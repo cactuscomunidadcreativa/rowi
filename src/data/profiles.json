@@ -1,0 +1,54 @@
+{
+  "admin": {
+    "email": "admin@rowisia.com",
+    "username": "admin",
+    "firstName": "Rowi",
+    "lastName": "Sia",
+    "progress": 0,
+    "brainStyle": "Creativo",
+    "values": [
+      "Autonomía",
+      "Aprendizaje",
+      "Colaboración",
+      "Liderazgo",
+      "Impacto social"
+    ],
+    "hobbies": [
+      "Lectura",
+      "Viajes",
+      "Música",
+      "Deporte",
+      "Cocina",
+      "Arte/Diseño"
+    ],
+    "commTonePrimary": "Directo",
+    "commToneSecondary": "Detallado",
+    "locationCity": "",
+    "locationCountry": "",
+    "commPrefs": [
+      "Directo",
+      "Detallado"
+    ],
+    "plan": "Starter",
+    "status": "Nuevo",
+    "updatedAt": "2025-10-06T21:53:34.516Z"
+  },
+  "eduardogonzalez": {
+    "email": "eduardo.gonzalez@6seconds.org",
+    "username": "eduardogonzalez",
+    "firstName": "",
+    "lastName": "",
+    "progress": 0,
+    "brainStyle": "Analítico",
+    "values": [],
+    "hobbies": [],
+    "commTonePrimary": "",
+    "commToneSecondary": "",
+    "locationCity": "",
+    "locationCountry": "",
+    "commPrefs": [],
+    "plan": "Starter",
+    "status": "Nuevo",
+    "updatedAt": "2025-10-09T13:31:30.259Z"
+  }
+}

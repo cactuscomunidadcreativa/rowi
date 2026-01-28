@@ -1,0 +1,325 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/core/prisma";
+import { getToken } from "next-auth/jwt";
+import { getServerAuthUser } from "@/core/auth";
+import OpenAI from "openai";
+
+export const runtime = "nodejs";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
+
+/* =========================================================
+   🧠 Helpers
+========================================================= */
+
+type AccessLevel = "visitor" | "user" | "hub";
+
+const MODEL_BY_LEVEL: Record<AccessLevel, string | null> = {
+  visitor: null,
+  user: "gpt-4o-mini",
+  hub: "gpt-4o",
+};
+
+// Mapeo de intent → slug esperado de agente
+const INTENT_TO_SLUG: Record<string, string> = {
+  super: "super",
+  affinity: "affinity",
+  eq: "eq",
+  eco: "eco",
+  relationship: "relationship",
+  community: "community",
+  sales: "sales",
+  trainer: "trainer",
+  router: "router",
+};
+
+function normalizeIntent(intent?: string): string {
+  const key = (intent || "super").toLowerCase();
+  return INTENT_TO_SLUG[key] || "router";
+}
+
+// Estimación simple de tokens (para usage)
+function estimateTokens(text: string): number {
+  if (!text) return 0;
+  return Math.ceil(text.length / 4); // aproximación muy grosera
+}
+
+/* =========================================================
+   🔎 Resolver agente por contexto (hub → tenant → superhub → global)
+   ---------------------------------------------------------
+   Prioridad: hubId → tenantId → superHubId → global
+   SIEMPRE hace fallback a global si no encuentra en niveles específicos
+========================================================= */
+async function resolveAgent(slug: string, auth: any) {
+  // Extraer IDs del contexto del usuario
+  const tenantId: string | null = auth?.primaryTenantId ?? null;
+
+  // Obtener hubId y superHubId del contexto del usuario si tiene memberships
+  let hubId: string | null = null;
+  let superHubId: string | null = null;
+
+  // Si el usuario tiene hubIds en su sesión
+  if (auth?.hubIds?.length > 0) {
+    hubId = auth.hubIds[0];
+    // Cargar el hub para obtener su superHubId
+    const hub = await prisma.hub.findUnique({
+      where: { id: hubId },
+      select: { superHubId: true }
+    });
+    superHubId = hub?.superHubId ?? null;
+  }
+
+  // Alternativa: si tiene superHubIds directamente
+  if (!superHubId && auth?.superHubIds?.length > 0) {
+    superHubId = auth.superHubIds[0];
+  }
+
+  // 1️⃣ Intentar agente por Hub (más específico)
+  if (hubId) {
+    const hubAgent = await prisma.agentConfig.findFirst({
+      where: { slug, hubId, isActive: true },
+    });
+    if (hubAgent) return hubAgent;
+  }
+
+  // 2️⃣ Intentar agente por Tenant
+  if (tenantId) {
+    const tenantAgent = await prisma.agentConfig.findFirst({
+      where: { slug, tenantId, isActive: true },
+    });
+    if (tenantAgent) return tenantAgent;
+  }
+
+  // 3️⃣ Intentar agente por SuperHub
+  if (superHubId) {
+    const shAgent = await prisma.agentConfig.findFirst({
+      where: { slug, superHubId, isActive: true },
+    });
+    if (shAgent) return shAgent;
+  }
+
+  // 4️⃣ Fallback global (accessLevel = 'global' o sin scope asignado)
+  const globalAgent = await prisma.agentConfig.findFirst({
+    where: {
+      slug,
+      isActive: true,
+      OR: [
+        { accessLevel: "global" },
+        {
+          tenantId: null,
+          superHubId: null,
+          organizationId: null,
+          hubId: null,
+        }
+      ]
+    },
+  });
+
+  return globalAgent;
+}
+
+/* =========================================================
+ 🚀 POST /api/rowi — Router IA Profesional
+========================================================= */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+
+    const intentRaw = body.intent as string | undefined;
+    const ask = (body.ask as string | undefined)?.trim() || "";
+    const locale: string = body.locale || "es";
+    const tenantFromBody: string | undefined = body.tenantId;
+    const attachments: any[] = Array.isArray(body.attachments) ? body.attachments : [];
+    const audio = body.audio as string | null | undefined;
+
+    /* =========================================================
+     🔐 1. Autenticación extendida
+    ========================================================== */
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const email = token?.email?.toLowerCase() || null;
+
+    let accessLevel: AccessLevel = "visitor";
+    let auth: any = null;
+
+    auth = await getServerAuthUser();
+
+    if (auth) {
+      if (auth.isSuperAdmin) {
+        accessLevel = "hub";
+      } else if (auth.hubs?.length > 0) {
+        accessLevel = "hub";
+      } else {
+        accessLevel = "user";
+      }
+    }
+
+    // Fallback legacy por X-Hub-Key (si quieres mantenerlo)
+    const hubKey = req.headers.get("x-hub-key") || req.headers.get("X-Hub-Key");
+    const envKey = process.env.HUB_ACCESS_KEY?.trim();
+    if (!auth && hubKey && envKey && hubKey === envKey) {
+      accessLevel = "hub";
+      auth = {
+        id: "hub-control-user",
+        email: "hub@rowi.system",
+        organizationRole: "SYSTEM",
+        hubs: [],
+        superHubs: [],
+        permissions: [],
+      };
+    }
+
+    /* =========================================================
+     🔐 2. Visitante sin login → modo demo
+    ========================================================== */
+    if (!auth && accessLevel === "visitor") {
+      return NextResponse.json(
+        {
+          ok: true,
+          preview: true,
+          access: "visitor",
+          text:
+            "👋 ¡Hola! Soy Rowi. Para conversar conmigo y desbloquear respuestas reales, inicia sesión o crea una cuenta gratuita en Rowi.app 🌱",
+        },
+        { status: 200 }
+      );
+    }
+
+    /* =========================================================
+     🎯 3. Resolver intent y agente
+    ========================================================== */
+    const slug = normalizeIntent(intentRaw);
+    const agent = await resolveAgent(slug, auth);
+
+    if (!agent) {
+      return NextResponse.json(
+        {
+          ok: false,
+          access: accessLevel,
+          text: `⚠️ No hay un agente IA configurado para el contexto "${slug}". Pídele a un admin que lo active en /hub/admin/agents.`,
+        },
+        { status: 200 }
+      );
+    }
+
+    const model = agent.model || MODEL_BY_LEVEL[accessLevel] || "gpt-4o-mini";
+
+    /* =========================================================
+     🧠 4. Construir mensaje para OpenAI
+    ========================================================== */
+    const userName = auth?.name || email || "Usuario";
+    const lang = (locale || "es").slice(0, 2);
+
+    let userContent = ask || "";
+    if (attachments.length > 0) {
+      const names = attachments.map((a) => a.name || "archivo").join(", ");
+      userContent += `\n\nArchivos adjuntos: ${names}.`;
+    }
+    if (audio) {
+      userContent += `\n\n(Nota: el usuario también envió un audio, aún no se ha transcrito aquí).`;
+    }
+
+    const systemPrompt =
+      agent.prompt ||
+      `Eres Rowi, un coach emocional y cognitivo. Hablas principalmente en ${lang}. Responde de forma clara, empática y aplicada al contexto de la persona.`;
+
+    const messages: OpenAI.ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: `Usuario: ${userName}\nContexto: intent=${slug}, nivel=${accessLevel}, locale=${locale}\n\nMensaje:\n${userContent}`,
+      },
+    ];
+
+    /* =========================================================
+     🤖 5. Llamar a OpenAI
+    ========================================================== */
+    const completion = await openai.chat.completions.create({
+      model,
+      messages,
+    });
+
+    const replyText =
+      completion.choices[0]?.message?.content?.trim() ||
+      "⚠️ No pude generar una respuesta en este momento.";
+
+    // Estimar tokens (opcional, aproximado)
+    const tokensInput = estimateTokens(JSON.stringify(messages));
+    const tokensOutput = estimateTokens(replyText);
+
+    /* =========================================================
+     📊 6. Registrar usage (ROWI_CHAT)
+    ========================================================== */
+    try {
+      const tenantId = tenantFromBody || auth?.primaryTenantId || null;
+
+      if (tenantId) {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const feature: "AFFINITY" | "ECO" | "ROWI_CHAT" | "OTHER" = "ROWI_CHAT";
+
+        const existingUsage = await prisma.usageDaily.findFirst({
+          where: { tenantId, feature, day: today },
+        });
+
+        if (existingUsage) {
+          await prisma.usageDaily.update({
+            where: { id: existingUsage.id },
+            data: {
+              tokensInput: existingUsage.tokensInput + tokensInput,
+              tokensOutput: existingUsage.tokensOutput + tokensOutput,
+              calls: existingUsage.calls + 1,
+              costUsd: (Number(existingUsage.costUsd) || 0) + 0, // aquí puedes poner cálculo real de coste
+            },
+          });
+        } else {
+          await prisma.usageDaily.create({
+            data: {
+              tenantId,
+              feature,
+              model,
+              tokensInput,
+              tokensOutput,
+              calls: 1,
+              costUsd: 0,
+              day: today,
+            },
+          });
+        }
+      }
+    } catch (usageErr) {
+      console.warn("⚠️ Error registrando usage en usageDaily:", usageErr);
+    }
+
+    /* =========================================================
+     📤 7. Respuesta final para RowiCoach
+    ========================================================== */
+    return NextResponse.json({
+      ok: true,
+      access: accessLevel,
+      model,
+      tokenLimit: MODEL_BY_LEVEL[accessLevel] ? (accessLevel === "hub" ? 10000 : 3000) : 0,
+      user: {
+        id: auth?.id,
+        email: auth?.email,
+        name: auth?.name,
+        role: auth?.organizationRole,
+        hubs: auth?.hubs,
+        superHubs: auth?.superHubs,
+        permissions: auth?.permissions,
+      },
+      text: replyText,
+    });
+  } catch (e: any) {
+    console.error("❌ Error en /api/rowi:", e);
+    return NextResponse.json(
+      { ok: false, error: e?.message || "Error interno en Rowi" },
+      { status: 500 }
+    );
+  }
+}

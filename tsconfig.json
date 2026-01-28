@@ -1,0 +1,69 @@
+{
+  "compilerOptions": {
+    /* === Núcleo de configuración === */
+    "target": "ES2021",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "jsx": "preserve",
+    /* === Soporte de rutas absolutas === */
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ],
+      "@/core/*": [
+        "core/*"
+      ],
+      "@/domains/*": [
+        "domains/*"
+      ],
+      "@/ai/*": [
+        "ai/*"
+      ],
+      "@/i18n/*": [
+        "i18n/*"
+      ],
+      "@/ui/*": [
+        "components/ui/*"
+      ],
+      "@/hooks/*": [
+        "hooks/*"
+      ]
+    },
+    /* === Next.js optimizations === */
+    "types": [
+      "node",
+      "react",
+      "next",
+      "next/types/global",
+      "next/navigation"
+    ],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "src",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

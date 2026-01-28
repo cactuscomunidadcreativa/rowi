@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   🌈 ROWI DESIGN SYSTEM 3.0
+   — Colores sólidos, alto contraste, elegancia y legibilidad
+   ========================================================= */
+
+/* =========================================================
+   🌤️ MODO DÍA
+   ========================================================= */
+:root {
+  --rowi-bg: #f7f9fb;                 /* fondo neutro cálido */
+  --rowi-fg: #1a1c1e;                 /* texto principal */
+  --rowi-card: #ffffff;               /* fondo sólido */
+  --rowi-card-elev: #f1f4f7;          /* hover cards */
+  --rowi-card-border: rgba(0, 0, 0, 0.08);
+
+  --rowi-muted: #5f6368;              /* texto secundario */
+  --rowi-muted-weak: #9aa0a6;         /* texto débil */
+
+  --rowi-chip: #e8eef3;               /* chips suaves */
+
+  --rowi-g1: #d797cf;                 /* rosa Rowi */
+  --rowi-g2: #31a2e3;                 /* azul Rowi */
+  --rowi-g3: #7a59c9;                 /* violeta Rowi */
+
+  /* === Compatibilidad Shadcn === */
+  --background: 0 0% 98%;
+  --foreground: 0 0% 6%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --primary: 208 73% 54%; /* Azul Rowi Día */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 333 65% 58%; /* Rosa Rowi Día */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 208 100% 97%;
+  --accent-foreground: 0 0% 10%;
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 86%;
+  --input: 0 0% 90%;
+  --ring: 208 73% 54%;
+  --radius: 0.75rem;
+}
+
+/* =========================================================
+   🌙 MODO NOCHE
+   ========================================================= */
+html.dark {
+  --rowi-bg: #101317;
+  --rowi-fg: #e8eaed;
+  --rowi-card: #1a1e23;
+  --rowi-card-elev: #23272e;
+  --rowi-card-border: rgba(255, 255, 255, 0.08);
+
+  --rowi-muted: #a0a7b3;
+  --rowi-muted-weak: #6c7280;
+
+  --rowi-chip: rgba(255, 255, 255, 0.1);
+
+  /* === Compatibilidad Shadcn (modo oscuro refinado) === */
+  --background: 220 13% 12%;
+  --foreground: 210 20% 96%;
+  --card: 220 13% 14%;
+  --card-foreground: 210 20% 96%;
+  --popover: 220 13% 14%;
+  --popover-foreground: 210 20% 96%;
+  --primary: 193 80% 67%; /* Azul Rowi noche */
+  --primary-foreground: 0 0% 10%;
+  --secondary: 329 100% 75%; /* Rosa Rowi noche */
+  --secondary-foreground: 0 0% 10%;
+  --muted: 220 13% 18%;
+  --muted-foreground: 210 20% 80%;
+  --accent: 220 13% 18%;
+  --accent-foreground: 210 20% 95%;
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 13% 20%;
+  --input: 220 13% 20%;
+  --ring: 193 80% 67%;
+}
+
+/* =========================================================
+   🌐 BASE — tipografía, fondo y suavizado
+   ========================================================= */
+html, body {
+  background: var(--rowi-bg);
+  color: var(--rowi-fg);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* =========================================================
+   🧩 COMPONENTES VISUALES ROWI
+   ========================================================= */
+@layer components {
+  /* === HEADER === */
+  .rowi-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--rowi-card);
+    border-bottom: 1px solid var(--rowi-card-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+
+  /* === CARD === */
+  .rowi-card {
+    @apply rounded-2xl p-4 transition-shadow;
+    background: var(--rowi-card);
+    border: 1px solid var(--rowi-card-border);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .rowi-card:hover {
+    background: var(--rowi-card-elev);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* === CHIP === */
+  .rowi-chip {
+    @apply rounded-full text-[11px] px-2 py-0.5 font-medium;
+    background: var(--rowi-chip);
+    border: 1px solid var(--rowi-card-border);
+    color: var(--rowi-fg);
+  }
+
+  /* === TEXTO === */
+  .rowi-muted { color: var(--rowi-muted); }
+  .rowi-muted-weak { color: var(--rowi-muted-weak); }
+
+  .rowi-gradient-text {
+    background: linear-gradient(90deg, var(--rowi-g2), var(--rowi-g1));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  /* === BOTONES === */
+  .rowi-btn {
+    @apply rounded-full px-3 py-1 text-sm font-medium transition;
+    border: 1px solid var(--rowi-card-border);
+    background: var(--rowi-card);
+    color: var(--rowi-fg);
+  }
+  .rowi-btn:hover { background: var(--rowi-card-elev); }
+
+  .rowi-btn-primary {
+    @apply rounded-full px-4 py-1.5 text-sm text-white font-medium shadow-sm;
+    background: linear-gradient(90deg, var(--rowi-g2), var(--rowi-g1));
+    border: none;
+  }
+  .rowi-btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  /* === LINKS === */
+  .rowi-link {
+    @apply rounded-full px-2.5 py-1 text-sm font-medium transition;
+    color: var(--rowi-fg);
+    opacity: 0.8;
+  }
+  .rowi-link:hover { opacity: 1; }
+  .rowi-link-active {
+    color: #fff;
+    background: linear-gradient(90deg, var(--rowi-g2), var(--rowi-g1));
+    border: none;
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   🧱 FIX MODALES Y POPUPS (sin transparencias)
+   ========================================================= */
+.dialog-content,
+.sheet-content,
+.modal-content,
+[data-radix-dialog-content],
+[data-radix-sheet-content] {
+  background-color: var(--rowi-card) !important;
+  color: var(--rowi-fg) !important;
+  border: 1px solid var(--rowi-card-border) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border-radius: 1rem;
+  backdrop-filter: none !important;
+  z-index: 1000;
+}
+
+[data-radix-dialog-overlay],
+[data-radix-sheet-overlay],
+.dialog-overlay,
+.sheet-overlay {
+  background-color: rgba(0,0,0,0.55) !important;
+  backdrop-filter: none !important;
+}
+
+html.dark .dialog-content,
+html.dark .sheet-content,
+html.dark .modal-content {
+  background-color: var(--rowi-card);
+  color: var(--rowi-fg);
+}
+
+/* =========================================================
+   🎚️ SCROLLBAR ESTILIZADA
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--rowi-g2), var(--rowi-g1));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--rowi-card-elev);
+}
+
+/* =========================================================
+   🧱 BASE (heredado de Shadcn)
+   ========================================================= */
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}

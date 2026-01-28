@@ -1,0 +1,1188 @@
+.
+├── apps
+│   └── rowi
+│       ├── scripts
+│       │   ├── audit-prisma-models.mjs
+│       │   ├── deep-repair.mjs
+│       │   ├── fix-missing-nav-translations.mjs
+│       │   └── flatten_src_locales.ts
+│       └── src
+│           └── lib
+│               └── i18n
+│                   └── locales
+│                       ├── en.json
+│                       ├── es.json
+│                       ├── it.json
+│                       └── pt.json
+├── architecture
+│   ├── deps.dot
+│   └── deps.svg
+├── components.json
+├── dynamic_routes_admin.txt
+├── dynamic_routes.txt
+├── eslint.config.mjs
+├── layouts_all.txt
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.ts
+├── node_modules
+│   ├── @auth
+│   │   └── prisma-adapter -> ../.pnpm/@auth+prisma-adapter@2.11.0_@prisma+client@6.17.1_prisma@6.17.1_typescript@5.9.2__typescript@5.9.2_/node_modules/@auth/prisma-adapter
+│   ├── @next-auth
+│   │   └── prisma-adapter -> ../.pnpm/@next-auth+prisma-adapter@1.0.7_@prisma+client@6.17.1_prisma@6.17.1_typescript@5.9.2__t_93b4c5aa8583a1fdb75da0031a6e7224/node_modules/@next-auth/prisma-adapter
+│   ├── @prisma
+│   │   └── client -> ../.pnpm/@prisma+client@6.17.1_prisma@6.17.1_typescript@5.9.2__typescript@5.9.2/node_modules/@prisma/client
+│   ├── @radix-ui
+│   │   ├── react-checkbox -> ../.pnpm/@radix-ui+react-checkbox@1.3.3_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-checkbox
+│   │   ├── react-dialog -> ../.pnpm/@radix-ui+react-dialog@1.1.15_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-dialog
+│   │   ├── react-label -> ../.pnpm/@radix-ui+react-label@2.1.8_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-label
+│   │   ├── react-select -> ../.pnpm/@radix-ui+react-select@2.2.6_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-select
+│   │   ├── react-separator -> ../.pnpm/@radix-ui+react-separator@1.1.7_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-separator
+│   │   ├── react-slot -> ../.pnpm/@radix-ui+react-slot@1.2.3_@types+react@19.2.2_react@19.1.0/node_modules/@radix-ui/react-slot
+│   │   ├── react-switch -> ../.pnpm/@radix-ui+react-switch@1.2.6_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-switch
+│   │   └── react-tabs -> ../.pnpm/@radix-ui+react-tabs@1.1.13_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@radix-ui/react-tabs
+│   ├── @sanity
+│   │   ├── client -> ../.pnpm/@sanity+client@7.11.0_debug@4.4.3/node_modules/@sanity/client
+│   │   ├── image-url -> ../.pnpm/@sanity+image-url@1.2.0/node_modules/@sanity/image-url
+│   │   └── vision -> ../.pnpm/@sanity+vision@4.6.1_@babel+runtime@7.28.4_@codemirror+lint@6.9.2_@codemirror+theme-one_95dac65640a57083b98bfb21492d8a3c/node_modules/@sanity/vision
+│   ├── @swc
+│   │   └── helpers -> ../.pnpm/@swc+helpers@0.5.17/node_modules/@swc/helpers
+│   ├── @tailwindcss
+│   │   └── postcss -> ../.pnpm/@tailwindcss+postcss@4.1.12/node_modules/@tailwindcss/postcss
+│   ├── @tanstack
+│   │   └── react-table -> ../.pnpm/@tanstack+react-table@8.21.3_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/@tanstack/react-table
+│   ├── @types
+│   │   ├── node -> ../.pnpm/@types+node@24.5.0/node_modules/@types/node
+│   │   ├── papaparse -> ../.pnpm/@types+papaparse@5.3.16/node_modules/@types/papaparse
+│   │   ├── react -> ../.pnpm/@types+react@19.2.2/node_modules/@types/react
+│   │   └── sortablejs -> ../.pnpm/@types+sortablejs@1.15.9/node_modules/@types/sortablejs
+│   ├── autoprefixer -> .pnpm/autoprefixer@10.4.21_postcss@8.5.6/node_modules/autoprefixer
+│   ├── bcrypt -> .pnpm/bcrypt@6.0.0/node_modules/bcrypt
+│   ├── bcryptjs -> .pnpm/bcryptjs@3.0.2/node_modules/bcryptjs
+│   ├── chalk -> .pnpm/chalk@5.6.2/node_modules/chalk
+│   ├── class-variance-authority -> .pnpm/class-variance-authority@0.7.1/node_modules/class-variance-authority
+│   ├── clsx -> .pnpm/clsx@2.1.1/node_modules/clsx
+│   ├── csv-parse -> .pnpm/csv-parse@5.6.0/node_modules/csv-parse
+│   ├── csv-parser -> .pnpm/csv-parser@3.2.0/node_modules/csv-parser
+│   ├── csv-stringify -> .pnpm/csv-stringify@6.6.0/node_modules/csv-stringify
+│   ├── d3-geo -> .pnpm/d3-geo@3.1.1/node_modules/d3-geo
+│   ├── dependency-cruiser -> .pnpm/dependency-cruiser@17.0.2/node_modules/dependency-cruiser
+│   ├── dotenv-cli -> .pnpm/dotenv-cli@11.0.0/node_modules/dotenv-cli
+│   ├── eslint -> .pnpm/eslint@9.34.0_jiti@2.6.1/node_modules/eslint
+│   ├── eslint-config-next -> .pnpm/eslint-config-next@15.5.2_eslint@9.34.0_jiti@2.6.1__typescript@5.9.2/node_modules/eslint-config-next
+│   ├── framer-motion -> .pnpm/framer-motion@12.23.22_@emotion+is-prop-valid@1.2.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/framer-motion
+│   ├── lucide-react -> .pnpm/lucide-react@0.544.0_react@19.1.0/node_modules/lucide-react
+│   ├── madge -> .pnpm/madge@8.0.0_typescript@5.9.2/node_modules/madge
+│   ├── next -> .pnpm/next@15.5.2_@babel+core@7.28.5_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next
+│   ├── next-auth -> .pnpm/next-auth@4.24.11_next@15.5.2_@babel+core@7.28.5_react-dom@19.1.0_react@19.1.0__react@1_31c88806522bd8b4d3a0968fe3798751/node_modules/next-auth
+│   ├── next-sanity -> .pnpm/next-sanity@10.0.15_@emotion+is-prop-valid@1.2.2_@sanity+client@7.11.0_@sanity+icons@3._29630763cb714f7f75d2624e876c0978/node_modules/next-sanity
+│   ├── openai -> .pnpm/openai@4.104.0_ws@8.18.3_zod@4.1.12/node_modules/openai
+│   ├── papaparse -> .pnpm/papaparse@5.5.3/node_modules/papaparse
+│   ├── pg -> .pnpm/pg@8.16.3/node_modules/pg
+│   ├── postcss -> .pnpm/postcss@8.5.6/node_modules/postcss
+│   ├── prisma -> .pnpm/prisma@6.17.1_typescript@5.9.2/node_modules/prisma
+│   ├── react -> .pnpm/react@19.1.0/node_modules/react
+│   ├── react-dom -> .pnpm/react-dom@19.1.0_react@19.1.0/node_modules/react-dom
+│   ├── react-simple-maps -> .pnpm/react-simple-maps@3.0.0_prop-types@15.8.1_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-simple-maps
+│   ├── recharts -> .pnpm/recharts@3.2.1_@types+react@19.2.2_react-dom@19.1.0_react@19.1.0__react-is@19.2.0_react@19.1.0_redux@5.0.1/node_modules/recharts
+│   ├── resend -> .pnpm/resend@6.4.1/node_modules/resend
+│   ├── sanity -> .pnpm/sanity@4.14.1_@emotion+is-prop-valid@1.2.2_@portabletext+sanity-bridge@1.2.0_@sanity+sc_289b14a6beb4eabfdab1bf6503db3275/node_modules/sanity
+│   ├── sonner -> .pnpm/sonner@2.0.7_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/sonner
+│   ├── sortablejs -> .pnpm/sortablejs@1.15.6/node_modules/sortablejs
+│   ├── string_decoder -> .pnpm/string_decoder@1.3.0/node_modules/string_decoder
+│   ├── swr -> .pnpm/swr@2.3.6_react@19.1.0/node_modules/swr
+│   ├── tailwind-merge -> .pnpm/tailwind-merge@3.3.1/node_modules/tailwind-merge
+│   ├── tailwind-variants -> .pnpm/tailwind-variants@3.1.1_tailwind-merge@3.3.1_tailwindcss@3.4.17_ts-node@10.9.2_@types+node@24.5.0_typescript@5.9.2__/node_modules/tailwind-variants
+│   ├── tailwindcss -> .pnpm/tailwindcss@3.4.17_ts-node@10.9.2_@types+node@24.5.0_typescript@5.9.2_/node_modules/tailwindcss
+│   ├── tailwindcss-animate -> .pnpm/tailwindcss-animate@1.0.7_tailwindcss@3.4.17_ts-node@10.9.2_@types+node@24.5.0_typescript@5.9.2__/node_modules/tailwindcss-animate
+│   ├── topojson-client -> .pnpm/topojson-client@3.1.0/node_modules/topojson-client
+│   ├── tree-cli -> .pnpm/tree-cli@0.6.7/node_modules/tree-cli
+│   ├── ts-node -> .pnpm/ts-node@10.9.2_@types+node@24.5.0_typescript@5.9.2/node_modules/ts-node
+│   ├── tslib -> .pnpm/tslib@2.8.1/node_modules/tslib
+│   ├── tsx -> .pnpm/tsx@4.20.6/node_modules/tsx
+│   ├── typescript -> .pnpm/typescript@5.9.2/node_modules/typescript
+│   ├── xlsx -> .pnpm/xlsx@0.18.5/node_modules/xlsx
+│   └── zod -> .pnpm/zod@4.1.12/node_modules/zod
+├── package.json
+├── pages_all.txt
+├── pnpm-lock 2.yaml
+├── pnpm-lock.yaml
+├── postcss.config.mjs
+├── prisma
+│   ├── migrations
+│   │   ├── 20251111161401_add_system_model
+│   │   │   └── migration.sql
+│   │   ├── 20251112174428_init_lowercase_schema
+│   │   │   └── migration.sql
+│   │   ├── 20251112182559_clean_tenant_multilinks
+│   │   │   └── migration.sql
+│   │   ├── 20251112184713_add_scope_fields_compat
+│   │   │   └── migration.sql
+│   │   └── migration_lock.toml
+│   └── schema.prisma
+├── public
+│   ├── apple-touch-icon.png
+│   ├── egg-1.png
+│   ├── egg-2.png
+│   ├── egg-3.png
+│   ├── favicon-96x96.png
+│   ├── favicon.svg
+│   ├── owl.png
+│   ├── rowi-logo.png
+│   ├── site.webmanifest
+│   ├── web-app-manifest-192x192.png
+│   └── web-app-manifest-512x512.png
+├── README.md
+├── route.ts
+├── scripts
+│   ├── audit-rowi-structure.ts
+│   ├── audit.mjs
+│   ├── cleanup-bak-files.ts
+│   ├── cleanup-rowi-structure.ts
+│   ├── clear-translations.ts
+│   ├── deep-repair.mjs
+│   ├── dev_db_up.sh
+│   ├── dev_up.sh
+│   ├── doctor.mjs
+│   ├── exportTranslationsToLocales.ts
+│   ├── feelings-from-csv.cjs
+│   ├── feelings-from-csv.ts
+│   ├── fix_ai_imports.sh
+│   ├── fix_all_duplicates.sh
+│   ├── fix_and_run.command
+│   ├── fix_imports_v2.sh
+│   ├── fix_imports_v2.shn
+│   ├── fix_imports_v3.sh
+│   ├── fix_imports_v4.sh
+│   ├── fix_imports_v5.sh
+│   ├── fix_imports.sh
+│   ├── fix-i18n-imports.ts
+│   ├── ingest-sixseconds.ts
+│   ├── map-deep-structure.ts
+│   ├── map-deps.mjs
+│   ├── reindex-translations.ts
+│   ├── restructure_rowi_v2.sh
+│   ├── restructure_rowi.sh
+│   ├── scan-ai.mjs
+│   ├── seed-from-csv.ts
+│   ├── seed.ts
+│   ├── sync_translations.ts
+│   ├── sync-i18n-with-db.ts
+│   ├── sync-locales.mjs
+│   ├── sync-rowiverse-users.ts
+│   ├── sync-user-country-language.ts
+│   ├── unify-translations-semantic.ts
+│   ├── unify-translations.ts
+│   ├── verify-i18n-structure.ts
+│   ├── verify-rowi-health.ts
+│   └── verify-rowi-structure.ts
+├── scripts 2
+│   ├── clean-invalid-translations.ts
+│   ├── fix-migration-syntax.ts
+│   ├── flatten_src_locales.ts
+│   ├── merge_locales_flat.ts
+│   └── migrate-emails-model.ts
+├── src
+│   ├── ai
+│   │   ├── agents
+│   │   │   ├── _template.ts
+│   │   │   ├── affinity
+│   │   │   │   ├── community.ts
+│   │   │   │   ├── customer.ts
+│   │   │   │   ├── prompts
+│   │   │   │   │   ├── community.ts
+│   │   │   │   │   ├── relationship.ts
+│   │   │   │   │   └── teamwork.ts
+│   │   │   │   ├── relationship.ts
+│   │   │   │   ├── router.ts
+│   │   │   │   └── teamwork.ts
+│   │   │   ├── affinity.ts
+│   │   │   ├── eco.ts
+│   │   │   ├── eq.ts
+│   │   │   ├── index.ts
+│   │   │   ├── router.ts
+│   │   │   ├── sales.ts
+│   │   │   ├── super.ts
+│   │   │   └── trainer.ts
+│   │   ├── client
+│   │   │   ├── client.ts
+│   │   │   ├── coach.ts
+│   │   │   ├── index.ts
+│   │   │   ├── lexicon.ts
+│   │   │   ├── registerUsage.ts
+│   │   │   └── RowiAI.ts
+│   │   ├── engine
+│   │   │   ├── context.ts
+│   │   │   ├── context.ts.bak
+│   │   │   ├── index.ts
+│   │   │   ├── index.ts.bak
+│   │   │   ├── local.ts
+│   │   │   ├── local.ts.bak
+│   │   │   ├── user-memory.ts
+│   │   │   └── user-memory.ts.bak
+│   │   ├── index.ts
+│   │   ├── learning
+│   │   │   ├── affinityAutoRecalc.ts
+│   │   │   ├── affinityLearning.ts
+│   │   │   └── index.ts
+│   │   ├── prompts
+│   │   │   ├── index.ts
+│   │   │   └── modules
+│   │   │       ├── affinity.ts
+│   │   │       ├── community-insights.ts
+│   │   │       ├── eco.ts
+│   │   │       ├── eq-dashboard.ts
+│   │   │       ├── eq.ts
+│   │   │       ├── index.ts
+│   │   │       ├── profile-insights.ts
+│   │   │       ├── rowi-coach.ts
+│   │   │       ├── sales.ts
+│   │   │       ├── super.ts
+│   │   │       └── trainer.ts
+│   │   └── tools
+│   │       ├── affinity.ts
+│   │       └── index.ts
+│   ├── app
+│   │   ├── (app)
+│   │   │   ├── admin
+│   │   │   │   ├── index.ts
+│   │   │   │   └── ui
+│   │   │   │       ├── index.ts
+│   │   │   │       └── page.tsx
+│   │   │   ├── affinity
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── community
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── dashboard
+│   │   │   │   ├── ClientDashboard.tsx
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── eco
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── feed
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── insight-test
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── post
+│   │   │   │   ├── index.ts
+│   │   │   │   └── new
+│   │   │   │       ├── index.ts
+│   │   │   │       └── page.tsx
+│   │   │   ├── profile
+│   │   │   │   ├── [username]
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── home
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── rowi
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── settings
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── InsightClient.tsx
+│   │   │   │   ├── invites
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── profile
+│   │   │   │       ├── index.ts
+│   │   │   │       └── page.tsx
+│   │   │   └── studio
+│   │   │       ├── [[...index]]
+│   │   │       │   ├── index.ts
+│   │   │       │   └── page.tsx
+│   │   │       └── index.ts
+│   │   ├── about
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── api
+│   │   │   ├── admin
+│   │   │   │   ├── agents
+│   │   │   │   │   ├── active
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── clone
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── context
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── global
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── map
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── prompt
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   ├── sync
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── toggle
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── ai
+│   │   │   │   │   └── list
+│   │   │   │   │       ├── learning
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── components
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── hubs
+│   │   │   │   │   ├── [hubId]
+│   │   │   │   │   │   ├── members
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   ├── roles
+│   │   │   │   │   │   │   ├── [roleId]
+│   │   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── layouts
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── scan
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── memberships
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── organizations
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── pages
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── scan
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── plans
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── prompts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── reports
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── roles
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   ├── superhubs
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── switch-tenant
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── tenants
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── ui
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── users
+│   │   │   │       ├── [id]
+│   │   │   │       │   ├── activity
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   ├── affinity
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   ├── full
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   ├── route.ts
+│   │   │   │       │   └── usage
+│   │   │   │       │       └── route.ts
+│   │   │   │       ├── import
+│   │   │   │       │   └── route.ts
+│   │   │   │       ├── imports
+│   │   │   │       │   ├── [id]
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   └── route.ts
+│   │   │   │       ├── invite
+│   │   │   │       │   ├── [token]
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   └── route.ts
+│   │   │   │       └── route.ts
+│   │   │   ├── affinity
+│   │   │   │   ├── composite
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── conversation
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── dashboard
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── team
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── decision
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── execution
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── growth
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── ia
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── innovation
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── interpret
+│   │   │   │   │   ├── global
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── leadership
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── recalculate
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── relationship
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   ├── snapshots
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── summary
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── utils.ts
+│   │   │   ├── ai
+│   │   │   │   ├── engine
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── jobs
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   └── train
+│   │   │   │       └── route.ts
+│   │   │   ├── alerts
+│   │   │   │   └── route.ts
+│   │   │   ├── auth
+│   │   │   │   ├── [...nextauth]
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── me
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── batch
+│   │   │   │   ├── history
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── community
+│   │   │   │   ├── connections
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── groups
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── members
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── bulk
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── debug
+│   │   │   │   └── db
+│   │   │   │       └── route.ts
+│   │   │   ├── eco
+│   │   │   │   ├── analayze-self
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── analayze-target
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── compose
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── dashboard
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── emails
+│   │   │   │   └── invite
+│   │   │   │       └── route.ts
+│   │   │   ├── emotional-config
+│   │   │   │   └── route.ts
+│   │   │   ├── emotions
+│   │   │   │   └── route.ts
+│   │   │   ├── env-check
+│   │   │   │   └── route.ts
+│   │   │   ├── eq
+│   │   │   │   ├── at
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── me
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── progress
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   └── snapshots
+│   │   │   │       └── route.ts
+│   │   │   ├── hello
+│   │   │   │   └── route.ts
+│   │   │   ├── hub
+│   │   │   │   ├── [hubId]
+│   │   │   │   │   ├── roles
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── agents
+│   │   │   │   │   ├── activate
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── sync
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── ai
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── announcements
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── builder
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── communities
+│   │   │   │   │   ├── [communityId]
+│   │   │   │   │   │   ├── members
+│   │   │   │   │   │   │   ├── [memberId]
+│   │   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── create-dynamic
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── import
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── link-all
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── members
+│   │   │   │   │   │   ├── [id]
+│   │   │   │   │   │   │   ├── link
+│   │   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── content
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── database
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── domains
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── eq
+│   │   │   │   │   └── snapshots
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── hubs
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── i18n
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── insights
+│   │   │   │   │   ├── generate
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── history
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── integrations
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── knowledge
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── logs
+│   │   │   │   │   ├── interactions
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── maintenance
+│   │   │   │   │   └── sync-users
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── memberships
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── modules
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── organizations
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── pages
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── plans
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── roles
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   ├── rowiverse
+│   │   │   │   │   ├── bootstrap
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── insights
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── link-communities
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── superhubs
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── system-health
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   ├── run-deep
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── run-doctor
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── tenants
+│   │   │   │   │   ├── [slug]
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── translations
+│   │   │   │   │   ├── auto
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── delete
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── dict
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── export
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── full
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── import
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── merge
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── missing
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   ├── save
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── scan
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── ui
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── usage
+│   │   │   │   │   ├── check
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── history
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── insights
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── list
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   ├── summary
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── today
+│   │   │   │   │       └── route.ts
+│   │   │   │   └── users
+│   │   │   │       ├── emails
+│   │   │   │       │   ├── add
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   ├── remove
+│   │   │   │       │   │   └── route.ts
+│   │   │   │       │   └── route.ts
+│   │   │   │       └── route.ts
+│   │   │   ├── hubs
+│   │   │   │   └── route.ts
+│   │   │   ├── i18n
+│   │   │   │   └── dict
+│   │   │   │       └── route.ts
+│   │   │   ├── import
+│   │   │   │   └── route.ts
+│   │   │   ├── index.ts
+│   │   │   ├── insight
+│   │   │   │   └── route.ts
+│   │   │   ├── invites
+│   │   │   │   ├── [token]
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── lead
+│   │   │   │   └── route.ts
+│   │   │   ├── logs
+│   │   │   │   └── route.ts
+│   │   │   ├── memberships
+│   │   │   │   └── route.ts
+│   │   │   ├── messages
+│   │   │   │   └── route.ts
+│   │   │   ├── plans
+│   │   │   │   └── route.ts
+│   │   │   ├── posts
+│   │   │   │   ├── index.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── preferences
+│   │   │   │   └── route.ts
+│   │   │   ├── profile
+│   │   │   │   └── route.ts
+│   │   │   ├── rowi
+│   │   │   │   ├── lexicon
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── social
+│   │   │   │   ├── init
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── upload-csv
+│   │   │   │   ├── community
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── route.ts
+│   │   │   │   └── self
+│   │   │   │       └── route.ts
+│   │   │   └── webhooks
+│   │   │       └── route.ts
+│   │   ├── ClientWrapper.tsx
+│   │   ├── contact
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── hub
+│   │   │   ├── admin
+│   │   │   │   ├── agents
+│   │   │   │   │   ├── components
+│   │   │   │   │   │   ├── AgentContextManager.tsx
+│   │   │   │   │   │   ├── AgentsEditModal.tsx
+│   │   │   │   │   │   └── AgentsToggleModal.tsx
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── ai
+│   │   │   │   │   ├── learning
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   └── prompts
+│   │   │   │   │       └── page.tsx
+│   │   │   │   ├── announcements
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── automation
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── builder
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── communities
+│   │   │   │   │   ├── [communityId]
+│   │   │   │   │   │   └── members
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   ├── actions
+│   │   │   │   │   │   └── getCommunities.ts
+│   │   │   │   │   ├── components
+│   │   │   │   │   │   ├── CommunityActions.tsx
+│   │   │   │   │   │   ├── CommunityForm.tsx
+│   │   │   │   │   │   └── CommunityList.tsx
+│   │   │   │   │   ├── import
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── members
+│   │   │   │   │   │   ├── [id]
+│   │   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   │   ├── components
+│   │   │   │   │   │   │   └── LinkUserModal.tsx
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── summary
+│   │   │   │   │       └── page.tsx
+│   │   │   │   ├── components
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── Sidebar.tsx
+│   │   │   │   ├── database
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── emotions
+│   │   │   │   │   ├── eq
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── events
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── summary
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── governance
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── hubs
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── i18n
+│   │   │   │   │   ├── en.json
+│   │   │   │   │   ├── es.json
+│   │   │   │   │   └── index.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── insights
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── integrations
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── knowledge
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── layouts
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   └── edit
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── lib
+│   │   │   │   │   └── index.ts
+│   │   │   │   ├── logs
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── members
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── members-client.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── memberships
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── organizations
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── pages
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── plans
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── prompts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── reports
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── roles
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── page.tsx
+│   │   │   │   │   └── roles-client.tsx
+│   │   │   │   ├── rowiverse
+│   │   │   │   │   ├── components
+│   │   │   │   │   │   └── WorldMap.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── settings
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── superhubs
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── system-health
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── tenants
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── tokens
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── translations
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── usage
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── users
+│   │   │   │       ├── [id]
+│   │   │   │       │   └── page.tsx
+│   │   │   │       ├── components
+│   │   │   │       │   ├── ImportUserModal.tsx
+│   │   │   │       │   ├── InviteModal.tsx
+│   │   │   │       │   └── UserInspector.tsx
+│   │   │   │       ├── imports
+│   │   │   │       │   ├── [id]
+│   │   │   │       │   │   └── page.tsx
+│   │   │   │       │   └── page.tsx
+│   │   │   │       ├── index.ts
+│   │   │   │       └── page.tsx
+│   │   │   ├── ai
+│   │   │   │   └── rowi-coach
+│   │   │   │       └── page.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── layout.tsx
+│   │   │   └── login
+│   │   │       ├── index.ts
+│   │   │       └── page.tsx
+│   │   ├── index.ts
+│   │   ├── invite
+│   │   │   ├── [token]
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── me
+│   │   │   ├── data
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── page.tsx
+│   │   │   └── profile
+│   │   │       ├── index.ts
+│   │   │       └── page.tsx
+│   │   ├── p
+│   │   │   ├── [slug]
+│   │   │   │   ├── index.ts
+│   │   │   │   └── page.tsx
+│   │   │   └── index.ts
+│   │   ├── page.tsx
+│   │   ├── pricing
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── RowiToast.ts
+│   │   ├── settings
+│   │   │   └── index.ts
+│   │   └── signin
+│   │       ├── index.ts
+│   │       └── page.tsx
+│   ├── components
+│   │   ├── admin
+│   │   │   └── UserDrawer.tsx
+│   │   ├── affinity
+│   │   │   ├── AffinityMonitor.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── MemberPickerDialog.tsx
+│   │   │   └── RowiCommunitySummary.tsx
+│   │   ├── ai
+│   │   │   ├── AgentActivationMap.tsx
+│   │   │   ├── ContextSelectorModal.tsx
+│   │   │   └── index.ts
+│   │   ├── auth
+│   │   │   ├── index.ts
+│   │   │   ├── SessionProvider.tsx
+│   │   │   └── UserActions.tsx
+│   │   ├── charts
+│   │   │   ├── CompetenciesSpider.tsx
+│   │   │   ├── EQBar.tsx
+│   │   │   ├── EQCompare.tsx
+│   │   │   ├── EQLine.tsx
+│   │   │   ├── EQRadar.tsx
+│   │   │   ├── FeedbackCompare.tsx
+│   │   │   ├── HistoryLine.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── SpiderEq.tsx
+│   │   │   └── SpiderRadar.tsx
+│   │   ├── coach
+│   │   │   ├── CoachPanel.tsx
+│   │   │   └── index.ts
+│   │   ├── community
+│   │   │   ├── Composer.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── PostItem.tsx
+│   │   │   └── types.ts
+│   │   ├── dashboard
+│   │   │   ├── ChartsPanel.tsx
+│   │   │   ├── EqTotalCard.tsx
+│   │   │   ├── FeedbackPanel.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── MoodChip.tsx
+│   │   │   ├── TalentsEq.tsx
+│   │   │   └── TrendCardsEq.tsx
+│   │   ├── eco
+│   │   │   ├── EcoChat.tsx
+│   │   │   └── index.ts
+│   │   ├── eq
+│   │   │   └── index.ts
+│   │   ├── hub
+│   │   │   ├── HubHeader.tsx
+│   │   │   ├── HubSidebar.tsx
+│   │   │   ├── index.ts
+│   │   │   └── UserDrawer.tsx
+│   │   ├── index.ts
+│   │   ├── invite
+│   │   │   ├── index.ts
+│   │   │   └── InviteActions.tsx
+│   │   ├── metrics
+│   │   │   ├── EqTotalBar.tsx
+│   │   │   ├── index.ts
+│   │   │   └── PursuitsBars.tsx
+│   │   ├── outcomes
+│   │   │   ├── index.ts
+│   │   │   ├── OutcomeCard.tsx
+│   │   │   ├── OutcomesPanel.tsx
+│   │   │   └── OverallSummary.tsx
+│   │   ├── rowi
+│   │   │   ├── EmotionalTimeline.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── InsightTest.tsx
+│   │   │   └── RowiCoach.tsx
+│   │   ├── settings
+│   │   │   ├── index.ts
+│   │   │   └── ProfileFields.tsx
+│   │   ├── shared
+│   │   │   ├── ChatDock.tsx
+│   │   │   ├── DemoBanner.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── LangToggle.tsx
+│   │   │   ├── NavBar.tsx
+│   │   │   ├── NavLinks.tsx
+│   │   │   ├── Providers.tsx
+│   │   │   ├── RowiLevelPill.tsx
+│   │   │   ├── RowiSEIToast.tsx
+│   │   │   ├── ThemeToggle.tsx
+│   │   │   ├── TopNav.tsx
+│   │   │   └── UserStatusBar.tsx
+│   │   ├── talents
+│   │   │   ├── index.ts
+│   │   │   ├── TalentBar.tsx
+│   │   │   └── TalentCluster.tsx
+│   │   └── ui
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── checkbox.tsx
+│   │       ├── dialog.tsx
+│   │       ├── index.ts
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── progress.tsx
+│   │       ├── select.tsx
+│   │       ├── separator.tsx
+│   │       ├── switch.tsx
+│   │       ├── tab.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       └── textarea.tsx
+│   ├── core
+│   │   ├── auth
+│   │   │   ├── config.ts
+│   │   │   ├── index.ts
+│   │   │   ├── policies
+│   │   │   │   ├── policy.admin.ts
+│   │   │   │   ├── policy.scope.ts
+│   │   │   │   └── policy.super.ts
+│   │   │   └── session-helpers.ts
+│   │   ├── auth.ts
+│   │   ├── index.ts
+│   │   ├── prisma.ts
+│   │   ├── services
+│   │   │   ├── affinity.cron.ts
+│   │   │   ├── client.ts
+│   │   │   └── index.ts
+│   │   ├── startup
+│   │   │   ├── cloneAgents.ts
+│   │   │   ├── cloneBaseAssests.ts
+│   │   │   ├── ensureAgents.ts
+│   │   │   ├── ensureBaseAgents.ts
+│   │   │   ├── ensureLayoutsAndComponents.ts
+│   │   │   ├── ensurePages.ts
+│   │   │   ├── ensureRowiverseCommunity.ts
+│   │   │   ├── ensureSystemAssets.ts
+│   │   │   ├── ensureSystemBootstrap.ts
+│   │   │   ├── ensureSystemHierarchy.ts
+│   │   │   ├── ensureTranslations.ts
+│   │   │   ├── exportLocales.ts
+│   │   │   └── exportTranslationsToLocales.ts
+│   │   └── utils
+│   │       ├── base-url.ts
+│   │       ├── cn.ts
+│   │       ├── findUserByEmail.ts
+│   │       └── index.ts
+│   ├── data
+│   │   ├── emotions
+│   │   │   ├── index.ts
+│   │   │   ├── README.md
+│   │   │   └── VOCABULARIO_EMOCIONES.csv
+│   │   ├── exercises
+│   │   │   ├── index.ts
+│   │   │   └── README.md
+│   │   ├── feed.json
+│   │   ├── feelings
+│   │   │   ├── en.json
+│   │   │   ├── es.json
+│   │   │   ├── index.ts
+│   │   │   ├── it.json
+│   │   │   └── pt.json
+│   │   ├── index.ts
+│   │   ├── invites.json
+│   │   ├── profiles.json
+│   │   ├── seeds
+│   │   │   ├── demodatalatam.csv
+│   │   │   ├── index.ts
+│   │   │   └── users.json
+│   │   ├── sixseconds
+│   │   │   ├── index.ts
+│   │   │   └── README.md
+│   │   └── ui.json
+│   ├── domains
+│   │   ├── affinity
+│   │   │   ├── components
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   └── lib
+│   │   │       ├── affinityEngine.ts
+│   │   │       └── index.ts
+│   │   ├── community
+│   │   │   ├── components
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   └── lib
+│   │   │       └── index.ts
+│   │   ├── eco
+│   │   │   ├── components
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   ├── lib
+│   │   │   │   ├── ecoAI.ts
+│   │   │   │   └── index.ts
+│   │   │   └── libAI.ts
+│   │   ├── eq
+│   │   │   ├── components
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   └── lib
+│   │   │       ├── dictionary.ts
+│   │   │       ├── eqLevels.ts
+│   │   │       ├── index.ts
+│   │   │       ├── levels.ts
+│   │   │       ├── model.ts
+│   │   │       └── types.ts
+│   │   ├── hr
+│   │   │   ├── components
+│   │   │   │   └── index.ts
+│   │   │   ├── index.ts
+│   │   │   └── lib
+│   │   │       └── index.ts
+│   │   ├── index.ts
+│   │   └── rowi
+│   │       ├── components
+│   │       │   └── index.ts
+│   │       ├── index.ts
+│   │       └── lib
+│   │           └── index.ts
+│   ├── hooks
+│   │   ├── index.ts
+│   │   └── useAllowAI.ts
+│   ├── index.ts
+│   ├── lib
+│   │   ├── db.ts
+│   │   ├── google
+│   │   │   └── translate.ts
+│   │   ├── i18n
+│   │   │   ├── constants.ts
+│   │   │   ├── getI18n.ts
+│   │   │   ├── glossary.ts
+│   │   │   ├── home.ts
+│   │   │   ├── I18nProvider.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── locales
+│   │   │   │   ├── en.json
+│   │   │   │   ├── es.json
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── it.json
+│   │   │   │   └── pt.json
+│   │   │   ├── react.ts
+│   │   │   └── useI18n.ts
+│   │   ├── kernel
+│   │   │   ├── alerts.service.ts
+│   │   │   ├── patterns.service.ts
+│   │   │   ├── runtime.ts
+│   │   │   ├── training.service.ts
+│   │   │   └── types.ts
+│   │   ├── math.ts
+│   │   └── utils.ts
+│   ├── logs
+│   │   └── scan-report.log
+│   ├── middleware.ts
+│   ├── sanity
+│   │   ├── config.ts
+│   │   ├── index.ts
+│   │   └── schemas
+│   │       ├── blocks
+│   │       │   ├── communityModule.ts
+│   │       │   ├── eqModule.ts
+│   │       │   ├── heroBlock.ts
+│   │       │   ├── index.ts
+│   │       │   ├── markdownBlock.ts
+│   │       │   └── simpleGridBlock.ts
+│   │       ├── blocks.ts
+│   │       ├── index.ts
+│   │       ├── page.ts
+│   │       ├── post.ts
+│   │       └── src
+│   │           ├── index.ts
+│   │           └── sanity
+│   │               ├── index.ts
+│   │               └── schemas
+│   │                   ├── index.ts
+│   │                   └── src
+│   │                       ├── index.ts
+│   │                       └── sanity
+│   │                           ├── index.ts
+│   │                           └── schemas
+│   │                               └── index.ts
+│   ├── types
+│   │   ├── eq.ts
+│   │   ├── index.ts
+│   │   ├── next-auth.d.ts
+│   │   └── rowi.ts
+│   ├── ui
+│   │   └── index.ts
+│   └── utils
+│       ├── cn.ts
+│       └── index.ts
+├── structure.txt
+├── tailwind.config.ts
+├── tree_prisma_L6.txt
+├── tree_rowi_L6.txt
+├── tree_src_app_L6.txt
+├── tree_src_core_L6.txt
+├── tree_src_L6.txt
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+└── vercel.json
+
+467 directories, 719 files

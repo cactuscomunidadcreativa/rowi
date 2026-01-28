@@ -1,0 +1,3144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String      @id @default(cuid())
+  name             String?
+  email            String      @unique
+  emails           UserEmail[]
+  emailVerified    DateTime?
+  image            String?
+  bio              String?
+  headline         String?
+  planExpiresAt    DateTime?
+  active           Boolean     @default(true)
+  allowAI          Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  planId           String?
+  primaryTenantId  String?
+  organizationRole String?     @default("VIEWER")
+
+  // 🌍 Identidad Global para RowiVerse (idioma, país, etc.)
+  country  String? @default("Unknown") // país del usuario
+  region   String? // estado o región
+  city     String? // ciudad
+  language String? @default("es") // idioma preferido (ISO 639-1)
+  timezone String? @default("America/Lima") // zona horaria
+  lat      Float? // latitud (opcional, para mapa)
+  lng      Float? // longitud (opcional, para mapa)
+
+  // 🔹 Vinculación global con RowiVerseUser
+  rowiverseId String?        @unique
+  rowiverse   RowiVerseUser? @relation("UserRowiVerseLink")
+
+  // 🔹 Relaciones existentes
+  accounts              Account[]
+  activityLogs          ActivityLog[]         @relation("UserActivityLogs")
+  affinityInteractions  AffinityInteraction[]
+  affinitySnapshots     AffinitySnapshot[]
+  affinityProfile       AffinityProfile?
+  auditLogs             AuditLog[]            @relation("AuditActor")
+  auditsTargeted        AuditLog[]            @relation("AuditTarget")
+  batches               Batch[]               @relation("UserBatches")
+  caseStudyAuthor       CaseStudy[]           @relation("CaseStudyAuthor")
+  issuedCertificates    Certificate[]         @relation("CertificateIssuedBy")
+  earnedCertificates    Certificate[]         @relation("CertificateUser")
+  claimedMembers        CommunityMember[]     @relation("ClaimedMembers")
+  ownedMembers          CommunityMember[]     @relation("OwnerMember")
+  communityMemberships  CommunityMember[]
+  csvUploads            CsvUpload[]           @relation("UserCsvUploads")
+  emotionalEvents       EmotionalEvent[]
+  employeeProfiles      EmployeeProfile[]
+  enrollments           Enrollment[]
+  eqProgress            EqProgress[]
+  eqSnapshots           EqSnapshot[]
+  hubMemberships        HubMembership[]
+  hubPosts              HubPost[]             @relation("HubPostsByUser")
+  invitesSent           InviteToken[]         @relation("UserInvites")
+  learningNotes         LearningNote[]
+  approvals             LeaveRequest[]        @relation("LeaveApprover")
+  memberships           Membership[]
+  orgMemberships        OrgMembership[]
+  pagesAuthored         Page[]                @relation("PagesByAuthor")
+  payouts               Payout[]
+  feedbacksGiven        PeerFeedback[]        @relation("PeerFeedbackGiver")
+  peerFeedbacks         PeerFeedback[]        @relation("PeerFeedbackReceiver")
+  reviewsAuthored       PerformanceReview[]   @relation("UserAsReviewer")
+  quizAttempts          QuizAttempt[]
+  peerChats             RowiChat[]            @relation("ChatPeerRelation")
+  userChats             RowiChat[]            @relation("UserChats")
+  authoredPosts         RowiFeed[]
+  initiatedRelations    RowiRelation[]        @relation("InitiatorRelation")
+  receivedRelations     RowiRelation[]        @relation("ReceiverRelation")
+  sessions              Session[]
+  studyGroupMemberships StudyGroupMember[]
+  plan                  Plan?                 @relation(fields: [planId], references: [id])
+  primaryTenant         Tenant?               @relation("UserPrimaryTenant", fields: [primaryTenantId], references: [id])
+  aiControls            UserAIControl[]
+  permissions           UserPermission[]
+  usage                 UserUsage[]
+  createdCommunities    RowiCommunity[]
+  rowiCommunities       RowiCommunityUser[]
+  invitedRowiUsers      RowiCommunityUser[]   @relation("RowiCommunityInviter")
+  rowiCommunityPosts    RowiCommunityPost[]
+  createdVerses         RowiVerse[]           @relation("UserCreatedVerses")
+  EcosystemLink         EcosystemLink[]
+
+  // 🦉 ROWI 100% - Nuevas relaciones
+  avatar                AvatarEvolution?
+  topPerformerMetrics   TopPerformerMetric[]
+  emotionalROI          EmotionalROI[]
+  decisionTracking      DecisionTracking[]
+  integrationConnections IntegrationConnection[]
+  calendarEvents        CalendarEvent[]
+  notificationQueue     NotificationQueue[]
+
+  @@map("user")
+}
+
+/// 📧 Correos secundarios del usuario
+model UserEmail {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  label     String? // work | personal | alt
+  verified  Boolean  @default(false)
+  primary   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@map("user_email")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("account")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model UserPermission {
+  id     String @id @default(cuid())
+  userId String
+
+  // ✅ Nuevos (compatibles)
+  scopeType PermissionScope? // temporalmente opcional
+  scopeId   String? // id del objeto según scopeType (puede ser null para rowiverse)
+
+  role      String
+  grantedAt DateTime @default(now())
+
+  // 🔁 Legacy (se eliminarán en Fase 2)
+  tenantId String?
+  scope    String  @default("global")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, tenantId])
+  @@index([userId, scopeType, scopeId])
+  @@map("user_permission")
+}
+
+/// =========================================================
+/// 🌎 SYSTEM — Núcleo Global del Ecosistema CACTUS
+/// =========================================================
+/// Representa la instancia raíz que contiene toda la estructura
+/// (SuperHubs, Hubs, Tenants, Agentes, Traducciones, etc.)
+/// Permite configuración global, branding, idioma base y políticas.
+model System {
+  id             String          @id @default(cuid())
+  name           String          @default("Cactus Global System")
+  slug           String          @unique
+  description    String?
+  logo           String?         @default("/cactus-logo.png")
+  primaryColor   String?         @default("#0F172A")
+  secondaryColor String?         @default("#F97316")
+  defaultLang    String?         @default("es")
+  timezone       String?         @default("America/Lima")
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  agents         AgentConfig[]
+  components     Component[]
+  layouts        Layout[]
+  pages          Page[]
+  settings       SystemSetting[]
+  tenants        Tenant[]
+  translations   Translation[]
+  superHubs      SuperHub[]
+
+  @@map("system")
+}
+
+/// =========================================================
+/// ⚙️ SYSTEM SETTING — Configuraciones y políticas globales
+/// =========================================================
+/// Guarda parámetros del sistema, límites, licencias, IA, etc.
+model SystemSetting {
+  id        String   @id @default(cuid())
+  systemId  String
+  key       String
+  value     String
+  type      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  system    System   @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  @@unique([systemId, key])
+  @@index([systemId])
+  @@map("system_setting")
+}
+
+/// 🏛️ SuperHub — Nodo continental o macro región dentro del RowiVerse
+/// ---------------------------------------------------------
+/// Ejemplo: “Cactus Hub Global”, “Rowi LATAM Hub”, “Rowi EMEA”, etc.
+/// Cada SuperHub agrupa Hubs, Tenants, Organizaciones y Comunidades.
+model SuperHub {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  vision      String?
+  mission     String?
+  colorTheme  String?
+  logo        String?
+  country     String? @default("Global")
+  language    String? @default("es")
+  region      String? @default("LATAM")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 🌍 Vinculación global al RowiVerse (raíz del ecosistema)
+  rowiVerseId String?
+  rowiVerse   RowiVerse? @relation("RowiVerseToSuperHub", fields: [rowiVerseId], references: [id], onDelete: Cascade)
+
+  // 🔗 Jerarquía interna de SuperHubs
+  parentHubId String?
+  parentHub   SuperHub?  @relation("SuperHubHierarchy", fields: [parentHubId], references: [id])
+  childHubs   SuperHub[] @relation("SuperHubHierarchy")
+
+  // ⚙️ Vínculo con el sistema base (Cactus System)
+  systemId String?
+  system   System? @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  // 💡 Relaciones funcionales (componentes del entorno)
+  agents       AgentConfig[]
+  Component    Component[]
+  Layout       Layout[]
+  pages        Page[]
+  rolesDynamic RoleDynamic[]
+  insights     InsightRecord[]
+  knowledge    KnowledgeResource[]
+  forecasts    PredictiveMetric[]  @relation("SuperHubForecasts")
+
+  // 🧩 Jerarquía descendente (relaciones nombradas para evitar ambigüedad)
+  hubs          Hub[]           @relation("SuperHubToHub")
+  tenants       Tenant[]        @relation("SuperHubToTenant")
+  organizations Organization[]  @relation("SuperHubToOrganization")
+  communities   RowiCommunity[] @relation("SuperHubToCommunity")
+
+  @@index([name])
+  @@index([slug])
+  @@index([rowiVerseId])
+  @@map("super_hub")
+}
+
+/// 🧱 Hub — Nodo operativo dentro del Tenant
+/// ---------------------------------------------------------
+/// Ejemplo: “Rowi Perú Hub”, “EQ LATAM Hub”, “Cactus Hub”
+/// Un Hub pertenece a un Tenant y puede estar asociado a un SuperHub.
+model Hub {
+  id          String   @id @default(cuid())
+  tenantId    String
+  superHubId  String?
+  name        String
+  slug        String   @unique
+  description String?
+  themeColor  String?
+  visibility  String?  @default("private")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🌍 Jerarquía superior
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  superHub SuperHub? @relation("SuperHubToHub", fields: [superHubId], references: [id])
+
+  // 👥 Relaciones internas
+  communityMembers  CommunityMember[]
+  memberships       HubMembership[]
+  roles             HubRoleDynamic[]
+  posts             HubPost[]
+  rolesDynamic      RoleDynamic[]
+  costLinks         CostCenterLink[]
+  agents            AgentConfig[]
+  emotionalEngines  EmotionalAIEngine[]
+  invoices          Invoice[]
+  predictiveMetrics PredictiveMetric[]
+  projects          Project[]
+  transactions      Transaction[]
+  insights          InsightRecord[]
+  knowledge         KnowledgeResource[]
+
+  // 🔗 Relaciones con Organizaciones y Comunidades
+  organizations Organization[]  @relation("HubToOrganization")
+  communities   RowiCommunity[] @relation("HubToCommunity")
+
+  // 🔗 Join Table para relación n:m con Organization (relación nombrada)
+  organizationLinks OrganizationToHub[] @relation("HubToOrganizationLink")
+
+  // 🦉 ROWI 100% - Nuevas relaciones
+  collectivePatterns CollectivePattern[]
+  emotionalROI       EmotionalROI[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([slug])
+  @@index([superHubId])
+  @@map("hub")
+}
+
+model HubMembership {
+  id       String          @id @default(cuid())
+  hubId    String
+  userId   String
+  roleId   String?
+  access   String?
+  joinedAt DateTime        @default(now())
+  hub      Hub             @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  role     HubRoleDynamic? @relation(fields: [roleId], references: [id])
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([hubId, userId])
+  @@index([hubId, roleId])
+  @@map("hub_membership")
+}
+
+model HubRoleDynamic {
+  id          String          @id @default(cuid())
+  hubId       String
+  name        String
+  permissions Json?
+  color       String?
+  icon        String?
+  createdAt   DateTime        @default(now())
+  memberships HubMembership[]
+  hub         Hub             @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@unique([hubId, name])
+  @@map("hub_role_dynamic")
+}
+
+model HubPost {
+  id         String   @id @default(cuid())
+  hubId      String
+  authorId   String
+  content    String
+  emotionTag String?
+  intent     String?
+  visibility String?  @default("hub")
+  createdAt  DateTime @default(now())
+  author     User     @relation("HubPostsByUser", fields: [authorId], references: [id], onDelete: Cascade)
+  hub        Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@index([hubId, createdAt])
+  @@map("hub_post")
+}
+
+/// 🧱 Tenant — Entidad operativa o espacio dentro del ecosistema RowiVerse
+/// ---------------------------------------------------------
+/// Ejemplo: “Rowi Master”, “EQ LATAM Network”, “Cactus Perú”
+/// Los Tenants pertenecen a un SuperHub y pueden tener comunidades, hubs y organizaciones.
+/// 🧱 Tenant — Entidad operativa o espacio dentro del ecosistema RowiVerse
+model Tenant {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  billingEmail    String?
+  visibilityScope String?
+  emotionalAccess Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // 🔗 Jerarquía superior
+  rowiVerseId String?
+  superHubId  String?
+  planId      String?
+  systemId    String?
+
+  // 🌍 Relaciones jerárquicas
+  rowiVerse RowiVerse? @relation("RowiVerseToTenant", fields: [rowiVerseId], references: [id], onDelete: Cascade)
+  superHub  SuperHub?  @relation("SuperHubToTenant", fields: [superHubId], references: [id], onDelete: Cascade)
+  system    System?    @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  // 💡 Relaciones funcionales internas
+  agents              AgentConfig[]
+  analytics           AnalyticsSnapshot[]
+  assets              Asset[]
+  communityMembers    CommunityMember[]
+  Component           Component[]
+  costCenters         CostCenter[]
+  courses             Course[]
+  emotionalEngines    EmotionalAIEngine[]
+  employees           EmployeeProfile[]
+  externalConnections ExternalConnection[]
+  invites             InviteToken[]        @relation("TenantInvites")
+  invoices            Invoice[]
+  Layout              Layout[]
+  members             Membership[]
+  pages               Page[]
+  payouts             Payout[]
+  payrollRuns         PayrollRun[]
+  forecasts           PredictiveMetric[]
+  products            Product[]
+  projects            Project[]
+  purchaseOrders      PurchaseOrder[]
+  rolesDynamic        RoleDynamic[]
+  salesOrders         SalesOrder[]
+  plan                Plan?                @relation(fields: [planId], references: [id])
+  modules             TenantModule[]
+  transactions        Transaction[]
+  translations        Translation[]
+  usageDaily          UsageDaily[]
+  primaryUsers        User[]               @relation("UserPrimaryTenant")
+  permissions         UserPermission[]
+  UserUsage           UserUsage[]
+  warehouses          Warehouse[]
+  webhooks            Webhook[]
+  hubs                Hub[]
+  insights            InsightRecord[]
+  knowledge           KnowledgeResource[]
+  emotionalConfigs    EmotionalConfig[]    @relation("TenantToEmotionalConfig")
+
+  // 👥 Comunidades vinculadas a este Tenant
+  rowiCommunities RowiCommunity[] @relation("TenantToCommunity")
+
+  // 🧩 Relaciones N:M con organizaciones (multi-tenant)
+  organizationLinks OrganizationToTenant[] @relation("TenantToOrganizationLink")
+
+  // 🦉 ROWI 100% - Nuevas relaciones
+  topPerformerMetrics    TopPerformerMetric[]
+  collectivePatterns     CollectivePattern[]
+  emotionalROI           EmotionalROI[]
+  decisionTracking       DecisionTracking[]
+  integrationConnections IntegrationConnection[]
+  tenantBranding         TenantBranding?
+  notificationQueue      NotificationQueue[]
+
+  @@index([name])
+  @@index([slug])
+  @@index([rowiVerseId])
+  @@index([superHubId])
+  @@map("tenant")
+}
+
+model Plan {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  description  String?
+  priceUsd     Float    @default(0)
+  durationDays Int      @default(30)
+  aiEnabled    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relaciones
+  memberships Membership[]
+  users       User[]
+  tenants     Tenant[]
+  RoleDynamic RoleDynamic[]
+
+  @@map("plan")
+}
+
+/// 🏢 Organización dentro del ecosistema RowiVerse
+/// ---------------------------------------------------------
+/// Ejemplo: “Teleperformance LATAM”, “EQ LATAM Network”, “Cactus Academy”
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🔗 Vínculos jerárquicos
+  rowiVerseId String?
+  superHubId  String?
+  hubId       String?
+
+  // 🧭 Relaciones jerárquicas (todas con nombres explícitos)
+  rowiVerse RowiVerse? @relation("RowiVerseToOrganization", fields: [rowiVerseId], references: [id], onDelete: Cascade)
+  superHub  SuperHub?  @relation("SuperHubToOrganization", fields: [superHubId], references: [id], onDelete: Cascade)
+  hub       Hub?       @relation("HubToOrganization", fields: [hubId], references: [id], onDelete: Cascade)
+
+  // 👥 Relaciones organizativas
+  members OrgMembership[]
+
+  // 💡 Relaciones funcionales internas
+  agents     AgentConfig[]
+  components Component[]
+  layouts    Layout[]
+  pages      Page[]
+
+  // 🌐 Relaciones N:M con Hubs, Tenants y Comunidades
+  hubLinks        OrganizationToHub[]    @relation("OrganizationToHubLink")
+  tenantLinks     OrganizationToTenant[] @relation("OrganizationToTenantLink")
+  rowiCommunities RowiCommunity[]        @relation("OrganizationToCommunity")
+
+  @@index([rowiVerseId])
+  @@index([superHubId])
+  @@index([hubId])
+  @@map("organization")
+}
+
+/// 🔗 Relación intermedia: Organización ↔ Hub
+/// ---------------------------------------------------------
+/// Permite que una organización esté vinculada a uno o varios hubs.
+/// Ejemplo: “Teleperformance LATAM” → vinculado a “Hub Perú” y “Hub Colombia”.
+model OrganizationToHub {
+  hubId          String
+  organizationId String
+
+  // 🔗 Relaciones con entidades principales
+  hub          Hub          @relation("HubToOrganizationLink", fields: [hubId], references: [id], onDelete: Cascade)
+  organization Organization @relation("OrganizationToHubLink", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // 🔒 Clave primaria compuesta
+  @@id([hubId, organizationId], map: "OrganizationToHub_pkey")
+  // ⚙️ Índices
+  @@index([organizationId], map: "OrganizationToHub_org_idx")
+  // 🧭 Nombre legible en BD
+  @@map("organization_to_hub")
+}
+
+model OrganizationToTenant {
+  tenantId       String
+  organizationId String
+
+  // 🔗 Relaciones con entidades principales
+  tenant       Tenant       @relation("TenantToOrganizationLink", fields: [tenantId], references: [id], onDelete: Cascade)
+  organization Organization @relation("OrganizationToTenantLink", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // 🔒 Clave primaria compuesta
+  @@id([tenantId, organizationId], map: "OrganizationToTenant_pkey")
+  // ⚙️ Índices
+  @@index([organizationId], map: "OrganizationToTenant_org_idx")
+  // 🧭 Nombre legible en BD
+  @@map("organization_to_tenant")
+}
+
+model OrgMembership {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrgRole      @default(MEMBER)
+  tokenQuota     Int?         @default(0)
+  tokenUsed      Int?         @default(0)
+  status         String       @default("active")
+  joinedAt       DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId, role])
+  @@map("org_membership")
+}
+
+model Membership {
+  id         String     @id @default(cuid())
+  userId     String
+  tenantId   String
+  planId     String?
+  role       TenantRole @default(VIEWER)
+  tokenQuota Int?       @default(0)
+  tokenUsed  Int?       @default(0)
+  notes      String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  plan       Plan?      @relation(fields: [planId], references: [id])
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId, role])
+  @@map("membership")
+}
+
+/// *
+/// * =========================================================
+/// * 🫂 COMMUNITY MEMBER — Miembros de la comunidad o hub
+/// * =========================================================
+/// * Representa una persona o identidad dentro de un Hub o Tenant.
+/// * Puede ser reclamada por un usuario real o existir como miembro simbólico.
+model CommunityMember {
+  id             String                @id @default(cuid())
+  name           String?
+  role           String?
+  status         CommunityMemberStatus @default(ACTIVE)
+  tenantId       String
+  hubId          String?
+  userId         String?
+  ownerId        String?
+  claimedById    String?
+  joinedAt       DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  brainStyle     String?
+  closeness      String?
+  connectionType String?
+  country        String?
+  email          String?               @unique
+  firstName      String?
+  group          String?
+  lastName       String?
+  source         String?               @default("manual")
+
+  // 🔗 Nueva conexión global
+  rowiverseUserId String? // ✅ ID global del RowiVerseUser
+  rowiverseUser   RowiVerseUser? @relation(fields: [rowiverseUserId], references: [id]) // ✅ Relación global
+
+  affinityInteractions AffinityInteraction[]
+  affinitySnapshots    AffinitySnapshot[]
+  claimedBy            User?                 @relation("ClaimedMembers", fields: [claimedById], references: [id])
+  hub                  Hub?                  @relation(fields: [hubId], references: [id])
+  owner                User?                 @relation("OwnerMember", fields: [ownerId], references: [id])
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                 User?                 @relation(fields: [userId], references: [id])
+  emotions             EmotionalEvent[]
+  progress             EqProgress[]
+  snapshots            EqSnapshot[]
+
+  @@index([tenantId])
+  @@index([hubId])
+  @@index([userId])
+  @@index([email])
+  @@index([firstName])
+  @@index([lastName])
+  @@index([rowiverseUserId]) // ✅ índice global
+  @@map("community_member")
+}
+
+model RowiRelation {
+  id                String   @id @default(cuid())
+  initiatorId       String
+  receiverId        String
+  initiatorGlobalId String? // 🔗 RowiVerseUser del iniciador
+  receiverGlobalId  String? // 🔗 RowiVerseUser del receptor
+  type              String   @default("connection")
+  strength          Float?
+  context           String?
+  status            String   @default("active")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relaciones locales (usuario dentro de tenant/hub)
+  initiator User @relation("InitiatorRelation", fields: [initiatorId], references: [id], onDelete: Cascade)
+  receiver  User @relation("ReceiverRelation", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // 🔗 Relaciones globales (persona dentro del RowiVerse)
+  initiatorGlobal RowiVerseUser? @relation("GlobalInitiatorRelation", fields: [initiatorGlobalId], references: [id])
+  receiverGlobal  RowiVerseUser? @relation("GlobalReceiverRelation", fields: [receiverGlobalId], references: [id])
+
+  @@unique([initiatorId, receiverId])
+  @@index([type, status])
+  @@index([initiatorGlobalId, receiverGlobalId])
+  @@map("rowi_relation")
+}
+
+model RowiFeed {
+  id         String   @id @default(cuid())
+  authorId   String
+  content    String
+  mood       String?
+  visibility String   @default("public")
+  likes      Int      @default(0)
+  comments   Int      @default(0)
+  tags       String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@map("rowi_feed")
+}
+
+/// =========================================================
+/// 🧠 EQ SNAPSHOT 2.0 — Compatible con datasets Six Seconds
+/// =========================================================
+model EqSnapshot {
+  id                      String   @id @default(cuid())
+  userId                  String?
+  memberId                String?
+  rowiverseUserId         String? // 🔗 identidad global RowiVerseUser
+  dataset                 String
+  project                 String?
+  owner                   String?
+  country                 String?
+  email                   String?
+  jobFunction             String?
+  jobRole                 String?
+  sector                  String?
+  age                     Int?
+  gender                  String?
+  education               String?
+  phone                   String?
+  context                 String?
+  at                      DateTime @default(now())
+  K                       Int?
+  C                       Int?
+  G                       Int?
+  EL                      Int?
+  RP                      Int?
+  ACT                     Int?
+  NE                      Int?
+  IM                      Int?
+  OP                      Int?
+  EMP                     Int?
+  NG                      Int?
+  brainStyle              String?
+  overall4                Float?
+  recentMood              String?
+  moodIntensity           String?
+  reliabilityIndex        Float?
+  positiveImpressionScore Float?
+  positiveImpressionRange String?
+  executionTimeRange      String?
+  randomIndex             Float?
+  densityIndex            Float?
+  answerStyle             String?
+  normFactorComplement    Float?
+  consistencyOutput       Float?
+
+  competencies  EqCompetencySnapshot[]
+  moods         EqMoodSnapshot[]
+  outcomes      EqOutcomeSnapshot[]
+  progress      EqProgress[]              @relation("ProgressBySnapshot")
+  member        CommunityMember?          @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  user          User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rowiverseUser RowiVerseUser?            @relation(fields: [rowiverseUserId], references: [id]) // ✅ nueva relación global
+  subfactors    EqSubfactorSnapshot[]
+  success       EqSuccessFactorSnapshot[]
+  values        EqValueSnapshot[]
+  talents       TalentSnapshot[]
+
+  @@index([userId])
+  @@index([memberId])
+  @@index([dataset])
+  @@index([email])
+  @@index([rowiverseUserId]) // ✅ índice global
+  @@map("eq_snapshot")
+}
+
+model EqCompetencySnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_competency_snapshot")
+}
+
+model EqOutcomeSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_outcome_snapshot")
+}
+
+model EqSubfactorSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_subfactor_snapshot")
+}
+
+model EqValueSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_value_snapshot")
+}
+
+model EqSuccessFactorSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_success_factor_snapshot")
+}
+
+model TalentSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  key        String
+  label      String?
+  score      Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("talent_snapshot")
+}
+
+model EqMoodSnapshot {
+  id         String     @id @default(cuid())
+  snapshotId String
+  mood       String
+  intensity  Float?
+  valence    Float?
+  snapshot   EqSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("eq_mood_snapshot")
+}
+
+model EqProgress {
+  id          String           @id @default(cuid())
+  userId      String?
+  memberId    String?
+  snapshotId  String?
+  reflection  String?
+  insight     String?
+  actionPlan  String?
+  metrics     Json?
+  contextType String?
+  contextId   String?
+  mood        String?
+  createdAt   DateTime         @default(now())
+  events      EmotionalEvent[] @relation("ProgressEvents")
+  member      CommunityMember? @relation(fields: [memberId], references: [id])
+  snapshot    EqSnapshot?      @relation("ProgressBySnapshot", fields: [snapshotId], references: [id])
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([memberId])
+  @@index([contextType, contextId])
+  @@map("eq_progress")
+}
+
+model RowiChat {
+  id          String           @id @default(cuid())
+  userId      String?
+  peerId      String?
+  agentId     String?
+  role        String
+  content     String
+  intent      String?
+  locale      String?
+  sentiment   String?
+  confidence  Float?
+  contextType String?
+  contextId   String?
+  createdAt   DateTime         @default(now())
+  events      EmotionalEvent[]
+  peer        User?            @relation("ChatPeerRelation", fields: [peerId], references: [id])
+  user        User?            @relation("UserChats", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contextType, contextId])
+  @@map("rowi_chat")
+}
+
+model EmotionalEvent {
+  id              String   @id @default(cuid())
+  userId          String?
+  memberId        String?
+  rowiverseUserId String? // 🔗 Identidad global RowiVerseUser
+  chatId          String?
+  progressId      String?
+  type            String
+  message         String?
+  contextType     String?
+  contextId       String?
+  intensity       Int?
+  valence         Float?
+  aiModel         String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  // Relaciones existentes
+  chat     RowiChat?        @relation(fields: [chatId], references: [id])
+  member   CommunityMember? @relation(fields: [memberId], references: [id])
+  progress EqProgress?      @relation("ProgressEvents", fields: [progressId], references: [id])
+  user     User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 🔹 Nueva relación global
+  rowiverseUser RowiVerseUser? @relation(fields: [rowiverseUserId], references: [id])
+
+  @@index([userId])
+  @@index([memberId])
+  @@index([type])
+  @@index([contextType, contextId])
+  @@index([rowiverseUserId]) // ✅ Nuevo índice global
+  @@map("emotional_event")
+}
+
+model Batch {
+  id          String    @id @default(cuid())
+  ownerId     String?
+  type        String
+  context     String?
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  status      String
+  result      Json?
+  meta        Json?
+  count       Int?      @default(0)
+  description String?
+  name        String
+  owner       User?     @relation("UserBatches", fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+  @@index([type])
+  @@index([context])
+  @@map("batch")
+}
+
+model CaseStudy {
+  id        String              @id @default(cuid())
+  authorId  String
+  title     String
+  summary   String?
+  context   String?
+  tags      String[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  sections  CaseSection[]
+  author    User                @relation("CaseStudyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  notes     LearningNote[]
+  feedback  PeerFeedback[]
+  resources KnowledgeResource[] @relation("CaseStudyResources")
+  groups    StudyGroup[]        @relation("CaseStudyToStudyGroup")
+
+  @@map("case_study")
+}
+
+model CaseSection {
+  id        String    @id @default(cuid())
+  caseId    String
+  heading   String
+  content   String?
+  order     Int       @default(0)
+  caseStudy CaseStudy @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("case_section")
+}
+
+model LearningNote {
+  id         String     @id @default(cuid())
+  caseId     String?
+  userId     String
+  title      String?
+  body       String?
+  visibility String?    @default("private")
+  createdAt  DateTime   @default(now())
+  caseStudy  CaseStudy? @relation(fields: [caseId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("learning_note")
+}
+
+model PeerFeedback {
+  id         String     @id @default(cuid())
+  caseId     String?
+  fromUserId String
+  toUserId   String
+  comment    String?
+  score      Int?
+  createdAt  DateTime   @default(now())
+  caseStudy  CaseStudy? @relation(fields: [caseId], references: [id])
+  fromUser   User       @relation("PeerFeedbackGiver", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User       @relation("PeerFeedbackReceiver", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@map("peer_feedback")
+}
+
+model StudyGroup {
+  id        String             @id @default(cuid())
+  name      String
+  purpose   String?
+  createdAt DateTime           @default(now())
+  members   StudyGroupMember[]
+  cases     CaseStudy[]        @relation("CaseStudyToStudyGroup")
+
+  @@map("study_group")
+}
+
+model StudyGroupMember {
+  id       String     @id @default(cuid())
+  groupId  String
+  userId   String
+  role     String?    @default("member")
+  joinedAt DateTime   @default(now())
+  group    StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("study_group_member")
+}
+
+model KnowledgeResource {
+  id         String        @id @default(cuid())
+  title      String
+  url        String?
+  kind       String?       @default("general")
+  content    String?
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  hubId      String?
+  tenantId   String?
+  superHubId String?
+  caseId     String?
+  tags       ResourceTag[]
+  caseStudy  CaseStudy?    @relation("CaseStudyResources", fields: [caseId], references: [id])
+  hub        Hub?          @relation(fields: [hubId], references: [id])
+  superHub   SuperHub?     @relation(fields: [superHubId], references: [id])
+  tenant     Tenant?       @relation(fields: [tenantId], references: [id])
+  agents     AgentConfig[] @relation("AgentKnowledge")
+
+  @@index([hubId])
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([kind])
+  @@map("knowledge_resource")
+}
+
+model ResourceTag {
+  id         String            @id @default(cuid())
+  resourceId String
+  tagId      String
+  resource   KnowledgeResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  tag        Tag               @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, tagId])
+  @@map("resource_tag")
+}
+
+model Tag {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  resources ResourceTag[]
+
+  @@map("tag")
+}
+
+model Course {
+  id            String        @id @default(cuid())
+  tenantId      String?
+  title         String
+  subtitle      String?
+  description   String?
+  difficulty    String?
+  durationHours Float?
+  lang          String?       @default("es")
+  status        String?       @default("draft")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  certificates  Certificate[]
+  tenant        Tenant?       @relation(fields: [tenantId], references: [id])
+  enrollments   Enrollment[]
+  lessons       Lesson[]
+
+  @@map("course")
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  subtitle    String?
+  content     Json?
+  durationMin Int?
+  isQuiz      Boolean  @default(false)
+  order       Int?     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quiz        Quiz?    @relation("LessonQuiz")
+
+  @@map("lesson")
+}
+
+model Enrollment {
+  id            String       @id @default(cuid())
+  userId        String
+  courseId      String
+  progressPct   Float?       @default(0)
+  status        String?      @default("active")
+  score         Float?
+  certificateId String?      @unique
+  certificate   Certificate? @relation("EnrollmentCertificate", fields: [certificateId], references: [id])
+  course        Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollment")
+}
+
+model Quiz {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  questions    Json
+  passingScore Float?
+  lessonId     String        @unique
+  lesson       Lesson        @relation("LessonQuiz", fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts     QuizAttempt[]
+
+  @@map("quiz")
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  answers   Json
+  score     Float?
+  passed    Boolean? @default(false)
+  createdAt DateTime @default(now())
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("quiz_attempt")
+}
+
+model Certificate {
+  id           String      @id @default(cuid())
+  courseId     String?
+  userId       String
+  projectId    String?
+  issuedById   String?
+  credentialId String?     @unique
+  title        String
+  description  String?
+  emotionTag   String?
+  issueDate    DateTime    @default(now())
+  expiryDate   DateTime?
+  verified     Boolean     @default(false)
+  digitalUrl   String?
+  signatureUrl String?
+  meta         Json?
+  createdAt    DateTime    @default(now())
+  course       Course?     @relation(fields: [courseId], references: [id])
+  issuedBy     User?       @relation("CertificateIssuedBy", fields: [issuedById], references: [id])
+  project      Project?    @relation(fields: [projectId], references: [id])
+  user         User        @relation("CertificateUser", fields: [userId], references: [id], onDelete: Cascade)
+  enrollment   Enrollment? @relation("EnrollmentCertificate")
+
+  @@map("certificate")
+}
+
+model AgentConfig {
+  id                 String                @id @default(cuid())
+  slug               String
+  name               String
+  description        String?
+  avatar             String?
+  type               String                @default("CUSTOM")
+  model              String?
+  prompt             String?
+  tools              Json?
+  tone               String?
+  accessLevel        String?
+  visibility         String?
+  autoLearn          Boolean               @default(false)
+  isActive           Boolean               @default(true)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  tenantId           String?
+  superHubId         String?
+  organizationId     String?
+  hubId              String?
+  systemId           String?
+
+  // Personalización Cultural del Tenant/Org
+  culturePrompt      String?               // Prompt adicional con cultura/valores de la empresa
+  companyValues      String[]              @default([]) // Lista de valores corporativos
+  companyMission     String?               // Misión de la empresa
+  companyTone        String?               // Tono de comunicación preferido
+  industryContext    String?               // Contexto de la industria
+  customInstructions String?               // Instrucciones personalizadas del admin
+  brandVoice         Json?                 // Guía de voz de marca (formalidad, emojis, etc.)
+  hub                Hub?                  @relation(fields: [hubId], references: [id])
+  organization       Organization?         @relation(fields: [organizationId], references: [id])
+  superHub           SuperHub?             @relation(fields: [superHubId], references: [id])
+  system             System?               @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant             Tenant?               @relation(fields: [tenantId], references: [id])
+  contexts           AgentContext[]
+  performanceReviews PerformanceReview[]
+  knowledge          KnowledgeResource[]   @relation("AgentKnowledge")
+  modelVersions      AgentModelVersion[]   @relation("AgentConfigToModelVersion")
+  trainingSamples    AgentTrainingSample[] @relation("AgentConfigToTrainingSample")
+
+  @@unique([slug, tenantId, superHubId, organizationId, hubId])
+  @@index([slug])
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([organizationId])
+  @@index([hubId])
+  @@index([slug, tenantId])
+  @@map("agent_config")
+}
+
+model AgentContext {
+  id            String      @id @default(cuid())
+  agentId       String
+  contextType   String
+  contextId     String?
+  isActive      Boolean     @default(true)
+  autoLearn     Boolean     @default(false)
+  learningData  Json?
+  feedbackScore Float?
+  customPrompt  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  agent         AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, contextType, contextId])
+  @@index([contextType])
+  @@index([contextId])
+  @@index([isActive])
+  @@map("agent_context")
+}
+
+/// =========================================================
+/// ⚙️ USER AI CONTROL — Control de acceso IA por usuario
+/// =========================================================
+/// Permite activar o desactivar agentes IA específicos para cada usuario.
+model UserAIControl {
+  id        String   @id @default(cuid())
+  userId    String
+  feature   String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feature])
+  @@index([userId])
+  @@map("user_ai_control")
+}
+
+/// =========================================================
+/// 📊 USER USAGE — Registro de uso y consumo IA
+/// =========================================================
+/// Guarda consumo de tokens y uso de IA por día, usuario y tenant.
+model UserUsage {
+  id           String   @id @default(cuid())
+  userId       String
+  tenantId     String?
+  day          DateTime
+  feature      String?
+  tokensInput  Int      @default(0)
+  tokensOutput Int      @default(0)
+  createdAt    DateTime @default(now())
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day, feature])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("user_usage")
+}
+
+model Page {
+  id             String          @id @default(cuid())
+  slug           String
+  title          String
+  summary        String?
+  content        Json?
+  components     Json?
+  theme          Json?
+  layoutConfig   Json?
+  aiConfig       Json?
+  seo            Json?
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  canonicalURL   String?
+  lang           String?         @default("es")
+  published      Boolean         @default(false)
+  systemId       String?
+  tenantId       String?
+  superHubId     String?
+  organizationId String?
+  authorId       String?
+  visibility     String?         @default("global")
+  accessLevel    String?         @default("public")
+  rolesAllowed   String[]        @default([])
+  scripts        Json?
+  dataSources    Json?
+  layoutId       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  author         User?           @relation("PagesByAuthor", fields: [authorId], references: [id])
+  layout         Layout?         @relation(fields: [layoutId], references: [id])
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
+  superHub       SuperHub?       @relation(fields: [superHubId], references: [id])
+  system         System?         @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant         Tenant?         @relation(fields: [tenantId], references: [id])
+  componentsR    PageComponent[]
+  translations   Translation[]
+
+  @@unique([slug, lang, tenantId, superHubId, organizationId])
+  @@index([slug])
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([organizationId])
+  @@map("page")
+}
+
+model PageComponent {
+  id          String    @id @default(cuid())
+  pageId      String
+  componentId String
+  zone        String?
+  position    Int?
+  props       Json?
+  dataBinding Json?
+  style       Json?
+  responsive  Json?
+  aiConfig    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  component   Component @relation(fields: [componentId], references: [id])
+  page        Page      @relation(fields: [pageId], references: [id])
+
+  @@index([pageId])
+  @@index([componentId])
+  @@map("page_component")
+}
+
+/// 🎨 Catálogo global de layouts disponibles
+model Layout {
+  id             String            @id @default(cuid())
+  name           String
+  description    String?
+  structure      Json?
+  theme          Json?
+  previewUrl     String?
+  isDefault      Boolean           @default(false)
+  systemId       String?
+  tenantId       String?
+  superHubId     String?
+  organizationId String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organization   Organization?     @relation(fields: [organizationId], references: [id])
+  superHub       SuperHub?         @relation(fields: [superHubId], references: [id])
+  system         System?           @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant         Tenant?           @relation(fields: [tenantId], references: [id])
+  components     LayoutComponent[]
+  pages          Page[]
+
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([organizationId])
+  @@map("layout")
+}
+
+model Component {
+  id             String            @id @default(cuid())
+  name           String
+  type           String?
+  category       String?
+  description    String?
+  icon           String?
+  config         Json?
+  schema         Json?
+  style          Json?
+  theme          Json?
+  slots          Json?
+  aiEnabled      Boolean           @default(false)
+  aiConfig       Json?
+  tenantId       String?
+  superHubId     String?
+  organizationId String?
+  systemId       String?
+  visibility     String?           @default("global")
+  accessLevel    String?           @default("public")
+  version        String?           @default("1.0.0")
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organization   Organization?     @relation(fields: [organizationId], references: [id])
+  superHub       SuperHub?         @relation(fields: [superHubId], references: [id])
+  system         System?           @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant         Tenant?           @relation(fields: [tenantId], references: [id])
+  usedInLayouts  LayoutComponent[]
+  usedInPages    PageComponent[]
+
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([organizationId])
+  @@map("component")
+}
+
+model LayoutComponent {
+  id          String    @id @default(cuid())
+  layoutId    String
+  componentId String
+  zone        String?
+  position    Int?
+  props       Json?
+  dataBinding Json?
+  style       Json?
+  responsive  Json?
+  aiConfig    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  component   Component @relation(fields: [componentId], references: [id])
+  layout      Layout    @relation(fields: [layoutId], references: [id])
+
+  @@index([layoutId])
+  @@index([componentId])
+  @@map("layout_component")
+}
+
+/// *
+/// * =========================================================
+/// * 🌐 TRANSLATION — Sistema de traducciones por Tenant/Página
+/// * =========================================================
+/// * Permite almacenar pares clave/valor de traducciones
+/// * asociadas a un tenant o página específica.
+/// * Soporta namespaces (ns) opcionales para organización modular.
+model Translation {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  pageId    String?
+  ns        String?  @default("common")
+  key       String
+  value     String
+  lang      String?  @default("es")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  systemId  String?
+  page      Page?    @relation(fields: [pageId], references: [id])
+  system    System?  @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, ns, key, lang])
+  @@unique([systemId, ns, key, lang])
+  @@index([tenantId, pageId])
+  @@map("translation")
+}
+
+model ExternalConnection {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  type       String
+  name       String
+  connection Json
+  createdAt  DateTime @default(now())
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@map("external_connection")
+}
+
+model Webhook {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  targetUrl String
+  secret    String?
+  events    String[]
+  createdAt DateTime @default(now())
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("webhook")
+}
+
+/// *
+/// * =========================================================
+/// * 🧾 AUDIT LOG — Registro de acciones del sistema
+/// * =========================================================
+/// * Guarda información de auditoría sobre acciones ejecutadas
+/// * por usuarios o agentes del sistema (creación, edición, borrado, etc.)
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  targetId  String?
+  action    String
+  entity    String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  actor     User?    @relation("AuditActor", fields: [actorId], references: [id])
+  target    User?    @relation("AuditTarget", fields: [targetId], references: [id])
+
+  @@map("audit_log")
+}
+
+model AccountCategory {
+  id           String              @id @default(cuid())
+  projectId    String?
+  code         String              @unique
+  name         String
+  type         AccountCategoryType
+  description  String?
+  parentId     String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  parent       AccountCategory?    @relation("AccountCategoryToAccountCategory", fields: [parentId], references: [id])
+  children     AccountCategory[]   @relation("AccountCategoryToAccountCategory")
+  project      Project?            @relation(fields: [projectId], references: [id])
+  transactions Transaction[]
+
+  @@map("account_category")
+}
+
+model Transaction {
+  id          String           @id @default(cuid())
+  tenantId    String?
+  hubId       String?
+  accountId   String?
+  type        TransactionType
+  description String?
+  amountUsd   Decimal          @db.Decimal(12, 2)
+  currency    String           @default("USD")
+  date        DateTime         @default(now())
+  reference   String?
+  status      String           @default("recorded")
+  method      String?
+  meta        Json?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  projectId   String?
+  allocations CostAllocation[]
+  account     AccountCategory? @relation(fields: [accountId], references: [id])
+  hub         Hub?             @relation(fields: [hubId], references: [id])
+  Project     Project?         @relation(fields: [projectId], references: [id])
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, hubId, date])
+  @@map("transaction")
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  tenantId    String?
+  hubId       String?
+  number      String?
+  type        String
+  clientName  String
+  clientEmail String?
+  description String?
+  totalUsd    Decimal       @db.Decimal(12, 2)
+  taxUsd      Decimal?      @db.Decimal(12, 2)
+  status      String        @default("draft")
+  issueDate   DateTime      @default(now())
+  dueDate     DateTime?
+  meta        Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  hub         Hub?          @relation(fields: [hubId], references: [id])
+  tenant      Tenant?       @relation(fields: [tenantId], references: [id])
+  items       InvoiceItem[]
+
+  @@index([tenantId, hubId, issueDate])
+  @@map("invoice")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  productId   String?
+  description String?
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  totalUsd    Decimal  @db.Decimal(12, 2)
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
+
+  @@map("invoice_item")
+}
+
+model CostCenter {
+  id          String           @id @default(cuid())
+  tenantId    String
+  code        String
+  name        String
+  description String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  allocations CostAllocation[]
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  links       CostCenterLink[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("cost_center")
+}
+
+model CostCenterLink {
+  id           String     @id @default(cuid())
+  costCenterId String
+  hubId        String?
+  weight       Float?     @default(1)
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+  hub          Hub?       @relation(fields: [hubId], references: [id])
+
+  @@map("cost_center_link")
+}
+
+model CostAllocation {
+  id            String       @id @default(cuid())
+  costCenterId  String
+  transactionId String?
+  amountUsd     Decimal      @db.Decimal(12, 2)
+  notes         String?
+  createdAt     DateTime     @default(now())
+  costCenter    CostCenter   @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([costCenterId, transactionId])
+  @@map("cost_allocation")
+}
+
+model Product {
+  id            String              @id @default(cuid())
+  tenantId      String?
+  sku           String              @unique
+  name          String
+  description   String?
+  category      String?
+  unitCostUsd   Decimal             @db.Decimal(12, 2)
+  priceUsd      Decimal             @db.Decimal(12, 2)
+  stockQty      Int                 @default(0)
+  reorderLevel  Int?                @default(5)
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  movements     InventoryMovement[]
+  invoiceItems  InvoiceItem[]
+  tenant        Tenant?             @relation(fields: [tenantId], references: [id])
+  purchaseItems PurchaseOrderItem[]
+  saleItems     SalesOrderItem[]
+
+  @@map("product")
+}
+
+model InventoryMovement {
+  id          String                @id @default(cuid())
+  productId   String
+  type        InventoryMovementType
+  quantity    Int
+  unitCostUsd Decimal               @db.Decimal(12, 2)
+  totalUsd    Decimal               @db.Decimal(12, 2)
+  reference   String?
+  sourceType  String?
+  date        DateTime              @default(now())
+  meta        Json?
+  product     Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, date])
+  @@map("inventory_movement")
+}
+
+model PurchaseOrder {
+  id            String              @id @default(cuid())
+  tenantId      String?
+  supplierName  String
+  supplierEmail String?
+  status        String              @default("draft")
+  totalUsd      Decimal             @db.Decimal(12, 2)
+  issueDate     DateTime            @default(now())
+  expectedDate  DateTime?
+  reference     String?
+  notes         String?
+  meta          Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  tenant        Tenant?             @relation(fields: [tenantId], references: [id])
+  items         PurchaseOrderItem[]
+
+  @@index([tenantId, issueDate])
+  @@map("purchase_order")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  productId       String?
+  description     String?
+  quantity        Int           @default(1)
+  unitCostUsd     Decimal       @db.Decimal(12, 2)
+  totalUsd        Decimal       @db.Decimal(12, 2)
+  product         Product?      @relation(fields: [productId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_order_item")
+}
+
+model SalesOrder {
+  id           String           @id @default(cuid())
+  tenantId     String?
+  clientName   String
+  clientEmail  String?
+  status       String           @default("draft")
+  totalUsd     Decimal          @db.Decimal(12, 2)
+  issueDate    DateTime         @default(now())
+  deliveryDate DateTime?
+  reference    String?
+  notes        String?
+  meta         Json?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  tenant       Tenant?          @relation(fields: [tenantId], references: [id])
+  items        SalesOrderItem[]
+
+  @@index([tenantId, issueDate])
+  @@map("sales_order")
+}
+
+model SalesOrderItem {
+  id           String     @id @default(cuid())
+  salesOrderId String
+  productId    String?
+  description  String?
+  quantity     Int        @default(1)
+  unitPrice    Decimal    @db.Decimal(12, 2)
+  totalUsd     Decimal    @db.Decimal(12, 2)
+  product      Product?   @relation(fields: [productId], references: [id])
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  @@map("sales_order_item")
+}
+
+model Asset {
+  id               String      @id @default(cuid())
+  tenantId         String?
+  name             String
+  description      String?
+  category         String?
+  acquisitionDate  DateTime?
+  valueUsd         Decimal     @db.Decimal(12, 2)
+  depreciationRate Float?
+  status           AssetStatus @default(ACTIVE)
+  location         String?
+  tags             String[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  projectId        String?
+  Project          Project?    @relation(fields: [projectId], references: [id])
+  tenant           Tenant?     @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("asset")
+}
+
+model PayrollRun {
+  id          String        @id @default(cuid())
+  tenantId    String
+  period      PayrollPeriod @default(MONTHLY)
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String        @default("open")
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  items       PayrollItem[]
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, periodStart, periodEnd])
+  @@map("payroll_run")
+}
+
+model PayrollItem {
+  id           String          @id @default(cuid())
+  payrollRunId String
+  employeeId   String
+  concept      String
+  amountUsd    Decimal         @db.Decimal(12, 2)
+  notes        String?
+  createdAt    DateTime        @default(now())
+  employee     EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payrollRun   PayrollRun      @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@index([payrollRunId, employeeId])
+  @@map("payroll_item")
+}
+
+model EmployeeProfile {
+  id           String              @id @default(cuid())
+  userId       String
+  tenantId     String?
+  position     String?
+  department   String?
+  hireDate     DateTime?
+  salaryUsd    Decimal?            @db.Decimal(10, 2)
+  contractType ContractType?
+  status       EmploymentStatus    @default(ACTIVE)
+  skills       String[]
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  projectId    String?
+  Project      Project?            @relation(fields: [projectId], references: [id])
+  tenant       Tenant?             @relation(fields: [tenantId], references: [id])
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaves       LeaveRequest[]
+  payrollItems PayrollItem[]
+  reviews      PerformanceReview[]
+  logs         ProductivityLog[]
+  timeEntries  TimeEntry[]
+
+  @@map("employee_profile")
+}
+
+model PerformanceReview {
+  id             String          @id @default(cuid())
+  employeeId     String
+  reviewerId     String?
+  agentId        String?
+  periodStart    DateTime
+  periodEnd      DateTime
+  score          Float?
+  emotionalScore Float?
+  comments       String?
+  goals          Json?
+  insightsAI     Json?
+  status         String?         @default("open")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  agent          AgentConfig?    @relation(fields: [agentId], references: [id])
+  employee       EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewer       User?           @relation("UserAsReviewer", fields: [reviewerId], references: [id])
+
+  @@index([employeeId, reviewerId, agentId])
+  @@map("performance_review")
+}
+
+/// *
+/// * =========================================================
+/// * ⏱️ TIME ENTRY — Registro de tiempo y actividad
+/// * =========================================================
+/// * Representa bloques de tiempo trabajados por un colaborador,
+/// * permitiendo análisis de productividad, facturación y bienestar.
+model TimeEntry {
+  id          String          @id @default(cuid())
+  employeeId  String
+  startedAt   DateTime
+  endedAt     DateTime?
+  minutes     Int?
+  activity    String?
+  billable    Boolean         @default(false)
+  rateUsdHour Decimal?        @db.Decimal(10, 2)
+  emotionTag  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, startedAt])
+  @@map("time_entry")
+}
+
+/// *
+/// * =========================================================
+/// * 📊 PRODUCTIVITY LOG — Registro de productividad y enfoque
+/// * =========================================================
+/// * Registra bloques de trabajo con su carga emocional,
+/// * tiempo invertido, nivel de foco y rendimiento percibido.
+/// * Permite correlacionar productividad con bienestar emocional.
+model ProductivityLog {
+  id                String          @id @default(cuid())
+  employeeId        String
+  taskName          String?
+  hoursSpent        Float?          @default(0)
+  focusLevel        Float?
+  emotionTag        String?
+  productivityIndex Float?
+  date              DateTime        @default(now())
+  notes             String?
+  employee          EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, date])
+  @@map("productivity_log")
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  date        DateTime
+  scope       String
+  metricKey   String
+  metricValue Float?
+  meta        Json?
+  createdAt   DateTime @default(now())
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, date, scope, metricKey])
+  @@map("analytics_snapshot")
+}
+
+model PredictiveMetric {
+  id          String    @id @default(cuid())
+  tenantId    String?
+  projectId   String?
+  hubId       String?
+  superHubId  String?
+  horizonDays Int       @default(30)
+  scope       String
+  metricKey   String
+  value       Float?
+  confidence  Float?
+  generatedBy String?
+  meta        Json?
+  createdAt   DateTime  @default(now())
+  hub         Hub?      @relation(fields: [hubId], references: [id])
+  project     Project?  @relation(fields: [projectId], references: [id])
+  superHub    SuperHub? @relation("SuperHubForecasts", fields: [superHubId], references: [id])
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@index([hubId])
+  @@index([superHubId])
+  @@index([scope, metricKey])
+  @@map("predictive_metric")
+}
+
+/// *
+/// * =========================================================
+/// * 🌴 LEAVE REQUEST — Solicitudes de ausencia
+/// * =========================================================
+/// * Permite registrar vacaciones, licencias, ausencias por enfermedad o capacitaciones.
+model LeaveRequest {
+  id         String          @id @default(cuid())
+  employeeId String
+  type       String
+  status     LeaveStatus     @default(PENDING)
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?
+  approvedBy String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  approver   User?           @relation("LeaveApprover", fields: [approvedBy], references: [id])
+  employee   EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([approvedBy])
+  @@map("leave_request")
+}
+
+model Payout {
+  id          String    @id @default(cuid())
+  userId      String?
+  tenantId    String?
+  projectId   String?
+  amountUsd   Decimal   @db.Decimal(12, 2)
+  description String?
+  reference   String?
+  status      String    @default("pending")
+  method      String?
+  issuedAt    DateTime  @default(now())
+  paidAt      DateTime?
+  meta        Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Project     Project?  @relation(fields: [projectId], references: [id])
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("payout")
+}
+
+model UsageDaily {
+  id           String       @id @default(cuid())
+  tenantId     String
+  day          DateTime
+  feature      UsageFeature
+  model        String?
+  tokensInput  Int          @default(0)
+  tokensOutput Int          @default(0)
+  calls        Int          @default(0)
+  costUsd      Decimal?     @db.Decimal(10, 4)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, feature, day, model])
+  @@index([tenantId, day])
+  @@map("usage_daily")
+}
+
+model TenantModule {
+  id          String   @id @default(cuid())
+  tenantId    String
+  key         String
+  name        String?
+  description String?
+  enabled     Boolean  @default(true)
+  visibility  String?
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@map("tenant_module")
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  code      String
+  location  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@map("warehouse")
+}
+
+/// *
+/// * =========================================================
+/// * 📁 PROJECT — Entidad genérica para conectar módulos
+/// * =========================================================
+/// * Representa proyectos, programas o iniciativas asociadas
+/// * a un Tenant o Hub, vinculadas con métricas, certificados
+/// * y transacciones.
+model Project {
+  id                String             @id @default(cuid())
+  tenantId          String?
+  hubId             String?
+  name              String
+  description       String?
+  status            String?            @default("active")
+  startDate         DateTime?
+  endDate           DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  accountCategories AccountCategory[]
+  assets            Asset[]
+  certificates      Certificate[]
+  employees         EmployeeProfile[]
+  payouts           Payout[]
+  predictiveMetrics PredictiveMetric[]
+  hub               Hub?               @relation(fields: [hubId], references: [id])
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id])
+  transactions      Transaction[]
+
+  @@index([tenantId])
+  @@index([hubId])
+  @@map("project")
+}
+
+/// *
+/// * =========================================================
+/// * 🧠 EMOTIONAL AI ENGINE — Configuración del motor emocional de IA
+/// * =========================================================
+/// * Define el estado y parámetros de un motor IA por Tenant o Hub.
+/// * Se usa en /api/ai/engine y por los agentes (eco, eq, trainer, etc.)
+model EmotionalAIEngine {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  hubId       String?
+  state       String   @default("idle")
+  mode        String   @default("coach")
+  description String?  @default("Motor emocional activo")
+  temperature Float    @default(0.7)
+  contextSize Int      @default(8192)
+  memorySpan  Int      @default(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  hub         Hub?     @relation(fields: [hubId], references: [id])
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, hubId])
+  @@index([tenantId])
+  @@index([hubId])
+  @@map("emotional_ai_engine")
+}
+
+/// =========================================================
+/// 💞 AFFINITY SNAPSHOT — Afinidad emocional global
+/// =========================================================
+model AffinitySnapshot {
+  id             String   @id @default(cuid())
+  userId         String
+  memberId       String
+  userGlobalId   String? // 🔗 RowiVerseUser del usuario local
+  memberGlobalId String? // 🔗 RowiVerseUser del miembro
+  context        String
+  lastHeat135    Int?
+  aiSummary      String?
+  biasFactor     Float?
+  closeness      String?
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+
+  member       CommunityMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGlobal   RowiVerseUser?  @relation("AffinityUserGlobal", fields: [userGlobalId], references: [id])
+  memberGlobal RowiVerseUser?  @relation("AffinityMemberGlobal", fields: [memberGlobalId], references: [id])
+
+  @@unique([userId, memberId, context])
+  @@index([userId])
+  @@index([memberId])
+  @@index([userGlobalId])
+  @@index([memberGlobalId])
+  @@map("affinity_snapshot")
+}
+
+/// =========================================================
+/// 💬 AFFINITY INTERACTION — Micro-interacciones y emociones
+/// =========================================================
+model AffinityInteraction {
+  id             String   @id @default(cuid())
+  userId         String
+  memberId       String
+  userGlobalId   String? // 🔗 RowiVerseUser del usuario local
+  memberGlobalId String? // 🔗 RowiVerseUser del miembro
+  context        String?
+  emotionTag     String?
+  effectiveness  Float?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  member       CommunityMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGlobal   RowiVerseUser?  @relation("InteractionUserGlobal", fields: [userGlobalId], references: [id])
+  memberGlobal RowiVerseUser?  @relation("InteractionMemberGlobal", fields: [memberGlobalId], references: [id])
+
+  @@index([userId])
+  @@index([memberId])
+  @@index([userGlobalId])
+  @@index([memberGlobalId])
+  @@map("affinity_interaction")
+}
+
+model AffinityProfile {
+  id       String @id @default(cuid())
+  userId   String @unique
+  traits   Json   @default("{}")
+  clusters Json   @default("{}")
+  scores   Json   @default("{}")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("affinity_profile")
+}
+
+/// =========================================================
+/// 🧠 INSIGHT RECORD — Resultados de IA Cognitiva Manual
+/// =========================================================
+model InsightRecord {
+  id          String    @id @default(cuid())
+  type        String
+  title       String
+  content     String
+  generatedBy String?
+  sourceModel String?
+  createdAt   DateTime  @default(now())
+  hubId       String?
+  tenantId    String?
+  superHubId  String?
+  meta        Json?
+  hub         Hub?      @relation(fields: [hubId], references: [id])
+  superHub    SuperHub? @relation(fields: [superHubId], references: [id])
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+
+  @@index([hubId])
+  @@index([tenantId])
+  @@index([superHubId])
+  @@map("insight_record")
+}
+
+/// =========================================================
+/// csv UPLAOD NUEVO 
+/// =========================================================
+model CsvUpload {
+  id        String   @id @default(cuid())
+  userEmail String
+  dataset   String?
+  rowCount  Int?
+  createdAt DateTime @default(now())
+  user      User     @relation("UserCsvUploads", fields: [userEmail], references: [email])
+
+  @@map("csv_upload")
+}
+
+/// =========================================================
+/// 💌 INVITE TOKEN — Invitaciones pendientes
+/// =========================================================
+model InviteToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String?
+  email     String
+  role      String?  @default("USER")
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  tenant    Tenant?  @relation("TenantInvites", fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserInvites", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([email])
+  @@map("invite_token")
+}
+
+/// =========================================================
+/// 🧾 ACTIVITY LOG — Registro de acciones administrativas
+/// =========================================================
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String?
+  targetId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+  user      User     @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@map("activity_log")
+}
+
+model RoleDynamic {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  level       RoleLevel @default(HUB)
+  hubId       String?
+  tenantId    String?
+  superHubId  String?
+  planId      String?
+  permissions Json?
+  color       String?
+  icon        String?
+  createdAt   DateTime  @default(now())
+  hub         Hub?      @relation(fields: [hubId], references: [id])
+  plan        Plan?     @relation(fields: [planId], references: [id])
+  superHub    SuperHub? @relation(fields: [superHubId], references: [id])
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+
+  @@unique([name, tenantId])
+  @@unique([name, superHubId])
+  @@index([hubId])
+  @@index([tenantId])
+  @@index([superHubId])
+  @@index([planId])
+  @@map("role_dynamic")
+}
+
+/// =========================================================
+/// 📦 IMPORT BATCH — Carga masiva asistida de usuarios
+/// =========================================================
+model ImportBatch {
+  id         String      @id @default(cuid())
+  name       String
+  uploadedBy String
+  uploadedAt DateTime    @default(now())
+  totalRows  Int
+  processed  Boolean     @default(false)
+  rows       ImportRow[]
+
+  @@map("import_batch")
+}
+
+model ImportRow {
+  id       String      @id @default(cuid())
+  batchId  String
+  email    String?
+  name     String?
+  surname  String?
+  country  String?
+  jobRole  String?
+  sector   String?
+  data     Json
+  selected Boolean     @default(true)
+  status   String      @default("pending")
+  message  String?
+  batch    ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@map("import_row")
+}
+
+/// =========================================================
+/// ⚙️ BACKGROUND TASK — Tareas asíncronas de IA o sistema
+/// =========================================================
+/// Guarda trabajos en segundo plano (entrenamientos, cálculos, sincronizaciones).
+model BackgroundTask {
+  id          String    @id @default(cuid())
+  type        String
+  status      String    @default("pending") // pending | running | completed | failed
+  description String?
+  payload     Json? // Datos de entrada o contexto del job
+  result      Json? // Resultado o salida final del proceso
+  error       String? // Mensaje de error (si aplica)
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("background_task")
+}
+
+/// =========================================================
+/// 🤖 AGENT MODEL VERSION — Versionado de modelos IA
+/// =========================================================
+/// Controla las versiones de los modelos IA usados por los agentes.
+model AgentModelVersion {
+  id          String      @id @default(cuid())
+  agentId     String
+  version     Int         @default(1)
+  modelName   String
+  description String?
+  metrics     Json? // Precisión, costo, performance
+  createdAt   DateTime    @default(now())
+  agent       AgentConfig @relation("AgentConfigToModelVersion", fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, version])
+  @@index([modelName])
+  @@map("agent_model_version")
+}
+
+/// =========================================================
+/// 🧠 AGENT TRAINING SAMPLE — Dataset de entrenamiento IA
+/// =========================================================
+/// Guarda ejemplos usados para entrenar o ajustar modelos IA.
+model AgentTrainingSample {
+  id        String      @id @default(cuid())
+  agentId   String
+  input     String // Prompt o entrada de entrenamiento
+  output    String // Respuesta esperada
+  meta      Json? // Datos adicionales o tags
+  createdAt DateTime    @default(now())
+  agent     AgentConfig @relation("AgentConfigToTrainingSample", fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@map("agent_training_sample")
+}
+
+/// =========================================================
+/// 💫 EMOTIONAL CONFIG — Configuración emocional base
+/// =========================================================
+/// Define parámetros emocionales por Tenant, como intensidad,
+/// escalas de humor o límites de análisis emocional.
+model EmotionalConfig {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  key         String
+  value       Json?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant?  @relation("TenantToEmotionalConfig", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("emotional_config")
+}
+
+model RowiVerse {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  bannerUrl   String?
+  visibility  String   @default("public")
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🔹 Relación con el creador
+  createdBy User? @relation("UserCreatedVerses", fields: [createdById], references: [id])
+
+  // 🔹 Comunidades asociadas
+  communities RowiCommunity[]
+
+  // 🔹 SuperHubs, Tenants y Organizaciones vinculadas (inversas)
+  superHubs      SuperHub[]      @relation("RowiVerseToSuperHub")
+  tenants        Tenant[]        @relation("RowiVerseToTenant")
+  organizations  Organization[]  @relation("RowiVerseToOrganization")
+  communitiesSet RowiCommunity[] @relation("RowiVerseToCommunity")
+
+  // 🔹 Usuarios globales vinculados al RowiVerse
+  users RowiVerseUser[] @relation("RowiVerseToUser")
+
+  @@map("rowi_verse")
+}
+
+/// 🌍 RowiVerseUser — Identidad universal dentro del RowiVerse
+/// ---------------------------------------------------------
+/// Representa la identidad global de una persona dentro del ecosistema.
+/// Está vinculada a un `User` local y al `RowiVerse` global.
+model RowiVerseUser {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  name      String?
+  image     String?
+  verified  Boolean  @default(false)
+  active    Boolean  @default(true)
+  country   String?  @default("NONE")
+  language  String?  @default("es")
+  status    String?  @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 🔗 Relaciones principales
+  userId      String? @unique
+  rowiVerseId String?
+
+  // ✅ Relación principal con el usuario local
+  user User? @relation("UserRowiVerseLink", fields: [userId], references: [id])
+
+  // ✅ Relación con el ecosistema global (RowiVerse)
+  rowiVerse RowiVerse? @relation("RowiVerseToUser", fields: [rowiVerseId], references: [id], onDelete: Cascade)
+
+  // 🔄 Relaciones inversas con módulos del ecosistema
+  communityMembers             CommunityMember[]
+  eqSnapshots                  EqSnapshot[]
+  emotionalEvents              EmotionalEvent[]
+  initiatorRelations           RowiRelation[]        @relation("GlobalInitiatorRelation")
+  receiverRelations            RowiRelation[]        @relation("GlobalReceiverRelation")
+  affinitySnapshotsAsUser      AffinitySnapshot[]    @relation("AffinityUserGlobal")
+  affinitySnapshotsAsMember    AffinitySnapshot[]    @relation("AffinityMemberGlobal")
+  affinityInteractionsAsUser   AffinityInteraction[] @relation("InteractionUserGlobal")
+  affinityInteractionsAsMember AffinityInteraction[] @relation("InteractionMemberGlobal")
+  RowiCommunityUser            RowiCommunityUser[]
+
+  @@unique([userId, rowiVerseId])
+  @@index([country])
+  @@index([language])
+  @@index([status])
+  @@map("rowiverse_user")
+}
+
+/// 🌐 Comunidad dentro del ecosistema RowiVerse
+/// ---------------------------------------------------------
+/// Ejemplo: “EQ Week Costa Rica”, “6S Staff Retreat”, “Cactus Academy”
+/// 🌐 Comunidad dentro del ecosistema RowiVerse
+model RowiCommunity {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String?
+  type           String?  @default("general")
+  visibility     String   @default("public")
+  bannerUrl      String?
+  coverUrl       String?
+  category       String?
+  rules          String?
+  createdById    String?
+  superId        String?
+  rowiVerseId    String?
+  superHubId     String?
+  hubId          String?
+  tenantId       String?
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // 👤 Datos administrativos
+  owner         String? // Nombre o referencia textual del creador
+  language      String?
+  executionTime Int?
+
+  // 🔗 Relaciones jerárquicas (todas con nombres explícitos)
+  rowiVerse    RowiVerse?    @relation("RowiVerseToCommunity", fields: [rowiVerseId], references: [id], map: "fk_rowiCommunity_rowiVerseId", onDelete: Cascade)
+  superHub     SuperHub?     @relation("SuperHubToCommunity", fields: [superHubId], references: [id], map: "fk_rowiCommunity_superHubId", onDelete: Cascade)
+  hub          Hub?          @relation("HubToCommunity", fields: [hubId], references: [id], map: "fk_rowiCommunity_hubId", onDelete: Cascade)
+  tenant       Tenant?       @relation("TenantToCommunity", fields: [tenantId], references: [id], map: "fk_rowiCommunity_tenantId", onDelete: Cascade)
+  organization Organization? @relation("OrganizationToCommunity", fields: [organizationId], references: [id], map: "fk_rowiCommunity_organizationId", onDelete: Cascade)
+  createdBy    User?         @relation(fields: [createdById], references: [id])
+
+  // 🔁 Jerarquía de subcomunidades
+  superCommunity RowiCommunity?  @relation("RowiCommunityHierarchy", fields: [superId], references: [id])
+  subCommunities RowiCommunity[] @relation("RowiCommunityHierarchy")
+
+  // 👥 Relaciones internas
+  members        RowiCommunityUser[]
+  posts          RowiCommunityPost[]
+  CommunityBatch CommunityBatch[]
+  RowiVerse      RowiVerse?          @relation(fields: [rowiVerseId], references: [id])
+
+  // 🧭 Índices
+  @@index([rowiVerseId])
+  @@index([superHubId])
+  @@index([hubId])
+  @@index([tenantId])
+  @@index([organizationId])
+  @@map("rowi_community")
+}
+
+/// 👥 Relación usuario ↔ comunidad social
+model RowiCommunityUser {
+  id              String  @id @default(cuid())
+  userId          String? // 🔄 opcional hasta que se vincule
+  rowiverseUserId String? // 🔗 Identidad global RowiVerse
+  communityId     String
+
+  role           String?   @default("member") // owner | admin | coach | mentor | member | friend | client
+  relationToMe   String? // cómo percibo a esta persona: "mi coach", "mi amigo", "mi pareja", etc.
+  connectionType String? // tipo de vínculo: "profesional", "emocional", "familiar", "social"
+  affinityLevel  Int? // nivel emocional (0–135 o escala interna)
+  trustLevel     Int? // confianza o apertura emocional
+  status         String?   @default("active") // active | invited | pending | blocked
+  invitedById    String?
+  joinedAt       DateTime  @default(now())
+  lastActiveAt   DateTime?
+
+  // Relaciones existentes
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  invitedBy User?         @relation("RowiCommunityInviter", fields: [invitedById], references: [id])
+
+  // Nueva relación global
+  rowiverseUser RowiVerseUser? @relation(fields: [rowiverseUserId], references: [id])
+
+  @@unique([userId, communityId])
+  @@index([communityId])
+  @@index([userId])
+  @@map("rowi_community_user")
+}
+
+/// 💬 Publicaciones dentro de una comunidad
+model RowiCommunityPost {
+  id          String        @id @default(cuid())
+  communityId String
+  authorId    String
+  content     String
+  mediaUrl    String?
+  tags        String[]
+  emotionTag  String?
+  visibility  String?       @default("community")
+  reactions   Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  community   RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author      User          @relation(fields: [authorId], references: [id])
+
+  @@map("rowi_community_post")
+}
+
+model CommunityBatch {
+  id          String        @id @default(cuid())
+  communityId String
+  fileName    String
+  totalRows   Int
+  processed   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  data        Json?
+  community   RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@map("community_batch")
+}
+
+/// 🔗 EcosystemLink — Relación jerárquica flexible entre entidades principales
+model EcosystemLink {
+  id          String   @id @default(cuid())
+  type        String // Ej: "organization↔tenant", "hub↔organization", "superhub↔tenant"
+  sourceType  String // Ej: "organization", "hub", "tenant"
+  sourceId    String
+  targetType  String // Ej: "hub", "tenant", "superhub"
+  targetId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  metadata    Json?
+
+  createdBy User? @relation(fields: [createdById], references: [id])
+
+  // 🔎 índices para búsquedas rápidas
+  @@index([sourceType, sourceId])
+  @@index([targetType, targetId])
+  @@index([type])
+  @@map("ecosystem_link")
+}
+
+/// *
+/// * =========================================================
+/// * 🧩 TENANT ROLE — Roles dentro de una organización
+/// * =========================================================
+/// * Define los permisos y responsabilidades de cada usuario
+/// * dentro de un Tenant (empresa, centro o comunidad).
+enum TenantRole {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+  EDITOR
+  VIEWER
+  DEVELOPER
+  BILLING
+  FEDERATOR
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum AgentType {
+  AFFINITY
+  ECO
+  EQ
+  SALES
+  TRAINER
+  SUPER
+  CUSTOM
+}
+
+enum UsageFeature {
+  AFFINITY
+  ECO
+  EQ
+  SALES
+  TRAINER
+  SUPER
+  ROWI_COACH
+  ROWI_CHAT
+  TTS
+  STT
+  IMPORT
+  EXPORT
+  CUSTOM_FEATURE
+}
+
+enum PayrollPeriod {
+  MONTHLY
+  BIWEEKLY
+  WEEKLY
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum InvoiceType {
+  SALE
+  PURCHASE
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  INACTIVE
+  SABBATICAL
+  TERMINATED
+}
+
+enum ContractType {
+  FULL_TIME
+  PART_TIME
+  FREELANCE
+  CONTRACTOR
+}
+
+enum InventoryMovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+enum AssetStatus {
+  ACTIVE
+  DISPOSED
+  MAINTENANCE
+  DEPRECATED
+}
+
+/// *
+/// * =========================================================
+/// * 🧭 ENUM — Estado del miembro de comunidad
+/// * =========================================================
+enum CommunityMemberStatus {
+  ACTIVE
+  INACTIVE
+  INVITED
+  SUSPENDED
+  DELETED
+}
+
+enum AccountCategoryType {
+  INCOME
+  EXPENSE
+  ASSET
+  LIABILITY
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RoleLevel {
+  SYSTEM
+  SUPERHUB
+  HUB
+  TENANT
+  PLAN
+}
+
+enum PermissionScope {
+  rowiverse
+  superhub
+  hub
+  tenant
+  organization
+  community
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🦉 ROWI 100% - NUEVOS MODELOS PARA FUNCIONALIDAD COMPLETA
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// =========================================================
+/// 🥚 AVATAR EVOLUTION — Evolución gamificada del Rowi Personal
+/// =========================================================
+/// Cada usuario tiene su propio Rowi que evoluciona con su desarrollo
+/// emocional. Desde Huevo → Bebé → Joven → Adulto → Sabio.
+model AvatarEvolution {
+  id            String            @id @default(cuid())
+  userId        String            @unique
+  stage         AvatarStage       @default(EGG)
+  experience    Int               @default(0)
+  accessories   Json              @default("[]")
+  colors        Json              @default("{}")
+  hatched       Boolean           @default(false)
+  hatchProgress Int               @default(0)
+  brainStyle    String?
+  personality   Json?
+  unlockedAt    DateTime          @default(now())
+  lastEvolution DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones AvatarMilestone[]
+  streaks    AvatarStreak[]
+
+  @@index([stage])
+  @@map("avatar_evolution")
+}
+
+/// =========================================================
+/// 🏆 AVATAR MILESTONE — Logros y hitos desbloqueados
+/// =========================================================
+model AvatarMilestone {
+  id          String        @id @default(cuid())
+  avatarId    String
+  type        MilestoneType
+  title       String?
+  description String?
+  xpReward    Int           @default(10)
+  icon        String?
+  rarity      String?       @default("common")
+  metadata    Json?
+  achievedAt  DateTime      @default(now())
+
+  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@index([avatarId])
+  @@index([type])
+  @@map("avatar_milestone")
+}
+
+/// =========================================================
+/// 🔥 AVATAR STREAK — Rachas de actividad
+/// =========================================================
+model AvatarStreak {
+  id          String   @id @default(cuid())
+  avatarId    String
+  type        String
+  currentDays Int      @default(0)
+  longestDays Int      @default(0)
+  lastActive  DateTime @default(now())
+  startedAt   DateTime @default(now())
+
+  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@unique([avatarId, type])
+  @@map("avatar_streak")
+}
+
+/// =========================================================
+/// 📊 TOP PERFORMER METRIC — Rankings de desempeño emocional
+/// =========================================================
+model TopPerformerMetric {
+  id               String   @id @default(cuid())
+  tenantId         String
+  userId           String
+  period           String
+  periodType       String   @default("monthly")
+
+  consistencyScore Float    @default(0)
+  growthScore      Float    @default(0)
+  impactScore      Float    @default(0)
+  engagementScore  Float    @default(0)
+  collaborationScore Float  @default(0)
+
+  overallScore     Float    @default(0)
+  overallRank      Int?
+  previousRank     Int?
+  rankChange       Int?
+
+  breakdown        Json?
+  calculatedAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId, period])
+  @@index([tenantId, period])
+  @@index([overallRank])
+  @@map("top_performer_metric")
+}
+
+/// =========================================================
+/// 🧠 COLLECTIVE PATTERN — Patrones detectados en grupos
+/// =========================================================
+model CollectivePattern {
+  id          String   @id @default(cuid())
+  tenantId    String
+  hubId       String?
+  patternType String
+  title       String
+  description String?
+  severity    String?  @default("info")
+  data        Json
+  confidence  Float    @default(0.5)
+  affectedUsers Int    @default(0)
+  recommendations Json?
+  status      String   @default("active")
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hub    Hub?   @relation(fields: [hubId], references: [id])
+
+  @@index([tenantId, patternType])
+  @@index([hubId])
+  @@index([status])
+  @@map("collective_pattern")
+}
+
+/// =========================================================
+/// 💰 EMOTIONAL ROI — Retorno de inversión emocional
+/// =========================================================
+model EmotionalROI {
+  id              String   @id @default(cuid())
+  tenantId        String
+  userId          String?
+  hubId           String?
+  period          String
+  periodType      String   @default("monthly")
+
+  timeInvestedMinutes Int     @default(0)
+  sessionsCount       Int     @default(0)
+  reflectionsCount    Int     @default(0)
+  practicesCompleted  Int     @default(0)
+
+  eqImprovement       Float?
+  affinityImprovement Float?
+  productivityGain    Float?
+  wellbeingScore      Float?
+  decisionsTracked    Int     @default(0)
+  positiveOutcomes    Int     @default(0)
+
+  roiScore            Float?
+  roiTrend            String?
+  benchmark           Float?
+
+  calculatedAt        DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+  hub    Hub?   @relation(fields: [hubId], references: [id])
+
+  @@unique([tenantId, userId, period])
+  @@index([tenantId, period])
+  @@index([userId])
+  @@map("emotional_roi")
+}
+
+/// =========================================================
+/// 🎯 DECISION TRACKING — Seguimiento de decisiones
+/// =========================================================
+model DecisionTracking {
+  id            String   @id @default(cuid())
+  userId        String
+  tenantId      String?
+  title         String
+  description   String?
+  category      String?
+  context       String?
+  emotionBefore String?
+  emotionAfter  String?
+  eqInfluence   Json?
+  affinityImpact Json?
+
+  outcome       String?  @default("pending")
+  outcomeNotes  String?
+  lessonsLearned String?
+  followUpDate  DateTime?
+
+  aiAnalysis    Json?
+  aiScore       Float?
+
+  decidedAt     DateTime @default(now())
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([outcome])
+  @@index([decidedAt])
+  @@map("decision_tracking")
+}
+
+/// =========================================================
+/// 🔌 INTEGRATION CONNECTION — Conexiones con servicios externos
+/// =========================================================
+model IntegrationConnection {
+  id            String   @id @default(cuid())
+  tenantId      String
+  userId        String?
+  platform      IntegrationPlatform
+  name          String
+  status        String   @default("pending")
+
+  accessToken   String?
+  refreshToken  String?
+  tokenExpiry   DateTime?
+  scope         String?
+  webhookUrl    String?
+  webhookSecret String?
+
+  config        Json?
+  channelId     String?
+  channelName   String?
+
+  lastSyncAt    DateTime?
+  messagesSent  Int      @default(0)
+  errorsCount   Int      @default(0)
+  lastError     String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, platform, userId])
+  @@index([tenantId])
+  @@index([platform])
+  @@index([status])
+  @@map("integration_connection")
+}
+
+/// =========================================================
+/// 🎨 TENANT BRANDING — Theming corporativo por tenant
+/// =========================================================
+model TenantBranding {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
+
+  primaryColor    String   @default("#31a2e3")
+  secondaryColor  String   @default("#f378a5")
+  accentColor     String?
+  backgroundColor String?
+  textColor       String?
+
+  colorK          String   @default("#1E88E5")
+  colorC          String   @default("#7A59C9")
+  colorG          String   @default("#43A047")
+
+  logoUrl         String?
+  logoLightUrl    String?
+  faviconUrl      String?
+  backgroundImage String?
+
+  fontHeading     String?  @default("Varela Round")
+  fontBody        String?  @default("Poppins")
+
+  defaultTheme    String   @default("light")
+
+  customCss       String?
+  cssVariables    Json?
+
+  isActive        Boolean  @default(true)
+  previewMode     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_branding")
+}
+
+/// =========================================================
+/// 📅 CALENDAR EVENT — Eventos de calendario sincronizados
+/// =========================================================
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  userId        String
+  integrationId String
+  externalId    String
+  title         String
+  description   String?
+  startTime     DateTime
+  endTime       DateTime?
+  location      String?
+  attendees     Json?
+  isAllDay      Boolean  @default(false)
+  eventType     String?
+
+  emotionalPrep Json?
+  prepSentAt    DateTime?
+  moodBefore    String?
+  moodAfter     String?
+
+  lastSyncAt    DateTime @default(now())
+  syncStatus    String   @default("synced")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, externalId])
+  @@index([userId, startTime])
+  @@index([integrationId])
+  @@map("calendar_event")
+}
+
+/// =========================================================
+/// 💬 NOTIFICATION QUEUE — Cola de notificaciones/mensajes
+/// =========================================================
+model NotificationQueue {
+  id            String   @id @default(cuid())
+  userId        String
+  tenantId      String?
+  channel       String
+  type          String
+  title         String?
+  message       String
+  metadata      Json?
+  priority      Int      @default(5)
+  scheduledFor  DateTime?
+  sentAt        DateTime?
+  status        String   @default("pending")
+  attempts      Int      @default(0)
+  lastError     String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  @@index([userId, status])
+  @@index([scheduledFor])
+  @@index([channel])
+  @@map("notification_queue")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🦉 ENUMS NUEVOS PARA ROWI 100%
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum AvatarStage {
+  EGG
+  HATCHING
+  BABY
+  YOUNG
+  ADULT
+  WISE
+}
+
+enum MilestoneType {
+  PROFILE_COMPLETE
+  SEI_COMPLETE
+  FIRST_COACH_SESSION
+  SEVEN_DAY_STREAK
+  THIRTY_DAY_STREAK
+  AFFINITY_ANALYSIS
+  COMMUNITY_JOIN
+  FIRST_REFLECTION
+  FIRST_DECISION
+  EQ_IMPROVEMENT
+  TOP_PERFORMER
+  MENTOR
+  INTEGRATIONS_SETUP
+  CUSTOM
+}
+
+enum IntegrationPlatform {
+  SLACK
+  TEAMS
+  WHATSAPP
+  GOOGLE_CALENDAR
+  OUTLOOK_CALENDAR
+  ZOOM
+  EMAIL
+  CUSTOM
+}

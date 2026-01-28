@@ -1,0 +1,637 @@
+src
+├── ai
+│   ├── agents
+│   │   ├── _template.ts
+│   │   ├── affinity
+│   │   │   ├── community.ts
+│   │   │   ├── customer.ts
+│   │   │   ├── prompts
+│   │   │   ├── relationship.ts
+│   │   │   ├── router.ts
+│   │   │   └── teamwork.ts
+│   │   ├── affinity.ts
+│   │   ├── eco.ts
+│   │   ├── eq.ts
+│   │   ├── index.ts
+│   │   ├── router.ts
+│   │   ├── sales.ts
+│   │   ├── super.ts
+│   │   └── trainer.ts
+│   ├── client
+│   │   ├── client.ts
+│   │   ├── coach.ts
+│   │   ├── index.ts
+│   │   ├── lexicon.ts
+│   │   ├── registerUsage.ts
+│   │   └── RowiAI.ts
+│   ├── engine
+│   │   ├── context.ts
+│   │   ├── context.ts.bak
+│   │   ├── index.ts
+│   │   ├── index.ts.bak
+│   │   ├── local.ts
+│   │   ├── local.ts.bak
+│   │   ├── user-memory.ts
+│   │   └── user-memory.ts.bak
+│   ├── index.ts
+│   ├── learning
+│   │   ├── affinityAutoRecalc.ts
+│   │   ├── affinityLearning.ts
+│   │   └── index.ts
+│   ├── prompts
+│   │   ├── index.ts
+│   │   └── modules
+│   │       ├── affinity.ts
+│   │       ├── community-insights.ts
+│   │       ├── eco.ts
+│   │       ├── eq-dashboard.ts
+│   │       ├── eq.ts
+│   │       ├── index.ts
+│   │       ├── profile-insights.ts
+│   │       ├── rowi-coach.ts
+│   │       ├── sales.ts
+│   │       ├── super.ts
+│   │       └── trainer.ts
+│   └── tools
+│       ├── affinity.ts
+│       └── index.ts
+├── app
+│   ├── (app)
+│   │   ├── admin
+│   │   │   ├── index.ts
+│   │   │   └── ui
+│   │   ├── affinity
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── community
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── dashboard
+│   │   │   ├── ClientDashboard.tsx
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── eco
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── feed
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── index.ts
+│   │   ├── insight-test
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── post
+│   │   │   ├── index.ts
+│   │   │   └── new
+│   │   ├── profile
+│   │   │   ├── [username]
+│   │   │   ├── home
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── rowi
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── settings
+│   │   │   ├── index.ts
+│   │   │   ├── InsightClient.tsx
+│   │   │   ├── invites
+│   │   │   ├── page.tsx
+│   │   │   └── profile
+│   │   └── studio
+│   │       ├── [[...index]]
+│   │       └── index.ts
+│   ├── about
+│   │   ├── index.ts
+│   │   └── page.tsx
+│   ├── api
+│   │   ├── admin
+│   │   │   ├── agents
+│   │   │   ├── ai
+│   │   │   ├── components
+│   │   │   ├── fix
+│   │   │   ├── hubs
+│   │   │   ├── layouts
+│   │   │   ├── memberships
+│   │   │   ├── organizations
+│   │   │   ├── pages
+│   │   │   ├── plans
+│   │   │   ├── prompts
+│   │   │   ├── reports
+│   │   │   ├── roles
+│   │   │   ├── route.ts
+│   │   │   ├── superhubs
+│   │   │   ├── switch-tenant
+│   │   │   ├── tenants
+│   │   │   ├── ui
+│   │   │   └── users
+│   │   ├── affinity
+│   │   │   ├── composite
+│   │   │   ├── conversation
+│   │   │   ├── dashboard
+│   │   │   ├── decision
+│   │   │   ├── execution
+│   │   │   ├── growth
+│   │   │   ├── ia
+│   │   │   ├── index.ts
+│   │   │   ├── innovation
+│   │   │   ├── interpret
+│   │   │   ├── leadership
+│   │   │   ├── recalculate
+│   │   │   ├── relationship
+│   │   │   ├── route.ts
+│   │   │   ├── snapshots
+│   │   │   ├── summary
+│   │   │   └── utils.ts
+│   │   ├── ai
+│   │   │   ├── engine
+│   │   │   ├── jobs
+│   │   │   ├── route.ts
+│   │   │   └── train
+│   │   ├── alerts
+│   │   │   └── route.ts
+│   │   ├── auth
+│   │   │   ├── [...nextauth]
+│   │   │   ├── access
+│   │   │   ├── me
+│   │   │   └── route.ts
+│   │   ├── batch
+│   │   │   ├── history
+│   │   │   └── route.ts
+│   │   ├── community
+│   │   │   ├── connections
+│   │   │   ├── groups
+│   │   │   ├── members
+│   │   │   └── route.ts
+│   │   ├── debug
+│   │   │   ├── db
+│   │   │   └── full
+│   │   ├── debug-auth
+│   │   │   ├── route.ts
+│   │   │   └── version
+│   │   ├── eco
+│   │   │   ├── analayze-self
+│   │   │   ├── analayze-target
+│   │   │   ├── compose
+│   │   │   ├── dashboard
+│   │   │   └── route.ts
+│   │   ├── emails
+│   │   │   └── invite
+│   │   ├── emotional-config
+│   │   │   └── route.ts
+│   │   ├── emotions
+│   │   │   └── route.ts
+│   │   ├── env-check
+│   │   │   └── route.ts
+│   │   ├── eq
+│   │   │   ├── at
+│   │   │   ├── me
+│   │   │   ├── progress
+│   │   │   ├── route.ts
+│   │   │   └── snapshots
+│   │   ├── hello
+│   │   │   └── route.ts
+│   │   ├── hub
+│   │   │   ├── [hubId]
+│   │   │   ├── agents
+│   │   │   ├── ai
+│   │   │   ├── announcements
+│   │   │   ├── builder
+│   │   │   ├── communities
+│   │   │   ├── content
+│   │   │   ├── database
+│   │   │   ├── domains
+│   │   │   ├── eq
+│   │   │   ├── hubs
+│   │   │   ├── i18n
+│   │   │   ├── insights
+│   │   │   ├── integrations
+│   │   │   ├── knowledge
+│   │   │   ├── logs
+│   │   │   ├── maintenance
+│   │   │   ├── memberships
+│   │   │   ├── modules
+│   │   │   ├── organizations
+│   │   │   ├── pages
+│   │   │   ├── plans
+│   │   │   ├── roles
+│   │   │   ├── route.ts
+│   │   │   ├── rowiverse
+│   │   │   ├── superhubs
+│   │   │   ├── system-health
+│   │   │   ├── tenants
+│   │   │   ├── translations
+│   │   │   ├── usage
+│   │   │   └── users
+│   │   ├── hubs
+│   │   │   └── route.ts
+│   │   ├── i18n
+│   │   │   └── dict
+│   │   ├── import
+│   │   │   └── route.ts
+│   │   ├── index.ts
+│   │   ├── insight
+│   │   │   └── route.ts
+│   │   ├── invites
+│   │   │   ├── [token]
+│   │   │   └── route.ts
+│   │   ├── lead
+│   │   │   └── route.ts
+│   │   ├── logs
+│   │   │   └── route.ts
+│   │   ├── memberships
+│   │   │   └── route.ts
+│   │   ├── messages
+│   │   │   └── route.ts
+│   │   ├── plans
+│   │   │   └── route.ts
+│   │   ├── posts
+│   │   │   ├── index.ts
+│   │   │   └── route.ts
+│   │   ├── preferences
+│   │   │   └── route.ts
+│   │   ├── profile
+│   │   │   └── route.ts
+│   │   ├── rowi
+│   │   │   ├── lexicon
+│   │   │   └── route.ts
+│   │   ├── social
+│   │   │   ├── init
+│   │   │   └── route.ts
+│   │   ├── upload-csv
+│   │   │   ├── community
+│   │   │   ├── route.ts
+│   │   │   └── self
+│   │   └── webhooks
+│   │       └── route.ts
+│   ├── ClientWrapper.tsx
+│   ├── contact
+│   │   ├── index.ts
+│   │   └── page.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── hub
+│   │   ├── admin
+│   │   │   ├── agents
+│   │   │   ├── ai
+│   │   │   ├── announcements
+│   │   │   ├── automation
+│   │   │   ├── builder
+│   │   │   ├── communities
+│   │   │   ├── components
+│   │   │   ├── database
+│   │   │   ├── emotions
+│   │   │   ├── governance
+│   │   │   ├── hubs
+│   │   │   ├── i18n
+│   │   │   ├── index.ts
+│   │   │   ├── insights
+│   │   │   ├── integrations
+│   │   │   ├── knowledge
+│   │   │   ├── layout.tsx
+│   │   │   ├── layouts
+│   │   │   ├── lib
+│   │   │   ├── logs
+│   │   │   ├── members
+│   │   │   ├── memberships
+│   │   │   ├── organizations
+│   │   │   ├── page.tsx
+│   │   │   ├── pages
+│   │   │   ├── plans
+│   │   │   ├── prompts
+│   │   │   ├── reports
+│   │   │   ├── roles
+│   │   │   ├── rowiverse
+│   │   │   ├── settings
+│   │   │   ├── superhubs
+│   │   │   ├── system-health
+│   │   │   ├── tenants
+│   │   │   ├── tokens
+│   │   │   ├── translations
+│   │   │   ├── usage
+│   │   │   └── users
+│   │   ├── ai
+│   │   │   └── rowi-coach
+│   │   ├── index.ts
+│   │   ├── layout.tsx
+│   │   └── login
+│   │       ├── index.ts
+│   │       └── page.tsx
+│   ├── index.ts
+│   ├── invite
+│   │   ├── [token]
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── index.ts
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── me
+│   │   ├── data
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   ├── index.ts
+│   │   ├── page.tsx
+│   │   └── profile
+│   │       ├── index.ts
+│   │       └── page.tsx
+│   ├── p
+│   │   ├── [slug]
+│   │   │   ├── index.ts
+│   │   │   └── page.tsx
+│   │   └── index.ts
+│   ├── page.tsx
+│   ├── pricing
+│   │   ├── index.ts
+│   │   └── page.tsx
+│   ├── RowiToast.ts
+│   ├── settings
+│   │   └── index.ts
+│   └── signin
+│       ├── index.ts
+│       └── page.tsx
+├── components
+│   ├── admin
+│   │   └── UserDrawer.tsx
+│   ├── affinity
+│   │   ├── AffinityMonitor.tsx
+│   │   ├── index.ts
+│   │   ├── MemberPickerDialog.tsx
+│   │   └── RowiCommunitySummary.tsx
+│   ├── ai
+│   │   ├── AgentActivationMap.tsx
+│   │   ├── ContextSelectorModal.tsx
+│   │   └── index.ts
+│   ├── auth
+│   │   ├── index.ts
+│   │   ├── SessionProvider.tsx
+│   │   └── UserActions.tsx
+│   ├── charts
+│   │   ├── CompetenciesSpider.tsx
+│   │   ├── EQBar.tsx
+│   │   ├── EQCompare.tsx
+│   │   ├── EQLine.tsx
+│   │   ├── EQRadar.tsx
+│   │   ├── FeedbackCompare.tsx
+│   │   ├── HistoryLine.tsx
+│   │   ├── index.ts
+│   │   ├── SpiderEq.tsx
+│   │   └── SpiderRadar.tsx
+│   ├── coach
+│   │   ├── CoachPanel.tsx
+│   │   └── index.ts
+│   ├── community
+│   │   ├── Composer.tsx
+│   │   ├── index.ts
+│   │   ├── PostItem.tsx
+│   │   └── types.ts
+│   ├── dashboard
+│   │   ├── ChartsPanel.tsx
+│   │   ├── EqTotalCard.tsx
+│   │   ├── FeedbackPanel.tsx
+│   │   ├── index.ts
+│   │   ├── MoodChip.tsx
+│   │   ├── TalentsEq.tsx
+│   │   └── TrendCardsEq.tsx
+│   ├── eco
+│   │   ├── EcoChat.tsx
+│   │   └── index.ts
+│   ├── eq
+│   │   └── index.ts
+│   ├── hub
+│   │   ├── HubHeader.tsx
+│   │   ├── HubSidebar.tsx
+│   │   ├── index.ts
+│   │   └── UserDrawer.tsx
+│   ├── index.ts
+│   ├── invite
+│   │   ├── index.ts
+│   │   └── InviteActions.tsx
+│   ├── metrics
+│   │   ├── EqTotalBar.tsx
+│   │   ├── index.ts
+│   │   └── PursuitsBars.tsx
+│   ├── outcomes
+│   │   ├── index.ts
+│   │   ├── OutcomeCard.tsx
+│   │   ├── OutcomesPanel.tsx
+│   │   └── OverallSummary.tsx
+│   ├── rowi
+│   │   ├── EmotionalTimeline.tsx
+│   │   ├── index.ts
+│   │   ├── InsightTest.tsx
+│   │   └── RowiCoach.tsx
+│   ├── settings
+│   │   ├── index.ts
+│   │   └── ProfileFields.tsx
+│   ├── shared
+│   │   ├── ChatDock.tsx
+│   │   ├── DemoBanner.tsx
+│   │   ├── index.ts
+│   │   ├── LangToggle.tsx
+│   │   ├── NavBar.tsx
+│   │   ├── NavLinks.tsx
+│   │   ├── Providers.tsx
+│   │   ├── RowiLevelPill.tsx
+│   │   ├── RowiSEIToast.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   ├── TopNav.tsx
+│   │   └── UserStatusBar.tsx
+│   ├── talents
+│   │   ├── index.ts
+│   │   ├── TalentBar.tsx
+│   │   └── TalentCluster.tsx
+│   └── ui
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── checkbox.tsx
+│       ├── dialog.tsx
+│       ├── index.ts
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── progress.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── switch.tsx
+│       ├── tab.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       └── textarea.tsx
+├── core
+│   ├── auth
+│   │   ├── config.ts
+│   │   ├── hasAccess.ts
+│   │   ├── index.ts
+│   │   ├── policies
+│   │   │   ├── policy.admin.ts
+│   │   │   ├── policy.scope.ts
+│   │   │   └── policy.super.ts
+│   │   └── session-helpers.ts
+│   ├── auth.ts
+│   ├── index.ts
+│   ├── prisma.ts
+│   ├── services
+│   │   ├── affinity.cron.ts
+│   │   ├── client.ts
+│   │   └── index.ts
+│   ├── startup
+│   │   ├── assignAgents.ts
+│   │   ├── assignAgentsToEntity.ts
+│   │   ├── cloneAgents.ts
+│   │   ├── cloneBaseAssests.ts
+│   │   ├── ensureAgents.ts
+│   │   ├── ensureBaseAgents.ts
+│   │   ├── ensureLayoutsAndComponents.ts
+│   │   ├── ensurePages.ts
+│   │   ├── ensurePermissions.ts
+│   │   ├── ensureRowiverseCommunity.ts
+│   │   ├── ensureSystemAssets.ts
+│   │   ├── ensureSystemBootstrap.ts
+│   │   ├── ensureSystemHierarchy.ts
+│   │   ├── ensureTranslations.ts
+│   │   ├── exportLocales.ts
+│   │   ├── exportTranslationsToLocales 11.17.23 AM.ts
+│   │   ├── setup.ts
+│   │   └── syncAgents.ts
+│   └── utils
+│       ├── base-url.ts
+│       ├── cn.ts
+│       ├── findUserByEmail.ts
+│       └── index.ts
+├── data
+│   ├── emotions
+│   │   ├── index.ts
+│   │   ├── README.md
+│   │   └── VOCABULARIO_EMOCIONES.csv
+│   ├── exercises
+│   │   ├── index.ts
+│   │   └── README.md
+│   ├── feed.json
+│   ├── feelings
+│   │   ├── en.json
+│   │   ├── es.json
+│   │   ├── index.ts
+│   │   ├── it.json
+│   │   └── pt.json
+│   ├── index.ts
+│   ├── invites.json
+│   ├── profiles.json
+│   ├── seeds
+│   │   ├── demodatalatam.csv
+│   │   ├── index.ts
+│   │   └── users.json
+│   ├── sixseconds
+│   │   ├── index.ts
+│   │   └── README.md
+│   └── ui.json
+├── domains
+│   ├── affinity
+│   │   ├── components
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   └── lib
+│   │       ├── affinityEngine.ts
+│   │       └── index.ts
+│   ├── community
+│   │   ├── components
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   └── lib
+│   │       └── index.ts
+│   ├── eco
+│   │   ├── components
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   ├── lib
+│   │   │   ├── ecoAI.ts
+│   │   │   └── index.ts
+│   │   └── libAI.ts
+│   ├── eq
+│   │   ├── components
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   └── lib
+│   │       ├── dictionary.ts
+│   │       ├── eqLevels.ts
+│   │       ├── index.ts
+│   │       ├── levels.ts
+│   │       ├── model.ts
+│   │       └── types.ts
+│   ├── hr
+│   │   ├── components
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   └── lib
+│   │       └── index.ts
+│   ├── index.ts
+│   └── rowi
+│       ├── components
+│       │   └── index.ts
+│       ├── index.ts
+│       └── lib
+│           └── index.ts
+├── hooks
+│   ├── index.ts
+│   ├── useAccess.ts
+│   └── useAllowAI.ts
+├── index.ts
+├── lib
+│   ├── db.ts
+│   ├── google
+│   │   └── translate.ts
+│   ├── i18n
+│   │   ├── constants.ts
+│   │   ├── getI18n.ts
+│   │   ├── glossary.ts
+│   │   ├── home.ts
+│   │   ├── I18nProvider.tsx
+│   │   ├── index.ts
+│   │   ├── locales
+│   │   │   ├── en.json
+│   │   │   ├── es.json
+│   │   │   ├── index.ts
+│   │   │   ├── it.json
+│   │   │   └── pt.json
+│   │   ├── react.ts
+│   │   └── useI18n.ts
+│   ├── kernel
+│   │   ├── alerts.service.ts
+│   │   ├── patterns.service.ts
+│   │   ├── runtime.ts
+│   │   ├── training.service.ts
+│   │   └── types.ts
+│   ├── math.ts
+│   └── utils.ts
+├── logs
+│   └── scan-report.log
+├── middleware.ts
+├── sanity
+│   ├── config.ts
+│   ├── index.ts
+│   └── schemas
+│       ├── blocks
+│       │   ├── communityModule.ts
+│       │   ├── eqModule.ts
+│       │   ├── heroBlock.ts
+│       │   ├── index.ts
+│       │   ├── markdownBlock.ts
+│       │   └── simpleGridBlock.ts
+│       ├── blocks.ts
+│       ├── index.ts
+│       ├── page.ts
+│       ├── post.ts
+│       └── src
+│           ├── index.ts
+│           └── sanity
+├── types
+│   ├── eq.ts
+│   ├── index.ts
+│   ├── next-auth.d.ts
+│   └── rowi.ts
+├── ui
+│   └── index.ts
+└── utils
+    ├── cn.ts
+    └── index.ts
+
+275 directories, 360 files

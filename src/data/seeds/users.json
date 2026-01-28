@@ -1,0 +1,393 @@
+[
+  {
+    "id": "716929",
+    "name": "Viviana De Ferrari",
+    "email": "Vivianadeferrari@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 102,
+      "C": 105,
+      "G": 109,
+      "EL": 103,
+      "RP": 100,
+      "ACT": 104,
+      "NE": 107,
+      "IM": 100,
+      "OP": 108,
+      "EMP": 113,
+      "NG": 104
+    }
+  },
+  {
+    "id": "716918",
+    "name": "Liliana Rodríguez",
+    "email": "malanga21@hotmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 99,
+      "C": 107,
+      "G": 96,
+      "EL": 92,
+      "RP": 105,
+      "ACT": 92,
+      "NE": 113,
+      "IM": 115,
+      "OP": 107,
+      "EMP": 96,
+      "NG": 96
+    }
+  },
+  {
+    "id": "716260",
+    "name": "Armando Romero",
+    "email": "armando.romero.jaramillo@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 92,
+      "C": 98,
+      "G": 85,
+      "EL": 97,
+      "RP": 86,
+      "ACT": 107,
+      "NE": 95,
+      "IM": 94,
+      "OP": 96,
+      "EMP": 87,
+      "NG": 82
+    }
+  },
+  {
+    "id": "714724",
+    "name": "Armando Romero",
+    "email": "Armando.romero.jaramillo@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 94,
+      "C": 97,
+      "G": 95,
+      "EL": 96,
+      "RP": 91,
+      "ACT": 110,
+      "NE": 93,
+      "IM": 94,
+      "OP": 89,
+      "EMP": 79,
+      "NG": 111
+    }
+  },
+  {
+    "id": "714458",
+    "name": "Otilia Alexandra Esquivia Santoya",
+    "email": "Oti.esquivia@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 110,
+      "C": 120,
+      "G": 119,
+      "EL": 117,
+      "RP": 104,
+      "ACT": 122,
+      "NE": 121,
+      "IM": 118,
+      "OP": 120,
+      "EMP": 120,
+      "NG": 118
+    }
+  },
+  {
+    "id": "714090",
+    "name": "Armando Romero",
+    "email": "Armando.Romero.jaramillo@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 86,
+      "C": 92,
+      "G": 79,
+      "EL": 87,
+      "RP": 86,
+      "ACT": 99,
+      "NE": 84,
+      "IM": 94,
+      "OP": 90,
+      "EMP": 75,
+      "NG": 83
+    }
+  },
+  {
+    "id": "714089",
+    "name": "Carolina Gulfo Guerra",
+    "email": "Carolinagulfo@hotmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 106,
+      "C": 98,
+      "G": 98,
+      "EL": 116,
+      "RP": 95,
+      "ACT": 124,
+      "NE": 80,
+      "IM": 97,
+      "OP": 90,
+      "EMP": 120,
+      "NG": 75
+    }
+  },
+  {
+    "id": "713993",
+    "name": "Manuela Jiménez Serna",
+    "email": "majise@alkimistika.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 116,
+      "C": 115,
+      "G": 111,
+      "EL": 115,
+      "RP": 116,
+      "ACT": 122,
+      "NE": 114,
+      "IM": 109,
+      "OP": 117,
+      "EMP": 107,
+      "NG": 116
+    }
+  },
+  {
+    "id": "713987",
+    "name": "Jesus Martinez",
+    "email": "jesus@micoachlatam.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 77,
+      "C": 93,
+      "G": 113,
+      "EL": 75,
+      "RP": 80,
+      "ACT": 103,
+      "NE": 98,
+      "IM": 77,
+      "OP": 96,
+      "EMP": 108,
+      "NG": 118
+    }
+  },
+  {
+    "id": "713745",
+    "name": "Sylvia Vergara",
+    "email": "sylviavergarap@gmail.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 91,
+      "C": 91,
+      "G": 88,
+      "EL": 87,
+      "RP": 95,
+      "ACT": 109,
+      "NE": 96,
+      "IM": 75,
+      "OP": 83,
+      "EMP": 100,
+      "NG": 75
+    }
+  },
+  {
+    "id": "713320",
+    "name": "Yiseth Caicedo",
+    "email": "yiseth@alkimistika.com",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 107,
+      "C": 110,
+      "G": 97,
+      "EL": 95,
+      "RP": 118,
+      "ACT": 110,
+      "NE": 108,
+      "IM": 103,
+      "OP": 120,
+      "EMP": 105,
+      "NG": 90
+    }
+  },
+  {
+    "id": "712338",
+    "name": "Arturo Muñoz",
+    "email": "arturo.munoz@impakto.com.ec",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 89,
+      "C": 95,
+      "G": 81,
+      "EL": 91,
+      "RP": 86,
+      "ACT": 96,
+      "NE": 107,
+      "IM": 95,
+      "OP": 82,
+      "EMP": 75,
+      "NG": 88
+    }
+  },
+  {
+    "id": "710516",
+    "name": "Cecilia Pibzón",
+    "email": "ceciliapinzon@b2grow.com.co",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 91,
+      "C": 97,
+      "G": 97,
+      "EL": 91,
+      "RP": 90,
+      "ACT": 107,
+      "NE": 100,
+      "IM": 99,
+      "OP": 82,
+      "EMP": 92,
+      "NG": 103
+    }
+  },
+  {
+    "id": "710231",
+    "name": "Ana Maria Alvarez",
+    "email": "anamariaalvarez@b2grow.com.co",
+    "owner": "Vergara Six Seconds Natalia",
+    "locale": "es",
+    "eq": {
+      "K": 91,
+      "C": 116,
+      "G": 115,
+      "EL": 96,
+      "RP": 86,
+      "ACT": 124,
+      "NE": 108,
+      "IM": 118,
+      "OP": 114,
+      "EMP": 112,
+      "NG": 118
+    }
+  },
+  {
+    "id": "743154",
+    "name": "Liliana RodrígueZ Vázquez",
+    "email": "liliana.rodriguez@6seconds.org",
+    "owner": "Gonzalez Eduardo",
+    "locale": "es",
+    "eq": {
+      "K": 84,
+      "C": 85,
+      "G": 83,
+      "EL": 83,
+      "RP": 85,
+      "ACT": 113,
+      "NE": 79,
+      "IM": 75,
+      "OP": 75,
+      "EMP": 83,
+      "NG": 83
+    }
+  },
+  {
+    "id": "743150",
+    "name": "Andréia DELPRA",
+    "email": "andreia@6seconds.org",
+    "owner": "Gonzalez Eduardo",
+    "locale": "es",
+    "eq": {
+      "K": 108,
+      "C": 87,
+      "G": 85,
+      "EL": 108,
+      "RP": 109,
+      "ACT": 113,
+      "NE": 78,
+      "IM": 75,
+      "OP": 81,
+      "EMP": 80,
+      "NG": 91
+    }
+  },
+  {
+    "id": "743145",
+    "name": "Eduardo Gonzalez",
+    "email": "eduardo.gonzalez@6seconds.org",
+    "owner": "Gonzalez Eduardo",
+    "locale": "es",
+    "eq": {
+      "K": 115,
+      "C": 117,
+      "G": 105,
+      "EL": 122,
+      "RP": 108,
+      "ACT": 124,
+      "NE": 124,
+      "IM": 104,
+      "OP": 114,
+      "EMP": 93,
+      "NG": 118
+    }
+  },
+  {
+    "id": "u1",
+    "name": "Edu",
+    "country": "Peru",
+    "jobrole": "Manager",
+    "sector": "Tech",
+    "sei": {
+      "K": 70,
+      "C": 55,
+      "G": 65,
+      "EL": 60,
+      "RP": 40,
+      "ACT": 55,
+      "NE": 62,
+      "IM": 70,
+      "OP": 66,
+      "EMP": 58,
+      "NG": 72
+    },
+    "eq": {
+      "K": 70,
+      "C": 55,
+      "G": 65,
+      "EL": 60,
+      "RP": 40,
+      "ACT": 55,
+      "NE": 62,
+      "IM": 70,
+      "OP": 66,
+      "EMP": 58,
+      "NG": 72
+    },
+    "history": [
+      {
+        "date": "2024-01",
+        "sei": { "K": 66, "C": 52, "G": 63, "EL": 58, "RP": 42, "ACT": 53, "NE": 60, "IM": 68, "OP": 64, "EMP": 57, "NG": 70 }
+      },
+      {
+        "date": "2024-06",
+        "sei": { "K": 69, "C": 54, "G": 64, "EL": 59, "RP": 41, "ACT": 54, "NE": 61, "IM": 69, "OP": 65, "EMP": 58, "NG": 71 }
+      },
+      {
+        "date": "2025-01",
+        "sei": { "K": 70, "C": 55, "G": 65, "EL": 60, "RP": 40, "ACT": 55, "NE": 62, "IM": 70, "OP": 66, "EMP": 58, "NG": 72 }
+      }
+    ],
+    "feedback": [
+      { "rater": "Peer A", "sei": { "K": 72, "C": 58, "G": 66, "EL": 63, "RP": 45, "ACT": 58, "NE": 64, "IM": 71, "OP": 68, "EMP": 60, "NG": 73 } },
+      { "rater": "Manager", "sei": { "K": 68, "C": 57, "G": 64, "EL": 61, "RP": 43, "ACT": 57, "NE": 63, "IM": 70, "OP": 67, "EMP": 59, "NG": 72 } }
+    ]
+  }
+]

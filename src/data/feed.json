@@ -1,0 +1,24 @@
+[
+  {
+    "id": "073b2ae8-8310-4f12-967f-b7c9b5420871",
+    "author": {
+      "email": "admin@rowisia.com",
+      "username": "admin",
+      "name": "Rowi Sia",
+      "image": "https://lh3.googleusercontent.com/a/ACg8ocLtQoabuPlrfpB6A6f_dt2ipS_6mQ0dd5MBYkphCYDwhBYgnw=s96-c"
+    },
+    "content": "Primer post de prueba ",
+    "createdAt": "2025-09-03T17:18:53.677Z"
+  },
+  {
+    "id": "8a0265c4-4095-400b-aac3-fa0d6adef992",
+    "author": {
+      "email": "admin@rowisia.com",
+      "username": "admin",
+      "name": "Rowi Sia",
+      "image": "https://lh3.googleusercontent.com/a/ACg8ocLtQoabuPlrfpB6A6f_dt2ipS_6mQ0dd5MBYkphCYDwhBYgnw=s96-c"
+    },
+    "content": "Prueba 2 ",
+    "createdAt": "2025-09-03T17:25:34.494Z"
+  }
+]

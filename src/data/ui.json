@@ -1,0 +1,13 @@
+{
+  "navigation": [
+    { "label": "Dashboard", "href": "/dashboard", "visible": true },
+    { "label": "Community", "href": "/community", "visible": true },
+    { "label": "Feed", "href": "/feed", "visible": true },
+    { "label": "Settings", "href": "/settings/profile", "visible": true }
+  ],
+  "buttons": [
+    { "id": "primary", "text": "Primary", "href": "/feed", "style": "button button--primary" },
+    { "id": "secondary", "text": "Secondary", "href": "/community", "style": "button" }
+  ],
+  "updatedAt": ""
+}

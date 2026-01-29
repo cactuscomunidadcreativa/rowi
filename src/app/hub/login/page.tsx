@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getSSOLoginUrl } from "@/lib/six-seconds/sso";
 
 // =========================================================
@@ -32,6 +33,14 @@ const T: Record<string, Record<string, string>> = {
   or: {
     es: "o",
     en: "or",
+  },
+  noAccount: {
+    es: "¿No tienes cuenta?",
+    en: "Don't have an account?",
+  },
+  register: {
+    es: "Regístrate gratis",
+    en: "Sign up for free",
   },
   // Error messages
   error_sso_no_token: {
@@ -111,35 +120,7 @@ function HubLoginContent() {
           </div>
         )}
 
-        {/* Six Seconds SSO Button - Primary */}
-        <button
-          onClick={handleSixSecondsLogin}
-          className="w-full py-3 px-4 bg-gradient-to-r from-[#f7941d] to-[#f15a29] hover:from-[#f9a53d] hover:to-[#f36f42] text-white rounded-lg font-medium transition-all flex flex-col items-center justify-center gap-1 shadow-lg"
-        >
-          <span className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-            {T.sixSecondsLogin[lang]}
-          </span>
-          <span className="text-xs opacity-80">{T.sixSecondsDesc[lang]}</span>
-        </button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/20" />
-          <span className="text-sm opacity-60">{T.or[lang]}</span>
-          <div className="flex-1 h-px bg-white/20" />
-        </div>
-
-        {/* Other providers (Google, etc.) */}
+        {/* Google Login - Primary method for all users */}
         <div className="space-y-3">
           {Object.values(providers)
             .filter((p: any) => p.id !== "credentials")
@@ -147,10 +128,10 @@ function HubLoginContent() {
               <button
                 key={provider.id}
                 onClick={() => signIn(provider.id, { callbackUrl })}
-                className="w-full py-3 px-4 bg-white/90 hover:bg-white text-gray-900 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 px-4 bg-white hover:bg-gray-50 text-gray-900 rounded-lg font-semibold transition-all flex items-center justify-center gap-3 shadow-lg text-lg"
               >
                 {provider.name === "Google" && (
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -172,6 +153,47 @@ function HubLoginContent() {
                 {T.loginWith[lang]} {provider.name}
               </button>
             ))}
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-white/20" />
+          <span className="text-sm opacity-60">{T.or[lang]}</span>
+          <div className="flex-1 h-px bg-white/20" />
+        </div>
+
+        {/* Six Seconds SSO Button - Secondary for SEI practitioners */}
+        <button
+          onClick={handleSixSecondsLogin}
+          className="w-full py-3 px-4 bg-gradient-to-r from-[#f7941d] to-[#f15a29] hover:from-[#f9a53d] hover:to-[#f36f42] text-white rounded-lg font-medium transition-all flex flex-col items-center justify-center gap-1"
+        >
+          <span className="flex items-center gap-2">
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            {T.sixSecondsLogin[lang]}
+          </span>
+          <span className="text-xs opacity-80">{T.sixSecondsDesc[lang]}</span>
+        </button>
+
+        {/* Register Link */}
+        <div className="pt-4 text-center">
+          <p className="text-sm opacity-80">
+            {T.noAccount[lang]}{" "}
+            <Link
+              href="/register"
+              className="font-semibold underline hover:text-white/90 transition-colors"
+            >
+              {T.register[lang]}
+            </Link>
+          </p>
         </div>
 
         {/* Language toggle */}

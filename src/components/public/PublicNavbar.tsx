@@ -118,10 +118,10 @@ export default function PublicNavbar() {
           </button>
 
           {/* Auth Buttons */}
-          <Link href="/login" className="hidden sm:block px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] transition-colors">
+          <Link href="/signin" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] transition-colors">
             {t("nav.login", "Iniciar sesión")}
           </Link>
-          <Link href="/register" className="rowi-btn-primary px-4 py-2 text-sm">
+          <Link href="/register" className="rowi-btn-primary px-4 py-2 text-sm hidden sm:block">
             {t("nav.register", "Comenzar gratis")}
           </Link>
 

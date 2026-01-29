@@ -4,14 +4,18 @@ import { createContext, useContext, useEffect, useState, useRef } from "react";
 // Importar traducciones locales como fallback
 import esLocale from "./locales/es.json";
 import enLocale from "./locales/en.json";
+import ptLocale from "./locales/pt.json";
+import itLocale from "./locales/it.json";
 
-type Lang = "es" | "en";
+type Lang = "es" | "en" | "pt" | "it";
 type Translations = Record<string, string>;
 
 // Diccionarios locales como fallback
 const localDicts: Record<Lang, Translations> = {
   es: esLocale as Translations,
   en: enLocale as Translations,
+  pt: ptLocale as Translations,
+  it: itLocale as Translations,
 };
 
 type I18nContextType = {
@@ -43,8 +47,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
     const stored = localStorage.getItem("rowi.lang") as Lang | null;
     const browserLang = navigator.language.slice(0, 2);
-    const detectedLang = stored || (browserLang === "en" ? "en" : "es");
-    const safe: Lang = detectedLang === "en" ? "en" : "es";
+    const supportedLangs: Lang[] = ["es", "en", "pt", "it"];
+    const detectedLang = stored || (supportedLangs.includes(browserLang as Lang) ? browserLang : "es");
+    const safe: Lang = supportedLangs.includes(detectedLang as Lang) ? (detectedLang as Lang) : "es";
 
     // Aplicar inmediatamente el diccionario local
     setDict(localDicts[safe]);

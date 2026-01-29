@@ -5,10 +5,14 @@ export type Dict = Record<string, string>;
 // Importar traducciones locales como fallback
 import esLocale from "./locales/es.json";
 import enLocale from "./locales/en.json";
+import ptLocale from "./locales/pt.json";
+import itLocale from "./locales/it.json";
 
 const localDicts: Record<string, Dict> = {
   es: esLocale as Dict,
   en: enLocale as Dict,
+  pt: ptLocale as Dict,
+  it: itLocale as Dict,
 };
 
 /**
@@ -102,7 +106,7 @@ export function useI18n(initialLang?: string) {
     if (dict[key]) return dict[key];
 
     // Buscar en otros idiomas como fallback
-    const fallbackLangs = lang === "es" ? ["en"] : ["es", "en"];
+    const fallbackLangs = lang === "es" ? ["en", "pt", "it"] : ["es", "en", "pt", "it"];
     for (const l of fallbackLangs) {
       const fallbackDict = localDicts[l];
       if (fallbackDict && fallbackDict[key]) return fallbackDict[key];

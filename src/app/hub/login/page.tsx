@@ -216,7 +216,7 @@ function HubLoginContent() {
         </div>
 
         {/* Language toggle */}
-        <div className="pt-2 flex justify-center gap-2">
+        <div className="pt-2 flex justify-center gap-2 flex-wrap">
           <button
             onClick={() => setLang("es")}
             className={`px-3 py-1 rounded text-sm ${
@@ -232,6 +232,22 @@ function HubLoginContent() {
             }`}
           >
             🇺🇸 EN
+          </button>
+          <button
+            onClick={() => setLang("pt")}
+            className={`px-3 py-1 rounded text-sm ${
+              lang === "pt" ? "bg-white/20" : "opacity-60 hover:opacity-80"
+            }`}
+          >
+            🇧🇷 PT
+          </button>
+          <button
+            onClick={() => setLang("it")}
+            className={`px-3 py-1 rounded text-sm ${
+              lang === "it" ? "bg-white/20" : "opacity-60 hover:opacity-80"
+            }`}
+          >
+            🇮🇹 IT
           </button>
         </div>
       </div>

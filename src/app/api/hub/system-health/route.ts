@@ -1,104 +1,109 @@
-// src/app/hub/admin/system-health/api/route.ts
+// src/app/api/hub/system-health/route.ts
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
-import { execSync } from "child_process";
+import { prisma } from "@/core/prisma";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * 🩺 Rowi System Health Check API
  *
- * - Lee el último log de verificación (.backups/verify-health-YYYY-MM-DD.json)
- * - Si no existe o está desactualizado (día distinto), ejecuta el script verify-rowi-health.ts una sola vez
- * - Devuelve los resultados en JSON listos para la UI del panel de monitoreo
+ * Verifica el estado de los componentes principales del sistema
+ * sin ejecutar scripts externos (compatible con Vercel)
  */
 
 export async function GET() {
+  const timestamp = new Date().toISOString();
+  const modules: Record<string, "ok" | "warn" | "fail"> = {};
+  const details: Record<string, string> = {};
+
   try {
-    const projectRoot = path.resolve(process.cwd());
-    const scriptPath = path.join(projectRoot, "scripts", "verify-rowi-health.ts");
-    const backupDir = path.join(projectRoot, ".backups");
-
-    // 📁 Asegurar que el directorio existe
-    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
-
-    // 🧩 Nombre del archivo log de hoy
-    const today = new Date().toISOString().slice(0, 10);
-    const logFile = path.join(backupDir, `verify-health-${today}.json`);
-
-    // ✅ Si ya existe un log de hoy, lo usamos (cache diario)
-    if (fs.existsSync(logFile)) {
-      const cached = JSON.parse(fs.readFileSync(logFile, "utf-8"));
-      return NextResponse.json({ ...cached, cached: true });
-    }
-
-    // ⚙️ Ejecutar el script SOLO si no hay log actual
-    if (!fs.existsSync(scriptPath)) {
-      return NextResponse.json(
-        { ok: false, error: `❌ Script no encontrado en ${scriptPath}` },
-        { status: 404 }
-      );
-    }
-
-    console.log("🩺 Ejecutando verificación de salud completa (no cacheada)...");
-
-    let stdout = "";
-    let stderr = "";
+    // 1. 🗄️ Verificar Prisma/Database
     try {
-      // Ejecuta en modo síncrono sin interferir con Next.js
-      stdout = execSync(`npx tsx ${scriptPath}`, {
-        cwd: projectRoot,
-        encoding: "utf-8",
-        stdio: "pipe",
-        timeout: 30000, // 30 segundos máximo
-      });
-    } catch (err: any) {
-      stderr = err.stderr?.toString() || err.message || "Error desconocido al ejecutar script";
+      const userCount = await prisma.user.count();
+      const planCount = await prisma.plan.count();
+      const tenantCount = await prisma.tenant.count();
+
+      modules.prisma = "ok";
+      details.prisma = `✅ DB conectada: ${userCount} usuarios, ${planCount} planes, ${tenantCount} tenants`;
+    } catch (dbErr: any) {
+      modules.prisma = "fail";
+      details.prisma = `❌ Error DB: ${dbErr.message}`;
     }
 
-    // 🧠 Analizar módulos del reporte
-    const modules: Record<string, "ok" | "warn" | "fail"> = {};
-    const find = (pattern: RegExp) => pattern.test(stdout + stderr);
+    // 2. 🌐 Verificar i18n (traducciones básicas)
+    try {
+      const translationCount = await prisma.translation.count();
+      modules.i18n = translationCount > 0 ? "ok" : "warn";
+      details.i18n = translationCount > 0
+        ? `✅ ${translationCount} traducciones en DB`
+        : `⚠️ Sin traducciones en DB (usando archivos locales)`;
+    } catch {
+      modules.i18n = "warn";
+      details.i18n = "⚠️ Tabla de traducciones no disponible (usando archivos)";
+    }
 
-    modules.typescript = find(/TypeScript.*OK|SUCCESS|PASSED/i)
-      ? "ok"
-      : find(/TypeScript.*WARN/i)
-      ? "warn"
-      : "fail";
+    // 3. 🔐 Verificar configuración de Auth
+    const hasGoogleId = !!process.env.GOOGLE_CLIENT_ID;
+    const hasGoogleSecret = !!process.env.GOOGLE_CLIENT_SECRET;
+    const hasNextAuthSecret = !!process.env.NEXTAUTH_SECRET;
 
-    modules.prisma = find(/Prisma.*OK|modelo Translation presente/i) ? "ok" : "fail";
-    modules.i18n = find(/i18n.*OK/i) ? "ok" : "warn";
+    if (hasGoogleId && hasGoogleSecret && hasNextAuthSecret) {
+      modules.auth = "ok";
+      details.auth = "✅ OAuth configurado correctamente";
+    } else {
+      modules.auth = "fail";
+      details.auth = `❌ Faltan variables: ${!hasGoogleId ? "GOOGLE_CLIENT_ID " : ""}${!hasGoogleSecret ? "GOOGLE_CLIENT_SECRET " : ""}${!hasNextAuthSecret ? "NEXTAUTH_SECRET" : ""}`;
+    }
 
-    modules.api = find(/API routes.*OK/i)
-      ? "ok"
-      : find(/Faltan.*rutas/i)
-      ? "warn"
-      : "fail";
+    // 4. 🤖 Verificar OpenAI API Key
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    modules.ai = hasOpenAI ? "ok" : "warn";
+    details.ai = hasOpenAI ? "✅ OpenAI API configurada" : "⚠️ OPENAI_API_KEY no configurada";
 
-    modules.build = find(/Next\.js build.*OK|successfully/i) ? "ok" : "fail";
+    // 5. 📊 Verificar datos básicos
+    try {
+      const rowiVerseCount = await prisma.rowiVerse.count();
+      const agentCount = await prisma.agentConfig.count();
 
-    // 🧾 Estructura del resultado
-    const data = {
-      ok: Object.values(modules).every((v) => v === "ok"),
-      timestamp: new Date().toISOString(),
+      if (rowiVerseCount > 0 && agentCount > 0) {
+        modules.data = "ok";
+        details.data = `✅ ${rowiVerseCount} RowiVerses, ${agentCount} agentes`;
+      } else {
+        modules.data = "warn";
+        details.data = `⚠️ Datos base incompletos: ${rowiVerseCount} RowiVerses, ${agentCount} agentes`;
+      }
+    } catch {
+      modules.data = "warn";
+      details.data = "⚠️ No se pudieron verificar datos base";
+    }
+
+    // 6. 🚀 Estado general (si llegamos aquí, el build está OK)
+    modules.build = "ok";
+    details.build = "✅ Aplicación desplegada correctamente";
+
+    // Calcular estado general
+    const allOk = Object.values(modules).every((v) => v === "ok");
+    const hasFails = Object.values(modules).some((v) => v === "fail");
+
+    return NextResponse.json({
+      ok: allOk,
+      status: hasFails ? "error" : allOk ? "healthy" : "degraded",
+      timestamp,
       modules,
-      output: stdout,
-      errors: stderr,
-      cached: false,
-    };
-
-    // 💾 Guardar el nuevo log
-    fs.writeFileSync(logFile, JSON.stringify(data, null, 2), "utf-8");
-
-    return NextResponse.json(data, { status: 200 });
+      details,
+      environment: process.env.VERCEL_ENV || process.env.NODE_ENV || "unknown",
+    });
   } catch (err: any) {
-    console.error("❌ Error ejecutando verificación de salud:", err);
+    console.error("❌ Error en system-health:", err);
     return NextResponse.json(
       {
         ok: false,
-        error: err.message || "Error inesperado durante la verificación",
-        timestamp: new Date().toISOString(),
+        status: "error",
+        error: err.message || "Error inesperado",
+        timestamp,
+        modules,
+        details,
       },
       { status: 500 }
     );

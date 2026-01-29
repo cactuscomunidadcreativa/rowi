@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import CMSPageRenderer from "@/components/public/CMSPageRenderer";
 import { HeroSection, FeaturesSection, StatsSection, CTASection } from "@/components/public/sections";
 import RowiEvolution from "@/components/public/RowiEvolution";
+import PublicWorldMap from "@/components/public/PublicWorldMap";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useI18n } from "@/lib/i18n/useI18n";
@@ -116,6 +117,9 @@ function FallbackHomePage() {
           }}
           config={{ layout: "gradient", columns: 4 }}
         />
+
+        {/* Global Map */}
+        <PublicWorldMap />
 
         {/* Evolution */}
         <RowiEvolution />

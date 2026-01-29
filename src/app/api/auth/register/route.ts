@@ -171,6 +171,67 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // =========================================================
+    // 🌐 Auto-vincular a RowiVerse (comunidad global)
+    // =========================================================
+    try {
+      // Buscar el RowiVerse principal
+      const rowiverse = await prisma.rowiVerse.findFirst({
+        where: { slug: "rowiverse" },
+      });
+
+      if (rowiverse) {
+        // Crear RowiVerseUser (identidad global)
+        const rowiverseUser = await prisma.rowiVerseUser.create({
+          data: {
+            email: normalizedEmail,
+            name: name || null,
+            country: country || "NONE",
+            language,
+            verified: false,
+            active: true,
+            rowiVerseId: rowiverse.id,
+            userId: user.id,
+          },
+        });
+
+        // Vincular usuario con RowiVerseUser
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { rowiverseId: rowiverseUser.id },
+        });
+
+        console.log(`✅ Usuario ${normalizedEmail} vinculado a RowiVerse`);
+      }
+
+      // Buscar tenant principal "rowi-master" para dar acceso básico
+      const rowiTenant = await prisma.tenant.findFirst({
+        where: { slug: "rowi-master" },
+      });
+
+      if (rowiTenant && !user.primaryTenantId) {
+        // Crear membership al tenant principal
+        await prisma.membership.create({
+          data: {
+            userId: user.id,
+            tenantId: rowiTenant.id,
+            role: "VIEWER",
+          },
+        });
+
+        // Asignar como primaryTenant
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { primaryTenantId: rowiTenant.id },
+        });
+
+        console.log(`✅ Usuario ${normalizedEmail} vinculado a tenant rowi-master`);
+      }
+    } catch (rvError) {
+      // No fallar el registro si hay error vinculando a RowiVerse
+      console.warn("⚠️ Error vinculando a RowiVerse (no crítico):", rvError);
+    }
+
     return NextResponse.json({
       ok: true,
       user: {

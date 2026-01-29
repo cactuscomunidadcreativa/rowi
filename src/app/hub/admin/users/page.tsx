@@ -56,7 +56,17 @@ interface UserData {
   planId?: string;
   memberships?: any[];
   orgMemberships?: any[];
+  hubMemberships?: any[];
   hubs?: any[];
+  // New hierarchy fields
+  organizationId?: string;
+  superHubId?: string;
+  hubId?: string;
+  // SEI data
+  eqSnapshots?: any[];
+  // Metadata
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function UsersPage() {
@@ -89,7 +99,14 @@ export default function UsersPage() {
         fetch("/api/hub/superhubs").then((r) => r.json()),
       ]);
 
-      setUsers(Array.isArray(usr.users) ? usr.users : []);
+      // Process users to map hubMemberships to hubs for easier access
+      const processedUsers = (Array.isArray(usr.users) ? usr.users : []).map((u: any) => ({
+        ...u,
+        hubs: u.hubMemberships?.map((hm: any) => hm.hub) || [],
+        hubId: u.hubMemberships?.[0]?.hubId || "",
+        organizationId: u.orgMemberships?.[0]?.organizationId || "",
+      }));
+      setUsers(processedUsers);
       setTenants(ten.tenants || []);
       setPlans(pln.plans || []);
       setOrgs(org.organizations || []);
@@ -446,9 +463,9 @@ function UserForm({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-end p-4">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[var(--rowi-surface)] rounded-xl shadow-xl border border-[var(--rowi-border)]">
+      <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-[var(--rowi-surface)] rounded-xl shadow-xl border border-[var(--rowi-border)]">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-[var(--rowi-border)] bg-[var(--rowi-surface)]">
+        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-[var(--rowi-border)] bg-[var(--rowi-surface)] z-10">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
               <Users className="w-4 h-4 text-white" />
@@ -457,6 +474,9 @@ function UserForm({
               <h2 className="text-sm font-semibold text-[var(--rowi-foreground)]">
                 {mode === "create" ? t("admin.users.new") : t("admin.users.edit")}
               </h2>
+              {mode === "edit" && user.email && (
+                <p className="text-xs text-[var(--rowi-muted)]">{user.email}</p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -465,94 +485,309 @@ function UserForm({
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-3">
-            <AdminInput
-              placeholderKey="admin.users.name"
-              value={user.name || ""}
-              onChange={(v) => setUser({ ...user, name: v })}
-            />
-            <AdminInput
-              placeholderKey="admin.users.email"
-              value={user.email || ""}
-              onChange={(v) => setUser({ ...user, email: v })}
-            />
+        <div className="p-4 space-y-5">
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 1: Basic Info
+          ═══════════════════════════════════════════════════════════ */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+              <Users className="w-3.5 h-3.5" />
+              {t("admin.users.basicInfo", "Información básica")}
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.name", "Nombre")}</label>
+                <AdminInput
+                  placeholderKey="admin.users.name"
+                  value={user.name || ""}
+                  onChange={(v) => setUser({ ...user, name: v })}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.email", "Email")}</label>
+                <AdminInput
+                  placeholderKey="admin.users.email"
+                  value={user.email || ""}
+                  onChange={(v) => setUser({ ...user, email: v })}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Role & Plan */}
-          <div className="grid grid-cols-2 gap-3">
-            <AdminSelect
-              value={user.organizationRole || "VIEWER"}
-              onChange={(v) => setUser({ ...user, organizationRole: v })}
-              options={[
-                { value: "SUPERADMIN", label: "Super Admin" },
-                { value: "ADMIN", label: "Admin" },
-                { value: "MANAGER", label: "Manager" },
-                { value: "EDITOR", label: "Editor" },
-                { value: "VIEWER", label: "Viewer" },
-              ]}
-            />
-            <AdminSelect
-              value={user.planId || ""}
-              onChange={(v) => setUser({ ...user, planId: v })}
-              options={[
-                { value: "", label: t("admin.users.noPlan") },
-                ...plans.map((p) => ({ value: p.id, label: p.name })),
-              ]}
-            />
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 2: Role & Plan
+          ═══════════════════════════════════════════════════════════ */}
+          <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+            <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              {t("admin.users.roleAndPlan", "Rol y Plan")}
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.role", "Rol global")}</label>
+                <AdminSelect
+                  value={user.organizationRole || "VIEWER"}
+                  onChange={(v) => setUser({ ...user, organizationRole: v })}
+                  options={[
+                    { value: "SUPERADMIN", label: "Super Admin" },
+                    { value: "ADMIN", label: "Admin" },
+                    { value: "MANAGER", label: "Manager" },
+                    { value: "EDITOR", label: "Editor" },
+                    { value: "VIEWER", label: "Viewer" },
+                  ]}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.plan", "Plan")}</label>
+                <AdminSelect
+                  value={user.planId || ""}
+                  onChange={(v) => setUser({ ...user, planId: v })}
+                  options={[
+                    { value: "", label: t("admin.users.noPlan", "Sin plan") },
+                    ...plans.map((p) => ({ value: p.id, label: p.name })),
+                  ]}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Hierarchy */}
-          <div className="border-t border-[var(--rowi-border)] pt-4 space-y-3">
-            <h3 className="text-xs font-semibold text-[var(--rowi-foreground)]">{t("admin.users.hierarchy")}</h3>
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 3: Hierarchy (Tenant, Organization, Hub, SuperHub)
+          ═══════════════════════════════════════════════════════════ */}
+          <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+            <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5" />
+              {t("admin.users.hierarchy", "Jerarquía")}
+            </h3>
 
-            <AdminSelect
-              value={user.primaryTenantId || ""}
-              onChange={(v) => setUser({ ...user, primaryTenantId: v })}
-              options={[
-                { value: "", label: t("admin.users.noTenant") },
-                ...tenants.map((t: any) => ({ value: t.id, label: t.name })),
-              ]}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              {/* Primary Tenant */}
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.tenant", "Tenant principal")}</label>
+                <AdminSelect
+                  value={user.primaryTenantId || ""}
+                  onChange={(v) => setUser({ ...user, primaryTenantId: v })}
+                  options={[
+                    { value: "", label: t("admin.users.noTenant", "Sin tenant") },
+                    ...tenants.map((t: any) => ({ value: t.id, label: t.name })),
+                  ]}
+                />
+              </div>
 
-            {user.hubs?.[0]?.superHub && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-[var(--rowi-background)] rounded text-xs">
-                <span className="text-[var(--rowi-muted)]">SuperHub:</span>
-                <span className="font-medium">{user.hubs[0].superHub.name}</span>
+              {/* Organization */}
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.organization", "Organización")}</label>
+                <AdminSelect
+                  value={user.organizationId || ""}
+                  onChange={(v) => setUser({ ...user, organizationId: v })}
+                  options={[
+                    { value: "", label: t("admin.users.noOrg", "Sin organización") },
+                    ...orgs.map((o: any) => ({ value: o.id, label: o.name })),
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* SuperHub */}
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.superHub", "SuperHub")}</label>
+                <AdminSelect
+                  value={user.superHubId || ""}
+                  onChange={(v) => setUser({ ...user, superHubId: v })}
+                  options={[
+                    { value: "", label: t("admin.users.noSuperHub", "Sin SuperHub") },
+                    ...superHubs.map((sh: any) => ({ value: sh.id, label: sh.name })),
+                  ]}
+                />
+              </div>
+
+              {/* Hub */}
+              <div>
+                <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("admin.users.hub", "Hub")}</label>
+                <AdminSelect
+                  value={user.hubId || ""}
+                  onChange={(v) => setUser({ ...user, hubId: v })}
+                  options={[
+                    { value: "", label: t("admin.users.noHub", "Sin Hub") },
+                    ...hubs.map((h: any) => ({ value: h.id, label: h.name })),
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Current assignments (read-only display) */}
+            {mode === "edit" && (user.hubs?.length > 0 || user.orgMemberships?.length > 0) && (
+              <div className="mt-2 p-3 bg-[var(--rowi-background)] rounded-lg space-y-2">
+                <p className="text-xs font-medium text-[var(--rowi-muted)]">{t("admin.users.currentAssignments", "Asignaciones actuales:")}</p>
+                {user.hubs?.map((hub: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <span className="text-[var(--rowi-muted)]">Hub:</span>
+                    <span className="font-medium text-[var(--rowi-foreground)]">{hub.name}</span>
+                    {hub.superHub && (
+                      <>
+                        <span className="text-[var(--rowi-muted)]">→</span>
+                        <span className="text-[var(--rowi-muted)]">SuperHub:</span>
+                        <span className="font-medium text-[var(--rowi-foreground)]">{hub.superHub.name}</span>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {user.orgMemberships?.map((om: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <span className="text-[var(--rowi-muted)]">Org:</span>
+                    <span className="font-medium text-[var(--rowi-foreground)]">{om.organization?.name || om.organizationId}</span>
+                    <AdminBadge variant="neutral" className="text-[10px]">{om.role}</AdminBadge>
+                  </div>
+                ))}
               </div>
             )}
+          </div>
 
-            {user.hubs?.[0] && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-[var(--rowi-background)] rounded text-xs">
-                <span className="text-[var(--rowi-muted)]">Hub:</span>
-                <span className="font-medium">{user.hubs[0].name}</span>
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 4: Features & Status
+          ═══════════════════════════════════════════════════════════ */}
+          <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+            <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+              <Cpu className="w-3.5 h-3.5" />
+              {t("admin.users.features", "Funcionalidades")}
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* AI Enabled */}
+              <label className="flex items-center gap-3 p-3 bg-[var(--rowi-background)] rounded-lg cursor-pointer hover:bg-[var(--rowi-background)]/80 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={!!user.allowAI}
+                  onChange={(e) => setUser({ ...user, allowAI: e.target.checked })}
+                  className="rounded border-[var(--rowi-border)] w-4 h-4"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[var(--rowi-primary)]" />
+                    <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+                      {t("admin.users.aiEnabled", "IA Habilitada")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--rowi-muted)] mt-0.5">
+                    {t("admin.users.aiEnabledDesc", "Acceso a funciones de inteligencia artificial")}
+                  </p>
+                </div>
+              </label>
+
+              {/* Active */}
+              <label className="flex items-center gap-3 p-3 bg-[var(--rowi-background)] rounded-lg cursor-pointer hover:bg-[var(--rowi-background)]/80 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={!!user.active}
+                  onChange={(e) => setUser({ ...user, active: e.target.checked })}
+                  className="rounded border-[var(--rowi-border)] w-4 h-4"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+                      {t("admin.common.active", "Activo")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--rowi-muted)] mt-0.5">
+                    {t("admin.users.activeDesc", "El usuario puede acceder a la plataforma")}
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 5: SEI Data (only in edit mode)
+          ═══════════════════════════════════════════════════════════ */}
+          {mode === "edit" && user.eqSnapshots?.length > 0 && (
+            <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+              <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                {t("admin.users.seiData", "Datos SEI")}
+              </h3>
+              <div className="p-3 bg-[var(--rowi-background)] rounded-lg">
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <span className="text-[var(--rowi-muted)]">Snapshots:</span>
+                    <span className="ml-1 font-medium">{user.eqSnapshots.length}</span>
+                  </div>
+                  {user.eqSnapshots[0] && (
+                    <>
+                      <div>
+                        <span className="text-[var(--rowi-muted)]">K:</span>
+                        <span className="ml-1 font-medium">{user.eqSnapshots[0].K || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--rowi-muted)]">C:</span>
+                        <span className="ml-1 font-medium">{user.eqSnapshots[0].C || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--rowi-muted)]">G:</span>
+                        <span className="ml-1 font-medium">{user.eqSnapshots[0].G || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--rowi-muted)]">Overall:</span>
+                        <span className="ml-1 font-medium">{user.eqSnapshots[0].overall4 || "—"}</span>
+                      </div>
+                      <div>
+                        <span className="text-[var(--rowi-muted)]">Brain Style:</span>
+                        <span className="ml-1 font-medium">{user.eqSnapshots[0].brainStyle || "—"}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Toggles */}
-          <div className="flex items-center justify-between border-t border-[var(--rowi-border)] pt-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!!user.allowAI}
-                onChange={(e) => setUser({ ...user, allowAI: e.target.checked })}
-                className="rounded border-[var(--rowi-border)]"
-              />
-              <Sparkles className="w-4 h-4 text-[var(--rowi-primary)]" />
-              {t("admin.users.aiEnabled")}
-            </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={!!user.active}
-                onChange={(e) => setUser({ ...user, active: e.target.checked })}
-                className="rounded border-[var(--rowi-border)]"
-              />
-              {t("admin.common.active")}
-            </label>
-          </div>
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 6: Memberships (only in edit mode)
+          ═══════════════════════════════════════════════════════════ */}
+          {mode === "edit" && user.memberships?.length > 0 && (
+            <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+              <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5" />
+                {t("admin.users.memberships", "Membresías")}
+              </h3>
+              <div className="space-y-2">
+                {user.memberships.map((m: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between p-2 bg-[var(--rowi-background)] rounded text-xs">
+                    <span className="font-medium">{m.tenant?.name || m.tenantId}</span>
+                    <AdminBadge variant="neutral">{m.role}</AdminBadge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 7: Metadata (only in edit mode)
+          ═══════════════════════════════════════════════════════════ */}
+          {mode === "edit" && (
+            <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+              <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide">
+                {t("admin.users.metadata", "Metadatos")}
+              </h3>
+              <div className="grid grid-cols-2 gap-3 text-xs text-[var(--rowi-muted)]">
+                <div>
+                  <span className="block">{t("admin.users.userId", "ID de usuario")}:</span>
+                  <code className="text-[10px] bg-[var(--rowi-background)] px-1 py-0.5 rounded font-mono">
+                    {user.id}
+                  </code>
+                </div>
+                {user.createdAt && (
+                  <div>
+                    <span className="block">{t("admin.users.createdAt", "Creado")}:</span>
+                    <span className="font-medium text-[var(--rowi-foreground)]">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

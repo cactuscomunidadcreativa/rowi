@@ -75,6 +75,22 @@ export async function GET(req: NextRequest) {
               },
             },
           },
+
+          // 📊 SEI Data - Include latest snapshot
+          eqSnapshots: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              K: true,
+              C: true,
+              G: true,
+              overall4: true,
+              brainStyle: true,
+              recentMood: true,
+              createdAt: true,
+            },
+          },
         },
         orderBy: { updatedAt: "desc" },
         skip,
@@ -172,6 +188,10 @@ export async function PATCH(req: NextRequest) {
       planId,
       allowAI,
       active,
+      // New hierarchy fields
+      organizationId,
+      superHubId,
+      hubId,
     } = body;
 
     if (!id)
@@ -180,21 +200,61 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: {
-        name,
-        email: email?.toLowerCase(),
-        organizationRole,
-        primaryTenantId,
-        planId: planId || null,
-        allowAI: allowAI ?? true,
-        active: active ?? true,
-      },
-      include: {
-        plan: { select: { id: true, name: true, priceUsd: true } },
-        primaryTenant: { select: { id: true, name: true } },
-      },
+    // Start a transaction to handle all updates
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      // 1. Update basic user data
+      const user = await tx.user.update({
+        where: { id },
+        data: {
+          name,
+          email: email?.toLowerCase(),
+          organizationRole,
+          primaryTenantId: primaryTenantId || null,
+          planId: planId || null,
+          allowAI: allowAI ?? true,
+          active: active ?? true,
+        },
+        include: {
+          plan: { select: { id: true, name: true, priceUsd: true } },
+          primaryTenant: { select: { id: true, name: true } },
+        },
+      });
+
+      // 2. Handle organization membership if organizationId changed
+      if (organizationId !== undefined) {
+        // Remove existing org memberships
+        await tx.orgMembership.deleteMany({ where: { userId: id } });
+
+        // Add new org membership if provided
+        if (organizationId) {
+          await tx.orgMembership.create({
+            data: {
+              userId: id,
+              organizationId,
+              role: "MEMBER",
+            },
+          });
+        }
+      }
+
+      // 3. Handle hub membership if hubId changed
+      if (hubId !== undefined) {
+        // Remove existing hub memberships
+        await tx.hubMembership.deleteMany({ where: { userId: id } });
+
+        // Add new hub membership if provided
+        if (hubId) {
+          await tx.hubMembership.create({
+            data: {
+              userId: id,
+              hubId,
+              role: "MEMBER",
+            },
+          });
+        }
+      }
+
+      return user;
     });
 
     return NextResponse.json({

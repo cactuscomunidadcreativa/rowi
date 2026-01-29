@@ -160,6 +160,19 @@ export async function POST(req: NextRequest) {
           brainStyle,
           recentMood,
           moodIntensity,
+          // Guardar competencias directamente en el snapshot
+          K,
+          C,
+          G,
+          EL,
+          RP,
+          ACT,
+          NE,
+          IM,
+          OP,
+          EMP,
+          NG,
+          overall4,
         },
       });
 

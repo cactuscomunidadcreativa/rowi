@@ -1685,5 +1685,12 @@
   "monitor.noTeamData": "Sin datos de equipo disponibles.",
   "monitor.bandHot": "HOT",
   "monitor.bandWarm": "WARM",
-  "monitor.bandCold": "COLD"
+  "monitor.bandCold": "COLD",
+  "beta.badge": "BETA",
+  "beta.title": "Rowi Pre-Launch",
+  "beta.message": "Estamos en fase de pruebas. Tu feedback es muy valioso.",
+  "beta.reportBug": "Reportar bug",
+  "beta.close": "Cerrar",
+  "beta.emailSubject": "Reporte de Bug - Rowi Beta",
+  "beta.emailBody": "Describe el problema que encontraste:\n\n\nPasos para reproducirlo:\n1.\n2.\n3.\n\n\nNavegador y dispositivo:"
 }

@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { X, Bug, Sparkles, ExternalLink } from "lucide-react";
+import { useI18n } from "@/lib/i18n/useI18n";
 
 /**
  * 🚀 Beta Banner Component
  *
  * Muestra un banner elegante indicando que la app está en fase Beta.
  * Incluye link para reportar bugs y se puede cerrar (persiste en localStorage).
+ * Totalmente traducible con i18n.
  */
 export default function BetaBanner() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -25,6 +28,15 @@ export default function BetaBanner() {
   const handleDismiss = () => {
     setVisible(false);
     localStorage.setItem("rowi-beta-banner-dismissed", "true");
+  };
+
+  // Build mailto link with translated content
+  const getMailtoLink = () => {
+    const subject = encodeURIComponent(t("beta.emailSubject", "Bug Report - Rowi Beta"));
+    const body = encodeURIComponent(
+      t("beta.emailBody", "Describe the problem you found:\n\n\nSteps to reproduce:\n1.\n2.\n3.\n\n\nBrowser and device:")
+    );
+    return `mailto:soporte@rowi.app?subject=${subject}&body=${body}`;
   };
 
   // Don't render on server or if dismissed
@@ -55,23 +67,23 @@ export default function BetaBanner() {
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            BETA
+            {t("beta.badge", "BETA")}
           </span>
           <p className="text-sm leading-6 text-white">
-            <strong className="font-semibold">Rowi Pre-Launch</strong>
+            <strong className="font-semibold">{t("beta.title", "Rowi Pre-Launch")}</strong>
             <svg viewBox="0 0 2 2" className="mx-2 inline h-0.5 w-0.5 fill-current" aria-hidden="true">
               <circle cx={1} cy={1} r={1} />
             </svg>
-            Estamos en fase de pruebas. Tu feedback es muy valioso.
+            {t("beta.message", "We're in testing phase. Your feedback is very valuable.")}
           </p>
         </div>
 
         <a
-          href="mailto:soporte@rowi.app?subject=Bug%20Report%20-%20Rowi%20Beta&body=Describe%20el%20problema%20que%20encontraste%3A%0A%0A%0APasos%20para%20reproducirlo%3A%0A1.%0A2.%0A3.%0A%0A%0ANavegador%20y%20dispositivo%3A"
+          href={getMailtoLink()}
           className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-purple-700 shadow-sm hover:bg-purple-50 transition-colors"
         >
           <Bug className="w-3.5 h-3.5" />
-          Reportar bug
+          {t("beta.reportBug", "Report bug")}
           <ExternalLink className="w-3 h-3 opacity-60" />
         </a>
       </div>
@@ -83,7 +95,7 @@ export default function BetaBanner() {
           onClick={handleDismiss}
           className="-m-3 p-3 focus-visible:outline-offset-[-4px] hover:bg-white/10 rounded-full transition-colors"
         >
-          <span className="sr-only">Cerrar</span>
+          <span className="sr-only">{t("beta.close", "Close")}</span>
           <X className="h-5 w-5 text-white" aria-hidden="true" />
         </button>
       </div>

@@ -53,12 +53,14 @@ export async function middleware(req: NextRequest) {
         - Signin
         - Registro
         - Página principal pública
+        - API de autenticación NextAuth
   ========================================================== */
   if (
     pathname === "/" ||
     pathname.startsWith("/signin") ||
     pathname.startsWith("/invite") ||
-    pathname.startsWith("/auth")
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api/auth")
   ) {
     return NextResponse.next();
   }

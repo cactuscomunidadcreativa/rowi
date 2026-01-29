@@ -18,10 +18,11 @@ export async function GET(req: NextRequest) {
     const limit = Number(url.searchParams.get("limit") ?? "50");
     const skip = (page - 1) * limit;
 
+    // SUPERADMIN ve todos, ADMIN solo ve su tenant, otros ven todos (para desarrollo)
     const baseWhere = auth
-      ? auth.organizationRole === "ADMIN"
+      ? auth.organizationRole === "ADMIN" && auth.primaryTenantId
         ? { primaryTenantId: auth.primaryTenantId }
-        : {}
+        : {} // SUPERADMIN o sin tenant ve todos
       : {};
 
     const where = q
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
             },
           },
 
-          // 📊 SEI Data - Include latest snapshot
+          // 📊 SEI Data - Include latest snapshot (optional, may fail on some DBs)
           eqSnapshots: {
             orderBy: { createdAt: "desc" },
             take: 1,
@@ -110,7 +111,7 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     console.error("❌ Error GET /api/admin/users:", err);
     return NextResponse.json(
-      { ok: false, error: "Error al listar usuarios" },
+      { ok: false, error: err.message || "Error al listar usuarios", stack: process.env.NODE_ENV === "development" ? err.stack : undefined },
       { status: 500 }
     );
   }

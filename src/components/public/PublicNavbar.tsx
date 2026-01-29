@@ -12,16 +12,17 @@ import { useTheme } from "@/lib/theme/ThemeProvider";
 const navItems = [
   { labelKey: "nav.home", href: "/" },
   { labelKey: "nav.howItWorks", href: "/how-it-works" },
-  { 
-    labelKey: "nav.forYou", 
+  { labelKey: "nav.demo", href: "/demo" },
+  {
+    labelKey: "nav.forYou",
     href: "/for-you",
     children: [
       { labelKey: "nav.forYouPersonal", href: "/for-you" },
       { labelKey: "nav.forOrganizations", href: "/for-organizations" },
     ]
   },
-  { 
-    labelKey: "nav.product", 
+  {
+    labelKey: "nav.product",
     href: "#",
     children: [
       { labelKey: "nav.productRowi", href: "/product/rowi" },

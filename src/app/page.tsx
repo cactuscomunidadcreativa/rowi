@@ -89,6 +89,7 @@ function FallbackHomePage() {
             subtitle: t("landing.hero.subtitle"),
             ctaPrimary: t("landing.hero.cta.primary"),
             ctaSecondary: t("landing.hero.cta.secondary"),
+            ctaSecondaryHref: "/demo",
             trustBadges: [
               { icon: "shield", text: t("landing.hero.trust.security") },
               { icon: "globe", text: t("landing.hero.trust.methodology") },

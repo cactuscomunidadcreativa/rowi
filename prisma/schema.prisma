@@ -121,6 +121,12 @@ model User {
   calendarEvents        CalendarEvent[]
   notificationQueue     NotificationQueue[]
 
+  // 🎮 Gamificación
+  achievements          UserAchievement[]
+  points                UserPoints[]
+  streak                UserStreak?
+  level                 UserLevel?
+
   @@map("user")
 }
 
@@ -4254,26 +4260,227 @@ enum LandingSectionType {
 /// 🖼️ Media Library para el Landing Builder
 model LandingMedia {
   id          String   @id @default(cuid())
-  
+
   // URL del archivo (puede ser local o CDN)
   url         String
-  
+
   // Tipo de media
   type        String   @default("image") // image, video, icon
-  
+
   // Metadatos
   name        String
   alt         String?
   width       Int?
   height      Int?
   size        Int?     // bytes
-  
+
   // Etiquetas para organizar
   tags        String[] @default([])
-  
+
   createdAt   DateTime @default(now())
-  
+
   @@map("landing_media")
+}
+
+// ============================================
+// 🎮 GAMIFICACIÓN
+// ============================================
+
+/// 🏆 Definición de logros/achievements disponibles
+model Achievement {
+  id          String   @id @default(cuid())
+
+  // Identificador único del logro (ej: "first_chat", "eq_master")
+  slug        String   @unique
+
+  // Información del logro
+  name        String                    // Nombre en español
+  nameEN      String?                   // Nombre en inglés
+  description String                    // Descripción en español
+  descriptionEN String?                 // Descripción en inglés
+
+  // Visual
+  icon        String?                   // Nombre del icono (lucide) o URL
+  color       String   @default("#8B5CF6") // Color del badge
+
+  // Categoría
+  category    AchievementCategory @default(GENERAL)
+
+  // Requisitos
+  requirement AchievementRequirement    // Tipo de requisito
+  threshold   Int      @default(1)      // Cantidad requerida
+
+  // Puntos que otorga
+  points      Int      @default(10)
+
+  // Nivel de dificultad/rareza
+  rarity      AchievementRarity @default(COMMON)
+
+  // Estado
+  isActive    Boolean  @default(true)
+
+  // Orden de display
+  order       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+/// 🎖️ Logros obtenidos por usuarios
+model UserAchievement {
+  id            String   @id @default(cuid())
+
+  userId        String
+  achievementId String
+
+  // Progreso (para logros graduales)
+  progress      Int      @default(0)      // Progreso actual
+  completed     Boolean  @default(false)  // ¿Completado?
+  completedAt   DateTime?                 // Fecha de completado
+
+  // Notificación
+  notified      Boolean  @default(false)  // ¿Ya se notificó al usuario?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relaciones
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+/// 💰 Puntos del usuario (historial)
+model UserPoints {
+  id          String   @id @default(cuid())
+
+  userId      String
+
+  // Puntos
+  amount      Int                        // Cantidad de puntos (+/-)
+  balance     Int                        // Balance después de esta transacción
+
+  // Razón
+  reason      PointsReason               // Tipo de transacción
+  reasonId    String?                    // ID relacionado (achievementId, etc.)
+  description String?                    // Descripción adicional
+
+  createdAt   DateTime @default(now())
+
+  // Relaciones
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("user_points")
+}
+
+/// 🔥 Rachas de actividad (streaks)
+model UserStreak {
+  id          String   @id @default(cuid())
+
+  userId      String   @unique
+
+  // Racha actual
+  currentStreak Int    @default(0)       // Días consecutivos actuales
+  longestStreak Int    @default(0)       // Racha más larga histórica
+
+  // Control de racha
+  lastActivityDate DateTime?             // Última fecha de actividad
+  streakStartDate  DateTime?             // Inicio de la racha actual
+
+  // Bonus por racha
+  multiplier    Float  @default(1.0)     // Multiplicador de puntos por racha
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_streaks")
+}
+
+/// 📊 Nivel del usuario
+model UserLevel {
+  id          String   @id @default(cuid())
+
+  userId      String   @unique
+
+  // Nivel actual
+  level       Int      @default(1)
+
+  // Puntos totales acumulados
+  totalPoints Int      @default(0)
+
+  // Puntos para el siguiente nivel
+  pointsToNextLevel Int @default(100)
+
+  // Título del nivel
+  title       String?                    // Ej: "Explorador Emocional"
+  titleEN     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_levels")
+}
+
+// Enums de gamificación
+enum AchievementCategory {
+  GENERAL           // Logros generales
+  CHAT              // Logros de conversaciones con Rowi
+  EQ                // Logros relacionados con EQ
+  COMMUNITY         // Logros de comunidad
+  LEARNING          // Logros de aprendizaje
+  SOCIAL            // Logros sociales
+  STREAK            // Logros de rachas
+  SPECIAL           // Logros especiales/eventos
+}
+
+enum AchievementRequirement {
+  CHAT_COUNT        // Número de chats
+  CHAT_STREAK       // Días consecutivos chateando
+  EQ_SCORE          // Puntuación EQ mínima
+  EQ_IMPROVEMENT    // Mejora en EQ
+  PROFILE_COMPLETE  // Perfil completado
+  COMMUNITY_JOIN    // Unirse a comunidad
+  COMMUNITY_POST    // Publicar en comunidad
+  INVITE_ACCEPTED   // Invitaciones aceptadas
+  COURSE_COMPLETE   // Cursos completados
+  DAYS_ACTIVE       // Días activo
+  FIRST_ACTION      // Primera acción de algo
+  CUSTOM            // Requisito personalizado
+}
+
+enum AchievementRarity {
+  COMMON            // Común (fácil de obtener)
+  UNCOMMON          // Poco común
+  RARE              // Raro
+  EPIC              // Épico
+  LEGENDARY         // Legendario
+}
+
+enum PointsReason {
+  ACHIEVEMENT       // Logro completado
+  DAILY_LOGIN       // Login diario
+  CHAT              // Conversación con Rowi
+  POST              // Publicación
+  COMMENT           // Comentario
+  STREAK_BONUS      // Bonus por racha
+  REFERRAL          // Referido
+  COURSE            // Completar curso
+  ADMIN_GRANT       // Otorgado por admin
+  ADMIN_DEDUCT      // Deducido por admin
 }
 
 

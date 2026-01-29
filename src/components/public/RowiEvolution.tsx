@@ -461,50 +461,54 @@ export default function RowiEvolution({
             <span className="font-mono text-[var(--rowi-primary)]">{simulatedScore}/{EQ_MAX}</span>
           </div>
 
-          <div className="relative h-6 bg-[var(--rowi-border)] rounded-full overflow-hidden">
-            {/* Level sections */}
-            <div className="absolute inset-0 flex">
-              {EVOLUTION_STAGES.map((stage, i) => {
-                const width = ((stage.seiLevel.max - stage.seiLevel.min + 1) / (135 - 65)) * 100;
-                return (
-                  <div
-                    key={stage.id}
-                    className="h-full transition-opacity"
-                    style={{
-                      width: `${width}%`,
-                      backgroundColor: `${stage.seiLevel.color}30`,
-                      borderRight: i < EVOLUTION_STAGES.length - 1 ? "2px solid var(--rowi-background)" : "none",
-                    }}
-                  />
-                );
-              })}
+          <div className="relative h-6">
+            {/* Bar background */}
+            <div className="absolute inset-0 bg-[var(--rowi-border)] rounded-full overflow-hidden">
+              {/* Level sections */}
+              <div className="absolute inset-0 flex">
+                {EVOLUTION_STAGES.map((stage, i) => {
+                  const width = ((stage.seiLevel.max - stage.seiLevel.min + 1) / (135 - 65)) * 100;
+                  return (
+                    <div
+                      key={stage.id}
+                      className="h-full transition-opacity"
+                      style={{
+                        width: `${width}%`,
+                        backgroundColor: `${stage.seiLevel.color}30`,
+                        borderRight: i < EVOLUTION_STAGES.length - 1 ? "2px solid var(--rowi-background)" : "none",
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Progress fill */}
+              <motion.div
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{
+                  background: `linear-gradient(90deg, ${EVOLUTION_STAGES[0].seiLevel.color}, ${currentStage.seiLevel.color})`,
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
             </div>
 
-            {/* Progress fill */}
+            {/* Current position indicator - outside overflow-hidden */}
             <motion.div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{
-                background: `linear-gradient(90deg, ${EVOLUTION_STAGES[0].seiLevel.color}, ${currentStage.seiLevel.color})`,
-              }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-
-            {/* Current position indicator */}
-            <motion.div
-              className="absolute w-5 h-5 bg-white rounded-full shadow-lg border-2 flex items-center justify-center"
+              className="absolute w-6 h-6 bg-white rounded-full shadow-lg border-2 flex items-center justify-center z-10"
               style={{
                 borderColor: currentStage.seiLevel.color,
                 left: `${progressPercent}%`,
                 top: "50%",
-                transform: "translate(-50%, -50%)"
+                marginLeft: "-12px",
+                marginTop: "-12px"
               }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
+              animate={{ scale: [1, 1.15, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
             >
               <div
-                className="w-2 h-2 rounded-full"
+                className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: currentStage.seiLevel.color }}
               />
             </motion.div>

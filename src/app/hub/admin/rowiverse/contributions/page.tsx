@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n/react";
+import { useI18n } from "@/lib/i18n/useI18n";
 import {
   Globe2,
   TrendingUp,
-  Users,
   MapPin,
   Calendar,
   FileSpreadsheet,
   UserPlus,
   BarChart3,
   RefreshCw,
+  ArrowLeft,
+  Database,
+  Users,
+  Activity,
+  Sparkles,
 } from "lucide-react";
 
 interface ContributionStats {
@@ -30,22 +34,71 @@ interface BenchmarkInfo {
   createdAt: string;
 }
 
-interface RecentContribution {
-  id: string;
-  sourceType: string;
-  eqTotal: number | null;
-  country: string | null;
-  status: string;
-  createdAt: string;
-}
+const t = {
+  es: {
+    title: "Contribuciones RowiVerse",
+    description: "Seguimiento de aportes al ecosistema global de inteligencia emocional",
+    backToGlobal: "Volver al Mapa",
+    refresh: "Actualizar",
+    loading: "Cargando datos...",
+    benchmarkDescription: "Base de datos global de inteligencia emocional Six Seconds",
+    totalDataPoints: "puntos de datos totales",
+    lastEnriched: "Última actualización",
+    totalContributions: "Total Contribuciones",
+    countriesRepresented: "Países Representados",
+    csvUploads: "Cargas CSV",
+    registrations: "Registros de Usuario",
+    bySource: "Por Fuente de Datos",
+    topCountries: "Top Países Contribuyentes",
+    recentActivity: "Actividad Reciente",
+    lastContributionReceived: "Última contribución recibida",
+    growRowiverse: "Haz Crecer el RowiVerse",
+    growDescription: "Importa nuevas comunidades y enriquece el ecosistema global de IE",
+    importCommunity: "Importar Comunidad",
+    source: {
+      csv: "Carga CSV",
+      registration: "Registro de Usuario",
+      eqSnapshot: "Evaluación EQ",
+    },
+    noData: "Sin datos de contribuciones",
+    noDataDesc: "Las contribuciones aparecerán aquí cuando se agreguen datos al RowiVerse",
+  },
+  en: {
+    title: "RowiVerse Contributions",
+    description: "Track contributions to the global emotional intelligence ecosystem",
+    backToGlobal: "Back to Map",
+    refresh: "Refresh",
+    loading: "Loading data...",
+    benchmarkDescription: "Six Seconds global emotional intelligence database",
+    totalDataPoints: "total data points",
+    lastEnriched: "Last updated",
+    totalContributions: "Total Contributions",
+    countriesRepresented: "Countries Represented",
+    csvUploads: "CSV Uploads",
+    registrations: "User Registrations",
+    bySource: "By Data Source",
+    topCountries: "Top Contributing Countries",
+    recentActivity: "Recent Activity",
+    lastContributionReceived: "Last contribution received",
+    growRowiverse: "Grow the RowiVerse",
+    growDescription: "Import new communities and enrich the global EI ecosystem",
+    importCommunity: "Import Community",
+    source: {
+      csv: "CSV Upload",
+      registration: "User Registration",
+      eqSnapshot: "EQ Assessment",
+    },
+    noData: "No contribution data",
+    noDataDesc: "Contributions will appear here when data is added to the RowiVerse",
+  },
+};
 
 export default function RowiverseContributionsPage() {
-  const { t } = useI18n();
+  const { lang } = useI18n();
+  const text = t[lang as keyof typeof t] || t.es;
+
   const [stats, setStats] = useState<ContributionStats | null>(null);
   const [benchmark, setBenchmark] = useState<BenchmarkInfo | null>(null);
-  const [recentContributions, setRecentContributions] = useState<
-    RecentContribution[]
-  >([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -74,296 +127,278 @@ export default function RowiverseContributionsPage() {
     loadData();
   };
 
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toLocaleString();
+  };
+
   if (loading) {
     return (
-      <div className="p-8 space-y-8">
-        <header className="flex justify-between items-center border-b pb-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-7 h-7" />
-              {t("admin.rowiverse.contributions.title")}
-            </h1>
-          </div>
-        </header>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin h-12 w-12 border-4 border-[var(--rowi-primary)] border-t-transparent rounded-full" />
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-[var(--rowi-primary)] mx-auto mb-3" />
+          <p className="text-[var(--rowi-muted)]">{text.loading}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-6">
       {/* Header */}
-      <header className="flex justify-between items-center border-b pb-4">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--rowi-border)] pb-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-[var(--rowi-foreground)] flex items-center gap-2">
             <TrendingUp className="w-7 h-7 text-[var(--rowi-primary)]" />
-            {t("admin.rowiverse.contributions.title")}
+            {text.title}
           </h1>
-          <p className="text-[var(--rowi-muted)] text-sm mt-1">
-            {t("admin.rowiverse.contributions.description")}
-          </p>
+          <p className="text-[var(--rowi-muted)] text-sm mt-1">{text.description}</p>
         </div>
-
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] hover:bg-[var(--rowi-primary)]/20 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] transition-colors text-sm disabled:opacity-50"
           >
-            <RefreshCw
-              className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
-            />
-            {t("common.refresh")}
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            {text.refresh}
           </button>
-
           <a
             href="/hub/admin/rowiverse"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-card-border)] hover:bg-[var(--rowi-muted)]/10 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] hover:bg-[var(--rowi-primary)]/20 transition-colors text-sm font-medium"
           >
-            <Globe2 className="w-4 h-4" />
-            {t("admin.rowiverse.contributions.backToGlobal")}
+            <ArrowLeft className="w-4 h-4" />
+            {text.backToGlobal}
           </a>
         </div>
       </header>
 
-      {/* Benchmark Info */}
+      {/* Benchmark Hero Card */}
       {benchmark && (
-        <section className="rowi-card bg-gradient-to-r from-[var(--rowi-primary)]/5 to-transparent">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Globe2 className="w-5 h-5" />
-                {benchmark.name}
-              </h2>
-              <p className="text-sm text-[var(--rowi-muted)] mt-1">
-                {t("admin.rowiverse.contributions.benchmarkDescription")}
-              </p>
+        <div className="rounded-2xl bg-gradient-to-r from-[var(--rowi-primary)]/10 via-purple-500/5 to-[var(--rowi-primary)]/10 border border-[var(--rowi-border)] p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-[var(--rowi-primary)]/20 flex items-center justify-center">
+                <Globe2 className="w-7 h-7 text-[var(--rowi-primary)]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-[var(--rowi-foreground)]">{benchmark.name}</h2>
+                <p className="text-sm text-[var(--rowi-muted)]">{text.benchmarkDescription}</p>
+              </div>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-[var(--rowi-primary)]">
-                {benchmark.totalRows.toLocaleString()}
-              </p>
-              <p className="text-xs text-[var(--rowi-muted)]">
-                {t("admin.rowiverse.contributions.totalDataPoints")}
-              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-[var(--rowi-primary)]">
+                  {formatNumber(benchmark.totalRows)}
+                </span>
+              </div>
+              <p className="text-xs text-[var(--rowi-muted)]">{text.totalDataPoints}</p>
+              {benchmark.lastEnrichedAt && (
+                <p className="text-xs text-[var(--rowi-muted)] mt-1 flex items-center gap-1 justify-end">
+                  <Calendar className="w-3 h-3" />
+                  {text.lastEnriched}: {new Date(benchmark.lastEnrichedAt).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </div>
-
-          {benchmark.lastEnrichedAt && (
-            <div className="mt-4 pt-4 border-t border-[var(--rowi-card-border)]">
-              <p className="text-xs text-[var(--rowi-muted)] flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {t("admin.rowiverse.contributions.lastEnriched")}:{" "}
-                {new Date(benchmark.lastEnrichedAt).toLocaleString()}
-              </p>
-            </div>
-          )}
-        </section>
+        </div>
       )}
 
-      {/* Stats Grid */}
+      {/* Stats Cards */}
       {stats && (
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            icon={<BarChart3 className="w-5 h-5" />}
-            label={t("admin.rowiverse.contributions.totalContributions")}
-            value={stats.totalContributions.toLocaleString()}
-            color="primary"
+            icon={<Database className="w-5 h-5" />}
+            value={formatNumber(stats.totalContributions)}
+            label={text.totalContributions}
+            color="purple"
           />
-
           <StatCard
             icon={<MapPin className="w-5 h-5" />}
-            label={t("admin.rowiverse.contributions.countriesRepresented")}
             value={stats.byCountry.length.toString()}
-            color="success"
+            label={text.countriesRepresented}
+            color="green"
           />
-
           <StatCard
             icon={<FileSpreadsheet className="w-5 h-5" />}
-            label={t("admin.rowiverse.contributions.csvUploads")}
-            value={(stats.bySource["csv_upload"] || 0).toLocaleString()}
-            color="warning"
+            value={formatNumber(stats.bySource["csv_upload"] || 0)}
+            label={text.csvUploads}
+            color="orange"
           />
-
           <StatCard
             icon={<UserPlus className="w-5 h-5" />}
-            label={t("admin.rowiverse.contributions.registrations")}
-            value={(stats.bySource["registration"] || 0).toLocaleString()}
-            color="info"
+            value={formatNumber(stats.bySource["registration"] || 0)}
+            label={text.registrations}
+            color="blue"
           />
-        </section>
+        </div>
       )}
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Contributions by Source */}
-        {stats && (
-          <section className="rowi-card">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5" />
-              {t("admin.rowiverse.contributions.bySource")}
+      {stats ? (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* By Source */}
+          <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-[var(--rowi-primary)]" />
+              {text.bySource}
             </h3>
-
             <div className="space-y-3">
-              {Object.entries(stats.bySource).map(([source, count]) => (
-                <div
-                  key={source}
-                  className="flex items-center justify-between p-3 rounded-lg bg-[var(--rowi-muted)]/5"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">
-                      {source === "csv_upload"
-                        ? "📄"
-                        : source === "registration"
-                        ? "👤"
-                        : source === "eq_snapshot"
-                        ? "📊"
-                        : "📝"}
-                    </span>
-                    <span className="font-medium">
-                      {source === "csv_upload"
-                        ? t("admin.rowiverse.contributions.source.csv")
-                        : source === "registration"
-                        ? t("admin.rowiverse.contributions.source.registration")
-                        : source === "eq_snapshot"
-                        ? t("admin.rowiverse.contributions.source.eqSnapshot")
-                        : source}
-                    </span>
+              {Object.entries(stats.bySource).map(([source, count]) => {
+                const sourceInfo = getSourceInfo(source, text);
+                const percentage = ((count / stats.totalContributions) * 100).toFixed(1);
+
+                return (
+                  <div
+                    key={source}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-[var(--rowi-background)] hover:bg-[var(--rowi-border)]/50 transition-colors"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
+                      style={{ backgroundColor: `${sourceInfo.color}15` }}
+                    >
+                      {sourceInfo.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{sourceInfo.label}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 h-1.5 rounded-full bg-[var(--rowi-border)] overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${Math.min(100, parseFloat(percentage))}%`,
+                              backgroundColor: sourceInfo.color,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-[var(--rowi-muted)]">{percentage}%</span>
+                      </div>
+                    </div>
+                    <p className="font-bold text-lg">{formatNumber(count)}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold">{count.toLocaleString()}</p>
-                    <p className="text-xs text-[var(--rowi-muted)]">
-                      {(
-                        (count / stats.totalContributions) *
-                        100
-                      ).toFixed(1)}
-                      %
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </section>
-        )}
+          </div>
 
-        {/* Top Countries */}
-        {stats && (
-          <section className="rowi-card">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              {t("admin.rowiverse.contributions.topCountries")}
+          {/* Top Countries */}
+          <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-green-500" />
+              {text.topCountries}
             </h3>
-
             <div className="space-y-2">
-              {stats.byCountry.slice(0, 10).map((item, idx) => (
+              {stats.byCountry.slice(0, 8).map((item, idx) => (
                 <div
                   key={item.country}
-                  className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--rowi-muted)]/5 transition-colors"
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--rowi-background)] transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[var(--rowi-primary)]/10 flex items-center justify-center text-xs font-bold text-[var(--rowi-primary)]">
-                      {idx + 1}
-                    </span>
-                    <span className="font-medium">{item.country}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 h-2 rounded-full bg-[var(--rowi-muted)]/20 overflow-hidden">
+                  <span className="w-6 h-6 rounded-full bg-[var(--rowi-primary)]/10 flex items-center justify-center text-xs font-bold text-[var(--rowi-primary)]">
+                    {idx + 1}
+                  </span>
+                  <span className="flex-1 font-medium text-sm truncate">{item.country}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-1.5 rounded-full bg-[var(--rowi-border)] overflow-hidden">
                       <div
                         className="h-full bg-[var(--rowi-primary)] rounded-full transition-all"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            (item.count / stats.byCountry[0].count) * 100
-                          )}%`,
+                          width: `${Math.min(100, (item.count / stats.byCountry[0].count) * 100)}%`,
                         }}
                       />
                     </div>
-                    <span className="text-sm font-semibold w-16 text-right">
-                      {item.count.toLocaleString()}
-                    </span>
+                    <span className="text-sm font-semibold w-14 text-right">{formatNumber(item.count)}</span>
                   </div>
                 </div>
               ))}
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-12 text-center">
+          <Database className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-2">{text.noData}</h3>
+          <p className="text-sm text-[var(--rowi-muted)]">{text.noDataDesc}</p>
+        </div>
+      )}
 
-      {/* Activity Timeline */}
+      {/* Recent Activity */}
       {stats?.lastContribution && (
-        <section className="rowi-card">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {t("admin.rowiverse.contributions.recentActivity")}
+        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-green-500" />
+            {text.recentActivity}
           </h3>
-
-          <div className="flex items-center gap-4 p-4 rounded-lg bg-[var(--rowi-success)]/10 border border-[var(--rowi-success)]/30">
-            <div className="w-3 h-3 rounded-full bg-[var(--rowi-success)] animate-pulse" />
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
             <div>
-              <p className="font-medium">
-                {t("admin.rowiverse.contributions.lastContributionReceived")}
-              </p>
-              <p className="text-sm text-[var(--rowi-muted)]">
+              <p className="font-medium text-sm">{text.lastContributionReceived}</p>
+              <p className="text-xs text-[var(--rowi-muted)]">
                 {new Date(stats.lastContribution).toLocaleString()}
               </p>
             </div>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Call to Action */}
-      <section className="rowi-card bg-gradient-to-r from-[var(--rowi-primary)]/10 to-[var(--rowi-secondary)]/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-lg">
-              {t("admin.rowiverse.contributions.growRowiverse")}
-            </h3>
-            <p className="text-sm text-[var(--rowi-muted)] mt-1">
-              {t("admin.rowiverse.contributions.growDescription")}
-            </p>
+      {/* CTA */}
+      <div className="rounded-xl bg-gradient-to-r from-[var(--rowi-primary)]/10 to-purple-500/10 border border-[var(--rowi-border)] p-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[var(--rowi-primary)]/20 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-[var(--rowi-primary)]" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">{text.growRowiverse}</h3>
+              <p className="text-sm text-[var(--rowi-muted)]">{text.growDescription}</p>
+            </div>
           </div>
           <a
             href="/hub/admin/communities"
-            className="px-6 py-3 rounded-lg bg-[var(--rowi-primary)] text-white hover:bg-[var(--rowi-primary)]/90 transition-colors"
+            className="px-6 py-3 rounded-lg bg-[var(--rowi-primary)] text-white hover:bg-[var(--rowi-primary)]/90 transition-colors font-medium whitespace-nowrap"
           >
-            {t("admin.rowiverse.contributions.importCommunity")}
+            {text.importCommunity}
           </a>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
 
 function StatCard({
   icon,
-  label,
   value,
+  label,
   color,
 }: {
   icon: React.ReactNode;
-  label: string;
   value: string;
-  color: "primary" | "success" | "warning" | "info";
+  label: string;
+  color: string;
 }) {
-  const colorClasses = {
-    primary:
-      "bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] border-[var(--rowi-primary)]/30",
-    success:
-      "bg-[var(--rowi-success)]/10 text-[var(--rowi-success)] border-[var(--rowi-success)]/30",
-    warning:
-      "bg-[var(--rowi-warning)]/10 text-[var(--rowi-warning)] border-[var(--rowi-warning)]/30",
-    info: "bg-[var(--rowi-info)]/10 text-[var(--rowi-info)] border-[var(--rowi-info)]/30",
+  const colorClasses: Record<string, string> = {
+    purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+    green: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+    orange: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
   };
 
   return (
-    <div
-      className={`p-4 rounded-lg border ${colorClasses[color]} transition-all hover:scale-105`}
-    >
-      <div className="flex items-center gap-2 mb-2">{icon}</div>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs opacity-80">{label}</p>
+    <div className="flex items-center gap-3 bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-xl p-4">
+      <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
+      <div>
+        <p className="text-xl font-bold">{value}</p>
+        <p className="text-xs text-[var(--rowi-muted)]">{label}</p>
+      </div>
     </div>
   );
+}
+
+function getSourceInfo(source: string, text: typeof t.es) {
+  const sources: Record<string, { emoji: string; label: string; color: string }> = {
+    csv_upload: { emoji: "📄", label: text.source.csv, color: "#f59e0b" },
+    registration: { emoji: "👤", label: text.source.registration, color: "#3b82f6" },
+    eq_snapshot: { emoji: "📊", label: text.source.eqSnapshot, color: "#8b5cf6" },
+  };
+  return sources[source] || { emoji: "📝", label: source, color: "#6b7280" };
 }

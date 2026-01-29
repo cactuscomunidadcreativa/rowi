@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     for (const plan of plans) {
       try {
         let stripeProductId = plan.stripeProductId;
-        let stripePriceIdMonthly = plan.stripePriceId;
+        let stripePriceIdMonthly = plan.stripePriceIdMonthly;
         let stripePriceIdYearly = plan.stripePriceIdYearly;
 
         // 1. Crear o actualizar producto en Stripe
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
           where: { id: plan.id },
           data: {
             stripeProductId,
-            stripePriceId: stripePriceIdMonthly,
+            stripePriceIdMonthly,
             stripePriceIdYearly,
           },
         });
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
         priceCents: true,
         priceYearlyCents: true,
         stripeProductId: true,
-        stripePriceId: true,
+        stripePriceIdMonthly: true,
         stripePriceIdYearly: true,
         isActive: true,
       },
@@ -190,9 +190,9 @@ export async function GET(req: NextRequest) {
       priceMonthly: plan.priceCents > 0 ? `$${plan.priceCents / 100}/mes` : "Gratis",
       priceYearly: plan.priceYearlyCents ? `$${plan.priceYearlyCents / 100}/año` : "N/A",
       stripeProductId: plan.stripeProductId || "❌ No configurado",
-      stripePriceIdMonthly: plan.stripePriceId || "❌ No configurado",
+      stripePriceIdMonthly: plan.stripePriceIdMonthly || "❌ No configurado",
       stripePriceIdYearly: plan.stripePriceIdYearly || "❌ No configurado",
-      needsSync: plan.priceCents > 0 && (!plan.stripeProductId || !plan.stripePriceId),
+      needsSync: plan.priceCents > 0 && (!plan.stripeProductId || !plan.stripePriceIdMonthly),
     }));
 
     const needsSync = status.filter(s => s.needsSync).length;

@@ -99,7 +99,7 @@ export async function createCheckoutSession(
     throw new Error("Plan not found");
   }
 
-  if (!plan.stripePriceId) {
+  if (!plan.stripePriceIdMonthly) {
     throw new Error("Plan not configured for Stripe payments");
   }
 
@@ -116,7 +116,7 @@ export async function createCheckoutSession(
     payment_method_types: ["card"],
     line_items: [
       {
-        price: plan.stripePriceId,
+        price: plan.stripePriceIdMonthly,
         quantity: 1,
       },
     ],

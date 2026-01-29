@@ -4,30 +4,39 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 /* =========================================================
-   🌍 CONFIG — Rutas especiales
+   🌍 CONFIG — Rutas que REQUIEREN autenticación
 ========================================================= */
 
-const ADMIN_PATH = "/hub/admin";
-const IA_PATHS = [
+// Rutas que requieren estar logueado
+const PROTECTED_PATHS = [
+  "/hub/admin",
+  "/dashboard",
+  "/profile",
+  "/settings",
+];
+
+// APIs que requieren autenticación
+const PROTECTED_API_PATHS = [
   "/api/rowi",
   "/api/eco",
   "/api/affinity",
   "/api/emotions",
   "/api/hub/ai",
+  "/api/hub/admin",
+  "/api/admin",
 ];
 
 /* =========================================================
    🔥 MIDDLEWARE PRINCIPAL
-   - Protege /hub/admin
-   - Permite a usuarios normales usar toda la app
-   - Habilita IA para usuarios loggeados
+   - Por defecto TODO es público
+   - Solo protege rutas específicas que requieren auth
 ========================================================= */
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   /* =========================================================
-     1) Ignorar rutas públicas y de sistema
+     1) Ignorar rutas de sistema (siempre públicas)
   ========================================================== */
   if (
     pathname.startsWith("/_next") ||
@@ -38,7 +47,19 @@ export async function middleware(req: NextRequest) {
   }
 
   /* =========================================================
-     2) Obtener token NextAuth
+     2) Verificar si la ruta requiere autenticación
+  ========================================================== */
+  const requiresAuth =
+    PROTECTED_PATHS.some((p) => pathname.startsWith(p)) ||
+    PROTECTED_API_PATHS.some((p) => pathname.startsWith(p));
+
+  // Si no requiere auth, permitir acceso
+  if (!requiresAuth) {
+    return NextResponse.next();
+  }
+
+  /* =========================================================
+     3) Obtener token NextAuth (solo si la ruta requiere auth)
   ========================================================== */
   const token = await getToken({
     req,
@@ -48,46 +69,24 @@ export async function middleware(req: NextRequest) {
   const isAuth = !!token;
 
   /* =========================================================
-     3) Permitir a usuarios NO loggeados:
-        - Landing page
-        - Signin
-        - Registro
-        - Página principal pública
-        - API de autenticación NextAuth
-        - API de traducciones (i18n)
-        - API pública (plans, etc.)
-  ========================================================== */
-  if (
-    pathname === "/" ||
-    pathname.startsWith("/signin") ||
-    pathname.startsWith("/invite") ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/i18n") ||
-    pathname.startsWith("/api/public") ||
-    pathname.startsWith("/api/plans")
-  ) {
-    return NextResponse.next();
-  }
-
-  /* =========================================================
-     4) Si el usuario NO está autenticado → redirigir a login
+     4) Si no está autenticado → redirigir a login
   ========================================================== */
   if (!isAuth) {
+    // Para APIs, devolver 401
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    // Para páginas, redirigir a signin
     const signin = new URL("/signin", req.url);
     signin.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signin);
   }
 
   /* =========================================================
-     5) IA — permitir todas las llamadas a IA para usuarios loggeados
-  ========================================================== */
-  if (IA_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
-
-  /* =========================================================
-     6) SUPERADMIN — acceso total
+     5) SUPERADMIN — acceso total
   ========================================================== */
   const permissions = (token as any).permissions || [];
 
@@ -103,38 +102,28 @@ export async function middleware(req: NextRequest) {
   }
 
   /* =========================================================
-     7) Usuario normal — puede usar TODA LA APP excepto /hub/admin
+     6) Validación para /hub/admin
   ========================================================== */
-  const isAdminRoute = pathname.startsWith(ADMIN_PATH);
+  if (pathname.startsWith("/hub/admin")) {
+    const hasAdminAccess = permissions.some((p: any) =>
+      ["superhub", "tenant", "hub"].includes(p.scopeType)
+    );
 
-  if (!isAdminRoute) {
-    // Usuario normal → acceso permitido
-    return NextResponse.next();
-  }
-
-  /* =========================================================
-     8) Validación para admin normal
-     Revisa si tiene permisos de superhub, tenant o hub
-  ========================================================== */
-  const hasAdminAccess = permissions.some((p: any) =>
-    ["superhub", "tenant", "hub"].includes(p.scopeType)
-  );
-
-  if (!hasAdminAccess) {
-    // No tiene acceso al admin panel → enviar a "Unauthorized"
-    const url = new URL("/hub/admin/unauthorized", req.url);
-    return NextResponse.rewrite(url);
+    if (!hasAdminAccess) {
+      const url = new URL("/hub/admin/unauthorized", req.url);
+      return NextResponse.rewrite(url);
+    }
   }
 
   return NextResponse.next();
 }
 
 /* =========================================================
-   9) MATCHER — protege SOLO lo que necesitamos
+   9) MATCHER — excluir archivos estáticos
 ========================================================= */
 
 export const config = {
   matcher: [
-    "/((?!_next|static|favicon.ico|api/public|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.gif$).*)",
+    "/((?!_next|static|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.gif$).*)",
   ],
 };

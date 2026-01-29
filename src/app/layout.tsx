@@ -1,6 +1,7 @@
 import "./globals.css";
 import ClientWrapper from "./ClientWrapper";
 import UserStatusBar from "@/components/shared/UserStatusBar";
+import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
 export const metadata = {
@@ -37,6 +38,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-zinc-950 dark:to-zinc-900 text-gray-900 dark:text-gray-100">
         <I18nProvider>
           <ClientWrapper>
+            <BetaBanner />
             <UserStatusBar />
             <main className="min-h-[90vh]">{children}</main>
           </ClientWrapper>

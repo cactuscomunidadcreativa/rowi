@@ -33,35 +33,7 @@ export async function GET(req: NextRequest) {
     const plans = await prisma.plan.findMany({
       where,
       orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        priceUsd: true,
-        priceCents: true,
-        durationDays: true,
-        aiEnabled: true,
-        // Stripe
-        stripePriceId: true,
-        stripeProductId: true,
-        // Trial
-        trialDays: true,
-        // Features
-        seiIncluded: true,
-        maxCommunities: true,
-        maxMembers: true,
-        benchmarkAccess: true,
-        apiAccess: true,
-        // Display
-        badge: true,
-        sortOrder: true,
-        isPublic: true,
-        isActive: true,
-        // Meta
-        createdAt: true,
-        updatedAt: true,
-        // Count relations
+      include: {
         _count: {
           select: {
             users: true,
@@ -79,7 +51,7 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     console.error("❌ Error GET /api/admin/plans:", err);
     return NextResponse.json(
-      { ok: false, error: "Error cargando planes" },
+      { ok: false, error: "Error cargando planes: " + err.message },
       { status: 500 }
     );
   }
@@ -100,7 +72,7 @@ export async function POST(req: NextRequest) {
       durationDays,
       aiEnabled,
       // Stripe
-      stripePriceId,
+      stripePriceIdMonthly,
       stripeProductId,
       // Trial
       trialDays,
@@ -108,6 +80,7 @@ export async function POST(req: NextRequest) {
       seiIncluded,
       maxCommunities,
       maxMembers,
+      maxUsers,
       benchmarkAccess,
       apiAccess,
       // Display
@@ -157,7 +130,7 @@ export async function POST(req: NextRequest) {
         durationDays: Number(durationDays) || 30,
         aiEnabled: aiEnabled ?? true,
         // Stripe
-        stripePriceId: stripePriceId || null,
+        stripePriceIdMonthly: stripePriceIdMonthly || null,
         stripeProductId: stripeProductId || null,
         // Trial
         trialDays: Number(trialDays) || 0,
@@ -165,6 +138,7 @@ export async function POST(req: NextRequest) {
         seiIncluded: seiIncluded ?? false,
         maxCommunities: Number(maxCommunities) || 1,
         maxMembers: Number(maxMembers) || 10,
+        maxUsers: Number(maxUsers) || 1,
         benchmarkAccess: benchmarkAccess ?? false,
         apiAccess: apiAccess ?? false,
         // Display
@@ -183,7 +157,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("❌ Error POST /api/admin/plans:", err);
     return NextResponse.json(
-      { ok: false, error: "Error al crear el plan" },
+      { ok: false, error: "Error al crear el plan: " + err.message },
       { status: 500 }
     );
   }
@@ -250,7 +224,7 @@ export async function PATCH(req: NextRequest) {
     if (data.durationDays !== undefined) updateData.durationDays = Number(data.durationDays);
     if (data.aiEnabled !== undefined) updateData.aiEnabled = data.aiEnabled;
     // Stripe
-    if (data.stripePriceId !== undefined) updateData.stripePriceId = data.stripePriceId;
+    if (data.stripePriceIdMonthly !== undefined) updateData.stripePriceIdMonthly = data.stripePriceIdMonthly;
     if (data.stripeProductId !== undefined) updateData.stripeProductId = data.stripeProductId;
     // Trial
     if (data.trialDays !== undefined) updateData.trialDays = Number(data.trialDays);
@@ -258,6 +232,7 @@ export async function PATCH(req: NextRequest) {
     if (data.seiIncluded !== undefined) updateData.seiIncluded = data.seiIncluded;
     if (data.maxCommunities !== undefined) updateData.maxCommunities = Number(data.maxCommunities);
     if (data.maxMembers !== undefined) updateData.maxMembers = Number(data.maxMembers);
+    if (data.maxUsers !== undefined) updateData.maxUsers = Number(data.maxUsers);
     if (data.benchmarkAccess !== undefined) updateData.benchmarkAccess = data.benchmarkAccess;
     if (data.apiAccess !== undefined) updateData.apiAccess = data.apiAccess;
     // Display
@@ -279,7 +254,7 @@ export async function PATCH(req: NextRequest) {
   } catch (err: any) {
     console.error("❌ Error PATCH /api/admin/plans:", err);
     return NextResponse.json(
-      { ok: false, error: "Error al actualizar el plan" },
+      { ok: false, error: "Error al actualizar el plan: " + err.message },
       { status: 500 }
     );
   }
@@ -323,7 +298,7 @@ export async function DELETE(req: NextRequest) {
   } catch (err: any) {
     console.error("❌ Error DELETE /api/admin/plans:", err);
     return NextResponse.json(
-      { ok: false, error: "Error al eliminar el plan" },
+      { ok: false, error: "Error al eliminar el plan: " + err.message },
       { status: 500 }
     );
   }

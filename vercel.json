@@ -1,40 +1,28 @@
 {
-  "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "crons": [
     {
       "path": "/api/affinity/recalculate?project=execution",
-      "schedule": "0 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "0 5 */15 * *"
     },
     {
       "path": "/api/affinity/recalculate?project=innovation",
-      "schedule": "10 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "10 5 */15 * *"
     },
     {
       "path": "/api/affinity/recalculate?project=leadership",
-      "schedule": "20 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "20 5 */15 * *"
     },
     {
       "path": "/api/affinity/recalculate?project=conversation",
-      "schedule": "30 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "30 5 */15 * *"
     },
     {
       "path": "/api/affinity/recalculate?project=relationship",
-      "schedule": "40 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "40 5 */15 * *"
     },
     {
       "path": "/api/affinity/recalculate?project=decision",
-      "schedule": "50 5 */15 * *",
-      "timezone": "America/Lima"
+      "schedule": "50 5 */15 * *"
     }
   ]
 }

@@ -348,7 +348,8 @@ export default function ProfileSettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newEmailLabel, setNewEmailLabel] = useState<"work" | "personal" | "alt">("work");
   const [showAddEmail, setShowAddEmail] = useState(false);
-  const [showSeiLinks, setShowSeiLinks] = useState(false);
+  // Mostrar links SEI automáticamente si no tiene evaluación
+  const [showSeiLinks, setShowSeiLinks] = useState(true);
 
   const [prefs, setPrefs] = useState<Prefs>({
     channels: { email: true, whatsapp: true, sms: false, call: false },
@@ -698,7 +699,7 @@ export default function ProfileSettingsPage() {
 
         {/* Links SEI disponibles */}
         <AnimatePresence>
-          {showSeiLinks && profile?.seiLinks && profile.seiLinks.length > 0 && (
+          {showSeiLinks && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
@@ -706,38 +707,49 @@ export default function ProfileSettingsPage() {
               className="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 space-y-3"
             >
               <p className="text-sm font-medium">{t("seiSelectLink")}</p>
-              <div className="grid gap-2">
-                {profile.seiLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-3 rounded-lg border hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                        <Globe size={16} style={{ color: COLORS.purple }} />
+              {profile?.seiLinks && profile.seiLinks.length > 0 ? (
+                <div className="grid gap-2">
+                  {profile.seiLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-lg border hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                          <Globe size={16} style={{ color: COLORS.purple }} />
+                        </div>
+                        <div>
+                          <p className="font-medium">{link.name}</p>
+                          {link.description && (
+                            <p className="text-xs rowi-muted">{link.description}</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{link.name}</p>
-                        {link.description && (
-                          <p className="text-xs rowi-muted">{link.description}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700">
+                          {link.language.toUpperCase()}
+                        </span>
+                        {link.isDefault && (
+                          <Star size={14} className="text-yellow-500" />
                         )}
+                        <ExternalLink size={14} className="rowi-muted" />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700">
-                        {link.language.toUpperCase()}
-                      </span>
-                      {link.isDefault && (
-                        <Star size={14} className="text-yellow-500" />
-                      )}
-                      <ExternalLink size={14} className="rowi-muted" />
-                    </div>
-                  </a>
-                ))}
-              </div>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <AlertCircle size={24} className="mx-auto text-orange-500 mb-2" />
+                  <p className="text-sm rowi-muted">
+                    {lang === "es"
+                      ? "No hay links de SEI disponibles en este momento. Por favor contacta al administrador."
+                      : "No SEI links available at this time. Please contact the administrator."}
+                  </p>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

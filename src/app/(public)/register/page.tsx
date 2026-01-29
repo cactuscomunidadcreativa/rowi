@@ -420,9 +420,9 @@ function RegisterPageContent() {
         toast.success(lang === "es" ? "Cuenta creada. Por favor inicia sesión." : "Account created. Please sign in.");
         router.push("/login");
       } else {
-        // Auto-login exitoso, ir al dashboard
-        toast.success(lang === "es" ? "¡Bienvenido a Rowi!" : "Welcome to Rowi!");
-        router.push("/dashboard");
+        // Auto-login exitoso, ir a settings/profile para completar perfil y ver SEI
+        toast.success(lang === "es" ? "¡Bienvenido a Rowi! Completa tu perfil." : "Welcome to Rowi! Complete your profile.");
+        router.push("/settings/profile");
       }
     } catch (error: any) {
       const errorMsg = error.message === "email_already_exists"

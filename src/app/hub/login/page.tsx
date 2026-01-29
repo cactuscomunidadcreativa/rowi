@@ -4,98 +4,24 @@ import { Suspense, useEffect, useState } from "react";
 import { getProviders, signIn } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getSSOLoginUrl } from "@/lib/six-seconds/sso";
 
 // =========================================================
-// Traducciones inline
+// Error code mapping to i18n keys
 // =========================================================
-const T: Record<string, Record<string, string>> = {
-  title: {
-    es: "Iniciar sesión en Rowi",
-    en: "Sign in to Rowi",
-  },
-  subtitle: {
-    es: "Accede con tu cuenta para continuar.",
-    en: "Access with your account to continue.",
-  },
-  loginWith: {
-    es: "Ingresar con",
-    en: "Sign in with",
-  },
-  sixSecondsLogin: {
-    es: "Ingresar con Six Seconds",
-    en: "Sign in with Six Seconds",
-  },
-  sixSecondsDesc: {
-    es: "Para graduados SEI y partners",
-    en: "For SEI graduates and partners",
-  },
-  or: {
-    es: "o",
-    en: "or",
-  },
-  noAccount: {
-    es: "¿No tienes cuenta?",
-    en: "Don't have an account?",
-  },
-  register: {
-    es: "Regístrate gratis",
-    en: "Sign up for free",
-  },
-  emailPlaceholder: {
-    es: "tu@email.com",
-    en: "you@email.com",
-  },
-  passwordPlaceholder: {
-    es: "Contraseña",
-    en: "Password",
-  },
-  loginButton: {
-    es: "Iniciar sesión",
-    en: "Sign in",
-  },
-  forgotPassword: {
-    es: "¿Olvidaste tu contraseña?",
-    en: "Forgot password?",
-  },
-  loginWithEmail: {
-    es: "o inicia sesión con email",
-    en: "or sign in with email",
-  },
-  // Error messages
-  error_sso_no_token: {
-    es: "No se recibió el token de autenticación",
-    en: "Authentication token not received",
-  },
-  error_sso_invalid_token: {
-    es: "El token de autenticación es inválido",
-    en: "Authentication token is invalid",
-  },
-  error_sso_no_access: {
-    es: "No tienes acceso a Rowi. Contacta a tu administrador.",
-    en: "You don't have access to Rowi. Contact your administrator.",
-  },
-  error_sso_extract_failed: {
-    es: "Error procesando la autenticación",
-    en: "Error processing authentication",
-  },
-  error_sso_processing_failed: {
-    es: "Error en el proceso de login. Intenta de nuevo.",
-    en: "Login process error. Please try again.",
-  },
-  error_CredentialsSignin: {
-    es: "Email o contraseña incorrectos",
-    en: "Invalid email or password",
-  },
-  error_default: {
-    es: "Error de autenticación. Intenta de nuevo.",
-    en: "Authentication error. Please try again.",
-  },
+const ERROR_KEYS: Record<string, string> = {
+  CredentialsSignin: "auth.errorCredentials",
+  sso_no_token: "auth.errorSsoNoToken",
+  sso_invalid_token: "auth.errorSsoInvalidToken",
+  sso_no_access: "auth.errorSsoNoAccess",
+  sso_extract_failed: "auth.errorSsoExtractFailed",
+  sso_processing_failed: "auth.errorSsoProcessingFailed",
 };
 
 function HubLoginContent() {
+  const { t, lang, setLang } = useI18n();
   const [providers, setProviders] = useState<Record<string, any>>({});
-  const [lang, setLang] = useState<"es" | "en">("es");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -105,24 +31,17 @@ function HubLoginContent() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   // ─────────────────────────────────────────────────────────
-  // Load providers and language
+  // Load providers
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     getProviders().then((prov) => setProviders(prov || {}));
-
-    // Detect language
-    const stored = localStorage.getItem("rowi.lang") as "es" | "en";
-    if (stored && ["es", "en"].includes(stored)) {
-      setLang(stored);
-    }
   }, []);
 
   // ─────────────────────────────────────────────────────────
   // Get error message
   // ─────────────────────────────────────────────────────────
-  const errorMessage = error
-    ? T[`error_${error}`]?.[lang] || T.error_default[lang]
-    : null;
+  const errorKey = error ? ERROR_KEYS[error] || "auth.errorDefault" : null;
+  const errorMessage = errorKey ? t(errorKey) : null;
 
   // ─────────────────────────────────────────────────────────
   // Handle Six Seconds SSO login
@@ -170,8 +89,8 @@ function HubLoginContent() {
       <div className="max-w-sm w-full bg-black/40 backdrop-blur-xl rounded-2xl shadow-xl p-8 space-y-5 text-center">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold mb-2">🔐 {T.title[lang]}</h1>
-          <p className="text-sm opacity-80">{T.subtitle[lang]}</p>
+          <h1 className="text-2xl font-bold mb-2">🔐 {t("auth.loginTitle")}</h1>
+          <p className="text-sm opacity-80">{t("auth.loginSubtitle")}</p>
         </div>
 
         {/* Error message */}
@@ -209,7 +128,7 @@ function HubLoginContent() {
                   />
                 </svg>
               )}
-              {T.loginWith[lang]} {provider.name}
+              {t("auth.loginWith")} {provider.name}
             </button>
           ))}
         </div>
@@ -217,7 +136,7 @@ function HubLoginContent() {
         {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/20" />
-          <span className="text-sm opacity-60">{T.loginWithEmail[lang]}</span>
+          <span className="text-sm opacity-60">{t("auth.loginWithEmail")}</span>
           <div className="flex-1 h-px bg-white/20" />
         </div>
 
@@ -227,7 +146,7 @@ function HubLoginContent() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={T.emailPlaceholder[lang]}
+            placeholder={t("auth.emailPlaceholder")}
             className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors"
             required
           />
@@ -235,7 +154,7 @@ function HubLoginContent() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={T.passwordPlaceholder[lang]}
+            placeholder={t("auth.password")}
             className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors"
             required
           />
@@ -250,7 +169,7 @@ function HubLoginContent() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
             ) : (
-              T.loginButton[lang]
+              t("auth.login")
             )}
           </button>
         </form>
@@ -258,7 +177,7 @@ function HubLoginContent() {
         {/* Divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/20" />
-          <span className="text-sm opacity-60">{T.or[lang]}</span>
+          <span className="text-sm opacity-60">{t("auth.or")}</span>
           <div className="flex-1 h-px bg-white/20" />
         </div>
 
@@ -278,20 +197,20 @@ function HubLoginContent() {
               <circle cx="12" cy="12" r="10" />
               <path d="M12 6v6l4 2" />
             </svg>
-            {T.sixSecondsLogin[lang]}
+            {t("auth.sixSecondsLogin")}
           </span>
-          <span className="text-xs opacity-80">{T.sixSecondsDesc[lang]}</span>
+          <span className="text-xs opacity-80">{t("auth.sixSecondsDesc")}</span>
         </button>
 
         {/* Register Link */}
         <div className="pt-2 text-center">
           <p className="text-sm opacity-80">
-            {T.noAccount[lang]}{" "}
+            {t("auth.noAccount")}{" "}
             <Link
               href="/register"
               className="font-semibold underline hover:text-white/90 transition-colors"
             >
-              {T.register[lang]}
+              {t("auth.registerFree")}
             </Link>
           </p>
         </div>
@@ -299,10 +218,7 @@ function HubLoginContent() {
         {/* Language toggle */}
         <div className="pt-2 flex justify-center gap-2">
           <button
-            onClick={() => {
-              setLang("es");
-              localStorage.setItem("rowi.lang", "es");
-            }}
+            onClick={() => setLang("es")}
             className={`px-3 py-1 rounded text-sm ${
               lang === "es" ? "bg-white/20" : "opacity-60 hover:opacity-80"
             }`}
@@ -310,10 +226,7 @@ function HubLoginContent() {
             🇪🇸 ES
           </button>
           <button
-            onClick={() => {
-              setLang("en");
-              localStorage.setItem("rowi.lang", "en");
-            }}
+            onClick={() => setLang("en")}
             className={`px-3 py-1 rounded text-sm ${
               lang === "en" ? "bg-white/20" : "opacity-60 hover:opacity-80"
             }`}

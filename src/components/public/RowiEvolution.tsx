@@ -493,10 +493,11 @@ export default function RowiEvolution({
 
             {/* Current position indicator */}
             <motion.div
-              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-lg border-2 flex items-center justify-center"
+              className="absolute w-5 h-5 bg-white rounded-full shadow-lg border-2 flex items-center justify-center"
               style={{
                 borderColor: currentStage.seiLevel.color,
                 left: `${progressPercent}%`,
+                top: "50%",
                 transform: "translate(-50%, -50%)"
               }}
               animate={{ scale: [1, 1.2, 1] }}
@@ -531,7 +532,7 @@ export default function RowiEvolution({
                     : "text-[var(--rowi-muted)]"
                 }`}
               >
-                {stage.seiLevel.emoji} {stage.seiLevel.short}
+                {stage.seiLevel.emoji} {lang === "en" ? stage.seiLevel.labelEN : stage.seiLevel.label}
               </span>
             ))}
           </div>

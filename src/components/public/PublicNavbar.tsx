@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Globe, Sun, Moon } from "lucide-react";
+import { Menu, X, ChevronDown, Globe, Sun, Moon, LayoutDashboard } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
@@ -38,9 +39,12 @@ const navItems = [
 export default function PublicNavbar() {
   const { t, lang, setLang } = useI18n();
   const { resolvedMode, setMode } = useTheme();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  const isLoggedIn = status === "authenticated" && !!session?.user;
 
   const toggleTheme = () => {
     setMode(resolvedMode === "dark" ? "light" : "dark");
@@ -118,12 +122,24 @@ export default function PublicNavbar() {
           </button>
 
           {/* Auth Buttons */}
-          <Link href="/signin" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] transition-colors">
-            {t("nav.login", "Iniciar sesión")}
-          </Link>
-          <Link href="/register" className="rowi-btn-primary px-4 py-2 text-sm hidden sm:block">
-            {t("nav.register", "Comenzar gratis")}
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="rowi-btn-primary px-4 py-2 text-sm flex items-center gap-2"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              {t("nav.dashboard", "Dashboard")}
+            </Link>
+          ) : (
+            <>
+              <Link href="/hub/login" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] transition-colors">
+                {t("nav.login", "Iniciar sesión")}
+              </Link>
+              <Link href="/register" className="rowi-btn-primary px-4 py-2 text-sm hidden sm:block">
+                {t("nav.register", "Comenzar gratis")}
+              </Link>
+            </>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -171,9 +187,19 @@ export default function PublicNavbar() {
                 </div>
               ))}
               <div className="pt-4 border-t border-gray-200 dark:border-zinc-800">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-center text-gray-600 dark:text-gray-400">
-                  {t("nav.login", "Iniciar sesión")}
-                </Link>
+                {isLoggedIn ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 text-center rowi-btn-primary"
+                  >
+                    {t("nav.dashboard", "Dashboard")}
+                  </Link>
+                ) : (
+                  <Link href="/hub/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-center text-gray-600 dark:text-gray-400">
+                    {t("nav.login", "Iniciar sesión")}
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

@@ -43,7 +43,7 @@ export default function BetaBanner() {
   if (!mounted || !visible) return null;
 
   return (
-    <div className="relative isolate flex items-center gap-x-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-6 py-2.5 sm:px-3.5">
+    <div className="relative z-50 isolate flex items-center gap-x-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-6 py-2.5 sm:px-3.5">
       {/* Animated background elements */}
       <div className="absolute left-[max(-7rem,calc(50%-52rem))] top-1/2 -z-10 -translate-y-1/2 transform-gpu blur-2xl" aria-hidden="true">
         <div

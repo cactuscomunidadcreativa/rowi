@@ -55,6 +55,7 @@ export async function middleware(req: NextRequest) {
         - Página principal pública
         - API de autenticación NextAuth
         - API de traducciones (i18n)
+        - API pública (plans, etc.)
   ========================================================== */
   if (
     pathname === "/" ||
@@ -62,7 +63,9 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/invite") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/i18n")
+    pathname.startsWith("/api/i18n") ||
+    pathname.startsWith("/api/public") ||
+    pathname.startsWith("/api/plans")
   ) {
     return NextResponse.next();
   }

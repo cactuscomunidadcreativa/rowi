@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parse } from "csv-parse/sync";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
+import { contributeBatchToRowiverse, ContributionInput } from "@/lib/rowiverse/contribution-service";
 
 export const runtime = "nodejs";
 
@@ -144,7 +145,11 @@ export async function POST(req: NextRequest) {
       moods: 0,
       success: 0,
       talents: 0,
+      rowiverseContributions: 0,
     };
+
+    // Acumular contribuciones al RowiVerse para batch insert al final
+    const rowiverseContributions: ContributionInput[] = [];
 
     /* =========================================================
        🔁 BUCLE PRINCIPAL — POR CADA FILA DEL CSV
@@ -175,7 +180,44 @@ export async function POST(req: NextRequest) {
       }
 
       /* =========================================================
-         2.2 VINCULAR COMO MIEMBRO DE LA COMUNIDAD
+         2.2.1 ASEGURAR ROWIVERSE USER (global identity primero)
+      ========================================================== */
+      let rowiVerseUser = await prisma.rowiVerseUser.findUnique({
+        where: { userId: user.id },
+      });
+
+      if (!rowiVerseUser) {
+        // Intentar buscar por email también
+        rowiVerseUser = await prisma.rowiVerseUser.findUnique({
+          where: { email: user.email },
+        });
+      }
+
+      if (!rowiVerseUser) {
+        rowiVerseUser = await prisma.rowiVerseUser.create({
+          data: {
+            userId: user.id,
+            email: user.email,
+            name: user.name,
+            language: user.language || "es",
+            rowiVerseId: rowiVerseId || community.rowiVerseId || null,
+            verified: false, // Se verifica cuando reclama su perfil
+            active: true,
+            status: "pending",
+          },
+        });
+      }
+
+      // Vincular User con RowiVerseUser si no está vinculado
+      if (!user.rowiverseId) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { rowiverseId: rowiVerseUser.id },
+        });
+      }
+
+      /* =========================================================
+         2.2.2 VINCULAR COMO MIEMBRO DE LA COMUNIDAD
       ========================================================== */
       let communityUser = await prisma.rowiCommunityUser.findFirst({
         where: { communityId: community.id, userId: user.id },
@@ -186,15 +228,25 @@ export async function POST(req: NextRequest) {
           data: {
             userId: user.id,
             communityId: community.id,
+            rowiverseUserId: rowiVerseUser.id,
+            email: user.email,
+            name: user.name,
             role: "member",
             status: "active",
+            language: user.language || community.language || "es",
           },
         });
         stats.membersCreated++;
+      } else if (!communityUser.rowiverseUserId) {
+        // Update existing to link with RowiVerse
+        await prisma.rowiCommunityUser.update({
+          where: { id: communityUser.id },
+          data: { rowiverseUserId: rowiVerseUser.id },
+        });
       }
 
       /* =========================================================
-         2.3 CREAR MIEMBRO LEGACY
+         2.3 CREAR MIEMBRO LEGACY (para compatibilidad)
       ========================================================== */
       let legacyMember = await prisma.communityMember.findFirst({
         where: { email, tenantId: tenantId ?? community.tenantId },
@@ -208,30 +260,17 @@ export async function POST(req: NextRequest) {
             userId: user.id,
             tenantId: tenantId ?? community.tenantId,
             hubId: hubId ?? community.hubId ?? null,
-            rowiverseUserId: null,
+            rowiverseUserId: rowiVerseUser.id,
             role: "member",
             status: "ACTIVE",
             joinedAt: new Date(),
           },
         });
-      }
-
-      /* =========================================================
-         2.3.1 ASEGURAR ROWIVERSE USER
-      ========================================================== */
-      let rowiVerseUser = await prisma.rowiVerseUser.findUnique({
-        where: { userId: user.id },
-      });
-
-      if (!rowiVerseUser) {
-        rowiVerseUser = await prisma.rowiVerseUser.create({
-          data: {
-            userId: user.id,
-            email: user.email,
-            name: user.name,
-            language: user.language || "es",
-            rowiVerseId: rowiVerseId || community.rowiVerseId || null,
-          },
+      } else if (!legacyMember.rowiverseUserId) {
+        // Update existing to link with RowiVerse
+        await prisma.communityMember.update({
+          where: { id: legacyMember.id },
+          data: { rowiverseUserId: rowiVerseUser.id },
         });
       }
 
@@ -285,6 +324,77 @@ export async function POST(req: NextRequest) {
       });
 
       stats.snapshotsCreated++;
+
+      /* =========================================================
+         2.3.3.1 PREPARAR CONTRIBUCIÓN AL ROWIVERSE
+      ========================================================== */
+      // Solo agregar si el usuario tiene habilitada la contribución (default: true)
+      if (user.contributeToRowiverse !== false) {
+        rowiverseContributions.push({
+          userId: user.id,
+          memberId: legacyMember.id,
+          tenantId: tenantId || community.tenantId || undefined,
+          sourceType: "csv_upload",
+          sourceId: snapshot.id,
+          eqData: {
+            eqTotal: toFloat(row["Know Yourself Score"]) && toFloat(row["Choose Yourself Score"]) && toFloat(row["Give Yourself Score"])
+              ? Math.round(((toFloat(row["Know Yourself Score"]) || 0) + (toFloat(row["Choose Yourself Score"]) || 0) + (toFloat(row["Give Yourself Score"]) || 0)) / 3)
+              : null,
+            K: toFloat(row["Know Yourself Score"]),
+            C: toFloat(row["Choose Yourself Score"]),
+            G: toFloat(row["Give Yourself Score"]),
+            EL: toFloat(row["Enhance Emotional Literacy Score"]),
+            RP: toFloat(row["Recognize Patterns Score"]),
+            ACT: toFloat(row["Apply Consequential Thinking Score"]),
+            NE: toFloat(row["Navigate Emotions Score"]),
+            IM: toFloat(row["Engage Intrinsic Motivation Score"]),
+            OP: toFloat(row["Excercise Optimism Score"]),
+            EMP: toFloat(row["Increase Empathy Score"]),
+            NG: toFloat(row["Pursue Noble Goals Score"]),
+          },
+          demographics: {
+            country: row.Country || null,
+            region: null,
+            sector: row.Sector || null,
+            jobFunction: row["Job Function"] || null,
+            jobRole: row["Job Role"] || null,
+            ageRange: row.Age ? `${row.Age}` : null,
+            gender: row.Gender || null,
+            education: row.Education || null,
+          },
+          outcomes: {
+            effectiveness: toFloat(row["Effectiveness"]),
+            relationships: toFloat(row["Relationship"]),
+            qualityOfLife: toFloat(row["Quality of Life"]),
+            wellbeing: toFloat(row["Wellbeing"]),
+            influence: toFloat(row["Influence"]),
+            decisionMaking: toFloat(row["Decision Making"]),
+            community: toFloat(row["Community"]),
+            health: toFloat(row["Health"]),
+          },
+          brainTalents: {
+            dataMining: toFloat(row["DataMining"]),
+            modeling: toFloat(row["Modeling"]),
+            prioritizing: toFloat(row["Prioritizing"]),
+            connection: toFloat(row["Connection"]),
+            emotionalInsight: toFloat(row["EmotionalInsight"]),
+            collaboration: toFloat(row["Collaboration"]),
+            reflecting: toFloat(row["Reflecting"]),
+            adaptability: toFloat(row["Adaptability"]),
+            criticalThinking: toFloat(row["CriticalThinking"]),
+            resilience: toFloat(row["Resilience"]),
+            riskTolerance: toFloat(row["RiskTolerance"]),
+            imagination: toFloat(row["Imagination"]),
+            proactivity: toFloat(row["Proactivity"]),
+            commitment: toFloat(row["Commitment"]),
+            problemSolving: toFloat(row["ProblemSolving"]),
+            vision: toFloat(row["Vision"]),
+            designing: toFloat(row["Designing"]),
+            entrepreneurship: toFloat(row["Entrepreneurship"]),
+            brainAgility: toFloat(row["Brain Agility"]),
+          },
+        });
+      }
 
       /* =========================================================
          2.3.4 RECALCULAR AFINIDAD
@@ -373,6 +483,19 @@ export async function POST(req: NextRequest) {
       }
 
     } // ←←← CIERRE CORRECTO DEL FOR PRINCIPAL
+
+    /* =========================================================
+       3️⃣ CONTRIBUIR AL ROWIVERSE EN BATCH
+    ========================================================== */
+    if (rowiverseContributions.length > 0) {
+      try {
+        const rowiverseResult = await contributeBatchToRowiverse(rowiverseContributions);
+        stats.rowiverseContributions = rowiverseResult.processed;
+        console.log(`🌐 RowiVerse: ${rowiverseResult.processed} contribuciones procesadas`);
+      } catch (err) {
+        console.warn("⚠️ Error al contribuir al RowiVerse:", err);
+      }
+    }
 
     /* =========================================================
        📦 RESPUESTA FINAL

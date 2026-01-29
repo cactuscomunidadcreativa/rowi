@@ -5,73 +5,98 @@
 
 export interface EqLevel {
   key: string;
-  label: string;       // Nombre descriptivo (Ej: Funcional)
-  short?: string;      // Versión corta opcional (Ej: FUN)
+  labelKey: string;       // Clave de traducción para el nombre
+  label: string;          // Fallback en español
+  labelEN: string;        // Fallback en inglés
+  short?: string;         // Versión corta opcional (Ej: FUN)
   min: number;
   max: number;
   color: string;
   emoji: string;
-  description: string;
+  descriptionKey: string; // Clave de traducción para descripción
+  description: string;    // Fallback en español
+  descriptionEN: string;  // Fallback en inglés
 }
 
 /**
  * 🧠 Escala oficial SEI (Six Seconds)
- * - Desafío (0–81)
- * - Emergente (82–91)
- * - Funcional (92–107)
- * - Diestro (108–117)
- * - Experto (118–135)
+ * Indicadores de nivel de competencia emocional
+ * - Desafío (65–81) / Challenge
+ * - Emergente (82–91) / Emerging
+ * - Funcional (92–107) / Functional
+ * - Diestro (108–117) / Skilled
+ * - Experto (118–135) / Expert
  */
 export const EQ_LEVELS: EqLevel[] = [
   {
     key: "challenge",
+    labelKey: "sei.levels.challenge",
     label: "Desafío",
+    labelEN: "Challenge",
     short: "CH",
-    min: 0,
+    min: 65,
     max: 81,
     color: "#ef4444",
     emoji: "🧩",
-    description: "Necesita desarrollar consciencia emocional y autogestión.",
+    descriptionKey: "sei.levels.challenge.desc",
+    description: "Necesita desarrollar consciencia emocional y autogestión. Área de oportunidad significativa.",
+    descriptionEN: "Needs to develop emotional awareness and self-management. Significant opportunity area.",
   },
   {
     key: "emerging",
+    labelKey: "sei.levels.emerging",
     label: "Emergente",
+    labelEN: "Emerging",
     short: "EM",
     min: 82,
     max: 91,
     color: "#f59e0b",
     emoji: "🌱",
-    description: "Comienza a reconocer emociones y usarlas de forma funcional.",
+    descriptionKey: "sei.levels.emerging.desc",
+    description: "Comienza a reconocer emociones y usarlas de forma funcional. En proceso de desarrollo.",
+    descriptionEN: "Beginning to recognize emotions and use them functionally. In development process.",
   },
   {
     key: "functional",
+    labelKey: "sei.levels.functional",
     label: "Funcional",
+    labelEN: "Functional",
     short: "FU",
     min: 92,
     max: 107,
     color: "#3b82f6",
     emoji: "🧠",
-    description: "Integra pensamiento y emoción con equilibrio consistente.",
+    descriptionKey: "sei.levels.functional.desc",
+    description: "Integra pensamiento y emoción con equilibrio consistente. Competencia estable.",
+    descriptionEN: "Integrates thinking and emotion with consistent balance. Stable competence.",
   },
   {
     key: "skilled",
+    labelKey: "sei.levels.skilled",
     label: "Diestro",
+    labelEN: "Skilled",
     short: "DI",
     min: 108,
     max: 117,
     color: "#8b5cf6",
     emoji: "🎯",
-    description: "Maneja con fluidez las competencias emocionales clave.",
+    descriptionKey: "sei.levels.skilled.desc",
+    description: "Maneja con fluidez las competencias emocionales clave. Alto desempeño.",
+    descriptionEN: "Fluently manages key emotional competencies. High performance.",
   },
   {
     key: "expert",
+    labelKey: "sei.levels.expert",
     label: "Experto",
+    labelEN: "Expert",
     short: "EX",
     min: 118,
     max: 135,
     color: "#10b981",
     emoji: "🌟",
-    description: "Domina la inteligencia emocional con propósito y liderazgo.",
+    descriptionKey: "sei.levels.expert.desc",
+    description: "Domina la inteligencia emocional con propósito y liderazgo. Nivel de excelencia.",
+    descriptionEN: "Masters emotional intelligence with purpose and leadership. Level of excellence.",
   },
 ];
 

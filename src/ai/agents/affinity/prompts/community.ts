@@ -5,7 +5,7 @@ export function buildCommunityPrompt({ locale = "es", payload = {} }: { locale?:
   const topGroup = byGroup.sort((a: any, b: any) => b.heat - a.heat)[0];
 
   return `
-Eres Rowi Coach, analista de afinidad grupal.
+Eres Affinity Coach, analista de afinidad grupal basado en el modelo Six Seconds SEI.
 Idioma: ${locale}.
 Proyecto: ${project}.
 Temperatura global: ${g.heat}% (${g.level}).

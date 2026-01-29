@@ -1,9 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n/react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  Sparkles,
+  Brain,
+  Target,
+  TrendingUp,
+  Heart,
+  Users,
+  Zap,
+  MessageCircle,
+  ArrowRight,
+  BarChart3,
+  Star,
+  Flame,
+  Compass
+} from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
-// === Componentes (los mismos que tienes) ===
+// === Componentes existentes ===
 import CompetenciesSpider from "@/components/charts/CompetenciesSpider";
 import { EqTotalBar } from "@/components/metrics/EqTotalBar";
 import { PursuitsBars } from "@/components/metrics/PursuitsBars";
@@ -16,13 +34,132 @@ import FeedbackPanel from "@/components/dashboard/FeedbackPanel";
 import RowiLevelPill from "@/components/shared/RowiLevelPill";
 import { EQ_MAX, EQ_LEVELS, getEqLevel, toPercentOf135 } from "@/domains/eq/lib/eqLevels";
 
+/* =========================================================
+   🌍 Traducciones del Dashboard
+========================================================= */
+const translations = {
+  es: {
+    welcome: "Bienvenido de vuelta",
+    subtitle: "Tu espacio de crecimiento emocional",
+    loading: "Cargando tu perfil emocional...",
+    dataSource: "Fuente de datos",
+
+    // Cards
+    eqScore: "Tu Puntuación EQ",
+    eqScoreDesc: "Basado en la metodología Six Seconds",
+    competencies: "Competencias Emocionales",
+    competenciesDesc: "Tus 8 competencias del modelo SEI",
+    noCompetencies: "Completa tu evaluación SEI para ver tus competencias",
+
+    // Pursuits
+    pursuits: "Los 3 Propósitos",
+    know: "Conocerte",
+    choose: "Elegirte",
+    give: "Entregarte",
+
+    // Talents
+    talents: "Tus Talentos",
+    focus: "Enfoque",
+    decisions: "Decisiones",
+    drive: "Impulso",
+
+    // Outcomes
+    outcomes: "Resultados de Vida",
+    outcomesDesc: "Cómo tu IE impacta tu bienestar",
+    overall: "Puntuación General",
+
+    // Coach
+    coachTitle: "Rowi Coach",
+    coachDesc: "Tu compañero de inteligencia emocional está listo para ayudarte",
+    startChat: "Iniciar conversación",
+
+    // Quick Actions
+    quickActions: "Acciones Rápidas",
+    takeSei: "Tomar evaluación SEI",
+    exploreAffinity: "Explorar Afinidad",
+    joinCommunity: "Unirse a la Comunidad",
+    viewProgress: "Ver mi progreso",
+
+    // Mood
+    currentMood: "Estado de ánimo",
+
+    // Info
+    additionalInfo: "Información Adicional",
+    user: "Usuario",
+    brainStyle: "Estilo cerebral",
+
+    // Indicators
+    indicators: "Indicadores de nivel",
+
+    // Level
+    yourLevel: "Tu nivel",
+  },
+  en: {
+    welcome: "Welcome back",
+    subtitle: "Your emotional growth space",
+    loading: "Loading your emotional profile...",
+    dataSource: "Data source",
+
+    // Cards
+    eqScore: "Your EQ Score",
+    eqScoreDesc: "Based on Six Seconds methodology",
+    competencies: "Emotional Competencies",
+    competenciesDesc: "Your 8 SEI model competencies",
+    noCompetencies: "Complete your SEI assessment to see your competencies",
+
+    // Pursuits
+    pursuits: "The 3 Pursuits",
+    know: "Know Yourself",
+    choose: "Choose Yourself",
+    give: "Give Yourself",
+
+    // Talents
+    talents: "Your Talents",
+    focus: "Focus",
+    decisions: "Decisions",
+    drive: "Drive",
+
+    // Outcomes
+    outcomes: "Life Outcomes",
+    outcomesDesc: "How your EI impacts your wellbeing",
+    overall: "Overall Score",
+
+    // Coach
+    coachTitle: "Rowi Coach",
+    coachDesc: "Your emotional intelligence companion is ready to help you",
+    startChat: "Start conversation",
+
+    // Quick Actions
+    quickActions: "Quick Actions",
+    takeSei: "Take SEI assessment",
+    exploreAffinity: "Explore Affinity",
+    joinCommunity: "Join Community",
+    viewProgress: "View my progress",
+
+    // Mood
+    currentMood: "Current mood",
+
+    // Info
+    additionalInfo: "Additional Information",
+    user: "User",
+    brainStyle: "Brain style",
+
+    // Indicators
+    indicators: "Level indicators",
+
+    // Level
+    yourLevel: "Your level",
+  },
+};
+
 export default function ClientDashboard() {
-  const { t, locale } = useI18n();
+  const { lang } = useI18n();
+  const t = translations[lang as keyof typeof translations] || translations.es;
 
   const [base, setBase] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // ========= 1️⃣ Cargar EQ real desde API =========
+  // Cargar EQ real desde API
   useEffect(() => {
     async function load() {
       try {
@@ -30,213 +167,488 @@ export default function ClientDashboard() {
         const data = await res.json();
         setBase(data);
       } catch (err) {
-        console.error("❌ Error cargando /api/eq/me:", err);
+        console.error("Error cargando /api/eq/me:", err);
       } finally {
         setLoading(false);
       }
     }
-
     load();
   }, []);
 
   if (loading || !base) {
     return (
-      <div className="text-sm text-gray-400 animate-pulse py-10">
-        Cargando datos emocionales…
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 flex items-center justify-center animate-pulse">
+            <Image
+              src="/rowivectors/Rowi-06.png"
+              alt="Rowi"
+              width={60}
+              height={60}
+              className="object-contain"
+            />
+          </div>
+          <div className="absolute inset-0 rounded-full border-2 border-[var(--rowi-g2)] border-t-transparent animate-spin" />
+        </div>
+        <p className="mt-4 text-gray-500 dark:text-gray-400 animate-pulse">
+          {t.loading}
+        </p>
       </div>
     );
   }
 
+  const eqTotal = base.eq?.total ?? 0;
+  const eqLevel = getEqLevel(eqTotal);
+  const userName = base.user?.name?.split(" ")[0] || "Usuario";
+
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* ENCABEZADO */}
-      <div className="flex items-end justify-between">
+    <div className="space-y-8 pt-20 pb-12 px-4 max-w-7xl mx-auto">
+      {/* HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-gray-500">
-            Fuente de datos: {base.source}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t.welcome}, <span className="rowi-gradient-text">{userName}</span>
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            {t.subtitle}
           </p>
         </div>
-      </div>
 
-      {/* === EQ TOTAL + COMPETENCIAS === */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-4">
-          {/* EQ TOTAL */}
-          <EqTotalBar
-            value={base.eq?.total ?? 0}
-            label={`EQ Total — ${base.eq?.total ?? 0}/${EQ_MAX}`}
-            color={getEqLevel(base.eq?.total ?? 0).color}
-          />
+        <MoodChip
+          text={base.mood?.recentText ?? "—"}
+          emoji={base.mood?.recentEmoji ?? "🙂"}
+        />
+      </motion.div>
 
-          {/* K/C/G */}
-          <PursuitsBars
-            know={base.eq?.pursuits?.know ?? null}
-            choose={base.eq?.pursuits?.choose ?? null}
-            give={base.eq?.pursuits?.give ?? null}
-            max={EQ_MAX}
+      {/* QUICK ACTIONS */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-3"
+      >
+        {!base.signals?.hasSEI && (
+          <QuickAction
+            href="/sei"
+            icon={Zap}
+            label={t.takeSei}
+            gradient="from-yellow-500 to-orange-500"
           />
+        )}
+        {base.signals?.hasSEI && (
+          <QuickAction
+            href="/rowi"
+            icon={MessageCircle}
+            label={t.startChat}
+            gradient="from-yellow-500 to-orange-500"
+          />
+        )}
+        <QuickAction
+          href="/affinity"
+          icon={Heart}
+          label={t.exploreAffinity}
+          gradient="from-pink-500 to-rose-500"
+        />
+        <QuickAction
+          href="/community"
+          icon={Users}
+          label={t.joinCommunity}
+          gradient="from-blue-500 to-cyan-500"
+        />
+        <QuickAction
+          href="/progress"
+          icon={TrendingUp}
+          label={t.viewProgress}
+          gradient="from-green-500 to-emerald-500"
+        />
+      </motion.div>
 
-          {/* Mood + Nivel Rowi */}
-          <MoodChip
-            text={base.mood?.recentText ?? "—"}
-            emoji={base.mood?.recentEmoji ?? "🙂"}
-          />
-          <RowiLevelPill
-            signals={{ hasSEI: true, hasProfile: true, coachSessions: 0 }}
-            size="sm"
-            className="mt-1"
-          />
-        </div>
+      {/* EQ SCORE + COMPETENCIES */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* EQ Score Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
+              <Brain className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
+                {t.eqScore}
+              </h2>
+              <a
+                href="https://www.6seconds.org/2025/04/23/the-six-seconds-eq-model/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[var(--rowi-g2)] hover:underline"
+              >
+                {t.eqScoreDesc} →
+              </a>
+            </div>
+          </div>
 
-        {/* 🧭 Competencias */}
-        <div className="rounded-xl border p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <h2 className="font-medium">🧭 Competencias</h2>
+          {/* EQ Level Display */}
+          <div className="mb-6 text-center">
+            <div
+              className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl"
+              style={{ backgroundColor: `${eqLevel.color}15` }}
+            >
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: eqLevel.color }}
+              />
+              <span
+                className="text-2xl font-bold"
+                style={{ color: eqLevel.color }}
+              >
+                {eqLevel.label}
+              </span>
+            </div>
+            <div className="mt-3 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(eqTotal / EQ_MAX) * 100}%` }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: eqLevel.color }}
+              />
+            </div>
+          </div>
+
+          {/* Pursuits K/C/G */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <Compass className="w-4 h-4" />
+              {t.pursuits}
+            </h3>
+            <PursuitsBars
+              know={base.eq?.pursuits?.know ?? null}
+              choose={base.eq?.pursuits?.choose ?? null}
+              give={base.eq?.pursuits?.give ?? null}
+              max={EQ_MAX}
+            />
+          </div>
+        </motion.div>
+
+        {/* Competencies Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
+                {t.competencies}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t.competenciesDesc}
+              </p>
+            </div>
           </div>
 
           {Object.values(base.eq?.competencias || {}).some(
             (v) => typeof v === "number" && v > 0
           ) ? (
             <>
-              <CompetenciesSpider comps={base.eq?.competencias} />
-              <IndicatorsLegend />
-              <FeedbackPanel present={{ competencias: base.eq.competencias }} />
+              <div className="h-64">
+                <CompetenciesSpider comps={base.eq?.competencias} />
+              </div>
+              <IndicatorsLegend t={t} />
             </>
           ) : (
-            <div className="text-sm text-gray-400 py-10 text-center">
-              No hay datos de competencias aún.
+            <div className="h-64 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                <Zap className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs">
+                {t.noCompetencies}
+              </p>
+              <Link
+                href="/sei"
+                className="mt-4 px-4 py-2 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+              >
+                {t.takeSei}
+              </Link>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* TALENTS */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Star className="w-5 h-5 text-yellow-500" />
+          {t.talents}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <TalentCard
+            title={t.focus}
+            icon={Target}
+            color="#1E88E5"
+            talents={Object.entries(base.eq?.talents?.focus || {})
+              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .map(([k, v]) => ({
+                label: k,
+                value: toPercentOf135(v ?? 0),
+                raw: v ?? null,
+              }))}
+          />
+          <TalentCard
+            title={t.decisions}
+            icon={Flame}
+            color="#E53935"
+            talents={Object.entries(base.eq?.talents?.decisions || {})
+              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .map(([k, v]) => ({
+                label: k,
+                value: toPercentOf135(v ?? 0),
+                raw: v ?? null,
+              }))}
+          />
+          <TalentCard
+            title={t.drive}
+            icon={TrendingUp}
+            color="#43A047"
+            talents={Object.entries(base.eq?.talents?.drive || {})
+              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .map(([k, v]) => ({
+                label: k,
+                value: toPercentOf135(v ?? 0),
+                raw: v ?? null,
+              }))}
+          />
+        </div>
+      </motion.div>
+
+      {/* OUTCOMES */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
+          {t.outcomes}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="md:col-span-1">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm h-full">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
+                {t.overall}
+              </h3>
+              <OverallSummary
+                overall4={base.outcomes?.overall4 ?? null}
+                subtitle={`${base.outcomes?.overall4 ?? "—"} / ${EQ_MAX} · ${getEqLevel(base.outcomes?.overall4 ?? 0).label}`}
+                color={getEqLevel(base.outcomes?.overall4 ?? 0).color}
+              />
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {t.outcomesDesc}
+              </p>
+              <OutcomesPanel present={{ ...base.outcomes, success: base.success }} />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ROWI COACH */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="bg-gradient-to-r from-[var(--rowi-g1)]/10 to-[var(--rowi-g2)]/10 rounded-2xl border border-[var(--rowi-g2)]/20 p-6"
+      >
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
+              <Image
+                src="/rowivectors/Rowi-06.png"
+                alt="Rowi"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-[var(--rowi-g2)]" />
+                {t.coachTitle}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t.coachDesc}
+              </p>
+            </div>
+          </div>
+
+          <div className="md:ml-auto">
+            <Link
+              href="/rowi"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
+            >
+              {t.startChat}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <CoachPanel
+            compact
+            profile={{
+              user: base.user,
+              mood: base.mood,
+              brain: base.brain,
+              eq: base.eq,
+              outcomes: base.outcomes,
+              success: base.success,
+            }}
+          />
+        </div>
+      </motion.div>
+
+      {/* ADDITIONAL INFO */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm"
+      >
+        <h2 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
+          {t.additionalInfo}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t.user}</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {base.user?.name ?? "—"}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {base.user?.email ?? "—"}
+            </p>
+          </div>
+          {base.brain?.style && (
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t.brainStyle}</p>
+              <p className="font-medium text-gray-900 dark:text-white">
+                {base.brain.style}
+              </p>
             </div>
           )}
         </div>
-      </div>
-
-      {/* === TALENTOS === */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <TalentCluster
-          title="Focus"
-          color="#1E88E5"
-          talents={Object.entries(base.eq?.talents?.focus || {}).map(
-            ([k, v]) => ({
-              label: k,
-              value: toPercentOf135(v ?? 0),
-              raw: v ?? null,
-            })
-          )}
-        />
-
-        <TalentCluster
-          title="Decisions"
-          color="#E53935"
-          talents={Object.entries(base.eq?.talents?.decisions || {}).map(
-            ([k, v]) => ({
-              label: k,
-              value: toPercentOf135(v ?? 0),
-              raw: v ?? null,
-            })
-          )}
-        />
-
-        <TalentCluster
-          title="Drive"
-          color="#43A047"
-          talents={Object.entries(base.eq?.talents?.drive || {}).map(
-            ([k, v]) => ({
-              label: k,
-              value: toPercentOf135(v ?? 0),
-              raw: v ?? null,
-            })
-          )}
-        />
-      </div>
-
-      {/* === OUTCOMES === */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-1">
-          <OverallSummary
-            overall4={base.outcomes?.overall4 ?? null}
-            subtitle={`${
-              base.outcomes?.overall4 ?? "—"
-            } / ${EQ_MAX} · ${
-              getEqLevel(base.outcomes?.overall4 ?? 0).label
-            }`}
-            color={getEqLevel(base.outcomes?.overall4 ?? 0).color}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <OutcomesPanel present={base.outcomes} />
-        </div>
-      </div>
-
-{/* === ROWI COACH (OPTIMIZADO) === */}
-<section className="rowi-card space-y-4 mt-8 p-6 border border-rowi-blueDay/20 rounded-xl shadow-sm">
-  <div className="flex items-center justify-between">
-    <h2 className="font-semibold text-xl flex items-center gap-2 text-rowi-blueDay">
-      💬 EQ Rowi Coach
-    </h2>
-
-    <span className="text-xs px-2 py-1 rounded-full bg-rowi-blueNight/10 text-rowi-blueNight">
-      Inteligencia Emocional · IA
-    </span>
-  </div>
-
-  <p className="text-sm text-gray-500 leading-relaxed">
-    Rowi analiza tu perfil emocional completo —competencias, subfactores, resultados,
-    talentos, estilo cerebral y estado emocional— para ofrecerte retroalimentación
-    personalizada y estrategias prácticas basadas en el modelo SEI de Six Seconds.
-  </p>
-
-  <CoachPanel
-    profile={{
-      user: base.user,
-      mood: base.mood,
-      brain: base.brain,
-      eq: base.eq,
-      outcomes: base.outcomes,
-      success: base.success,
-    }}
-  />
-</section>
-
-      {/* INFORMACIÓN ADICIONAL */}
-      <section className="rowi-card space-y-3 mt-8">
-        <h2 className="font-medium text-lg flex items-center gap-2">
-          🧩 {t("dashboard.additionalInfo") || "Información adicional"}
-        </h2>
-        <ul className="text-sm space-y-1 text-gray-300">
-          <li>
-            <b>Usuario:</b> {base.user?.name ?? "—"} ({base.user?.email ?? "—"})
-          </li>
-
-          {base.brain?.style && (
-            <li>
-              <b>Estilo cerebral:</b> {base.brain.style}
-            </li>
-          )}
-        </ul>
-      </section>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+          {t.dataSource}: {base.source}
+        </p>
+      </motion.div>
     </div>
   );
 }
 
-/* === Indicadores === */
-function IndicatorsLegend() {
+/* =========================================================
+   🔗 Quick Action Button
+========================================================= */
+function QuickAction({
+  href,
+  icon: Icon,
+  label,
+  gradient
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  gradient: string;
+}) {
   return (
-    <div className="mt-3 text-sm">
-      <div className="font-medium mb-1">Indicadores</div>
-      <ul className="space-y-1">
+    <Link
+      href={href}
+      className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] hover:shadow-md transition-all group"
+    >
+      <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${gradient} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[var(--rowi-g2)] transition-colors">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+/* =========================================================
+   🎯 Talent Card
+========================================================= */
+function TalentCard({
+  title,
+  icon: Icon,
+  color,
+  talents,
+}: {
+  title: string;
+  icon: React.ElementType;
+  color: string;
+  talents: { label: string; value: number; raw: number | null }[];
+}) {
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 shadow-sm">
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="w-10 h-10 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: `${color}20` }}
+        >
+          <Icon className="w-5 h-5" style={{ color }} />
+        </div>
+        <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+      </div>
+      <TalentCluster
+        title=""
+        color={color}
+        talents={talents}
+      />
+    </div>
+  );
+}
+
+/* =========================================================
+   📊 Indicators Legend
+========================================================= */
+function IndicatorsLegend({ t }: { t: typeof translations.es }) {
+  return (
+    <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
+      <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        {t.indicators}
+      </div>
+      <div className="flex flex-wrap gap-3">
         {EQ_LEVELS.map((lvl) => (
-          <li key={lvl.key} className="flex items-center gap-2">
+          <div key={lvl.key} className="flex items-center gap-2">
             <span
-              className="inline-block h-2 w-8 rounded"
+              className="inline-block h-3 w-3 rounded-full"
               style={{ background: lvl.color }}
             />
-            <span>
-              {lvl.label} ({lvl.min}-{lvl.max})
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              {lvl.label}
             </span>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

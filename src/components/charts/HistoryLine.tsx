@@ -78,7 +78,7 @@ export default function HistoryLine({
             <defs>
               <linearGradient id="gradEQLine" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#31A2E3" />
-                <stop offset="50%" stopColor="#7A59C9" />
+                <stop offset="50%" stopColor="#E53935" />
                 <stop offset="100%" stopColor="#D797CF" />
               </linearGradient>
             </defs>
@@ -90,7 +90,7 @@ export default function HistoryLine({
               stroke="url(#gradEQLine)"
               strokeWidth={2.5}
               dot={{
-                fill: "#7A59C9",
+                fill: "#E53935",
                 strokeWidth: 1.2,
                 stroke: "#31A2E3",
                 r: 4,

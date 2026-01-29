@@ -1,17 +1,39 @@
 "use client";
-import { useI18n } from "@/lib/i18n/react";
+
+import Image from "next/image";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export type RowiSignals = {
   hasProfile?: boolean;
   hasSEI?: boolean;
-  coachSessions?: number; // cuántas interacciones o planes con Rowi Coach
+  coachSessions?: number;
 };
 
 type Props = {
   signals?: RowiSignals;
   size?: "xs" | "sm" | "md";
   className?: string;
-  showLabel?: boolean; // si quieres solo el icono sin texto
+  showLabel?: boolean;
+};
+
+/* =========================================================
+   🌍 Traducciones de niveles
+========================================================= */
+const translations = {
+  es: {
+    egg: { label: "Huevito", tip: "Comienza tu viaje" },
+    signals: { label: "Señales", tip: "Falta completar tu SEI" },
+    almost: { label: "Casi listo", tip: "Falta tu perfil personal" },
+    minrowi: { label: "Mini Rowi", tip: "Tu guía emocional inicial" },
+    rowi: { label: "Rowi", tip: "Coach calibrado contigo" },
+  },
+  en: {
+    egg: { label: "Egg", tip: "Start your journey" },
+    signals: { label: "Signals", tip: "Complete your SEI" },
+    almost: { label: "Almost ready", tip: "Complete your profile" },
+    minrowi: { label: "Mini Rowi", tip: "Your initial emotional guide" },
+    rowi: { label: "Rowi", tip: "Coach calibrated with you" },
+  },
 };
 
 /* =========================================================
@@ -22,18 +44,18 @@ function resolveLevel(signals?: RowiSignals) {
   const sessions = s.coachSessions || 0;
 
   if (!s.hasProfile && !s.hasSEI && sessions < 1)
-    return { key: "egg", icon: "🥚", labelKey: "level.egg.label", tipKey: "level.egg.tip", img: "/egg-1.png" };
+    return { key: "egg", icon: "🥚", img: "/rowivectors/Rowi-01.png" };
 
   if (s.hasProfile && !s.hasSEI)
-    return { key: "signals", icon: "🔭", labelKey: "level.signals.label", tipKey: "level.signals.tip", img: "/egg-2.png" };
+    return { key: "signals", icon: "🔭", img: "/rowivectors/Rowi-02.png" };
 
   if (s.hasSEI && !s.hasProfile)
-    return { key: "almost", icon: "✨", labelKey: "level.almost.label", tipKey: "level.almost.tip", img: "/egg-2.png" };
+    return { key: "almost", icon: "✨", img: "/rowivectors/Rowi-03.png" };
 
   if (s.hasProfile && s.hasSEI && sessions < 5)
-    return { key: "minrowi", icon: "🐣", labelKey: "level.minrowi.label", tipKey: "level.minrowi.tip", img: "/egg-2.png" };
+    return { key: "minrowi", icon: "🐣", img: "/rowivectors/Rowi-04.png" };
 
-  return { key: "rowi", icon: "🦉", labelKey: "level.rowi.label", tipKey: "level.rowi.tip", img: "/owl.png" };
+  return { key: "rowi", icon: "🦉", img: "/rowivectors/Rowi-06.png" };
 }
 
 /* =========================================================
@@ -45,52 +67,40 @@ export default function RowiLevelPill({
   className = "",
   showLabel = true,
 }: Props) {
-  const { t } = useI18n();
+  const { lang } = useI18n();
+  const t = translations[lang as keyof typeof translations] || translations.es;
   const lv = resolveLevel(signals);
+  const levelText = t[lv.key as keyof typeof t];
 
-  const px = size === "xs" ? "px-1.5 py-0.5" : size === "md" ? "px-3 py-1.5" : "px-2 py-1";
-  const text = size === "xs" ? "text-[10px]" : size === "md" ? "text-sm" : "text-xs";
-  const imgSize = size === "xs" ? "h-3.5 w-3.5" : size === "md" ? "h-5 w-5" : "h-4 w-4";
+  const sizeClasses = {
+    xs: { px: "px-2 py-1", text: "text-[10px]", img: 14 },
+    sm: { px: "px-2.5 py-1", text: "text-xs", img: 18 },
+    md: { px: "px-3 py-1.5", text: "text-sm", img: 22 },
+  };
 
-  const label = t(lv.labelKey) || defaultLabels[lv.key].label;
-  const tip = t(lv.tipKey) || defaultLabels[lv.key].tip;
+  const s = sizeClasses[size];
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.03] ${px} ${text} ${className}`}
-      title={`${label} · ${tip}`}
-      aria-label={`${label} · ${tip}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 ${s.px} ${s.text} font-medium text-gray-700 dark:text-gray-300 ${className}`}
+      title={`${levelText.label} · ${levelText.tip}`}
+      aria-label={`${levelText.label} · ${levelText.tip}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={lv.img}
-        alt={label}
-        className={imgSize}
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).style.display = "none";
-        }}
+        alt={levelText.label}
+        width={s.img}
+        height={s.img}
+        className="object-contain"
       />
-      {showLabel ? (
-        <span>
-          {lv.icon} {label}
+      {showLabel && (
+        <span className="flex items-center gap-1">
+          <span>{lv.icon}</span>
+          <span>{levelText.label}</span>
         </span>
-      ) : (
-        <span aria-hidden="true">{lv.icon}</span>
       )}
     </span>
   );
 }
 
-/* =========================================================
-   📚 Fallbacks locales en caso no haya traducción
-========================================================= */
-const defaultLabels: Record<string, { label: string; tip: string }> = {
-  egg: { label: "Huevito", tip: "Comienza tu viaje" },
-  signals: { label: "Señales", tip: "Falta completar tu SEI" },
-  almost: { label: "Casi listo", tip: "Falta tu perfil personal" },
-  minrowi: { label: "Mini Rowi", tip: "Tu guía emocional inicial" },
-  rowi: { label: "Rowi", tip: "Coach calibrado contigo" },
-};
-
-// También exportamos el resolver
 export { resolveLevel };

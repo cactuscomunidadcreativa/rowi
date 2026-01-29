@@ -1,6 +1,6 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/react";
+import { useI18n } from "@/lib/i18n/useI18n";
 import { getEqLevel, EQ_MAX } from "@/domains/eq/lib/eqLevels";
 
 type Props = {
@@ -35,33 +35,37 @@ export default function OverallSummary({ overall4, notes }: Props) {
   const message = messages[lvl.key ?? "funcional"];
 
   return (
-    <div className="rounded-xl border p-4 shadow-sm flex flex-col gap-3 text-center">
-      {/* Encabezado */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">
-          {t("rowi.overallTitle") || "Overall 4 Outcomes"}
-        </span>
-        <span className="text-xl font-semibold" style={{ color: lvl.color }}>
-          {value != null ? value : "—"}
-          <span className="text-sm text-gray-400"> / {EQ_MAX}</span>
+    <div className="h-full flex flex-col items-center justify-center text-center">
+      {/* Nivel prominente */}
+      <div
+        className="inline-flex items-center gap-2 px-5 py-3 rounded-xl mb-3"
+        style={{ backgroundColor: `${lvl.color}15` }}
+      >
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ backgroundColor: lvl.color }}
+        />
+        <span
+          className="text-xl font-bold"
+          style={{ color: lvl.color }}
+        >
+          {t(`rowi.level.${lvl.key}`) || lvl.label}
         </span>
       </div>
 
-      {/* Nivel */}
-      <div className="text-sm font-medium" style={{ color: lvl.color }}>
-        {t(`rowi.level.${lvl.key}`) || lvl.label}
-      </div>
+      {/* Mensaje descriptivo */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+        {message}
+      </p>
 
-      {/* Mensaje o notas */}
+      {/* Notas adicionales */}
       {notes?.length ? (
-        <ul className="list-disc list-inside text-xs text-gray-500 text-left space-y-1">
+        <ul className="mt-3 list-disc list-inside text-xs text-gray-500 text-left space-y-1">
           {notes.map((n, i) => (
             <li key={i}>{n}</li>
           ))}
         </ul>
-      ) : (
-        <div className="text-xs text-gray-500">{message}</div>
-      )}
+      ) : null}
     </div>
   );
 }

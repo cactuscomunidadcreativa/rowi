@@ -1,91 +1,184 @@
 "use client";
-import Link from "next/link";
-import { useI18n } from "@/lib/i18n/react"; // usa tu hook existente
+
+import { useEffect, useState } from "react";
+import CMSPageRenderer from "@/components/public/CMSPageRenderer";
+import { HeroSection, FeaturesSection, StatsSection, CTASection } from "@/components/public/sections";
+import RowiEvolution from "@/components/public/RowiEvolution";
+import PublicNavbar from "@/components/public/PublicNavbar";
+import PublicFooter from "@/components/public/PublicFooter";
+import { useI18n } from "@/lib/i18n/useI18n";
+
+/**
+ * 🏠 Página de Inicio - Home
+ * Nueva landing page con diseño estilo Rowi
+ */
+
+interface Section {
+  id: string;
+  type: string;
+  order: number;
+  config?: Record<string, any>;
+  content: Record<string, any>;
+}
 
 export default function HomePage() {
+  const [sections, setSections] = useState<Section[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [useFallback, setUseFallback] = useState(false);
+
+  useEffect(() => {
+    async function loadSections() {
+      try {
+        const res = await fetch("/api/public/pages/home");
+        const data = await res.json();
+
+        if (data.ok && data.sections?.length > 0) {
+          setSections(data.sections);
+        } else {
+          setUseFallback(true);
+        }
+      } catch (error) {
+        console.error("Error loading page sections:", error);
+        setUseFallback(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSections();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--rowi-background)]">
+        <div className="w-16 h-16 border-4 border-[var(--rowi-primary)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Si tenemos secciones del CMS, renderizarlas
+  if (!useFallback && sections.length > 0) {
+    return (
+      <>
+        <PublicNavbar />
+        <main className="pt-16">
+          <CMSPageRenderer sections={sections} pageType="home" />
+        </main>
+        <PublicFooter />
+      </>
+    );
+  }
+
+  // Fallback con contenido estático
+  return <FallbackHomePage />;
+}
+
+function FallbackHomePage() {
   const { t } = useI18n();
 
   return (
-    <main className="relative min-h-screen bg-background text-foreground transition-colors">
-      {/* halo sutil */}
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-40">
-        <div
-          className="absolute left-1/2 top-[-10%] h-[40rem] w-[40rem] -translate-x-1/2 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side,rgba(215,151,207,0.25),rgba(49,162,227,0.25),transparent)",
+    <>
+      <PublicNavbar />
+      <main className="pt-16 min-h-screen bg-[var(--rowi-background)]">
+        {/* Hero */}
+        <HeroSection
+          content={{
+            badge: t("landing.hero.badge"),
+            title1: t("landing.hero.title1"),
+            title2: t("landing.hero.title2"),
+            subtitle: t("landing.hero.subtitle"),
+            ctaPrimary: t("landing.hero.cta.primary"),
+            ctaSecondary: t("landing.hero.cta.secondary"),
+            trustBadges: [
+              { icon: "shield", text: t("landing.hero.trust.security") },
+              { icon: "globe", text: t("landing.hero.trust.methodology") },
+              { icon: "star", text: t("landing.hero.trust.users") },
+            ],
+          }}
+          config={{
+            layout: "centered",
+            showBadge: true,
+            showTrustBadges: true,
+            gradient: true,
           }}
         />
-      </div>
 
-      <section className="mx-auto max-w-3xl text-center pt-20">
-        <h1 className="bg-gradient-to-r from-[#d797cf] to-[#31a2e3] bg-clip-text text-4xl font-bold text-transparent">
-          Rowi SIA
-        </h1>
-        <p className="mt-3 text-base text-muted-foreground">
-          {t("home.subtitle") ||
-            "Conversa con Rowi, explora tu IE y conecta mejor con tu comunidad."}
-        </p>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/rowi"
-            className="rounded-full px-4 py-2 text-sm text-white"
-            style={{
-              background:
-                "linear-gradient(90deg, var(--rowiPink, #d797cf), var(--rowiBlue, #31a2e3))",
-            }}
-          >
-            {t("home.coach") || "Hablar con Rowi Coach"}
-          </Link>
-          <Link
-            href="/dashboard"
-            className="rounded-full border border-border bg-card px-4 py-2 text-sm hover:bg-card/80 transition"
-          >
-            {t("home.dashboard") || "Ir al Dashboard"}
-          </Link>
-          <Link
-            href="/community"
-            className="rounded-full border border-border bg-card px-4 py-2 text-sm hover:bg-card/80 transition"
-          >
-            {t("home.community") || "Comunidad"}
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto mt-10 grid gap-4 md:grid-cols-3 max-w-5xl px-4">
-        <Card
-          title={t("home.ie_title") || "IE (Six Seconds)"}
-          desc={t("home.ie_desc") || "K/C/G, competencias, talentos y factores."}
-          href="/dashboard"
+        {/* Stats */}
+        <StatsSection
+          content={{
+            stats: [
+              { value: "10,000", suffix: "+", label: t("landing.stats.activeUsers") },
+              { value: "50,000", suffix: "+", label: t("landing.stats.conversations") },
+              { value: "95", suffix: "%", label: t("landing.stats.satisfaction") },
+              { value: "24", suffix: "/7", label: t("landing.stats.availability") },
+            ],
+          }}
+          config={{ layout: "gradient", columns: 4 }}
         />
-        <Card
-          title={t("home.affinity_title") || "Afinidad"}
-          desc={t("home.affinity_desc") || "Planes y guiones para relacionarte mejor."}
-          href="/affinity"
-        />
-        <Card
-          title={t("home.eco_title") || "ECO"}
-          desc={t("home.eco_desc") || "WhatsApp, email, 1:1 o speech—con buen tono."}
-          href="/eco"
-        />
-      </section>
 
-      <footer className="mt-16 text-center text-xs text-gray-500 pb-4">
-        © {new Date().getFullYear()} Rowi SIA — Emotional Intelligence Platform
-      </footer>
-    </main>
-  );
-}
+        {/* Evolution */}
+        <RowiEvolution />
 
-function Card({ title, desc, href }: { title: string; desc: string; href: string }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-2xl border border-border bg-card p-4 shadow-sm transition hover:border-accent hover:bg-accent/10"
-    >
-      <div className="text-sm font-semibold">{title}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{desc}</div>
-    </Link>
+        {/* Features */}
+        <FeaturesSection
+          content={{
+            title1: t("landing.features.title1"),
+            title2: t("landing.features.title2"),
+            subtitle: t("landing.features.subtitle"),
+            features: [
+              {
+                icon: "sparkles",
+                title: t("landing.features.coach.title"),
+                description: t("landing.features.coach.description"),
+                gradient: "from-pink-500 to-rose-500",
+              },
+              {
+                icon: "brain",
+                title: t("landing.features.sei.title"),
+                description: t("landing.features.sei.description"),
+                gradient: "from-blue-500 to-cyan-500",
+              },
+              {
+                icon: "heart",
+                title: t("landing.features.affinity.title"),
+                description: t("landing.features.affinity.description"),
+                gradient: "from-purple-500 to-violet-500",
+              },
+              {
+                icon: "bar-chart",
+                title: t("landing.features.dashboard.title"),
+                description: t("landing.features.dashboard.description"),
+                gradient: "from-green-500 to-emerald-500",
+              },
+              {
+                icon: "users",
+                title: t("landing.features.community.title"),
+                description: t("landing.features.community.description"),
+                gradient: "from-orange-500 to-amber-500",
+              },
+              {
+                icon: "target",
+                title: t("landing.features.goals.title"),
+                description: t("landing.features.goals.description"),
+                gradient: "from-indigo-500 to-blue-500",
+              },
+            ],
+          }}
+          config={{ columns: 3, showIcons: true }}
+        />
+
+        {/* CTA */}
+        <CTASection
+          content={{
+            title: t("landing.cta.title"),
+            subtitle: t("landing.cta.subtitle"),
+            buttonText: t("landing.cta.button"),
+            buttonIcon: "heart",
+          }}
+          config={{ gradient: true }}
+        />
+      </main>
+      <PublicFooter />
+    </>
   );
 }

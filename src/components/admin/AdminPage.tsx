@@ -201,8 +201,8 @@ export function AdminList({ children }: AdminListProps) {
 
 interface AdminListItemProps {
   icon?: LucideIcon;
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   badge?: ReactNode;
   meta?: ReactNode;
   actions?: ReactNode;

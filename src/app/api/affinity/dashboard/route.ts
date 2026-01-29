@@ -40,6 +40,12 @@ export async function GET(req: NextRequest) {
         aiSummary: true,
         closeness: true,
         updatedAt: true,
+        member: {
+          select: {
+            name: true,
+            brainStyle: true,
+          },
+        },
       },
       orderBy: { updatedAt: "desc" },
       take: 300,
@@ -61,7 +67,10 @@ export async function GET(req: NextRequest) {
       .slice(0, 5)
       .map((s) => ({
         memberId: s.memberId,
+        memberName: s.member?.name || "Sin nombre",
+        brainStyle: s.member?.brainStyle || null,
         heat: Math.round((s.lastHeat135 / 135) * 100),
+        band: s.lastHeat135 >= 95 ? "hot" : s.lastHeat135 >= 62 ? "warm" : "cold",
         context: s.context,
         closeness: s.closeness,
         updatedAt: s.updatedAt,

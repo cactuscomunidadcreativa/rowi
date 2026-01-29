@@ -4,14 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Languages,
-  RefreshCcw,
   Save,
   Download,
-  Upload,
-  Sparkles,
-  Trash2,
-  Plus,
+  Search,
+  AlertTriangle,
+  CheckCircle,
+  FileText,
   Loader2,
+  Eye,
+  Copy,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  X,
+  Globe,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -24,51 +31,93 @@ import {
 } from "@/components/admin/AdminPage";
 
 /* =========================================================
-   🌍 Rowi Admin — Translations Center
+   🌍 Rowi Admin — Translations Center (Safe Version)
    ---------------------------------------------------------
-   Clean, compact, and 100% translatable
+   - Lee y edita traducciones de los archivos JSON
+   - Paginación completa para ver todas las claves
+   - Agregar nuevos idiomas con traducción automática
+   - Scan solo muestra reporte, NO modifica archivos
+   - Guardado controlado con confirmación
 ========================================================= */
+
+interface ScanReport {
+  ok: boolean;
+  summary: {
+    keysFoundInCode: number;
+    keysInEs: number;
+    keysInEn: number;
+    missingInEs: number;
+    missingInEn: number;
+    unusedInEs: number;
+    unusedInEn: number;
+  };
+  missingKeys: {
+    es: { key: string; usedIn: string[] }[];
+    en: { key: string; usedIn: string[] }[];
+  };
+  unusedKeys: {
+    es: string[];
+    en: string[];
+  };
+  message: string;
+}
+
+const AVAILABLE_LANGUAGES = [
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "pt", name: "Português", flag: "🇧🇷" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
+  { code: "ko", name: "한국어", flag: "🇰🇷" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+];
+
+const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 export default function TranslationsPage() {
   const { t, ready } = useI18n();
-  const [matrix, setMatrix] = useState<Record<string, any>>({});
+  const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [langs, setLangs] = useState(["es", "en"]);
+  const [scanning, setScanning] = useState(false);
+  const [scanReport, setScanReport] = useState<ScanReport | null>(null);
   const [search, setSearch] = useState("");
-  const [selectedNs, setSelectedNs] = useState("ALL");
-  const [knownNamespaces, setKnownNamespaces] = useState<string[]>([]);
-  const [filterMode, setFilterMode] = useState<"all" | "translated" | "missing">("all");
-  const [filterLang, setFilterLang] = useState<string>("es");
-  const [translating, setTranslating] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
+  const [filterMode, setFilterMode] = useState<"all" | "missing" | "filled">("all");
+  const [selectedLang, setSelectedLang] = useState<string>("es");
+  const [showScanReport, setShowScanReport] = useState(false);
+  const [showAddLanguage, setShowAddLanguage] = useState(false);
+  const [newLangCode, setNewLangCode] = useState("");
+  const [sourceLang, setSourceLang] = useState("es");
+  const [translating, setTranslating] = useState(false);
 
-  async function loadAll() {
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(100);
+
+  // Idiomas activos (los que tienen traducciones)
+  const activeLangs = useMemo(() => {
+    return Object.keys(translations).filter(lang =>
+      translations[lang] && Object.keys(translations[lang]).length > 0
+    );
+  }, [translations]);
+
+  // =========================================================
+  // 📖 Cargar traducciones desde API
+  // =========================================================
+  async function loadTranslations() {
     setLoading(true);
     try {
-      const res = await fetch("/api/hub/translations?format=list");
+      const res = await fetch("/api/hub/translations");
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
 
-      const list = json.rows || json.missing || json || [];
-      const all: Record<string, any> = {};
-      const namespacesSet = new Set<string>();
+      if (json.error) throw new Error(json.error);
 
-      list.forEach((item: any) => {
-        const ns = item.ns || "global";
-        namespacesSet.add(ns);
-        const full = `${ns}.${item.key}`;
-        all[full] = {};
-        langs.forEach((lang) => {
-          all[full][lang] = { value: item[lang] || "" };
-        });
-        all[full]._ns = ns;
-        all[full]._key = item.key;
-      });
-
-      setMatrix(all);
-      setKnownNamespaces(Array.from(namespacesSet).sort());
-    } catch {
+      setTranslations(json);
+    } catch (e) {
+      console.error(e);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
@@ -76,181 +125,227 @@ export default function TranslationsPage() {
   }
 
   useEffect(() => {
-    if (ready) loadAll();
+    if (ready) loadTranslations();
   }, [ready]);
 
-  async function saveAll() {
+  // =========================================================
+  // 💾 Guardar traducciones
+  // =========================================================
+  async function saveTranslations() {
+    if (!confirm("¿Guardar cambios en los archivos de traducción?")) return;
+
     setSaving(true);
     try {
-      const updates = Object.entries(matrix).flatMap(([_, row]) =>
-        langs.map((lang) => ({
-          ns: row._ns,
-          key: row._key,
-          lang,
-          value: row[lang]?.value || "",
-        }))
-      );
-
       const res = await fetch("/api/hub/translations/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
+        body: JSON.stringify(translations),
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
 
       toast.success(t("admin.translations.saved"));
-      loadAll();
-    } catch {
+      loadTranslations();
+    } catch (e) {
+      console.error(e);
       toast.error(t("common.error"));
     } finally {
       setSaving(false);
     }
   }
 
-  async function scanSystem() {
+  // =========================================================
+  // 🔍 Escanear código (SOLO LECTURA)
+  // =========================================================
+  async function runScan() {
+    setScanning(true);
     try {
-      toast.info(t("admin.translations.scanning"));
       const res = await fetch("/api/hub/translations/scan");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      toast.success(t("admin.translations.scanComplete"));
-      loadAll();
-    } catch {
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+
+      setScanReport(json);
+      setShowScanReport(true);
+      toast.success("Scan completado (solo lectura)");
+    } catch (e) {
+      console.error(e);
       toast.error(t("common.error"));
+    } finally {
+      setScanning(false);
     }
   }
 
-  async function autoTranslate(targetLang: string, sourceLang: string = "es") {
-    const pending = Object.values(matrix).filter(
-      (r: any) => !r[targetLang]?.value || r[targetLang]?.value.trim() === ""
-    );
-    if (pending.length === 0) {
-      toast.info(t("admin.translations.noPending"));
+  // =========================================================
+  // 🌐 Agregar nuevo idioma con traducción automática
+  // =========================================================
+  async function addLanguageWithTranslation() {
+    if (!newLangCode) {
+      toast.error("Selecciona un idioma");
       return;
     }
 
-    setTranslating(targetLang);
-    setProgress({ done: 0, total: pending.length });
+    if (activeLangs.includes(newLangCode)) {
+      toast.error("Este idioma ya existe");
+      return;
+    }
 
+    setTranslating(true);
     try {
-      const batchSize = 30;
-      for (let i = 0; i < pending.length; i += batchSize) {
-        const batch = pending.slice(i, i + batchSize).map((r: any) => ({
-          ns: r._ns,
-          key: r._key,
-          value: r[sourceLang]?.value || r._key,
-        }));
+      const res = await fetch("/api/hub/translations/auto-translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceLang,
+          targetLang: newLangCode,
+          translations: translations[sourceLang] || {},
+        }),
+      });
 
-        const res = await fetch("/api/hub/translations/auto", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ keys: batch, lang: targetLang }),
-        });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Error al traducir");
 
-        const j = await res.json();
-        if (!res.ok) throw new Error(j.error);
+      // Agregar las traducciones al estado
+      setTranslations(prev => ({
+        ...prev,
+        [newLangCode]: json.translations,
+      }));
 
-        const translatedArray = Array.isArray(j) ? j : j.translations || j.data || [];
-
-        setMatrix((prev) => {
-          const updated = { ...prev };
-          translatedArray.forEach((t: any) => {
-            const full = `${t.ns}.${t.key}`;
-            if (updated[full]) {
-              updated[full][targetLang] = { value: t.value };
-            }
-          });
-          return updated;
-        });
-
-        setProgress((p) => ({ done: Math.min(p.done + batch.length, pending.length), total: pending.length }));
-        await new Promise((r) => setTimeout(r, 150));
-      }
-
-      toast.success(t("admin.translations.autoComplete"));
-    } catch {
-      toast.error(t("common.error"));
+      toast.success(`Idioma ${newLangCode.toUpperCase()} agregado con ${Object.keys(json.translations).length} traducciones`);
+      setShowAddLanguage(false);
+      setNewLangCode("");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || t("common.error"));
     } finally {
-      setTranslating(null);
-      setProgress({ done: 0, total: 0 });
+      setTranslating(false);
     }
   }
 
+  // =========================================================
+  // 📥 Exportar CSV
+  // =========================================================
   function exportCSV() {
-    const rows = [["Namespace", "Key", ...langs.map((l) => l.toUpperCase())]];
-    for (const fullKey in matrix) {
-      const row = matrix[fullKey];
-      rows.push([row._ns, row._key, ...langs.map((l) => row[l]?.value || "")]);
+    const allKeys = new Set<string>();
+    activeLangs.forEach(lang => {
+      if (translations[lang]) {
+        Object.keys(translations[lang]).forEach(k => allKeys.add(k));
+      }
+    });
+
+    const headers = ["Key", ...activeLangs.map(l => l.toUpperCase())];
+    const rows = [headers];
+
+    for (const key of Array.from(allKeys).sort()) {
+      const row = [key];
+      for (const lang of activeLangs) {
+        row.push(translations[lang]?.[key] || "");
+      }
+      rows.push(row);
     }
-    const csv = rows.map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+    const csv = rows.map(r => r.map(cell => `"${(cell || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `translations-${Date.now()}.csv`;
+    a.download = `translations-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
+    toast.success("CSV exportado");
   }
 
-  async function importCSV(e: any) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    toast.info(t("admin.translations.importing"));
-    try {
-      const res = await fetch("/api/hub/translations/import", { method: "POST", body: formData });
-      const json = await res.json();
-      if (res.ok) {
-        toast.success(t("admin.translations.importComplete"));
-        await loadAll();
-      } else toast.error(json.error);
-    } catch {
-      toast.error(t("common.error"));
-    }
-  }
+  // =========================================================
+  // 📊 Estadísticas
+  // =========================================================
+  const stats = useMemo(() => {
+    const result: Record<string, { total: number; filled: number; missing: number }> = {};
 
-  const translationStats = useMemo(() => {
-    const stats: Record<string, { missing: number; filled: number; total: number }> = {};
-    langs.forEach((l) => (stats[l] = { missing: 0, filled: 0, total: 0 }));
-    Object.values(matrix).forEach((row: any) => {
-      langs.forEach((l) => {
-        stats[l].total++;
-        if (!row[l]?.value || row[l]?.value.trim() === "") stats[l].missing++;
-        else stats[l].filled++;
-      });
+    activeLangs.forEach(lang => {
+      const data = translations[lang] || {};
+      const keys = Object.keys(data);
+      const filled = keys.filter(k => data[k] && data[k].trim() !== "").length;
+      result[lang] = {
+        total: keys.length,
+        filled,
+        missing: keys.length - filled,
+      };
     });
-    return stats;
-  }, [matrix, langs]);
 
+    return result;
+  }, [translations, activeLangs]);
+
+  // =========================================================
+  // 🔎 Filtrar claves
+  // =========================================================
   const filteredKeys = useMemo(() => {
-    const out: string[] = [];
-    const q = search.trim().toLowerCase();
+    const allKeys = new Set<string>();
+    activeLangs.forEach(lang => {
+      if (translations[lang]) {
+        Object.keys(translations[lang]).forEach(k => allKeys.add(k));
+      }
+    });
 
-    for (const k of Object.keys(matrix)) {
-      const row = matrix[k];
-      const textParts: string[] = [row._ns, row._key];
-      langs.forEach((lang) => {
-        const val = row[lang]?.value || "";
-        if (val) textParts.push(val);
-      });
+    const q = search.toLowerCase().trim();
 
-      const fullText = textParts.join(" ").toLowerCase();
+    return Array.from(allKeys)
+      .filter(key => {
+        // Búsqueda
+        if (q) {
+          let searchText = key;
+          activeLangs.forEach(lang => {
+            searchText += " " + (translations[lang]?.[key] || "");
+          });
+          if (!searchText.toLowerCase().includes(q)) return false;
+        }
 
-      if (selectedNs !== "ALL" && row._ns !== selectedNs) continue;
-      if (q && !fullText.includes(q)) continue;
+        // Filtro por estado
+        if (filterMode === "missing") {
+          const val = translations[selectedLang]?.[key] || "";
+          if (val.trim() !== "") return false;
+        }
+        if (filterMode === "filled") {
+          const val = translations[selectedLang]?.[key] || "";
+          if (val.trim() === "") return false;
+        }
 
-      const value = row[filterLang]?.value || "";
-      const isMissing = !value || value.trim() === "";
-      if (filterMode === "missing" && !isMissing) continue;
-      if (filterMode === "translated" && isMissing) continue;
+        return true;
+      })
+      .sort();
+  }, [translations, search, filterMode, selectedLang, activeLangs]);
 
-      out.push(k);
-    }
-    return out;
-  }, [matrix, langs, search, selectedNs, filterMode, filterLang]);
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterMode, selectedLang, pageSize]);
 
-  const totalCount = Object.keys(matrix).length;
+  // =========================================================
+  // 📄 Paginación
+  // =========================================================
+  const totalPages = Math.ceil(filteredKeys.length / pageSize);
+  const paginatedKeys = filteredKeys.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // =========================================================
+  // ✏️ Actualizar traducción
+  // =========================================================
+  function updateTranslation(lang: string, key: string, value: string) {
+    setTranslations(prev => ({
+      ...prev,
+      [lang]: {
+        ...(prev[lang] || {}),
+        [key]: value,
+      },
+    }));
+  }
+
+  // =========================================================
+  // 📋 Copiar clave faltante
+  // =========================================================
+  function copyMissingKey(key: string) {
+    navigator.clipboard.writeText(`"${key}": "",`);
+    toast.success("Clave copiada");
+  }
 
   return (
     <AdminPage
@@ -260,39 +355,248 @@ export default function TranslationsPage() {
       loading={loading}
       actions={
         <div className="flex items-center gap-2 flex-wrap">
-          <AdminButton variant="secondary" icon={RefreshCcw} onClick={scanSystem} size="sm">
-            {t("admin.translations.scan")}
+          <AdminButton
+            variant="secondary"
+            icon={Plus}
+            onClick={() => setShowAddLanguage(true)}
+            size="sm"
+          >
+            Agregar Idioma
+          </AdminButton>
+          <AdminButton
+            variant="secondary"
+            icon={scanning ? Loader2 : Search}
+            onClick={runScan}
+            disabled={scanning}
+            size="sm"
+          >
+            {scanning ? "Escaneando..." : "Scan"}
           </AdminButton>
           <AdminButton variant="secondary" icon={Download} onClick={exportCSV} size="sm">
             CSV
           </AdminButton>
-          <label className="cursor-pointer">
-            <AdminButton variant="secondary" icon={Upload} size="sm" as="span">
-              {t("admin.translations.import")}
-            </AdminButton>
-            <input type="file" accept=".csv" onChange={importCSV} className="hidden" />
-          </label>
-          <AdminButton icon={Save} onClick={saveAll} loading={saving} size="sm">
-            {t("admin.common.save")}
+          <AdminButton icon={Save} onClick={saveTranslations} loading={saving} size="sm">
+            Guardar
           </AdminButton>
         </div>
       }
     >
+      {/* Add Language Modal */}
+      {showAddLanguage && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--rowi-card)] rounded-xl max-w-md w-full shadow-xl">
+            <div className="p-4 border-b border-[var(--rowi-border)] flex items-center justify-between">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Agregar Nuevo Idioma
+              </h3>
+              <button onClick={() => setShowAddLanguage(false)} className="p-1 hover:bg-[var(--rowi-border)] rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Nuevo idioma</label>
+                <select
+                  value={newLangCode}
+                  onChange={(e) => setNewLangCode(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
+                >
+                  <option value="">Seleccionar idioma...</option>
+                  {AVAILABLE_LANGUAGES.filter(l => !activeLangs.includes(l.code)).map(lang => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.flag} {lang.name} ({lang.code.toUpperCase()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Traducir desde</label>
+                <select
+                  value={sourceLang}
+                  onChange={(e) => setSourceLang(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
+                >
+                  {activeLangs.map(lang => {
+                    const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === lang);
+                    return (
+                      <option key={lang} value={lang}>
+                        {langInfo?.flag || "🌐"} {langInfo?.name || lang.toUpperCase()} ({stats[lang]?.total || 0} claves)
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div className="p-3 bg-blue-500/10 rounded-lg text-sm">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-blue-600 dark:text-blue-400">Traducción automática con IA</p>
+                    <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                      Se generarán traducciones automáticas para todas las {stats[sourceLang]?.total || 0} claves.
+                      Podrás editarlas después si es necesario.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <AdminButton variant="secondary" onClick={() => setShowAddLanguage(false)}>
+                  Cancelar
+                </AdminButton>
+                <AdminButton
+                  icon={translating ? Loader2 : Sparkles}
+                  onClick={addLanguageWithTranslation}
+                  loading={translating}
+                  disabled={!newLangCode || translating}
+                >
+                  {translating ? "Traduciendo..." : "Generar Traducciones"}
+                </AdminButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scan Report Modal */}
+      {showScanReport && scanReport && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--rowi-card)] rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-xl">
+            <div className="p-4 border-b border-[var(--rowi-border)] flex items-center justify-between">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Reporte de Scan (Solo Lectura)
+              </h3>
+              <AdminButton variant="ghost" size="sm" onClick={() => setShowScanReport(false)}>
+                Cerrar
+              </AdminButton>
+            </div>
+
+            <div className="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+              {/* Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
+                  <div className="text-2xl font-bold">{scanReport.summary.keysFoundInCode}</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">Claves en código</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
+                  <div className="text-2xl font-bold text-green-500">{scanReport.summary.keysInEs}</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">Claves en ES</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
+                  <div className="text-2xl font-bold text-blue-500">{scanReport.summary.keysInEn}</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">Claves en EN</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
+                  <div className="text-2xl font-bold text-orange-500">
+                    {scanReport.summary.missingInEs + scanReport.summary.missingInEn}
+                  </div>
+                  <div className="text-xs text-[var(--rowi-muted)]">Total faltantes</div>
+                </div>
+              </div>
+
+              {/* Missing Keys */}
+              {(scanReport.missingKeys.es.length > 0 || scanReport.missingKeys.en.length > 0) && (
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2 text-orange-500">
+                    <AlertTriangle className="w-4 h-4" />
+                    Claves usadas en código pero no en traducciones
+                  </h4>
+
+                  {scanReport.missingKeys.es.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">
+                        Faltantes en ES ({scanReport.summary.missingInEs}):
+                      </div>
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        {scanReport.missingKeys.es.map(({ key }) => (
+                          <div
+                            key={key}
+                            className="flex items-center gap-2 text-xs p-2 bg-[var(--rowi-background)] rounded group"
+                          >
+                            <code className="flex-1 text-orange-500">{key}</code>
+                            <button
+                              onClick={() => copyMissingKey(key)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {scanReport.missingKeys.en.length > 0 && (
+                    <div>
+                      <div className="text-sm font-medium mb-2">
+                        Faltantes en EN ({scanReport.summary.missingInEn}):
+                      </div>
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        {scanReport.missingKeys.en.map(({ key }) => (
+                          <div
+                            key={key}
+                            className="flex items-center gap-2 text-xs p-2 bg-[var(--rowi-background)] rounded group"
+                          >
+                            <code className="flex-1 text-blue-500">{key}</code>
+                            <button
+                              onClick={() => copyMissingKey(key)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* All Good */}
+              {scanReport.summary.missingInEs === 0 && scanReport.summary.missingInEn === 0 && (
+                <div className="flex items-center gap-2 text-green-500 p-4 bg-green-500/10 rounded-lg">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Todas las claves usadas en el código tienen traducción</span>
+                </div>
+              )}
+
+              <p className="text-xs text-[var(--rowi-muted)] mt-4">
+                Este scan es de SOLO LECTURA. No se modificaron archivos.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Bar */}
       <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
         <span className="text-[var(--rowi-muted)]">
-          Total: <b className="text-[var(--rowi-foreground)]">{totalCount}</b> —
-          {t("admin.translations.showing")} <b className="text-[var(--rowi-foreground)]">{filteredKeys.length}</b>
+          Total: <b className="text-[var(--rowi-foreground)]">{filteredKeys.length}</b> claves
         </span>
-        <div className="flex gap-3">
-          {langs.map((l) => (
-            <div key={l} className="flex items-center gap-1.5">
-              <span className="font-semibold uppercase text-[var(--rowi-foreground)]">{l}</span>
-              <AdminBadge variant="success">{translationStats[l].filled}</AdminBadge>
-              <AdminBadge variant="warning">{translationStats[l].missing}</AdminBadge>
-            </div>
-          ))}
+        <div className="flex gap-3 flex-wrap">
+          {activeLangs.map(l => {
+            const langInfo = AVAILABLE_LANGUAGES.find(lang => lang.code === l);
+            return (
+              <div key={l} className="flex items-center gap-1.5">
+                <span className="text-sm">{langInfo?.flag || "🌐"}</span>
+                <span className="font-semibold uppercase text-[var(--rowi-foreground)]">{l}</span>
+                <AdminBadge variant="success">{stats[l]?.filled || 0}</AdminBadge>
+                {(stats[l]?.missing || 0) > 0 && (
+                  <AdminBadge variant="warning">{stats[l]?.missing}</AdminBadge>
+                )}
+              </div>
+            );
+          })}
         </div>
+        {scanReport && (
+          <AdminButton variant="ghost" size="xs" icon={Eye} onClick={() => setShowScanReport(true)}>
+            Ver scan
+          </AdminButton>
+        )}
       </div>
 
       {/* Filters */}
@@ -302,106 +606,71 @@ export default function TranslationsPage() {
             <AdminInput
               value={search}
               onChange={setSearch}
-              placeholderKey="admin.translations.searchPlaceholder"
+              placeholder="Buscar clave o valor..."
             />
           </div>
           <AdminSelect
-            value={selectedNs}
-            onChange={setSelectedNs}
-            options={[
-              { value: "ALL", label: t("admin.translations.allNamespaces") },
-              ...knownNamespaces.map((ns) => ({ value: ns, label: ns })),
-            ]}
-          />
-          <AdminSelect
             value={filterMode}
-            onChange={(v) => setFilterMode(v as any)}
+            onChange={(v) => setFilterMode(v as "all" | "missing" | "filled")}
             options={[
-              { value: "all", label: t("admin.translations.all") },
-              { value: "translated", label: t("admin.translations.translated") },
-              { value: "missing", label: t("admin.translations.missing") },
+              { value: "all", label: "Todas" },
+              { value: "filled", label: "Traducidas" },
+              { value: "missing", label: "Sin traducir" },
             ]}
           />
           <AdminSelect
-            value={filterLang}
-            onChange={setFilterLang}
-            options={langs.map((l) => ({ value: l, label: `Base: ${l.toUpperCase()}` }))}
+            value={selectedLang}
+            onChange={(v) => setSelectedLang(v)}
+            options={activeLangs.map(l => ({ value: l, label: `Filtrar por ${l.toUpperCase()}` }))}
           />
-        </div>
-
-        {/* Auto-translate buttons */}
-        <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[var(--rowi-border)]">
-          {langs.map((l) => (
-            <AdminButton
-              key={l}
-              variant="ghost"
-              size="xs"
-              icon={Sparkles}
-              onClick={() => autoTranslate(l)}
-              disabled={translating !== null}
-            >
-              Auto {l.toUpperCase()}
-              {translationStats[l].missing > 0 && (
-                <span className="ml-1 text-[var(--rowi-warning)]">({translationStats[l].missing})</span>
-              )}
-            </AdminButton>
-          ))}
-          {translating && (
-            <span className="flex items-center gap-1 text-xs text-[var(--rowi-muted)]">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              {progress.done}/{progress.total}
-            </span>
-          )}
+          <AdminSelect
+            value={pageSize.toString()}
+            onChange={(v) => setPageSize(parseInt(v))}
+            options={PAGE_SIZE_OPTIONS.map(n => ({ value: n.toString(), label: `${n} por página` }))}
+          />
         </div>
       </AdminCard>
 
       {/* Translation Table */}
       <AdminCard className="p-0 overflow-hidden">
-        <div className="overflow-x-auto max-h-[60vh]">
+        <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-[var(--rowi-surface)] border-b border-[var(--rowi-border)] z-10">
               <tr>
-                <th className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)] w-28">NS</th>
-                <th className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)] w-40">Key</th>
-                {langs.map((l) => (
-                  <th key={l} className="px-3 py-2 text-center font-medium text-[var(--rowi-muted)] uppercase">{l}</th>
-                ))}
+                <th className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)] w-1/4">Clave</th>
+                {activeLangs.map(lang => {
+                  const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === lang);
+                  return (
+                    <th key={lang} className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)]">
+                      {langInfo?.flag || "🌐"} {lang.toUpperCase()}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--rowi-border)]">
-              {filteredKeys.slice(0, 100).map((k) => {
-                const row = matrix[k];
+              {paginatedKeys.map(key => {
                 return (
-                  <tr key={k} className="hover:bg-[var(--rowi-background)]">
-                    <td className="px-3 py-1.5 text-[var(--rowi-foreground)] font-medium">{row._ns}</td>
+                  <tr key={key} className="hover:bg-[var(--rowi-background)]">
                     <td className="px-3 py-1.5">
                       <code className="text-[10px] text-[var(--rowi-muted)] bg-[var(--rowi-background)] px-1 py-0.5 rounded break-all">
-                        {row._key}
+                        {key}
                       </code>
                     </td>
-                    {langs.map((lang) => {
-                      const cell = row[lang] || {};
-                      const val = cell.value || "";
-                      const isEmpty = !val || val.trim() === "";
+                    {activeLangs.map(lang => {
+                      const val = translations[lang]?.[key] || "";
+                      const isEmpty = !val.trim();
                       return (
                         <td key={lang} className="px-1 py-0.5">
                           <textarea
                             value={val}
-                            onChange={(e) =>
-                              setMatrix((prev) => ({
-                                ...prev,
-                                [k]: {
-                                  ...prev[k],
-                                  [lang]: { ...cell, value: e.target.value },
-                                },
-                              }))
-                            }
+                            onChange={(e) => updateTranslation(lang, key, e.target.value)}
                             rows={1}
                             className={`w-full resize-none text-xs px-2 py-1 rounded border transition-colors ${
                               isEmpty
-                                ? "bg-[var(--rowi-warning)]/10 border-[var(--rowi-warning)]/30 text-[var(--rowi-foreground)]"
-                                : "bg-[var(--rowi-surface)] border-[var(--rowi-border)] text-[var(--rowi-foreground)]"
-                            } focus:ring-1 focus:ring-[var(--rowi-primary)] focus:border-[var(--rowi-primary)] outline-none`}
+                                ? "bg-orange-500/10 border-orange-500/30"
+                                : "bg-[var(--rowi-surface)] border-[var(--rowi-border)]"
+                            } focus:ring-1 focus:ring-[var(--rowi-primary)] outline-none`}
                             placeholder="—"
                           />
                         </td>
@@ -412,12 +681,72 @@ export default function TranslationsPage() {
               })}
             </tbody>
           </table>
-          {filteredKeys.length > 100 && (
-            <div className="p-4 text-center text-xs text-[var(--rowi-muted)] border-t border-[var(--rowi-border)]">
-              {t("admin.translations.showingFirst")} 100 / {filteredKeys.length}
+
+          {filteredKeys.length === 0 && (
+            <div className="p-8 text-center text-[var(--rowi-muted)]">
+              No se encontraron traducciones
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--rowi-border)] bg-[var(--rowi-surface)]">
+            <div className="text-xs text-[var(--rowi-muted)]">
+              Mostrando {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredKeys.length)} de {filteredKeys.length} claves
+            </div>
+            <div className="flex items-center gap-2">
+              <AdminButton
+                variant="secondary"
+                size="sm"
+                icon={ChevronLeft}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </AdminButton>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 text-xs rounded ${
+                        currentPage === pageNum
+                          ? "bg-[var(--rowi-primary)] text-white"
+                          : "bg-[var(--rowi-background)] text-[var(--rowi-foreground)] hover:bg-[var(--rowi-border)]"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <AdminButton
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </AdminButton>
+            </div>
+          </div>
+        )}
       </AdminCard>
     </AdminPage>
   );

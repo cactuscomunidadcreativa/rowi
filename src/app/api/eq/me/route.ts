@@ -183,7 +183,16 @@ export async function GET(req: NextRequest) {
       subfactors: subfactors.map((s) => ({ key: s.label, score: s.score })),
     };
 
-    /* 1️⃣2️⃣ Response Final */
+    /* 1️⃣2️⃣ Signals for Rowi level */
+    const hasSEI = snap !== null && (snap.K != null || snap.C != null || snap.G != null);
+    const hasProfile = user.name != null && user.name.length > 0;
+
+    // Count coach sessions (from RowiChat)
+    const coachSessionCount = await prisma.rowiChat.count({
+      where: { userId: user.id },
+    });
+
+    /* 1️⃣3️⃣ Response Final */
     return NextResponse.json({
       source: "db",
       user: { name: user.name ?? "", email: user.email ?? "" },
@@ -197,6 +206,11 @@ export async function GET(req: NextRequest) {
       },
       outcomes,
       success, // ✔️ success REAL aquí
+      signals: {
+        hasSEI,
+        hasProfile,
+        coachSessions: coachSessionCount,
+      },
     });
   } catch (e: any) {
     console.error("❌ /api/eq/me error:", e);

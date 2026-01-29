@@ -1,43 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n/react";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "@/lib/theme/ThemeProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
-   🌙☀️ Rowi Theme Toggle — con traducciones integradas
+   🌙☀️ Rowi Theme Toggle — conectado al ThemeProvider
 ========================================================= */
 export default function ThemeToggle() {
   const { t } = useI18n();
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { resolvedMode, setMode } = useTheme();
 
-  useEffect(() => {
-    const stored = (localStorage.getItem("rowi.theme") as "dark" | "light") || "dark";
-    applyTheme(stored);
-  }, []);
-
-  function applyTheme(next: "dark" | "light") {
-    setTheme(next);
-    const root = document.documentElement;
-    root.classList.toggle("dark", next === "dark");
-    root.setAttribute("data-theme", next);
-    localStorage.setItem("rowi.theme", next);
-    // Evento global por si otros componentes necesitan reaccionar
-    window.dispatchEvent(new CustomEvent("rowi:theme-changed", { detail: next }));
-  }
-
-  const label =
-    theme === "dark"
-      ? t("theme.light") || "☀️ Modo claro"
-      : t("theme.dark") || "🌙 Modo oscuro";
+  const toggleTheme = () => {
+    setMode(resolvedMode === "dark" ? "light" : "dark");
+  };
 
   return (
     <button
-      onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-      title={t("theme.toggle") || "Cambiar tema"}
-      className={`inline-flex items-center gap-2 rounded-md border border-white/20 
-                  bg-white/10 px-3 py-1.5 text-xs hover:border-white/40 transition-colors`}
+      onClick={toggleTheme}
+      title={resolvedMode === "dark"
+        ? (t("theme.light") || "Cambiar a modo claro")
+        : (t("theme.dark") || "Cambiar a modo oscuro")}
+      className="inline-flex items-center justify-center gap-2 rounded-lg p-2
+                 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+      aria-label={resolvedMode === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
-      <span>{label}</span>
+      {resolvedMode === "dark" ? (
+        <Sun className="w-5 h-5 text-yellow-500" />
+      ) : (
+        <Moon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+      )}
     </button>
   );
 }

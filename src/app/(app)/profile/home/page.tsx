@@ -1,20 +1,22 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/core/prisma";
 import { getServerSession } from "next-auth";
+import { getI18n } from "@/lib/i18n/getI18n";
 
 export default async function ProfileHomePage() {
   const session = await getServerSession();
   const email = session?.user?.email ?? null;
+  const { t } = await getI18n();
 
   if (!email) {
     return (
       <section className="space-y-4 p-6 max-w-5xl mx-auto">
-        <h1 className="text-xl font-semibold">Mi Panel (Demo)</h1>
-        <p className="text-sm opacity-70">Inicia sesión para ver tu panel personal.</p>
+        <h1 className="text-xl font-semibold">{t("panel.titleDemo")}</h1>
+        <p className="text-sm opacity-70">{t("panel.loginPrompt")}</p>
         <div className="grid gap-3 md:grid-cols-3">
-          <Card label="Progreso" value="72%" />
-          <Card label="Acciones sugeridas" value="3" />
-          <Card label="Comunidad" value="15 miembros" />
+          <Card label={t("panel.progress")} value="72%" />
+          <Card label={t("panel.suggestedActions")} value="3" />
+          <Card label={t("panel.community")} value={`15 ${t("panel.members")}`} />
         </div>
       </section>
     );
@@ -34,8 +36,8 @@ export default async function ProfileHomePage() {
 
   return (
     <section className="space-y-4 p-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">Mi Panel</h1>
-      <p className="text-sm opacity-70">Hola, {user?.name ?? user?.email}</p>
+      <h1 className="text-xl font-semibold">{t("panel.title")}</h1>
+      <p className="text-sm opacity-70">{t("panel.greeting")}, {user?.name ?? user?.email}</p>
       <div className="grid gap-3 md:grid-cols-3">
         <Card label="K" value={latestEQ?.K ?? "—"} />
         <Card label="C" value={latestEQ?.C ?? "—"} />

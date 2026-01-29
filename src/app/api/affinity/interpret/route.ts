@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
        🤖 Generación con IA
     ========================================================== */
     const prompt = `
-Eres Rowi Coach. Explica de forma breve y emocional (máximo 3–4 frases) los resultados de afinidad entre "${userName}" y "${memberName}".
+Eres Affinity Coach. Explica de forma breve y emocional (máximo 3–4 frases) los resultados de afinidad entre "${userName}" y "${memberName}".
 Idioma: ${lang}.
 Proyecto: ${project}.
 Afinidad total: ${affinityNum}%.
@@ -79,9 +79,9 @@ Usa un tono empático, reflexivo y motivador. Termina con una pregunta abierta b
     const completion = await ai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.7,
-      max_tokens: 200,
+      max_tokens: 150, // Reducido para controlar tokens
       messages: [
-        { role: "system", content: `You are Rowi Coach. Always reply in ${lang}.` },
+        { role: "system", content: `You are Affinity Coach. Always reply in ${lang}. Be concise.` },
         { role: "user", content: prompt },
       ],
     });

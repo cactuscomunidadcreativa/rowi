@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 
 /**
  * 🌱 ECO Dashboard — Estado emocional + comunicación recomendada
  * Combina EQ + Brain Style + micro sugerencias de comunicación.
+ * Usa el usuario autenticado de la sesión.
  */
 export async function GET() {
   try {
-    // 1️⃣ Obtener último snapshot EQ
-    const user = await prisma.user.findFirst({
-      where: { email: "eduardo@cactuscomunidadcreativa.com" },
+    // 1️⃣ Obtener usuario de la sesión
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({
+        ok: false,
+        error: "No autenticado",
+      });
+    }
+
+    // 2️⃣ Buscar usuario con sus snapshots EQ
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
       include: { eqSnapshots: { orderBy: { at: "desc" }, take: 1 } },
     });
 
@@ -22,14 +34,18 @@ export async function GET() {
 
     const snap = user.eqSnapshots?.[0];
     const band = (v?: number | null) =>
-      v == null ? "mid" : v >= 70 ? "high" : v >= 50 ? "mid" : "low";
+      v == null ? null : v >= 70 ? "high" : v >= 50 ? "mid" : "low";
 
     const NE = band(snap?.NE);
     const ACT = band(snap?.ACT);
     const OP = band(snap?.OP);
     const EMP = band(snap?.EMP);
 
-    // 2️⃣ Generar rutinas base (igual que tu ruta actual)
+    // Solo mostrar eqStatus si hay datos reales
+    const hasEqData = snap && (snap.NE != null || snap.ACT != null || snap.OP != null || snap.EMP != null);
+    const eqStatus = hasEqData ? { NE, ACT, OP, EMP } : null;
+
+    // 3️⃣ Generar rutinas base solo si hay datos EQ
     const routines: Array<{ id: string; title: string; how: string; reason: string; minutes: number }> = [];
     if (NE === "low")
       routines.push({
@@ -64,8 +80,9 @@ export async function GET() {
         minutes: 2,
       });
 
-    // 3️⃣ Agregar análisis cognitivo del comunicador (Brain Style)
-    const brainStyle = user.brainStyle || "Strategist";
+    // 4️⃣ Análisis cognitivo del comunicador (Brain Style) - solo si el usuario lo tiene configurado
+    const brainStyle = user.brainStyle || null;
+
     const COMM_PREFS: Record<string, { pattern: string; risk: string }> = {
       Strategist: { pattern: "preciso y enfocado en lógica", risk: "puede sonar distante" },
       Guardian: { pattern: "estructurado y seguro", risk: "evita riesgo o espontaneidad" },
@@ -76,26 +93,32 @@ export async function GET() {
       Inventor: { pattern: "creativo e inspirador", risk: "puede dispersarse" },
     };
 
-    const comm = COMM_PREFS[brainStyle] || COMM_PREFS.Strategist;
+    const comm = brainStyle ? COMM_PREFS[brainStyle] : null;
 
-    // 4️⃣ Fusión: EQ + Comunicación
+    // 5️⃣ Generar insights solo si hay datos
+    const insights: string[] = [];
+    if (comm) {
+      insights.push(`Tu comunicación natural es ${comm.pattern}.`);
+      insights.push(`Recordá que ${comm.risk}.`);
+    }
+    if (NE === "low") {
+      insights.push("Tu regulación emocional necesita atención hoy.");
+    } else if (NE === "high") {
+      insights.push("Tu estabilidad emocional está en buen nivel.");
+    }
+
+    // 6️⃣ Respuesta
     return NextResponse.json({
       ok: true,
       user: {
         name: user.name,
-        brainStyle,
-        commPattern: comm.pattern,
-        commRisk: comm.risk,
+        brainStyle: brainStyle,
+        commPattern: comm?.pattern || null,
+        commRisk: comm?.risk || null,
       },
-      eqStatus: { NE, ACT, OP, EMP },
+      eqStatus,
       routines: routines.slice(0, 3),
-      insights: [
-        `Tu comunicación natural es ${comm.pattern}.`,
-        `Recordá que ${comm.risk}.`,
-        NE === "low"
-          ? "Tu regulación emocional necesita atención hoy."
-          : "Tu estabilidad emocional está en buen nivel.",
-      ],
+      insights: insights.length > 0 ? insights : null,
     });
   } catch (e: any) {
     console.error("ECO Dashboard error:", e);

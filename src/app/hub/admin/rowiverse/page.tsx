@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import WorldMap from "./components/WorldMap";
-import { Globe2, Heart, Users } from "lucide-react";
+import { Globe2, Heart, Users, TrendingUp } from "lucide-react";
 
 export default function RowiVersePage() {
   const [data, setData] = useState<any>(null);
@@ -25,6 +25,13 @@ export default function RowiVersePage() {
             Ecosistema emocional mundial — comunidades, usuarios y afinidades activas.
           </p>
         </div>
+        <a
+          href="/hub/admin/rowiverse/contributions"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rowi-blueDay/10 text-rowi-blueDay hover:bg-rowi-blueDay/20 transition-colors"
+        >
+          <TrendingUp className="w-4 h-4" />
+          Ver Contribuciones
+        </a>
       </header>
 
       {/* MAPA */}

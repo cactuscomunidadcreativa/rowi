@@ -111,7 +111,7 @@ export default function SpiderRadar({
           <defs>
             <radialGradient id="rowiRadarFill" cx="50%" cy="50%" r="65%">
               <stop offset="0%" stopColor="#31A2E3" stopOpacity={0.45} />
-              <stop offset="70%" stopColor="#7A59C9" stopOpacity={0.35} />
+              <stop offset="70%" stopColor="#E53935" stopOpacity={0.35} />
               <stop offset="100%" stopColor="#D797CF" stopOpacity={0.25} />
             </radialGradient>
           </defs>
@@ -119,7 +119,7 @@ export default function SpiderRadar({
           <Radar
             name="EQ Snapshot"
             dataKey="score"
-            stroke="#7A59C9"
+            stroke="#E53935"
             fill="url(#rowiRadarFill)"
             fillOpacity={0.4}
           />

@@ -12,9 +12,9 @@ export const runtime = "nodejs";
  */
 export async function GET(
   req: Request,
-  context: { params: { memberId: string } } // 👈 No hace falta "Promise"
+  context: { params: Promise<{ memberId: string }> }
 ) {
-  const { memberId } = context.params; // ✅ Se accede directo (sin await)
+  const { memberId } = await context.params;
 
   try {
     // 🔹 Buscar al miembro

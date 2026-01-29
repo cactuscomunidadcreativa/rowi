@@ -1,62 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/core/prisma";
+import fs from "fs";
+import path from "path";
 
 export const runtime = "nodejs";
 
 /**
  * 💾 POST /api/hub/translations/save
  * ---------------------------------------------------------
- * Guarda las traducciones recibidas en la base de datos.
+ * Guarda las traducciones en los archivos JSON.
  *
- * ⚠️ IMPORTANTE: NO exporta automáticamente a JSON.
- * Los archivos JSON en /src/lib/i18n/locales/ son la fuente de verdad.
- * La BD es solo para traducciones personalizadas por tenant.
+ * Formato esperado: { es: {...}, en: {...} }
  *
- * Para actualizar traducciones globales, edita directamente los JSON.
+ * ⚠️ Los archivos JSON son la fuente de verdad.
+ * Este endpoint modifica directamente los archivos JSON.
  */
 export async function POST(req: NextRequest) {
   try {
-    const updates = await req.json();
-    if (!Array.isArray(updates)) {
+    const data = await req.json();
+
+    // Validar formato
+    if (!data || typeof data !== "object") {
       return NextResponse.json({ ok: false, error: "Formato inválido" }, { status: 400 });
     }
 
-    let updated = 0;
-    let created = 0;
+    const LOCALES_DIR = path.resolve(process.cwd(), "src/lib/i18n/locales");
 
-    for (const item of updates) {
-      const { ns, key, lang, value, tenantId } = item;
-      if (!ns || !key || !lang) continue;
+    // Asegurar que el directorio existe
+    if (!fs.existsSync(LOCALES_DIR)) {
+      fs.mkdirSync(LOCALES_DIR, { recursive: true });
+    }
 
-      // Solo guardar en BD si tiene tenantId (personalización por tenant)
-      // Las traducciones globales deben editarse en los JSON
-      const existing = await prisma.translation.findFirst({
-        where: { ns, key, lang, tenantId: tenantId || null }
-      });
+    let savedLangs = 0;
+    let totalKeys = 0;
 
-      if (existing) {
-        await prisma.translation.update({
-          where: { id: existing.id },
-          data: { value },
-        });
-        updated++;
-      } else {
-        await prisma.translation.create({
-          data: { ns, key, lang, value: value || "", tenantId: tenantId || null },
-        });
-        created++;
+    // Guardar todos los idiomas que vengan en el objeto
+    for (const lang of Object.keys(data)) {
+      if (data[lang] && typeof data[lang] === "object" && /^[a-z]{2}$/.test(lang)) {
+        const filePath = path.join(LOCALES_DIR, `${lang}.json`);
+
+        // Ordenar las claves alfabéticamente para mantener consistencia
+        const sortedKeys = Object.keys(data[lang]).sort();
+        const sortedData: Record<string, string> = {};
+        for (const key of sortedKeys) {
+          sortedData[key] = data[lang][key];
+        }
+
+        // Escribir el archivo JSON con formato legible
+        fs.writeFileSync(filePath, JSON.stringify(sortedData, null, 2) + "\n", "utf8");
+
+        savedLangs++;
+        totalKeys += sortedKeys.length;
+        console.log(`💾 Saved ${lang}.json with ${sortedKeys.length} keys`);
       }
     }
 
-    // ⚠️ Ya NO exportamos a JSON automáticamente para evitar ciclos
-    // Los JSON son la fuente de verdad y deben editarse manualmente
-
     return NextResponse.json({
       ok: true,
-      message: "✅ Traducciones guardadas en BD",
-      updated,
-      created,
-      total: updated + created,
+      message: `✅ Traducciones guardadas`,
+      savedLangs,
+      totalKeys,
     });
   } catch (e: any) {
     console.error("❌ Error POST /hub/translations/save:", e);

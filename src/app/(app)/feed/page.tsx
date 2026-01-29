@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { getBaseUrl } from "@/core/utils/base-url";
+import { getI18n } from "@/lib/i18n/getI18n";
 
 async function fetchFeed() {
   const base = getBaseUrl();
@@ -11,12 +12,13 @@ async function fetchFeed() {
 
 export default async function FeedPage() {
   const posts = await fetchFeed();
+  const { t } = await getI18n();
 
   return (
     <main className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Feed</h1>
-        <Link href="/post/new" className="button button--primary">Crear post</Link>
+        <h1 className="text-xl font-semibold">{t("feed.title")}</h1>
+        <Link href="/post/new" className="button button--primary">{t("feed.createPost")}</Link>
       </div>
 
       {posts.map((p) => (
@@ -32,7 +34,7 @@ export default async function FeedPage() {
       ))}
 
       {posts.length === 0 && (
-        <p className="opacity-70">No hay posts aún. <Link className="underline" href="/post/new">Crea el primero</Link>.</p>
+        <p className="opacity-70">{t("feed.noPosts")} <Link className="underline" href="/post/new">{t("feed.createFirst")}</Link>.</p>
       )}
     </main>
   );

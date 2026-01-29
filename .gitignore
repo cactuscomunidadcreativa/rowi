@@ -31,7 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
 
 # vercel
 .vercel
@@ -51,4 +53,12 @@ apps/rowi/.backups/
 # Temp files
 *.log
 11.6.2
+
+# Data files (sensitive)
+*.xlsx
+*.csv
+~$*
+
+# Uploads
+/uploads/
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   BarChart,
   Bar,
@@ -12,9 +13,6 @@ import {
   Legend,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 /**
@@ -34,6 +32,7 @@ import {
  * =========================================================
  */
 export default function AffinityMonitor({ baseUrl = "", compact = false }: { baseUrl?: string; compact?: boolean }) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +61,7 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
         setTeamDash(jb?.ok ? jb : null);
       } catch (e: any) {
         if (!alive) return;
-        setError(e?.message || "Error cargando Affinity Monitor");
+        setError(e?.message || t("monitor.errorLoading") || "Error cargando Affinity Monitor");
       } finally {
         if (alive) setLoading(false);
       }
@@ -90,11 +89,11 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
 
   if (loading) {
     return (
-      <div className="w-full rounded-2xl border border-border/20 bg-surface p-6 animate-pulse">
-        <div className="h-6 w-48 rounded bg-foreground/10 mb-4" />
+      <div className="w-full rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-6 animate-pulse">
+        <div className="h-6 w-48 rounded bg-[var(--rowi-foreground)]/10 mb-4" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-28 rounded-xl bg-foreground/5" />
+            <div key={i} className="h-28 rounded-xl bg-[var(--rowi-foreground)]/5" />
           ))}
         </div>
       </div>
@@ -104,7 +103,9 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
   if (error) {
     return (
       <div className="w-full rounded-2xl border border-red-300/30 bg-red-50/40 dark:bg-red-950/20 p-4">
-        <div className="text-red-700 dark:text-red-300 font-semibold mb-1">No se pudo cargar el Affinity Monitor</div>
+        <div className="text-red-700 dark:text-red-300 font-semibold mb-1">
+          {t("monitor.errorTitle") || "No se pudo cargar el Affinity Monitor"}
+        </div>
         <div className="text-sm opacity-80">{error}</div>
       </div>
     );
@@ -115,49 +116,72 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
       {/* Header global */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xl font-semibold text-primary">Affinity Monitor</h2>
-          <p className="text-sm text-muted-foreground">
-            Termómetro emocional y de conexión — actualizado {new Date(meDash?.updatedAt || Date.now()).toLocaleString()}
+          <h2 className="text-xl font-semibold text-[var(--rowi-primary)]">
+            {t("monitor.title") || "Affinity Monitor"}
+          </h2>
+          <p className="text-sm text-[var(--rowi-muted)]">
+            {t("monitor.subtitle") || "Termómetro emocional y de conexión"} — {t("monitor.updated") || "actualizado"} {new Date(meDash?.updatedAt || Date.now()).toLocaleString()}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <BandPill band={meDash?.global?.band} />
-          <span className="text-sm text-muted-foreground">
-            {meDash?.global?.relationships ?? 0} relaciones monitoreadas
+          <BandPill band={meDash?.global?.band} t={t} />
+          <span className="text-sm text-[var(--rowi-muted)]">
+            {meDash?.global?.relationships ?? 0} {t("monitor.relationshipsMonitored") || "relaciones monitoreadas"}
           </span>
         </div>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KpiCard title="Affinity global" value={`${meDash?.global?.heat ?? 0}%`} hint="Promedio de afinidad personal" band={meDash?.global?.band} />
-        <KpiCard title="Efectividad" value={meDash?.global?.avgEffectiveness != null ? `${meDash.global.avgEffectiveness}%` : "—"} hint="Interacciones efectivas últimos 30 días" />
-        <KpiCard title="Top emoción" value={topEmotions?.[0]?.tag || "—"} hint="Emoción predominante reciente" />
+        <KpiCard
+          title={t("monitor.globalAffinity") || "Afinidad global"}
+          value={`${meDash?.global?.heat ?? 0}%`}
+          hint={t("monitor.personalAverage") || "Promedio de afinidad personal"}
+          band={meDash?.global?.band}
+        />
+        <KpiCard
+          title={t("monitor.effectiveness") || "Efectividad"}
+          value={meDash?.global?.avgEffectiveness != null ? `${meDash.global.avgEffectiveness}%` : "—"}
+          hint={t("monitor.effectivenessHint") || "Interacciones efectivas últimos 30 días"}
+        />
+        <KpiCard
+          title={t("monitor.topEmotion") || "Top emoción"}
+          value={topEmotions?.[0]?.tag || "—"}
+          hint={t("monitor.topEmotionHint") || "Emoción predominante reciente"}
+        />
       </div>
 
       {/* Emociones predominantes */}
       {!compact && (
-        <div className="rounded-2xl border border-border/20 bg-surface p-4">
-          <SectionTitle title="Emociones predominantes" subtitle="Últimos 30 días" />
+        <div className="rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-4">
+          <SectionTitle
+            title={t("monitor.predominantEmotions") || "Emociones predominantes"}
+            subtitle={t("monitor.last30Days") || "Últimos 30 días"}
+          />
           {topEmotions?.length ? (
             <div className="flex flex-wrap gap-2 mt-2">
               {topEmotions.map((e: any) => (
-                <span key={e.tag} className="inline-flex items-center gap-2 rounded-full border border-border/30 px-3 py-1 text-sm">
+                <span key={e.tag} className="inline-flex items-center gap-2 rounded-full border border-[var(--rowi-border)] px-3 py-1 text-sm text-[var(--rowi-foreground)]">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: colors.secondary }} />
                   {e.tag}
-                  <span className="text-muted-foreground">×{e.count}</span>
+                  <span className="text-[var(--rowi-muted)]">×{e.count}</span>
                 </span>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">Sin datos de emociones recientes.</div>
+            <div className="text-sm text-[var(--rowi-muted)]">
+              {t("monitor.noEmotionData") || "Sin datos de emociones recientes."}
+            </div>
           )}
         </div>
       )}
 
       {/* Interacciones diarias */}
-      <div className="rounded-2xl border border-border/20 bg-surface p-4">
-        <SectionTitle title="Interacciones" subtitle="Frecuencia (30 días)" />
+      <div className="rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-4">
+        <SectionTitle
+          title={t("monitor.interactions") || "Interacciones"}
+          subtitle={t("monitor.frequency30Days") || "Frecuencia (30 días)"}
+        />
         {dailySeries?.length ? (
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -171,43 +195,75 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground">Sin interacciones registradas.</div>
+          <div className="text-sm text-[var(--rowi-muted)]">
+            {t("monitor.noInteractions") || "Sin interacciones registradas."}
+          </div>
         )}
       </div>
 
       {/* Top relaciones */}
-      <div className="rounded-2xl border border-border/20 bg-surface p-4">
-        <SectionTitle title="Relaciones destacadas" subtitle="Top 5 por afinidad" />
+      <div className="rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-4">
+        <SectionTitle
+          title={t("monitor.topRelationships") || "Relaciones destacadas"}
+          subtitle={t("monitor.top5ByAffinity") || "Top 5 por afinidad"}
+        />
         {topMembers?.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {topMembers.map((m: any) => (
-              <div key={`${m.memberId}-${m.context}`} className="rounded-xl border border-border/20 bg-background/50 p-3">
+              <div key={`${m.memberId}-${m.context}`} className="rounded-xl border border-[var(--rowi-border)] bg-[var(--rowi-background)] p-3">
                 <div className="flex items-center justify-between">
-                  <div className="font-semibold truncate">{m.memberId}</div>
+                  <div className="font-semibold truncate text-[var(--rowi-foreground)]">
+                    {m.memberName || m.memberId}
+                  </div>
                   <span className="text-sm font-bold" style={{ color: bandColor(m.band) }}>{m.heat}%</span>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">Contexto: {m.context || "general"}</div>
-                <div className="text-xs text-muted-foreground">Cercanía: {m.closeness || "—"}</div>
+                {m.brainStyle && (
+                  <div className="text-xs text-[var(--rowi-primary)] mt-0.5">{m.brainStyle}</div>
+                )}
+                <div className="text-xs text-[var(--rowi-muted)] mt-1">
+                  {t("monitor.context") || "Contexto"}: {m.context || "general"}
+                </div>
+                <div className="text-xs text-[var(--rowi-muted)]">
+                  {t("monitor.closeness") || "Cercanía"}: {m.closeness || "—"}
+                </div>
                 {m.aiSummary && (
-                  <div className="mt-2 text-xs italic text-foreground/80 line-clamp-3">{m.aiSummary}</div>
+                  <div className="mt-2 text-xs italic text-[var(--rowi-foreground)]/80 line-clamp-3">{m.aiSummary}</div>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground">Aún no hay relaciones destacadas.</div>
+          <div className="text-sm text-[var(--rowi-muted)]">
+            {t("monitor.noTopRelationships") || "Aún no hay relaciones destacadas. Analiza miembros para ver datos aquí."}
+          </div>
         )}
       </div>
 
       {/* Sección equipo (si existe tenant) */}
       {teamDash?.ok && (
-        <div className="rounded-2xl border border-border/20 bg-surface p-4">
-          <SectionTitle title="Equipo" subtitle={`Miembros: ${teamDash?.team?.members || 0}`} />
+        <div className="rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-4">
+          <SectionTitle
+            title={t("monitor.team") || "Equipo"}
+            subtitle={`${t("monitor.members") || "Miembros"}: ${teamDash?.team?.members || 0}`}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <KpiCard title="Affinity equipo" value={`${teamDash?.team?.avgHeat ?? 0}%`} hint="Promedio de afinidad del tenant" band={teamDash?.team?.band} />
-            <KpiCard title="Efectividad equipo" value={teamDash?.team?.avgEffectiveness != null ? `${teamDash.team.avgEffectiveness}%` : "—"} hint="Interacciones efectivas (30 días)" />
-            <KpiCard title="Top emoción equipo" value={teamDash?.team?.topEmotions?.[0]?.tag || "—"} hint="Predominante en 30 días" />
+            <KpiCard
+              title={t("monitor.teamAffinity") || "Afinidad equipo"}
+              value={`${teamDash?.team?.avgHeat ?? 0}%`}
+              hint={t("monitor.teamAffinityHint") || "Promedio de afinidad del tenant"}
+              band={teamDash?.team?.band}
+            />
+            <KpiCard
+              title={t("monitor.teamEffectiveness") || "Efectividad equipo"}
+              value={teamDash?.team?.avgEffectiveness != null ? `${teamDash.team.avgEffectiveness}%` : "—"}
+              hint={t("monitor.teamEffectivenessHint") || "Interacciones efectivas (30 días)"}
+            />
+            <KpiCard
+              title={t("monitor.teamTopEmotion") || "Top emoción equipo"}
+              value={teamDash?.team?.topEmotions?.[0]?.tag || "—"}
+              hint={t("monitor.teamTopEmotionHint") || "Predominante en 30 días"}
+            />
           </div>
 
           {/* Contextos */}
@@ -228,30 +284,32 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
 
           {/* Ranking */}
           {teamDash?.ranking?.length ? (
-            <div className="rounded-xl border border-border/20 bg-background/50">
+            <div className="rounded-xl border border-[var(--rowi-border)] bg-[var(--rowi-background)]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-muted-foreground">
+                  <tr className="text-left text-[var(--rowi-muted)]">
                     <th className="px-3 py-2">#</th>
-                    <th className="px-3 py-2">Miembro</th>
-                    <th className="px-3 py-2">Affinity</th>
-                    <th className="px-3 py-2">Conexiones</th>
+                    <th className="px-3 py-2">{t("monitor.member") || "Miembro"}</th>
+                    <th className="px-3 py-2">{t("monitor.affinity") || "Afinidad"}</th>
+                    <th className="px-3 py-2">{t("monitor.connections") || "Conexiones"}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {teamDash.ranking.map((r: any, idx: number) => (
-                    <tr key={r.userId} className="border-t border-border/10">
-                      <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
-                      <td className="px-3 py-2">{r.name}</td>
+                    <tr key={r.userId} className="border-t border-[var(--rowi-border)]/50">
+                      <td className="px-3 py-2 text-[var(--rowi-muted)]">{idx + 1}</td>
+                      <td className="px-3 py-2 text-[var(--rowi-foreground)]">{r.name}</td>
                       <td className="px-3 py-2 font-semibold" style={{ color: bandColor(r.avgHeat >= 70 ? "hot" : r.avgHeat >= 45 ? "warm" : "cold") }}>{r.avgHeat}%</td>
-                      <td className="px-3 py-2">{r.connections}</td>
+                      <td className="px-3 py-2 text-[var(--rowi-foreground)]">{r.connections}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">Sin datos de equipo disponibles.</div>
+            <div className="text-sm text-[var(--rowi-muted)]">
+              {t("monitor.noTeamData") || "Sin datos de equipo disponibles."}
+            </div>
           )}
         </div>
       )}
@@ -265,25 +323,26 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
 function KpiCard({ title, value, hint, band }: { title: string; value: string; hint?: string; band?: string }) {
   const color = band === "hot" ? "text-green-500" : band === "warm" ? "text-amber-500" : "text-slate-400";
   return (
-    <div className="rounded-2xl border border-border/20 bg-surface p-4">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className={`text-2xl font-semibold mt-1 ${band ? color : "text-foreground"}`}>{value}</div>
-      {hint && <div className="text-xs text-muted-foreground mt-1">{hint}</div>}
+    <div className="rounded-2xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] p-4">
+      <div className="text-sm text-[var(--rowi-muted)]">{title}</div>
+      <div className={`text-2xl font-semibold mt-1 ${band ? color : "text-[var(--rowi-foreground)]"}`}>{value}</div>
+      {hint && <div className="text-xs text-[var(--rowi-muted)] mt-1">{hint}</div>}
     </div>
   );
 }
 
-function BandPill({ band }: { band?: string }) {
-  const map: Record<string, { label: string; className: string }> = {
-    hot: { label: "HOT", className: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" },
-    warm: { label: "WARM", className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
-    cold: { label: "COLD", className: "bg-slate-400/15 text-slate-600 dark:text-slate-300 border-slate-400/30" },
+function BandPill({ band, t }: { band?: string; t: (key: string) => string }) {
+  const map: Record<string, { labelKey: string; fallback: string; className: string }> = {
+    hot: { labelKey: "monitor.bandHot", fallback: "HOT", className: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" },
+    warm: { labelKey: "monitor.bandWarm", fallback: "WARM", className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+    cold: { labelKey: "monitor.bandCold", fallback: "COLD", className: "bg-slate-400/15 text-slate-600 dark:text-slate-300 border-slate-400/30" },
   };
   const cfg = band ? map[band] : map.cold;
+  const label = t(cfg.labelKey) || cfg.fallback;
   return (
     <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold ${cfg.className}`}>
       <span className="h-2.5 w-2.5 rounded-full" style={{ background: "currentColor" }} />
-      {cfg.label}
+      {label}
     </span>
   );
 }
@@ -291,8 +350,8 @@ function BandPill({ band }: { band?: string }) {
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="flex items-end justify-between gap-4 flex-wrap mb-2">
-      <h3 className="text-base font-semibold text-primary">{title}</h3>
-      {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+      <h3 className="text-base font-semibold text-[var(--rowi-primary)]">{title}</h3>
+      {subtitle && <div className="text-xs text-[var(--rowi-muted)]">{subtitle}</div>}
     </div>
   );
 }

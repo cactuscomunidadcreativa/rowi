@@ -1,8 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Send, Mic, Paperclip, MessageCircle, Sparkles, Heart, ArrowRight } from "lucide-react";
 import { registerUsage } from "@/ai/client/registerUsage";
 import { useSession } from "next-auth/react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    📦 Tipos
@@ -19,191 +24,133 @@ type Attachment = { name: string; type: string; data: string };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 /* =========================================================
-   🌍 Traducciones i18n
+   🌍 Contenido Demo por idioma
 ========================================================= */
-const TR = {
+const DEMO_CONTENT = {
   es: {
-    title: "Super Rowi",
-    placeholder: "Escribe un mensaje…",
-    mic: "🎙",
-    attach: "📎",
-    send: "➤",
-    greeting:
-      "👋 Hola, soy Super Rowi. Puedes escribir, grabar un audio 🎙 o adjuntar un archivo 📎 para analizarlo juntos.",
-    micError: "No se pudo acceder al micrófono.",
-    typingText: "Rowi está escribiendo… 💭",
-    typingAudio: "Rowi está grabando una respuesta 🎧…",
+    greeting: "¡Hola! Soy Rowi, tu compañero de inteligencia emocional.",
+    intro: "Las emociones son el motor de nuestras decisiones, relaciones y bienestar. Comprenderlas es el primer paso para vivir una vida más plena.",
+    question: "¿Sabías que desarrollar tu inteligencia emocional puede mejorar tu comunicación, reducir el estrés y fortalecer tus relaciones?",
+    invitation: "Me encantaría acompañarte en este viaje. Crea tu cuenta gratuita y juntos exploraremos tu mundo emocional.",
+    cta: "Comenzar mi viaje",
+    ctaLogin: "Ya tengo cuenta",
+    placeholder: "Escribe un mensaje...",
+    typingText: "Rowi está escribiendo...",
   },
   en: {
-    title: "Super Rowi",
-    placeholder: "Type a message…",
-    mic: "🎙",
-    attach: "📎",
-    send: "➤",
-    greeting:
-      "👋 Hi, I'm Super Rowi. You can type, record 🎙 or attach 📎 a file to analyze together.",
-    micError: "Could not access the microphone.",
-    typingText: "Rowi is typing… 💭",
-    typingAudio: "Rowi is recording an answer 🎧…",
-  },
-  pt: {
-    title: "Super Rowi",
-    placeholder: "Digite uma mensagem…",
-    mic: "🎙",
-    attach: "📎",
-    send: "➤",
-    greeting:
-      "👋 Olá, sou o Super Rowi. Você pode digitar, gravar 🎙 ou anexar 📎 um arquivo para analisarmos juntos.",
-    micError: "Não foi possível acessar o microfone.",
-    typingText: "Rowi está escrevendo… 💭",
-    typingAudio: "Rowi está gravando uma resposta 🎧…",
-  },
-  it: {
-    title: "Super Rowi",
-    placeholder: "Scrivi un messaggio…",
-    mic: "🎙",
-    attach: "📎",
-    send: "➤",
-    greeting:
-      "👋 Ciao, sono Super Rowi. Puoi scrivere, registrare 🎙 o allegare 📎 un file per analizziarlo insieme.",
-    micError: "Impossibile accedere al microfono.",
-    typingText: "Rowi sta scrivendo… 💭",
-    typingAudio: "Rowi sta registrando una risposta 🎧…",
+    greeting: "Hi! I'm Rowi, your emotional intelligence companion.",
+    intro: "Emotions are the engine of our decisions, relationships, and wellbeing. Understanding them is the first step to living a fuller life.",
+    question: "Did you know that developing your emotional intelligence can improve your communication, reduce stress, and strengthen your relationships?",
+    invitation: "I'd love to accompany you on this journey. Create your free account and together we'll explore your emotional world.",
+    cta: "Start my journey",
+    ctaLogin: "I have an account",
+    placeholder: "Type a message...",
+    typingText: "Rowi is typing...",
   },
 };
 
 /* =========================================================
-   💬 COMPONENTE PRINCIPAL — REFACTORIZADO SIN ERRORES DE HOOKS
+   💬 COMPONENTE PRINCIPAL
 ========================================================= */
 export default function RowiCoach() {
   const { data: session } = useSession();
+  const { lang } = useI18n();
+  const content = DEMO_CONTENT[lang as keyof typeof DEMO_CONTENT] || DEMO_CONTENT.es;
 
   /* =========================================================
-     🔥 TODOS LOS HOOKS VAN AQUÍ (ANTES DE CUALQUIER RETURN)
+     🔥 ESTADOS
   ========================================================== */
-
-  // Estados demo
-  const [demoData, setDemoData] = React.useState<any>(null);
-  const [checkingDemo, setCheckingDemo] = React.useState(true);
-
-  // Estados del chat
   const [open, setOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [recording, setRecording] = React.useState(false);
   const [attachments, setAttachments] = React.useState<Attachment[]>([]);
   const [mediaRecorder, setMediaRecorder] = React.useState<MediaRecorder | null>(null);
-  const [typing, setTyping] = React.useState<"text" | "audio" | null>(null);
+  const [typing, setTyping] = React.useState(false);
   const [playing, setPlaying] = React.useState<string | null>(null);
   const [audioPlayer, setAudioPlayer] = React.useState<HTMLAudioElement | null>(null);
+  const [demoStep, setDemoStep] = React.useState(0);
+  const [showDemoTyping, setShowDemoTyping] = React.useState(false);
 
-  // Idioma
-  const [locale, setLocale] = React.useState<keyof typeof TR>("es");
-  const t = TR[locale];
-
-  // Usuario
-  const allowAI = session?.user?.allowAI ?? true;
+  const isLoggedIn = !!session?.user?.email;
   const userName = session?.user?.name || "Usuario";
   const tenantId = session?.user?.primaryTenantId || "rowi-master";
-
   const ENABLED = process.env.NEXT_PUBLIC_ROWICOACH_ENABLED === "true";
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   /* =========================================================
      🔁 EFFECTS
   ========================================================== */
 
-  // Cargar demo si no hay sesión
+  // Auto-scroll a nuevos mensajes
   React.useEffect(() => {
-    const email = session?.user?.email ?? null;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, showDemoTyping]);
 
-    if (email) {
-      setCheckingDemo(false);
-      setDemoData(null);
-      return;
+  // Persistencia para usuarios logueados
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      const saved = localStorage.getItem("rowiCoachHistory");
+      if (saved) setMessages(JSON.parse(saved));
     }
+  }, [isLoggedIn]);
 
-    async function run() {
-      try {
-        const res = await fetch("/api/rowi", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessLevel: "visitor" }),
-        });
-        const json = await res.json();
-        setDemoData(json);
-      } catch (e) {
-        console.error("Error modo demo:", e);
-      } finally {
-        setCheckingDemo(false);
-      }
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      localStorage.setItem("rowiCoachHistory", JSON.stringify(messages));
     }
-    run();
-  }, [session?.user]);
+  }, [messages, isLoggedIn]);
 
-  // Abrir chat automáticamente en demo
+  // Simulación de conversación demo
   React.useEffect(() => {
-    if (!session?.user?.email) setOpen(true);
-  }, [session?.user?.email]);
+    if (!isLoggedIn && open && demoStep === 0) {
+      // Iniciar secuencia demo
+      simulateDemoConversation();
+    }
+  }, [open, isLoggedIn]);
 
-  // Persistencia
-  React.useEffect(() => {
-    const saved = localStorage.getItem("rowiCoachHistory");
-    if (saved) setMessages(JSON.parse(saved));
-  }, []);
+  async function simulateDemoConversation() {
+    // Paso 1: Saludo
+    setShowDemoTyping(true);
+    await delay(1500);
+    setShowDemoTyping(false);
+    setMessages([{ id: uid(), role: "assistant", text: content.greeting }]);
+    setDemoStep(1);
 
-  React.useEffect(() => {
-    localStorage.setItem("rowiCoachHistory", JSON.stringify(messages));
-  }, [messages]);
+    // Paso 2: Introducción sobre emociones
+    await delay(2000);
+    setShowDemoTyping(true);
+    await delay(2000);
+    setShowDemoTyping(false);
+    setMessages(prev => [...prev, { id: uid(), role: "assistant", text: content.intro }]);
+    setDemoStep(2);
 
-  // Idioma dinámico
-  React.useEffect(() => {
-    const update = () => {
-      const lang = document.documentElement.getAttribute("data-lang") || "es";
-      setLocale(["es", "en", "pt", "it"].includes(lang) ? lang as any : "es");
-    };
+    // Paso 3: Pregunta reflexiva
+    await delay(2500);
+    setShowDemoTyping(true);
+    await delay(1500);
+    setShowDemoTyping(false);
+    setMessages(prev => [...prev, { id: uid(), role: "assistant", text: content.question }]);
+    setDemoStep(3);
 
-    update();
-    const obs = new MutationObserver(update);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-lang"] });
-    return () => obs.disconnect();
-  }, []);
-
-  /* =========================================================
-     🔥 RETURNS CONDICIONALES (DESPUÉS DE HOOKS)
-  ========================================================== */
-
-  if (checkingDemo) {
-    return (
-      <div className="fixed bottom-20 right-5 p-4 bg-black/70 text-white rounded-xl shadow-lg">
-        <p className="text-sm animate-pulse">Cargando Rowi…</p>
-      </div>
-    );
+    // Paso 4: Invitación
+    await delay(3000);
+    setShowDemoTyping(true);
+    await delay(2000);
+    setShowDemoTyping(false);
+    setMessages(prev => [...prev, { id: uid(), role: "assistant", text: content.invitation }]);
+    setDemoStep(4);
   }
 
-  // Modo demo
-  if (!session?.user?.email && demoData?.preview) {
-    return (
-      <div className="fixed bottom-20 right-5 w-[360px] max-w-[90vw] border border-amber-400 bg-amber-50 text-amber-900 rounded-2xl p-5 shadow-lg">
-        <h2 className="text-lg font-semibold mb-2">🧠 Modo Demo Activo</h2>
-        <p className="text-sm mb-4">{demoData?.text}</p>
-        <button
-          onClick={() => (window.location.href = "/hub/login")}
-          className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg"
-        >
-          Iniciar sesión
-        </button>
-      </div>
-    );
+  function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
-
-  // IA deshabilitada
-  if (!ENABLED || !allowAI) return null;
 
   /* =========================================================
      🎙️ AUDIO — START / STOP
   ========================================================== */
-
   async function startRecording() {
+    if (!isLoggedIn) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
@@ -223,7 +170,7 @@ export default function RowiCoach() {
       setMediaRecorder(recorder);
       setRecording(true);
     } catch {
-      alert(t.micError);
+      alert(lang === "en" ? "Could not access the microphone." : "No se pudo acceder al micrófono.");
     }
   }
 
@@ -236,6 +183,7 @@ export default function RowiCoach() {
      📎 ARCHIVOS
   ========================================================== */
   function handleAttachFile(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!isLoggedIn) return;
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -249,12 +197,14 @@ export default function RowiCoach() {
      🚀 ENVIAR MENSAJE
   ========================================================== */
   async function sendMessage(extra?: { audio?: string }) {
+    if (!isLoggedIn) return;
+
     const text = input.trim();
     if (!text && !extra?.audio) return;
 
     if (text) setMessages((m) => [...m, { id: uid(), role: "user", text }]);
     setInput("");
-    setTyping("text");
+    setTyping(true);
 
     try {
       const res = await fetch("/api/rowi", {
@@ -265,7 +215,7 @@ export default function RowiCoach() {
           ask: text,
           audio: extra?.audio || null,
           tenantId,
-          locale,
+          locale: lang,
           a: userName,
           attachments,
         }),
@@ -276,7 +226,7 @@ export default function RowiCoach() {
       const reply: Message = {
         id: uid(),
         role: "assistant",
-        text: json?.text || "…",
+        text: json?.text || "...",
         audioUrl: json?.audioUrl || undefined,
       };
 
@@ -292,9 +242,9 @@ export default function RowiCoach() {
       });
     } catch (e) {
       console.error("[RowiCoach] Error:", e);
-      setMessages((m) => [...m, { id: uid(), role: "assistant", text: "⚠️ Error procesando tu mensaje." }]);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", text: "Error procesando tu mensaje." }]);
     } finally {
-      setTyping(null);
+      setTyping(false);
     }
   }
 
@@ -324,111 +274,253 @@ export default function RowiCoach() {
   }
 
   /* =========================================================
-     💬 UI FINAL
+     💬 UI
   ========================================================== */
 
-  const bubble = (
-    <button
+  // Botón flotante
+  const FloatingButton = (
+    <motion.button
       onClick={() => setOpen(!open)}
-      className="fixed bottom-5 right-5 z-50 rounded-full shadow-lg px-5 py-4 text-sm font-semibold
-                 bg-gradient-to-r from-[#d797cf] to-[#31a2e3] text-white hover:scale-105 transition-transform"
+      className="fixed bottom-5 right-5 z-50 group"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
     >
-      {open ? "✖" : "Rowi"}
-    </button>
+      <div className="relative">
+        {/* Glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+
+        {/* Button */}
+        <div className="relative w-16 h-16 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center shadow-xl overflow-hidden">
+          {open ? (
+            <X className="w-6 h-6 text-white" />
+          ) : (
+            <Image
+              src="/rowivectors/Rowi-06.png"
+              alt="Rowi"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
+          )}
+        </div>
+
+        {/* Notification dot for demo */}
+        {!isLoggedIn && !open && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" />
+        )}
+      </div>
+    </motion.button>
   );
 
-  if (!open) return bubble;
+  if (!open) return FloatingButton;
 
   return (
     <>
-      {bubble}
+      {FloatingButton}
 
-      <div className="fixed bottom-20 right-5 w-[380px] max-w-[92vw] rounded-2xl border border-white/10 bg-black/85 text-white backdrop-blur-xl flex flex-col shadow-2xl z-50">
-        
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-3 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-[#d797cf] to-[#31a2e3] rounded-full flex items-center justify-center font-bold">
-              R
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          className="fixed bottom-24 right-5 w-[380px] max-w-[92vw] rounded-3xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col shadow-2xl z-50 overflow-hidden"
+        >
+          {/* HEADER */}
+          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)]">
+            <div className="relative w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/rowivectors/Rowi-06.png"
+                alt="Rowi"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             </div>
-            <strong className="text-sm">{t.title}</strong>
-          </div>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-xs opacity-70 hover:opacity-100"
-          >
-            ✖
-          </button>
-        </div>
-
-        {/* MENSAJES */}
-        <div className="flex-1 max-h-[420px] overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-[#31a2e3]/30 scrollbar-track-transparent">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
-                m.role === "user"
-                  ? "ml-auto bg-gradient-to-r from-[#31a2e3]/40 to-[#d797cf]/40"
-                  : "mr-auto bg-white/10"
-              }`}
+            <div className="flex-1">
+              <h3 className="font-bold text-white">Rowi Coach</h3>
+              <p className="text-xs text-white/80">
+                {isLoggedIn
+                  ? (lang === "en" ? "Your EI companion" : "Tu compañero de IE")
+                  : (lang === "en" ? "Emotional Intelligence" : "Inteligencia Emocional")}
+              </p>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="p-2 rounded-full hover:bg-white/20 transition-colors"
             >
-              {m.text}
-              {m.audioUrl && (
-                <div className="flex items-center gap-2 mt-1">
-                  <button
-                    onClick={() => playAudio(m.audioUrl!, m.id)}
-                    className={`text-xs ${playing === m.id ? "text-blue-400 scale-110" : "text-gray-300 hover:text-white"}`}
-                  >
-                    {playing === m.id ? "⏸" : "▶"}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
 
-          {typing && (
-            <div className="mr-auto text-xs text-gray-400 italic animate-pulse">
-              {typing === "audio" ? t.typingAudio : t.typingText}
+          {/* MENSAJES */}
+          <div className="flex-1 max-h-[350px] overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-zinc-950">
+            {messages.length === 0 && !showDemoTyping && (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 flex items-center justify-center">
+                  <Image
+                    src="/rowivectors/Rowi-06.png"
+                    alt="Rowi"
+                    width={60}
+                    height={60}
+                    className="object-contain"
+                  />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  {lang === "en"
+                    ? "Start a conversation with Rowi"
+                    : "Inicia una conversación con Rowi"}
+                </p>
+              </div>
+            )}
+
+            {messages.map((m) => (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {m.role === "assistant" && (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center mr-2 flex-shrink-0">
+                    <Image
+                      src="/rowivectors/Rowi-06.png"
+                      alt="Rowi"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                    m.role === "user"
+                      ? "bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white"
+                      : "bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm"
+                  }`}
+                >
+                  {m.text}
+                  {m.audioUrl && (
+                    <button
+                      onClick={() => playAudio(m.audioUrl!, m.id)}
+                      className={`mt-2 text-xs flex items-center gap-1 ${playing === m.id ? "text-[var(--rowi-g2)]" : "opacity-70 hover:opacity-100"}`}
+                    >
+                      {playing === m.id ? "Pause" : "Play"}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Typing indicator */}
+            {(typing || showDemoTyping) && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
+                  <Image
+                    src="/rowivectors/Rowi-06.png"
+                    alt="Rowi"
+                    width={24}
+                    height={24}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* CTA para usuarios no logueados */}
+          {!isLoggedIn && demoStep >= 4 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-gradient-to-r from-[var(--rowi-g1)]/10 to-[var(--rowi-g2)]/10 border-t border-gray-200 dark:border-zinc-800"
+            >
+              <Link
+                href="/register"
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Sparkles className="w-5 h-5" />
+                {content.cta}
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2 w-full mt-2 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] transition-colors"
+              >
+                {content.ctaLogin}
+              </Link>
+            </motion.div>
+          )}
+
+          {/* INPUT (solo para usuarios logueados) */}
+          {isLoggedIn && (
+            <div className="flex items-center gap-2 p-3 border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <button
+                onClick={recording ? stopRecording : startRecording}
+                className={`p-2.5 rounded-full transition-all ${
+                  recording
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500"
+                }`}
+              >
+                <Mic className="w-5 h-5" />
+              </button>
+
+              <label className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500 cursor-pointer">
+                <Paperclip className="w-5 h-5" />
+                <input type="file" className="hidden" onChange={handleAttachFile} />
+              </label>
+
+              <input
+                type="text"
+                placeholder={content.placeholder}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                className="flex-1 bg-gray-100 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--rowi-g2)] transition-all"
+              />
+
+              <button
+                onClick={() => sendMessage()}
+                disabled={!input.trim()}
+                className="p-2.5 rounded-full bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white disabled:opacity-50 hover:opacity-90 transition-opacity"
+              >
+                <Send className="w-5 h-5" />
+              </button>
             </div>
           )}
 
-          {messages.length === 0 && <div className="opacity-70 text-sm">{t.greeting}</div>}
-        </div>
-
-        {/* INPUT */}
-        <div className="flex items-end gap-2 border-t border-white/10 bg-black/70 p-2">
-          <button
-            onClick={recording ? stopRecording : startRecording}
-            className={`rounded-full w-10 h-10 flex items-center justify-center text-xl ${
-              recording ? "bg-red-500 animate-pulse" : "bg-gradient-to-r from-[#31a2e3] to-[#d797cf]"
-            }`}
-          >
-            {t.mic}
-          </button>
-
-          <label className="cursor-pointer p-2 text-lg text-gray-300 hover:text-white">
-            {t.attach}
-            <input type="file" className="hidden" onChange={handleAttachFile} />
-          </label>
-
-          <textarea
-            rows={1}
-            placeholder={t.placeholder}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            className="flex-1 bg-transparent text-sm text-white placeholder-gray-400 outline-none resize-none px-2"
-          />
-
-          <button
-            onClick={() => sendMessage()}
-            className="rounded-full bg-gradient-to-r from-[#d797cf] to-[#31a2e3] px-3 py-2 text-sm text-white hover:scale-105"
-          >
-            {t.send}
-          </button>
-        </div>
-
-      </div>
+          {/* Input deshabilitado para demo */}
+          {!isLoggedIn && demoStep < 4 && (
+            <div className="flex items-center gap-2 p-3 border-t border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950">
+              <input
+                type="text"
+                placeholder={content.placeholder}
+                disabled
+                className="flex-1 bg-gray-200 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm outline-none opacity-50 cursor-not-allowed"
+              />
+              <button
+                disabled
+                className="p-2.5 rounded-full bg-gray-300 dark:bg-zinc-700 text-gray-500 cursor-not-allowed"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

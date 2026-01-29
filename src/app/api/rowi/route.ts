@@ -100,13 +100,14 @@ async function resolveAgent(slug: string, auth: any) {
     if (shAgent) return shAgent;
   }
 
-  // 4️⃣ Fallback global (accessLevel = 'global' o sin scope asignado)
+  // 4️⃣ Fallback global (accessLevel = 'global', 'system' o sin scope asignado)
   const globalAgent = await prisma.agentConfig.findFirst({
     where: {
       slug,
       isActive: true,
       OR: [
         { accessLevel: "global" },
+        { accessLevel: "system" },
         {
           tenantId: null,
           superHubId: null,

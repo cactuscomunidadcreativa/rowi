@@ -1,80 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/core/prisma";
+import fs from "fs";
+import path from "path";
 
 export const runtime = "nodejs";
 
 /**
  * 📘 GET /api/hub/translations
  * ---------------------------------------------------------
- * 🔹 Devuelve TODAS las traducciones existentes en la base de datos
- * 🔹 Permite formato "list" (por defecto) o "dict"
- * 🔹 Permite filtrar opcionalmente por idioma (?lang=en)
- * 🔹 Ordena por namespace y clave
+ * 🔹 Devuelve traducciones de los archivos JSON (fuente de verdad)
+ * 🔹 Formato: { es: {...}, en: {...} }
+ * 🔹 Los archivos JSON en /src/lib/i18n/locales/ son la fuente de verdad
  */
 export async function GET(req: NextRequest) {
   try {
-    const url = new URL(req.url);
-    const format = (url.searchParams.get("format") || "list") as "list" | "dict";
-    const take = parseInt(url.searchParams.get("take") || "10000", 10);
-    const skip = parseInt(url.searchParams.get("skip") || "0", 10);
-    const qLang = url.searchParams.get("lang");
-    const headerLang = req.headers.get("accept-language") || "";
-    const lang = (qLang || headerLang.split(",")[0]?.slice(0, 2) || "es").toLowerCase();
+    const LOCALES_DIR = path.resolve(process.cwd(), "src/lib/i18n/locales");
 
-    /* =========================================================
-       🔍 Recuperar TODAS las traducciones existentes
-    ========================================================== */
-    const translations = await prisma.translation.findMany({
-      orderBy: [{ ns: "asc" }, { key: "asc" }, { lang: "asc" }],
-      take,
-      skip,
-    });
+    const result: Record<string, Record<string, string>> = {};
 
-    if (!translations.length) {
-      return NextResponse.json({
-        ok: true,
-        total: 0,
-        lang,
-        rows: [],
-        message: "⚠️ No se encontraron traducciones en la base de datos.",
-      });
-    }
+    // Leer todos los archivos .json del directorio de locales
+    if (fs.existsSync(LOCALES_DIR)) {
+      const files = fs.readdirSync(LOCALES_DIR);
 
-    /* =========================================================
-       📦 Agrupar por namespace + key
-    ========================================================== */
-    const grouped: Record<string, any> = {};
-    for (const t of translations) {
-      const full = `${t.ns}.${t.key}`;
-      if (!grouped[full]) grouped[full] = { ns: t.ns, key: t.key };
-      grouped[full][t.lang] = t.value || "";
-    }
+      for (const file of files) {
+        if (file.endsWith(".json")) {
+          const lang = file.replace(".json", "");
+          const filePath = path.join(LOCALES_DIR, file);
 
-    const rowsGrouped = Object.values(grouped);
-
-    if (format === "dict") {
-      const dict: Record<string, string> = {};
-      for (const g of rowsGrouped as any[]) {
-        dict[`${g.ns}.${g.key}`] = g[lang] || g.es || g.en || g.pt || g.it || "";
+          try {
+            const content = fs.readFileSync(filePath, "utf8");
+            result[lang] = JSON.parse(content);
+          } catch (e) {
+            console.error(`Error reading ${filePath}:`, e);
+            result[lang] = {};
+          }
+        }
       }
-      return NextResponse.json({
-        ok: true,
-        lang,
-        total: Object.keys(dict).length,
-        dict,
-      });
     }
 
-    return NextResponse.json({
-      ok: true,
-      lang,
-      total: rowsGrouped.length,
-      rows: rowsGrouped,
-    });
+    return NextResponse.json(result);
   } catch (err: any) {
-    console.error("❌ Error GET /hub/translations (modo total):", err);
+    console.error("❌ Error GET /hub/translations:", err);
     return NextResponse.json(
-      { ok: false, error: "Error interno al obtener todas las traducciones" },
+      { ok: false, error: "Error al leer archivos de traducción" },
       { status: 500 },
     );
   }

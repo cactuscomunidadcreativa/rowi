@@ -13,7 +13,15 @@ import {
   Sparkles,
   Eye,
   RotateCcw,
+  Copy,
+  Building2,
+  Network,
+  ArrowRight,
+  Check,
+  X,
+  AlertCircle,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
   AdminPage,
@@ -60,9 +68,9 @@ const DEFAULT_FORM: BrandingForm = {
   errorColor: "#ef4444",
   fontHeading: "Inter",
   fontBody: "Inter",
-  logoUrl: "",
-  logoLightUrl: "",
-  faviconUrl: "",
+  logoUrl: "/rowi-logo.png",
+  logoLightUrl: "/owl.png",
+  faviconUrl: "/favicon.svg",
   // SEI Pursuit Colors (Six Seconds EQ Model)
   colorK: "#1E88E5", // Know Yourself / Focus - Azul
   colorC: "#E53935", // Choose Yourself / Decisions - Rojo
@@ -88,6 +96,9 @@ export default function BrandingPage() {
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [previewMode, setPreviewMode] = useState<"light" | "dark">("light");
+  const [showInheritModal, setShowInheritModal] = useState(false);
+  const [selectedSourceTenant, setSelectedSourceTenant] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
 
   async function loadTenants() {
     try {
@@ -222,6 +233,54 @@ export default function BrandingPage() {
     toast.info(t("admin.branding.reset"));
   }
 
+  // Copiar branding de otro tenant
+  async function copyBrandingFromTenant() {
+    if (!selectedSourceTenant || !tenantId) {
+      toast.error(t("admin.branding.selectSource"));
+      return;
+    }
+
+    setCopying(true);
+    try {
+      // Cargar branding del tenant fuente
+      const res = await fetch(`/api/theme/branding?tenantId=${selectedSourceTenant}`);
+      const data = await res.json();
+
+      if (data.ok && data.branding) {
+        const b = data.branding;
+        const newForm: BrandingForm = {
+          primaryColor: b.colors?.primary || DEFAULT_FORM.primaryColor,
+          secondaryColor: b.colors?.secondary || DEFAULT_FORM.secondaryColor,
+          accentColor: b.colors?.accent || DEFAULT_FORM.accentColor,
+          backgroundColor: b.colors?.background || DEFAULT_FORM.backgroundColor,
+          textColor: b.colors?.foreground || DEFAULT_FORM.textColor,
+          successColor: b.colors?.success || DEFAULT_FORM.successColor,
+          warningColor: b.colors?.warning || DEFAULT_FORM.warningColor,
+          errorColor: b.colors?.error || DEFAULT_FORM.errorColor,
+          fontHeading: b.fonts?.heading || DEFAULT_FORM.fontHeading,
+          fontBody: b.fonts?.body || DEFAULT_FORM.fontBody,
+          logoUrl: data.logo || "",
+          logoLightUrl: data.logoLight || "",
+          faviconUrl: data.favicon || "",
+          colorK: b.sei?.k || DEFAULT_FORM.colorK,
+          colorC: b.sei?.c || DEFAULT_FORM.colorC,
+          colorG: b.sei?.g || DEFAULT_FORM.colorG,
+        };
+        setForm(newForm);
+        toast.success(t("admin.branding.copied"));
+        setShowInheritModal(false);
+        setSelectedSourceTenant(null);
+        applyPreview();
+      } else {
+        toast.error(t("admin.branding.copyError"));
+      }
+    } catch {
+      toast.error(t("admin.branding.copyError"));
+    } finally {
+      setCopying(false);
+    }
+  }
+
   return (
     <AdminPage
       titleKey="admin.branding.title"
@@ -233,8 +292,11 @@ export default function BrandingPage() {
           <AdminSelect
             value={tenantId || ""}
             onChange={setTenantId}
-            options={tenants.map((t) => ({ value: t.id, label: t.name }))}
+            options={tenants.map((tn) => ({ value: tn.id, label: tn.name }))}
           />
+          <AdminButton variant="secondary" icon={Copy} onClick={() => setShowInheritModal(true)} size="sm">
+            {t("admin.branding.inheritFrom")}
+          </AdminButton>
           <AdminButton variant="secondary" icon={RotateCcw} onClick={resetToDefault} size="sm">
             {t("admin.branding.reset")}
           </AdminButton>
@@ -492,6 +554,140 @@ export default function BrandingPage() {
           </div>
         </div>
       </AdminCard>
+
+      {/* Inherit Branding Modal */}
+      <AnimatePresence>
+        {showInheritModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowInheritModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[var(--rowi-background)] rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 border-b border-[var(--rowi-border)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--rowi-primary)]/10 flex items-center justify-center">
+                      <Copy className="w-5 h-5 text-[var(--rowi-primary)]" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">
+                        {t("admin.branding.inheritTitle")}
+                      </h2>
+                      <p className="text-sm text-[var(--rowi-muted)]">
+                        {t("admin.branding.inheritDescription")}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowInheritModal(false)}
+                    className="p-2 rounded-lg hover:bg-[var(--rowi-surface)]"
+                  >
+                    <X className="w-5 h-5 text-[var(--rowi-muted)]" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* Warning */}
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
+                      {t("admin.branding.inheritWarning")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Source Tenant Selection */}
+                <div>
+                  <label className="text-sm font-medium text-[var(--rowi-foreground)] mb-2 block">
+                    {t("admin.branding.selectSourceTenant")}
+                  </label>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {tenants
+                      .filter((tn) => tn.id !== tenantId)
+                      .map((tn) => (
+                        <button
+                          key={tn.id}
+                          onClick={() => setSelectedSourceTenant(tn.id)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                            selectedSourceTenant === tn.id
+                              ? "border-[var(--rowi-primary)] bg-[var(--rowi-primary)]/5"
+                              : "border-[var(--rowi-border)] hover:bg-[var(--rowi-surface)]"
+                          }`}
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <p className="font-medium text-[var(--rowi-foreground)]">{tn.name}</p>
+                            <p className="text-xs text-[var(--rowi-muted)]">{tn.slug}</p>
+                          </div>
+                          {selectedSourceTenant === tn.id && (
+                            <Check className="w-5 h-5 text-[var(--rowi-primary)]" />
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Visual indicator */}
+                {selectedSourceTenant && (
+                  <div className="flex items-center justify-center gap-4 py-4">
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-xl bg-[var(--rowi-surface)] flex items-center justify-center mx-auto mb-2">
+                        <Building2 className="w-6 h-6 text-[var(--rowi-muted)]" />
+                      </div>
+                      <p className="text-xs text-[var(--rowi-muted)]">
+                        {tenants.find((tn) => tn.id === selectedSourceTenant)?.name}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-6 h-6 text-[var(--rowi-primary)]" />
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-xl bg-[var(--rowi-primary)]/10 flex items-center justify-center mx-auto mb-2">
+                        <Building2 className="w-6 h-6 text-[var(--rowi-primary)]" />
+                      </div>
+                      <p className="text-xs text-[var(--rowi-muted)]">
+                        {tenants.find((tn) => tn.id === tenantId)?.name}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t border-[var(--rowi-border)] flex gap-3">
+                <button
+                  onClick={() => setShowInheritModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-[var(--rowi-border)] text-[var(--rowi-muted)] font-medium hover:bg-[var(--rowi-surface)] transition-colors"
+                >
+                  {t("common.cancel")}
+                </button>
+                <button
+                  onClick={copyBrandingFromTenant}
+                  disabled={!selectedSourceTenant || copying}
+                  className="flex-1 py-2.5 rounded-xl bg-[var(--rowi-primary)] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {copying ? (
+                    <RefreshCcw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {t("admin.branding.copyBranding")}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AdminPage>
   );
 }

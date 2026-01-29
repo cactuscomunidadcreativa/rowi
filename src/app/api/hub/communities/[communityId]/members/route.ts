@@ -11,13 +11,13 @@ export const runtime = "nodejs";
 ========================================================= */
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ communityId: string }> }
 ) {
-  const { id } = await context.params; // 👈 FIX principal
+  const { communityId } = await context.params;
 
   try {
     const members = await prisma.rowiCommunityUser.findMany({
-      where: { communityId: id },
+      where: { communityId },
       orderBy: { joinedAt: "asc" },
       include: {
         user: {
@@ -48,9 +48,9 @@ export async function GET(
 ========================================================= */
 export async function POST(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ communityId: string }> }
 ) {
-  const { id } = await context.params; // 👈 también se corrige aquí
+  const { communityId } = await context.params;
 
   try {
     const body = await req.json();
@@ -58,7 +58,7 @@ export async function POST(
 
     // Validar comunidad
     const community = await prisma.rowiCommunity.findUnique({
-      where: { id },
+      where: { id: communityId },
     });
     if (!community)
       return NextResponse.json(
@@ -88,7 +88,7 @@ export async function POST(
     // Crear vinculación miembro
     const member = await prisma.rowiCommunityUser.create({
       data: {
-        communityId: id,
+        communityId,
         userId: user.id,
         role: role || "member",
         status: "active",
@@ -111,9 +111,9 @@ export async function POST(
 ========================================================= */
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ communityId: string }> }
 ) {
-  const { id } = await context.params;
+  const { communityId } = await context.params;
 
   try {
     const { searchParams } = new URL(req.url);
@@ -126,7 +126,7 @@ export async function DELETE(
       );
 
     await prisma.rowiCommunityUser.deleteMany({
-      where: { communityId: id, userId },
+      where: { communityId, userId },
     });
 
     return NextResponse.json({ ok: true });

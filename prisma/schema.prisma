@@ -19,11 +19,32 @@ model User {
   planExpiresAt    DateTime?
   active           Boolean     @default(true)
   allowAI          Boolean     @default(true)
+  contributeToRowiverse Boolean @default(true)  // Auto-contribuir data EQ al RowiVerse global
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   planId           String?
   primaryTenantId  String?
   organizationRole String?     @default("VIEWER")
+
+  // 🚀 Onboarding y estado del usuario
+  onboardingStatus OnboardingStatus @default(REGISTERED)
+  onboardingStep   Int              @default(0)        // Paso actual del onboarding
+  onboardingData   Json?                               // Datos temporales del onboarding
+  seiRequested     Boolean          @default(false)    // ¿Solicitó tomar el SEI?
+  seiRequestedAt   DateTime?                           // Fecha de solicitud del SEI
+  seiCompletedAt   DateTime?                           // Fecha de completado del SEI
+  seiExternalId    String?                             // ID externo en Six Seconds
+  trialStartedAt   DateTime?                           // Inicio del trial
+  trialEndsAt      DateTime?                           // Fin del trial
+
+  // 🔐 SSO Six Seconds Integration
+  ssoProvider      String?                             // "six-seconds" | null
+  ssoProviderId    String?                             // ID único del usuario en el SSO
+  preferredLang    String?          @default("es")     // Idioma preferido del SSO
+
+  // 💳 Stripe
+  stripeCustomerId     String?   @unique              // ID del cliente en Stripe
+  stripeSubscriptionId String?                        // ID de la suscripción activa
 
   // 🌍 Identidad Global para RowiVerse (idioma, país, etc.)
   country  String? @default("Unknown") // país del usuario
@@ -322,6 +343,9 @@ model Hub {
   collectivePatterns CollectivePattern[]
   emotionalROI       EmotionalROI[]
 
+  // 📊 Benchmarks vinculados a este Hub
+  benchmarks Benchmark[] @relation("HubToBenchmark")
+
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([slug])
@@ -456,6 +480,9 @@ model Tenant {
   tenantBranding         TenantBranding?
   notificationQueue      NotificationQueue[]
 
+  // 📊 Benchmarks vinculados a este Tenant
+  benchmarks Benchmark[] @relation("TenantToBenchmark")
+
   @@index([name])
   @@index([slug])
   @@index([rowiVerseId])
@@ -466,12 +493,99 @@ model Tenant {
 model Plan {
   id           String   @id @default(cuid())
   name         String   @unique
+  slug         String?  @unique          // "free", "plus", "family", "pro", "business", "enterprise"
   description  String?
-  priceUsd     Float    @default(0)
-  durationDays Int      @default(30)
-  aiEnabled    Boolean  @default(true)
+  descriptionEN String?                   // Descripción en inglés
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // 💰 Precios
+  priceUsd          Float    @default(0)      // Precio mensual USD
+  priceCents        Int      @default(0)      // Precio mensual en centavos para Stripe
+  priceYearlyUsd    Float    @default(0)      // Precio anual USD
+  priceYearlyCents  Int      @default(0)      // Precio anual en centavos para Stripe
+  currency          String   @default("USD")  // Moneda principal
+  billingPeriod     String   @default("monthly") // "monthly" | "yearly" | "custom"
+
+  // 💳 Stripe
+  stripePriceIdMonthly String?           // ID precio mensual Stripe
+  stripePriceIdYearly  String?           // ID precio anual Stripe
+  stripeProductId      String?           // ID del producto en Stripe
+
+  // 🎁 Trial
+  trialDays           Int      @default(0)   // Días de trial (0 = sin trial)
+  durationDays        Int      @default(30)  // Duración del plan
+
+  // 🤖 Tokens IA
+  tokensMonthly       Int      @default(0)    // Tokens IA mensuales incluidos
+  tokensShared        Boolean  @default(false) // Tokens compartidos entre usuarios
+  tokensPerUser       Boolean  @default(true)  // Tokens por usuario individual
+  tokensOrganization  Int      @default(0)    // Tokens para la organización (Business/Enterprise)
+
+  // 👥 Usuarios y miembros
+  maxUsers            Int      @default(1)      // Usuarios máximos (individual: 1, family: 6, etc.)
+  minUsers            Int      @default(1)      // Usuarios mínimos (Business: 20)
+  pricePerUserMonthly Float    @default(0)      // Precio por usuario adicional/mes
+  pricePerUserYearly  Float    @default(0)      // Precio por usuario adicional/año
+  allowFamilyMembers  Boolean  @default(false)  // Permite agregar familiares
+
+  // 🏢 Tipo de plan
+  planType            String   @default("individual") // "individual" | "family" | "team" | "business" | "enterprise"
+  targetAudience      String?                         // "B2C" | "B2B" | "B2C/B2B"
+
+  // 🧠 Features - IA y Asistentes
+  aiEnabled           Boolean  @default(true)
+  superRowiAccess     Boolean  @default(false)  // Acceso a Super Rowi
+  rowiEQAccess        Boolean  @default(false)  // Acceso a Rowi EQ
+  rowiAffinityAccess  Boolean  @default(false)  // Acceso a Rowi Affinity
+  rowiECOAccess       Boolean  @default(false)  // Acceso a Rowi ECO
+  rowiTrainerAccess   Boolean  @default(false)  // Acceso a Rowi Trainer
+  rowiSalesAccess     Boolean  @default(false)  // Acceso a Rowi Sales
+
+  // 🧠 Features - SEI y Assessment
+  seiIncluded         Boolean  @default(false)  // SEI incluido en el precio
+  seiAnnual           Boolean  @default(false)  // SEI anual incluido
+  brainBriefIncluded  Boolean  @default(false)  // Brain Brief Profile incluido
+  seiDiscountPercent  Int      @default(0)      // % descuento en SEI
+
+  // 🧠 Features - Comunidades y grupos
+  maxCommunities      Int      @default(1)      // Comunidades máximas
+  maxMembers          Int      @default(10)     // Miembros por comunidad
+  privateGroups       Boolean  @default(false)  // Grupos privados
+
+  // 🧠 Features - Reportes y Analytics
+  benchmarkAccess     Boolean  @default(false)  // Acceso a benchmarks
+  advancedReports     Boolean  @default(false)  // Reportes avanzados
+  executiveDashboard  Boolean  @default(false)  // Dashboard ejecutivo
+  benchmarkingSectorial Boolean @default(false) // Benchmarking sectorial
+
+  // 🧠 Features - Integraciones
+  apiAccess           Boolean  @default(false)  // Acceso a API
+  slackIntegration    Boolean  @default(false)  // Integración Slack
+  teamsIntegration    Boolean  @default(false)  // Integración MS Teams
+  gmailIntegration    Boolean  @default(false)  // Integración Gmail/Google
+
+  // 🧠 Features - Soporte
+  supportLevel        String   @default("community") // "community" | "email" | "chat" | "priority" | "dedicated"
+  customOnboarding    Boolean  @default(false)  // Onboarding personalizado
+  workshopIncludes    Boolean  @default(false)  // Workshops de adopción
+
+  // 🏷️ Display
+  badge               String?           // "Popular", "Best Value", "Recomendado", etc.
+  badgeEN             String?           // Badge en inglés
+  emoji               String?           // Emoji del plan
+  color               String?           // Color del plan (hex)
+  icon                String?           // Icono (lucide icon name)
+  sortOrder           Int      @default(0)
+  isPublic            Boolean  @default(true)   // Visible en pricing page
+  isActive            Boolean  @default(true)
+  isCustomPricing     Boolean  @default(false)  // Precio personalizado (Enterprise)
+
+  // 📝 Features JSON (para características adicionales)
+  features            Json?             // Lista de features adicionales
+  featuresEN          Json?             // Features en inglés
+  limitations         Json?             // Limitaciones del plan
+  limitationsEN       Json?             // Limitaciones en inglés
 
   // Relaciones
   memberships Membership[]
@@ -516,6 +630,9 @@ model Organization {
   hubLinks        OrganizationToHub[]    @relation("OrganizationToHubLink")
   tenantLinks     OrganizationToTenant[] @relation("OrganizationToTenantLink")
   rowiCommunities RowiCommunity[]        @relation("OrganizationToCommunity")
+
+  // 📊 Benchmarks vinculados a esta Organización
+  benchmarks Benchmark[] @relation("OrganizationToBenchmark")
 
   @@index([rowiVerseId])
   @@index([superHubId])
@@ -2523,6 +2640,12 @@ model RowiCommunityUser {
   rowiverseUserId String? // 🔗 Identidad global RowiVerse
   communityId     String
 
+  // 👤 Datos del miembro (copiados para búsqueda rápida)
+  name           String?               // Nombre del miembro
+  email          String?               // Email del miembro
+  phone          String?               // Teléfono del miembro
+  language       String?   @default("es")
+
   role           String?   @default("member") // owner | admin | coach | mentor | member | friend | client
   relationToMe   String? // cómo percibo a esta persona: "mi coach", "mi amigo", "mi pareja", etc.
   connectionType String? // tipo de vínculo: "profesional", "emocional", "familiar", "social"
@@ -2616,6 +2739,18 @@ enum TenantRole {
   DEVELOPER
   BILLING
   FEDERATOR
+}
+
+/// 🚀 Estado del usuario en el proceso de onboarding
+enum OnboardingStatus {
+  REGISTERED        // Cuenta creada
+  PAYMENT_PENDING   // Esperando pago (plan pago)
+  ONBOARDING        // Completando datos básicos
+  PENDING_SEI       // Esperando resultados del SEI
+  ACTIVE            // Usuario completamente activo
+  SUSPENDED         // Cuenta suspendida
+  TRIAL_EXPIRED     // Trial expiró sin suscripción
+  CANCELLED         // Usuario canceló suscripción
 }
 
 enum OrgRole {
@@ -3141,4 +3276,1002 @@ enum IntegrationPlatform {
   ZOOM
   EMAIL
   CUSTOM
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 📊 BENCHMARK — Motor de Inteligencia Comparativa Viva
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Benchmark principal que contiene toda la data agregada para comparaciones
+model Benchmark {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  type           BenchmarkType
+  status         BenchmarkStatus @default(PROCESSING)
+
+  // Ámbito jerárquico (multinivel)
+  scope          BenchmarkScope  @default(GLOBAL)
+  tenantId       String?
+  hubId          String?
+  organizationId String?
+  communityId    String?
+  teamId         String?
+
+  // Metadata
+  sourceFile     String?
+  totalRows      Int             @default(0)
+  processedRows  Int             @default(0)
+  dateRangeStart DateTime?
+  dateRangeEnd   DateTime?
+
+  uploadedBy     String
+  uploadedAt     DateTime        @default(now())
+  processedAt    DateTime?
+  lastEnrichedAt DateTime?       // Última vez que se enriqueció con nueva data
+
+  version        Int             @default(1)
+  isActive       Boolean         @default(true)
+  isLearning     Boolean         @default(true)  // Sigue aprendiendo de nueva data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant       Tenant?       @relation("TenantToBenchmark", fields: [tenantId], references: [id])
+  hub          Hub?          @relation("HubToBenchmark", fields: [hubId], references: [id])
+  organization Organization? @relation("OrganizationToBenchmark", fields: [organizationId], references: [id])
+
+  dataPoints       BenchmarkDataPoint[]
+  statistics       BenchmarkStatistic[]
+  correlations     BenchmarkCorrelation[]
+  topPerformers    BenchmarkTopPerformer[]
+  outcomePatterns  BenchmarkOutcomePattern[]
+  userComparisons  BenchmarkUserComparison[]
+
+  @@index([type, scope, isActive])
+  @@index([tenantId])
+  @@index([hubId])
+  @@map("benchmark")
+}
+
+enum BenchmarkType {
+  ROWIVERSE      // Data global SOH
+  EXTERNAL       // Benchmarks de mercado/industria
+  INTERNAL       // Benchmarks organizacionales
+}
+
+enum BenchmarkScope {
+  GLOBAL         // Todo el ecosistema
+  REGION         // Por región geográfica
+  COUNTRY        // Por país
+  SECTOR         // Por industria
+  TENANT         // Por organización
+  HUB            // Por hub/división
+  TEAM           // Por equipo
+  COMMUNITY      // Por comunidad
+  COHORT         // Por cohorte (edad, rol, etc.)
+}
+
+enum BenchmarkStatus {
+  PROCESSING
+  COMPLETED
+  ENRICHING      // Incorporando nueva data
+  FAILED
+  ARCHIVED
+}
+
+/// Data point individual del benchmark (cada registro de la fuente)
+model BenchmarkDataPoint {
+  id          String   @id @default(cuid())
+  benchmarkId String
+
+  // Origen (para learning feedback loop)
+  sourceType  String?  // "soh", "rowiverse_user", "tenant_user"
+  sourceId    String?  // ID del registro original
+  sourceDate  DateTime?
+
+  // Segmentación demográfica
+  country     String?
+  region      String?
+  jobFunction String?
+  jobRole     String?
+  sector      String?
+  ageRange    String?
+  gender      String?
+  education   String?
+  generation  String?  // Millennials, Gen Z, etc.
+
+  // Segmentación organizacional
+  tenantId    String?
+  hubId       String?
+  teamId      String?
+  communityId String?
+
+  // Core EQ (Know/Choose/Give)
+  K           Float?
+  C           Float?
+  G           Float?
+  eqTotal     Float?
+
+  // 8 Competencias Six Seconds
+  EL          Float?   // Emotional Literacy
+  RP          Float?   // Recognize Patterns
+  ACT         Float?   // Consequential Thinking
+  NE          Float?   // Navigate Emotions
+  IM          Float?   // Intrinsic Motivation
+  OP          Float?   // Exercise Optimism
+  EMP         Float?   // Empathy
+  NG          Float?   // Noble Goals
+
+  // Outcomes (lo que buscamos predecir)
+  effectiveness    Float?
+  relationships    Float?
+  qualityOfLife    Float?
+  wellbeing        Float?
+  influence        Float?
+  decisionMaking   Float?
+  community        Float?
+  network          Float?
+  achievement      Float?
+  satisfaction     Float?
+  balance          Float?
+  health           Float?
+
+  // Brain Talents (18 talentos del modelo Six Seconds)
+  dataMining       Float?
+  modeling         Float?
+  prioritizing     Float?
+  connection       Float?
+  emotionalInsight Float?
+  collaboration    Float?
+  reflecting       Float?
+  adaptability     Float?
+  criticalThinking Float?
+  resilience       Float?
+  riskTolerance    Float?
+  imagination      Float?
+  proactivity      Float?
+  commitment       Float?
+  problemSolving   Float?
+  vision           Float?
+  designing        Float?
+  entrepreneurship Float?
+  brainAgility     Float?  // Score agregado de agilidad cerebral
+
+  // Profile y otros
+  brainStyle       String?
+  profile          String?
+
+  // Quality indicators
+  reliabilityIndex Float?
+
+  createdAt DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@index([benchmarkId, country, region])
+  @@index([benchmarkId, sector])
+  @@index([benchmarkId, tenantId])
+  @@index([benchmarkId, jobRole])
+  @@map("benchmark_data_point")
+}
+
+/// Top Performer — Patrones de los mejores en cada outcome
+model BenchmarkTopPerformer {
+  id          String   @id @default(cuid())
+  benchmarkId String
+
+  // Filtros de contexto
+  country     String?
+  region      String?
+  sector      String?
+  jobRole     String?
+  ageRange    String?
+  tenantId    String?
+
+  // Outcome objetivo (qué queremos lograr)
+  outcomeKey  String   // effectiveness, health, relationships, etc.
+
+  // Definición de "top performer"
+  percentileThreshold Int @default(90)  // Top 10%
+  sampleSize  Int      @default(0)
+
+  // Perfil promedio de los top performers
+  avgK        Float?
+  avgC        Float?
+  avgG        Float?
+  avgEL       Float?
+  avgRP       Float?
+  avgACT      Float?
+  avgNE       Float?
+  avgIM       Float?
+  avgOP       Float?
+  avgEMP      Float?
+  avgNG       Float?
+
+  // Competencias distintivas (ordenadas por importancia)
+  topCompetencies     Json?   // [{key: "OP", avgScore, importance, diffFromAvg}]
+  topTalents          Json?   // [{key: "proactivity", avgScore, importance}] - 18 en orden cluster
+  topTalentsSummary   Json?   // Top 5 talentos más distintivos
+
+  // Patrones recurrentes
+  commonPatterns      Json?   // Combinaciones de competencias que se repiten
+  talentPatterns      Json?   // Combinaciones de talentos que se repiten
+
+  calculatedAt DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([benchmarkId, outcomeKey, country, region, sector, jobRole, ageRange, tenantId])
+  @@index([benchmarkId, outcomeKey])
+  @@map("benchmark_top_performer")
+}
+
+/// Correlación — Relación entre competencia y outcome
+model BenchmarkCorrelation {
+  id            String   @id @default(cuid())
+  benchmarkId   String
+
+  // Contexto
+  country       String?
+  region        String?
+  sector        String?
+  tenantId      String?
+
+  // Relación
+  competencyKey String   // K, C, G, EL, RP, etc.
+  outcomeKey    String   // effectiveness, health, etc.
+
+  // Estadísticas
+  correlation   Float    // Pearson r (-1 a 1)
+  pValue        Float?   // Significancia estadística
+  n             Int      @default(0)
+
+  // Interpretación
+  strength      String?  // strong, moderate, weak
+  direction     String?  // positive, negative
+
+  calculatedAt  DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([benchmarkId, competencyKey, outcomeKey, country, region, sector, tenantId])
+  @@index([benchmarkId, outcomeKey])
+  @@map("benchmark_correlation")
+}
+
+/// Outcome Pattern — Mapas de éxito emocional
+model BenchmarkOutcomePattern {
+  id          String   @id @default(cuid())
+  benchmarkId String
+
+  outcomeKey  String   // El outcome que queremos lograr
+
+  // Contexto
+  country     String?
+  region      String?
+  sector      String?
+  tenantId    String?
+
+  // El patrón descubierto
+  patternName        String?   // "El Optimista Empático", etc.
+  patternDescription String?
+
+  // Competencias clave (en orden de importancia)
+  keyCompetencies    Json      // [{key, weight, minThreshold}]
+  keyTalents         Json?     // [{key, weight}]
+
+  // Métricas
+  sampleSize         Int       @default(0)
+  avgOutcomeScore    Float?
+  successRate        Float?    // % que logran alto outcome con este patrón
+
+  confidence         Float?    // Confianza estadística
+
+  calculatedAt DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@index([benchmarkId, outcomeKey])
+  @@map("benchmark_outcome_pattern")
+}
+
+/// Estadísticas — Pre-calculadas por filtros
+model BenchmarkStatistic {
+  id          String   @id @default(cuid())
+  benchmarkId String
+
+  // Filtros
+  country     String?
+  region      String?
+  sector      String?
+  jobRole     String?
+  ageRange    String?
+  gender      String?
+  education   String?
+  tenantId    String?
+
+  // Métrica
+  metricKey   String
+
+  // Estadísticas
+  n           Int      @default(0)
+  mean        Float?
+  median      Float?
+  stdDev      Float?
+  min         Float?
+  max         Float?
+  p10         Float?
+  p25         Float?
+  p50         Float?
+  p75         Float?
+  p90         Float?
+  p95         Float?
+
+  calculatedAt DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([benchmarkId, metricKey, country, region, sector, jobRole, ageRange, gender, education, tenantId])
+  @@index([benchmarkId, metricKey])
+  @@map("benchmark_statistic")
+}
+
+/// User Comparison — Comparación individual guardada
+model BenchmarkUserComparison {
+  id          String   @id @default(cuid())
+  benchmarkId String
+  userId      String?
+  memberId    String?
+
+  // Outcome buscado
+  targetOutcome String  // effectiveness, health, etc.
+
+  // Contexto usado para comparar
+  comparisonContext Json  // {country, region, sector, etc.}
+  fallbackUsed      String? // null, "region", "global"
+
+  // Fortalezas del usuario (lo que YA tiene)
+  userStrengths     Json    // [{competency, score, percentile, vsTopPerformer}]
+
+  // Cómo los top performers usan fortalezas similares
+  topPerformerInsights Json  // [{strength, howTheyUseIt, resultTheyGet}]
+
+  // Qué desarrollar (apalancado en fortalezas)
+  developmentAreas  Json    // [{area, priority, leveragedBy, actionSuggestion}]
+
+  // Puntajes comparativos
+  userScores        Json
+  benchmarkScores   Json
+  percentiles       Json
+
+  // Resumen generado
+  summaryInsight    String?
+
+  createdAt DateTime @default(now())
+
+  benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([memberId])
+  @@map("benchmark_user_comparison")
+}
+
+/// Upload Job — Procesamiento de archivos
+model BenchmarkUploadJob {
+  id           String    @id @default(cuid())
+  benchmarkId  String?
+
+  status       String    @default("pending")
+  progress     Int       @default(0)
+  currentPhase String?
+
+  totalRows     Int      @default(0)
+  processedRows Int      @default(0)
+  failedRows    Int      @default(0)
+
+  errorMessage String?
+  errorDetails Json?
+
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status])
+  @@map("benchmark_upload_job")
+}
+
+/// 🌐 RowiVerse Contribution — Registro de cada contribución de data EQ al benchmark global
+model RowiVerseContribution {
+  id          String   @id @default(cuid())
+
+  // Quién contribuyó
+  userId      String?  // Usuario de Rowi (si aplica)
+  memberId    String?  // CommunityMember (si es data de CSV)
+  tenantId    String?  // Tenant de origen
+
+  // A qué benchmark se contribuyó
+  benchmarkId String   // El benchmark ROWIVERSE global
+  dataPointId String?  // El BenchmarkDataPoint creado
+
+  // Tipo de contribución
+  sourceType  String   // "registration", "csv_upload", "eq_snapshot", "manual"
+  sourceId    String?  // ID del registro fuente (EqSnapshot, CsvUpload, etc.)
+
+  // Datos contribuidos (anonimizados)
+  eqTotal     Float?
+  K           Float?
+  C           Float?
+  G           Float?
+
+  // Demographics (anonimizados)
+  country     String?
+  region      String?
+  sector      String?
+  jobFunction String?
+  ageRange    String?
+  gender      String?
+
+  // Estado
+  status      String   @default("pending")  // pending, processed, rejected
+  processedAt DateTime?
+
+  createdAt   DateTime @default(now())
+
+  @@index([benchmarkId])
+  @@index([userId])
+  @@index([memberId])
+  @@index([tenantId])
+  @@index([status])
+  @@map("rowiverse_contribution")
+}
+
+// =========================================================
+// 💳 STRIPE & PAGOS
+// =========================================================
+
+/// 💳 Suscripción de usuario con Stripe
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String
+  planId      String
+
+  // Stripe IDs
+  stripeSubscriptionId String  @unique
+  stripePriceId        String
+  stripeCustomerId     String
+
+  // Estado
+  status       SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean @default(false)
+  cancelledAt        DateTime?
+
+  // Trial
+  trialStart DateTime?
+  trialEnd   DateTime?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  @@map("subscription")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  UNPAID
+  TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAUSED
+}
+
+/// 💰 Historial de pagos
+model Payment {
+  id          String   @id @default(cuid())
+  userId      String
+
+  // Stripe IDs
+  stripePaymentIntentId String? @unique
+  stripeInvoiceId       String? @unique
+  stripeChargeId        String?
+
+  // Detalles
+  amountCents  Int
+  currency     String   @default("usd")
+  status       PaymentStatus @default(PENDING)
+  description  String?
+
+  // Metadata
+  metadata     Json?
+  receiptUrl   String?
+  invoiceUrl   String?
+
+  paidAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@map("payment")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+/// 🎁 Cupones y descuentos
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+
+  // Tipo de descuento
+  discountType    CouponType @default(PERCENTAGE)
+  discountValue   Float      // Porcentaje o monto fijo
+
+  // Restricciones
+  maxUses         Int?       // Usos máximos totales
+  usedCount       Int        @default(0)
+  maxUsesPerUser  Int        @default(1)
+  minAmountCents  Int?       // Monto mínimo para aplicar
+
+  // Planes válidos (null = todos)
+  validPlanIds    String[]   @default([])
+
+  // Vigencia
+  startsAt        DateTime   @default(now())
+  expiresAt       DateTime?
+
+  // Estado
+  active          Boolean    @default(true)
+
+  // Stripe
+  stripeCouponId  String?    @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  redemptions CouponRedemption[]
+
+  @@map("coupon")
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_TRIAL_DAYS
+}
+
+/// 🎟️ Redención de cupones
+model CouponRedemption {
+  id       String   @id @default(cuid())
+  couponId String
+  userId   String
+
+  // Contexto
+  subscriptionId String?
+  paymentId      String?
+
+  // Valores aplicados
+  discountApplied Float
+
+  redeemedAt DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+
+  @@unique([couponId, userId])
+  @@map("coupon_redemption")
+}
+
+// =========================================================
+// 🧠 SIX SECONDS INTEGRATION
+// =========================================================
+
+/// 📤 Cola de solicitudes SEI pendientes
+model SeiRequest {
+  id          String   @id @default(cuid())
+  userId      String
+
+  // Datos del usuario para Six Seconds
+  email       String
+  name        String
+  country     String?
+  language    String   @default("es")
+
+  // Link directo al SEI (proporcionado por Six Seconds)
+  seiLink     String?              // Link para tomar el SEI directamente
+
+  // Estado
+  status      SeiRequestStatus @default(PENDING)
+
+  // Six Seconds
+  sixSecondsProjectId String?     // Proyecto en Six Seconds donde se envió
+  sixSecondsEmail     String?     // Email enviado por Six Seconds
+
+  // Tracking
+  requestedAt  DateTime @default(now())
+  sentAt       DateTime?           // Cuando se envió a Six Seconds (manual)
+  startedAt    DateTime?           // Cuando el usuario empezó el SEI
+  completedAt  DateTime?           // Cuando se recibió el resultado
+  expiresAt    DateTime?           // Fecha límite para completar
+
+  // Resultado (cuando se importa)
+  resultSnapshotId String?         // EqSnapshot creado con el resultado
+
+  // Notas admin
+  adminNotes   String?
+  processedBy  String?             // Email del admin que procesó
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([email])
+  @@map("sei_request")
+}
+
+enum SeiRequestStatus {
+  PENDING          // Esperando envío a Six Seconds
+  SENT             // Enviado a Six Seconds (link enviado al usuario)
+  IN_PROGRESS      // Usuario está completando el SEI
+  COMPLETED        // SEI completado, resultados recibidos
+  EXPIRED          // Expiró sin completar
+  CANCELLED        // Cancelado por el usuario o admin
+}
+
+/// 📥 Importación de CSV de Six Seconds
+model SixSecondsImport {
+  id          String   @id @default(cuid())
+
+  // Archivo
+  filename    String
+  fileSize    Int
+
+  // Procesamiento
+  status      SixSecondsImportStatus @default(PENDING)
+  totalRows   Int      @default(0)
+  processedRows Int    @default(0)
+  matchedUsers  Int    @default(0)   // Usuarios encontrados en Rowi
+  newSnapshots  Int    @default(0)   // EqSnapshots creados
+  activatedUsers Int   @default(0)   // Usuarios activados (PENDING_SEI -> ACTIVE)
+
+  // Errores
+  failedRows  Int      @default(0)
+  errors      Json?                   // Array de errores detallados
+
+  // Admin
+  uploadedBy  String                  // Email del admin
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@map("six_seconds_import")
+}
+
+enum SixSecondsImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIAL       // Completado con algunos errores
+}
+
+/// 🔗 Links SEI por idioma (configurables desde CMS)
+model SeiLink {
+  id          String   @id @default(cuid())
+
+  // Identificador único para el link
+  code        String   @unique    // "default", "es-basic", "en-pro", etc.
+  name        String              // Nombre descriptivo para el CMS
+
+  // Link al SEI
+  url         String              // URL completa del SEI en Six Seconds
+
+  // Configuración
+  language    String   @default("es")  // Idioma del SEI
+  planSlug    String?                   // Plan asociado (null = todos)
+  isDefault   Boolean  @default(false) // Link por defecto para el idioma
+
+  // Tracking Six Seconds
+  sixSecondsProjectId String?     // ID del proyecto en Six Seconds
+
+  // Estado
+  isActive    Boolean  @default(true)
+
+  // Meta
+  description String?             // Descripción interna
+  notes       String?             // Notas para admins
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([language])
+  @@index([isActive])
+  @@map("sei_link")
+}
+
+/// 📝 Contenido CMS editable (textos de onboarding, páginas, etc.)
+model CmsContent {
+  id          String   @id @default(cuid())
+
+  // Identificador único del contenido
+  key         String              // "onboarding.welcome.title", "onboarding.step1.description"
+  language    String   @default("es")
+
+  // Contenido
+  value       String   @db.Text    // El texto/HTML
+  valueType   CmsValueType @default(TEXT)  // TEXT, HTML, MARKDOWN, JSON
+
+  // Categoría para organizar
+  category    String?             // "onboarding", "pricing", "landing", etc.
+  subcategory String?             // "step1", "step2", etc.
+
+  // Metadata
+  description String?             // Descripción para el admin
+  placeholder String?             // Valor por defecto si está vacío
+
+  // Estado
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, language])
+  @@index([category])
+  @@index([language])
+  @@map("cms_content")
+}
+
+enum CmsValueType {
+  TEXT
+  HTML
+  MARKDOWN
+  JSON
+}
+
+/// 🎨 Configuración de onboarding (pasos, colores, etc.)
+model OnboardingConfig {
+  id          String   @id @default(cuid())
+
+  // Configuración general
+  key         String   @unique     // "general", "steps", "features", etc.
+  config      Json                 // Configuración JSON
+
+  // Estado
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("onboarding_config")
+}
+
+// =========================================================
+// 📊 VENTAS Y FINANZAS
+// =========================================================
+
+/// 📈 Registro de conversiones y fuentes de adquisición
+model UserAcquisition {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+
+  // Fuente de adquisición
+  source      AcquisitionSource @default(ORGANIC)
+  channel     String?           // "google", "facebook", "referral", etc.
+  campaign    String?           // Campaña específica
+  medium      String?           // "cpc", "email", "social", etc.
+
+  // Referido
+  referredBy  String?           // userId del referente
+  referralCode String?          // Código de referido usado
+
+  // Cupón usado en registro
+  couponCode  String?
+
+  // UTM params
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
+
+  // Landing page
+  landingPage String?
+
+  // Conversiones
+  registeredAt DateTime @default(now())
+  convertedAt  DateTime?          // Cuando se convirtió a pago
+
+  // Valor
+  lifetimeValueCents Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([source])
+  @@index([referredBy])
+  @@map("user_acquisition")
+}
+
+enum AcquisitionSource {
+  ORGANIC
+  PAID_SEARCH
+  PAID_SOCIAL
+  REFERRAL
+  EMAIL
+  DIRECT
+  AFFILIATE
+  PARTNER
+  EVENT
+  OTHER
+}
+
+/// 💵 Comisiones de referidos
+model ReferralCommission {
+  id          String   @id @default(cuid())
+
+  // Quién refirió
+  referrerId  String
+
+  // Quién fue referido
+  referredUserId String
+
+  // Pago que generó la comisión
+  paymentId   String?
+
+  // Comisión
+  commissionCents Int
+  commissionRate  Float           // Porcentaje de comisión (ej: 0.20 = 20%)
+
+  // Estado
+  status      CommissionStatus @default(PENDING)
+
+  // Pago de la comisión
+  paidAt      DateTime?
+  payoutId    String?           // Referencia al pago
+
+  createdAt DateTime @default(now())
+
+  @@index([referrerId])
+  @@index([status])
+  @@map("referral_commission")
+}
+
+enum CommissionStatus {
+  PENDING     // Esperando que pase el período de reembolso
+  APPROVED    // Aprobada, lista para pago
+  PAID        // Pagada
+  CANCELLED   // Cancelada (ej: reembolso del referido)
+}
+
+/// 📊 Métricas de ventas agregadas (por día/mes)
+model SalesMetric {
+  id          String   @id @default(cuid())
+
+  // Período
+  date        DateTime @db.Date
+  period      MetricPeriod @default(DAILY)
+
+  // Métricas de usuarios
+  newUsers           Int @default(0)
+  newTrials          Int @default(0)
+  trialConversions   Int @default(0)
+  churned            Int @default(0)
+
+  // Métricas de ingresos (en centavos)
+  mrrCents           Int @default(0)   // Monthly Recurring Revenue
+  newMrrCents        Int @default(0)   // MRR de nuevos clientes
+  expansionMrrCents  Int @default(0)   // MRR de upgrades
+  churnedMrrCents    Int @default(0)   // MRR perdido por churn
+
+  // Métricas de pagos
+  totalPayments      Int @default(0)
+  totalRevenueCents  Int @default(0)
+  refundsCents       Int @default(0)
+
+  // SEI
+  seiRequests        Int @default(0)
+  seiCompleted       Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, period])
+  @@index([date])
+  @@map("sales_metric")
+}
+
+enum MetricPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+/// =========================================================
+/// 🎨 LANDING PAGE BUILDER — Secciones visuales de la landing
+/// =========================================================
+/// Sistema de CMS visual estilo Elementor para construir la landing page.
+/// Cada sección tiene un tipo, orden, configuración visual y contenido traducible.
+
+model LandingSection {
+  id          String   @id @default(cuid())
+  
+  // Tipo de sección (hero, features, testimonials, pricing, etc.)
+  type        LandingSectionType
+  
+  // Orden en la página (0, 1, 2...)
+  order       Int      @default(0)
+  
+  // Visibilidad
+  isVisible   Boolean  @default(true)
+  
+  // Configuración visual (colores, espaciado, animaciones, etc.)
+  config      Json?    // { bgColor, padding, animation, columns, etc. }
+  
+  // Contenido por idioma { es: {...}, en: {...} }
+  content     Json     // Estructura depende del tipo
+  
+  // Metadatos
+  name        String?  // Nombre interno para el admin
+  description String?  // Descripción interna
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([order])
+  @@index([type])
+  @@map("landing_section")
+}
+
+enum LandingSectionType {
+  NAVBAR
+  HERO
+  FEATURES
+  HOW_IT_WORKS
+  TESTIMONIALS
+  PRICING
+  CTA
+  STATS
+  FAQ
+  LOGOS
+  FOOTER
+  CUSTOM
+}
+
+/// 🖼️ Media Library para el Landing Builder
+model LandingMedia {
+  id          String   @id @default(cuid())
+  
+  // URL del archivo (puede ser local o CDN)
+  url         String
+  
+  // Tipo de media
+  type        String   @default("image") // image, video, icon
+  
+  // Metadatos
+  name        String
+  alt         String?
+  width       Int?
+  height      Int?
+  size        Int?     // bytes
+  
+  // Etiquetas para organizar
+  tags        String[] @default([])
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("landing_media")
 }

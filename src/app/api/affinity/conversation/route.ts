@@ -12,14 +12,6 @@ import {
 
 export const runtime = "nodejs";
 
-/**
- * 🗣️ CONVERSATION AFFINITY
- * ---------------------------------------------------------
- * Evalúa afinidad comunicacional (escucha, empatía, conexión).
- * - Pondera más UNDERSTANDING (CTX.conversation).
- * - Sinergia de talentos de conexión y reflejo.
- * - IA contextual (solo plan Pro o ?force=1).
- */
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
@@ -40,18 +32,67 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Missing data" }, { status: 400 });
     }
 
-    // Snapshots base (yo / miembro)
-    const [mySnap, thSnapWithMember] = await Promise.all([
+    let targetUserId: string | null = null;
+    let memberCloseness: string | null = "Neutral";
+    let memberName: string | null = null;
+    let realMemberId: string | null = null;
+
+    if (memberId.startsWith("user_")) {
+      const realUserId = memberId.replace("user_", "");
+      targetUserId = realUserId;
+
+      const [tenantUser, linkedMember] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: realUserId },
+          select: { id: true, name: true },
+        }),
+        prisma.communityMember.findFirst({
+          where: { userId: realUserId, tenantId: me.primaryTenantId! },
+          select: { id: true, closeness: true, name: true },
+        }),
+      ]);
+
+      memberName = linkedMember?.name || tenantUser?.name || null;
+      memberCloseness = linkedMember?.closeness || "Neutral";
+      realMemberId = linkedMember?.id || null;
+    } else {
+      realMemberId = memberId;
+    }
+
+    const [mySnap, thSnap] = await Promise.all([
       prisma.eqSnapshot.findFirst({ where: { userId: me.id }, orderBy: { at: "desc" } }),
-      prisma.eqSnapshot.findFirst({
-        where: { memberId },
-        orderBy: { at: "desc" },
-        include: { member: { select: { closeness: true, name: true } } }
-      }),
+      targetUserId
+        ? prisma.eqSnapshot.findFirst({
+            where: { userId: targetUserId },
+            orderBy: { at: "desc" },
+          })
+        : prisma.eqSnapshot.findFirst({
+            where: { memberId },
+            orderBy: { at: "desc" },
+            include: { member: { select: { closeness: true, name: true } } },
+          }),
     ]);
-    if (!mySnap || !thSnapWithMember) return NextResponse.json({ ok: true, items: [] });
-    const thSnap = thSnapWithMember;
-    const memberCloseness = thSnapWithMember.member?.closeness;
+
+    if (!mySnap || !thSnap) {
+      if (thSnap) {
+        const basicHeat = Math.round(((thSnap.K || 0) + (thSnap.C || 0) + (thSnap.G || 0)) / 3);
+        const heat100 = Math.round((basicHeat / 135) * 100);
+        return NextResponse.json({
+          ok: true, project, memberId, member: memberName,
+          heat: heat100, heat135: basicHeat,
+          affinity_level: basicHeat >= 108 ? "Diestro" : basicHeat >= 92 ? "Funcional" : "Emergente",
+          band: basicHeat >= 108 ? "hot" : basicHeat >= 92 ? "warm" : "cold",
+          ai_summary: "Datos básicos de SEI (falta tu perfil para cálculo completo)",
+          basic_only: true,
+        });
+      }
+      return NextResponse.json({ ok: true, items: [] });
+    }
+
+    if (!targetUserId && (thSnap as any).member) {
+      memberCloseness = (thSnap as any).member?.closeness || "Neutral";
+      memberName = (thSnap as any).member?.name || null;
+    }
 
     // Data complementaria (outcomes + talentos)
     const [myOuts, thOuts, myTalsRows, thTalsRows] = await Promise.all([
@@ -106,35 +147,57 @@ export async function GET(req: NextRequest) {
     const affinity_level = seiLevel135(composite135);
     const band = composite135 >= 108 ? "hot" : composite135 >= 92 ? "warm" : "cold";
 
-    // IA contextual (solo Pro o ?force=1)
     let ai_summary = "ℹ️ Afinidad numérica calculada (modo ahorro IA).";
     if (me.plan?.name === "pro" || force) {
       ai_summary = await generateAiAdvice({
         locale: "es",
         aName: me.name || "Tú",
-        bName: thSnapWithMember.member?.name || "Miembro",
+        bName: memberName || "Miembro",
         context: project,
       });
     }
 
-    // Guardar snapshot
-    await prisma.affinitySnapshot.upsert({
-      where: { userId_memberId_context: { userId: me.id, memberId, context: project } },
-      update: {
-        lastHeat135: Math.round(composite135),
-        aiSummary: ai_summary,
-        biasFactor: uPrefs.biasFactor,
-        closeness: memberCloseness,
-      },
-      create: {
-        userId: me.id,
-        memberId,
-        context: project,
-        lastHeat135: Math.round(composite135),
-        aiSummary: ai_summary,
-        biasFactor: uPrefs.biasFactor,
-        closeness: memberCloseness,
-      },
+    if (realMemberId) {
+      await prisma.affinitySnapshot.upsert({
+        where: { userId_memberId_context: { userId: me.id, memberId: realMemberId, context: project } },
+        update: {
+          lastHeat135: Math.round(composite135),
+          aiSummary: ai_summary,
+          biasFactor: uPrefs.biasFactor,
+          closeness: memberCloseness,
+        },
+        create: {
+          userId: me.id,
+          memberId: realMemberId,
+          context: project,
+          lastHeat135: Math.round(composite135),
+          aiSummary: ai_summary,
+          biasFactor: uPrefs.biasFactor,
+          closeness: memberCloseness,
+        },
+      });
+    }
+
+    // Calcular talentos y competencias compartidas
+    const sharedTalents: string[] = [];
+    const complementaryTalents: { yours: string; theirs: string }[] = [];
+    Object.keys(myTals).forEach((k) => {
+      const my = myTals[k];
+      const th = thTals[k];
+      if (my && th && my >= 100 && th >= 100) {
+        sharedTalents.push(k);
+      } else if (my && th && ((my >= 110 && th < 90) || (th >= 110 && my < 90))) {
+        complementaryTalents.push({ yours: my >= 110 ? k : "", theirs: th >= 110 ? k : "" });
+      }
+    });
+
+    const strongCompetencies: string[] = [];
+    (["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const).forEach((k) => {
+      const my = myComp[k];
+      const th = thComp[k];
+      if (my && th && my >= 100 && th >= 100) {
+        strongCompetencies.push(k);
+      }
     });
 
     // Respuesta final
@@ -142,10 +205,27 @@ export async function GET(req: NextRequest) {
       ok: true,
       project,
       memberId,
+      member: memberName,
+      connectionType: "conversation",
       heat,
+      heat135: Math.round(composite135),
       affinity_level,
       band,
       ai_summary,
+      parts: {
+        growth: Math.round(growth),
+        collaboration: Math.round(collab),
+        understanding: Math.round(understand),
+      },
+      brainStyles: {
+        yours: mySnap.brainStyle,
+        theirs: thSnap.brainStyle,
+        compatibility: Math.round((collab / 135) * 100),
+      },
+      sharedTalents,
+      complementaryTalents: complementaryTalents.filter((t) => t.yours || t.theirs),
+      strongCompetencies,
+      closeness: memberCloseness,
       style: {
         channel: inferMemberChannel(thSnap).channel,
         tone: uPrefs.toneFactor > 1.0 ? "direct" : "warm",

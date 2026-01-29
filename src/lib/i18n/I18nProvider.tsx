@@ -1,8 +1,18 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 
-type Lang = "es" | "en" | "pt" | "it";
+// Importar traducciones locales como fallback
+import esLocale from "./locales/es.json";
+import enLocale from "./locales/en.json";
+
+type Lang = "es" | "en";
 type Translations = Record<string, string>;
+
+// Diccionarios locales como fallback
+const localDicts: Record<Lang, Translations> = {
+  es: esLocale as Translations,
+  en: enLocale as Translations,
+};
 
 type I18nContextType = {
   lang: Lang;
@@ -19,63 +29,80 @@ const I18nContext = createContext<I18nContextType>({
 });
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>("es");
-  const [dict, setDict] = useState<Translations>({});
+  const [lang, setLangState] = useState<Lang>("es");
+  const [dict, setDict] = useState<Translations>(localDicts.es);
   const [loading, setLoading] = useState(false);
+  const initialized = useRef(false);
 
   /* =========================================================
      🌐 Inicializar idioma guardado o del navegador
   ========================================================== */
   useEffect(() => {
-    const stored =
-      (localStorage.getItem("rowi.lang") as Lang) ||
-      (navigator.language.slice(0, 2) as Lang) ||
-      "es";
-    const safe: Lang = ["es", "en", "pt", "it"].includes(stored)
-      ? stored
-      : "es";
-    applyLang(safe);
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const stored = localStorage.getItem("rowi.lang") as Lang | null;
+    const browserLang = navigator.language.slice(0, 2);
+    const detectedLang = stored || (browserLang === "en" ? "en" : "es");
+    const safe: Lang = detectedLang === "en" ? "en" : "es";
+
+    // Aplicar inmediatamente el diccionario local
+    setDict(localDicts[safe]);
+    setLangState(safe);
+    document.documentElement.setAttribute("data-lang", safe);
+
+    // Luego intentar cargar desde API
+    loadFromAPI(safe);
   }, []);
 
   /* =========================================================
-     📦 Cargar diccionario desde la API principal
+     📦 Cargar traducciones adicionales desde API
   ========================================================== */
-  async function applyLang(next: Lang) {
-    if (next === lang) return;
-    setLoading(true);
+  async function loadFromAPI(targetLang: Lang) {
     try {
       const tenant =
         document.documentElement.getAttribute("data-tenant") || "rowi-master";
       const res = await fetch(
-        `/api/hub/translations?format=list&lang=${next}&tenantId=${tenant}`
+        `/api/hub/translations?format=list&lang=${targetLang}&tenantId=${tenant}`
       );
       const data = await res.json();
 
-      if (data?.ok && Array.isArray(data.rows)) {
-        const rows = data.rows;
-        const dict: Translations = {};
-
-        for (const r of rows) {
+      if (data?.ok && Array.isArray(data.rows) && data.rows.length > 0) {
+        const apiDict: Translations = {};
+        for (const r of data.rows) {
           const full = r.ns ? `${r.ns}.${r.key}` : r.key;
-          dict[full] =
-            r[next] || r.es || r.en || r.pt || r.it || full;
+          apiDict[full] = r[targetLang] || r.es || r.en || full;
         }
-
-        setDict(dict);
-        setLang(next);
-        document.documentElement.setAttribute("data-lang", next);
-        localStorage.setItem("rowi.lang", next);
-
-        // 🔁 Notificar globalmente al sistema
-        window.dispatchEvent(
-          new CustomEvent("rowi:lang-changed", { detail: next })
-        );
+        // Combinar: local como base, API sobrescribe
+        setDict(prev => ({ ...prev, ...apiDict }));
       }
     } catch (err) {
-      console.error("❌ Error cargando traducciones:", err);
-    } finally {
-      setLoading(false);
+      console.warn("⚠️ No se pudieron cargar traducciones de API, usando locales");
     }
+  }
+
+  /* =========================================================
+     🔄 Cambiar idioma
+  ========================================================== */
+  async function setLang(next: Lang) {
+    if (next === lang) return;
+    setLoading(true);
+
+    // Aplicar inmediatamente el diccionario local
+    const localDict = localDicts[next];
+    setDict(localDict);
+    setLangState(next);
+    document.documentElement.setAttribute("data-lang", next);
+    localStorage.setItem("rowi.lang", next);
+
+    // Notificar globalmente
+    window.dispatchEvent(
+      new CustomEvent("rowi:lang-changed", { detail: next })
+    );
+
+    // Luego intentar cargar desde API
+    await loadFromAPI(next);
+    setLoading(false);
   }
 
   /* =========================================================
@@ -86,7 +113,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <I18nContext.Provider value={{ lang, t, setLang: applyLang, loading }}>
+    <I18nContext.Provider value={{ lang, t, setLang, loading }}>
       {children}
     </I18nContext.Provider>
   );

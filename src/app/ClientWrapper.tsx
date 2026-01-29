@@ -18,11 +18,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       </div>
 
       {/* 🔹 Contenido principal */}
-      <div
-        className="min-h-screen transition-colors 
-                   bg-[var(--rowi-bg)] text-[var(--rowi-fg)] 
-                   dark:bg-[var(--rowi-bg-night)] dark:text-[var(--rowi-fg-night)]"
-      >
+      <div className="min-h-screen transition-colors bg-[var(--rowi-bg)] text-[var(--rowi-fg)]">
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
       </div>
 
@@ -43,12 +39,9 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
             fontFamily: "'Poppins', sans-serif",
           },
           classNames: {
-            success:
-              "bg-[var(--rowi-blue-day)] text-white dark:bg-[var(--rowi-blue-night)]",
-            error:
-              "bg-[var(--rowi-pink-day)] text-white dark:bg-[var(--rowi-pink-night)]",
-            info:
-              "bg-[var(--rowi-blue-day)] text-white dark:bg-[var(--rowi-blue-night)]",
+            success: "bg-[var(--rowi-g2)] text-white",
+            error: "bg-[var(--rowi-g1)] text-white",
+            info: "bg-[var(--rowi-g2)] text-white",
           },
         }}
       />

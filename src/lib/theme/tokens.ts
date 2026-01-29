@@ -106,9 +106,9 @@ export const defaultTokens: ThemeTokens = {
   },
 
   sei: {
-    k: '#1E88E5',
-    c: '#7A59C9',
-    g: '#43A047',
+    k: '#1E88E5', // Know Yourself / Focus - Azul
+    c: '#E53935', // Choose Yourself / Decisions - Rojo
+    g: '#43A047', // Give Yourself / Drive - Verde
   },
 
   fonts: {

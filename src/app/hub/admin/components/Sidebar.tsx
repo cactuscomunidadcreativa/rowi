@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n/useI18n";
 import {
   Globe2, Layers3, Network, Building2, Building, Users, FolderKanban, ShieldCheck, Gauge,
   Puzzle, MessageSquareCode, BookOpenCheck, Bot,
-  Brain, LineChart, FileText, BarChart3,
+  Brain, LineChart, FileText, BarChart3, TrendingUp, Target, Activity,
   Coins, Scale, Receipt, FileSpreadsheet, ClipboardList, ShoppingCart, Wallet,
   CreditCard, Briefcase, Package, ChartPie, HardDrive,
   Calendar, ClipboardCheck, Clock,
@@ -17,7 +17,8 @@ import {
   Settings2, Bell, Database, SlidersHorizontal,
   Blocks, PanelLeft, Palette,
   ChevronDown, ChevronRight, HeartHandshake, Languages,
-  LucideIcon, LayoutDashboard, Wrench,
+  LucideIcon, LayoutDashboard, Wrench, GitCompareArrows, Award, Sparkles,
+  Link2, Earth, Upload, Settings,
 } from "lucide-react";
 
 /* =========================================================
@@ -54,6 +55,7 @@ export default function Sidebar() {
       items: [
         { href: "/hub/admin", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
         { href: "/hub/admin/branding", labelKey: "admin.nav.branding", icon: Palette },
+        { href: "/hub/admin/platform-config", labelKey: "admin.nav.platformConfig", icon: Settings },
       ],
     },
     // 🏛️ ESTRUCTURA (Ecosistema)
@@ -86,6 +88,16 @@ export default function Sidebar() {
           ],
         },
         { href: "/hub/admin/plans", labelKey: "admin.nav.plans", icon: Gauge },
+        { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
+      ],
+    },
+    // 🌐 ROWIVERSE
+    {
+      titleKey: "admin.nav.rowiverse",
+      icon: Earth,
+      items: [
+        { href: "/hub/admin/rowiverse", labelKey: "admin.nav.rowiverseMap", icon: Globe2 },
+        { href: "/hub/admin/rowiverse/contributions", labelKey: "admin.nav.contributions", icon: Upload },
       ],
     },
     // 🤖 IA & AUTOMATIZACIÓN
@@ -110,6 +122,16 @@ export default function Sidebar() {
         { href: "/hub/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
       ],
     },
+    // 📊 BENCHMARKS
+    {
+      titleKey: "admin.nav.benchmarksSection",
+      icon: TrendingUp,
+      items: [
+        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
+        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: FileSpreadsheet },
+        { href: "/hub/admin/benchmarks/compare", labelKey: "admin.nav.compareBenchmarks", icon: GitCompareArrows },
+      ],
+    },
     // 💰 FINANZAS & CONTABILIDAD
     {
       titleKey: "admin.nav.finance",
@@ -131,6 +153,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.sales",
       icon: CreditCard,
       items: [
+        { href: "/hub/admin/sales/dashboard", labelKey: "admin.nav.salesDashboard", icon: TrendingUp },
         { href: "/hub/admin/sales/opportunities", labelKey: "admin.nav.opportunities", icon: Briefcase },
         { href: "/hub/admin/sales/subscriptions", labelKey: "admin.nav.subscriptions", icon: CreditCard },
         { href: "/hub/admin/sales/clients", labelKey: "admin.nav.clients", icon: Users2 },
@@ -162,6 +185,40 @@ export default function Sidebar() {
         { href: "/hub/admin/education/study-groups", labelKey: "admin.nav.studyGroups", icon: Users },
       ],
     },
+    // 🌐 SITIO PÚBLICO & CMS
+    {
+      titleKey: "admin.nav.publicSite",
+      icon: Globe2,
+      items: [
+        { href: "/hub/admin/landing-builder", labelKey: "admin.nav.landingBuilder", icon: Sparkles },
+        { href: "/hub/admin/cms", labelKey: "admin.nav.cms", icon: FileText },
+        {
+          href: "/hub/admin/public-pages",
+          labelKey: "admin.nav.publicPages",
+          icon: PanelLeft,
+          children: [
+            { href: "/hub/admin/public-pages", labelKey: "admin.nav.allPages", icon: FileText },
+            { href: "/", labelKey: "admin.nav.pageHome", icon: LayoutDashboard },
+            { href: "/pricing", labelKey: "admin.nav.pagePricing", icon: CreditCard },
+            { href: "/product/rowi", labelKey: "admin.nav.productRowi", icon: Bot },
+            { href: "/product/affinity", labelKey: "admin.nav.productAffinity", icon: HeartHandshake },
+            { href: "/product/insights", labelKey: "admin.nav.productInsights", icon: LineChart },
+            { href: "/product/integrations", labelKey: "admin.nav.productIntegrations", icon: Network },
+          ],
+        },
+        { href: "/hub/admin/translations", labelKey: "admin.nav.translations", icon: Languages },
+      ],
+    },
+    // 🎯 SIX SECONDS & SEI
+    {
+      titleKey: "admin.nav.sixSeconds",
+      icon: Award,
+      items: [
+        { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
+        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
+        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: FileSpreadsheet },
+      ],
+    },
     // 🎨 CONTENIDO & UI
     {
       titleKey: "admin.nav.content",
@@ -178,7 +235,6 @@ export default function Sidebar() {
       icon: Wrench,
       items: [
         { href: "/hub/admin/settings", labelKey: "admin.nav.settings", icon: Settings2 },
-        { href: "/hub/admin/translations", labelKey: "admin.nav.translations", icon: Languages },
         { href: "/hub/admin/tokens", labelKey: "admin.nav.tokens", icon: Gauge },
         { href: "/hub/admin/integrations", labelKey: "admin.nav.integrations", icon: Network },
         { href: "/hub/admin/database", labelKey: "admin.nav.database", icon: Database },

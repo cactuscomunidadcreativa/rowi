@@ -23,14 +23,20 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || undefined;
 
+    // Build OR conditions for member lookup
+    const ownerConditions: any[] = [
+      { ownerId: owner.id }, // 👈 miembros que tú creaste
+      { userId: owner.id },  // 👈 por compatibilidad con versiones previas
+    ];
+
+    // Si el usuario tiene tenant, también mostrar miembros del tenant
+    if (owner.primaryTenantId) {
+      ownerConditions.push({ tenantId: owner.primaryTenantId });
+    }
+
     const where = {
       AND: [
-        {
-          OR: [
-            { ownerId: owner.id }, // 👈 asegura que veas los tuyos
-            { userId: owner.id },  // 👈 por compatibilidad con versiones previas
-          ],
-        },
+        { OR: ownerConditions },
         q
           ? {
               OR: [
@@ -58,12 +64,35 @@ export async function GET(req: NextRequest) {
             updatedAt: true,
           },
         },
+        // Include linked user's eqSnapshots for tenant_link members
+        user: {
+          select: {
+            id: true,
+            eqSnapshots: {
+              orderBy: { at: "desc" },
+              take: 1,
+              select: {
+                brainStyle: true,
+                K: true,
+                C: true,
+                G: true,
+              },
+            },
+          },
+        },
       },
     });
 
     const members = membersDB.map((m) => {
       const affinity = m.affinitySnapshots?.[0];
-      const heat = affinity?.lastHeat135 ?? null;
+      let heat = affinity?.lastHeat135 ?? null;
+
+      // For tenant_link members without affinitySnapshots, use linked user's eqSnapshots
+      if (heat === null && m.userId && (m as any).user?.eqSnapshots?.[0]) {
+        const snap = (m as any).user.eqSnapshots[0];
+        heat = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
+      }
+
       let level = null;
       if (typeof heat === "number") {
         if (heat >= 118) level = "Experto";
@@ -73,32 +102,93 @@ export async function GET(req: NextRequest) {
         else level = "Desafío";
       }
 
+      // Get brainStyle from member or linked user
+      const brainStyle = m.brainStyle || (m as any).user?.eqSnapshots?.[0]?.brainStyle;
+
       return {
         id: m.id,
         name: m.name,
         email: m.email || undefined,
         country: m.country || undefined,
-        brainStyle: m.brainStyle || undefined,
+        brainStyle: brainStyle || undefined,
         group: m.group || "Trabajo",
         closeness: m.closeness || "Neutral",
         connectionType: m.connectionType || undefined,
         tenantId: m.tenantId,
         ownerId: m.ownerId,
-        affinityHeat135: affinity?.lastHeat135 ?? null,
+        affinityHeat135: heat,
         affinityPercent:
-          typeof affinity?.lastHeat135 === "number"
-            ? Math.round((affinity.lastHeat135 / 135) * 100)
+          typeof heat === "number"
+            ? Math.round((heat / 135) * 100)
             : null,
         affinityLevel: level,
         aiSummary: affinity?.aiSummary ?? null,
         updatedAt: m.updatedAt,
+        source: "community_member",
       };
     });
 
+    // 🆕 También incluir Users del mismo tenant como "compañeros de equipo"
+    let teammates: any[] = [];
+    if (owner.primaryTenantId) {
+      const tenantUsers = await prisma.user.findMany({
+        where: {
+          primaryTenantId: owner.primaryTenantId,
+          id: { not: owner.id }, // Excluir al usuario actual
+          active: true,
+        },
+        include: {
+          eqSnapshots: {
+            orderBy: { at: "desc" },
+            take: 1,
+            select: {
+              brainStyle: true,
+              K: true,
+              C: true,
+              G: true,
+            },
+          },
+        },
+        take: 200,
+      });
+
+      // Filtrar usuarios que ya están en members (por email o userId)
+      const existingEmails = new Set(members.map((m) => m.email?.toLowerCase()).filter(Boolean));
+      const existingUserIds = new Set(membersDB.filter((m) => m.userId).map((m) => m.userId));
+
+      teammates = tenantUsers
+        .filter((u) => !existingEmails.has(u.email?.toLowerCase()) && !existingUserIds.has(u.id))
+        .map((u) => {
+          const snap = u.eqSnapshots?.[0];
+          const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
+
+          return {
+            id: `user_${u.id}`,
+            name: u.name || u.email?.split("@")[0] || "Unknown",
+            email: u.email || undefined,
+            country: u.country || undefined,
+            brainStyle: snap?.brainStyle || undefined,
+            group: "Trabajo", // Compañeros de trabajo
+            closeness: "Neutral",
+            connectionType: "teammate",
+            tenantId: owner.primaryTenantId,
+            ownerId: null,
+            affinityHeat135: avgScore,
+            affinityPercent: avgScore ? Math.round((avgScore / 135) * 100) : null,
+            affinityLevel: null,
+            aiSummary: null,
+            updatedAt: u.updatedAt,
+            source: "tenant_user",
+          };
+        });
+    }
+
+    const allMembers = [...members, ...teammates];
+
     return NextResponse.json({
       ok: true,
-      total: members.length,
-      members,
+      total: allMembers.length,
+      members: allMembers,
     });
   } catch (e: any) {
     console.error("❌ GET /community/members error:", e);

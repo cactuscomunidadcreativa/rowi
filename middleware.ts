@@ -4,32 +4,49 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
 /* =========================================================
-   🌍 CONFIG — Rutas que REQUIEREN autenticación
+   🌍 CONFIG — Rutas públicas de promoción/landing
 ========================================================= */
 
-// Rutas que requieren estar logueado
-const PROTECTED_PATHS = [
-  "/hub/admin",
-  "/dashboard",
-  "/profile",
-  "/settings",
+const PUBLIC_PAGES = [
+  "/",
+  "/signin",
+  "/login",
+  "/register",
+  "/invite",
+  "/auth",
+  "/contact",
+  "/pricing",
+  "/how-it-works",
+  "/for-organizations",
+  "/for-you",
+  "/product",
 ];
 
-// APIs que requieren autenticación
-const PROTECTED_API_PATHS = [
+const PUBLIC_API_PATHS = [
+  "/api/auth",
+  "/api/i18n",
+  "/api/public",
+  "/api/plans",
+];
+
+/* =========================================================
+   🔒 CONFIG — Rutas protegidas (requieren permisos especiales)
+========================================================= */
+
+const ADMIN_PATH = "/hub/admin";
+const IA_PATHS = [
   "/api/rowi",
   "/api/eco",
   "/api/affinity",
   "/api/emotions",
   "/api/hub/ai",
-  "/api/hub/admin",
-  "/api/admin",
 ];
 
 /* =========================================================
    🔥 MIDDLEWARE PRINCIPAL
-   - Por defecto TODO es público
-   - Solo protege rutas específicas que requieren auth
+   - Páginas de promoción son públicas
+   - El resto requiere autenticación
+   - /hub/admin requiere permisos especiales
 ========================================================= */
 
 export async function middleware(req: NextRequest) {
@@ -47,19 +64,19 @@ export async function middleware(req: NextRequest) {
   }
 
   /* =========================================================
-     2) Verificar si la ruta requiere autenticación
+     2) Verificar si es una página/API pública
   ========================================================== */
-  const requiresAuth =
-    PROTECTED_PATHS.some((p) => pathname.startsWith(p)) ||
-    PROTECTED_API_PATHS.some((p) => pathname.startsWith(p));
+  const isPublicPage = PUBLIC_PAGES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+  const isPublicApi = PUBLIC_API_PATHS.some((p) => pathname.startsWith(p));
 
-  // Si no requiere auth, permitir acceso
-  if (!requiresAuth) {
+  if (isPublicPage || isPublicApi) {
     return NextResponse.next();
   }
 
   /* =========================================================
-     3) Obtener token NextAuth (solo si la ruta requiere auth)
+     3) Obtener token NextAuth
   ========================================================== */
   const token = await getToken({
     req,
@@ -74,10 +91,7 @@ export async function middleware(req: NextRequest) {
   if (!isAuth) {
     // Para APIs, devolver 401
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     // Para páginas, redirigir a signin
     const signin = new URL("/signin", req.url);
@@ -86,7 +100,14 @@ export async function middleware(req: NextRequest) {
   }
 
   /* =========================================================
-     5) SUPERADMIN — acceso total
+     5) IA — permitir todas las llamadas a IA para usuarios loggeados
+  ========================================================== */
+  if (IA_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  /* =========================================================
+     6) SUPERADMIN — acceso total
   ========================================================== */
   const permissions = (token as any).permissions || [];
 
@@ -102,17 +123,24 @@ export async function middleware(req: NextRequest) {
   }
 
   /* =========================================================
-     6) Validación para /hub/admin
+     7) Usuario normal — puede usar TODA LA APP excepto /hub/admin
   ========================================================== */
-  if (pathname.startsWith("/hub/admin")) {
-    const hasAdminAccess = permissions.some((p: any) =>
-      ["superhub", "tenant", "hub"].includes(p.scopeType)
-    );
+  const isAdminRoute = pathname.startsWith(ADMIN_PATH);
 
-    if (!hasAdminAccess) {
-      const url = new URL("/hub/admin/unauthorized", req.url);
-      return NextResponse.rewrite(url);
-    }
+  if (!isAdminRoute) {
+    return NextResponse.next();
+  }
+
+  /* =========================================================
+     8) Validación para admin normal
+  ========================================================== */
+  const hasAdminAccess = permissions.some((p: any) =>
+    ["superhub", "tenant", "hub"].includes(p.scopeType)
+  );
+
+  if (!hasAdminAccess) {
+    const url = new URL("/hub/admin/unauthorized", req.url);
+    return NextResponse.rewrite(url);
   }
 
   return NextResponse.next();

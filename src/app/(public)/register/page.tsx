@@ -295,6 +295,7 @@ function RegisterPageContent() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "",
     country: "",
     language: lang,
     wantsSei: true,
@@ -369,8 +370,13 @@ function RegisterPageContent() {
   }
 
   async function handleEmailRegistration() {
-    if (!formData.email || !formData.name) {
+    if (!formData.email || !formData.name || !formData.password) {
       toast.error(t.errors.requiredFields);
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast.error(lang === "es" ? "La contraseña debe tener al menos 8 caracteres" : "Password must be at least 8 characters");
       return;
     }
 
@@ -382,6 +388,7 @@ function RegisterPageContent() {
         body: JSON.stringify({
           email: formData.email,
           name: formData.name,
+          password: formData.password,
           planSlug: selectedPlan?.slug,
           billingPeriod,
           country: formData.country,
@@ -401,10 +408,27 @@ function RegisterPageContent() {
         throw new Error(data.error);
       }
 
-      toast.success(t.success.emailSent);
-      nextStep();
+      // Auto-login después del registro exitoso
+      const signInResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        // Si falla el auto-login, mostrar mensaje y redirigir a login
+        toast.success(lang === "es" ? "Cuenta creada. Por favor inicia sesión." : "Account created. Please sign in.");
+        router.push("/login");
+      } else {
+        // Auto-login exitoso, ir al dashboard
+        toast.success(lang === "es" ? "¡Bienvenido a Rowi!" : "Welcome to Rowi!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
-      toast.error(error.message || t.errors.general);
+      const errorMsg = error.message === "email_already_exists"
+        ? (lang === "es" ? "Este email ya está registrado" : "This email is already registered")
+        : error.message || t.errors.general;
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -779,6 +803,15 @@ function RegisterPageContent() {
                     }
                     className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20"
                   />
+                  <input
+                    type="password"
+                    placeholder={lang === "es" ? "Contraseña (mínimo 8 caracteres)" : "Password (minimum 8 characters)"}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20"
+                  />
                 </div>
               </div>
 
@@ -792,7 +825,7 @@ function RegisterPageContent() {
                 </button>
                 <button
                   onClick={handleEmailRegistration}
-                  disabled={loading || !formData.email || !formData.name}
+                  disabled={loading || !formData.email || !formData.name || !formData.password || formData.password.length < 8}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
                 >
                   {loading ? (

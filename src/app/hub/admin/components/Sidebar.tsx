@@ -18,22 +18,24 @@ import {
   Blocks, PanelLeft, Palette,
   ChevronDown, ChevronRight, HeartHandshake, Languages,
   LucideIcon, LayoutDashboard, Wrench, GitCompareArrows, Award, Sparkles,
-  Link2, Earth, Upload, Settings,
+  Link2, Earth, Upload, Settings, Trophy, Medal, Star, Flame,
+  Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
 } from "lucide-react";
 
 /* =========================================================
-   🌐 Rowi Hub Admin Sidebar — Reorganized & i18n Ready
+   🌐 Rowi Hub Admin Sidebar — Reorganizado & Bilingüe
    ---------------------------------------------------------
-   - Estructura mejorada con grupos lógicos
-   - Branding/Theme incluido
-   - Todas las labels usan claves de traducción
-   - Animaciones suaves
+   - Estructura optimizada por frecuencia de uso
+   - Secciones core primero, avanzadas después
+   - Soporte completo ES/EN
+   - Nuevas secciones: Gamificación, EQ Upload
 ========================================================= */
 
 interface NavItem {
   href: string;
   labelKey: string;
   icon: LucideIcon;
+  badge?: string;
   children?: NavItem[];
 }
 
@@ -41,6 +43,7 @@ interface NavSection {
   titleKey: string;
   icon: LucideIcon;
   items: NavItem[];
+  priority?: number; // Mayor = más arriba
 }
 
 export default function Sidebar() {
@@ -48,31 +51,75 @@ export default function Sidebar() {
   const { t } = useI18n();
 
   const sections: NavSection[] = [
-    // 🏠 PRINCIPAL
+    // ═══════════════════════════════════════════════════════
+    // 🏠 PRINCIPAL - Lo más usado
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.main",
       icon: LayoutDashboard,
+      priority: 100,
       items: [
         { href: "/hub/admin", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-        { href: "/hub/admin/branding", labelKey: "admin.nav.branding", icon: Palette },
-        { href: "/hub/admin/platform-config", labelKey: "admin.nav.platformConfig", icon: Settings },
+        { href: "/hub/admin/users", labelKey: "admin.nav.users", icon: Users },
+        { href: "/hub/admin/communities", labelKey: "admin.nav.communities", icon: HeartHandshake },
       ],
     },
-    // 🏛️ ESTRUCTURA (Ecosistema)
+
+    // ═══════════════════════════════════════════════════════
+    // 💓 INTELIGENCIA EMOCIONAL (Core del producto)
+    // ═══════════════════════════════════════════════════════
     {
-      titleKey: "admin.nav.structure",
-      icon: Globe2,
+      titleKey: "admin.nav.eq",
+      icon: Brain,
+      priority: 95,
       items: [
-        { href: "/hub/admin/superhubs", labelKey: "admin.nav.superhubs", icon: Layers3 },
-        { href: "/hub/admin/hubs", labelKey: "admin.nav.hubs", icon: Network },
-        { href: "/hub/admin/tenants", labelKey: "admin.nav.tenants", icon: Building2 },
-        { href: "/hub/admin/organizations", labelKey: "admin.nav.organizations", icon: Building },
+        { href: "/hub/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
+        { href: "/hub/admin/eq-upload", labelKey: "admin.nav.eqUpload", icon: Upload, badge: "NEW" },
+        { href: "/hub/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
+        { href: "/hub/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
+        { href: "/hub/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
       ],
     },
-    // 👥 PERSONAS
+
+    // ═══════════════════════════════════════════════════════
+    // 🏆 GAMIFICACIÓN (Nuevo)
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.gamification",
+      icon: Trophy,
+      priority: 90,
+      items: [
+        { href: "/hub/admin/achievements", labelKey: "admin.nav.achievements", icon: Medal },
+        { href: "/hub/admin/badges", labelKey: "admin.nav.badges", icon: BadgeCheck },
+        { href: "/hub/admin/levels", labelKey: "admin.nav.levels", icon: Star },
+        { href: "/hub/admin/streaks", labelKey: "admin.nav.streaks", icon: Flame },
+        { href: "/hub/admin/leaderboards", labelKey: "admin.nav.leaderboards", icon: Crown },
+        { href: "/hub/admin/rewards", labelKey: "admin.nav.rewards", icon: Gift },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // 🎯 SIX SECONDS & SEI
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.sixSeconds",
+      icon: Award,
+      priority: 85,
+      items: [
+        { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
+        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
+        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: Upload },
+        { href: "/hub/admin/benchmarks/compare", labelKey: "admin.nav.compareBenchmarks", icon: GitCompareArrows },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // 👥 PERSONAS & ACCESOS
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.people",
       icon: Users,
+      priority: 80,
       items: [
         { href: "/hub/admin/users", labelKey: "admin.nav.users", icon: Users },
         { href: "/hub/admin/roles", labelKey: "admin.nav.roles", icon: ShieldCheck },
@@ -87,23 +134,32 @@ export default function Sidebar() {
             { href: "/hub/admin/communities/members", labelKey: "admin.nav.members", icon: Users2 },
           ],
         },
+        { href: "/hub/admin/invites", labelKey: "admin.nav.invites", icon: Mail },
         { href: "/hub/admin/plans", labelKey: "admin.nav.plans", icon: Gauge },
-        { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
       ],
     },
+
+    // ═══════════════════════════════════════════════════════
     // 🌐 ROWIVERSE
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.rowiverse",
       icon: Earth,
+      priority: 75,
       items: [
         { href: "/hub/admin/rowiverse", labelKey: "admin.nav.rowiverseMap", icon: Globe2 },
         { href: "/hub/admin/rowiverse/contributions", labelKey: "admin.nav.contributions", icon: Upload },
+        { href: "/hub/admin/affinity", labelKey: "admin.nav.affinity", icon: Heart },
       ],
     },
+
+    // ═══════════════════════════════════════════════════════
     // 🤖 IA & AUTOMATIZACIÓN
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.aiAutomation",
       icon: Bot,
+      priority: 70,
       items: [
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
         { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },
@@ -111,84 +167,60 @@ export default function Sidebar() {
         { href: "/hub/admin/automation", labelKey: "admin.nav.automationPanel", icon: Workflow },
       ],
     },
-    // 💓 EQ (Inteligencia Emocional)
-    {
-      titleKey: "admin.nav.eq",
-      icon: Brain,
-      items: [
-        { href: "/hub/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
-        { href: "/hub/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
-        { href: "/hub/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
-        { href: "/hub/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
-      ],
-    },
-    // 📊 BENCHMARKS
-    {
-      titleKey: "admin.nav.benchmarksSection",
-      icon: TrendingUp,
-      items: [
-        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
-        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: FileSpreadsheet },
-        { href: "/hub/admin/benchmarks/compare", labelKey: "admin.nav.compareBenchmarks", icon: GitCompareArrows },
-      ],
-    },
-    // 💰 FINANZAS & CONTABILIDAD
-    {
-      titleKey: "admin.nav.finance",
-      icon: Coins,
-      items: [
-        { href: "/hub/admin/accounting/accounts", labelKey: "admin.nav.accounts", icon: Scale },
-        { href: "/hub/admin/accounting/transactions", labelKey: "admin.nav.transactions", icon: Receipt },
-        { href: "/hub/admin/accounting/invoices", labelKey: "admin.nav.invoices", icon: FileSpreadsheet },
-        { href: "/hub/admin/accounting/purchase-orders", labelKey: "admin.nav.purchaseOrders", icon: ClipboardList },
-        { href: "/hub/admin/accounting/sales-orders", labelKey: "admin.nav.salesOrders", icon: ShoppingCart },
-        { href: "/hub/admin/accounting/payouts", labelKey: "admin.nav.payouts", icon: Wallet },
-        { href: "/hub/admin/accounting/payroll", labelKey: "admin.nav.payroll", icon: Calendar },
-        { href: "/hub/admin/accounting/assets", labelKey: "admin.nav.assets", icon: HardDrive },
-        { href: "/hub/admin/accounting/cost-centers", labelKey: "admin.nav.costCenters", icon: Building },
-      ],
-    },
-    // 🧩 VENTAS & CRM
+
+    // ═══════════════════════════════════════════════════════
+    // 💰 VENTAS & SUSCRIPCIONES
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.sales",
       icon: CreditCard,
+      priority: 65,
       items: [
         { href: "/hub/admin/sales/dashboard", labelKey: "admin.nav.salesDashboard", icon: TrendingUp },
-        { href: "/hub/admin/sales/opportunities", labelKey: "admin.nav.opportunities", icon: Briefcase },
         { href: "/hub/admin/sales/subscriptions", labelKey: "admin.nav.subscriptions", icon: CreditCard },
+        { href: "/hub/admin/sales/opportunities", labelKey: "admin.nav.opportunities", icon: Briefcase },
         { href: "/hub/admin/sales/clients", labelKey: "admin.nav.clients", icon: Users2 },
         { href: "/hub/admin/sales/products", labelKey: "admin.nav.products", icon: Package },
         { href: "/hub/admin/sales/reports", labelKey: "admin.nav.salesReports", icon: ChartPie },
       ],
     },
-    // 👔 RRHH
+
+    // ═══════════════════════════════════════════════════════
+    // 🏛️ ESTRUCTURA (Ecosistema Multi-tenant)
+    // ═══════════════════════════════════════════════════════
     {
-      titleKey: "admin.nav.hr",
-      icon: Users,
+      titleKey: "admin.nav.structure",
+      icon: Globe2,
+      priority: 60,
       items: [
-        { href: "/hub/admin/hr/employees", labelKey: "admin.nav.employees", icon: Users },
-        { href: "/hub/admin/hr/reviews", labelKey: "admin.nav.reviews", icon: ClipboardCheck },
-        { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
-        { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
-        { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
+        { href: "/hub/admin/superhubs", labelKey: "admin.nav.superhubs", icon: Layers3 },
+        { href: "/hub/admin/hubs", labelKey: "admin.nav.hubs", icon: Network },
+        { href: "/hub/admin/tenants", labelKey: "admin.nav.tenants", icon: Building2 },
+        { href: "/hub/admin/organizations", labelKey: "admin.nav.organizations", icon: Building },
       ],
     },
-    // 🎓 EDUCACIÓN
+
+    // ═══════════════════════════════════════════════════════
+    // 🎨 BRANDING & APARIENCIA
+    // ═══════════════════════════════════════════════════════
     {
-      titleKey: "admin.nav.education",
-      icon: GraduationCap,
+      titleKey: "admin.nav.branding",
+      icon: Palette,
+      priority: 55,
       items: [
-        { href: "/hub/admin/education/courses", labelKey: "admin.nav.courses", icon: BookOpen },
-        { href: "/hub/admin/education/enrollments", labelKey: "admin.nav.enrollments", icon: ClipboardList },
-        { href: "/hub/admin/education/quizzes", labelKey: "admin.nav.quizzes", icon: FileText },
-        { href: "/hub/admin/education/certificates", labelKey: "admin.nav.certificates", icon: FileSpreadsheet },
-        { href: "/hub/admin/education/study-groups", labelKey: "admin.nav.studyGroups", icon: Users },
+        { href: "/hub/admin/branding", labelKey: "admin.nav.brandingTheme", icon: Palette },
+        { href: "/hub/admin/platform-config", labelKey: "admin.nav.platformConfig", icon: Settings },
+        { href: "/hub/admin/translations", labelKey: "admin.nav.translations", icon: Languages },
       ],
     },
+
+    // ═══════════════════════════════════════════════════════
     // 🌐 SITIO PÚBLICO & CMS
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.publicSite",
       icon: Globe2,
+      priority: 50,
       items: [
         { href: "/hub/admin/landing-builder", labelKey: "admin.nav.landingBuilder", icon: Sparkles },
         { href: "/hub/admin/cms", labelKey: "admin.nav.cms", icon: FileText },
@@ -202,37 +234,68 @@ export default function Sidebar() {
             { href: "/pricing", labelKey: "admin.nav.pagePricing", icon: CreditCard },
             { href: "/product/rowi", labelKey: "admin.nav.productRowi", icon: Bot },
             { href: "/product/affinity", labelKey: "admin.nav.productAffinity", icon: HeartHandshake },
-            { href: "/product/insights", labelKey: "admin.nav.productInsights", icon: LineChart },
-            { href: "/product/integrations", labelKey: "admin.nav.productIntegrations", icon: Network },
           ],
         },
-        { href: "/hub/admin/translations", labelKey: "admin.nav.translations", icon: Languages },
       ],
     },
-    // 🎯 SIX SECONDS & SEI
+
+    // ═══════════════════════════════════════════════════════
+    // 🎓 EDUCACIÓN
+    // ═══════════════════════════════════════════════════════
     {
-      titleKey: "admin.nav.sixSeconds",
-      icon: Award,
+      titleKey: "admin.nav.education",
+      icon: GraduationCap,
+      priority: 45,
       items: [
-        { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
-        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
-        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: FileSpreadsheet },
+        { href: "/hub/admin/education/courses", labelKey: "admin.nav.courses", icon: BookOpen },
+        { href: "/hub/admin/education/enrollments", labelKey: "admin.nav.enrollments", icon: ClipboardList },
+        { href: "/hub/admin/education/quizzes", labelKey: "admin.nav.quizzes", icon: FileText },
+        { href: "/hub/admin/education/certificates", labelKey: "admin.nav.certificates", icon: Award },
+        { href: "/hub/admin/education/study-groups", labelKey: "admin.nav.studyGroups", icon: Users },
       ],
     },
-    // 🎨 CONTENIDO & UI
+
+    // ═══════════════════════════════════════════════════════
+    // 💰 FINANZAS & CONTABILIDAD
+    // ═══════════════════════════════════════════════════════
     {
-      titleKey: "admin.nav.content",
-      icon: PanelLeft,
+      titleKey: "admin.nav.finance",
+      icon: Coins,
+      priority: 40,
       items: [
-        { href: "/hub/admin/pages", labelKey: "admin.nav.pages", icon: FileText },
-        { href: "/hub/admin/layouts", labelKey: "admin.nav.layouts", icon: Blocks },
-        { href: "/hub/admin/components", labelKey: "admin.nav.components", icon: Puzzle },
+        { href: "/hub/admin/accounting/accounts", labelKey: "admin.nav.accounts", icon: Scale },
+        { href: "/hub/admin/accounting/transactions", labelKey: "admin.nav.transactions", icon: Receipt },
+        { href: "/hub/admin/accounting/invoices", labelKey: "admin.nav.invoices", icon: FileSpreadsheet },
+        { href: "/hub/admin/accounting/purchase-orders", labelKey: "admin.nav.purchaseOrders", icon: ClipboardList },
+        { href: "/hub/admin/accounting/sales-orders", labelKey: "admin.nav.salesOrders", icon: ShoppingCart },
+        { href: "/hub/admin/accounting/payouts", labelKey: "admin.nav.payouts", icon: Wallet },
+        { href: "/hub/admin/accounting/payroll", labelKey: "admin.nav.payroll", icon: Calendar },
       ],
     },
+
+    // ═══════════════════════════════════════════════════════
+    // 👔 RRHH
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.hr",
+      icon: Briefcase,
+      priority: 35,
+      items: [
+        { href: "/hub/admin/hr/employees", labelKey: "admin.nav.employees", icon: Users },
+        { href: "/hub/admin/hr/reviews", labelKey: "admin.nav.reviews", icon: ClipboardCheck },
+        { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
+        { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
+        { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
     // ⚙️ SISTEMA & CONFIGURACIÓN
+    // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.system",
       icon: Wrench,
+      priority: 10,
       items: [
         { href: "/hub/admin/settings", labelKey: "admin.nav.settings", icon: Settings2 },
         { href: "/hub/admin/tokens", labelKey: "admin.nav.tokens", icon: Gauge },
@@ -241,12 +304,13 @@ export default function Sidebar() {
         { href: "/hub/admin/announcements", labelKey: "admin.nav.announcements", icon: Bell },
         { href: "/hub/admin/logs", labelKey: "admin.nav.logs", icon: FileText },
         { href: "/hub/admin/audit", labelKey: "admin.nav.audit", icon: ShieldCheck },
-        { href: "/hub/admin/insights", labelKey: "admin.nav.insights", icon: LineChart },
-        { href: "/hub/admin/reports", labelKey: "admin.nav.reports", icon: FileText },
-        { href: "/hub/admin/system-health", labelKey: "admin.nav.systemHealth", icon: Gauge },
+        { href: "/hub/admin/system-health", labelKey: "admin.nav.systemHealth", icon: Activity },
       ],
     },
   ];
+
+  // Ordenar secciones por prioridad
+  const sortedSections = [...sections].sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
   return (
     <aside className="h-full flex flex-col bg-[var(--rowi-card)]">
@@ -264,7 +328,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {sections.map((section, i) => (
+        {sortedSections.map((section, i) => (
           <SidebarSection
             key={i}
             section={section}
@@ -384,6 +448,11 @@ function SidebarLink({ item, pathname, t }: SidebarLinkProps) {
     >
       <Icon className="w-4 h-4 flex-shrink-0" />
       <span className="truncate">{t(item.labelKey)}</span>
+      {item.badge && (
+        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">
+          {item.badge}
+        </span>
+      )}
     </Link>
   );
 }

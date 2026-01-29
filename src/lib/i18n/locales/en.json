@@ -1597,6 +1597,18 @@
   "admin.nav.productInsights": "Insights",
   "admin.nav.productIntegrations": "Integrations",
 
+  "admin.nav.gamification": "Gamification",
+  "admin.nav.achievements": "Achievements",
+  "admin.nav.badges": "Badges",
+  "admin.nav.levels": "Levels",
+  "admin.nav.streaks": "Streaks",
+  "admin.nav.leaderboards": "Leaderboards",
+  "admin.nav.rewards": "Rewards",
+  "admin.nav.eqUpload": "Upload EQ",
+  "admin.nav.invites": "Invitations",
+  "admin.nav.affinity": "Affinity",
+  "admin.nav.brandingTheme": "Branding & Theme",
+
   "admin.nav.platformConfig": "Platform Config",
   "admin.platformConfig.title": "Platform Configuration",
   "admin.platformConfig.description": "Manage messaging services, Six Seconds dictionary, and Rowi evolution levels",

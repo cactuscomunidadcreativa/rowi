@@ -80,11 +80,87 @@ export async function POST() {
               return;
             }
 
-            // 5️⃣ Vincular
+            // 5️⃣ Vincular miembro
             await prisma.rowiCommunityUser.update({
               where: { id: member.id },
               data: { userId: user.id },
             });
+
+            // ═══════════════════════════════════════════════════════════════
+            // 6️⃣ COPIAR TODOS LOS DATOS DEL MIEMBRO AL USUARIO
+            // ═══════════════════════════════════════════════════════════════
+
+            const copyResults = {
+              eqSnapshots: 0,
+              eqProgress: 0,
+              emotionalEvents: 0,
+              affinitySnapshots: 0,
+              contributions: 0,
+              benchmarkOutcomes: 0,
+            };
+
+            // EqSnapshots (evaluaciones SEI con talentos y competencias)
+            const snapshotsResult = await prisma.eqSnapshot.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.eqSnapshots = snapshotsResult.count;
+
+            // EqProgress (progreso emocional)
+            const progressResult = await prisma.eqProgress.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.eqProgress = progressResult.count;
+
+            // EmotionalEvents (eventos emocionales)
+            const eventsResult = await prisma.emotionalEvent.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.emotionalEvents = eventsResult.count;
+
+            // AffinitySnapshots (afinidad)
+            const affinityResult = await prisma.affinitySnapshot.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.affinitySnapshots = affinityResult.count;
+
+            // RowiVerseContributions
+            const contributionsResult = await prisma.rowiVerseContribution.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.contributions = contributionsResult.count;
+
+            // BenchmarkOutcomes
+            const outcomesResult = await prisma.benchmarkOutcome.updateMany({
+              where: { memberId: member.id },
+              data: { userId: user.id },
+            });
+            copyResults.benchmarkOutcomes = outcomesResult.count;
+
+            // 7️⃣ Actualizar seiCompletedAt del usuario si tiene snapshots
+            if (copyResults.eqSnapshots > 0) {
+              const latestSnapshot = await prisma.eqSnapshot.findFirst({
+                where: { userId: user.id },
+                orderBy: { at: "desc" },
+              });
+
+              if (latestSnapshot) {
+                await prisma.user.update({
+                  where: { id: user.id },
+                  data: {
+                    seiCompletedAt: latestSnapshot.at,
+                    seiRequested: true,
+                    ...(latestSnapshot.country && { country: latestSnapshot.country }),
+                  },
+                });
+              }
+            }
+
+            const totalCopied = Object.values(copyResults).reduce((a, b) => a + b, 0);
 
             linked++;
             details.push({
@@ -93,6 +169,8 @@ export async function POST() {
               userId: user.id,
               userName: user.name,
               community: member.community?.name,
+              dataCopied: copyResults,
+              totalRecordsCopied: totalCopied,
               status: "✅ Vinculado correctamente",
             });
           } catch (err: any) {

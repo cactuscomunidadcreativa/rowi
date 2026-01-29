@@ -1598,6 +1598,18 @@
   "admin.nav.productIntegrations": "Integraciones",
   "admin.nav.platformConfig": "Configuración Plataforma",
 
+  "admin.nav.gamification": "Gamificación",
+  "admin.nav.achievements": "Logros",
+  "admin.nav.badges": "Insignias",
+  "admin.nav.levels": "Niveles",
+  "admin.nav.streaks": "Rachas",
+  "admin.nav.leaderboards": "Clasificaciones",
+  "admin.nav.rewards": "Recompensas",
+  "admin.nav.eqUpload": "Subir EQ",
+  "admin.nav.invites": "Invitaciones",
+  "admin.nav.affinity": "Afinidad",
+  "admin.nav.brandingTheme": "Branding y Tema",
+
   "admin.platformConfig.title": "Configuración de Plataforma",
   "admin.platformConfig.description": "Configura servicios de mensajería, diccionario Six Seconds y niveles de Rowi",
   "admin.platformConfig.tabs.messaging": "Servicios de Mensajería",

@@ -36,6 +36,7 @@ const DEMO_CONTENT = {
     ctaLogin: "Ya tengo cuenta",
     placeholder: "Escribe un mensaje...",
     typingText: "Rowi está escribiendo...",
+    accountIntent: "¡Excelente! Me alegra que quieras comenzar tu viaje de inteligencia emocional. 🎉",
   },
   en: {
     greeting: "Hi! I'm Rowi, your emotional intelligence companion.",
@@ -46,8 +47,20 @@ const DEMO_CONTENT = {
     ctaLogin: "I have an account",
     placeholder: "Type a message...",
     typingText: "Rowi is typing...",
+    accountIntent: "Excellent! I'm glad you want to start your emotional intelligence journey. 🎉",
   },
 };
+
+// Palabras clave para detectar intención de crear cuenta
+const ACCOUNT_INTENT_KEYWORDS = [
+  // Español
+  "crear cuenta", "crear mi cuenta", "registrar", "registrarme", "registro",
+  "inscribir", "inscribirme", "quiero cuenta", "nueva cuenta", "abrir cuenta",
+  "comenzar", "empezar", "iniciar", "unirme", "probar",
+  // English
+  "create account", "sign up", "signup", "register", "join", "start",
+  "get started", "new account", "open account", "try", "begin",
+];
 
 /* =========================================================
    💬 COMPONENTE PRINCIPAL
@@ -71,6 +84,8 @@ export default function RowiCoach() {
   const [audioPlayer, setAudioPlayer] = React.useState<HTMLAudioElement | null>(null);
   const [demoStep, setDemoStep] = React.useState(0);
   const [showDemoTyping, setShowDemoTyping] = React.useState(false);
+  const [showCTA, setShowCTA] = React.useState(false);
+  const [demoInput, setDemoInput] = React.useState("");
 
   const isLoggedIn = !!session?.user?.email;
   const userName = session?.user?.name || "Usuario";
@@ -144,6 +159,48 @@ export default function RowiCoach() {
 
   function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Detectar intención de crear cuenta en el input del demo
+  function checkAccountIntent(text: string): boolean {
+    const lowerText = text.toLowerCase().trim();
+    return ACCOUNT_INTENT_KEYWORDS.some(keyword => lowerText.includes(keyword));
+  }
+
+  // Manejar input del usuario en modo demo
+  function handleDemoInput(text: string) {
+    if (!text.trim()) return;
+
+    // Agregar mensaje del usuario
+    setMessages(prev => [...prev, { id: uid(), role: "user", text }]);
+    setDemoInput("");
+
+    // Detectar intención
+    if (checkAccountIntent(text)) {
+      // Mostrar respuesta y CTA
+      setShowDemoTyping(true);
+      setTimeout(() => {
+        setShowDemoTyping(false);
+        setMessages(prev => [...prev, { id: uid(), role: "assistant", text: content.accountIntent }]);
+        setShowCTA(true);
+        setDemoStep(4); // Asegurar que el CTA se muestre
+      }, 1000);
+    } else {
+      // Respuesta genérica invitando a crear cuenta
+      setShowDemoTyping(true);
+      setTimeout(() => {
+        setShowDemoTyping(false);
+        setMessages(prev => [...prev, {
+          id: uid(),
+          role: "assistant",
+          text: lang === "es"
+            ? "Para poder tener una conversación completa y personalizada, necesitas crear tu cuenta gratuita. ¡Es muy fácil y rápido!"
+            : "To have a complete and personalized conversation, you need to create your free account. It's very easy and quick!"
+        }]);
+        setShowCTA(true);
+        setDemoStep(4);
+      }, 1500);
+    }
   }
 
   /* =========================================================
@@ -441,7 +498,7 @@ export default function RowiCoach() {
           </div>
 
           {/* CTA para usuarios no logueados */}
-          {!isLoggedIn && demoStep >= 4 && (
+          {!isLoggedIn && (demoStep >= 4 || showCTA) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -502,18 +559,21 @@ export default function RowiCoach() {
             </div>
           )}
 
-          {/* Input deshabilitado para demo */}
-          {!isLoggedIn && demoStep < 4 && (
-            <div className="flex items-center gap-2 p-3 border-t border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950">
+          {/* Input para demo - ahora funcional */}
+          {!isLoggedIn && demoStep < 4 && !showCTA && (
+            <div className="flex items-center gap-2 p-3 border-t border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               <input
                 type="text"
                 placeholder={content.placeholder}
-                disabled
-                className="flex-1 bg-gray-200 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm outline-none opacity-50 cursor-not-allowed"
+                value={demoInput}
+                onChange={(e) => setDemoInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleDemoInput(demoInput)}
+                className="flex-1 bg-gray-100 dark:bg-zinc-800 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--rowi-g2)] transition-all"
               />
               <button
-                disabled
-                className="p-2.5 rounded-full bg-gray-300 dark:bg-zinc-700 text-gray-500 cursor-not-allowed"
+                onClick={() => handleDemoInput(demoInput)}
+                disabled={!demoInput.trim()}
+                className="p-2.5 rounded-full bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white disabled:opacity-50 hover:opacity-90 transition-opacity"
               >
                 <Send className="w-5 h-5" />
               </button>

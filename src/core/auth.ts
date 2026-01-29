@@ -2,6 +2,9 @@ import { prisma } from "@/core/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+// Re-export authOptions for convenience
+export { authOptions };
+
 /* =========================================================
    🧩 getServerAuthUser — VERSIÓN FINAL PARA APP ROUTER
    ---------------------------------------------------------

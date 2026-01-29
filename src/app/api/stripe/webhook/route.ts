@@ -55,9 +55,4 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Disable body parsing for webhooks
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Note: Body parsing is automatically disabled in App Router when using req.text()

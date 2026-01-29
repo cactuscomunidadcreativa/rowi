@@ -62,3 +62,9 @@ apps/rowi/.backups/
 # Uploads
 /uploads/
 
+# Seed data with personal info
+src/data/seeds/*.csv
+src/data/seeds/*.json
+*.bak
+*.old
+*.backup

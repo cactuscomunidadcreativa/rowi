@@ -7,6 +7,11 @@ import { I18nProvider } from "@/lib/i18n/I18nProvider";
 export const metadata = {
   title: "Rowi SIA",
   description: "App de Inteligencia Emocional",
+  icons: {
+    icon: "/owl.png",
+    shortcut: "/owl.png",
+    apple: "/owl.png",
+  },
 };
 
 export default async function RootLayout({

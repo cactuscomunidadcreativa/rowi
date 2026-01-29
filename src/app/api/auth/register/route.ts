@@ -124,11 +124,12 @@ export async function POST(req: NextRequest) {
       referredBy = referrer?.id || null;
     }
 
-    // Crear usuario
+    // Crear usuario con password hasheado
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
         name: name || null,
+        password: hashedPassword, // Guardar password en User para CredentialsProvider
         language,
         country: country || "Unknown",
         planId: selectedPlanId,
@@ -137,6 +138,7 @@ export async function POST(req: NextRequest) {
         trialStartedAt: trialEndsAt ? new Date() : null,
         trialEndsAt,
         contributeToRowiverse: true,
+        organizationRole: "VIEWER", // Rol por defecto
       },
     });
 

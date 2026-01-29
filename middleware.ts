@@ -20,6 +20,7 @@ const PUBLIC_PAGES = [
   "/for-organizations",
   "/for-you",
   "/product",
+  "/demo",
 ];
 
 const PUBLIC_API_PATHS = [

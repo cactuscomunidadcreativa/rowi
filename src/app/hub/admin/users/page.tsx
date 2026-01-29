@@ -14,6 +14,9 @@ import {
   Cpu,
   Sparkles,
   ShieldCheck,
+  Trash2,
+  Link2,
+  AlertTriangle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -71,6 +74,8 @@ export default function UsersPage() {
   const [inspector, setInspector] = useState<string | null>(null);
   const [editing, setEditing] = useState<UserData | null>(null);
   const [creator, setCreator] = useState<Partial<UserData> | null>(null);
+  const [deleting, setDeleting] = useState<UserData | null>(null);
+  const [merging, setMerging] = useState<UserData | null>(null);
 
   async function loadAll() {
     setLoading(true);
@@ -114,6 +119,48 @@ export default function UsersPage() {
       if (!res.ok) throw new Error(j.error);
       toast.success(t("admin.users.updated"));
       setEditing(null);
+      loadAll();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteUser() {
+    if (!deleting) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deleting.id }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error);
+      toast.success(t("admin.users.deleted", "Usuario eliminado"));
+      setDeleting(null);
+      loadAll();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function mergeUsers(targetId: string) {
+    if (!merging) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceId: merging.id, targetId }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error);
+      toast.success(t("admin.users.merged", "Usuarios unidos correctamente"));
+      setMerging(null);
       loadAll();
     } catch (e: any) {
       toast.error(e.message);
@@ -260,6 +307,8 @@ export default function UsersPage() {
                 <>
                   <AdminIconButton icon={Eye} onClick={() => setInspector(user.id)} title={t("admin.common.view")} />
                   <AdminIconButton icon={Pencil} onClick={() => setEditing(user)} title={t("admin.common.edit")} />
+                  <AdminIconButton icon={Link2} onClick={() => setMerging(user)} title={t("admin.users.merge", "Unir con otro")} />
+                  <AdminIconButton icon={Trash2} onClick={() => setDeleting(user)} title={t("admin.common.delete")} className="text-red-500 hover:text-red-600" />
                 </>
               }
             />
@@ -308,6 +357,12 @@ export default function UsersPage() {
                 <AdminButton variant="secondary" size="xs" icon={Pencil} onClick={() => setEditing(user)}>
                   {t("admin.common.edit")}
                 </AdminButton>
+                <AdminButton variant="ghost" size="xs" icon={Link2} onClick={() => setMerging(user)}>
+                  {t("admin.users.merge", "Unir")}
+                </AdminButton>
+                <AdminButton variant="ghost" size="xs" icon={Trash2} onClick={() => setDeleting(user)} className="text-red-500">
+                  {t("admin.common.delete")}
+                </AdminButton>
               </div>
             </AdminCard>
           ))}
@@ -330,6 +385,27 @@ export default function UsersPage() {
           superHubs={superHubs}
           orgs={orgs}
           plans={plans}
+          saving={saving}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleting && (
+        <DeleteConfirmModal
+          user={deleting}
+          onConfirm={deleteUser}
+          onClose={() => setDeleting(null)}
+          saving={saving}
+        />
+      )}
+
+      {/* Merge Users Modal */}
+      {merging && (
+        <MergeUsersModal
+          sourceUser={merging}
+          allUsers={users.filter(u => u.id !== merging.id)}
+          onMerge={mergeUsers}
+          onClose={() => setMerging(null)}
           saving={saving}
         />
       )}
@@ -477,6 +553,167 @@ function UserForm({
               {t("admin.common.active")}
             </label>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   🗑️ DeleteConfirmModal — Confirmar eliminación
+========================================================= */
+function DeleteConfirmModal({
+  user,
+  onConfirm,
+  onClose,
+  saving,
+}: {
+  user: UserData;
+  onConfirm: () => void;
+  onClose: () => void;
+  saving: boolean;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[var(--rowi-surface)] rounded-xl shadow-xl border border-[var(--rowi-border)] p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6 text-red-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">
+              {t("admin.users.confirmDelete", "¿Eliminar usuario?")}
+            </h2>
+            <p className="text-sm text-[var(--rowi-muted)]">
+              {t("admin.users.deleteWarning", "Esta acción no se puede deshacer")}
+            </p>
+          </div>
+        </div>
+
+        <div className="p-3 bg-[var(--rowi-background)] rounded-lg mb-4">
+          <p className="font-medium text-[var(--rowi-foreground)]">{user.name}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{user.email}</p>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <AdminButton variant="ghost" onClick={onClose}>
+            {t("admin.common.cancel")}
+          </AdminButton>
+          <AdminButton
+            onClick={onConfirm}
+            loading={saving}
+            className="bg-red-500 hover:bg-red-600 text-white"
+          >
+            {t("admin.common.delete")}
+          </AdminButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   🔗 MergeUsersModal — Unir dos usuarios
+========================================================= */
+function MergeUsersModal({
+  sourceUser,
+  allUsers,
+  onMerge,
+  onClose,
+  saving,
+}: {
+  sourceUser: UserData;
+  allUsers: UserData[];
+  onMerge: (targetId: string) => void;
+  onClose: () => void;
+  saving: boolean;
+}) {
+  const { t } = useI18n();
+  const [search, setSearch] = useState("");
+  const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
+
+  const filteredUsers = allUsers.filter(
+    (u) =>
+      u.name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-lg max-h-[80vh] bg-[var(--rowi-surface)] rounded-xl shadow-xl border border-[var(--rowi-border)] flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-[var(--rowi-border)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
+              <Link2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">
+                {t("admin.users.mergeTitle", "Unir usuarios")}
+              </h2>
+              <p className="text-sm text-[var(--rowi-muted)]">
+                {t("admin.users.mergeDesc", "Los datos de este usuario se moverán al usuario seleccionado")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Source user */}
+        <div className="p-4 border-b border-[var(--rowi-border)]">
+          <p className="text-xs text-[var(--rowi-muted)] mb-2">{t("admin.users.mergeFrom", "Usuario origen (se eliminará):")}</p>
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="font-medium text-[var(--rowi-foreground)]">{sourceUser.name}</p>
+            <p className="text-sm text-[var(--rowi-muted)]">{sourceUser.email}</p>
+          </div>
+        </div>
+
+        {/* Search and select target */}
+        <div className="p-4 flex-1 overflow-y-auto">
+          <p className="text-xs text-[var(--rowi-muted)] mb-2">{t("admin.users.mergeTo", "Usuario destino (conservará los datos):")}</p>
+
+          <AdminSearch
+            value={search}
+            onChange={setSearch}
+            className="w-full mb-3"
+          />
+
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {filteredUsers.slice(0, 20).map((user) => (
+              <div
+                key={user.id}
+                onClick={() => setSelectedTarget(user.id)}
+                className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                  selectedTarget === user.id
+                    ? "border-[var(--rowi-primary)] bg-[var(--rowi-primary)]/10"
+                    : "border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50"
+                }`}
+              >
+                <p className="font-medium text-[var(--rowi-foreground)]">{user.name}</p>
+                <p className="text-sm text-[var(--rowi-muted)]">{user.email}</p>
+              </div>
+            ))}
+            {filteredUsers.length === 0 && (
+              <p className="text-center text-[var(--rowi-muted)] py-4">
+                {t("admin.users.noResults", "No se encontraron usuarios")}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-[var(--rowi-border)] flex justify-end gap-2">
+          <AdminButton variant="ghost" onClick={onClose}>
+            {t("admin.common.cancel")}
+          </AdminButton>
+          <AdminButton
+            onClick={() => selectedTarget && onMerge(selectedTarget)}
+            loading={saving}
+            disabled={!selectedTarget}
+          >
+            {t("admin.users.mergeConfirm", "Unir usuarios")}
+          </AdminButton>
         </div>
       </div>
     </div>

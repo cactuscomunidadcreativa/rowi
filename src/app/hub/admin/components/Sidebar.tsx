@@ -82,19 +82,35 @@ export default function Sidebar() {
     },
 
     // ═══════════════════════════════════════════════════════
-    // 🏆 GAMIFICACIÓN (Nuevo)
+    // 🏆 GAMIFICACIÓN
     // ═══════════════════════════════════════════════════════
     {
       titleKey: "admin.nav.gamification",
       icon: Trophy,
       priority: 90,
       items: [
-        { href: "/hub/admin/achievements", labelKey: "admin.nav.achievements", icon: Medal },
-        { href: "/hub/admin/badges", labelKey: "admin.nav.badges", icon: BadgeCheck },
-        { href: "/hub/admin/levels", labelKey: "admin.nav.levels", icon: Star },
-        { href: "/hub/admin/streaks", labelKey: "admin.nav.streaks", icon: Flame },
-        { href: "/hub/admin/leaderboards", labelKey: "admin.nav.leaderboards", icon: Crown },
-        { href: "/hub/admin/rewards", labelKey: "admin.nav.rewards", icon: Gift },
+        { href: "/hub/admin/gamification", labelKey: "admin.nav.gamificationDashboard", icon: Trophy },
+        { href: "/hub/admin/gamification/achievements", labelKey: "admin.nav.achievements", icon: Medal },
+        { href: "/hub/admin/gamification/levels", labelKey: "admin.nav.levels", icon: Star },
+        { href: "/hub/admin/gamification/streaks", labelKey: "admin.nav.streaks", icon: Flame },
+        { href: "/hub/admin/gamification/leaderboards", labelKey: "admin.nav.leaderboards", icon: Crown },
+        { href: "/hub/admin/gamification/rewards", labelKey: "admin.nav.rewards", icon: Gift },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // 📚 E-LEARNING
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.elearning",
+      icon: BookOpen,
+      priority: 88,
+      items: [
+        { href: "/hub/admin/elearning", labelKey: "admin.nav.elearningDashboard", icon: BookOpen },
+        { href: "/hub/admin/elearning/microlearning", labelKey: "admin.nav.microlearning", icon: Zap },
+        { href: "/hub/admin/elearning/courses", labelKey: "admin.nav.courses", icon: GraduationCap },
+        { href: "/hub/admin/elearning/quizzes", labelKey: "admin.nav.quizzes", icon: Target },
+        { href: "/hub/admin/elearning/certificates", labelKey: "admin.nav.certificates", icon: Award },
       ],
     },
 

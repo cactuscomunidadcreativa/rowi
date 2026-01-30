@@ -12,6 +12,8 @@ import {
   TrendingDown,
   Minus,
   Download,
+  Users,
+  Database,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -114,6 +116,8 @@ export default function BenchmarkStatsPage() {
   const [filtersData, setFiltersData] = useState<FiltersData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingFilters, setLoadingFilters] = useState(true);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [filteredSampleSize, setFilteredSampleSize] = useState<number>(0);
 
   // Filtros activos
   const [filters, setFilters] = useState({
@@ -148,6 +152,8 @@ export default function BenchmarkStatsPage() {
           genders: data.benchmark.genders || [],
           educations: data.benchmark.educations || [],
         });
+        // Guardar el total de registros
+        setTotalRecords(data.benchmark.totalRows || data.benchmark._count?.dataPoints || 0);
       }
     } catch (error) {
       toast.error(t("common.error"));
@@ -169,6 +175,9 @@ export default function BenchmarkStatsPage() {
 
       if (data.ok) {
         setStats(data.statistics || []);
+        // Calcular el tamaño de muestra filtrado (usar el n máximo entre las estadísticas)
+        const maxN = Math.max(...(data.statistics || []).map((s: StatResult) => s.n || 0), 0);
+        setFilteredSampleSize(maxN);
       }
     } catch (error) {
       toast.error(t("common.error"));
@@ -246,7 +255,7 @@ export default function BenchmarkStatsPage() {
             {t(`admin.benchmarks.metrics.${metricKey}`)}
           </h4>
           {stat && (
-            <AdminBadge variant={isInsufficient ? "warning" : "secondary"}>
+            <AdminBadge variant={isInsufficient ? "warning" : "neutral"}>
               n={stat.n}
             </AdminBadge>
           )}
@@ -408,6 +417,63 @@ export default function BenchmarkStatsPage() {
               {renderFilterSelect("gender", "admin.benchmarks.stats.gender", filtersData.genders)}
               {renderFilterSelect("education", "admin.benchmarks.stats.education", filtersData.educations)}
             </>
+          )}
+        </div>
+      </AdminCard>
+
+      {/* Sample Size Indicator */}
+      <AdminCard className="mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-[var(--rowi-foreground)]">
+                  {filteredSampleSize.toLocaleString()}
+                </p>
+                <p className="text-xs text-[var(--rowi-muted)]">
+                  {hasActiveFilters
+                    ? t("admin.benchmarks.stats.filteredSampleSize")
+                    : t("admin.benchmarks.stats.totalSampleSize")}
+                </p>
+              </div>
+            </div>
+
+            {hasActiveFilters && totalRecords > 0 && (
+              <>
+                <div className="h-12 w-px bg-[var(--rowi-card-border)]" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center">
+                    <Database className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[var(--rowi-muted)]">
+                      {totalRecords.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-[var(--rowi-muted)]">
+                      {t("admin.benchmarks.stats.totalPopulation")}
+                    </p>
+                  </div>
+                </div>
+                <div className="h-12 w-px bg-[var(--rowi-card-border)]" />
+                <div>
+                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {totalRecords > 0 ? ((filteredSampleSize / totalRecords) * 100).toFixed(1) : 0}%
+                  </p>
+                  <p className="text-xs text-[var(--rowi-muted)]">
+                    {t("admin.benchmarks.stats.percentageOfTotal")}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <AdminBadge variant="info">
+              {t("admin.benchmarks.stats.filtered")}
+            </AdminBadge>
           )}
         </div>
       </AdminCard>

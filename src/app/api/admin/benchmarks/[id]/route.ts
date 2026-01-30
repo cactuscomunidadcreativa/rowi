@@ -53,7 +53,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 
     // Obtener valores únicos para filtros
-    const [countryStats, regionStats, sectorStats, jobFunctionStats, jobRoleStats, ageRangeStats, genderStats, educationStats] = await Promise.all([
+    const [countryStats, regionStats, sectorStats, jobFunctionStats, jobRoleStats, ageRangeStats, genderStats, educationStats, countryRegionStats] = await Promise.all([
       prisma.benchmarkDataPoint.groupBy({
         by: ["country"],
         where: { benchmarkId: id, country: { not: null } },
@@ -94,26 +94,44 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         where: { benchmarkId: id, education: { not: null } },
         _count: true,
       }),
+      // Mapeo país → región
+      prisma.benchmarkDataPoint.groupBy({
+        by: ["country", "region"],
+        where: { benchmarkId: id, country: { not: null }, region: { not: null } },
+        _count: true,
+      }),
     ]);
 
-    // Obtener años únicos de sourceDate (en query separado por si falla)
-    let yearStats: Array<{ year: number; count: bigint }> = [];
+    // Obtener años y meses únicos
+    let yearStats: Array<{ year: number | null; _count: number }> = [];
+    let monthStats: Array<{ month: number | null; _count: number }> = [];
+    let quarterStats: Array<{ quarter: number | null; _count: number }> = [];
     try {
-      yearStats = await prisma.$queryRaw<Array<{ year: number; count: bigint }>>`
-        SELECT EXTRACT(YEAR FROM "sourceDate")::int as year, COUNT(*) as count
-        FROM "BenchmarkDataPoint"
-        WHERE "benchmarkId" = ${id} AND "sourceDate" IS NOT NULL
-        GROUP BY year
-        ORDER BY year DESC
-      `;
+      [yearStats, monthStats, quarterStats] = await Promise.all([
+        prisma.benchmarkDataPoint.groupBy({
+          by: ["year"],
+          where: { benchmarkId: id, year: { not: null } },
+          _count: true,
+        }),
+        prisma.benchmarkDataPoint.groupBy({
+          by: ["month"],
+          where: { benchmarkId: id, month: { not: null } },
+          _count: true,
+        }),
+        prisma.benchmarkDataPoint.groupBy({
+          by: ["quarter"],
+          where: { benchmarkId: id, quarter: { not: null } },
+          _count: true,
+        }),
+      ]);
     } catch (yearError) {
-      console.log("Note: Could not fetch year stats (sourceDate may be empty):", yearError);
+      console.error("❌ Error fetching temporal stats:", yearError);
     }
 
     // Formatear filtros para el frontend (excluir valores vacíos)
     const formatFilterOptions = (stats: any[], field: string) =>
       stats
-        .filter((s) => s[field] && s[field].trim() !== "") // Excluir null y strings vacíos
+        .filter((s) => s[field] && String(s[field]).trim() !== "") // Excluir null y strings vacíos
         .map((s) => ({
           value: s[field],
           label: s[field],
@@ -158,16 +176,62 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         });
     };
 
-    // Formatear años
-    const formatYearOptions = (stats: Array<{ year: number; count: bigint }>) =>
+    // Formatear años desde el campo year (Int)
+    const formatYearOptions = (stats: Array<{ year: number | null; _count: number }>) =>
       stats
-        .filter((s) => s.year && s.year > 1900)
+        .filter((s) => s.year !== null && s.year > 1900 && s.year < 2100)
         .map((s) => ({
           value: String(s.year),
           label: String(s.year),
-          count: Number(s.count),
+          count: s._count,
         }))
-        .sort((a, b) => parseInt(b.value) - parseInt(a.value)); // Más reciente primero
+        .sort((a, b) => parseInt(b.value) - parseInt(a.value));
+
+    // Nombres de meses en español
+    const MONTH_NAMES: Record<number, string> = {
+      1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+      5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+      9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
+    };
+
+    // Formatear meses
+    const formatMonthOptions = (stats: Array<{ month: number | null; _count: number }>) =>
+      stats
+        .filter((s) => s.month !== null && s.month >= 1 && s.month <= 12)
+        .map((s) => ({
+          value: String(s.month),
+          label: MONTH_NAMES[s.month!] || `Mes ${s.month}`,
+          count: s._count,
+        }))
+        .sort((a, b) => parseInt(a.value) - parseInt(b.value)); // Ordenar Ene-Dic
+
+    // Nombres de trimestres
+    const QUARTER_NAMES: Record<number, string> = {
+      1: "Q1 (Ene-Mar)", 2: "Q2 (Abr-Jun)",
+      3: "Q3 (Jul-Sep)", 4: "Q4 (Oct-Dic)",
+    };
+
+    // Formatear trimestres
+    const formatQuarterOptions = (stats: Array<{ quarter: number | null; _count: number }>) =>
+      stats
+        .filter((s) => s.quarter !== null && s.quarter >= 1 && s.quarter <= 4)
+        .map((s) => ({
+          value: String(s.quarter),
+          label: QUARTER_NAMES[s.quarter!] || `Q${s.quarter}`,
+          count: s._count,
+        }))
+        .sort((a, b) => parseInt(a.value) - parseInt(b.value));
+
+    // Crear mapeo país → región (para filtrado dinámico en frontend)
+    const countryToRegion: Record<string, string> = {};
+    for (const stat of countryRegionStats) {
+      if (stat.country && stat.region) {
+        // Si un país tiene múltiples regiones, usar la región con más registros
+        if (!countryToRegion[stat.country] || stat._count > (countryRegionStats.find(s => s.country === stat.country && s.region === countryToRegion[stat.country])?._count || 0)) {
+          countryToRegion[stat.country] = stat.region;
+        }
+      }
+    }
 
     return NextResponse.json({
       ok: true,
@@ -182,6 +246,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         genders: formatFilterOptions(genderStats, "gender"),
         educations: formatFilterOptions(educationStats, "education"),
         years: formatYearOptions(yearStats),
+        months: formatMonthOptions(monthStats),
+        quarters: formatQuarterOptions(quarterStats),
+        // Mapeos para filtrado dinámico
+        countryToRegion,
       },
       metadata: {
         countries: countryStats.length,

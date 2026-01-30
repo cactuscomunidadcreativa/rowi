@@ -2,6 +2,7 @@
 
 import { prisma } from "../../prisma";
 import { isSuperAdmin } from "./policy.super";
+import { hasOrgAccessWithHierarchy } from "./policy.hierarchy";
 
 /**
  * Verifica si el usuario tiene acceso al scope solicitado.
@@ -49,7 +50,7 @@ export async function hasScope(
      3) Herencia de SCOPES por membresía
        - tenant → membership.tenants
        - hub → membership.hubs
-       - organization → membership.orgs
+       - organization → membership.orgs (CON HERENCIA JERÁRQUICA)
        - community → membership.communities
   ========================================================== */
   if (scopeType === "tenant" && scopeId) {
@@ -66,11 +67,14 @@ export async function hasScope(
     if (hasHubMembership) return true;
   }
 
+  /* =========================================================
+     🌲 ORGANIZATION: Ahora usa HERENCIA JERÁRQUICA
+     - Si tienes acceso a "LATAM" (padre), automáticamente
+       tienes acceso a "México", "Colombia", etc. (hijos)
+  ========================================================== */
   if (scopeType === "organization" && scopeId) {
-    const hasOrgMembership = await prisma.orgMembership.findFirst({
-      where: { userId, organizationId: scopeId },
-    });
-    if (hasOrgMembership) return true;
+    const hasOrgAccess = await hasOrgAccessWithHierarchy(userId, scopeId);
+    if (hasOrgAccess) return true;
   }
 
   if (scopeType === "community" && scopeId) {

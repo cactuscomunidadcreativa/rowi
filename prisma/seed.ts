@@ -1076,20 +1076,6 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
     console.log(`   Milestone: ${m.title}`);
   }
 
-  // Streak
-  await prisma.avatarStreak.upsert({
-    where: { avatarId_type: { avatarId: avatar.id, type: "DAILY" } },
-    update: {},
-    create: {
-      avatarId: avatar.id,
-      type: "DAILY",
-      currentDays: 30,
-      longestDays: 45,
-      lastActive: new Date(),
-    },
-  });
-  console.log("   Streak creado");
-
   // ============================================================
   // 13.5. EQ SNAPSHOT PARA SUPERADMIN
   // ============================================================
@@ -1164,6 +1150,71 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
     });
   }
   console.log("   Competencias EQ SuperAdmin creadas");
+
+  // ============================================================
+  // 13.6. AVATAR EVOLUTION PARA SUPERADMIN
+  // ============================================================
+  console.log("\n13.6. Creando Avatar Evolution para SuperAdmin...");
+
+  // Calcular nivel Six Seconds basado en overall4 (111.66)
+  // Rango: 108-117 = Nivel 4 (Diestro)
+  const sixSecondsLevel = 4;
+  const rowiLevel = 5; // Nivel medio-alto para demo
+  const evolutionScore = (rowiLevel * 0.6) + (sixSecondsLevel * 0.4); // 3.0 + 1.6 = 4.6
+
+  const superadminAvatar = await prisma.avatarEvolution.upsert({
+    where: { userId: superadmin.id },
+    update: {
+      sixSecondsLevel,
+      evolutionScore,
+      stage: "YOUNG", // Score 4.6 = YOUNG (5.0-)
+      hatched: true,
+      hatchProgress: 100,
+      daysActive: 90,
+      brainStyle: "Strategist",
+    },
+    create: {
+      userId: superadmin.id,
+      stage: "YOUNG",
+      experience: 1500,
+      hatched: true,
+      hatchProgress: 100,
+      sixSecondsLevel,
+      evolutionScore,
+      daysActive: 90,
+      brainStyle: "Strategist",
+      personality: {
+        strengths: ["strategic_thinking", "emotional_awareness", "leadership"],
+        challenges: ["patience", "delegation"],
+      },
+    },
+  });
+  console.log("   Avatar SuperAdmin:", superadminAvatar.id);
+
+  // Crear milestones de evolucion
+  const avatarMilestones = [
+    { type: "EGG_RECEIVED" as const, title: "Huevito Recibido", xpReward: 10, rarity: "common" },
+    { type: "AVATAR_HATCHED" as const, title: "Avatar Eclosionado", xpReward: 100, rarity: "rare" },
+    { type: "AVATAR_BABY" as const, title: "Rowi Bebe", xpReward: 75, rarity: "uncommon" },
+    { type: "AVATAR_YOUNG" as const, title: "Rowi Joven", xpReward: 75, rarity: "uncommon" },
+    { type: "SEI_FIRST_ASSESSMENT" as const, title: "Primer SEI Completado", xpReward: 50, rarity: "rare" },
+  ];
+
+  for (const milestone of avatarMilestones) {
+    await prisma.avatarMilestone.upsert({
+      where: { id: `${superadminAvatar.id}-${milestone.type}` },
+      update: {},
+      create: {
+        id: `${superadminAvatar.id}-${milestone.type}`,
+        avatarId: superadminAvatar.id,
+        type: milestone.type,
+        title: milestone.title,
+        xpReward: milestone.xpReward,
+        rarity: milestone.rarity,
+      },
+    });
+  }
+  console.log("   Milestones de Avatar creados");
 
   // ============================================================
   // 14. TENANT BRANDING

@@ -208,6 +208,75 @@ model UserPermission {
 }
 
 /// =========================================================
+/// 🎛️ PROFILE FEATURE — Features visibles por perfil/rol
+/// =========================================================
+/// Define qué features/secciones puede ver cada rol.
+/// Permite configurar visibilidad granular en el UI.
+model ProfileFeature {
+  id          String   @id @default(cuid())
+
+  // 🎯 A qué perfil aplica
+  role        String   // OrgRole o TenantRole como string
+  roleType    String   @default("org") // "org" | "tenant" | "custom"
+
+  // 📦 Feature específica
+  featureKey  String   // ej: "benchmarks", "admin.users", "dashboard.roi"
+  category    String   @default("general") // Categoría para agrupar features
+
+  // 🔒 Configuración de acceso
+  canView     Boolean  @default(false)
+  canCreate   Boolean  @default(false)
+  canEdit     Boolean  @default(false)
+  canDelete   Boolean  @default(false)
+
+  // 📝 Metadata
+  description String?
+  priority    Int      @default(0) // Para ordenamiento
+
+  // 🕐 Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🔗 Opcional: scope específico (tenant, org, etc.)
+  scopeType   String?  // "tenant" | "organization" | "global"
+  scopeId     String?  // ID del scope si no es global
+
+  @@unique([role, roleType, featureKey, scopeType, scopeId])
+  @@index([role, roleType])
+  @@index([featureKey])
+  @@index([category])
+  @@map("profile_feature")
+}
+
+/// =========================================================
+/// 📋 FEATURE DEFINITION — Catálogo de features disponibles
+/// =========================================================
+/// Define todas las features posibles del sistema.
+/// Sirve como catálogo para configurar ProfileFeature.
+model FeatureDefinition {
+  id           String   @id @default(cuid())
+  key          String   @unique // ej: "benchmarks.stats", "admin.users.create"
+  name         String   // Nombre legible
+  description  String?
+  category     String   @default("general")
+  parentKey    String?  // Para jerarquía de features
+
+  // 🔧 Configuración
+  icon         String?  // Nombre de icono lucide
+  route        String?  // Ruta asociada en la app
+  isAdmin      Boolean  @default(false) // Solo para admins
+  isDefault    Boolean  @default(true)  // Visible por defecto para nuevos roles
+
+  // 🕐 Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([parentKey])
+  @@map("feature_definition")
+}
+
+/// =========================================================
 /// 🌎 SYSTEM — Núcleo Global del Ecosistema CACTUS
 /// =========================================================
 /// Representa la instancia raíz que contiene toda la estructura
@@ -638,15 +707,26 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // 🔗 Vínculos jerárquicos
+  // 🔗 Vínculos jerárquicos (legacy)
   rowiVerseId String?
   superHubId  String?
   hubId       String?
+
+  // 🏢 NUEVO: Jerarquía de organizaciones
+  // Six Seconds → LATAM/EMEA/APAC → Coaches/Staff → Clients
+  parentId           String?
+  unitType           OrgUnitType     @default(TEAM)
+  inheritPermissions Boolean         @default(true)  // Heredar permisos del padre
+  level              Int             @default(0)     // Nivel en árbol (0=raíz)
 
   // 🧭 Relaciones jerárquicas (todas con nombres explícitos)
   rowiVerse RowiVerse? @relation("RowiVerseToOrganization", fields: [rowiVerseId], references: [id], onDelete: Cascade)
   superHub  SuperHub?  @relation("SuperHubToOrganization", fields: [superHubId], references: [id], onDelete: Cascade)
   hub       Hub?       @relation("HubToOrganization", fields: [hubId], references: [id], onDelete: Cascade)
+
+  // 🌲 NUEVO: Self-relation para jerarquía padre/hijos
+  parent   Organization?  @relation("OrgHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Organization[] @relation("OrgHierarchy")
 
   // 👥 Relaciones organizativas
   members OrgMembership[]
@@ -668,6 +748,8 @@ model Organization {
   @@index([rowiVerseId])
   @@index([superHubId])
   @@index([hubId])
+  @@index([parentId])
+  @@index([unitType])
   @@map("organization")
 }
 
@@ -2547,9 +2629,6 @@ model RowiVerse {
   // 🔹 Relación con el creador
   createdBy User? @relation("UserCreatedVerses", fields: [createdById], references: [id])
 
-  // 🔹 Comunidades asociadas
-  communities RowiCommunity[]
-
   // 🔹 SuperHubs, Tenants y Organizaciones vinculadas (inversas)
   superHubs      SuperHub[]      @relation("RowiVerseToSuperHub")
   tenants        Tenant[]        @relation("RowiVerseToTenant")
@@ -2630,6 +2709,7 @@ model RowiCommunity {
   hubId          String?
   tenantId       String?
   organizationId String?
+  teamType       String?  // biz, impact, coaching, education, research, ops, tech, marketing
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -2654,7 +2734,6 @@ model RowiCommunity {
   members        RowiCommunityUser[]
   posts          RowiCommunityPost[]
   CommunityBatch CommunityBatch[]
-  RowiVerse      RowiVerse?          @relation(fields: [rowiVerseId], references: [id])
 
   // 🧭 Índices
   @@index([rowiVerseId])
@@ -2791,6 +2870,24 @@ enum OrgRole {
   MANAGER
   MEMBER
   VIEWER
+}
+
+/// 🏢 Tipo de unidad organizacional en jerarquía
+/// ------------------------------------------------
+/// WORLD = Six Seconds (raíz global)
+/// REGION = LATAM, EMEA, APAC, etc.
+/// COUNTRY = Perú, México, USA, etc.
+/// DIVISION = Staff, Coaches, etc.
+/// TEAM = Equipo específico
+/// CLIENT = Cliente final
+enum OrgUnitType {
+  WORLD
+  REGION
+  COUNTRY
+  DIVISION
+  TEAM
+  COMMUNITY
+  CLIENT
 }
 
 enum AgentType {
@@ -2930,11 +3027,17 @@ model AvatarEvolution {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
+  // Sistema Dual de Niveles
+  sixSecondsLevel Int             @default(1)       // 1-5, calculado de EqSnapshot overall4
+  lastSeiSync     DateTime?                         // Ultima sincronizacion con SEI
+  evolutionScore  Float           @default(0)       // Score combinado: (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
+  daysActive      Int             @default(0)       // Dias desde registro (para hatch progress)
+
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   milestones AvatarMilestone[]
-  streaks    AvatarStreak[]
 
   @@index([stage])
+  @@index([sixSecondsLevel])
   @@map("avatar_evolution")
 }
 
@@ -2958,24 +3061,6 @@ model AvatarMilestone {
   @@index([avatarId])
   @@index([type])
   @@map("avatar_milestone")
-}
-
-/// =========================================================
-/// 🔥 AVATAR STREAK — Rachas de actividad
-/// =========================================================
-model AvatarStreak {
-  id          String   @id @default(cuid())
-  avatarId    String
-  type        String
-  currentDays Int      @default(0)
-  longestDays Int      @default(0)
-  lastActive  DateTime @default(now())
-  startedAt   DateTime @default(now())
-
-  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
-
-  @@unique([avatarId, type])
-  @@map("avatar_streak")
 }
 
 /// =========================================================
@@ -3297,6 +3382,19 @@ enum MilestoneType {
   MENTOR
   INTEGRATIONS_SETUP
   CUSTOM
+
+  // Evolucion del Avatar
+  EGG_RECEIVED           // Recibio su huevito
+  HATCHING_STARTED       // El huevo comenzo a eclosionar
+  AVATAR_HATCHED         // El avatar eclosiono
+  AVATAR_BABY            // Llego a BABY
+  AVATAR_YOUNG           // Llego a YOUNG
+  AVATAR_ADULT           // Llego a ADULT
+  AVATAR_WISE            // Llego a WISE (maximo)
+
+  // Six Seconds
+  SEI_FIRST_ASSESSMENT   // Completo primer SEI
+  SEI_LEVEL_UP           // Subio de nivel Six Seconds
 }
 
 enum IntegrationPlatform {
@@ -3413,6 +3511,9 @@ model BenchmarkDataPoint {
   gender      String?
   education   String?
   generation  String?  // Millennials, Gen Z, etc.
+  year        Int?     // Año del assessment (extraído de Date/Year)
+  month       Int?     // Mes del assessment (1-12, extraído de Date)
+  quarter     Int?     // Trimestre (1-4, calculado desde month)
 
   // Segmentación organizacional
   tenantId    String?
@@ -4230,6 +4331,8 @@ enum MetricPeriod {
   DAILY
   WEEKLY
   MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 /// =========================================================
@@ -5153,7 +5256,7 @@ model WeekFlowMetrics {
   hubId     String?
   userId    String?
 
-  periodType  MetricPeriodType
+  periodType  MetricPeriod
   periodStart DateTime
   periodEnd   DateTime
 
@@ -5182,11 +5285,6 @@ model WeekFlowMetrics {
   @@map("weekflow_metrics")
 }
 
-enum MetricPeriodType {
-  WEEKLY
-  MONTHLY
-  QUARTERLY
-  YEARLY
-}
+// MetricPeriodType fue unificado con MetricPeriod (ver arriba)
 
 

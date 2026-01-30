@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
   GitCompareArrows,
@@ -18,6 +18,9 @@ import {
   ChevronDown,
   Layers,
   Filter,
+  Target,
+  Sparkles,
+  Trophy,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -26,6 +29,8 @@ import {
   AdminBadge,
   AdminButton,
 } from "@/components/admin/AdminPage";
+import { SearchableSelect, SelectOption } from "@/components/ui/searchable-select";
+import { SmartFilterCommand, createBenchmarkFilterCategories, FilterCategory, FilterValue } from "@/components/ui/smart-filter-command";
 
 interface Benchmark {
   id: string;
@@ -53,6 +58,9 @@ interface FiltersData {
   genders: FilterOption[];
   educations: FilterOption[];
   years: FilterOption[];
+  months: FilterOption[];
+  quarters: FilterOption[];
+  countryToRegion: Record<string, string>;
 }
 
 interface SegmentFilter {
@@ -66,6 +74,8 @@ interface SegmentFilter {
   gender?: string;
   education?: string;
   year?: string;
+  month?: string;
+  quarter?: string;
 }
 
 interface StatData {
@@ -94,6 +104,21 @@ interface SegmentSummary {
   avgC?: number;
   avgG?: number;
   topCompetencies: Array<{ key: string; mean: number }>;
+}
+
+interface TopPerformerByOutcome {
+  segmentName: string;
+  outcome: string;
+  topPerformerCount: number;
+  totalCount: number;
+  percentage: number;
+  avgOutcomeScore: number;
+  topCompetencies: Array<{
+    key: string;
+    topPerformerMean: number;
+    generalMean: number;
+    diffPercent: number;
+  }>;
 }
 
 const METRIC_GROUPS = {
@@ -135,7 +160,12 @@ export default function CompareBenchmarksPage() {
   const [comparison, setComparison] = useState<ComparisonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [comparing, setComparing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"stats" | "summary">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "topPerformers">("stats");
+
+  // Outcome selector for Top Performers analysis
+  const [selectedOutcome, setSelectedOutcome] = useState<string>("effectiveness");
+  const [topPerformersByOutcome, setTopPerformersByOutcome] = useState<TopPerformerByOutcome[]>([]);
+  const [loadingTopPerformers, setLoadingTopPerformers] = useState(false);
 
   // Load benchmarks list
   useEffect(() => {
@@ -185,6 +215,9 @@ export default function CompareBenchmarksPage() {
           genders: data.benchmark.genders || [],
           educations: data.benchmark.educations || [],
           years: data.benchmark.years || [],
+          months: data.benchmark.months || [],
+          quarters: data.benchmark.quarters || [],
+          countryToRegion: data.benchmark.countryToRegion || {},
         });
       }
     } catch (error) {
@@ -268,7 +301,7 @@ export default function CompareBenchmarksPage() {
 
     // Validate segments have at least one filter
     const validSegments = segments.filter((s) =>
-      s.country || s.region || s.sector || s.jobFunction || s.jobRole || s.ageRange || s.gender || s.education || s.year
+      s.country || s.region || s.sector || s.jobFunction || s.jobRole || s.ageRange || s.gender || s.education || s.year || s.month || s.quarter
     );
 
     if (validSegments.length < 2) {
@@ -309,6 +342,71 @@ export default function CompareBenchmarksPage() {
     }
     return { icon: TrendingDown, color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/30" };
   };
+
+  // Cargar top performers por outcome para cada segmento
+  const loadTopPerformersByOutcome = async (outcome: string) => {
+    if (!selectedBenchmarkId || segmentSummaries.length === 0) return;
+
+    setLoadingTopPerformers(true);
+    try {
+      const results: TopPerformerByOutcome[] = [];
+
+      for (const segment of segments) {
+        // Construir query params para el segmento
+        const params = new URLSearchParams();
+        params.append("outcome", outcome);
+        if (segment.country) params.append("country", segment.country);
+        if (segment.region) params.append("region", segment.region);
+        if (segment.sector) params.append("sector", segment.sector);
+        if (segment.jobFunction) params.append("jobFunction", segment.jobFunction);
+        if (segment.jobRole) params.append("jobRole", segment.jobRole);
+        if (segment.ageRange) params.append("ageRange", segment.ageRange);
+        if (segment.gender) params.append("gender", segment.gender);
+        if (segment.education) params.append("education", segment.education);
+        if (segment.year) params.append("year", segment.year);
+        if (segment.month) params.append("month", segment.month);
+        if (segment.quarter) params.append("quarter", segment.quarter);
+
+        const res = await fetch(
+          `/api/admin/benchmarks/${selectedBenchmarkId}/top-performers/calculate?${params.toString()}`
+        );
+        const data = await res.json();
+
+        if (data.ok && data.analysis) {
+          results.push({
+            segmentName: segment.name,
+            outcome,
+            topPerformerCount: data.analysis.topPerformerCount || 0,
+            totalCount: data.analysis.totalCount || 0,
+            percentage: data.analysis.topPerformerPercentage || 0,
+            avgOutcomeScore: data.analysis.outcomeStats?.topPerformers?.mean || 0,
+            topCompetencies: (data.analysis.competencyAnalysis || [])
+              .slice(0, 5)
+              .map((c: any) => ({
+                key: c.metric,
+                topPerformerMean: c.topPerformers?.mean || 0,
+                generalMean: c.general?.mean || 0,
+                diffPercent: c.difference?.meanDiffPercent || 0,
+              })),
+          });
+        }
+      }
+
+      setTopPerformersByOutcome(results);
+    } catch (error) {
+      console.error("Error loading top performers:", error);
+      toast.error("Error al cargar top performers");
+    } finally {
+      setLoadingTopPerformers(false);
+    }
+  };
+
+  // Cargar top performers cuando cambia el outcome o hay resultados
+  useEffect(() => {
+    if (mode === "segments" && segmentSummaries.length > 0 && activeTab === "topPerformers") {
+      loadTopPerformersByOutcome(selectedOutcome);
+    }
+  }, [selectedOutcome, segmentSummaries, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const exportToCSV = () => {
     if (!comparison) return;
@@ -362,28 +460,95 @@ export default function CompareBenchmarksPage() {
     toast.success(t("admin.benchmarks.compare.exported"));
   };
 
-  const renderFilterSelect = (
+  // Obtener países filtrados por región para cada segmento
+  const getFilteredCountriesForSegment = (segmentIndex: number): FilterOption[] => {
+    if (!filtersData) return [];
+    const regionFilter = segments[segmentIndex].region;
+    if (!regionFilter) return filtersData.countries;
+    return filtersData.countries.filter(
+      (c) => filtersData.countryToRegion[c.value] === regionFilter
+    );
+  };
+
+  // Renderizar filtro con SearchableSelect
+  const renderSearchableFilter = (
     segmentIndex: number,
     field: keyof SegmentFilter,
     options: FilterOption[],
     label: string
   ) => (
-    <div className="flex-1 min-w-[120px]">
+    <div className="flex-1 min-w-[140px]">
       <label className="block text-xs text-[var(--rowi-muted)] mb-1">{label}</label>
-      <select
+      <SearchableSelect
+        options={options as SelectOption[]}
         value={(segments[segmentIndex][field] as string) || ""}
-        onChange={(e) => updateSegment(segmentIndex, field, e.target.value)}
-        className="w-full px-2 py-1.5 text-xs rounded border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
-      >
-        <option value="">Todos</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label} {opt.count ? `(${opt.count})` : ""}
-          </option>
-        ))}
-      </select>
+        onChange={(val) => {
+          updateSegment(segmentIndex, field, val);
+          // Limpiar país si cambia la región
+          if (field === "region") {
+            updateSegment(segmentIndex, "country", "");
+          }
+        }}
+        placeholder="Todos"
+        searchPlaceholder="Buscar..."
+        emptyMessage="Sin resultados"
+        showCount={true}
+        className="text-xs"
+      />
     </div>
   );
+
+  // Crear categorías de filtro para un segmento específico
+  const getSegmentFilterCategories = (segmentIndex: number): FilterCategory[] => {
+    if (!filtersData) return [];
+    return createBenchmarkFilterCategories({
+      regions: filtersData.regions,
+      countries: getFilteredCountriesForSegment(segmentIndex),
+      sectors: filtersData.sectors,
+      jobFunctions: filtersData.jobFunctions,
+      genders: filtersData.genders,
+      ageRanges: filtersData.ageRanges,
+      years: filtersData.years,
+      months: filtersData.months,
+      quarters: filtersData.quarters,
+    });
+  };
+
+  // Obtener filtros seleccionados para un segmento (convertido a FilterValue para SmartFilterCommand)
+  const getSegmentSelectedFilters = (segmentIndex: number): Record<string, FilterValue> => ({
+    region: segments[segmentIndex].region || [],
+    country: segments[segmentIndex].country || [],
+    sector: segments[segmentIndex].sector || [],
+    jobFunction: segments[segmentIndex].jobFunction || [],
+    gender: segments[segmentIndex].gender || [],
+    ageRange: segments[segmentIndex].ageRange || [],
+    year: segments[segmentIndex].year || [],
+    month: segments[segmentIndex].month || [],
+    quarter: segments[segmentIndex].quarter || [],
+  });
+
+  // Handler para cambio de filtro en un segmento (convierte FilterValue a string para el estado)
+  const handleSegmentFilterChange = (segmentIndex: number, key: string, value: FilterValue) => {
+    // En Compare usamos valores simples por segmento, así que tomamos el primer valor del array
+    const simpleValue = Array.isArray(value) ? value[0] || "" : value;
+    updateSegment(segmentIndex, key as keyof SegmentFilter, simpleValue);
+    if (key === "region") {
+      updateSegment(segmentIndex, "country", "");
+    }
+  };
+
+  // Limpiar filtros de un segmento
+  const clearSegmentFilters = (segmentIndex: number) => {
+    updateSegment(segmentIndex, "region", "");
+    updateSegment(segmentIndex, "country", "");
+    updateSegment(segmentIndex, "sector", "");
+    updateSegment(segmentIndex, "jobFunction", "");
+    updateSegment(segmentIndex, "gender", "");
+    updateSegment(segmentIndex, "ageRange", "");
+    updateSegment(segmentIndex, "year", "");
+    updateSegment(segmentIndex, "month", "");
+    updateSegment(segmentIndex, "quarter", "");
+  };
 
   // Get column names based on mode
   const getColumnNames = () => {
@@ -508,15 +673,30 @@ export default function CompareBenchmarksPage() {
                 </div>
 
                 {filtersData ? (
-                  <div className="flex flex-wrap gap-2">
-                    {filtersData.regions.length > 0 && renderFilterSelect(idx, "region", filtersData.regions, t("admin.benchmarks.stats.region"))}
-                    {filtersData.countries.length > 0 && renderFilterSelect(idx, "country", filtersData.countries, t("admin.benchmarks.stats.country"))}
-                    {filtersData.sectors.length > 0 && renderFilterSelect(idx, "sector", filtersData.sectors, t("admin.benchmarks.stats.sector"))}
-                    {filtersData.jobFunctions.length > 0 && renderFilterSelect(idx, "jobFunction", filtersData.jobFunctions, t("admin.benchmarks.stats.jobFunction"))}
-                    {filtersData.genders.length > 0 && renderFilterSelect(idx, "gender", filtersData.genders, t("admin.benchmarks.stats.gender"))}
-                    {filtersData.ageRanges.length > 0 && renderFilterSelect(idx, "ageRange", filtersData.ageRanges, t("admin.benchmarks.stats.age"))}
-                    {filtersData.years.length > 0 && renderFilterSelect(idx, "year", filtersData.years, t("admin.benchmarks.stats.year"))}
-                  </div>
+                  <>
+                    {/* Smart Filter Command para este segmento */}
+                    <div className="mb-3">
+                      <SmartFilterCommand
+                        categories={getSegmentFilterCategories(idx)}
+                        selectedFilters={getSegmentSelectedFilters(idx)}
+                        onFilterChange={(key, value) => handleSegmentFilterChange(idx, key, value)}
+                        onClearAll={() => clearSegmentFilters(idx)}
+                        placeholder={t("admin.benchmarks.stats.searchFiltersFor").replace("{name}", segment.name)}
+                      />
+                    </div>
+                    {/* Filtros detallados */}
+                    <div className="flex flex-wrap gap-3">
+                      {filtersData.regions.length > 0 && renderSearchableFilter(idx, "region", filtersData.regions, t("admin.benchmarks.stats.region"))}
+                      {filtersData.countries.length > 0 && renderSearchableFilter(idx, "country", getFilteredCountriesForSegment(idx), t("admin.benchmarks.stats.country"))}
+                      {filtersData.sectors.length > 0 && renderSearchableFilter(idx, "sector", filtersData.sectors, t("admin.benchmarks.stats.sector"))}
+                      {filtersData.jobFunctions.length > 0 && renderSearchableFilter(idx, "jobFunction", filtersData.jobFunctions, t("admin.benchmarks.stats.jobFunction"))}
+                      {filtersData.genders.length > 0 && renderSearchableFilter(idx, "gender", filtersData.genders, t("admin.benchmarks.stats.gender"))}
+                      {filtersData.ageRanges.length > 0 && renderSearchableFilter(idx, "ageRange", filtersData.ageRanges, t("admin.benchmarks.stats.age"))}
+                      {filtersData.years.length > 0 && renderSearchableFilter(idx, "year", filtersData.years, t("admin.benchmarks.stats.year"))}
+                      {filtersData.months.length > 0 && renderSearchableFilter(idx, "month", filtersData.months, t("admin.benchmarks.stats.month"))}
+                      {filtersData.quarters.length > 0 && renderSearchableFilter(idx, "quarter", filtersData.quarters, t("admin.benchmarks.stats.quarter"))}
+                    </div>
+                  </>
                 ) : (
                   <div className="text-xs text-[var(--rowi-muted)] flex items-center gap-2">
                     <RefreshCw className="w-3 h-3 animate-spin" />
@@ -547,7 +727,7 @@ export default function CompareBenchmarksPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <AdminBadge variant={selectedIds.length >= 2 ? "success" : "secondary"}>
+              <AdminBadge variant={selectedIds.length >= 2 ? "success" : "neutral"}>
                 {selectedIds.length}/4 {t("admin.benchmarks.compare.selected")}
               </AdminBadge>
               <AdminButton
@@ -665,6 +845,19 @@ export default function CompareBenchmarksPage() {
               <BarChart3 className="w-4 h-4 inline mr-2" />
               {t("admin.benchmarks.compare.statistics")}
             </button>
+            {mode === "segments" && segmentSummaries.length > 0 && (
+              <button
+                onClick={() => setActiveTab("topPerformers")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === "topPerformers"
+                    ? "bg-[var(--rowi-primary)] text-white"
+                    : "bg-[var(--rowi-card)] text-[var(--rowi-muted)] hover:text-[var(--rowi-foreground)]"
+                }`}
+              >
+                <Trophy className="w-4 h-4 inline mr-2" />
+                Top Performers por Outcome
+              </button>
+            )}
             <div className="flex-1" />
             <AdminButton variant="secondary" size="sm" onClick={exportToCSV} icon={Download}>
               {t("admin.benchmarks.compare.exportCSV")}
@@ -997,6 +1190,170 @@ export default function CompareBenchmarksPage() {
                   </table>
                 </div>
               </AdminCard>
+            </>
+          )}
+
+          {/* TOP PERFORMERS BY OUTCOME TAB */}
+          {activeTab === "topPerformers" && mode === "segments" && (
+            <>
+              {/* Outcome Selector */}
+              <AdminCard className="mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-[var(--rowi-primary)]" />
+                    <span className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      Seleccionar Outcome a analizar:
+                    </span>
+                  </div>
+                  <select
+                    value={selectedOutcome}
+                    onChange={(e) => setSelectedOutcome(e.target.value)}
+                    className="flex-1 max-w-xs px-3 py-2 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)] text-sm"
+                  >
+                    {METRIC_GROUPS.outcomes.map((outcome) => (
+                      <option key={outcome} value={outcome}>
+                        {t(`admin.benchmarks.outcomes.${outcome}`) || outcome}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingTopPerformers && (
+                    <RefreshCw className="w-4 h-4 animate-spin text-[var(--rowi-muted)]" />
+                  )}
+                </div>
+              </AdminCard>
+
+              {/* Top Performers Comparison Cards */}
+              {topPerformersByOutcome.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {topPerformersByOutcome.map((data, idx) => (
+                    <AdminCard
+                      key={data.segmentName}
+                      className={`p-4 ${idx === 0 ? "border-2 border-[var(--rowi-primary)]" : ""}`}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <Trophy className={`w-5 h-5 ${idx === 0 ? "text-[var(--rowi-primary)]" : "text-yellow-500"}`} />
+                        <h4 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                          {data.segmentName}
+                        </h4>
+                        {idx === 0 && <span className="text-xs text-[var(--rowi-primary)]">(Base)</span>}
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-2 rounded bg-[var(--rowi-background)]">
+                          <span className="text-xs text-[var(--rowi-muted)]">Top Performers</span>
+                          <span className="text-sm font-bold text-[var(--rowi-primary)]">
+                            {data.topPerformerCount.toLocaleString()} ({data.percentage.toFixed(1)}%)
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center p-2 rounded bg-[var(--rowi-background)]">
+                          <span className="text-xs text-[var(--rowi-muted)]">
+                            Promedio {t(`admin.benchmarks.outcomes.${selectedOutcome}`) || selectedOutcome}
+                          </span>
+                          <span className="text-sm font-bold">
+                            {data.avgOutcomeScore.toFixed(1)}
+                          </span>
+                        </div>
+
+                        {data.topCompetencies.length > 0 && (
+                          <div className="pt-2 border-t border-[var(--rowi-card-border)]">
+                            <p className="text-xs text-[var(--rowi-muted)] mb-2 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3" />
+                              Competencias clave de Top Performers:
+                            </p>
+                            <div className="space-y-1">
+                              {data.topCompetencies.map((comp) => {
+                                const indicator = getDiffIndicator(comp.diffPercent);
+                                const Icon = indicator.icon;
+                                return (
+                                  <div key={comp.key} className="flex items-center justify-between text-xs">
+                                    <span className="text-[var(--rowi-foreground)]">
+                                      {t(`admin.benchmarks.metrics.${comp.key}`) || comp.key}
+                                    </span>
+                                    <span className={`flex items-center gap-1 ${indicator.color}`}>
+                                      <Icon className="w-3 h-3" />
+                                      {comp.diffPercent > 0 ? "+" : ""}{comp.diffPercent.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </AdminCard>
+                  ))}
+                </div>
+              )}
+
+              {/* Detailed Comparison Table */}
+              {topPerformersByOutcome.length > 0 && (
+                <AdminCard>
+                  <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-yellow-500" />
+                    Comparación detallada: Top Performers en {t(`admin.benchmarks.outcomes.${selectedOutcome}`) || selectedOutcome}
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[var(--rowi-card-border)]">
+                          <th className="text-left py-2 px-3 font-medium text-[var(--rowi-muted)]">
+                            Competencia
+                          </th>
+                          {topPerformersByOutcome.map((data, idx) => (
+                            <th key={data.segmentName} className="text-center py-2 px-3 font-medium">
+                              <span className={idx === 0 ? "text-[var(--rowi-primary)]" : "text-[var(--rowi-foreground)]"}>
+                                {data.segmentName}
+                              </span>
+                              <br />
+                              <span className="text-xs text-[var(--rowi-muted)] font-normal">
+                                (TP vs General)
+                              </span>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {METRIC_GROUPS.competencies.map((metric) => (
+                          <tr key={metric} className="border-b border-[var(--rowi-card-border)] hover:bg-[var(--rowi-background)]">
+                            <td className="py-2 px-3 font-medium">
+                              {t(`admin.benchmarks.metrics.${metric}`) || metric}
+                            </td>
+                            {topPerformersByOutcome.map((data) => {
+                              const comp = data.topCompetencies.find((c) => c.key === metric);
+                              if (!comp) return <td key={data.segmentName} className="text-center py-2 px-3 text-[var(--rowi-muted)]">-</td>;
+
+                              const indicator = getDiffIndicator(comp.diffPercent);
+                              const Icon = indicator.icon;
+
+                              return (
+                                <td key={data.segmentName} className="text-center py-2 px-3">
+                                  <div className="flex flex-col items-center">
+                                    <span className="font-bold">{comp.topPerformerMean.toFixed(1)}</span>
+                                    <span className={`flex items-center gap-1 text-xs ${indicator.color}`}>
+                                      <Icon className="w-3 h-3" />
+                                      {comp.diffPercent > 0 ? "+" : ""}{comp.diffPercent.toFixed(1)}%
+                                    </span>
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </AdminCard>
+              )}
+
+              {topPerformersByOutcome.length === 0 && !loadingTopPerformers && (
+                <AdminCard className="text-center py-8">
+                  <AlertTriangle className="w-12 h-12 mx-auto mb-2 text-[var(--rowi-muted)] opacity-50" />
+                  <p className="text-[var(--rowi-muted)]">
+                    Ejecuta la comparación de segmentos primero para ver los top performers por outcome
+                  </p>
+                </AdminCard>
+              )}
             </>
           )}
         </>

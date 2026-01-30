@@ -18,6 +18,10 @@ export async function GET(req: Request) {
       where: { rowiVerseId },
       include: {
         _count: { select: { members: true, posts: true } },
+        hub: { select: { id: true, name: true } },
+        tenant: { select: { id: true, name: true } },
+        superHub: { select: { id: true, name: true } },
+        organization: { select: { id: true, name: true, unitType: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -46,7 +50,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const body = await req.json();
-    const { name, description, visibility, category } = body;
+    const {
+      name,
+      slug: customSlug,
+      description,
+      visibility,
+      category,
+      teamType,
+      bannerUrl,
+      // Jerarquía explícita (override)
+      hubId: explicitHubId,
+      tenantId: explicitTenantId,
+      superHubId: explicitSuperHubId,
+      organizationId: explicitOrganizationId,
+    } = body;
 
     if (!name)
       return NextResponse.json({ error: "Falta el nombre" }, { status: 400 });
@@ -68,16 +85,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
 
     /* ---------------------------------------------------------
-       🔹 JERARQUÍA AUTOMÁTICA
+       🔹 JERARQUÍA (explícita o automática)
     --------------------------------------------------------- */
 
-    // 1️⃣ Hub principal del usuario
+    // 1️⃣ Hub (explícito o del usuario)
     const hubMembership = user.hubMemberships?.[0] || null;
-    const hubId = hubMembership?.hubId || null;
+    const hubId = explicitHubId || hubMembership?.hubId || null;
 
-    // 2️⃣ SuperHub desde el Hub
-    let superHubId = null;
-    if (hubId) {
+    // 2️⃣ SuperHub (explícito o desde el Hub)
+    let superHubId = explicitSuperHubId || null;
+    if (!superHubId && hubId) {
       const hub = await prisma.hub.findUnique({
         where: { id: hubId },
         select: { superHubId: true },
@@ -85,11 +102,11 @@ export async function POST(req: Request) {
       superHubId = hub?.superHubId || null;
     }
 
-    // 3️⃣ Tenant del usuario
-    const tenantId = user.primaryTenantId || null;
+    // 3️⃣ Tenant (explícito o del usuario)
+    const tenantId = explicitTenantId || user.primaryTenantId || null;
 
-    // 4️⃣ Organización (si aplica)
-    const organizationId = user.orgMemberships?.[0]?.organizationId || null;
+    // 4️⃣ Organización (explícita o del usuario)
+    const organizationId = explicitOrganizationId || user.orgMemberships?.[0]?.organizationId || null;
 
     // 5️⃣ RowiVerse raíz
     const rowiVerseId = "rowiverse_root";
@@ -97,7 +114,7 @@ export async function POST(req: Request) {
     /* ---------------------------------------------------------
        🔹 Crear comunidad con toda la jerarquía
     --------------------------------------------------------- */
-    const slug = name
+    const slug = customSlug || name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
@@ -109,6 +126,8 @@ export async function POST(req: Request) {
         description,
         visibility: visibility || "public",
         category: category || "general",
+        teamType: teamType || null,
+        bannerUrl: bannerUrl || null,
         createdById: user.id,
 
         // 🔥 Enlaces jerárquicos

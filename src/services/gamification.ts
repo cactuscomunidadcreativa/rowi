@@ -5,6 +5,7 @@
 
 import { prisma } from "@/core/prisma";
 import { PointReason, AchievementCategory } from "@prisma/client";
+import { checkAndEvolve, addAvatarExperience } from "@/services/avatar-evolution";
 
 interface AwardPointsOptions {
   userId: string;
@@ -427,6 +428,15 @@ export async function recordActivity(
     userId,
     category: "GENERAL",
   });
+
+  // Actualizar evolucion del avatar
+  try {
+    await addAvatarExperience(userId, points);
+    await checkAndEvolve(userId);
+  } catch (error) {
+    // No fallar si el avatar no existe todavia
+    console.warn("[Gamification] Avatar evolution error:", error);
+  }
 
   return {
     pointsAwarded: pointsResult.pointsAwarded,

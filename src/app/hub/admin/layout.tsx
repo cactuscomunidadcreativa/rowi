@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState, useRef, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
 import UserStatusBar from "@/components/shared/UserStatusBar";
 import { defaultTokens, tokensToCSS } from "@/lib/theme/tokens";
@@ -9,12 +9,17 @@ import { defaultTokens, tokensToCSS } from "@/lib/theme/tokens";
  * 🧩 HubAdminLayout v2
  * Incluye:
  * - Sidebar lateral
- * - Barra superior de usuario (rol, plan, IA)
+ * - Barra superior de usuario (rol, plan, IA) con auto-hide
  * - Área principal flexible
  * - Inyección de variables CSS del tema
  * =========================================================
  */
 export default function HubAdminLayout({ children }: { children: ReactNode }) {
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
+  const lastScrollY = useRef(0);
+  const mainRef = useRef<HTMLElement>(null);
+
   // Inyectar variables CSS del tema por defecto
   useEffect(() => {
     const css = tokensToCSS(defaultTokens);
@@ -34,6 +39,41 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Handler para scroll con auto-hide
+  const handleScroll = useCallback(() => {
+    if (!mainRef.current) return;
+    const currentScrollY = mainRef.current.scrollTop;
+    const scrollingDown = currentScrollY > lastScrollY.current;
+    const scrolledPastThreshold = currentScrollY > 60;
+
+    if (scrollingDown && scrolledPastThreshold && !isHovering) {
+      setIsHeaderVisible(false);
+    } else if (!scrollingDown || currentScrollY < 60) {
+      setIsHeaderVisible(true);
+    }
+    lastScrollY.current = currentScrollY;
+  }, [isHovering]);
+
+  // Configurar listener de scroll
+  useEffect(() => {
+    const mainEl = mainRef.current;
+    if (!mainEl) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    mainEl.addEventListener("scroll", onScroll, { passive: true });
+    return () => mainEl.removeEventListener("scroll", onScroll);
+  }, [handleScroll]);
+
   return (
     <div className="flex min-h-screen w-full bg-[var(--rowi-background)] text-[var(--rowi-foreground)] transition-colors duration-300">
       {/* Sidebar lateral fijo */}
@@ -43,13 +83,26 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
 
       {/* Contenido principal */}
       <section className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Barra superior del usuario */}
-        <header className="sticky top-0 z-30 bg-[var(--rowi-card)]/80 backdrop-blur-md border-b border-[var(--rowi-primary)]/20">
+        {/* Barra superior del usuario con auto-hide */}
+        <header
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          className={`
+            sticky top-0 z-30
+            bg-[var(--rowi-card)]/80 backdrop-blur-md
+            border-b border-[var(--rowi-primary)]/20
+            transition-transform duration-300 ease-in-out
+            ${isHeaderVisible || isHovering ? "translate-y-0" : "-translate-y-full"}
+          `}
+        >
           <UserStatusBar />
         </header>
 
         {/* Área de contenido scrollable */}
-        <main className="flex-1 overflow-y-auto p-6 bg-[var(--rowi-background)]">
+        <main
+          ref={mainRef}
+          className="flex-1 overflow-y-auto p-6 bg-[var(--rowi-background)]"
+        >
           {children}
         </main>
       </section>

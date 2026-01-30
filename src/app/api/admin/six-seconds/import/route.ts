@@ -14,6 +14,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { parse } from "csv-parse/sync";
 import { contributeBatchToRowiverse, ContributionInput } from "@/lib/rowiverse/contribution-service";
+import { syncSeiLevel, createInitialAvatar } from "@/services/avatar-evolution";
 
 // Mapeo de columnas del CSV de Six Seconds
 const COLUMN_MAPPING: Record<string, string> = {
@@ -234,6 +235,14 @@ export async function POST(req: NextRequest) {
             },
           });
           stats.activatedUsers++;
+        }
+
+        // Sincronizar nivel Six Seconds del avatar
+        try {
+          await createInitialAvatar(user.id, data.brainStyle);
+          await syncSeiLevel(user.id);
+        } catch (avatarError) {
+          console.warn(`⚠️ Error syncing avatar for ${email}:`, avatarError);
         }
 
         // Preparar contribución al RowiVerse

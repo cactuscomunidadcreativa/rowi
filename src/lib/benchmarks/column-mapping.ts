@@ -20,6 +20,16 @@ export const SOH_COLUMN_MAPPING: Record<string, string> = {
   Gender: "gender",
   Education: "education",
   Generations: "generation",
+  // Año
+  Year: "year",
+  YEAR: "year",
+  year: "year",
+  "Assessment Year": "year",
+  // Fecha (para extraer año si Year no está disponible)
+  Date: "sourceDate",
+  date: "sourceDate",
+  DATE: "sourceDate",
+  "Assessment Date": "sourceDate",
 
   // Core EQ (Know/Choose/Give) - múltiples variantes
   "Know Yourself Score": "K",
@@ -283,6 +293,143 @@ export function detectGeneration(ageRange: string | null): string | null {
       return null;
   }
 }
+
+/**
+ * Resultado de extracción de fecha con año, mes y trimestre
+ */
+export interface ExtractedDateInfo {
+  year: number | null;
+  month: number | null; // 1-12
+  quarter: number | null; // 1-4
+}
+
+/**
+ * Extrae año, mes y trimestre de una fecha o valor
+ * Soporta múltiples formatos:
+ * - Año directo: "2018", 2018
+ * - Fecha ISO: "2018-05-15"
+ * - Fecha US: "05/15/2018", "5/15/2018"
+ * - Fecha EU: "15/05/2018", "15-05-2018"
+ * - Excel serial date number
+ */
+export function extractDateInfo(value: any): ExtractedDateInfo {
+  const result: ExtractedDateInfo = { year: null, month: null, quarter: null };
+  if (!value) return result;
+
+  let parsedDate: Date | null = null;
+
+  // Si es un número, puede ser año directo o serial date de Excel
+  if (typeof value === "number") {
+    // Si es un año válido (1900-2100)
+    if (value >= 1900 && value <= 2100) {
+      result.year = value;
+      return result; // Solo año, sin mes
+    }
+    // Si es un serial date de Excel (número > 30000 típicamente)
+    if (value > 30000 && value < 100000) {
+      parsedDate = new Date((value - 25569) * 86400 * 1000);
+    }
+  } else {
+    const str = String(value).trim();
+    if (!str) return result;
+
+    // Intentar parsear como año directo (4 dígitos)
+    const yearOnlyMatch = str.match(/^(\d{4})$/);
+    if (yearOnlyMatch) {
+      const year = parseInt(yearOnlyMatch[1], 10);
+      if (year >= 1900 && year <= 2100) {
+        result.year = year;
+        return result; // Solo año, sin mes
+      }
+    }
+
+    // Intentar extraer de fecha ISO (YYYY-MM-DD)
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      const year = parseInt(isoMatch[1], 10);
+      const month = parseInt(isoMatch[2], 10);
+      if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12) {
+        result.year = year;
+        result.month = month;
+        result.quarter = Math.ceil(month / 3);
+        return result;
+      }
+    }
+
+    // Intentar extraer de fecha con formato MM/DD/YYYY o DD/MM/YYYY
+    const slashMatch = str.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (slashMatch) {
+      const year = parseInt(slashMatch[3], 10);
+      // Asumimos MM/DD/YYYY (formato US más común en Excel)
+      let month = parseInt(slashMatch[1], 10);
+      // Si el primer número es > 12, entonces es DD/MM/YYYY
+      if (month > 12) {
+        month = parseInt(slashMatch[2], 10);
+      }
+      if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12) {
+        result.year = year;
+        result.month = month;
+        result.quarter = Math.ceil(month / 3);
+        return result;
+      }
+    }
+
+    // Intentar parsear como Date nativo
+    try {
+      parsedDate = new Date(str);
+    } catch {
+      // Ignorar errores
+    }
+  }
+
+  // Si tenemos una fecha parseada válida
+  if (parsedDate && !isNaN(parsedDate.getTime())) {
+    const year = parsedDate.getFullYear();
+    const month = parsedDate.getMonth() + 1; // getMonth() es 0-indexed
+    if (year >= 1900 && year <= 2100) {
+      result.year = year;
+      result.month = month;
+      result.quarter = Math.ceil(month / 3);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Extrae solo el año de una fecha o valor (para compatibilidad)
+ */
+export function extractYearFromValue(value: any): number | null {
+  return extractDateInfo(value).year;
+}
+
+/**
+ * Nombres de meses en español
+ */
+export const MONTH_NAMES: Record<number, string> = {
+  1: "Enero",
+  2: "Febrero",
+  3: "Marzo",
+  4: "Abril",
+  5: "Mayo",
+  6: "Junio",
+  7: "Julio",
+  8: "Agosto",
+  9: "Septiembre",
+  10: "Octubre",
+  11: "Noviembre",
+  12: "Diciembre",
+};
+
+/**
+ * Nombres de trimestres
+ */
+export const QUARTER_NAMES: Record<number, string> = {
+  1: "Q1 (Ene-Mar)",
+  2: "Q2 (Abr-Jun)",
+  3: "Q3 (Jul-Sep)",
+  4: "Q4 (Oct-Dic)",
+};
 
 // =========================================================
 // 📊 NOMBRES LEGIBLES PARA MÉTRICAS (I18N KEYS)

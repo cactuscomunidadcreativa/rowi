@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -19,6 +19,9 @@ import {
   BarChart3,
   Shield,
   Download,
+  X,
+  Globe,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -28,6 +31,8 @@ import {
   AdminBadge,
   AdminButton,
 } from "@/components/admin/AdminPage";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SmartFilterCommand, createBenchmarkFilterCategories, type FilterValue } from "@/components/ui/smart-filter-command";
 
 interface FilterOption {
   value: string;
@@ -44,6 +49,10 @@ interface FiltersData {
   ageRanges: FilterOption[];
   genders: FilterOption[];
   educations: FilterOption[];
+  years: FilterOption[];
+  months: FilterOption[];
+  quarters: FilterOption[];
+  countryToRegion: Record<string, string>;
 }
 
 /* =========================================================
@@ -84,6 +93,8 @@ interface TopPerformer {
   sampleSize: number;
   totalPopulation?: number;
   confidenceLevel?: "high" | "medium" | "low";
+  lowConfidenceSample?: boolean;
+  insufficientReason?: string;
   avgK: number | null;
   avgC: number | null;
   avgG: number | null;
@@ -153,17 +164,22 @@ export default function TopPerformersPage() {
   const [isFiltered, setIsFiltered] = useState(false);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [methodology, setMethodology] = useState<APIResponse["methodology"] | null>(null);
+  const [showGlobalComparison, setShowGlobalComparison] = useState(false);
+  const [globalTopPerformers, setGlobalTopPerformers] = useState<TopPerformer[]>([]);
 
-  // Filtros activos
-  const [filters, setFilters] = useState({
-    country: "",
-    region: "",
-    sector: "",
-    jobFunction: "",
-    jobRole: "",
-    ageRange: "",
-    gender: "",
-    education: "",
+  // Filtros activos - ahora soportan arrays para multi-selección
+  const [filters, setFilters] = useState<Record<string, FilterValue>>({
+    country: [],
+    region: [],
+    sector: [],
+    jobFunction: [],
+    jobRole: [],
+    ageRange: [],
+    gender: [],
+    education: [],
+    year: [],
+    month: [],
+    quarter: [],
   });
 
   // Cargar opciones de filtros
@@ -182,6 +198,10 @@ export default function TopPerformersPage() {
           ageRanges: data.benchmark.ageRanges || [],
           genders: data.benchmark.genders || [],
           educations: data.benchmark.educations || [],
+          years: data.benchmark.years || [],
+          months: data.benchmark.months || [],
+          quarters: data.benchmark.quarters || [],
+          countryToRegion: data.benchmark.countryToRegion || {},
         });
       }
     } catch (error) {
@@ -198,6 +218,7 @@ export default function TopPerformersPage() {
 
       if (data.ok) {
         setTopPerformers(data.topPerformers);
+        setGlobalTopPerformers(data.topPerformers); // Guardar copia global
         setIsFiltered(false);
         setWarnings([]);
         setMethodology(null);
@@ -209,9 +230,15 @@ export default function TopPerformersPage() {
     }
   }
 
+  // Helper para verificar si un filtro tiene valores
+  const hasValue = (value: FilterValue): boolean => {
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== "";
+  };
+
   // Calcular top performers con filtros
   async function calculateWithFilters() {
-    const hasFilters = Object.values(filters).some((v) => v !== "");
+    const hasFilters = Object.values(filters).some(hasValue);
     if (!hasFilters) {
       loadTopPerformers();
       return;
@@ -221,7 +248,14 @@ export default function TopPerformersPage() {
     try {
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.set(key, value);
+        if (Array.isArray(value)) {
+          // Para arrays, agregar cada valor como parámetro separado
+          value.forEach(v => {
+            if (v) queryParams.append(key, v);
+          });
+        } else if (value) {
+          queryParams.set(key, value);
+        }
       });
 
       const res = await fetch(`/api/admin/benchmarks/${id}/top-performers/calculate?${queryParams}`);
@@ -248,27 +282,41 @@ export default function TopPerformersPage() {
     loadTopPerformers();
   }, [id]);
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = (key: string, value: FilterValue) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
     setFilters({
-      country: "",
-      region: "",
-      sector: "",
-      jobFunction: "",
-      jobRole: "",
-      ageRange: "",
-      gender: "",
-      education: "",
+      country: [],
+      region: [],
+      sector: [],
+      jobFunction: [],
+      jobRole: [],
+      ageRange: [],
+      gender: [],
+      education: [],
+      year: [],
+      month: [],
+      quarter: [],
     });
     loadTopPerformers();
   };
 
-  const hasActiveFilters = Object.values(filters).some((v) => v !== "");
+  // Filtrar países por región seleccionada (soporta multi-selección)
+  const filteredCountries = React.useMemo(() => {
+    if (!filtersData) return [];
+    const regions = Array.isArray(filters.region) ? filters.region : (filters.region ? [filters.region] : []);
+    if (regions.length === 0) return filtersData.countries || [];
+    return filtersData.countries.filter(
+      (c) => regions.includes(filtersData.countryToRegion[c.value])
+    );
+  }, [filtersData, filters.region]);
+
+  const hasActiveFilters = Object.values(filters).some(hasValue);
 
   const selectedProfile = topPerformers.find((tp) => tp.outcomeKey === selectedOutcome);
+  const globalProfile = globalTopPerformers.find((tp) => tp.outcomeKey === selectedOutcome);
 
   // Helper para obtener color de nivel de confianza
   const getConfidenceLevelStyle = (level?: string) => {
@@ -298,32 +346,43 @@ export default function TopPerformersPage() {
     }
   };
 
-  const renderFilterSelect = (
-    key: keyof typeof filters,
+  // Helper para obtener valor simple de un filtro (para SearchableSelect fallback)
+  const getSimpleValue = (value: FilterValue): string => {
+    if (Array.isArray(value)) return value[0] || "";
+    return value || "";
+  };
+
+  const renderSearchableFilter = (
+    key: string,
     labelKey: string,
     options: FilterOption[]
-  ) => (
-    <div>
-      <label className="block text-xs font-medium text-[var(--rowi-muted)] mb-1">
-        {t(labelKey)}
-      </label>
-      <div className="relative">
-        <select
-          value={filters[key]}
-          onChange={(e) => handleFilterChange(key, e.target.value)}
-          className="w-full px-3 py-2 pr-8 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)] text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--rowi-primary)]"
-        >
-          <option value="">{t("admin.benchmarks.stats.all")}</option>
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label} {opt.count ? `(${opt.count})` : ""}
-            </option>
-          ))}
-        </select>
-        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--rowi-muted)] pointer-events-none" />
+  ) => {
+    const currentValue = filters[key];
+    const displayValue = getSimpleValue(currentValue);
+    const arrayValue = Array.isArray(currentValue) ? currentValue : (currentValue ? [currentValue] : []);
+
+    return (
+      <div>
+        <label className="block text-xs font-medium text-[var(--rowi-muted)] mb-1 flex items-center gap-1">
+          {t(labelKey)}
+          {arrayValue.length > 1 && (
+            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-[var(--rowi-primary)] text-white">
+              +{arrayValue.length - 1}
+            </span>
+          )}
+        </label>
+        <SearchableSelect
+          options={options}
+          value={displayValue}
+          onChange={(value) => handleFilterChange(key, value ? [value] : [])}
+          placeholder={t("admin.benchmarks.stats.all")}
+          searchPlaceholder={`${t("common.search")}...`}
+          emptyMessage={t("common.noResults")}
+          showCount
+        />
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <AdminPage
@@ -342,6 +401,85 @@ export default function TopPerformersPage() {
         </AdminButton>
       }
     >
+      {/* Smart Filter Command - Búsqueda inteligente */}
+      {filtersData && (
+        <div className="mb-4">
+          <SmartFilterCommand
+            categories={createBenchmarkFilterCategories({
+              regions: filtersData.regions,
+              countries: filteredCountries,
+              sectors: filtersData.sectors,
+              jobFunctions: filtersData.jobFunctions,
+              jobRoles: filtersData.jobRoles,
+              ageRanges: filtersData.ageRanges,
+              genders: filtersData.genders,
+              educations: filtersData.educations,
+              years: filtersData.years,
+              months: filtersData.months,
+              quarters: filtersData.quarters,
+            })}
+            selectedFilters={filters}
+            onFilterChange={handleFilterChange}
+            onClearAll={clearFilters}
+            placeholder={t("admin.benchmarks.topPerformers.searchFilters")}
+          />
+        </div>
+      )}
+
+      {/* Resumen de filtros activos */}
+      {hasActiveFilters && filtersData && (
+        <div className="mb-4 p-3 rounded-lg border border-[var(--rowi-primary)]/30 bg-[var(--rowi-primary)]/5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+              {t("admin.benchmarks.stats.activeFilters")}:
+            </span>
+            <span className="text-xs text-[var(--rowi-muted)]">
+              {!isFiltered && t("admin.benchmarks.topPerformers.clickCalculate")}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(filters).map(([key, value]) => {
+              const values = Array.isArray(value) ? value : (value ? [value] : []);
+              if (values.length === 0) return null;
+
+              // Encontrar la categoría para obtener las labels
+              const categoryMap: Record<string, { label: string; options: FilterOption[] }> = {
+                region: { label: t("admin.benchmarks.stats.region"), options: filtersData.regions },
+                country: { label: t("admin.benchmarks.stats.country"), options: filtersData.countries },
+                sector: { label: t("admin.benchmarks.stats.sector"), options: filtersData.sectors },
+                jobFunction: { label: t("admin.benchmarks.stats.jobFunction"), options: filtersData.jobFunctions },
+                jobRole: { label: t("admin.benchmarks.stats.jobRole"), options: filtersData.jobRoles },
+                ageRange: { label: t("admin.benchmarks.stats.age"), options: filtersData.ageRanges },
+                gender: { label: t("admin.benchmarks.stats.gender"), options: filtersData.genders },
+                education: { label: t("admin.benchmarks.stats.education"), options: filtersData.educations },
+                year: { label: t("admin.benchmarks.stats.year"), options: filtersData.years },
+              };
+
+              const category = categoryMap[key];
+              if (!category) return null;
+
+              return values.map((v) => {
+                const option = category.options.find((o) => o.value === v);
+                return (
+                  <button
+                    key={`${key}-${v}`}
+                    onClick={() => {
+                      const newValues = values.filter((val) => val !== v);
+                      handleFilterChange(key, newValues);
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] hover:bg-[var(--rowi-primary)]/20 transition-colors border border-[var(--rowi-primary)]/30"
+                  >
+                    <span className="font-medium">{category.label}:</span>
+                    <span>{option?.label || v}</span>
+                    <X className="w-3 h-3" />
+                  </button>
+                );
+              });
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Filters Panel */}
       <AdminCard className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -380,17 +518,18 @@ export default function TopPerformersPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filtersData && (
             <>
-              {renderFilterSelect("country", "admin.benchmarks.stats.country", filtersData.countries)}
-              {renderFilterSelect("region", "admin.benchmarks.stats.region", filtersData.regions)}
-              {renderFilterSelect("sector", "admin.benchmarks.stats.sector", filtersData.sectors)}
-              {renderFilterSelect("jobFunction", "admin.benchmarks.stats.jobFunction", filtersData.jobFunctions)}
-              {renderFilterSelect("jobRole", "admin.benchmarks.stats.jobRole", filtersData.jobRoles)}
-              {renderFilterSelect("ageRange", "admin.benchmarks.stats.age", filtersData.ageRanges)}
-              {renderFilterSelect("gender", "admin.benchmarks.stats.gender", filtersData.genders)}
-              {renderFilterSelect("education", "admin.benchmarks.stats.education", filtersData.educations)}
+              {renderSearchableFilter("region", "admin.benchmarks.stats.region", filtersData.regions)}
+              {renderSearchableFilter("country", "admin.benchmarks.stats.country", filteredCountries)}
+              {renderSearchableFilter("sector", "admin.benchmarks.stats.sector", filtersData.sectors)}
+              {renderSearchableFilter("jobFunction", "admin.benchmarks.stats.jobFunction", filtersData.jobFunctions)}
+              {renderSearchableFilter("jobRole", "admin.benchmarks.stats.jobRole", filtersData.jobRoles)}
+              {renderSearchableFilter("ageRange", "admin.benchmarks.stats.age", filtersData.ageRanges)}
+              {renderSearchableFilter("gender", "admin.benchmarks.stats.gender", filtersData.genders)}
+              {renderSearchableFilter("education", "admin.benchmarks.stats.education", filtersData.educations)}
+              {filtersData.years.length > 0 && renderSearchableFilter("year", "admin.benchmarks.stats.year", filtersData.years)}
             </>
           )}
         </div>
@@ -438,6 +577,38 @@ export default function TopPerformersPage() {
 
       {selectedProfile ? (
         <div className="space-y-6">
+          {/* Low Confidence Warning Banner */}
+          {selectedProfile.lowConfidenceSample && (
+            <AdminCard className="border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-amber-800 dark:text-amber-200 mb-2">
+                    {t("admin.benchmarks.topPerformers.lowConfidenceWarning")}
+                  </h3>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                    {t("admin.benchmarks.topPerformers.lowConfidenceDesc")}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4 mb-3">
+                    <div className="px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50">
+                      <span className="text-xs text-amber-600 dark:text-amber-400">{t("admin.benchmarks.topPerformers.currentSampleSize")}:</span>
+                      <span className="ml-2 font-bold text-amber-800 dark:text-amber-200">{selectedProfile.sampleSize}</span>
+                    </div>
+                    <div className="px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50">
+                      <span className="text-xs text-amber-600 dark:text-amber-400">{t("admin.benchmarks.topPerformers.recommendedMinimum")}:</span>
+                      <span className="ml-2 font-bold text-amber-800 dark:text-amber-200">100</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 italic">
+                    💡 {t("admin.benchmarks.topPerformers.lowConfidenceRecommendation")}
+                  </p>
+                </div>
+              </div>
+            </AdminCard>
+          )}
+
           {/* Stats Overview with Confidence Level */}
           <AdminGrid cols={4}>
             <AdminCard compact>
@@ -512,6 +683,86 @@ export default function TopPerformersPage() {
               })()}
             </AdminCard>
           </AdminGrid>
+
+          {/* Global Comparison Toggle - Solo mostrar cuando hay filtros activos */}
+          {isFiltered && globalProfile && (
+            <AdminCard>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      {t("admin.benchmarks.topPerformers.globalComparison")}
+                    </h3>
+                    <p className="text-xs text-[var(--rowi-muted)]">
+                      {t("admin.benchmarks.topPerformers.globalComparisonDesc")}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowGlobalComparison(!showGlobalComparison)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    showGlobalComparison
+                      ? "bg-[var(--rowi-primary)] text-white"
+                      : "bg-[var(--rowi-background)] border border-[var(--rowi-card-border)] text-[var(--rowi-foreground)] hover:bg-[var(--rowi-primary)]/10"
+                  }`}
+                >
+                  <ArrowRightLeft className="w-4 h-4" />
+                  {t("admin.benchmarks.topPerformers.showGlobalComparison")}
+                </button>
+              </div>
+
+              {/* Comparison Stats */}
+              {showGlobalComparison && (
+                <div className="mt-4 pt-4 border-t border-[var(--rowi-card-border)]">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Sample Size Comparison */}
+                    <div className="p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-card-border)]">
+                      <p className="text-xs text-[var(--rowi-muted)] mb-2">{t("admin.benchmarks.topPerformers.sampleSize")}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <p className="text-xs text-blue-600 dark:text-blue-400">{t("admin.benchmarks.topPerformers.filtered")}</p>
+                          <p className="text-lg font-bold text-[var(--rowi-foreground)]">{selectedProfile.sampleSize.toLocaleString()}</p>
+                        </div>
+                        <div className="text-[var(--rowi-muted)]">vs</div>
+                        <div className="flex-1 text-right">
+                          <p className="text-xs text-green-600 dark:text-green-400">{t("admin.benchmarks.topPerformers.global")}</p>
+                          <p className="text-lg font-bold text-[var(--rowi-foreground)]">{globalProfile.sampleSize.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Top 3 Competencies Comparison */}
+                    {selectedProfile.topCompetencies?.slice(0, 3).map((comp, idx) => {
+                      const globalComp = globalProfile.topCompetencies?.find(c => c.key === comp.key);
+                      const diff = globalComp ? (comp.avgScore - globalComp.avgScore).toFixed(1) : "-";
+                      const isPositive = globalComp && comp.avgScore > globalComp.avgScore;
+                      return (
+                        <div key={comp.key} className="p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-card-border)]">
+                          <p className="text-xs text-[var(--rowi-muted)] mb-2">#{idx + 1} {t(`admin.benchmarks.metrics.${comp.key}`)}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <p className="text-xs text-blue-600 dark:text-blue-400">{t("admin.benchmarks.topPerformers.filtered")}</p>
+                              <p className="text-lg font-bold text-[var(--rowi-foreground)]">{comp.avgScore?.toFixed(1)}</p>
+                            </div>
+                            <div className={`px-2 py-1 rounded text-xs font-bold ${isPositive ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                              {isPositive ? "+" : ""}{diff}
+                            </div>
+                            <div className="flex-1 text-right">
+                              <p className="text-xs text-green-600 dark:text-green-400">{t("admin.benchmarks.topPerformers.global")}</p>
+                              <p className="text-lg font-bold text-[var(--rowi-foreground)]">{globalComp?.avgScore?.toFixed(1) || "-"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </AdminCard>
+          )}
 
           {/* Statistical Summary */}
           {selectedProfile.statistics && (
@@ -593,7 +844,7 @@ export default function TopPerformersPage() {
                       +{comp.diffFromAvg?.toFixed(1)}
                     </span>
                     {comp.isSignificant && (
-                      <CheckCircle className="w-4 h-4 text-green-500" title={t("admin.benchmarks.topPerformers.significant")} />
+                      <span title={t("admin.benchmarks.topPerformers.significant")}><CheckCircle className="w-4 h-4 text-green-500" /></span>
                     )}
                   </div>
                 ))}
@@ -638,7 +889,7 @@ export default function TopPerformersPage() {
                         {talent.avgScore?.toFixed(1)}
                       </span>
                       {talent.isSignificant && (
-                        <CheckCircle className="w-4 h-4 text-green-500" title={t("admin.benchmarks.topPerformers.significant")} />
+                        <span title={t("admin.benchmarks.topPerformers.significant")}><CheckCircle className="w-4 h-4 text-green-500" /></span>
                       )}
                       {talent.effectInterpretation && (
                         <span className={`w-2 h-2 rounded-full ${getEffectSizeStyle(talent.effectInterpretation)}`}
@@ -680,7 +931,7 @@ export default function TopPerformersPage() {
                           {t(`admin.benchmarks.metrics.${comp.key}`)}
                         </span>
                         {comp.isSignificant && (
-                          <CheckCircle className="w-4 h-4 text-green-500" title={t("admin.benchmarks.topPerformers.significant")} />
+                          <span title={t("admin.benchmarks.topPerformers.significant")}><CheckCircle className="w-4 h-4 text-green-500" /></span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -693,11 +944,11 @@ export default function TopPerformersPage() {
                           )}
                         </span>
                         {comp.effectSize !== undefined && comp.effectSize !== null && (
-                          <AdminBadge variant={comp.effectInterpretation === "large" ? "success" : comp.effectInterpretation === "medium" ? "info" : "secondary"}>
+                          <AdminBadge variant={comp.effectInterpretation === "large" ? "success" : comp.effectInterpretation === "medium" ? "info" : "neutral"}>
                             d={comp.effectSize.toFixed(2)}
                           </AdminBadge>
                         )}
-                        <AdminBadge variant={comp.diffFromAvg > 5 ? "success" : comp.diffFromAvg > 2 ? "info" : "secondary"}>
+                        <AdminBadge variant={comp.diffFromAvg > 5 ? "success" : comp.diffFromAvg > 2 ? "info" : "neutral"}>
                           +{comp.diffFromAvg?.toFixed(1)}
                         </AdminBadge>
                       </div>
@@ -906,7 +1157,7 @@ export default function TopPerformersPage() {
                   >
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       {pattern.talents?.map((talent) => (
-                        <AdminBadge key={talent} variant="secondary">
+                        <AdminBadge key={talent} variant="neutral">
                           {t(`admin.benchmarks.talents.${talent}`)}
                         </AdminBadge>
                       ))}

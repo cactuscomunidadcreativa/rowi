@@ -166,26 +166,58 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const { id: benchmarkId } = await params;
     const { searchParams } = new URL(req.url);
 
-    // Filtros
-    const country = searchParams.get("country");
-    const region = searchParams.get("region");
-    const sector = searchParams.get("sector");
-    const jobFunction = searchParams.get("jobFunction");
-    const jobRole = searchParams.get("jobRole");
-    const ageRange = searchParams.get("ageRange");
-    const gender = searchParams.get("gender");
-    const education = searchParams.get("education");
+    // Helper para obtener múltiples valores de un parámetro
+    const getMultipleValues = (key: string): string[] => {
+      return searchParams.getAll(key).filter(Boolean);
+    };
 
-    // Construir filtros base
+    // Filtros - ahora soportan múltiples valores
+    const countries = getMultipleValues("country");
+    const regions = getMultipleValues("region");
+    const sectors = getMultipleValues("sector");
+    const jobFunctions = getMultipleValues("jobFunction");
+    const jobRoles = getMultipleValues("jobRole");
+    const ageRanges = getMultipleValues("ageRange");
+    const genders = getMultipleValues("gender");
+    const educations = getMultipleValues("education");
+    const years = getMultipleValues("year");
+    const months = getMultipleValues("month");
+    const quarters = getMultipleValues("quarter");
+
+    // Construir filtros base con soporte para arrays (OR dentro de cada filtro)
     const baseWhere: any = { benchmarkId };
-    if (country) baseWhere.country = country;
-    if (region) baseWhere.region = region;
-    if (sector) baseWhere.sector = sector;
-    if (jobFunction) baseWhere.jobFunction = jobFunction;
-    if (jobRole) baseWhere.jobRole = jobRole;
-    if (ageRange) baseWhere.ageRange = ageRange;
-    if (gender) baseWhere.gender = gender;
-    if (education) baseWhere.education = education;
+    if (countries.length === 1) baseWhere.country = countries[0];
+    else if (countries.length > 1) baseWhere.country = { in: countries };
+
+    if (regions.length === 1) baseWhere.region = regions[0];
+    else if (regions.length > 1) baseWhere.region = { in: regions };
+
+    if (sectors.length === 1) baseWhere.sector = sectors[0];
+    else if (sectors.length > 1) baseWhere.sector = { in: sectors };
+
+    if (jobFunctions.length === 1) baseWhere.jobFunction = jobFunctions[0];
+    else if (jobFunctions.length > 1) baseWhere.jobFunction = { in: jobFunctions };
+
+    if (jobRoles.length === 1) baseWhere.jobRole = jobRoles[0];
+    else if (jobRoles.length > 1) baseWhere.jobRole = { in: jobRoles };
+
+    if (ageRanges.length === 1) baseWhere.ageRange = ageRanges[0];
+    else if (ageRanges.length > 1) baseWhere.ageRange = { in: ageRanges };
+
+    if (genders.length === 1) baseWhere.gender = genders[0];
+    else if (genders.length > 1) baseWhere.gender = { in: genders };
+
+    if (educations.length === 1) baseWhere.education = educations[0];
+    else if (educations.length > 1) baseWhere.education = { in: educations };
+
+    if (years.length === 1) baseWhere.year = parseInt(years[0]);
+    else if (years.length > 1) baseWhere.year = { in: years.map(y => parseInt(y)) };
+
+    if (months.length === 1) baseWhere.month = parseInt(months[0]);
+    else if (months.length > 1) baseWhere.month = { in: months.map(m => parseInt(m)) };
+
+    if (quarters.length === 1) baseWhere.quarter = parseInt(quarters[0]);
+    else if (quarters.length > 1) baseWhere.quarter = { in: quarters.map(q => parseInt(q)) };
 
     // Calcular estadísticas globales para el subconjunto filtrado
     const globalStats: Record<string, { mean: number; stdDev: number; n: number }> = {};
@@ -227,9 +259,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
       const totalCount = outcomeValues.length;
 
-      // Validar tamaño mínimo de muestra total
+      // Flag para indicar si la muestra es pequeña
+      let lowConfidenceSample = false;
+      let insufficientReason = "";
+
+      // Advertir si la muestra es pequeña pero continuar
       if (totalCount < MIN_TOTAL_SAMPLE) {
-        warnings.push(`${outcome}: muestra insuficiente (${totalCount} < ${MIN_TOTAL_SAMPLE})`);
+        warnings.push(`${outcome}: muestra pequeña (${totalCount} < ${MIN_TOTAL_SAMPLE} recomendados)`);
+        lowConfidenceSample = true;
+        insufficientReason = "small_total_sample";
+      }
+
+      // Si no hay datos en absoluto, saltar
+      if (totalCount === 0) {
+        warnings.push(`${outcome}: sin datos disponibles`);
         continue;
       }
 
@@ -253,9 +296,16 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
       const sampleSize = topPerformerData.length;
 
-      // Validar tamaño mínimo de top performers
+      // Advertir si la muestra de top performers es pequeña pero continuar
       if (sampleSize < MIN_TOP_PERFORMER_SAMPLE) {
-        warnings.push(`${outcome}: top performers insuficientes (${sampleSize} < ${MIN_TOP_PERFORMER_SAMPLE})`);
+        warnings.push(`${outcome}: muestra top performers pequeña (${sampleSize} < ${MIN_TOP_PERFORMER_SAMPLE} recomendados)`);
+        lowConfidenceSample = true;
+        insufficientReason = insufficientReason || "small_top_sample";
+      }
+
+      // Si no hay top performers, saltar
+      if (sampleSize === 0) {
+        warnings.push(`${outcome}: sin top performers encontrados`);
         continue;
       }
 
@@ -512,7 +562,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         thresholdValue: threshold,
         sampleSize,
         totalPopulation: totalCount,
-        confidenceLevel,
+        confidenceLevel: lowConfidenceSample ? "low" : confidenceLevel,
+        lowConfidenceSample,
+        insufficientReason,
 
         // Promedios de competencias
         avgK: compStats["K"].mean,
@@ -556,7 +608,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       topPerformers,
       total: topPerformers.length,
       filtered: true,
-      filters: { country, region, sector, jobFunction, jobRole, ageRange, gender, education },
+      filters: {
+        countries,
+        regions,
+        sectors,
+        jobFunctions,
+        jobRoles,
+        ageRanges,
+        genders,
+        educations,
+        years,
+      },
       warnings: warnings.length > 0 ? warnings : undefined,
       methodology: {
         minTotalSample: MIN_TOTAL_SAMPLE,

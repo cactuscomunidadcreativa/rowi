@@ -34,6 +34,11 @@ export {
   normalizeCountry,
   normalizeAgeRange,
   detectGeneration,
+  extractYearFromValue,
+  extractDateInfo,
+  MONTH_NAMES,
+  QUARTER_NAMES,
+  type ExtractedDateInfo,
 } from "./column-mapping";
 
 // Top Performers

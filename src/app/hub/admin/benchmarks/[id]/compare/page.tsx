@@ -290,9 +290,7 @@ export default function BenchmarkComparePage() {
           {result.fallbackUsed && (
             <AdminCard className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                {t("admin.benchmarks.compare.results.fallbackNotice", {
-                  source: t(`admin.benchmarks.compare.results.fallback.${result.fallbackUsed}`),
-                })}
+                {t("admin.benchmarks.compare.results.fallbackNotice").replace("{source}", t(`admin.benchmarks.compare.results.fallback.${result.fallbackUsed}`))}
               </p>
             </AdminCard>
           )}
@@ -482,7 +480,7 @@ export default function BenchmarkComparePage() {
                                 ? "info"
                                 : percentile >= 25
                                   ? "warning"
-                                  : "danger"
+                                  : "error"
                           }
                         >
                           P{percentile}

@@ -20,6 +20,10 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  GitBranch,
+  ChevronRight,
+  Filter,
+  Layers,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -71,10 +75,22 @@ interface CommunityData {
   hubId?: string;
   tenantId?: string;
   superHubId?: string;
+  organizationId?: string;
+  teamType?: string;
   hub?: { id: string; name: string };
   tenant?: { id: string; name: string };
   superHub?: { id: string; name: string };
+  organization?: { id: string; name: string; unitType: string };
   _count?: { members: number };
+}
+
+interface OrgNode {
+  id: string;
+  name: string;
+  slug: string;
+  unitType: string;
+  level: number;
+  parentId: string | null;
 }
 
 const VISIBILITY_OPTIONS = [
@@ -92,15 +108,31 @@ const CATEGORY_OPTIONS = [
   { value: "innovation", labelKey: "admin.communities.category.innovation" },
 ];
 
+// Tipos de equipo Six Seconds
+const TEAM_TYPE_OPTIONS = [
+  { value: "", label: "—", color: "gray" },
+  { value: "biz", label: "Biz", color: "blue", description: "Equipo de negocios y ventas" },
+  { value: "impact", label: "Impact", color: "green", description: "Equipo de impacto social" },
+  { value: "coaching", label: "Coaching", color: "purple", description: "Equipo de coaches certificados" },
+  { value: "education", label: "Education", color: "orange", description: "Equipo de educación y formación" },
+  { value: "research", label: "Research", color: "cyan", description: "Equipo de investigación" },
+  { value: "ops", label: "Ops", color: "pink", description: "Equipo de operaciones" },
+  { value: "tech", label: "Tech", color: "indigo", description: "Equipo de tecnología" },
+  { value: "marketing", label: "Marketing", color: "amber", description: "Equipo de marketing" },
+];
+
 export default function AdminCommunitiesPage() {
   const { t, ready, lang } = useI18n();
   const [communities, setCommunities] = useState<CommunityData[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [superHubs, setSuperHubs] = useState<any[]>([]);
+  const [organizations, setOrganizations] = useState<OrgNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+  const [filterTeamType, setFilterTeamType] = useState<string>("ALL");
+  const [filterOrganization, setFilterOrganization] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -112,10 +144,12 @@ export default function AdminCommunitiesPage() {
     description: string;
     visibility: string;
     category: string;
+    teamType: string;
     bannerUrl: string;
     hubId: string;
     tenantId: string;
     superHubId: string;
+    organizationId: string;
   } | null>(null);
 
   // Helper para traducciones inline
@@ -124,24 +158,27 @@ export default function AdminCommunitiesPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const [comRes, hRes, tRes, shRes] = await Promise.all([
+      const [comRes, hRes, tRes, shRes, orgRes] = await Promise.all([
         fetch("/api/hub/communities"),
         fetch("/api/hub/hubs"),
         fetch("/api/hub/tenants"),
         fetch("/api/hub/superhubs"),
+        fetch("/api/admin/organizations/hierarchy?flat=true"),
       ]);
 
-      const [comData, hData, tData, shData] = await Promise.all([
+      const [comData, hData, tData, shData, orgData] = await Promise.all([
         comRes.json(),
         hRes.json(),
         tRes.json(),
         shRes.json(),
+        orgRes.json(),
       ]);
 
       setCommunities(Array.isArray(comData) ? comData : []);
       setHubs(Array.isArray(hData?.hubs) ? hData.hubs : Array.isArray(hData) ? hData : []);
       setTenants(Array.isArray(tData?.tenants) ? tData.tenants : Array.isArray(tData) ? tData : []);
       setSuperHubs(Array.isArray(shData?.superHubs) ? shData.superHubs : Array.isArray(shData) ? shData : []);
+      setOrganizations(orgData.ok ? (orgData.organizations || []) : []);
     } catch {
       toast.error(t("common.error"));
     } finally {
@@ -161,10 +198,12 @@ export default function AdminCommunitiesPage() {
       description: "",
       visibility: "public",
       category: "",
+      teamType: "",
       bannerUrl: "",
       hubId: "",
       tenantId: "",
       superHubId: "",
+      organizationId: "",
     });
   }
 
@@ -177,10 +216,12 @@ export default function AdminCommunitiesPage() {
       description: c.description || "",
       visibility: c.visibility || "public",
       category: c.category || "",
+      teamType: c.teamType || "",
       bannerUrl: c.bannerUrl || "",
       hubId: c.hubId || "",
       tenantId: c.tenantId || "",
       superHubId: c.superHubId || "",
+      organizationId: c.organizationId || "",
     });
   }
 
@@ -204,10 +245,12 @@ export default function AdminCommunitiesPage() {
           description: editor.description,
           visibility: editor.visibility,
           category: editor.category,
+          teamType: editor.teamType || null,
           bannerUrl: editor.bannerUrl,
           hubId: editor.hubId || null,
           tenantId: editor.tenantId || null,
           superHubId: editor.superHubId || null,
+          organizationId: editor.organizationId || null,
         }),
       });
 
@@ -235,16 +278,67 @@ export default function AdminCommunitiesPage() {
     }
   }
 
-  const filtered = communities.filter(
-    (c) =>
+  const filtered = communities.filter((c) => {
+    // Búsqueda por texto
+    const matchesSearch =
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.slug.toLowerCase().includes(search.toLowerCase())
-  );
+      c.slug.toLowerCase().includes(search.toLowerCase());
+
+    // Filtro por tipo de equipo
+    const matchesTeamType =
+      filterTeamType === "ALL" || c.teamType === filterTeamType;
+
+    // Filtro por organización (incluye descendientes)
+    const matchesOrganization =
+      filterOrganization === "ALL" ||
+      c.organizationId === filterOrganization ||
+      (() => {
+        // Verificar si pertenece a un descendiente de la org filtrada
+        if (!c.organizationId) return false;
+        let currentId = c.organizationId;
+        while (currentId) {
+          if (currentId === filterOrganization) return true;
+          const org = organizations.find((o) => o.id === currentId);
+          currentId = org?.parentId || "";
+        }
+        return false;
+      })();
+
+    return matchesSearch && matchesTeamType && matchesOrganization;
+  });
 
   // Stats
   const totalMembers = communities.reduce((acc, c) => acc + (c._count?.members || 0), 0);
   const publicCount = communities.filter((c) => c.visibility === "public").length;
   const privateCount = communities.filter((c) => c.visibility === "private").length;
+
+  // Stats filtrados
+  const teamTypeStats = TEAM_TYPE_OPTIONS.filter(t => t.value).reduce((acc, type) => {
+    acc[type.value] = communities.filter((c) => c.teamType === type.value).length;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Helper: get organization path
+  function getOrgPath(orgId: string | undefined): string {
+    if (!orgId) return "";
+    const org = organizations.find((o) => o.id === orgId);
+    if (!org) return "";
+
+    const path: string[] = [org.name];
+    let currentParentId = org.parentId;
+
+    while (currentParentId) {
+      const parent = organizations.find((o) => o.id === currentParentId);
+      if (parent) {
+        path.unshift(parent.name);
+        currentParentId = parent.parentId;
+      } else {
+        break;
+      }
+    }
+
+    return path.join(" → ");
+  }
 
   function getVisibilityColor(v: string) {
     switch (v) {
@@ -262,6 +356,27 @@ export default function AdminCommunitiesPage() {
       case "private": return Lock;
       default: return Globe2;
     }
+  }
+
+  // Helper: get team type badge styles
+  function getTeamTypeStyle(teamType: string | undefined): { bg: string; text: string; label: string } {
+    const opt = TEAM_TYPE_OPTIONS.find(t => t.value === teamType);
+    if (!opt || !teamType) return { bg: "", text: "", label: "" };
+
+    const colorMap: Record<string, { bg: string; text: string }> = {
+      blue: { bg: "bg-blue-500/10", text: "text-blue-600" },
+      green: { bg: "bg-green-500/10", text: "text-green-600" },
+      purple: { bg: "bg-purple-500/10", text: "text-purple-600" },
+      orange: { bg: "bg-orange-500/10", text: "text-orange-600" },
+      cyan: { bg: "bg-cyan-500/10", text: "text-cyan-600" },
+      pink: { bg: "bg-pink-500/10", text: "text-pink-600" },
+      indigo: { bg: "bg-indigo-500/10", text: "text-indigo-600" },
+      amber: { bg: "bg-amber-500/10", text: "text-amber-600" },
+      gray: { bg: "bg-gray-500/10", text: "text-gray-600" },
+    };
+
+    const colors = colorMap[opt.color] || colorMap.gray;
+    return { ...colors, label: opt.label };
   }
 
   return (
@@ -380,7 +495,7 @@ export default function AdminCommunitiesPage() {
       }
     >
       {/* Stats Cards - Responsive */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <AdminCard compact className="text-center">
           <p className="text-2xl md:text-3xl font-bold text-[var(--rowi-primary)]">{communities.length}</p>
           <p className="text-[10px] md:text-xs text-[var(--rowi-muted)] truncate">{t("admin.communities.totalCommunities")}</p>
@@ -398,6 +513,92 @@ export default function AdminCommunitiesPage() {
           <p className="text-[10px] md:text-xs text-[var(--rowi-muted)] truncate">{t("admin.communities.privateCommunities")}</p>
         </AdminCard>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════
+          🔍 FILTROS AVANZADOS
+          Filtra por tipo de equipo (Biz, Impact, etc.) y organización
+      ═══════════════════════════════════════════════════════ */}
+      <AdminCard compact className="mb-6">
+        <div className="flex flex-col gap-4">
+          {/* Filtros por Tipo de Equipo (chips clickeables) */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Layers className="w-4 h-4 text-[var(--rowi-muted)]" />
+              <span className="text-xs font-medium text-[var(--rowi-muted)]">{t("admin.communities.filterByTeamType")}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setFilterTeamType("ALL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  filterTeamType === "ALL"
+                    ? "bg-[var(--rowi-primary)] text-white"
+                    : "bg-[var(--rowi-background)] text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)]"
+                }`}
+              >
+                {t("admin.communities.allTypes")} ({communities.length})
+              </button>
+              {TEAM_TYPE_OPTIONS.filter(t => t.value).map((type) => {
+                const count = teamTypeStats[type.value] || 0;
+                const style = getTeamTypeStyle(type.value);
+                const isActive = filterTeamType === type.value;
+                return (
+                  <button
+                    key={type.value}
+                    onClick={() => setFilterTeamType(isActive ? "ALL" : type.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? `${style.bg} ${style.text} ring-2 ring-offset-1`
+                        : "bg-[var(--rowi-background)] text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)]"
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${style.bg.replace("/10", "")}`} />
+                    {type.label}
+                    <span className="opacity-60">({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Filtro por Organización */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-[var(--rowi-muted)]" />
+              <span className="text-xs font-medium text-[var(--rowi-muted)]">{t("admin.communities.filterByOrganization")}</span>
+            </div>
+            <select
+              value={filterOrganization}
+              onChange={(e) => setFilterOrganization(e.target.value)}
+              className="px-3 py-1.5 rounded-lg text-xs bg-[var(--rowi-background)] border border-[var(--rowi-border)] text-[var(--rowi-foreground)]"
+            >
+              <option value="ALL">{t("admin.communities.allOrganizations")}</option>
+              {organizations.map((org) => (
+                <option key={org.id} value={org.id}>
+                  {"│ ".repeat(org.level)}{org.level > 0 ? "└ " : ""}{org.name} ({org.unitType})
+                </option>
+              ))}
+            </select>
+
+            {/* Mostrar filtros activos */}
+            {(filterTeamType !== "ALL" || filterOrganization !== "ALL") && (
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-xs text-[var(--rowi-muted)]">
+                  {filtered.length} {t("admin.communities.results")}
+                </span>
+                <button
+                  onClick={() => {
+                    setFilterTeamType("ALL");
+                    setFilterOrganization("ALL");
+                  }}
+                  className="px-2 py-1 rounded text-xs text-[var(--rowi-error)] hover:bg-[var(--rowi-error)]/10"
+                >
+                  {t("admin.communities.clearFilters")}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </AdminCard>
 
       {/* Editor Form - Responsive */}
       {editor && (
@@ -462,33 +663,149 @@ export default function AdminCommunitiesPage() {
             </div>
           </div>
 
-          {/* Hierarchy Links */}
-          <p className="text-xs text-[var(--rowi-muted)] mb-2 mt-4 font-medium">{t("admin.communities.hierarchy")}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-            <AdminSelect
-              value={editor.tenantId}
-              onChange={(v) => setEditor({ ...editor, tenantId: v })}
-              options={[
-                { value: "", label: t("admin.communities.noTenant") },
-                ...tenants.map((t) => ({ value: t.id, label: t.name })),
-              ]}
-            />
-            <AdminSelect
-              value={editor.hubId}
-              onChange={(v) => setEditor({ ...editor, hubId: v })}
-              options={[
-                { value: "", label: t("admin.communities.noHub") },
-                ...hubs.map((h) => ({ value: h.id, label: h.name })),
-              ]}
-            />
-            <AdminSelect
-              value={editor.superHubId}
-              onChange={(v) => setEditor({ ...editor, superHubId: v })}
-              options={[
-                { value: "", label: t("admin.communities.noSuperHub") },
-                ...superHubs.map((s) => ({ value: s.id, label: s.name })),
-              ]}
-            />
+          {/* ═══════════════════════════════════════════════════════
+              🌍 JERARQUÍA COMPLETA
+              Muestra toda la cadena: Plataforma + Organización
+          ═══════════════════════════════════════════════════════ */}
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5 border border-[var(--rowi-primary)]/10">
+            <div className="flex items-center gap-2 mb-3">
+              <GitBranch className="w-4 h-4 text-[var(--rowi-primary)]" />
+              <p className="text-sm text-[var(--rowi-foreground)] font-semibold">{t("admin.communities.fullHierarchy")}</p>
+            </div>
+
+            {/* Jerarquía de Plataforma: SuperHub → Hub → Tenant */}
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2 font-medium">
+                {t("admin.communities.platformHierarchy")}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">SuperHub</label>
+                  <AdminSelect
+                    value={editor.superHubId}
+                    onChange={(v) => setEditor({ ...editor, superHubId: v })}
+                    options={[
+                      { value: "", label: "—" },
+                      ...superHubs.map((s) => ({ value: s.id, label: s.name })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Hub</label>
+                  <AdminSelect
+                    value={editor.hubId}
+                    onChange={(v) => setEditor({ ...editor, hubId: v })}
+                    options={[
+                      { value: "", label: "—" },
+                      ...hubs.map((h) => ({ value: h.id, label: h.name })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Tenant</label>
+                  <AdminSelect
+                    value={editor.tenantId}
+                    onChange={(v) => setEditor({ ...editor, tenantId: v })}
+                    options={[
+                      { value: "", label: "—" },
+                      ...tenants.map((t) => ({ value: t.id, label: t.name })),
+                    ]}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Jerarquía Organizacional: World → Region → Team... */}
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2 font-medium">
+                {t("admin.communities.orgHierarchy")}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.organization")}</label>
+                  <AdminSelect
+                    value={editor.organizationId}
+                    onChange={(v) => setEditor({ ...editor, organizationId: v })}
+                    options={[
+                      { value: "", label: t("admin.communities.selectOrganization") },
+                      ...organizations.map((org) => ({
+                        value: org.id,
+                        label: `${"│ ".repeat(org.level)}${org.level > 0 ? "└ " : ""}${org.name} (${org.unitType})`,
+                      })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.teamType")}</label>
+                  <AdminSelect
+                    value={editor.teamType}
+                    onChange={(v) => setEditor({ ...editor, teamType: v })}
+                    options={TEAM_TYPE_OPTIONS.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                    }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Preview del path completo */}
+            {(editor.superHubId || editor.hubId || editor.tenantId || editor.organizationId) && (
+              <div className="mt-4 p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-border)]">
+                <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2">
+                  {t("admin.communities.fullPath")}
+                </p>
+                <div className="flex flex-wrap items-center gap-1 text-xs">
+                  {editor.superHubId && (
+                    <>
+                      <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 font-medium">
+                        {superHubs.find(s => s.id === editor.superHubId)?.name}
+                      </span>
+                      <ChevronRight className="w-3 h-3 text-[var(--rowi-muted)]" />
+                    </>
+                  )}
+                  {editor.hubId && (
+                    <>
+                      <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-medium">
+                        {hubs.find(h => h.id === editor.hubId)?.name}
+                      </span>
+                      <ChevronRight className="w-3 h-3 text-[var(--rowi-muted)]" />
+                    </>
+                  )}
+                  {editor.tenantId && (
+                    <>
+                      <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-600 font-medium">
+                        {tenants.find(t => t.id === editor.tenantId)?.name}
+                      </span>
+                      {editor.organizationId && <ChevronRight className="w-3 h-3 text-[var(--rowi-muted)]" />}
+                    </>
+                  )}
+                  {editor.organizationId && (
+                    <>
+                      <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-600 font-medium">
+                        {getOrgPath(editor.organizationId)}
+                      </span>
+                      {editor.teamType && <ChevronRight className="w-3 h-3 text-[var(--rowi-muted)]" />}
+                    </>
+                  )}
+                  {editor.teamType && (
+                    <span className={`px-2 py-0.5 rounded font-medium uppercase text-[10px] ${
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "blue" ? "bg-blue-500/10 text-blue-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "green" ? "bg-green-500/10 text-green-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "purple" ? "bg-purple-500/10 text-purple-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "orange" ? "bg-orange-500/10 text-orange-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "cyan" ? "bg-cyan-500/10 text-cyan-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "pink" ? "bg-pink-500/10 text-pink-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "indigo" ? "bg-indigo-500/10 text-indigo-600" :
+                      TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.color === "amber" ? "bg-amber-500/10 text-amber-600" :
+                      "bg-gray-500/10 text-gray-600"
+                    }`}>
+                      {TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.label}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-4">
@@ -600,6 +917,26 @@ export default function AdminCommunitiesPage() {
                 <p className="text-[10px] text-[var(--rowi-muted)] font-mono truncate">{c.slug}</p>
                 {c.description && (
                   <p className="text-xs text-[var(--rowi-muted)] mt-1 line-clamp-2">{c.description}</p>
+                )}
+
+                {/* Organization Path + Team Type */}
+                {(c.organizationId || c.teamType) && (
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {c.organizationId && (
+                      <div className="flex items-center gap-1 text-[10px] text-red-500/80">
+                        <GitBranch className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{getOrgPath(c.organizationId)}</span>
+                      </div>
+                    )}
+                    {c.teamType && (() => {
+                      const style = getTeamTypeStyle(c.teamType);
+                      return (
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${style.bg} ${style.text}`}>
+                          {style.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                 )}
 
                 <div className="flex flex-wrap gap-2 sm:gap-3 mt-3 pt-2 border-t border-[var(--rowi-border)]">

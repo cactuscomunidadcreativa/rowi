@@ -4,6 +4,23 @@ import { authOptions } from "@/core/auth/config";
 import { prisma } from "../prisma";
 import type { NextRequest } from "next/server";
 
+// 🌲 Re-export funciones de jerarquía para uso externo
+export {
+  getAncestorOrgIds,
+  getDescendantOrgIds,
+  hasOrgAccessWithHierarchy,
+  getAccessibleOrgIds,
+  getEffectiveOrgRole,
+  hasOrgRole,
+  getOrgHierarchyTree,
+} from "./policies/policy.hierarchy";
+
+// 🔐 Re-export funciones de acceso
+export { canAccess } from "./hasAccess";
+export { isSuperAdmin } from "./policies/policy.super";
+export { isAdmin } from "./policies/policy.admin";
+export { hasScope } from "./policies/policy.scope";
+
 export async function getServerAuthUser(req?: NextRequest) {
   try {
     // 1️⃣ Obtener sesión

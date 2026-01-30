@@ -21,6 +21,7 @@ import {
   OUTCOMES,
   normalizeAgeRange,
   detectGeneration,
+  extractDateInfo,
 } from "@/lib/benchmarks";
 
 // =========================================================
@@ -983,7 +984,13 @@ async function insertBatchDataPoints(benchmarkId: string, rows: any[]) {
     const batch = rows.slice(i, i + BATCH_SIZE);
 
     await prisma.benchmarkDataPoint.createMany({
-      data: batch.map((row) => ({
+      data: batch.map((row) => {
+        // Extraer fecha completa (año, mes, trimestre) desde Year o Date
+        const dateInfoFromYear = extractDateInfo(row.year);
+        const dateInfoFromDate = extractDateInfo(row.sourceDate);
+        const dateInfo = dateInfoFromYear.year ? dateInfoFromYear : dateInfoFromDate;
+
+        return {
         benchmarkId,
         sourceType: "soh",
         country: row.country || null,
@@ -995,6 +1002,9 @@ async function insertBatchDataPoints(benchmarkId: string, rows: any[]) {
         gender: row.gender || null,
         education: row.education || null,
         generation: detectGeneration(normalizeAgeRange(row.ageRange)),
+        year: dateInfo.year,
+        month: dateInfo.month,
+        quarter: dateInfo.quarter,
         K: row.K,
         C: row.C,
         G: row.G,
@@ -1041,7 +1051,8 @@ async function insertBatchDataPoints(benchmarkId: string, rows: any[]) {
         brainStyle: row.brainStyle,
         profile: row.profile,
         reliabilityIndex: row.reliabilityIndex,
-      })),
+      };
+      }),
     });
   }
 }
@@ -1053,7 +1064,13 @@ async function insertBatchDataPointsDirect(benchmarkId: string, rows: any[]) {
   if (rows.length === 0) return;
 
   await prisma.benchmarkDataPoint.createMany({
-    data: rows.map((row) => ({
+    data: rows.map((row) => {
+      // Extraer fecha completa (año, mes, trimestre) desde Year o Date
+      const dateInfoFromYear = extractDateInfo(row.year);
+      const dateInfoFromDate = extractDateInfo(row.sourceDate);
+      const dateInfo = dateInfoFromYear.year ? dateInfoFromYear : dateInfoFromDate;
+
+      return {
       benchmarkId,
       sourceType: "soh",
       country: row.country || null,
@@ -1065,6 +1082,9 @@ async function insertBatchDataPointsDirect(benchmarkId: string, rows: any[]) {
       gender: row.gender || null,
       education: row.education || null,
       generation: row.generation || detectGeneration(normalizeAgeRange(row.ageRange)),
+      year: dateInfo.year,
+      month: dateInfo.month,
+      quarter: dateInfo.quarter,
       K: row.K,
       C: row.C,
       G: row.G,
@@ -1111,7 +1131,8 @@ async function insertBatchDataPointsDirect(benchmarkId: string, rows: any[]) {
       brainStyle: row.brainStyle,
       profile: row.profile,
       reliabilityIndex: row.reliabilityIndex,
-    })),
+    };
+    }),
     skipDuplicates: true,
   });
 }

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 /* =========================================================
-   🔸 PATCH — Editar comunidad
+   🔸 PATCH/PUT — Editar comunidad
    ---------------------------------------------------------
    Usa await params, evita sobrescribir valores vacíos
 ========================================================= */
@@ -16,17 +16,36 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { name, description, visibility, bannerUrl, coverUrl, category } = body;
+    const {
+      name,
+      slug,
+      description,
+      visibility,
+      bannerUrl,
+      coverUrl,
+      category,
+      teamType,
+      hubId,
+      tenantId,
+      superHubId,
+      organizationId,
+    } = body;
 
     const updated = await prisma.rowiCommunity.update({
       where: { id: communityId },
       data: {
         name: name ?? undefined,
+        slug: slug ?? undefined,
         description: description ?? undefined,
         visibility: visibility ?? undefined,
         bannerUrl: bannerUrl ?? undefined,
         coverUrl: coverUrl ?? undefined,
         category: category ?? undefined,
+        teamType: teamType ?? undefined,
+        hubId: hubId ?? undefined,
+        tenantId: tenantId ?? undefined,
+        superHubId: superHubId ?? undefined,
+        organizationId: organizationId ?? undefined,
       },
     });
 
@@ -39,6 +58,9 @@ export async function PATCH(
     );
   }
 }
+
+// Alias PUT → PATCH
+export { PATCH as PUT };
 
 /* =========================================================
    🔻 DELETE — Eliminar comunidad

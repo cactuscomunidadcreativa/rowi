@@ -6,6 +6,8 @@
 // - RowiVerse (sistema global)
 // - Six Seconds (primer cliente)
 // - Eduardo, Josh como admins
+// - 6 Planes completos
+// - Permisos jerárquicos
 // ============================================================
 
 import { PrismaClient } from "@prisma/client";
@@ -15,7 +17,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("\n");
   console.log("=".repeat(60));
-  console.log("  ROWI - SEED MÍNIMO");
+  console.log("  ROWI - SEED MÍNIMO CON PLANES Y PERMISOS");
   console.log("=".repeat(60));
   console.log("\n");
 
@@ -59,48 +61,404 @@ async function main() {
   console.log("   ✅ System:", system.id);
 
   // ============================================================
-  // 3. PLANES - Solo los esenciales
+  // 3. PLANES ROWI - 6 Planes Completos
   // ============================================================
-  console.log("\n3. Creando Planes...");
+  console.log("\n3. Creando Planes ROWI...");
 
-  const planFree = await prisma.plan.upsert({
-    where: { slug: "free" },
-    update: {},
-    create: {
-      name: "Free",
+  const plansData = [
+    // 1. FREE ROWI
+    {
+      name: "Free ROWI",
       slug: "free",
-      description: "Plan gratuito para explorar Rowi",
+      description: "Comienza tu viaje de inteligencia emocional. Ideal para explorar Rowi.",
+      descriptionEN: "Start your emotional intelligence journey. Ideal to explore Rowi.",
       priceUsd: 0,
       priceCents: 0,
+      priceYearlyUsd: 0,
+      priceYearlyCents: 0,
       billingPeriod: "monthly",
       tokensMonthly: 10,
+      tokensShared: false,
+      tokensPerUser: true,
       maxUsers: 1,
+      minUsers: 1,
       planType: "individual",
       targetAudience: "B2C",
       aiEnabled: true,
       superRowiAccess: true,
       rowiEQAccess: true,
+      rowiAffinityAccess: false,
+      rowiECOAccess: false,
+      rowiTrainerAccess: false,
+      rowiSalesAccess: false,
+      seiIncluded: false,
+      seiAnnual: false,
+      brainBriefIncluded: false,
+      seiDiscountPercent: 0,
       maxCommunities: 1,
       maxMembers: 5,
+      privateGroups: false,
+      benchmarkAccess: false,
+      advancedReports: false,
+      executiveDashboard: false,
+      benchmarkingSectorial: false,
+      apiAccess: false,
+      slackIntegration: false,
+      teamsIntegration: false,
+      gmailIntegration: false,
       supportLevel: "community",
+      customOnboarding: false,
+      workshopIncludes: false,
+      emoji: "🆓",
+      color: "#6B7280",
+      icon: "Sparkles",
+      sortOrder: 1,
       isPublic: true,
       isActive: true,
-      sortOrder: 1,
+      isCustomPricing: false,
+      features: ["10 tokens IA / mes", "Acceso a Rowi EQ básico", "1 comunidad", "Soporte comunitario"],
+      featuresEN: ["10 AI tokens / month", "Basic Rowi EQ access", "1 community", "Community support"],
+      limitations: ["Sin SEI incluido", "Sin grupos privados", "Sin reportes avanzados"],
+      limitationsEN: ["SEI not included", "No private groups", "No advanced reports"],
     },
-  });
 
-  const planEnterprise = await prisma.plan.upsert({
-    where: { slug: "enterprise" },
-    update: {},
-    create: {
-      name: "Enterprise",
-      slug: "enterprise",
-      description: "Plan empresarial completo",
-      priceUsd: 0,
-      priceCents: 0,
+    // 2. ROWI+
+    {
+      name: "ROWI+",
+      slug: "plus",
+      description: "Para tu crecimiento personal. Todo lo que necesitas para desarrollar tu inteligencia emocional.",
+      descriptionEN: "For your personal growth. Everything you need to develop your emotional intelligence.",
+      priceUsd: 12,
+      priceCents: 1200,
+      priceYearlyUsd: 120,
+      priceYearlyCents: 12000,
       billingPeriod: "monthly",
-      tokensMonthly: 999999,
-      maxUsers: 9999,
+      tokensMonthly: 150,
+      tokensShared: false,
+      tokensPerUser: true,
+      maxUsers: 1,
+      minUsers: 1,
+      planType: "individual",
+      targetAudience: "B2C",
+      aiEnabled: true,
+      superRowiAccess: true,
+      rowiEQAccess: true,
+      rowiAffinityAccess: true,
+      rowiECOAccess: true,
+      rowiTrainerAccess: true,
+      rowiSalesAccess: false,
+      seiIncluded: false,
+      seiAnnual: false,
+      brainBriefIncluded: true,
+      seiDiscountPercent: 20,
+      maxCommunities: 3,
+      maxMembers: 20,
+      privateGroups: true,
+      benchmarkAccess: false,
+      advancedReports: true,
+      executiveDashboard: false,
+      benchmarkingSectorial: false,
+      apiAccess: false,
+      slackIntegration: false,
+      teamsIntegration: false,
+      gmailIntegration: false,
+      supportLevel: "email",
+      customOnboarding: false,
+      workshopIncludes: false,
+      badge: "Popular",
+      badgeEN: "Popular",
+      emoji: "⭐",
+      color: "#3B82F6",
+      icon: "Star",
+      sortOrder: 2,
+      isPublic: true,
+      isActive: true,
+      isCustomPricing: false,
+      features: [
+        "150 tokens IA / mes",
+        "Todos los agentes Rowi",
+        "Brain Brief Profile incluido",
+        "20% descuento en SEI",
+        "Hasta 3 comunidades",
+        "Grupos privados",
+        "Reportes avanzados",
+        "Soporte por email",
+      ],
+      featuresEN: [
+        "150 AI tokens / month",
+        "All Rowi agents",
+        "Brain Brief Profile included",
+        "20% discount on SEI",
+        "Up to 3 communities",
+        "Private groups",
+        "Advanced reports",
+        "Email support",
+      ],
+      limitations: ["Sin benchmarks", "Sin integraciones", "Sin dashboard ejecutivo"],
+      limitationsEN: ["No benchmarks", "No integrations", "No executive dashboard"],
+    },
+
+    // 3. ROWI Family
+    {
+      name: "ROWI Family",
+      slug: "family",
+      description: "Inteligencia emocional para toda la familia. Comparte tokens y crece juntos.",
+      descriptionEN: "Emotional intelligence for the whole family. Share tokens and grow together.",
+      priceUsd: 40,
+      priceCents: 4000,
+      priceYearlyUsd: 400,
+      priceYearlyCents: 40000,
+      billingPeriod: "monthly",
+      tokensMonthly: 500,
+      tokensShared: true,
+      tokensPerUser: false,
+      maxUsers: 6,
+      minUsers: 2,
+      allowFamilyMembers: true,
+      planType: "family",
+      targetAudience: "B2C",
+      aiEnabled: true,
+      superRowiAccess: true,
+      rowiEQAccess: true,
+      rowiAffinityAccess: true,
+      rowiECOAccess: true,
+      rowiTrainerAccess: true,
+      rowiSalesAccess: false,
+      seiIncluded: false,
+      seiAnnual: false,
+      brainBriefIncluded: true,
+      seiDiscountPercent: 30,
+      maxCommunities: 5,
+      maxMembers: 30,
+      privateGroups: true,
+      benchmarkAccess: true,
+      advancedReports: true,
+      executiveDashboard: false,
+      benchmarkingSectorial: false,
+      apiAccess: false,
+      slackIntegration: false,
+      teamsIntegration: false,
+      gmailIntegration: false,
+      supportLevel: "chat",
+      customOnboarding: false,
+      workshopIncludes: false,
+      badge: "Familias",
+      badgeEN: "Families",
+      emoji: "👨‍👩‍👧‍👦",
+      color: "#8B5CF6",
+      icon: "Users",
+      sortOrder: 3,
+      isPublic: true,
+      isActive: true,
+      isCustomPricing: false,
+      features: [
+        "500 tokens IA compartidos / mes",
+        "Hasta 6 miembros familiares",
+        "Todos los agentes Rowi",
+        "Brain Brief para todos",
+        "30% descuento en SEI",
+        "Benchmarks familiares",
+        "Dashboard familiar",
+        "Soporte por chat",
+      ],
+      featuresEN: [
+        "500 shared AI tokens / month",
+        "Up to 6 family members",
+        "All Rowi agents",
+        "Brain Brief for everyone",
+        "30% discount on SEI",
+        "Family benchmarks",
+        "Family dashboard",
+        "Chat support",
+      ],
+      limitations: ["Sin integraciones empresariales", "Sin API"],
+      limitationsEN: ["No enterprise integrations", "No API"],
+    },
+
+    // 4. ROWI Pro
+    {
+      name: "ROWI Pro",
+      slug: "pro",
+      description: "Para profesionales y coaches. Herramientas avanzadas para tu práctica.",
+      descriptionEN: "For professionals and coaches. Advanced tools for your practice.",
+      priceUsd: 25,
+      priceCents: 2500,
+      priceYearlyUsd: 250,
+      priceYearlyCents: 25000,
+      billingPeriod: "monthly",
+      pricePerUserMonthly: 25,
+      pricePerUserYearly: 250,
+      tokensMonthly: 500,
+      tokensShared: false,
+      tokensPerUser: true,
+      maxUsers: 50,
+      minUsers: 1,
+      planType: "team",
+      targetAudience: "B2C/B2B",
+      aiEnabled: true,
+      superRowiAccess: true,
+      rowiEQAccess: true,
+      rowiAffinityAccess: true,
+      rowiECOAccess: true,
+      rowiTrainerAccess: true,
+      rowiSalesAccess: true,
+      seiIncluded: true,
+      seiAnnual: true,
+      brainBriefIncluded: true,
+      seiDiscountPercent: 50,
+      maxCommunities: 10,
+      maxMembers: 100,
+      privateGroups: true,
+      benchmarkAccess: true,
+      advancedReports: true,
+      executiveDashboard: true,
+      benchmarkingSectorial: false,
+      apiAccess: false,
+      slackIntegration: false,
+      teamsIntegration: false,
+      gmailIntegration: false,
+      supportLevel: "priority",
+      customOnboarding: true,
+      workshopIncludes: false,
+      badge: "Recomendado",
+      badgeEN: "Recommended",
+      emoji: "🚀",
+      color: "#10B981",
+      icon: "Rocket",
+      sortOrder: 4,
+      isPublic: true,
+      isActive: true,
+      isCustomPricing: false,
+      features: [
+        "500 tokens IA / usuario / mes",
+        "SEI anual incluido",
+        "Todos los agentes + Rowi Sales",
+        "50% descuento en SEI adicionales",
+        "Dashboard ejecutivo",
+        "Hasta 10 comunidades",
+        "Reportes avanzados",
+        "Onboarding personalizado",
+        "Soporte prioritario",
+      ],
+      featuresEN: [
+        "500 AI tokens / user / month",
+        "Annual SEI included",
+        "All agents + Rowi Sales",
+        "50% discount on additional SEI",
+        "Executive dashboard",
+        "Up to 10 communities",
+        "Advanced reports",
+        "Custom onboarding",
+        "Priority support",
+      ],
+      limitations: ["Sin API", "Sin integraciones avanzadas"],
+      limitationsEN: ["No API", "No advanced integrations"],
+    },
+
+    // 5. ROWI Business
+    {
+      name: "ROWI Business",
+      slug: "business",
+      description: "Inteligencia emocional para tu organización. Transforma la cultura de tu empresa.",
+      descriptionEN: "Emotional intelligence for your organization. Transform your company culture.",
+      priceUsd: 5,
+      priceCents: 500,
+      priceYearlyUsd: 54,
+      priceYearlyCents: 5400,
+      billingPeriod: "monthly",
+      pricePerUserMonthly: 5,
+      pricePerUserYearly: 54,
+      tokensMonthly: 0,
+      tokensOrganization: 1000,
+      tokensShared: true,
+      tokensPerUser: false,
+      maxUsers: 1000,
+      minUsers: 20,
+      planType: "business",
+      targetAudience: "B2B",
+      aiEnabled: true,
+      superRowiAccess: true,
+      rowiEQAccess: true,
+      rowiAffinityAccess: true,
+      rowiECOAccess: true,
+      rowiTrainerAccess: true,
+      rowiSalesAccess: true,
+      seiIncluded: true,
+      seiAnnual: true,
+      brainBriefIncluded: true,
+      seiDiscountPercent: 70,
+      maxCommunities: 50,
+      maxMembers: 500,
+      privateGroups: true,
+      benchmarkAccess: true,
+      advancedReports: true,
+      executiveDashboard: true,
+      benchmarkingSectorial: true,
+      apiAccess: true,
+      slackIntegration: true,
+      teamsIntegration: true,
+      gmailIntegration: true,
+      supportLevel: "priority",
+      customOnboarding: true,
+      workshopIncludes: true,
+      badge: "Empresas",
+      badgeEN: "Business",
+      emoji: "🏢",
+      color: "#F59E0B",
+      icon: "Building2",
+      sortOrder: 5,
+      isPublic: true,
+      isActive: true,
+      isCustomPricing: false,
+      features: [
+        "Desde $5 USD/usuario/mes (mín. 20)",
+        "1000 tokens IA compartidos/org/mes",
+        "SEI anual para todos",
+        "Todos los agentes Rowi",
+        "70% descuento en SEI adicionales",
+        "API y webhooks",
+        "Integraciones: Slack, Teams, Gmail",
+        "Dashboard ejecutivo",
+        "Benchmarking sectorial",
+        "Workshops de adopción",
+        "Soporte prioritario",
+      ],
+      featuresEN: [
+        "From $5 USD/user/month (min. 20)",
+        "1000 shared AI tokens/org/month",
+        "Annual SEI for everyone",
+        "All Rowi agents",
+        "70% discount on additional SEI",
+        "API and webhooks",
+        "Integrations: Slack, Teams, Gmail",
+        "Executive dashboard",
+        "Industry benchmarking",
+        "Adoption workshops",
+        "Priority support",
+      ],
+      limitations: ["Mínimo 20 usuarios"],
+      limitationsEN: ["Minimum 20 users"],
+    },
+
+    // 6. ROWI Enterprise
+    {
+      name: "ROWI Enterprise",
+      slug: "enterprise",
+      description: "Solución personalizada para grandes organizaciones. Máximo poder e integración.",
+      descriptionEN: "Custom solution for large organizations. Maximum power and integration.",
+      priceUsd: 30000,
+      priceCents: 3000000,
+      priceYearlyUsd: 30000,
+      priceYearlyCents: 3000000,
+      billingPeriod: "custom",
+      pricePerUserMonthly: 0,
+      pricePerUserYearly: 0,
+      tokensMonthly: 0,
+      tokensOrganization: 10000,
+      tokensShared: true,
+      tokensPerUser: false,
+      maxUsers: 999999,
+      minUsers: 100,
       planType: "enterprise",
       targetAudience: "B2B",
       aiEnabled: true,
@@ -111,21 +469,87 @@ async function main() {
       rowiTrainerAccess: true,
       rowiSalesAccess: true,
       seiIncluded: true,
+      seiAnnual: true,
+      brainBriefIncluded: true,
+      seiDiscountPercent: 100,
       maxCommunities: 999,
       maxMembers: 9999,
+      privateGroups: true,
       benchmarkAccess: true,
       advancedReports: true,
       executiveDashboard: true,
+      benchmarkingSectorial: true,
       apiAccess: true,
+      slackIntegration: true,
+      teamsIntegration: true,
+      gmailIntegration: true,
       supportLevel: "dedicated",
-      isPublic: false,
+      customOnboarding: true,
+      workshopIncludes: true,
+      badge: "Enterprise",
+      badgeEN: "Enterprise",
+      emoji: "☁️",
+      color: "#6366F1",
+      icon: "Cloud",
+      sortOrder: 6,
+      isPublic: true,
       isActive: true,
-      sortOrder: 10,
+      isCustomPricing: true,
+      features: [
+        "Precio personalizado (~$30,000 USD/año base)",
+        "10,000+ tokens IA dedicados/mes",
+        "SEI ilimitado para toda la organización",
+        "Todos los agentes Rowi",
+        "API dedicada y webhooks",
+        "Todas las integraciones",
+        "Dashboard ejecutivo+ personalizado",
+        "Benchmarking sectorial avanzado",
+        "Workshops de adopción e implementación",
+        "Custom onboarding y formación",
+        "Soporte dedicado 24/7",
+        "SLA garantizado",
+      ],
+      featuresEN: [
+        "Custom pricing (~$30,000 USD/year base)",
+        "10,000+ dedicated AI tokens/month",
+        "Unlimited SEI for entire organization",
+        "All Rowi agents",
+        "Dedicated API and webhooks",
+        "All integrations",
+        "Custom executive dashboard+",
+        "Advanced industry benchmarking",
+        "Adoption and implementation workshops",
+        "Custom onboarding and training",
+        "Dedicated 24/7 support",
+        "Guaranteed SLA",
+      ],
+      limitations: [],
+      limitationsEN: [],
     },
-  });
+  ];
 
-  console.log("   ✅ Plan Free:", planFree.id);
-  console.log("   ✅ Plan Enterprise:", planEnterprise.id);
+  const plans: Record<string, any> = {};
+  for (const p of plansData) {
+    const plan = await prisma.plan.upsert({
+      where: { slug: p.slug },
+      update: {
+        ...p,
+        features: p.features,
+        featuresEN: p.featuresEN,
+        limitations: p.limitations,
+        limitationsEN: p.limitationsEN,
+      },
+      create: {
+        ...p,
+        features: p.features,
+        featuresEN: p.featuresEN,
+        limitations: p.limitations,
+        limitationsEN: p.limitationsEN,
+      },
+    });
+    plans[p.slug] = plan;
+    console.log(`   ${p.emoji} Plan "${p.name}": ${plan.id}`);
+  }
 
   // ============================================================
   // 4. SUPERHUB - Six Seconds
@@ -166,6 +590,7 @@ async function main() {
       defaultTimezone: "America/Los_Angeles",
       superHubId: superHub.id,
       systemId: system.id,
+      planId: plans["enterprise"].id,
     },
   });
   console.log("   ✅ Tenant:", tenant.id);
@@ -207,6 +632,22 @@ async function main() {
   });
   console.log("   ✅ Organization:", org.id);
 
+  // Vincular Organization con Tenant
+  await prisma.organizationToTenant.upsert({
+    where: {
+      tenantId_organizationId: {
+        tenantId: tenant.id,
+        organizationId: org.id,
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      organizationId: org.id,
+      isPrimary: true,
+    },
+  });
+
   // ============================================================
   // 8. USUARIOS - Eduardo (Superadmin), Josh, Eduardo 6S
   // ============================================================
@@ -218,7 +659,7 @@ async function main() {
     update: {
       organizationRole: "SUPERADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
     },
@@ -227,7 +668,7 @@ async function main() {
       email: "eduardo@cactuscomunidadcreativa.com",
       organizationRole: "SUPERADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
       language: "es",
@@ -242,7 +683,7 @@ async function main() {
     update: {
       organizationRole: "ADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
     },
@@ -251,7 +692,7 @@ async function main() {
       email: "eduardo.gonzalez@6seconds.org",
       organizationRole: "ADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
       language: "en",
@@ -266,7 +707,7 @@ async function main() {
     update: {
       organizationRole: "ADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
     },
@@ -275,7 +716,7 @@ async function main() {
       email: "josh@6seconds.org",
       organizationRole: "ADMIN",
       primaryTenantId: tenant.id,
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       active: true,
       allowAI: true,
       language: "en",
@@ -351,7 +792,7 @@ async function main() {
       userId: eduardo.id,
       tenantId: tenant.id,
       role: "SUPERADMIN",
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       tokenQuota: 999999,
     },
   });
@@ -385,7 +826,7 @@ async function main() {
       userId: eduardo6s.id,
       tenantId: tenant.id,
       role: "ADMIN",
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       tokenQuota: 999999,
     },
   });
@@ -419,7 +860,7 @@ async function main() {
       userId: josh.id,
       tenantId: tenant.id,
       role: "ADMIN",
-      planId: planEnterprise.id,
+      planId: plans["enterprise"].id,
       tokenQuota: 999999,
     },
   });
@@ -448,55 +889,98 @@ async function main() {
   console.log("   ✅ Memberships creados");
 
   // ============================================================
-  // 11. PERMISSIONS - Permisos de superadmin
+  // 11. PERMISSIONS - Permisos jerárquicos completos
   // ============================================================
-  console.log("\n11. Creando Permisos...");
+  console.log("\n11. Creando Permisos Jerárquicos...");
 
-  // Eduardo - Superadmin global
-  await prisma.userPermission.upsert({
-    where: { id: `perm-eduardo-global` },
-    update: {},
-    create: {
-      id: `perm-eduardo-global`,
-      userId: eduardo.id,
-      permission: "SUPERADMIN",
-      scope: "GLOBAL",
-      scopeType: "GLOBAL",
-      grantedBy: eduardo.id,
-    },
-  });
+  // Eduardo - Superadmin con permisos en todos los niveles
+  const eduardoPermissions = [
+    { scopeType: "GLOBAL" as const, scopeId: null, permission: "SUPERADMIN", scope: "GLOBAL" },
+    { scopeType: "ROWIVERSE" as const, scopeId: rowiverse.id, permission: "SUPERADMIN", scope: rowiverse.id },
+    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "SUPERADMIN", scope: superHub.id },
+    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
+    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
+    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "OWNER", scope: org.id },
+  ];
+
+  for (const perm of eduardoPermissions) {
+    const permId = `perm-eduardo-${perm.scopeType.toLowerCase()}-${perm.scopeId || "global"}`;
+    await prisma.userPermission.upsert({
+      where: { id: permId },
+      update: { permission: perm.permission },
+      create: {
+        id: permId,
+        userId: eduardo.id,
+        permission: perm.permission,
+        scope: perm.scope,
+        scopeType: perm.scopeType,
+        scopeId: perm.scopeId,
+        tenantId: perm.scopeType === "TENANT" || perm.scopeType === "HUB" || perm.scopeType === "ORGANIZATION" ? tenant.id : null,
+        hubId: perm.scopeType === "HUB" ? hub.id : null,
+        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
+        grantedBy: eduardo.id,
+      },
+    });
+    console.log(`   ✅ Eduardo: ${perm.scopeType} → ${perm.permission}`);
+  }
 
   // Eduardo 6S - Admin de Six Seconds
-  await prisma.userPermission.upsert({
-    where: { id: `perm-eduardo6s-tenant` },
-    update: {},
-    create: {
-      id: `perm-eduardo6s-tenant`,
-      userId: eduardo6s.id,
-      permission: "ADMIN",
-      scope: tenant.id,
-      scopeType: "TENANT",
-      tenantId: tenant.id,
-      grantedBy: eduardo.id,
-    },
-  });
+  const eduardo6sPermissions = [
+    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "ADMIN", scope: superHub.id },
+    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
+    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
+    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "ADMIN", scope: org.id },
+  ];
+
+  for (const perm of eduardo6sPermissions) {
+    const permId = `perm-eduardo6s-${perm.scopeType.toLowerCase()}-${perm.scopeId}`;
+    await prisma.userPermission.upsert({
+      where: { id: permId },
+      update: { permission: perm.permission },
+      create: {
+        id: permId,
+        userId: eduardo6s.id,
+        permission: perm.permission,
+        scope: perm.scope,
+        scopeType: perm.scopeType,
+        scopeId: perm.scopeId,
+        tenantId: tenant.id,
+        hubId: perm.scopeType === "HUB" ? hub.id : null,
+        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
+        grantedBy: eduardo.id,
+      },
+    });
+    console.log(`   ✅ Eduardo 6S: ${perm.scopeType} → ${perm.permission}`);
+  }
 
   // Josh - Admin de Six Seconds
-  await prisma.userPermission.upsert({
-    where: { id: `perm-josh-tenant` },
-    update: {},
-    create: {
-      id: `perm-josh-tenant`,
-      userId: josh.id,
-      permission: "ADMIN",
-      scope: tenant.id,
-      scopeType: "TENANT",
-      tenantId: tenant.id,
-      grantedBy: eduardo.id,
-    },
-  });
+  const joshPermissions = [
+    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "ADMIN", scope: superHub.id },
+    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
+    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
+    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "ADMIN", scope: org.id },
+  ];
 
-  console.log("   ✅ Permisos creados");
+  for (const perm of joshPermissions) {
+    const permId = `perm-josh-${perm.scopeType.toLowerCase()}-${perm.scopeId}`;
+    await prisma.userPermission.upsert({
+      where: { id: permId },
+      update: { permission: perm.permission },
+      create: {
+        id: permId,
+        userId: josh.id,
+        permission: perm.permission,
+        scope: perm.scope,
+        scopeType: perm.scopeType,
+        scopeId: perm.scopeId,
+        tenantId: tenant.id,
+        hubId: perm.scopeType === "HUB" ? hub.id : null,
+        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
+        grantedBy: eduardo.id,
+      },
+    });
+    console.log(`   ✅ Josh: ${perm.scopeType} → ${perm.permission}`);
+  }
 
   // ============================================================
   // 12. COMUNIDAD - Comunidad principal de Six Seconds
@@ -554,6 +1038,406 @@ async function main() {
   console.log("   ✅ Miembros agregados a comunidad");
 
   // ============================================================
+  // 13. TENANT BRANDING - Configuración visual
+  // ============================================================
+  console.log("\n13. Creando Tenant Branding...");
+
+  await prisma.tenantBranding.upsert({
+    where: { tenantId: tenant.id },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      primaryColor: "#E85D04",
+      secondaryColor: "#FED7AA",
+      logoUrl: "/six-seconds-logo.png",
+      faviconUrl: "/favicon.ico",
+      fontFamily: "Inter",
+      customCss: "",
+    },
+  });
+  console.log("   ✅ Tenant Branding configurado");
+
+  // ============================================================
+  // 14. AGENTES IA - 6 Agentes Rowi
+  // ============================================================
+  console.log("\n14. Creando Agentes IA...");
+
+  const agentsData = [
+    {
+      slug: "super-rowi",
+      name: "Super Rowi",
+      description: "Asistente principal de inteligencia emocional",
+      avatar: "/agents/super-rowi.png",
+      type: "GENERAL",
+      model: "gpt-4o-mini",
+      prompt: `Eres Super Rowi, asistente de inteligencia emocional.
+Ayudas a los usuarios a entender y gestionar sus emociones.
+Usas el modelo Six Seconds: Know Yourself, Choose Yourself, Give Yourself.`,
+      tone: "warm",
+    },
+    {
+      slug: "eq",
+      name: "Rowi EQ",
+      description: "Coach de inteligencia emocional basado en Six Seconds",
+      avatar: "/agents/eq.png",
+      type: "EQ_COACH",
+      model: "gpt-4o-mini",
+      prompt: `Eres Rowi EQ, coach especializado en las 8 competencias Six Seconds:
+1. Enhance Emotional Literacy
+2. Recognize Patterns
+3. Apply Consequential Thinking
+4. Navigate Emotions
+5. Engage Intrinsic Motivation
+6. Exercise Optimism
+7. Increase Empathy
+8. Pursue Noble Goals`,
+      tone: "empathetic",
+    },
+    {
+      slug: "affinity",
+      name: "Rowi Affinity",
+      description: "Experto en relaciones y compatibilidad emocional",
+      avatar: "/agents/affinity.png",
+      type: "AFFINITY_EXPERT",
+      model: "gpt-4o-mini",
+      prompt: `Eres Rowi Affinity, experto en relaciones y compatibilidad emocional.
+Analizas patrones de comunicacion y sugieres como mejorar las relaciones.`,
+      tone: "supportive",
+    },
+    {
+      slug: "eco",
+      name: "Rowi ECO",
+      description: "Experto en comunicacion emocional",
+      avatar: "/agents/eco.png",
+      type: "COMMUNICATION_EXPERT",
+      model: "gpt-4o-mini",
+      prompt: `Eres Rowi ECO, experto en comunicacion emocional.
+Ayudas a redactar mensajes con inteligencia emocional.
+Adaptas el estilo segun Brain Styles.`,
+      tone: "adaptive",
+    },
+    {
+      slug: "trainer",
+      name: "Rowi Trainer",
+      description: "Entrenador personal de habitos y emociones",
+      avatar: "/agents/trainer.png",
+      type: "COACH",
+      model: "gpt-4o-mini",
+      prompt: `Eres Rowi Trainer, entrenador de habitos y emociones.
+Ayudas a establecer metas claras, superar obstaculos y desarrollar habitos positivos.`,
+      tone: "motivational",
+    },
+    {
+      slug: "sales",
+      name: "Rowi Sales",
+      description: "Coach de ventas y negociacion emocional",
+      avatar: "/agents/sales.png",
+      type: "SALES_EXPERT",
+      model: "gpt-4o-mini",
+      prompt: `Eres Rowi Sales, coach de ventas y negociacion emocional.
+Usas tecnicas de inteligencia emocional y persuasion etica.`,
+      tone: "persuasive",
+    },
+  ];
+
+  // Crear agentes GLOBALES
+  for (const agent of agentsData) {
+    const existingGlobal = await prisma.agentConfig.findFirst({
+      where: { slug: agent.slug, tenantId: null, superHubId: null, organizationId: null, hubId: null },
+    });
+
+    if (existingGlobal) {
+      await prisma.agentConfig.update({
+        where: { id: existingGlobal.id },
+        data: { name: agent.name, description: agent.description, prompt: agent.prompt },
+      });
+    } else {
+      await prisma.agentConfig.create({
+        data: {
+          slug: agent.slug,
+          name: agent.name,
+          description: agent.description,
+          avatar: agent.avatar,
+          type: agent.type,
+          model: agent.model,
+          prompt: agent.prompt,
+          tone: agent.tone,
+          accessLevel: "system",
+          visibility: "global",
+          systemId: system.id,
+          isActive: true,
+          autoLearn: true,
+          tools: { web_search: true, code_interpreter: false },
+        },
+      });
+    }
+    console.log(`   🤖 [GLOBAL] ${agent.name}`);
+  }
+
+  // Crear agentes para TENANT Six Seconds
+  const tenantCulture = {
+    culturePrompt: `CULTURA SIX SECONDS:
+- Pioneros en inteligencia emocional aplicada desde 1997
+- Valoramos autenticidad, empatia y crecimiento continuo
+- Lenguaje cercano pero profesional basado en ciencia`,
+    companyValues: ["Empatia", "Crecimiento", "Autenticidad", "Colaboracion", "Ciencia"],
+    companyMission: "Democratizar la inteligencia emocional para un mundo mejor",
+    companyTone: "Calido, inspirador, cercano pero profesional",
+    industryContext: "EdTech/HRTech - Inteligencia Emocional",
+  };
+
+  for (const agent of agentsData) {
+    const existingTenant = await prisma.agentConfig.findFirst({
+      where: { slug: agent.slug, tenantId: tenant.id, superHubId: null, organizationId: null, hubId: null },
+    });
+
+    if (!existingTenant) {
+      await prisma.agentConfig.create({
+        data: {
+          slug: agent.slug,
+          name: agent.name,
+          description: agent.description,
+          avatar: agent.avatar,
+          type: agent.type,
+          model: agent.model,
+          prompt: agent.prompt,
+          tone: agent.tone,
+          accessLevel: "tenant",
+          visibility: "global",
+          tenantId: tenant.id,
+          systemId: system.id,
+          isActive: true,
+          autoLearn: true,
+          tools: { web_search: true, code_interpreter: false },
+          culturePrompt: tenantCulture.culturePrompt,
+          companyValues: tenantCulture.companyValues,
+          companyMission: tenantCulture.companyMission,
+          companyTone: tenantCulture.companyTone,
+          industryContext: tenantCulture.industryContext,
+        },
+      });
+      console.log(`   🤖 [TENANT] ${agent.name}`);
+    }
+  }
+
+  // ============================================================
+  // 15. SYSTEM SETTINGS - Configuración del sistema
+  // ============================================================
+  console.log("\n15. Creando System Settings...");
+
+  const settingsData = [
+    { key: "ai.defaultModel", value: "gpt-4o-mini", type: "string" },
+    { key: "ai.maxTokens", value: "4096", type: "number" },
+    { key: "ai.temperature", value: "0.7", type: "number" },
+    { key: "eq.sixSecondsEnabled", value: "true", type: "boolean" },
+    { key: "affinity.heatThreshold", value: "70", type: "number" },
+    { key: "gamification.enabled", value: "true", type: "boolean" },
+    { key: "locale.default", value: "es", type: "string" },
+    { key: "features.weekflow", value: "true", type: "boolean" },
+    { key: "features.communities", value: "true", type: "boolean" },
+    { key: "features.benchmarks", value: "true", type: "boolean" },
+  ];
+
+  for (const s of settingsData) {
+    await prisma.systemSetting.upsert({
+      where: { systemId_key: { systemId: system.id, key: s.key } },
+      update: { value: s.value },
+      create: { systemId: system.id, key: s.key, value: s.value, type: s.type },
+    });
+  }
+  console.log(`   ✅ ${settingsData.length} settings creados`);
+
+  // ============================================================
+  // 16. EQ SNAPSHOT - Datos EQ de ejemplo para Eduardo
+  // ============================================================
+  console.log("\n16. Creando EQ Snapshot para Eduardo...");
+
+  const eduardoEQ = await prisma.eqSnapshot.upsert({
+    where: { id: "sei-eduardo-demo" },
+    update: {},
+    create: {
+      id: "sei-eduardo-demo",
+      user: { connect: { id: eduardo.id } },
+      rowiverseUser: { connect: { id: rvEduardo.id } },
+      email: "eduardo@cactuscomunidadcreativa.com",
+      dataset: "Six Seconds Demo",
+      project: "Rowi Core Team",
+      owner: "Sistema",
+      at: new Date(),
+      K: 115,
+      C: 116,
+      G: 105,
+      EL: 122,
+      RP: 108,
+      ACT: 124,
+      NE: 124,
+      IM: 104,
+      OP: 114,
+      EMP: 93,
+      NG: 118,
+      brainStyle: "Strategist",
+      recentMood: "Confianza",
+      moodIntensity: "Seguro",
+      overall4: 111.66,
+      country: "PE",
+      gender: "M",
+      age: 39,
+      reliabilityIndex: 85.69,
+      positiveImpressionRange: "Average",
+    },
+  });
+
+  // Crear competencias EQ
+  const eqCompetencies = [
+    { key: "EL", label: "Enhance Emotional Literacy", score: 121.93 },
+    { key: "RP", label: "Recognize Patterns", score: 108.12 },
+    { key: "ACT", label: "Apply Consequential Thinking", score: 124.10 },
+    { key: "NE", label: "Navigate Emotions", score: 124.12 },
+    { key: "IM", label: "Engage Intrinsic Motivation", score: 104.42 },
+    { key: "OP", label: "Exercise Optimism", score: 113.84 },
+    { key: "EMP", label: "Increase Empathy", score: 92.76 },
+    { key: "NG", label: "Pursue Noble Goals", score: 118.00 },
+  ];
+
+  for (const comp of eqCompetencies) {
+    await prisma.eqCompetencySnapshot.upsert({
+      where: { id: `${eduardoEQ.id}-${comp.key}` },
+      update: { score: comp.score },
+      create: {
+        id: `${eduardoEQ.id}-${comp.key}`,
+        snapshot: { connect: { id: eduardoEQ.id } },
+        key: comp.key,
+        label: comp.label,
+        score: comp.score,
+      },
+    });
+  }
+  console.log("   ✅ EQ Snapshot y competencias creadas");
+
+  // ============================================================
+  // 17. AVATAR EVOLUTION - Gamificación
+  // ============================================================
+  console.log("\n17. Creando Avatar Evolution...");
+
+  const eduardoAvatar = await prisma.avatarEvolution.upsert({
+    where: { userId: eduardo.id },
+    update: {},
+    create: {
+      userId: eduardo.id,
+      stage: "YOUNG",
+      experience: 1500,
+      hatched: true,
+      hatchProgress: 100,
+      sixSecondsLevel: 4,
+      evolutionScore: 4.6,
+      daysActive: 90,
+      brainStyle: "Strategist",
+      personality: {
+        strengths: ["strategic_thinking", "emotional_awareness", "leadership"],
+        challenges: ["patience", "delegation"],
+      },
+    },
+  });
+
+  // Milestones de Avatar
+  const avatarMilestones = [
+    { type: "EGG_RECEIVED", title: "Huevito Recibido", xpReward: 10, rarity: "common" },
+    { type: "AVATAR_HATCHED", title: "Avatar Eclosionado", xpReward: 100, rarity: "rare" },
+    { type: "AVATAR_BABY", title: "Rowi Bebe", xpReward: 75, rarity: "uncommon" },
+    { type: "AVATAR_YOUNG", title: "Rowi Joven", xpReward: 75, rarity: "uncommon" },
+    { type: "SEI_FIRST_ASSESSMENT", title: "Primer SEI Completado", xpReward: 50, rarity: "rare" },
+  ];
+
+  for (const milestone of avatarMilestones) {
+    await prisma.avatarMilestone.upsert({
+      where: { id: `${eduardoAvatar.id}-${milestone.type}` },
+      update: {},
+      create: {
+        id: `${eduardoAvatar.id}-${milestone.type}`,
+        avatarId: eduardoAvatar.id,
+        type: milestone.type as any,
+        title: milestone.title,
+        xpReward: milestone.xpReward,
+        rarity: milestone.rarity,
+      },
+    });
+  }
+  console.log("   ✅ Avatar y milestones creados");
+
+  // ============================================================
+  // 18. EMOTIONAL CONFIG - Configuración emocional
+  // ============================================================
+  console.log("\n18. Creando Emotional Config...");
+
+  await prisma.emotionalConfig.upsert({
+    where: { tenantId_key: { tenantId: tenant.id, key: "emotional-settings" } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      key: "emotional-settings",
+      value: {
+        enabled: true,
+        allowedTypes: ["ky", "cy", "gy", "optimism", "empathy", "clarity"],
+        aiAutoDetect: true,
+        defaultIntensity: 5,
+      },
+      description: "Configuracion emocional principal",
+    },
+  });
+  console.log("   ✅ Emotional Config creado");
+
+  // ============================================================
+  // 19. ACHIEVEMENTS - Logros disponibles
+  // ============================================================
+  console.log("\n19. Creando Achievements (logros)...");
+
+  const achievementsData = [
+    { key: "first_login", name: "Primer Paso", description: "Iniciaste tu viaje en Rowi", xp: 10, icon: "🌱", category: "onboarding" },
+    { key: "profile_complete", name: "Perfil Completo", description: "Completaste tu perfil", xp: 50, icon: "✨", category: "onboarding" },
+    { key: "first_sei", name: "Auto-conocimiento", description: "Completaste tu primer SEI", xp: 100, icon: "🧠", category: "eq" },
+    { key: "first_chat", name: "Primera Conversación", description: "Tuviste tu primera conversación con Rowi", xp: 25, icon: "💬", category: "engagement" },
+    { key: "week_streak_7", name: "Semana Consistente", description: "7 días seguidos usando Rowi", xp: 75, icon: "🔥", category: "consistency" },
+    { key: "community_join", name: "Social", description: "Te uniste a tu primera comunidad", xp: 30, icon: "👥", category: "community" },
+    { key: "avatar_hatched", name: "Nacimiento", description: "Tu avatar ha eclosionado", xp: 100, icon: "🥚", category: "avatar" },
+  ];
+
+  for (const ach of achievementsData) {
+    await prisma.achievement.upsert({
+      where: { key: ach.key },
+      update: {},
+      create: {
+        key: ach.key,
+        name: ach.name,
+        description: ach.description,
+        xpReward: ach.xp,
+        icon: ach.icon,
+        category: ach.category,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`   ✅ ${achievementsData.length} achievements creados`);
+
+  // Dar algunos logros a Eduardo
+  const eduardoAchievements = ["first_login", "profile_complete", "first_sei", "avatar_hatched"];
+  for (const achKey of eduardoAchievements) {
+    const ach = await prisma.achievement.findUnique({ where: { key: achKey } });
+    if (ach) {
+      await prisma.userAchievement.upsert({
+        where: { id: `${eduardo.id}-${achKey}` },
+        update: {},
+        create: {
+          id: `${eduardo.id}-${achKey}`,
+          userId: eduardo.id,
+          achievementId: ach.id,
+          earnedAt: new Date(),
+        },
+      });
+    }
+  }
+  console.log("   ✅ Achievements asignados a Eduardo");
+
+  // ============================================================
   // RESUMEN FINAL
   // ============================================================
   console.log("\n");
@@ -571,13 +1455,39 @@ async function main() {
   console.log("  - Comunidad: Six Seconds Global");
   console.log("\n");
   console.log("Usuarios:");
-  console.log("  - eduardo@cactuscomunidadcreativa.com (SUPERADMIN)");
+  console.log("  - eduardo@cactuscomunidadcreativa.com (SUPERADMIN global)");
   console.log("  - eduardo.gonzalez@6seconds.org (ADMIN Six Seconds)");
   console.log("  - josh@6seconds.org (ADMIN Six Seconds)");
   console.log("\n");
-  console.log("Planes:");
-  console.log("  - Free (usuarios nuevos)");
-  console.log("  - Enterprise (admins)");
+  console.log("Planes (6):");
+  console.log("  🆓 Free ROWI - Exploración");
+  console.log("  ⭐ ROWI+ - Individual premium");
+  console.log("  👨‍👩‍👧‍👦 ROWI Family - Familias");
+  console.log("  🚀 ROWI Pro - Profesionales");
+  console.log("  🏢 ROWI Business - Empresas");
+  console.log("  ☁️ ROWI Enterprise - Grandes organizaciones");
+  console.log("\n");
+  console.log("Permisos jerárquicos:");
+  console.log("  - Eduardo: SUPERADMIN (Global, RowiVerse, SuperHub, Tenant, Hub, Org)");
+  console.log("  - Eduardo 6S: ADMIN (SuperHub, Tenant, Hub, Org)");
+  console.log("  - Josh: ADMIN (SuperHub, Tenant, Hub, Org)");
+  console.log("\n");
+  console.log("Agentes IA (6):");
+  console.log("  🤖 Super Rowi - Asistente principal");
+  console.log("  🧠 Rowi EQ - Coach de inteligencia emocional");
+  console.log("  💚 Rowi Affinity - Experto en relaciones");
+  console.log("  💬 Rowi ECO - Comunicacion emocional");
+  console.log("  🏋️ Rowi Trainer - Entrenador personal");
+  console.log("  💼 Rowi Sales - Coach de ventas");
+  console.log("\n");
+  console.log("Datos de prueba:");
+  console.log("  - EQ Snapshot para Eduardo (SEI completo)");
+  console.log("  - Avatar Evolution con milestones");
+  console.log("  - 7 Achievements disponibles");
+  console.log("  - System Settings configurados");
+  console.log("  - Emotional Config activo");
+  console.log("\n");
+  console.log("¡Rowi está listo para pruebas! 🚀");
   console.log("\n");
 }
 

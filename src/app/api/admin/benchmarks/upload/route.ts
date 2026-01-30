@@ -6,14 +6,14 @@
  * - .xlsx (Excel)
  * - .xls (Excel legacy)
  * - .csv (recomendado para archivos grandes >100MB)
+ *
+ * NOTA: Procesa archivos en memoria (compatible con Vercel serverless)
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 import {
   SOH_COLUMN_MAPPING,
   NUMERIC_COLUMNS,
@@ -74,16 +74,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Guardar archivo temporalmente
+    // Leer archivo en memoria (compatible con Vercel serverless)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const filename = `benchmark_${Date.now()}_${file.name}`;
-    const uploadPath = join(process.cwd(), "uploads", filename);
-
-    // Crear directorio si no existe
-    const { mkdir } = await import("fs/promises");
-    await mkdir(join(process.cwd(), "uploads"), { recursive: true });
-    await writeFile(uploadPath, buffer);
 
     // Crear benchmark en estado PROCESSING
     const benchmark = await prisma.benchmark.create({
@@ -110,24 +104,43 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Iniciar procesamiento en background
-    // En producción, esto sería una cola de trabajo (Bull, etc.)
-    if (isCSV) {
-      processCSVInBackground(benchmark.id, job.id, uploadPath).catch((err) => {
-        console.error("❌ Error processing CSV benchmark:", err);
-      });
-    } else {
-      processExcelInBackground(benchmark.id, job.id, uploadPath).catch((err) => {
-        console.error("❌ Error processing Excel benchmark:", err);
-      });
-    }
+    // Procesar archivo en memoria (síncrono para compatibilidad con Vercel)
+    // Nota: Para archivos muy grandes, considerar usar un servicio de cola externo
+    try {
+      if (isCSV) {
+        await processCSVInMemory(benchmark.id, job.id, buffer);
+      } else {
+        await processExcelInMemory(benchmark.id, job.id, buffer);
+      }
 
-    return NextResponse.json({
-      ok: true,
-      benchmark,
-      jobId: job.id,
-      message: "Archivo subido, procesamiento iniciado",
-    });
+      return NextResponse.json({
+        ok: true,
+        benchmark,
+        jobId: job.id,
+        message: "Archivo procesado correctamente",
+      });
+    } catch (processError) {
+      console.error("❌ Error processing benchmark:", processError);
+
+      // Marcar como fallido
+      await prisma.benchmark.update({
+        where: { id: benchmark.id },
+        data: { status: "FAILED" },
+      });
+      await prisma.benchmarkUploadJob.update({
+        where: { id: job.id },
+        data: {
+          status: "failed",
+          errorMessage: processError instanceof Error ? processError.message : "Error procesando archivo",
+          completedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json(
+        { error: "Error procesando archivo", details: processError instanceof Error ? processError.message : "Unknown" },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("❌ Error uploading benchmark:", error);
     return NextResponse.json(
@@ -138,151 +151,127 @@ export async function POST(req: NextRequest) {
 }
 
 // =========================================================
-// 🔄 PROCESAMIENTO CSV EN BACKGROUND (optimizado para archivos muy grandes)
+// 🔄 PROCESAMIENTO CSV EN MEMORIA (compatible con Vercel serverless)
 // =========================================================
-async function processCSVInBackground(
+async function processCSVInMemory(
   benchmarkId: string,
   jobId: string,
-  filePath: string
+  buffer: Buffer
 ) {
-  try {
-    await updateJobStatus(jobId, "processing", 5, "parsing");
+  await updateJobStatus(jobId, "processing", 5, "parsing");
 
-    const fs = await import("fs");
-    const readline = await import("readline");
+  // Parsear CSV desde buffer
+  const csvText = buffer.toString("utf8").replace(/^\uFEFF/, ""); // Remove BOM if present
+  const lines = csvText.split(/\r?\n/).filter((line) => line.trim());
 
-    const fileStream = fs.createReadStream(filePath, { highWaterMark: 64 * 1024 }); // 64KB chunks
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity,
-    });
-
-    let headers: string[] = [];
-    let isFirstRow = true;
-    let rowCount = 0;
-    let validRowCount = 0;
-    let batch: any[] = [];
-    const BATCH_SIZE = 1000; // Insertar cada 1000 filas válidas
-
-    for await (const line of rl) {
-      if (isFirstRow) {
-        headers = parseCSVLine(line);
-        console.log(`📋 Headers encontrados: ${headers.length} columnas`);
-        isFirstRow = false;
-        continue;
-      }
-
-      const values = parseCSVLine(line);
-      const rowData: Record<string, any> = {};
-
-      // Mapear solo las columnas que necesitamos
-      for (let i = 0; i < headers.length; i++) {
-        const header = headers[i];
-        if (!header) continue;
-
-        const mappedKey = SOH_COLUMN_MAPPING[header];
-        if (mappedKey) {
-          let value = values[i];
-
-          if (NUMERIC_COLUMNS.includes(mappedKey)) {
-            const num = parseFloat(String(value));
-            value = isNaN(num) ? null : num;
-          }
-
-          rowData[mappedKey] = value ?? null;
-        }
-      }
-
-      rowCount++;
-
-      // Solo agregar si tiene al menos un valor de EQ
-      const hasEQData = EQ_COMPETENCIES.some((c) => rowData[c] !== null && rowData[c] !== undefined);
-
-      if (hasEQData) {
-        batch.push(rowData);
-        validRowCount++;
-
-        // Insertar batch inmediatamente cuando alcanza el tamaño
-        if (batch.length >= BATCH_SIZE) {
-          await insertBatchDataPointsDirect(benchmarkId, batch);
-          batch = []; // Limpiar para liberar memoria
-
-          // Actualizar progreso cada cierto número de inserciones
-          if (validRowCount % 10000 === 0) {
-            const progress = Math.min(70, 10 + Math.round((validRowCount / 250000) * 60));
-            await updateJobStatus(jobId, "processing", progress, "importing", validRowCount);
-            console.log(`📊 Procesadas: ${rowCount} filas, insertadas: ${validRowCount}`);
-          }
-        }
-      }
-    }
-
-    // Insertar filas restantes del último batch
-    if (batch.length > 0) {
-      await insertBatchDataPointsDirect(benchmarkId, batch);
-      batch = [];
-    }
-
-    console.log(`📊 CSV completado: ${rowCount} filas procesadas, ${validRowCount} insertadas`);
-
-    // Contar total insertado
-    const totalInserted = await prisma.benchmarkDataPoint.count({
-      where: { benchmarkId },
-    });
-
-    console.log(`📊 CSV: Total filas procesadas: ${rowCount}, insertadas: ${totalInserted}`);
-
-    // Calcular estadísticas, correlaciones, top performers
-    await updateJobStatus(jobId, "processing", 75, "statistics");
-    await calculateAndSaveStatistics(benchmarkId);
-
-    await updateJobStatus(jobId, "processing", 85, "correlations");
-    await calculateAndSaveCorrelations(benchmarkId);
-
-    await updateJobStatus(jobId, "processing", 92, "topPerformers");
-    await calculateAndSaveTopPerformers(benchmarkId);
-
-    // Actualizar benchmark
-    await prisma.benchmark.update({
-      where: { id: benchmarkId },
-      data: {
-        status: "COMPLETED",
-        totalRows: totalInserted,
-        processedRows: totalInserted,
-        processedAt: new Date(),
-      },
-    });
-
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        status: "completed",
-        progress: 100,
-        currentPhase: null,
-        processedRows: totalInserted,
-        totalRows: totalInserted,
-        completedAt: new Date(),
-      },
-    });
-
-    console.log(`✅ CSV Benchmark ${benchmarkId} procesado: ${totalInserted} filas`);
-  } catch (error) {
-    console.error("❌ Error processing CSV benchmark:", error);
-
-    await prisma.benchmark.update({
-      where: { id: benchmarkId },
-      data: { status: "FAILED" },
-    });
-
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        status: "failed",
-        errorMessage: error instanceof Error ? error.message : "Error desconocido",
-        completedAt: new Date(),
-      },
-    });
+  if (lines.length < 2) {
+    throw new Error("CSV vacío o sin datos");
   }
+
+  const headers = parseCSVLine(lines[0]);
+  console.log(`📋 Headers encontrados: ${headers.length} columnas`);
+
+  let rowCount = 0;
+  let validRowCount = 0;
+  let batch: any[] = [];
+  const BATCH_SIZE = 1000;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+
+    const values = parseCSVLine(line);
+    const rowData: Record<string, any> = {};
+
+    // Mapear solo las columnas que necesitamos
+    for (let j = 0; j < headers.length; j++) {
+      const header = headers[j];
+      if (!header) continue;
+
+      const mappedKey = SOH_COLUMN_MAPPING[header];
+      if (mappedKey) {
+        let value = values[j];
+
+        if (NUMERIC_COLUMNS.includes(mappedKey)) {
+          const num = parseFloat(String(value));
+          value = isNaN(num) ? null : num;
+        }
+
+        rowData[mappedKey] = value ?? null;
+      }
+    }
+
+    rowCount++;
+
+    // Solo agregar si tiene al menos un valor de EQ
+    const hasEQData = EQ_COMPETENCIES.some((c) => rowData[c] !== null && rowData[c] !== undefined);
+
+    if (hasEQData) {
+      batch.push(rowData);
+      validRowCount++;
+
+      // Insertar batch inmediatamente cuando alcanza el tamaño
+      if (batch.length >= BATCH_SIZE) {
+        await insertBatchDataPointsDirect(benchmarkId, batch);
+        batch = [];
+
+        if (validRowCount % 10000 === 0) {
+          const progress = Math.min(70, 10 + Math.round((validRowCount / 250000) * 60));
+          await updateJobStatus(jobId, "processing", progress, "importing", validRowCount);
+          console.log(`📊 Procesadas: ${rowCount} filas, insertadas: ${validRowCount}`);
+        }
+      }
+    }
+  }
+
+  // Insertar filas restantes del último batch
+  if (batch.length > 0) {
+    await insertBatchDataPointsDirect(benchmarkId, batch);
+  }
+
+  console.log(`📊 CSV completado: ${rowCount} filas procesadas, ${validRowCount} insertadas`);
+
+  // Contar total insertado
+  const totalInserted = await prisma.benchmarkDataPoint.count({
+    where: { benchmarkId },
+  });
+
+  console.log(`📊 CSV: Total filas procesadas: ${rowCount}, insertadas: ${totalInserted}`);
+
+  // Calcular estadísticas, correlaciones, top performers
+  await updateJobStatus(jobId, "processing", 75, "statistics");
+  await calculateAndSaveStatistics(benchmarkId);
+
+  await updateJobStatus(jobId, "processing", 85, "correlations");
+  await calculateAndSaveCorrelations(benchmarkId);
+
+  await updateJobStatus(jobId, "processing", 92, "topPerformers");
+  await calculateAndSaveTopPerformers(benchmarkId);
+
+  // Actualizar benchmark
+  await prisma.benchmark.update({
+    where: { id: benchmarkId },
+    data: {
+      status: "COMPLETED",
+      totalRows: totalInserted,
+      processedRows: totalInserted,
+      processedAt: new Date(),
+    },
+  });
+
+  await prisma.benchmarkUploadJob.update({
+    where: { id: jobId },
+    data: {
+      status: "completed",
+      progress: 100,
+      currentPhase: null,
+      processedRows: totalInserted,
+      totalRows: totalInserted,
+      completedAt: new Date(),
+    },
+  });
+
+  console.log(`✅ CSV Benchmark ${benchmarkId} procesado: ${totalInserted} filas`);
 }
 
 // Helper para parsear líneas CSV (maneja comillas)
@@ -314,159 +303,127 @@ function parseCSVLine(line: string): string[] {
 }
 
 // =========================================================
-// 🔄 PROCESAMIENTO EXCEL EN BACKGROUND (streaming)
+// 🔄 PROCESAMIENTO EXCEL EN MEMORIA (compatible con Vercel serverless)
 // =========================================================
-async function processExcelInBackground(
+async function processExcelInMemory(
   benchmarkId: string,
   jobId: string,
-  filePath: string
+  buffer: Buffer
 ) {
-  try {
-    // Actualizar estado
-    await updateJobStatus(jobId, "processing", 5, "parsing");
+  await updateJobStatus(jobId, "processing", 5, "parsing");
 
-    // Importar ExcelJS para streaming
-    const ExcelJS = await import("exceljs");
-    const fs = await import("fs");
+  // Importar ExcelJS
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.default.Workbook();
 
-    const rows: any[] = [];
-    let headers: string[] = [];
-    let rowCount = 0;
-    let isFirstRow = true;
+  // Leer desde buffer en memoria
+  await workbook.xlsx.load(buffer);
 
-    // Usar streaming para archivos grandes
-    const workbookReader = new ExcelJS.default.stream.xlsx.WorkbookReader(filePath, {
-      worksheets: "emit",
-      sharedStrings: "cache",
-      hyperlinks: "ignore",
-      styles: "ignore",
-      entries: "emit",
-    });
-
-    for await (const worksheetReader of workbookReader) {
-      // Solo procesar la primera hoja
-      if (worksheetReader.id !== 1) continue;
-
-      for await (const row of worksheetReader) {
-        if (isFirstRow) {
-          // Primera fila = headers
-          headers = row.values as string[];
-          isFirstRow = false;
-          continue;
-        }
-
-        const values = row.values as any[];
-        const rowData: Record<string, any> = {};
-
-        // Mapear columnas del Excel a nuestro schema
-        headers.forEach((header, index) => {
-          if (!header) return;
-          const mappedKey = SOH_COLUMN_MAPPING[header];
-          if (mappedKey) {
-            let value = values[index];
-
-            // Convertir a número si es columna numérica
-            if (NUMERIC_COLUMNS.includes(mappedKey)) {
-              const num = parseFloat(String(value));
-              value = isNaN(num) ? null : num;
-            }
-
-            rowData[mappedKey] = value ?? null;
-          }
-        });
-
-        // Solo agregar si tiene al menos un valor de EQ
-        if (
-          EQ_COMPETENCIES.some(
-            (c) => rowData[c] !== null && rowData[c] !== undefined
-          )
-        ) {
-          rows.push(rowData);
-        }
-
-        rowCount++;
-
-        // Actualizar progreso cada 10000 filas y hacer batch insert
-        if (rowCount % 10000 === 0) {
-          await updateJobStatus(jobId, "processing", 10, "parsing", rowCount);
-
-          // Insertar batch intermedio para liberar memoria
-          if (rows.length >= 5000) {
-            await insertBatchDataPoints(benchmarkId, rows.splice(0, 5000));
-          }
-        }
-      }
-    }
-
-    // Insertar filas restantes que quedaron en el buffer
-    await updateJobStatus(jobId, "processing", 30, "importing", rowCount);
-
-    if (rows.length > 0) {
-      await insertBatchDataPoints(benchmarkId, rows);
-    }
-
-    // Contar total insertado
-    const totalInserted = await prisma.benchmarkDataPoint.count({
-      where: { benchmarkId },
-    });
-
-    console.log(`📊 Total filas procesadas: ${rowCount}, insertadas: ${totalInserted}`);
-
-    // Calcular estadísticas
-    await updateJobStatus(jobId, "processing", 75, "statistics");
-    await calculateAndSaveStatistics(benchmarkId);
-
-    // Calcular correlaciones
-    await updateJobStatus(jobId, "processing", 85, "correlations");
-    await calculateAndSaveCorrelations(benchmarkId);
-
-    // Calcular top performers
-    await updateJobStatus(jobId, "processing", 92, "topPerformers");
-    await calculateAndSaveTopPerformers(benchmarkId);
-
-    // Actualizar benchmark con totales
-    await prisma.benchmark.update({
-      where: { id: benchmarkId },
-      data: {
-        status: "COMPLETED",
-        totalRows: totalInserted,
-        processedRows: totalInserted,
-        processedAt: new Date(),
-      },
-    });
-
-    // Finalizar job
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        status: "completed",
-        progress: 100,
-        currentPhase: null,
-        processedRows: totalInserted,
-        totalRows: totalInserted,
-        completedAt: new Date(),
-      },
-    });
-
-    console.log(`✅ Benchmark ${benchmarkId} procesado: ${totalInserted} filas`);
-  } catch (error) {
-    console.error("❌ Error processing benchmark:", error);
-
-    // Marcar como fallido
-    await prisma.benchmark.update({
-      where: { id: benchmarkId },
-      data: { status: "FAILED" },
-    });
-
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        status: "failed",
-        errorMessage: error instanceof Error ? error.message : "Error desconocido",
-        completedAt: new Date(),
-      },
-    });
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) {
+    throw new Error("No se encontró hoja de cálculo en el archivo");
   }
+
+  const rows: any[] = [];
+  let headers: string[] = [];
+  let rowCount = 0;
+  let isFirstRow = true;
+
+  worksheet.eachRow((row, rowNumber) => {
+    if (isFirstRow) {
+      headers = row.values as string[];
+      isFirstRow = false;
+      return;
+    }
+
+    const values = row.values as any[];
+    const rowData: Record<string, any> = {};
+
+    // Mapear columnas del Excel a nuestro schema
+    headers.forEach((header, index) => {
+      if (!header) return;
+      const mappedKey = SOH_COLUMN_MAPPING[header];
+      if (mappedKey) {
+        let value = values[index];
+
+        // Convertir a número si es columna numérica
+        if (NUMERIC_COLUMNS.includes(mappedKey)) {
+          const num = parseFloat(String(value));
+          value = isNaN(num) ? null : num;
+        }
+
+        rowData[mappedKey] = value ?? null;
+      }
+    });
+
+    // Solo agregar si tiene al menos un valor de EQ
+    if (EQ_COMPETENCIES.some((c) => rowData[c] !== null && rowData[c] !== undefined)) {
+      rows.push(rowData);
+    }
+
+    rowCount++;
+  });
+
+  console.log(`📊 Excel parseado: ${rowCount} filas, ${rows.length} válidas`);
+
+  // Insertar en batches
+  await updateJobStatus(jobId, "processing", 30, "importing", rowCount);
+
+  const BATCH_SIZE = 1000;
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+    await insertBatchDataPoints(benchmarkId, batch);
+
+    if ((i + BATCH_SIZE) % 10000 === 0) {
+      const progress = Math.min(70, 30 + Math.round(((i + BATCH_SIZE) / rows.length) * 40));
+      await updateJobStatus(jobId, "processing", progress, "importing", i + BATCH_SIZE);
+    }
+  }
+
+  // Contar total insertado
+  const totalInserted = await prisma.benchmarkDataPoint.count({
+    where: { benchmarkId },
+  });
+
+  console.log(`📊 Total filas procesadas: ${rowCount}, insertadas: ${totalInserted}`);
+
+  // Calcular estadísticas
+  await updateJobStatus(jobId, "processing", 75, "statistics");
+  await calculateAndSaveStatistics(benchmarkId);
+
+  // Calcular correlaciones
+  await updateJobStatus(jobId, "processing", 85, "correlations");
+  await calculateAndSaveCorrelations(benchmarkId);
+
+  // Calcular top performers
+  await updateJobStatus(jobId, "processing", 92, "topPerformers");
+  await calculateAndSaveTopPerformers(benchmarkId);
+
+  // Actualizar benchmark con totales
+  await prisma.benchmark.update({
+    where: { id: benchmarkId },
+    data: {
+      status: "COMPLETED",
+      totalRows: totalInserted,
+      processedRows: totalInserted,
+      processedAt: new Date(),
+    },
+  });
+
+  // Finalizar job
+  await prisma.benchmarkUploadJob.update({
+    where: { id: jobId },
+    data: {
+      status: "completed",
+      progress: 100,
+      currentPhase: null,
+      processedRows: totalInserted,
+      totalRows: totalInserted,
+      completedAt: new Date(),
+    },
+  });
+
+  console.log(`✅ Benchmark ${benchmarkId} procesado: ${totalInserted} filas`);
 }
 
 // =========================================================

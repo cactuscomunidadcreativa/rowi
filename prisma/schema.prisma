@@ -62,11 +62,10 @@ model User {
   // 🔹 Relaciones existentes
   accounts              Account[]
   activityLogs          ActivityLog[]         @relation("UserActivityLogs")
+  activityLogsTargeted  ActivityLog[]         @relation("ActivityLogTarget")
   affinityInteractions  AffinityInteraction[]
   affinitySnapshots     AffinitySnapshot[]
   affinityProfile       AffinityProfile?
-  auditLogs             AuditLog[]            @relation("AuditActor")
-  auditsTargeted        AuditLog[]            @relation("AuditTarget")
   batches               Batch[]               @relation("UserBatches")
   caseStudyAuthor       CaseStudy[]           @relation("CaseStudyAuthor")
   issuedCertificates    Certificate[]         @relation("CertificateIssuedBy")
@@ -1727,23 +1726,8 @@ model Webhook {
 
 /// *
 /// * =========================================================
-/// * 🧾 AUDIT LOG — Registro de acciones del sistema
-/// * =========================================================
-/// * Guarda información de auditoría sobre acciones ejecutadas
-/// * por usuarios o agentes del sistema (creación, edición, borrado, etc.)
-model AuditLog {
-  id        String   @id @default(cuid())
-  actorId   String?
-  targetId  String?
-  action    String
-  entity    String?
-  meta      Json?
-  createdAt DateTime @default(now())
-  actor     User?    @relation("AuditActor", fields: [actorId], references: [id])
-  target    User?    @relation("AuditTarget", fields: [targetId], references: [id])
-
-  @@map("audit_log")
-}
+// NOTA: AuditLog fue unificado con ActivityLog
+// Todas las funciones de auditoría ahora usan ActivityLog con actorId opcional
 
 model AccountCategory {
   id           String              @id @default(cuid())
@@ -2460,21 +2444,32 @@ model InviteToken {
 }
 
 /// =========================================================
-/// 🧾 ACTIVITY LOG — Registro de acciones administrativas
+/// 🧾 ACTIVITY LOG — Registro unificado de acciones y auditoría
 /// =========================================================
+/// Unifica ActivityLog y AuditLog en un solo modelo.
+/// - userId: quien ejecuta la acción (opcional para acciones del sistema)
+/// - targetUserId: usuario afectado por la acción (opcional)
 model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  entity    String?
-  targetId  String?
-  details   Json?
-  createdAt DateTime @default(now())
-  user      User     @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  userId       String?                      // Actor (opcional para acciones del sistema)
+  targetUserId String?                      // Usuario objetivo (migrado de AuditLog.targetId)
+  action       String                       // Tipo de acción
+  entity       String?                      // Entidad afectada (User, Tenant, etc.)
+  targetId     String?                      // ID de la entidad afectada
+  details      Json?                        // Detalles adicionales (antes: meta en AuditLog)
+  ipAddress    String?                      // IP del actor (para auditoría)
+  userAgent    String?                      // User agent (para auditoría)
+  createdAt    DateTime @default(now())
+
+  // Relaciones
+  user         User?    @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+  targetUser   User?    @relation("ActivityLogTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([targetUserId])
   @@index([action])
   @@index([entity])
+  @@index([createdAt])
   @@map("activity_log")
 }
 
@@ -3034,34 +3029,17 @@ model AvatarEvolution {
   daysActive      Int             @default(0)       // Dias desde registro (para hatch progress)
 
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  milestones AvatarMilestone[]
+
+  // Logros del avatar (unificado con Achievement system)
+  achievements UserAchievement[] @relation("AvatarAchievements")
 
   @@index([stage])
   @@index([sixSecondsLevel])
   @@map("avatar_evolution")
 }
 
-/// =========================================================
-/// 🏆 AVATAR MILESTONE — Logros y hitos desbloqueados
-/// =========================================================
-model AvatarMilestone {
-  id          String        @id @default(cuid())
-  avatarId    String
-  type        MilestoneType
-  title       String?
-  description String?
-  xpReward    Int           @default(10)
-  icon        String?
-  rarity      String?       @default("common")
-  metadata    Json?
-  achievedAt  DateTime      @default(now())
-
-  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
-
-  @@index([avatarId])
-  @@index([type])
-  @@map("avatar_milestone")
-}
+// NOTA: AvatarMilestone fue unificado con Achievement/UserAchievement
+// Los hitos del avatar ahora se manejan a través del sistema de logros
 
 /// =========================================================
 /// 📊 TOP PERFORMER METRIC — Rankings de desempeño emocional
@@ -3367,6 +3345,8 @@ enum AvatarStage {
   WISE
 }
 
+// DEPRECATED: MilestoneType fue migrado a AchievementRequirement
+// Mantener temporalmente para compatibilidad con código existente
 enum MilestoneType {
   PROFILE_COMPLETE
   SEI_COMPLETE
@@ -3382,19 +3362,15 @@ enum MilestoneType {
   MENTOR
   INTEGRATIONS_SETUP
   CUSTOM
-
-  // Evolucion del Avatar
-  EGG_RECEIVED           // Recibio su huevito
-  HATCHING_STARTED       // El huevo comenzo a eclosionar
-  AVATAR_HATCHED         // El avatar eclosiono
-  AVATAR_BABY            // Llego a BABY
-  AVATAR_YOUNG           // Llego a YOUNG
-  AVATAR_ADULT           // Llego a ADULT
-  AVATAR_WISE            // Llego a WISE (maximo)
-
-  // Six Seconds
-  SEI_FIRST_ASSESSMENT   // Completo primer SEI
-  SEI_LEVEL_UP           // Subio de nivel Six Seconds
+  EGG_RECEIVED
+  HATCHING_STARTED
+  AVATAR_HATCHED
+  AVATAR_BABY
+  AVATAR_YOUNG
+  AVATAR_ADULT
+  AVATAR_WISE
+  SEI_FIRST_ASSESSMENT
+  SEI_LEVEL_UP
 }
 
 enum IntegrationPlatform {
@@ -4460,17 +4436,22 @@ model Achievement {
   @@map("achievements")
 }
 
-/// 🎖️ Logros obtenidos por usuarios
+/// 🎖️ Logros obtenidos por usuarios (unificado con AvatarMilestone)
 model UserAchievement {
   id            String   @id @default(cuid())
 
   userId        String
   achievementId String
+  avatarId      String?                   // 🔗 Opcional: vinculo con avatar (antes AvatarMilestone)
 
   // Progreso (para logros graduales)
   progress      Int      @default(0)      // Progreso actual
   completed     Boolean  @default(false)  // ¿Completado?
   completedAt   DateTime?                 // Fecha de completado
+
+  // Campos migrados de AvatarMilestone
+  xpReward      Int      @default(0)      // XP otorgado (para logros de avatar)
+  metadata      Json?                     // Metadata adicional
 
   // Notificación
   notified      Boolean  @default(false)  // ¿Ya se notificó al usuario?
@@ -4479,10 +4460,12 @@ model UserAchievement {
   updatedAt     DateTime @updatedAt
 
   // Relaciones
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement      @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  avatar        AvatarEvolution? @relation("AvatarAchievements", fields: [avatarId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
+  @@index([avatarId])
   @@map("user_achievements")
 }
 
@@ -4574,6 +4557,7 @@ enum AchievementCategory {
   SOCIAL            // Logros sociales
   STREAK            // Logros de rachas
   SPECIAL           // Logros especiales/eventos
+  AVATAR            // Logros de evolución del avatar (migrado de AvatarMilestone)
 }
 
 enum AchievementRequirement {
@@ -4589,6 +4573,20 @@ enum AchievementRequirement {
   DAYS_ACTIVE       // Días activo
   FIRST_ACTION      // Primera acción de algo
   CUSTOM            // Requisito personalizado
+
+  // Migrados de MilestoneType (avatar evolution)
+  SEI_COMPLETE          // Completar SEI
+  FIRST_COACH_SESSION   // Primera sesión de coach
+  SEVEN_DAY_STREAK      // Racha de 7 días
+  THIRTY_DAY_STREAK     // Racha de 30 días
+  AFFINITY_ANALYSIS     // Análisis de afinidad
+  FIRST_REFLECTION      // Primera reflexión
+  FIRST_DECISION        // Primera decisión
+  TOP_PERFORMER         // Top performer
+  MENTOR                // Ser mentor
+  INTEGRATIONS_SETUP    // Configurar integraciones
+  AVATAR_HATCHED        // Avatar eclosionado
+  AVATAR_EVOLUTION      // Evolución del avatar
 }
 
 enum AchievementRarity {

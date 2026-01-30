@@ -582,18 +582,34 @@ async function main() {
     create: {
       name: "Six Seconds Global",
       slug: "six-seconds-global",
-      logo: "/six-seconds-logo.png",
-      primaryColor: "#E85D04",
-      active: true,
       billingEmail: "admin@6seconds.org",
-      defaultLang: "en",
-      defaultTimezone: "America/Los_Angeles",
       superHubId: superHub.id,
       systemId: system.id,
       planId: plans["enterprise"].id,
     },
   });
   console.log("   ✅ Tenant:", tenant.id);
+
+  // Crear TenantBranding con configuración visual
+  await prisma.tenantBranding.upsert({
+    where: { tenantId: tenant.id },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      logoUrl: "/six-seconds-logo.png",
+      primaryColor: "#E85D04",
+      backgroundColor: "#1a1a2e",
+      textColor: "#ffffff",
+      colorK: "#3b82f6", // Know Yourself - Blue
+      colorC: "#10b981", // Choose Yourself - Green
+      colorG: "#f59e0b", // Give Yourself - Orange
+      fontHeading: "Inter",
+      fontBody: "Inter",
+      defaultTheme: "light",
+      isActive: true,
+    },
+  });
+  console.log("   ✅ TenantBranding creado");
 
   // ============================================================
   // 6. HUB - Six Seconds Hub
@@ -625,9 +641,8 @@ async function main() {
       name: "Six Seconds Organization",
       slug: "six-seconds-org",
       description: "Organización principal de Six Seconds",
-      tenantId: tenant.id,
       hubId: hub.id,
-      unitType: "COMPANY",
+      unitType: "CLIENT",
     },
   });
   console.log("   ✅ Organization:", org.id);
@@ -644,7 +659,6 @@ async function main() {
     create: {
       tenantId: tenant.id,
       organizationId: org.id,
-      isPrimary: true,
     },
   });
 
@@ -810,11 +824,11 @@ async function main() {
 
   await prisma.hubMembership.upsert({
     where: { hubId_userId: { hubId: hub.id, userId: eduardo.id } },
-    update: { role: "admin" },
+    update: { access: "admin" },
     create: {
       hubId: hub.id,
       userId: eduardo.id,
-      role: "admin",
+      access: "admin",
     },
   });
 
@@ -844,11 +858,11 @@ async function main() {
 
   await prisma.hubMembership.upsert({
     where: { hubId_userId: { hubId: hub.id, userId: eduardo6s.id } },
-    update: { role: "admin" },
+    update: { access: "admin" },
     create: {
       hubId: hub.id,
       userId: eduardo6s.id,
-      role: "admin",
+      access: "admin",
     },
   });
 
@@ -878,11 +892,11 @@ async function main() {
 
   await prisma.hubMembership.upsert({
     where: { hubId_userId: { hubId: hub.id, userId: josh.id } },
-    update: { role: "admin" },
+    update: { access: "admin" },
     create: {
       hubId: hub.id,
       userId: josh.id,
-      role: "admin",
+      access: "admin",
     },
   });
 
@@ -895,91 +909,81 @@ async function main() {
 
   // Eduardo - Superadmin con permisos en todos los niveles
   const eduardoPermissions = [
-    { scopeType: "GLOBAL" as const, scopeId: null, permission: "SUPERADMIN", scope: "GLOBAL" },
-    { scopeType: "ROWIVERSE" as const, scopeId: rowiverse.id, permission: "SUPERADMIN", scope: rowiverse.id },
-    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "SUPERADMIN", scope: superHub.id },
-    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
-    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
-    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "OWNER", scope: org.id },
+    { scopeType: "rowiverse" as const, scopeId: rowiverse.id, role: "SUPERADMIN", scope: rowiverse.id },
+    { scopeType: "superhub" as const, scopeId: superHub.id, role: "SUPERADMIN", scope: superHub.id },
+    { scopeType: "tenant" as const, scopeId: tenant.id, role: "ADMIN", scope: tenant.id },
+    { scopeType: "hub" as const, scopeId: hub.id, role: "ADMIN", scope: hub.id },
+    { scopeType: "organization" as const, scopeId: org.id, role: "OWNER", scope: org.id },
   ];
 
   for (const perm of eduardoPermissions) {
     const permId = `perm-eduardo-${perm.scopeType.toLowerCase()}-${perm.scopeId || "global"}`;
     await prisma.userPermission.upsert({
       where: { id: permId },
-      update: { permission: perm.permission },
+      update: { role: perm.role },
       create: {
         id: permId,
         userId: eduardo.id,
-        permission: perm.permission,
+        role: perm.role,
         scope: perm.scope,
         scopeType: perm.scopeType,
         scopeId: perm.scopeId,
         tenantId: perm.scopeType === "TENANT" || perm.scopeType === "HUB" || perm.scopeType === "ORGANIZATION" ? tenant.id : null,
-        hubId: perm.scopeType === "HUB" ? hub.id : null,
-        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
-        grantedBy: eduardo.id,
       },
     });
-    console.log(`   ✅ Eduardo: ${perm.scopeType} → ${perm.permission}`);
+    console.log(`   ✅ Eduardo: ${perm.scopeType} → ${perm.role}`);
   }
 
   // Eduardo 6S - Admin de Six Seconds
   const eduardo6sPermissions = [
-    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "ADMIN", scope: superHub.id },
-    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
-    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
-    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "ADMIN", scope: org.id },
+    { scopeType: "superhub" as const, scopeId: superHub.id, role: "ADMIN", scope: superHub.id },
+    { scopeType: "tenant" as const, scopeId: tenant.id, role: "ADMIN", scope: tenant.id },
+    { scopeType: "hub" as const, scopeId: hub.id, role: "ADMIN", scope: hub.id },
+    { scopeType: "organization" as const, scopeId: org.id, role: "ADMIN", scope: org.id },
   ];
 
   for (const perm of eduardo6sPermissions) {
     const permId = `perm-eduardo6s-${perm.scopeType.toLowerCase()}-${perm.scopeId}`;
     await prisma.userPermission.upsert({
       where: { id: permId },
-      update: { permission: perm.permission },
+      update: { role: perm.role },
       create: {
         id: permId,
         userId: eduardo6s.id,
-        permission: perm.permission,
+        role: perm.role,
         scope: perm.scope,
         scopeType: perm.scopeType,
         scopeId: perm.scopeId,
         tenantId: tenant.id,
-        hubId: perm.scopeType === "HUB" ? hub.id : null,
-        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
-        grantedBy: eduardo.id,
       },
     });
-    console.log(`   ✅ Eduardo 6S: ${perm.scopeType} → ${perm.permission}`);
+    console.log(`   ✅ Eduardo 6S: ${perm.scopeType} → ${perm.role}`);
   }
 
   // Josh - Admin de Six Seconds
   const joshPermissions = [
-    { scopeType: "SUPERHUB" as const, scopeId: superHub.id, permission: "ADMIN", scope: superHub.id },
-    { scopeType: "TENANT" as const, scopeId: tenant.id, permission: "ADMIN", scope: tenant.id },
-    { scopeType: "HUB" as const, scopeId: hub.id, permission: "ADMIN", scope: hub.id },
-    { scopeType: "ORGANIZATION" as const, scopeId: org.id, permission: "ADMIN", scope: org.id },
+    { scopeType: "superhub" as const, scopeId: superHub.id, role: "ADMIN", scope: superHub.id },
+    { scopeType: "tenant" as const, scopeId: tenant.id, role: "ADMIN", scope: tenant.id },
+    { scopeType: "hub" as const, scopeId: hub.id, role: "ADMIN", scope: hub.id },
+    { scopeType: "organization" as const, scopeId: org.id, role: "ADMIN", scope: org.id },
   ];
 
   for (const perm of joshPermissions) {
     const permId = `perm-josh-${perm.scopeType.toLowerCase()}-${perm.scopeId}`;
     await prisma.userPermission.upsert({
       where: { id: permId },
-      update: { permission: perm.permission },
+      update: { role: perm.role },
       create: {
         id: permId,
         userId: josh.id,
-        permission: perm.permission,
+        role: perm.role,
         scope: perm.scope,
         scopeType: perm.scopeType,
         scopeId: perm.scopeId,
         tenantId: tenant.id,
-        hubId: perm.scopeType === "HUB" ? hub.id : null,
-        organizationId: perm.scopeType === "ORGANIZATION" ? org.id : null,
-        grantedBy: eduardo.id,
       },
     });
-    console.log(`   ✅ Josh: ${perm.scopeType} → ${perm.permission}`);
+    console.log(`   ✅ Josh: ${perm.scopeType} → ${perm.role}`);
   }
 
   // ============================================================
@@ -994,18 +998,18 @@ async function main() {
       name: "Six Seconds Global",
       slug: "six-seconds-global",
       description: "Comunidad global de Six Seconds - Inteligencia Emocional",
-      type: "PROFESSIONAL",
-      visibility: "PUBLIC",
+      type: "professional",
+      visibility: "public",
       tenantId: tenant.id,
       hubId: hub.id,
-      creatorId: eduardo6s.id,
-      rowiverseCreatorId: rvEduardo6s.id,
+      createdById: eduardo6s.id,
+      owner: "Eduardo Gonzalez",
     },
   });
   console.log("   ✅ Comunidad:", community.id);
 
-  // Agregar miembros a la comunidad
-  await prisma.communityMember.upsert({
+  // Agregar miembros a la comunidad usando RowiCommunityUser
+  await prisma.rowiCommunityUser.upsert({
     where: { id: `member-eduardo6s-${community.id}` },
     update: {},
     create: {
@@ -1016,11 +1020,11 @@ async function main() {
       email: "eduardo.gonzalez@6seconds.org",
       name: "Eduardo Gonzalez",
       role: "owner",
-      status: "ACTIVE",
+      status: "active",
     },
   });
 
-  await prisma.communityMember.upsert({
+  await prisma.rowiCommunityUser.upsert({
     where: { id: `member-josh-${community.id}` },
     update: {},
     create: {
@@ -1031,34 +1035,14 @@ async function main() {
       email: "josh@6seconds.org",
       name: "Josh Freedman",
       role: "admin",
-      status: "ACTIVE",
+      status: "active",
     },
   });
 
   console.log("   ✅ Miembros agregados a comunidad");
 
   // ============================================================
-  // 13. TENANT BRANDING - Configuración visual
-  // ============================================================
-  console.log("\n13. Creando Tenant Branding...");
-
-  await prisma.tenantBranding.upsert({
-    where: { tenantId: tenant.id },
-    update: {},
-    create: {
-      tenantId: tenant.id,
-      primaryColor: "#E85D04",
-      secondaryColor: "#FED7AA",
-      logoUrl: "/six-seconds-logo.png",
-      faviconUrl: "/favicon.ico",
-      fontFamily: "Inter",
-      customCss: "",
-    },
-  });
-  console.log("   ✅ Tenant Branding configurado");
-
-  // ============================================================
-  // 14. AGENTES IA - 6 Agentes Rowi
+  // 13. AGENTES IA - 6 Agentes Rowi
   // ============================================================
   console.log("\n14. Creando Agentes IA...");
 
@@ -1319,7 +1303,7 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   // ============================================================
   console.log("\n17. Creando Avatar Evolution...");
 
-  const eduardoAvatar = await prisma.avatarEvolution.upsert({
+  await prisma.avatarEvolution.upsert({
     where: { userId: eduardo.id },
     update: {},
     create: {
@@ -1338,31 +1322,7 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
       },
     },
   });
-
-  // Milestones de Avatar
-  const avatarMilestones = [
-    { type: "EGG_RECEIVED", title: "Huevito Recibido", xpReward: 10, rarity: "common" },
-    { type: "AVATAR_HATCHED", title: "Avatar Eclosionado", xpReward: 100, rarity: "rare" },
-    { type: "AVATAR_BABY", title: "Rowi Bebe", xpReward: 75, rarity: "uncommon" },
-    { type: "AVATAR_YOUNG", title: "Rowi Joven", xpReward: 75, rarity: "uncommon" },
-    { type: "SEI_FIRST_ASSESSMENT", title: "Primer SEI Completado", xpReward: 50, rarity: "rare" },
-  ];
-
-  for (const milestone of avatarMilestones) {
-    await prisma.avatarMilestone.upsert({
-      where: { id: `${eduardoAvatar.id}-${milestone.type}` },
-      update: {},
-      create: {
-        id: `${eduardoAvatar.id}-${milestone.type}`,
-        avatarId: eduardoAvatar.id,
-        type: milestone.type as any,
-        title: milestone.title,
-        xpReward: milestone.xpReward,
-        rarity: milestone.rarity,
-      },
-    });
-  }
-  console.log("   ✅ Avatar y milestones creados");
+  console.log("   ✅ Avatar Evolution creado");
 
   // ============================================================
   // 18. EMOTIONAL CONFIG - Configuración emocional
@@ -1392,26 +1352,28 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("\n19. Creando Achievements (logros)...");
 
   const achievementsData = [
-    { key: "first_login", name: "Primer Paso", description: "Iniciaste tu viaje en Rowi", xp: 10, icon: "🌱", category: "onboarding" },
-    { key: "profile_complete", name: "Perfil Completo", description: "Completaste tu perfil", xp: 50, icon: "✨", category: "onboarding" },
-    { key: "first_sei", name: "Auto-conocimiento", description: "Completaste tu primer SEI", xp: 100, icon: "🧠", category: "eq" },
-    { key: "first_chat", name: "Primera Conversación", description: "Tuviste tu primera conversación con Rowi", xp: 25, icon: "💬", category: "engagement" },
-    { key: "week_streak_7", name: "Semana Consistente", description: "7 días seguidos usando Rowi", xp: 75, icon: "🔥", category: "consistency" },
-    { key: "community_join", name: "Social", description: "Te uniste a tu primera comunidad", xp: 30, icon: "👥", category: "community" },
-    { key: "avatar_hatched", name: "Nacimiento", description: "Tu avatar ha eclosionado", xp: 100, icon: "🥚", category: "avatar" },
+    { slug: "first_login", name: "Primer Paso", description: "Iniciaste tu viaje en Rowi", points: 10, icon: "🌱", category: "GENERAL", requirement: "FIRST_ACTION" },
+    { slug: "profile_complete", name: "Perfil Completo", description: "Completaste tu perfil", points: 50, icon: "✨", category: "GENERAL", requirement: "PROFILE_COMPLETE" },
+    { slug: "first_sei", name: "Auto-conocimiento", description: "Completaste tu primer SEI", points: 100, icon: "🧠", category: "EQ", requirement: "SEI_COMPLETE" },
+    { slug: "first_chat", name: "Primera Conversación", description: "Tuviste tu primera conversación con Rowi", points: 25, icon: "💬", category: "CHAT", requirement: "CHAT_COUNT" },
+    { slug: "week_streak_7", name: "Semana Consistente", description: "7 días seguidos usando Rowi", points: 75, icon: "🔥", category: "STREAK", requirement: "CHAT_STREAK", threshold: 7 },
+    { slug: "community_join", name: "Social", description: "Te uniste a tu primera comunidad", points: 30, icon: "👥", category: "COMMUNITY", requirement: "COMMUNITY_JOIN" },
+    { slug: "avatar_hatched", name: "Nacimiento", description: "Tu avatar ha eclosionado", points: 100, icon: "🥚", category: "AVATAR", requirement: "DAYS_ACTIVE" },
   ];
 
   for (const ach of achievementsData) {
     await prisma.achievement.upsert({
-      where: { key: ach.key },
+      where: { slug: ach.slug },
       update: {},
       create: {
-        key: ach.key,
+        slug: ach.slug,
         name: ach.name,
         description: ach.description,
-        xpReward: ach.xp,
+        points: ach.points,
         icon: ach.icon,
-        category: ach.category,
+        category: ach.category as any,
+        requirement: ach.requirement as any,
+        threshold: ach.threshold || 1,
         isActive: true,
       },
     });
@@ -1420,17 +1382,19 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
 
   // Dar algunos logros a Eduardo
   const eduardoAchievements = ["first_login", "profile_complete", "first_sei", "avatar_hatched"];
-  for (const achKey of eduardoAchievements) {
-    const ach = await prisma.achievement.findUnique({ where: { key: achKey } });
+  for (const achSlug of eduardoAchievements) {
+    const ach = await prisma.achievement.findUnique({ where: { slug: achSlug } });
     if (ach) {
       await prisma.userAchievement.upsert({
-        where: { id: `${eduardo.id}-${achKey}` },
+        where: { id: `${eduardo.id}-${achSlug}` },
         update: {},
         create: {
-          id: `${eduardo.id}-${achKey}`,
+          id: `${eduardo.id}-${achSlug}`,
           userId: eduardo.id,
           achievementId: ach.id,
-          earnedAt: new Date(),
+          completed: true,
+          completedAt: new Date(),
+          progress: 100,
         },
       });
     }

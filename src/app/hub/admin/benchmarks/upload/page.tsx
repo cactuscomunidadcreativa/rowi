@@ -41,7 +41,7 @@ interface UploadState {
   error?: string;
 }
 
-const CHUNK_SIZE = 50000; // Filas por chunk
+const CHUNK_SIZE = 10000; // Filas por chunk (10k para no exceder el límite de 4.5MB de Vercel)
 
 const BENCHMARK_TYPES = [
   { value: "ROWIVERSE", labelKey: "admin.benchmarks.types.rowiverse" },

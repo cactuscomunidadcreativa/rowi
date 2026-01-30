@@ -3033,9 +3033,30 @@ model AvatarEvolution {
   // Logros del avatar (unificado con Achievement system)
   achievements UserAchievement[] @relation("AvatarAchievements")
 
+  // Rachas del avatar
+  streaks      AvatarStreak[]
+
   @@index([stage])
   @@index([sixSecondsLevel])
   @@map("avatar_evolution")
+}
+
+/// =========================================================
+/// 🔥 AVATAR STREAK — Rachas del avatar (ej: días consecutivos)
+/// =========================================================
+model AvatarStreak {
+  id          String   @id @default(cuid())
+  avatarId    String
+  type        String
+  currentDays Int      @default(0)
+  longestDays Int      @default(0)
+  lastActive  DateTime @default(now())
+  startedAt   DateTime @default(now())
+
+  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@unique([avatarId, type])
+  @@map("avatar_streak")
 }
 
 // NOTA: AvatarMilestone fue unificado con Achievement/UserAchievement

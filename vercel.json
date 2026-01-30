@@ -2,6 +2,15 @@
   "functions": {
     "src/app/api/admin/benchmarks/upload/route.ts": {
       "maxDuration": 300
+    },
+    "src/app/api/admin/benchmarks/init-upload/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/admin/benchmarks/upload-chunk/route.ts": {
+      "maxDuration": 120
+    },
+    "src/app/api/admin/benchmarks/finalize-upload/route.ts": {
+      "maxDuration": 300
     }
   },
   "crons": [

@@ -1,6 +1,5 @@
 import "./globals.css";
 import ClientWrapper from "./ClientWrapper";
-import UserStatusBar from "@/components/shared/UserStatusBar";
 import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
@@ -36,6 +35,11 @@ export default async function RootLayout({
    *    ✔️ o en el seed real prisma/seed.ts
    *
    * El layout debe mantenerse 100% limpio.
+   *
+   * 📝 NOTA: UserStatusBar NO se incluye aquí porque cada layout específico
+   * maneja su propia barra de estado:
+   * - /hub/admin/* → tiene su propio header con UserStatusBar
+   * - /(app)/* → usa NavBar como navegación principal
    */
 
   return (
@@ -44,7 +48,6 @@ export default async function RootLayout({
         <I18nProvider>
           <ClientWrapper>
             <BetaBanner />
-            <UserStatusBar />
             <main className="min-h-[90vh]">{children}</main>
           </ClientWrapper>
         </I18nProvider>

@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
 ========================================================= */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     // 🔹 1. Historial detallado (últimos 60 registros)
     const usage = await prisma.userUsage.findMany({

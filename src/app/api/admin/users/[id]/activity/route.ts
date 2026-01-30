@@ -14,9 +14,7 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  // 👉 CORRECCIÓN: await context.params
-  const { params } = await context;
-  const userId = params.id;
+  const { id: userId } = await context.params;
 
   const auth = await getServerAuthUser();
   if (!auth)

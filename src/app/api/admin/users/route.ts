@@ -152,6 +152,9 @@ export async function POST(req: NextRequest) {
 
 /* =========================================================
    ✏️ PATCH — Editar usuario (actualización completa)
+   ---------------------------------------------------------
+   Soporta: datos básicos, plan, rol, jerarquía completa
+   (tenant, organization, hub, superHub)
 ========================================================= */
 export async function PATCH(req: NextRequest) {
   try {
@@ -172,6 +175,12 @@ export async function PATCH(req: NextRequest) {
       planId,
       allowAI,
       active,
+      // Jerarquía
+      organizationId,
+      hubId,
+      superHubId,
+      // Rol en organización (opcional)
+      orgRole,
     } = body;
 
     if (!id)
@@ -180,6 +189,7 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
 
+    // 1️⃣ Actualizar datos básicos del usuario
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
@@ -197,10 +207,71 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
+    // 2️⃣ Manejar membresía de organización
+    if (organizationId !== undefined) {
+      // Eliminar membresías existentes
+      await prisma.orgMembership.deleteMany({
+        where: { userId: id },
+      });
+
+      // Crear nueva membresía si se especificó organización
+      if (organizationId) {
+        await prisma.orgMembership.create({
+          data: {
+            userId: id,
+            organizationId,
+            role: orgRole || "MEMBER",
+          },
+        });
+      }
+    }
+
+    // 3️⃣ Manejar membresía de hub
+    if (hubId !== undefined) {
+      // Eliminar membresías existentes de hub
+      await prisma.hubMembership.deleteMany({
+        where: { userId: id },
+      });
+
+      // Crear nueva membresía si se especificó hub
+      if (hubId) {
+        await prisma.hubMembership.create({
+          data: {
+            userId: id,
+            hubId,
+            role: "member",
+          },
+        });
+      }
+    }
+
+    // 4️⃣ Obtener usuario actualizado con todas las relaciones
+    const finalUser = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        plan: { select: { id: true, name: true, priceUsd: true } },
+        primaryTenant: { select: { id: true, name: true } },
+        orgMemberships: {
+          include: {
+            organization: { select: { id: true, name: true, unitType: true } },
+          },
+        },
+        hubMemberships: {
+          include: {
+            hub: {
+              include: {
+                superHub: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
     return NextResponse.json({
       ok: true,
       message: "✅ Usuario actualizado correctamente",
-      user: updatedUser,
+      user: finalUser,
     });
   } catch (err: any) {
     console.error("❌ Error PATCH /api/admin/users:", err);

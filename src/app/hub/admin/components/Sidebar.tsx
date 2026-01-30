@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +20,7 @@ import {
   LucideIcon, LayoutDashboard, Wrench, GitCompareArrows, Award, Sparkles,
   Link2, Earth, Upload, Settings, Trophy, Medal, Star, Flame,
   Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
+  Shield, GitBranch, ToggleRight, KeyRound,
 } from "lucide-react";
 
 /* =========================================================
@@ -123,9 +124,16 @@ export default function Sidebar() {
       priority: 85,
       items: [
         { href: "/hub/admin/sei-links", labelKey: "admin.nav.seiLinks", icon: Link2 },
-        { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: Activity },
-        { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: Upload },
-        { href: "/hub/admin/benchmarks/compare", labelKey: "admin.nav.compareBenchmarks", icon: GitCompareArrows },
+        {
+          href: "/hub/admin/benchmarks",
+          labelKey: "admin.nav.benchmarks",
+          icon: Activity,
+          children: [
+            { href: "/hub/admin/benchmarks", labelKey: "admin.nav.benchmarksDashboard", icon: LayoutDashboard },
+            { href: "/hub/admin/benchmarks/upload", labelKey: "admin.nav.uploadBenchmark", icon: Upload },
+            { href: "/hub/admin/benchmarks/compare", labelKey: "admin.nav.compareBenchmarks", icon: GitCompareArrows },
+          ],
+        },
       ],
     },
 
@@ -152,6 +160,16 @@ export default function Sidebar() {
         },
         { href: "/hub/admin/invites", labelKey: "admin.nav.invites", icon: Mail },
         { href: "/hub/admin/plans", labelKey: "admin.nav.plans", icon: Gauge },
+        {
+          href: "/hub/admin/permissions",
+          labelKey: "admin.nav.permissions",
+          icon: Shield,
+          badge: "NEW",
+          children: [
+            { href: "/hub/admin/permissions", labelKey: "admin.nav.permissionsFeatures", icon: ToggleRight },
+            { href: "/hub/admin/permissions/roles", labelKey: "admin.nav.permissionsRoles", icon: KeyRound },
+          ],
+        },
       ],
     },
 
@@ -212,7 +230,15 @@ export default function Sidebar() {
         { href: "/hub/admin/superhubs", labelKey: "admin.nav.superhubs", icon: Layers3 },
         { href: "/hub/admin/hubs", labelKey: "admin.nav.hubs", icon: Network },
         { href: "/hub/admin/tenants", labelKey: "admin.nav.tenants", icon: Building2 },
-        { href: "/hub/admin/organizations", labelKey: "admin.nav.organizations", icon: Building },
+        {
+          href: "/hub/admin/organizations",
+          labelKey: "admin.nav.organizations",
+          icon: Building,
+          children: [
+            { href: "/hub/admin/organizations", labelKey: "admin.nav.organizationsList", icon: Building },
+            { href: "/hub/admin/organizations/hierarchy", labelKey: "admin.nav.organizationsHierarchy", icon: GitBranch, badge: "NEW" },
+          ],
+        },
       ],
     },
 
@@ -376,18 +402,46 @@ interface SidebarSectionProps {
 
 function SidebarSection({ section, pathname, t }: SidebarSectionProps) {
   const TitleIcon = section.icon;
-  const [open, setOpen] = useState(false);
 
-  const isActive = section.items.some(
-    (item) =>
-      pathname === item.href ||
-      pathname?.startsWith(item.href + "/") ||
-      item.children?.some((c) => pathname?.startsWith(c.href))
-  );
+  // Check if any item in section is active (including nested children)
+  // IMPORTANT: Only consider routes under /hub/admin/ as valid for active state
+  const isActive = useMemo(() => {
+    // Only match if we're in the admin area
+    if (!pathname?.startsWith("/hub/admin")) return false;
 
+    return section.items.some((item) => {
+      // Skip items that don't start with /hub/admin (external links like /, /pricing)
+      if (!item.href.startsWith("/hub/admin")) return false;
+
+      // Exact match
+      if (pathname === item.href) return true;
+
+      // Prefix match (but not for dashboard which is just /hub/admin)
+      if (item.href !== "/hub/admin" && pathname?.startsWith(item.href + "/")) return true;
+
+      // For dashboard, only exact match
+      if (item.href === "/hub/admin" && pathname === "/hub/admin") return true;
+
+      // Check nested children for active state (only admin routes)
+      const childActive = item.children?.some((c) => {
+        // Skip non-admin routes
+        if (!c.href.startsWith("/hub/admin")) return false;
+        if (pathname === c.href) return true;
+        if (pathname?.startsWith(c.href + "/")) return true;
+        return false;
+      });
+
+      return childActive;
+    });
+  }, [section.items, pathname]);
+
+  // Auto-expand when section contains active route, collapse otherwise
+  const [open, setOpen] = useState(isActive);
+
+  // Force update when pathname changes - always sync with isActive
   useEffect(() => {
-    if (isActive) setOpen(true);
-  }, [isActive]);
+    setOpen(isActive);
+  }, [pathname, isActive]);
 
   return (
     <div className="rounded-lg">
@@ -484,13 +538,36 @@ interface NestedGroupProps {
 }
 
 function NestedGroup({ item, pathname, t }: NestedGroupProps) {
-  const [open, setOpen] = useState(false);
   const Icon = item.icon;
-  const activeChild = item.children?.some((c) => pathname?.startsWith(c.href));
 
+  // Check if any child is active (exact match or starts with for nested pages)
+  // IMPORTANT: Only consider routes under /hub/admin/ as valid for active state
+  const isActive = useMemo(() => {
+    // Only match if we're in the admin area
+    if (!pathname?.startsWith("/hub/admin")) return false;
+
+    const activeChild = item.children?.some((c) => {
+      // Skip non-admin routes (like /, /pricing, /product/*)
+      if (!c.href.startsWith("/hub/admin")) return false;
+      if (pathname === c.href) return true;
+      if (pathname?.startsWith(c.href + "/")) return true;
+      return false;
+    });
+
+    // Also check if the parent href matches (only if it's an admin route)
+    const parentActive = item.href.startsWith("/hub/admin") &&
+      (pathname === item.href || pathname?.startsWith(item.href + "/"));
+
+    return activeChild || parentActive;
+  }, [item.href, item.children, pathname]);
+
+  // Auto-expand when active, auto-collapse when not
+  const [open, setOpen] = useState(isActive);
+
+  // Force sync with isActive when pathname changes
   useEffect(() => {
-    if (activeChild) setOpen(true);
-  }, [activeChild]);
+    setOpen(isActive);
+  }, [pathname, isActive]);
 
   return (
     <div>
@@ -499,15 +576,20 @@ function NestedGroup({ item, pathname, t }: NestedGroupProps) {
         className={`
           flex items-center justify-between w-full px-3 py-1.5 text-sm rounded-md
           transition-colors duration-200
-          ${open || activeChild
-            ? "text-[var(--rowi-primary)]"
-            : "text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)]"
+          ${isActive
+            ? "bg-[var(--rowi-primary)]/5 text-[var(--rowi-primary)] font-medium"
+            : "text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
           }
         `}
       >
         <span className="flex items-center gap-2">
-          <Icon className="w-4 h-4" />
+          <Icon className={`w-4 h-4 ${isActive ? "text-[var(--rowi-primary)]" : ""}`} />
           <span className="truncate">{t(item.labelKey)}</span>
+          {item.badge && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">
+              {item.badge}
+            </span>
+          )}
         </span>
         <ChevronRight
           className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-90" : ""}`}

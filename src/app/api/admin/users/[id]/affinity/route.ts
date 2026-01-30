@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
 ========================================================= */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const snapshots = await prisma.affinitySnapshot.findMany({
       where: { userId: id },
       include: {

@@ -76,7 +76,7 @@ export default async function ProfileHomePage() {
       },
       _count: {
         select: {
-          rowiChats: true,
+          userChats: true,
         }
       }
     },
@@ -275,7 +275,7 @@ export default async function ProfileHomePage() {
     day: "numeric"
   }) : null;
 
-  const chatCount = user?._count?.rowiChats || 0;
+  const chatCount = user?._count?.userChats || 0;
   const communityCount = user?.memberships?.length || 0;
 
   return (

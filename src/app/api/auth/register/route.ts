@@ -204,9 +204,14 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Usuario ${normalizedEmail} vinculado a RowiVerse`);
       }
 
-      // Buscar tenant principal "rowi-master" para dar acceso básico
+      // Buscar tenant principal para dar acceso básico
       const rowiTenant = await prisma.tenant.findFirst({
-        where: { slug: "rowi-master" },
+        where: {
+          OR: [
+            { slug: "six-seconds-global" },
+            { slug: "rowi-master" },
+          ]
+        },
       });
 
       if (rowiTenant && !user.primaryTenantId) {
@@ -225,7 +230,7 @@ export async function POST(req: NextRequest) {
           data: { primaryTenantId: rowiTenant.id },
         });
 
-        console.log(`✅ Usuario ${normalizedEmail} vinculado a tenant rowi-master`);
+        console.log(`✅ Usuario ${normalizedEmail} vinculado a tenant ${rowiTenant.slug}`);
       }
     } catch (rvError) {
       // No fallar el registro si hay error vinculando a RowiVerse

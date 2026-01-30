@@ -20,7 +20,7 @@ export default function SignInPage() {
         Object.values(providers).map((provider: any) => (
           <button
             key={provider.name}
-            onClick={() => signIn(provider.id, { callbackUrl: "/" })}
+            onClick={() => signIn(provider.id, { callbackUrl: "/hub" })}
             className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition mb-3"
           >
             Continuar con {provider.name}

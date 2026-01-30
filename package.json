@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "NEXT_DISABLE_TURBOPACK=1 next dev -p 3000",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && prisma db push --accept-data-loss && next build",
     "start": "next start",
     "lint": "eslint",
     "sync:i18n": "pnpm dlx tsx scripts/sync-i18n-with-db.ts",

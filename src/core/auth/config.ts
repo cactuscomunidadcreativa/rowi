@@ -13,7 +13,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
+      // SECURITY: Disabled dangerous email linking to prevent account takeover
+      // If a user signs up with email/password, then tries Google OAuth with same email,
+      // this would allow automatic account linking without verification
+      allowDangerousEmailAccountLinking: false,
     }),
 
     /* 🌐 Facebook Login */

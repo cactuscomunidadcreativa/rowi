@@ -3,6 +3,7 @@ import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { getServerAuthUser } from "@/core/auth";
 import OpenAI from "openai";
+import { recordActivity } from "@/services/gamification";
 
 export const runtime = "nodejs";
 
@@ -298,6 +299,22 @@ export async function POST(req: NextRequest) {
     }
 
     /* =========================================================
+     🎮 6.5 Gamificación - Otorgar puntos por sesión de chat
+    ========================================================== */
+    let gamificationResult = null;
+    try {
+      if (auth?.id) {
+        gamificationResult = await recordActivity(auth.id, "CHAT", {
+          points: 10,
+          reasonId: slug,
+          description: `Chat con ${slug}`,
+        });
+      }
+    } catch (gamErr) {
+      console.warn("⚠️ Error en gamificación:", gamErr);
+    }
+
+    /* =========================================================
      📤 7. Respuesta final para RowiCoach
     ========================================================== */
     return NextResponse.json({
@@ -315,6 +332,7 @@ export async function POST(req: NextRequest) {
         permissions: auth?.permissions,
       },
       text: replyText,
+      gamification: gamificationResult,
     });
   } catch (e: any) {
     console.error("❌ Error en /api/rowi:", e);

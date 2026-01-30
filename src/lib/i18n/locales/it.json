@@ -1709,5 +1709,33 @@
   "beta.reportBug": "Segnala bug",
   "beta.close": "Chiudi",
   "beta.emailSubject": "Segnalazione Bug - Rowi Beta",
-  "beta.emailBody": "Descrivi il problema che hai riscontrato:\n\n\nPassaggi per riprodurlo:\n1.\n2.\n3.\n\n\nBrowser e dispositivo:"
+  "beta.emailBody": "Descrivi il problema che hai riscontrato:\n\n\nPassaggi per riprodurlo:\n1.\n2.\n3.\n\n\nBrowser e dispositivo:",
+
+  "weekflow.title": "WeekFlow",
+  "weekflow.description": "Check-in settimanali del team",
+  "weekflow.checkin.title": "Come ti senti questa settimana?",
+  "weekflow.checkin.subtitle": "Il tuo check-in aiuta il team a capirsi meglio",
+  "weekflow.checkin.required": "Completa il check-in per vedere il contenuto del team",
+  "weekflow.checkin.done": "Check-in completato!",
+  "weekflow.checkin.selectEmotion": "Seleziona come ti senti",
+  "weekflow.checkin.intensity": "Quanto è intensa?",
+  "weekflow.checkin.note": "Aggiungi una nota (opzionale)",
+  "weekflow.checkin.submit": "Invia check-in",
+
+  "weekflow.sections.showTell.title": "Show & Tell",
+  "weekflow.sections.showTell.description": "Cosa vuoi mostrare al team",
+  "weekflow.sections.toDiscuss.title": "Da Discutere",
+  "weekflow.sections.toDiscuss.description": "Argomenti che richiedono conversazione",
+  "weekflow.sections.focus.title": "Il Mio Focus",
+  "weekflow.sections.focus.description": "Su cosa ti stai concentrando questa settimana",
+
+  "weekflow.tasks.title": "Rowi Tasks",
+  "weekflow.tasks.add": "Aggiungi attività",
+  "weekflow.tasks.empty": "Nessuna attività in sospeso",
+
+  "weekflow.emotions.levels.desafio.name": "🧩 Sfida",
+  "weekflow.emotions.levels.emergente.name": "🌱 Emergente",
+  "weekflow.emotions.levels.funcional.name": "🧠 Funzionale",
+  "weekflow.emotions.levels.diestro.name": "🎯 Abile",
+  "weekflow.emotions.levels.experto.name": "🌟 Esperto"
 }

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3 } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -23,6 +23,7 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      weekflow: "WeekFlow",
       signin: "Iniciar sesión",
       signout: "Cerrar sesión",
       profile: "Mi perfil",
@@ -40,6 +41,7 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      weekflow: "WeekFlow",
       signin: "Sign in",
       signout: "Sign out",
       profile: "My profile",
@@ -57,6 +59,7 @@ const translations = {
 const LINKS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
   { href: "/community", key: "community", icon: Users },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck },
   { href: "/affinity", key: "affinity", icon: Heart },
   { href: "/benchmark", key: "benchmark", icon: BarChart3 },
   { href: "/eco", key: "eco", icon: Satellite },

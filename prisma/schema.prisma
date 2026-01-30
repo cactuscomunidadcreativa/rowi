@@ -126,6 +126,16 @@ model User {
   points                UserPoints[]
   streak                UserStreak?
   level                 UserLevel?
+  rewards               UserReward[]
+  microLearningProgress UserMicroLearning[]
+
+  // 📅 WeekFlow
+  weekFlowContributions WeekFlowContribution[]
+  weekFlowMoodCheckins  WeekFlowMoodCheckin[]
+  weekFlowComments      WeekFlowComment[]
+  rowiTasks             RowiTask[]
+  taskReflections       TaskReflection[]
+  emotionVocabulary     EmotionVocabulary?
 
   @@map("user")
 }
@@ -352,6 +362,11 @@ model Hub {
   // 📊 Benchmarks vinculados a este Hub
   benchmarks Benchmark[] @relation("HubToBenchmark")
 
+  // 📅 WeekFlow
+  weekFlowConfigs  WeekFlowConfig[]
+  weekFlowSessions WeekFlowSession[]
+  rowiTasks        RowiTask[]
+
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([slug])
@@ -489,6 +504,11 @@ model Tenant {
   // 📊 Benchmarks vinculados a este Tenant
   benchmarks Benchmark[] @relation("TenantToBenchmark")
 
+  // 📅 WeekFlow
+  weekFlowConfigs  WeekFlowConfig[]
+  weekFlowSessions WeekFlowSession[]
+  rowiTasks        RowiTask[]
+
   @@index([name])
   @@index([slug])
   @@index([rowiVerseId])
@@ -575,6 +595,11 @@ model Plan {
   supportLevel        String   @default("community") // "community" | "email" | "chat" | "priority" | "dedicated"
   customOnboarding    Boolean  @default(false)  // Onboarding personalizado
   workshopIncludes    Boolean  @default(false)  // Workshops de adopción
+
+  // 📅 Features - WeekFlow
+  weekflowAccess      Boolean  @default(false)  // Acceso a WeekFlow
+  maxWeekflows        Int      @default(0)      // Máximo de WeekFlows (0 = ilimitado)
+  weekflowInsights    Boolean  @default(false)  // Insights emocionales avanzados
 
   // 🏷️ Display
   badge               String?           // "Popular", "Best Value", "Recomendado", etc.
@@ -1339,6 +1364,7 @@ model AgentConfig {
   knowledge          KnowledgeResource[]   @relation("AgentKnowledge")
   modelVersions      AgentModelVersion[]   @relation("AgentConfigToModelVersion")
   trainingSamples    AgentTrainingSample[] @relation("AgentConfigToTrainingSample")
+  knowledgeDeployments AgentKnowledgeDeployment[]
 
   @@unique([slug, tenantId, superHubId, organizationId, hubId])
   @@index([slug])
@@ -4481,6 +4507,686 @@ enum PointsReason {
   COURSE            // Completar curso
   ADMIN_GRANT       // Otorgado por admin
   ADMIN_DEDUCT      // Deducido por admin
+  MICRO_LEARNING    // Completar micro-learning
+}
+
+/// =========================================================
+/// 📚 MICROLEARNING — Micro-acciones de Six Seconds
+/// =========================================================
+/// Contenido de microlearning basado en competencias EQ,
+/// outcomes, brain talents y el modelo Six Seconds.
+model MicroLearning {
+  id          String   @id @default(cuid())
+  slug        String   @unique              // "EEL_action_1", "INFLUENCE_action_2"
+
+  // Categorización
+  category    MicroLearningCategory         // competency | outcome | brain_talent | core_outcome
+  parentKey   String                        // "EEL" | "INFLUENCE" | "BBE" | "EFFECTIVENESS"
+
+  // Contenido
+  title       String                        // Título en español
+  titleEN     String?                       // Título en inglés
+  description String?                       // Descripción detallada
+  descriptionEN String?                     // Descripción en inglés
+  content     Json?                         // Contenido estructurado adicional
+
+  // Metadata
+  duration    Int      @default(2)          // Duración estimada en minutos
+  difficulty  MicroLearningDifficulty @default(BEGINNER)
+  order       Int      @default(0)          // Orden dentro de su categoría
+  points      Int      @default(10)         // Puntos que otorga al completar
+
+  // Estado
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)      // Destacado
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  userProgress UserMicroLearning[]
+
+  @@index([category, parentKey])
+  @@index([isActive])
+  @@map("micro_learning")
+}
+
+/// 📊 Progreso de MicroLearning por usuario
+model UserMicroLearning {
+  id              String   @id @default(cuid())
+
+  userId          String
+  microLearningId String
+
+  // Progreso
+  status          MicroLearningStatus @default(NOT_STARTED)
+  progress        Int      @default(0)        // 0-100
+  completedAt     DateTime?
+
+  // Feedback
+  rating          Int?                         // 1-5 estrellas
+  notes           String?                      // Notas del usuario
+  reflection      String?                      // Reflexión personal
+
+  // Gamificación
+  pointsEarned    Int      @default(0)
+
+  // Tracking
+  startedAt       DateTime?
+  lastAccessAt    DateTime?
+  timeSpentSecs   Int      @default(0)        // Tiempo total invertido
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  microLearning   MicroLearning @relation(fields: [microLearningId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, microLearningId])
+  @@index([userId, status])
+  @@index([microLearningId])
+  @@map("user_micro_learning")
+}
+
+/// 🎁 Recompensas canjeables
+model Reward {
+  id          String   @id @default(cuid())
+  slug        String   @unique              // "premium_badge", "discount_10"
+
+  // Información
+  name        String                        // Nombre en español
+  nameEN      String?                       // Nombre en inglés
+  description String?                       // Descripción
+  descriptionEN String?
+
+  // Visual
+  icon        String?                       // Icono (lucide o URL)
+  image       String?                       // Imagen de la recompensa
+  color       String   @default("#10B981")  // Color del reward
+
+  // Costo y tipo
+  cost        Int                           // Puntos necesarios para canjear
+  type        RewardType                    // badge | feature | discount | physical | certificate
+
+  // Disponibilidad
+  stock       Int?                          // null = ilimitado
+  maxPerUser  Int      @default(1)          // Máximo por usuario
+  expiresAt   DateTime?                     // Fecha de expiración
+
+  // Estado
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+
+  // Metadata adicional
+  metadata    Json?                         // Datos específicos del tipo de reward
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  claims      UserReward[]
+
+  @@index([type, isActive])
+  @@map("reward")
+}
+
+/// 🏆 Recompensas reclamadas por usuarios
+model UserReward {
+  id          String   @id @default(cuid())
+
+  userId      String
+  rewardId    String
+
+  // Estado
+  status      RewardClaimStatus @default(CLAIMED)
+  claimedAt   DateTime @default(now())
+  redeemedAt  DateTime?                     // Cuando se usó (si aplica)
+  expiresAt   DateTime?                     // Expiración individual
+
+  // Tracking
+  metadata    Json?                         // Datos adicionales (código de descuento, etc.)
+
+  // Relaciones
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward      Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([rewardId])
+  @@map("user_reward")
+}
+
+/// 🧠 Knowledge Deployment — Despliegue de conocimiento a agentes IA
+model AgentKnowledgeDeployment {
+  id          String   @id @default(cuid())
+
+  agentId     String
+
+  // Fuente y tipo
+  source      KnowledgeSource               // manual | auto_learned | six_seconds | conversation
+  contentType KnowledgeContentType          // outcome | competency | brain_talent | micro_action | pattern | custom
+  contentKey  String                        // "INFLUENCE" | "EEL" | "BBE" | etc.
+
+  // Contenido
+  title       String?                       // Título descriptivo
+  content     Json                          // El contenido completo (JSON)
+  summary     String?                       // Resumen para quick reference
+
+  // Estado de deployment
+  status      KnowledgeDeploymentStatus @default(PENDING)
+  deployedAt  DateTime?
+  deployedBy  String?                       // userId del admin que aprobó
+
+  // Métricas de uso
+  usageCount  Int      @default(0)          // Veces que se ha usado
+  lastUsedAt  DateTime?
+  effectiveness Float?                      // 0-1 basado en feedback
+
+  // Metadata
+  tags        String[] @default([])
+  metadata    Json?                         // Datos adicionales
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  agent       AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, contentType, contentKey])
+  @@index([agentId, status])
+  @@index([contentType, contentKey])
+  @@map("agent_knowledge_deployment")
+}
+
+/// 📈 Definición de Niveles del sistema de gamificación
+model LevelDefinition {
+  id              String   @id @default(cuid())
+
+  level           Int      @unique           // 1, 2, 3...
+
+  // Requisitos
+  minPoints       Int                        // Puntos mínimos para este nivel
+  maxPoints       Int?                       // Puntos máximos (null para el último nivel)
+
+  // Títulos
+  title           String                     // "Explorador Emocional"
+  titleEN         String?                    // "Emotional Explorer"
+  description     String?
+  descriptionEN   String?
+
+  // Visual
+  icon            String?                    // Icono del nivel
+  color           String   @default("#8B5CF6")
+  badge           String?                    // Badge/imagen del nivel
+
+  // Beneficios
+  benefits        Json?                      // Lista de beneficios desbloqueados
+  multiplier      Float    @default(1.0)     // Multiplicador de puntos
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("level_definition")
+}
+
+// =========================================================
+// 🏷️ ENUMS para MicroLearning y Gamificación extendida
+// =========================================================
+
+enum MicroLearningCategory {
+  COMPETENCY      // Competencias EQ (EEL, RP, ACT, etc.)
+  OUTCOME         // Outcomes (Influence, Decision Making, etc.)
+  BRAIN_TALENT    // Brain Talents (BBE, BBI, etc.)
+  CORE_OUTCOME    // Core Outcomes (Effectiveness, Wellbeing, etc.)
+}
+
+enum MicroLearningDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum MicroLearningStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum RewardType {
+  BADGE           // Badge visual
+  FEATURE         // Acceso a feature premium
+  DISCOUNT        // Descuento
+  PHYSICAL        // Producto físico
+  CERTIFICATE     // Certificado digital
+  TOKENS          // Tokens de IA adicionales
+}
+
+enum RewardClaimStatus {
+  CLAIMED         // Reclamado
+  REDEEMED        // Usado/canjeado
+  EXPIRED         // Expirado
+  REVOKED         // Revocado
+}
+
+enum KnowledgeSource {
+  MANUAL          // Subido manualmente por admin
+  AUTO_LEARNED    // Aprendido de conversaciones
+  SIX_SECONDS     // Contenido de Six Seconds
+  CONVERSATION    // Extraído de chat específico
+  IMPORT          // Importado de archivo
+}
+
+enum KnowledgeContentType {
+  OUTCOME         // Outcomes de Six Seconds
+  COMPETENCY      // Competencias EQ
+  BRAIN_TALENT    // Brain Talents
+  CORE_OUTCOME    // Core Outcomes
+  MICRO_ACTION    // Micro-acciones específicas
+  PATTERN         // Patrón aprendido
+  CUSTOM          // Contenido personalizado
+}
+
+enum KnowledgeDeploymentStatus {
+  PENDING         // Pendiente de aprobación
+  APPROVED        // Aprobado, listo para deploy
+  DEPLOYED        // Desplegado y activo
+  REJECTED        // Rechazado
+  ARCHIVED        // Archivado (ya no activo)
+}
+
+// =========================================================
+// 📅 WEEKFLOW - Check-ins Semanales de Equipo
+// =========================================================
+
+model WeekFlowConfig {
+  id        String   @id @default(cuid())
+
+  // Scope (puede ser a nivel tenant, hub, o global)
+  tenantId  String?
+  hubId     String?
+
+  // Configuración
+  name      String   @default("WeekFlow")
+  isActive  Boolean  @default(true)
+
+  // Secciones habilitadas
+  enableShowTell    Boolean @default(true)
+  enableToDiscuss   Boolean @default(true)
+  enableFocus       Boolean @default(true)
+  enableTasks       Boolean @default(true)
+  enableMoodCheckin Boolean @default(true)
+
+  // Configuración de check-in
+  requireMoodCheckin Boolean @default(true)
+  moodReminderDay    Int     @default(1)     // 1=Lunes
+  moodReminderTime   String  @default("09:00")
+
+  // Gamificación
+  pointsPerCheckin      Int @default(15)
+  pointsPerContribution Int @default(10)
+  pointsPerTaskComplete Int @default(5)
+
+  // Límites
+  maxItemsPerSection       Int @default(10)
+  maxTasksPerMember        Int @default(20)
+  daysBeforeTaskReflection Int @default(7)
+
+  // Integraciones
+  slackWebhook    String?
+  googleDocsId    String?
+  emailReminders  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant    Tenant?            @relation(fields: [tenantId], references: [id])
+  hub       Hub?               @relation(fields: [hubId], references: [id])
+  sessions  WeekFlowSession[]
+
+  @@unique([tenantId, hubId])
+  @@index([tenantId])
+  @@index([hubId])
+  @@map("weekflow_config")
+}
+
+model WeekFlowSession {
+  id        String   @id @default(cuid())
+
+  configId  String
+  tenantId  String?
+  hubId     String?
+
+  // Identificación de semana
+  weekNumber Int      // ISO week number (1-53)
+  year       Int
+  weekStart  DateTime
+  weekEnd    DateTime
+
+  status    WeekFlowSessionStatus @default(ACTIVE)
+  summary   String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  config        WeekFlowConfig         @relation(fields: [configId], references: [id], onDelete: Cascade)
+  tenant        Tenant?                @relation(fields: [tenantId], references: [id])
+  hub           Hub?                   @relation(fields: [hubId], references: [id])
+  contributions WeekFlowContribution[]
+  moodCheckins  WeekFlowMoodCheckin[]
+
+  @@unique([configId, year, weekNumber])
+  @@index([tenantId, year, weekNumber])
+  @@index([hubId, year, weekNumber])
+  @@index([weekStart])
+  @@map("weekflow_session")
+}
+
+enum WeekFlowSessionStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model WeekFlowContribution {
+  id        String   @id @default(cuid())
+
+  sessionId String
+  userId    String
+
+  type      WeekFlowContributionType
+  content   String   @db.Text
+
+  order     Int      @default(0)
+  status    WeekFlowContributionStatus @default(ACTIVE)
+
+  // Para Focus items que son tareas
+  isTask      Boolean   @default(false)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  dueDate     DateTime?
+  priority    TaskPriority @default(MEDIUM)
+
+  // Menciones a otros usuarios (@tags)
+  mentions    String[]  @default([])  // Array de userIds mencionados
+
+  reactions   Json?     // { "👍": ["userId1"], "🎉": ["userId2"] }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  session   WeekFlowSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id])
+  comments  WeekFlowComment[]
+
+  @@index([sessionId, type])
+  @@index([userId])
+  @@index([sessionId, userId])
+  @@map("weekflow_contribution")
+}
+
+enum WeekFlowContributionType {
+  SHOW_TELL
+  TO_DISCUSS
+  FOCUS
+}
+
+enum WeekFlowContributionStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model WeekFlowMoodCheckin {
+  id        String   @id @default(cuid())
+
+  sessionId String
+  userId    String
+
+  // Emoción seleccionada (slug de la rueda progresiva)
+  emotion   String      // Ej: "joy", "overwhelmed", "anxious"
+  intensity Int         @default(5)  // 1-10
+
+  note      String?     @db.Text
+
+  createdAt DateTime @default(now())
+
+  session   WeekFlowSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id])
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("weekflow_mood_checkin")
+}
+
+model WeekFlowComment {
+  id             String   @id @default(cuid())
+  contributionId String
+  userId         String
+  content        String   @db.Text
+  mentions       String[] @default([])  // Array de userIds mencionados
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contribution WeekFlowContribution @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  user         User                 @relation(fields: [userId], references: [id])
+
+  @@index([contributionId])
+  @@index([userId])
+  @@map("weekflow_comment")
+}
+
+// =========================================================
+// ✅ ROWI TASKS - Tareas con Insights Emocionales
+// =========================================================
+
+model RowiTask {
+  id        String   @id @default(cuid())
+
+  userId    String
+  tenantId  String?
+  hubId     String?
+
+  title       String
+  description String? @db.Text
+
+  status    RowiTaskStatus @default(TODO)
+  priority  TaskPriority   @default(MEDIUM)
+
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  // Origen
+  sourceType    String?   // "weekflow", "manual", "imported"
+  sourceId      String?
+
+  // Organización
+  tags      String[]  @default([])
+  category  String?
+
+  // Recurrencia
+  isRecurring   Boolean @default(false)
+  recurringRule String?
+
+  // Visibilidad
+  visibility    TaskVisibility @default(PRIVATE)
+
+  // Emotional insights (todo opcional)
+  weekFlowSessionId   String?
+  emotionAtCreation   String?   // Slug de emoción
+  emotionAtCompletion String?
+  incompletionReason  TaskIncompletionReason?
+  incompletionNote    String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User             @relation(fields: [userId], references: [id])
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
+  hub         Hub?             @relation(fields: [hubId], references: [id])
+  reflections TaskReflection[]
+
+  @@index([userId, status])
+  @@index([tenantId])
+  @@index([hubId])
+  @@index([dueDate])
+  @@map("rowi_task")
+}
+
+enum RowiTaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+  POSTPONED
+  BLOCKED
+}
+
+enum TaskVisibility {
+  PRIVATE
+  TEAM
+  HUB_ADMIN
+}
+
+enum TaskIncompletionReason {
+  // Emocionales
+  OVERWHELMED
+  ANXIOUS
+  UNMOTIVATED
+  PERFECTIONISM
+  FEAR_OF_FAILURE
+  // Externos
+  TIME_CONSTRAINT
+  DEPENDENCY_BLOCKED
+  PRIORITY_SHIFT
+  UNCLEAR_TASK
+  // Re-evaluación
+  NO_LONGER_NEEDED
+  DELEGATED
+  MERGED
+  // Otros
+  OTHER
+}
+
+model TaskReflection {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+
+  type      ReflectionType
+
+  emotion   String?   // Slug de emoción
+  intensity Int?      @default(5)
+  note      String?   @db.Text
+
+  blockerType     String?
+  suggestedAction String?
+
+  createdAt DateTime @default(now())
+
+  task      RowiTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_reflection")
+}
+
+enum ReflectionType {
+  CREATION
+  POSTPONE
+  BLOCK
+  COMPLETION
+  WEEKLY_REVIEW
+}
+
+// =========================================================
+// 🎨 VOCABULARIO EMOCIONAL PROGRESIVO (Six Seconds)
+// =========================================================
+
+model EmotionVocabulary {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+
+  level     EmotionLevel @default(DESAFIO)
+
+  unlockedEmotions   String[] @default([])
+  totalCheckins      Int @default(0)
+  uniqueEmotionsUsed Int @default(0)
+  progressToNextLevel Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("emotion_vocabulary")
+}
+
+enum EmotionLevel {
+  DESAFIO     // 8 emociones
+  EMERGENTE   // 24 emociones
+  FUNCIONAL   // 48 emociones
+  DIESTRO     // 80 emociones
+  EXPERTO     // 130+ emociones
+}
+
+// =========================================================
+// 📊 WEEKFLOW METRICS
+// =========================================================
+
+model WeekFlowMetrics {
+  id        String   @id @default(cuid())
+
+  tenantId  String?
+  hubId     String?
+  userId    String?
+
+  periodType  MetricPeriodType
+  periodStart DateTime
+  periodEnd   DateTime
+
+  totalCheckins       Int @default(0)
+  totalContributions  Int @default(0)
+  totalTasks          Int @default(0)
+  completedTasks      Int @default(0)
+
+  avgMoodIntensity    Float?
+  dominantEmotion     String?
+  moodVariance        Float?
+
+  commentCount        Int @default(0)
+  reactionCount       Int @default(0)
+  consecutiveWeeks    Int @default(0)
+
+  taskCompletionRate  Float?
+  participationRate   Float?
+
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, hubId, userId, periodType, periodStart])
+  @@index([tenantId, periodType])
+  @@index([hubId, periodType])
+  @@index([userId, periodType])
+  @@map("weekflow_metrics")
+}
+
+enum MetricPeriodType {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 

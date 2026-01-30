@@ -75,6 +75,11 @@ export interface RowiPlan {
   customOnboarding: boolean;
   workshopIncludes: boolean;
 
+  // WeekFlow
+  weekflowAccess: boolean;
+  maxWeekflows: number;
+  weekflowInsights: boolean;
+
   // Display
   badge?: string;
   badgeEN?: string;
@@ -151,6 +156,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     supportLevel: "community",
     customOnboarding: false,
     workshopIncludes: false,
+
+    // WeekFlow
+    weekflowAccess: false,
+    maxWeekflows: 0,
+    weekflowInsights: false,
 
     emoji: "🆓",
     color: "#6B7280",
@@ -239,6 +249,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     customOnboarding: false,
     workshopIncludes: false,
 
+    // WeekFlow
+    weekflowAccess: true,
+    maxWeekflows: 3,
+    weekflowInsights: false,
+
     badge: "Popular",
     badgeEN: "Popular",
     emoji: "⭐",
@@ -252,6 +267,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       "Todos los agentes Rowi",
       "Brain Brief Profile incluido",
       "20% descuento en SEI",
+      "WeekFlow (3 equipos)",
       "Hasta 3 comunidades",
       "Grupos privados",
       "Reportes avanzados",
@@ -336,6 +352,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     customOnboarding: false,
     workshopIncludes: false,
 
+    // WeekFlow
+    weekflowAccess: true,
+    maxWeekflows: 5,
+    weekflowInsights: false,
+
     badge: "Familias",
     badgeEN: "Families",
     emoji: "👨‍👩‍👧‍👦",
@@ -351,6 +372,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       "Brain Brief para todos",
       "30% descuento en SEI",
       "Benchmarks familiares",
+      "WeekFlow familiar (5 equipos)",
       "Dashboard familiar",
       "Soporte por chat",
     ],
@@ -433,6 +455,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     customOnboarding: true,
     workshopIncludes: false,
 
+    // WeekFlow
+    weekflowAccess: true,
+    maxWeekflows: 10,
+    weekflowInsights: true,
+
     badge: "Recomendado",
     badgeEN: "Recommended",
     emoji: "🚀",
@@ -451,6 +478,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       "Reportes avanzados",
       "Onboarding personalizado",
       "Soporte prioritario",
+      "WeekFlow + Insights (10 equipos)",
     ],
     featuresEN: [
       "500 AI tokens / user / month",
@@ -533,6 +561,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     customOnboarding: true,
     workshopIncludes: true,
 
+    // WeekFlow
+    weekflowAccess: true,
+    maxWeekflows: 50,
+    weekflowInsights: true,
+
     badge: "Empresas",
     badgeEN: "Business",
     emoji: "🏢",
@@ -553,6 +586,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       "Benchmarking sectorial",
       "Workshops de adopción",
       "Soporte prioritario",
+      "WeekFlow ilimitado + Insights",
     ],
     featuresEN: [
       "From $5 USD/user/month (min. 20)",
@@ -632,6 +666,11 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     supportLevel: "dedicated",
     customOnboarding: true,
     workshopIncludes: true,
+
+    // WeekFlow
+    weekflowAccess: true,
+    maxWeekflows: 0, // 0 = ilimitado
+    weekflowInsights: true,
 
     badge: "Enterprise",
     badgeEN: "Enterprise",

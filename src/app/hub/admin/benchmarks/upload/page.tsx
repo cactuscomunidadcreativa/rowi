@@ -41,7 +41,7 @@ interface UploadState {
   error?: string;
 }
 
-const CHUNK_SIZE = 10000; // Filas por chunk (10k para no exceder el límite de 4.5MB de Vercel)
+const CHUNK_SIZE = 2000; // Filas por chunk (2k para no exceder el límite de 4.5MB de Vercel)
 
 const BENCHMARK_TYPES = [
   { value: "ROWIVERSE", labelKey: "admin.benchmarks.types.rowiverse" },
@@ -268,6 +268,12 @@ export default function UploadBenchmarkPage() {
           }),
           signal: abortControllerRef.current.signal,
         });
+
+        // Manejar errores HTTP antes de parsear JSON
+        if (!chunkRes.ok) {
+          const errorText = await chunkRes.text();
+          throw new Error(`Error HTTP ${chunkRes.status}: ${errorText.slice(0, 200)}`);
+        }
 
         const chunkData = await chunkRes.json();
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,17 +64,19 @@ const EMOTION_EMOJIS: Record<string, string> = {
 
 export default function TaskInsightsPage() {
   const { t } = useI18n();
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
+  const authLoading = status === "loading";
+  const user = session?.user as { plan?: { weekflowAccess?: boolean; weekflowInsights?: boolean } } | undefined;
 
   const [insights, setInsights] = useState<Insights | null>(null);
   const [period, setPeriod] = useState("MONTHLY");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && session) {
       fetchInsights();
     }
-  }, [authLoading, user, period]);
+  }, [authLoading, session, period]);
 
   const fetchInsights = async () => {
     setIsLoading(true);

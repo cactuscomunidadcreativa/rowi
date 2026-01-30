@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
@@ -87,7 +87,8 @@ export default function WeekFlowPresentPage() {
   const router = useRouter();
   const params = useParams();
   const hubId = params.hubId as string;
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: authSession, status } = useSession();
+  const authLoading = status === "loading";
 
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,10 +96,10 @@ export default function WeekFlowPresentPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && authSession) {
       fetchCurrentSession();
     }
-  }, [authLoading, user, hubId]);
+  }, [authLoading, authSession, hubId]);
 
   useEffect(() => {
     // Keyboard navigation
@@ -254,12 +255,7 @@ export default function WeekFlowPresentPage() {
                     key={checkin.id}
                     className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-slate-800 shadow-lg"
                   >
-                    <Avatar className="w-16 h-16">
-                      <AvatarImage src={checkin.user.image} />
-                      <AvatarFallback className="text-xl">
-                        {checkin.user.name?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <Avatar src={checkin.user.image} alt={checkin.user.name} className="w-16 h-16" />
                     <span className="text-4xl">{getEmotionEmoji(checkin.emotion)}</span>
                     <span className="font-medium">{checkin.user.name}</span>
                   </div>
@@ -292,10 +288,7 @@ export default function WeekFlowPresentPage() {
                   <Card key={contribution.id} className="overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={contribution.user.image} />
-                          <AvatarFallback>{contribution.user.name?.[0]}</AvatarFallback>
-                        </Avatar>
+                        <Avatar src={contribution.user.image} alt={contribution.user.name} className="w-10 h-10" />
                         <div className="flex-1">
                           <p className="font-medium text-sm mb-1">
                             {contribution.user.name}

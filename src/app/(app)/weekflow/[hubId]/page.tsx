@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -85,9 +85,11 @@ export default function WeekFlowHubPage() {
   const router = useRouter();
   const params = useParams();
   const hubId = params.hubId as string;
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: authSession, status } = useSession();
+  const authLoading = status === "loading";
+  const user = authSession?.user as { id?: string; plan?: { weekflowAccess?: boolean } } | undefined;
 
-  const [session, setSession] = useState<Session | null>(null);
+  const [weekflowSession, setWeekflowSession] = useState<Session | null>(null);
   const [userCheckin, setUserCheckin] = useState<MoodCheckin | null>(null);
   const [requiresCheckin, setRequiresCheckin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,17 +101,17 @@ export default function WeekFlowHubPage() {
   const [isSubmitting, setIsSubmitting] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && authSession) {
       fetchCurrentSession();
     }
-  }, [authLoading, user, hubId]);
+  }, [authLoading, authSession, hubId]);
 
   const fetchCurrentSession = async () => {
     try {
       const res = await fetch(`/api/weekflow/sessions?hubId=${hubId}&current=true`);
       const data = await res.json();
       if (data.ok) {
-        setSession(data.session);
+        setWeekflowSession(data.session);
         setUserCheckin(data.userCheckin);
         setRequiresCheckin(data.requiresCheckin);
       }
@@ -122,7 +124,7 @@ export default function WeekFlowHubPage() {
 
   const handleAddContribution = async (type: "SHOW_TELL" | "TO_DISCUSS" | "FOCUS") => {
     const content = newContribution[type];
-    if (!content.trim() || !session) return;
+    if (!content.trim() || !weekflowSession) return;
 
     setIsSubmitting((prev) => ({ ...prev, [type]: true }));
 
@@ -131,7 +133,7 @@ export default function WeekFlowHubPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: session.id,
+          sessionId: weekflowSession.id,
           type,
           content: content.trim(),
           isTask: type === "FOCUS",
@@ -152,11 +154,11 @@ export default function WeekFlowHubPage() {
   };
 
   const getUserContributions = (type: string) => {
-    return session?.contributions.filter((c) => c.type === type && c.user.id === user?.id) || [];
+    return weekflowSession?.contributions.filter((c) => c.type === type && c.user.id === user?.id) || [];
   };
 
   const getTeamContributions = (type: string) => {
-    return session?.contributions.filter((c) => c.type === type && c.user.id !== user?.id) || [];
+    return weekflowSession?.contributions.filter((c) => c.type === type && c.user.id !== user?.id) || [];
   };
 
   if (authLoading || isLoading) {
@@ -192,9 +194,9 @@ export default function WeekFlowHubPage() {
   }
 
   const formatWeekRange = () => {
-    if (!session) return "";
-    const start = new Date(session.weekStart);
-    const end = new Date(session.weekEnd);
+    if (!weekflowSession) return "";
+    const start = new Date(weekflowSession.weekStart);
+    const end = new Date(weekflowSession.weekEnd);
     return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
   };
 
@@ -205,7 +207,7 @@ export default function WeekFlowHubPage() {
         <div>
           <h1 className="text-2xl font-bold mb-1">{t("weekflow.title")}</h1>
           <p className="text-muted-foreground">
-            {t("weekflow.week") || "Semana"} {session?.weekNumber}, {session?.year} •{" "}
+            {t("weekflow.week") || "Semana"} {weekflowSession?.weekNumber}, {weekflowSession?.year} •{" "}
             {formatWeekRange()}
           </p>
         </div>
@@ -373,7 +375,7 @@ export default function WeekFlowHubPage() {
       </Tabs>
 
       {/* Team Pulse (simplified) */}
-      {session && session.moodCheckins.length > 1 && (
+      {weekflowSession && weekflowSession.moodCheckins.length > 1 && (
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -383,15 +385,12 @@ export default function WeekFlowHubPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {session.moodCheckins.map((checkin) => (
+              {weekflowSession.moodCheckins.map((checkin) => (
                 <div
                   key={checkin.id}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted"
                 >
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={checkin.user.image} />
-                    <AvatarFallback>{checkin.user.name?.[0]}</AvatarFallback>
-                  </Avatar>
+                  <Avatar src={checkin.user.image} alt={checkin.user.name} className="w-6 h-6" />
                   <span className="text-lg">{getEmotionEmoji(checkin.emotion)}</span>
                 </div>
               ))}
@@ -444,10 +443,7 @@ function ContributionCard({
     >
       <div className="flex items-start gap-3">
         {!isOwn && (
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={contribution.user.image} />
-            <AvatarFallback>{contribution.user.name?.[0]}</AvatarFallback>
-          </Avatar>
+          <Avatar src={contribution.user.image} alt={contribution.user.name} className="w-8 h-8" />
         )}
         <div className="flex-1 min-w-0">
           {!isOwn && (

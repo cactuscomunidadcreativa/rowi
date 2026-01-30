@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useI18n } from "@/lib/i18n/i18n-context";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   type EmotionLevel,
   LEVEL_COLORS,
   LEVEL_INFO,
 } from "./emotions-data";
 import { Button } from "@/components/ui/button";
-import confetti from "canvas-confetti";
 
 interface EmotionLevelUpProps {
   isOpen: boolean;
@@ -33,15 +32,6 @@ export function EmotionLevelUp({
     if (isOpen) {
       // Delay para mostrar contenido después de la animación inicial
       const timer = setTimeout(() => setShowContent(true), 300);
-
-      // Confetti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: [LEVEL_COLORS[newLevel], "#FFD700", "#FFA500"],
-      });
-
       return () => clearTimeout(timer);
     } else {
       setShowContent(false);

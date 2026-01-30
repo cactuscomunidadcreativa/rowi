@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useI18n } from "@/lib/i18n/i18n-context";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   type Emotion,
   type EmotionLevel,

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +28,8 @@ export default function WeekFlowCheckinPage() {
   const router = useRouter();
   const params = useParams();
   const hubId = params.hubId as string;
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: authSession, status } = useSession();
+  const authLoading = status === "loading";
 
   const [session, setSession] = useState<Session | null>(null);
   const [vocabulary, setVocabulary] = useState<UserVocabulary | null>(null);
@@ -40,10 +41,10 @@ export default function WeekFlowCheckinPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && authSession) {
       fetchData();
     }
-  }, [authLoading, user, hubId]);
+  }, [authLoading, authSession, hubId]);
 
   const fetchData = async () => {
     try {

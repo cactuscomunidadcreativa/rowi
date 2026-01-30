@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,16 +29,17 @@ export default function WeekFlowHistoryPage() {
   const router = useRouter();
   const params = useParams();
   const hubId = params.hubId as string;
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: authSession, status } = useSession();
+  const authLoading = status === "loading";
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && authSession) {
       fetchSessions();
     }
-  }, [authLoading, user, hubId]);
+  }, [authLoading, authSession, hubId]);
 
   const fetchSessions = async () => {
     try {

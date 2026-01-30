@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Calendar, Users, ArrowRight, Lock } from "lucide-react";
@@ -22,15 +22,17 @@ interface Hub {
 export default function WeekFlowPage() {
   const { t } = useI18n();
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
+  const authLoading = status === "loading";
+  const user = session?.user as { plan?: { weekflowAccess?: boolean } } | undefined;
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && session) {
       fetchUserHubs();
     }
-  }, [authLoading, user]);
+  }, [authLoading, session]);
 
   const fetchUserHubs = async () => {
     try {

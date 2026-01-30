@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { useAuth } from "@/domains/auth/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,9 @@ const STATUS_ICONS = {
 
 export default function RowiTasksPage() {
   const { t } = useI18n();
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
+  const authLoading = status === "loading";
+  const user = session?.user as { plan?: { weekflowAccess?: boolean; weekflowInsights?: boolean } } | undefined;
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,10 +90,10 @@ export default function RowiTasksPage() {
   const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && session) {
       fetchTasks();
     }
-  }, [authLoading, user]);
+  }, [authLoading, session]);
 
   const fetchTasks = async () => {
     try {

@@ -41,7 +41,7 @@ interface UploadState {
   error?: string;
 }
 
-const CHUNK_SIZE = 2000; // Filas por chunk (2k para no exceder el límite de 4.5MB de Vercel)
+const CHUNK_SIZE = 1000; // Filas por chunk (1k para no exceder el límite de 4.5MB de Vercel)
 
 const BENCHMARK_TYPES = [
   { value: "ROWIVERSE", labelKey: "admin.benchmarks.types.rowiverse" },
@@ -238,12 +238,16 @@ export default function UploadBenchmarkPage() {
         const end = Math.min(start + CHUNK_SIZE, totalRows);
         const chunkRows = rows.slice(start, end);
 
-        // Mapear filas a objetos
+        // Mapear filas a objetos (solo incluir valores no vacíos para reducir payload)
         const mappedRows = chunkRows.map((row) => {
           const obj: Record<string, any> = {};
           headers.forEach((header, idx) => {
-            const mappedKey = SOH_COLUMN_MAPPING[header] || header.toLowerCase().replace(/\s+/g, "_");
-            obj[mappedKey] = row[idx] ?? null;
+            const value = row[idx];
+            // Solo incluir si tiene valor (reduce tamaño del JSON significativamente)
+            if (value !== null && value !== undefined && value !== "") {
+              const mappedKey = SOH_COLUMN_MAPPING[header] || header.toLowerCase().replace(/\s+/g, "_");
+              obj[mappedKey] = value;
+            }
           });
           return obj;
         });

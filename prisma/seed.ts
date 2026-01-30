@@ -1091,6 +1091,81 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("   Streak creado");
 
   // ============================================================
+  // 13.5. EQ SNAPSHOT PARA SUPERADMIN
+  // ============================================================
+  console.log("\n13.5. Creando EQ Snapshot para SuperAdmin...");
+
+  const superadminEQ = await prisma.eqSnapshot.upsert({
+    where: { id: "sei-superadmin" },
+    update: {
+      K: 115,
+      C: 116,
+      G: 105,
+      brainStyle: "Strategist",
+      recentMood: "Confianza",
+      moodIntensity: "Seguro",
+    },
+    create: {
+      id: "sei-superadmin",
+      user: { connect: { id: superadmin.id } },
+      rowiverseUser: { connect: { id: rowiverseUser.id } },
+      email: adminEmail,
+      dataset: "ROWI Admin Initial",
+      project: "Rowi Core Team",
+      owner: "Sistema",
+      at: new Date(),
+      K: 115,
+      C: 116,
+      G: 105,
+      EL: 122,
+      RP: 108,
+      ACT: 124,
+      NE: 124,
+      IM: 104,
+      OP: 114,
+      EMP: 93,
+      NG: 118,
+      brainStyle: "Strategist",
+      recentMood: "Confianza",
+      moodIntensity: "Seguro",
+      overall4: 111.66,
+      country: "PE",
+      gender: "M",
+      age: 39,
+      reliabilityIndex: 85.69,
+      positiveImpressionRange: "Average",
+    },
+  });
+  console.log("   EQ Snapshot SuperAdmin:", superadminEQ.id);
+
+  // Crear competencias EQ para superadmin
+  const superadminCompetencies = [
+    { key: "EL", label: "Enhance Emotional Literacy", score: 121.93 },
+    { key: "RP", label: "Recognize Patterns", score: 108.12 },
+    { key: "ACT", label: "Apply Consequential Thinking", score: 124.10 },
+    { key: "NE", label: "Navigate Emotions", score: 124.12 },
+    { key: "IM", label: "Engage Intrinsic Motivation", score: 104.42 },
+    { key: "OP", label: "Exercise Optimism", score: 113.84 },
+    { key: "EMP", label: "Increase Empathy", score: 92.76 },
+    { key: "NG", label: "Pursue Noble Goals", score: 118.00 },
+  ];
+
+  for (const comp of superadminCompetencies) {
+    await prisma.eqCompetencySnapshot.upsert({
+      where: { id: `${superadminEQ.id}-${comp.key}` },
+      update: { score: comp.score },
+      create: {
+        id: `${superadminEQ.id}-${comp.key}`,
+        snapshot: { connect: { id: superadminEQ.id } },
+        key: comp.key,
+        label: comp.label,
+        score: comp.score,
+      },
+    });
+  }
+  console.log("   Competencias EQ SuperAdmin creadas");
+
+  // ============================================================
   // 14. TENANT BRANDING
   // ============================================================
   console.log("\n14. Creando Tenant Branding...");

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { upload } from "@vercel/blob/client";
 import {
   Upload,
   FileSpreadsheet,
@@ -11,6 +12,7 @@ import {
   Loader2,
   X,
   Zap,
+  Cloud,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -20,7 +22,12 @@ import {
 } from "@/components/admin/AdminPage";
 
 /* =========================================================
-   📊 Upload Benchmark — Con barra de progreso visible
+   📊 Upload Benchmark — Con Vercel Blob para archivos grandes
+
+   Flujo:
+   1. Cliente sube archivo directo a Vercel Blob (hasta 500MB)
+   2. Backend recibe URL del blob y procesa en background
+   3. Frontend hace polling del estado del job
 ========================================================= */
 
 type UploadPhase = "idle" | "uploading" | "processing" | "completed" | "error";
@@ -62,8 +69,9 @@ const BENCHMARK_SCOPES = [
 
 const PHASE_MESSAGES = {
   es: {
-    uploading: "Subiendo archivo...",
+    uploading: "Subiendo archivo a la nube...",
     processing: "Procesando datos...",
+    downloading: "Descargando archivo...",
     parsing: "Analizando archivo...",
     importing: "Importando filas...",
     statistics: "Calculando estadísticas...",
@@ -71,8 +79,9 @@ const PHASE_MESSAGES = {
     error: "Error en el proceso",
   },
   en: {
-    uploading: "Uploading file...",
+    uploading: "Uploading file to cloud...",
     processing: "Processing data...",
+    downloading: "Downloading file...",
     parsing: "Analyzing file...",
     importing: "Importing rows...",
     statistics: "Calculating statistics...",
@@ -84,7 +93,7 @@ const PHASE_MESSAGES = {
 export default function UploadBenchmarkPage() {
   const { t, lang } = useI18n();
   const router = useRouter();
-  const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
@@ -146,99 +155,96 @@ export default function UploadBenchmarkPage() {
   };
 
   // =========================================================
-  // 🚀 UPLOAD CON XMLHttpRequest para progreso real
+  // 🚀 UPLOAD CON VERCEL BLOB (client-side)
   // =========================================================
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file || !name.trim()) {
       toast.error(t("admin.benchmarks.errors.noData") || "Selecciona archivo y nombre");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("name", name.trim());
-    formData.append("type", type);
-    formData.append("scope", scope);
-    formData.append("isLearning", String(isLearning));
+    abortControllerRef.current = new AbortController();
 
-    const xhr = new XMLHttpRequest();
-    xhrRef.current = xhr;
+    try {
+      setUploadState({
+        phase: "uploading",
+        progress: 0,
+        message: messages.uploading,
+      });
 
-    // Progreso del upload
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 50); // 0-50% para upload
-        setUploadState({
-          phase: "uploading",
-          progress: percent,
-          message: `${messages.uploading} ${Math.round((e.loaded / 1024 / 1024))}MB / ${Math.round((e.total / 1024 / 1024))}MB`,
-        });
-      }
-    };
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (data.ok) {
-            setUploadState({
-              phase: "processing",
-              progress: 55,
-              message: messages.processing,
-            });
-            // Iniciar polling del job
-            pollJobStatus(data.jobId);
-          } else {
-            setUploadState({
-              phase: "error",
-              progress: 0,
-              message: messages.error,
-              error: data.error || "Error desconocido",
-            });
-            toast.error(data.error || "Error al procesar");
-          }
-        } catch {
+      // 1. Subir archivo directamente a Vercel Blob
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/admin/benchmarks/blob-token",
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded / progressEvent.total) * 40);
           setUploadState({
-            phase: "error",
-            progress: 0,
-            message: messages.error,
-            error: "Error parsing response",
+            phase: "uploading",
+            progress: percent,
+            message: `${messages.uploading} ${Math.round(progressEvent.loaded / 1024 / 1024)}MB / ${Math.round(progressEvent.total / 1024 / 1024)}MB`,
           });
-        }
+        },
+      });
+
+      setUploadState({
+        phase: "uploading",
+        progress: 45,
+        message: "Iniciando procesamiento...",
+      });
+
+      // 2. Notificar al backend para procesar el archivo
+      const response = await fetch("/api/admin/benchmarks/start-processing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blobUrl: blob.url,
+          name: name.trim(),
+          type,
+          scope,
+          isLearning,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || "Error iniciando procesamiento");
+      }
+
+      setUploadState({
+        phase: "processing",
+        progress: 50,
+        message: messages.processing,
+      });
+
+      // 3. Polling del estado del job
+      pollJobStatus(data.jobId, data.benchmarkId);
+
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        setUploadState({
+          phase: "idle",
+          progress: 0,
+          message: "",
+        });
+        toast.info("Upload cancelado");
       } else {
         setUploadState({
           phase: "error",
           progress: 0,
           message: messages.error,
-          error: `HTTP ${xhr.status}: ${xhr.statusText}`,
+          error: error.message || "Error desconocido",
         });
+        toast.error(error.message || "Error en upload");
       }
-    };
-
-    xhr.onerror = () => {
-      setUploadState({
-        phase: "error",
-        progress: 0,
-        message: messages.error,
-        error: "Error de conexión",
-      });
-    };
-
-    // Iniciar upload
-    setUploadState({
-      phase: "uploading",
-      progress: 0,
-      message: messages.uploading,
-    });
-
-    xhr.open("POST", "/api/admin/benchmarks/upload");
-    xhr.send(formData);
+    }
   };
 
   // =========================================================
   // 📊 POLLING del estado del job
   // =========================================================
-  const pollJobStatus = async (jobId: string) => {
+  const pollJobStatus = async (jobId: string, benchmarkId: string) => {
     const poll = async () => {
       try {
         const res = await fetch(`/api/admin/benchmarks/job/${jobId}`);
@@ -252,7 +258,8 @@ export default function UploadBenchmarkPage() {
 
           // Determinar mensaje según fase
           let phaseMessage = messages.processing;
-          if (job.currentPhase === "parsing") phaseMessage = messages.parsing;
+          if (job.currentPhase === "downloading") phaseMessage = messages.downloading;
+          else if (job.currentPhase === "parsing") phaseMessage = messages.parsing;
           else if (job.currentPhase === "importing") phaseMessage = messages.importing;
           else if (job.currentPhase === "statistics") phaseMessage = messages.statistics;
 
@@ -266,7 +273,7 @@ export default function UploadBenchmarkPage() {
             });
             toast.success(t("admin.benchmarks.upload.completed") || "¡Benchmark procesado!");
             setTimeout(() => {
-              router.push(`/hub/admin/benchmarks/${job.benchmarkId}`);
+              router.push(`/hub/admin/benchmarks/${benchmarkId}`);
             }, 2000);
           } else if (job.status === "failed") {
             setUploadState({
@@ -284,7 +291,6 @@ export default function UploadBenchmarkPage() {
               processedRows: job.processedRows,
               totalRows: job.totalRows,
             });
-            // Continuar polling
             setTimeout(poll, 1500);
           }
         } else {
@@ -299,9 +305,7 @@ export default function UploadBenchmarkPage() {
   };
 
   const handleCancel = () => {
-    if (xhrRef.current) {
-      xhrRef.current.abort();
-    }
+    abortControllerRef.current?.abort();
     setUploadState({
       phase: "idle",
       progress: 0,
@@ -364,7 +368,7 @@ export default function UploadBenchmarkPage() {
               </div>
             ) : (
               <>
-                <Upload className="w-12 h-12 mx-auto text-[var(--rowi-muted)] mb-4" />
+                <Cloud className="w-12 h-12 mx-auto text-[var(--rowi-muted)] mb-4" />
                 <p className="text-[var(--rowi-foreground)] font-medium mb-1">
                   {t("admin.benchmarks.upload.dropzone") || "Arrastra tu archivo o haz clic"}
                 </p>
@@ -448,12 +452,12 @@ export default function UploadBenchmarkPage() {
         </AdminCard>
 
         {/* =========================================================
-            📊 BARRA DE PROGRESO SIEMPRE VISIBLE DURANTE UPLOAD
+            📊 BARRA DE PROGRESO
         ========================================================= */}
         {uploadState.phase !== "idle" && (
           <AdminCard>
             <div className="space-y-4">
-              {/* Header con icono y estado */}
+              {/* Header */}
               <div className="flex items-center gap-3">
                 {uploadState.phase === "completed" ? (
                   <CheckCircle className="w-6 h-6 text-green-500" />
@@ -476,7 +480,7 @@ export default function UploadBenchmarkPage() {
                 </span>
               </div>
 
-              {/* Barra de progreso */}
+              {/* Progress bar */}
               <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ${
@@ -528,7 +532,7 @@ export default function UploadBenchmarkPage() {
           </AdminCard>
         )}
 
-        {/* Botones */}
+        {/* Buttons */}
         <div className="flex justify-end gap-3">
           {isUploading ? (
             <AdminButton variant="secondary" onClick={handleCancel}>
@@ -544,11 +548,11 @@ export default function UploadBenchmarkPage() {
               </AdminButton>
               <AdminButton
                 variant="primary"
-                icon={Upload}
+                icon={Cloud}
                 onClick={handleUpload}
                 disabled={!file || !name.trim() || uploadState.phase === "completed"}
               >
-                {t("admin.benchmarks.upload.startUpload") || "Iniciar Upload"}
+                {t("admin.benchmarks.upload.startUpload") || "Subir a la Nube"}
               </AdminButton>
             </>
           )}

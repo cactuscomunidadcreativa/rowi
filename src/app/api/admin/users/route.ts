@@ -84,13 +84,22 @@ export async function GET(req: NextRequest) {
       prisma.user.count({ where }),
     ]);
 
-    return NextResponse.json({
-      ok: true,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      users,
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        users,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      }
+    );
   } catch (err: any) {
     console.error("❌ Error GET /api/admin/users:", err);
     return NextResponse.json(

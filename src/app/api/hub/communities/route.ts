@@ -26,7 +26,12 @@ export async function GET(req: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(communities ?? []);
+    return NextResponse.json(communities ?? [], {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache",
+      },
+    });
   } catch (err: any) {
     console.error("❌ Error GET /hub/communities:", err);
     return NextResponse.json([], { status: 500 });

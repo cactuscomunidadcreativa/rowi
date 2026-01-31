@@ -168,6 +168,14 @@ export async function POST(req: NextRequest) {
           relationships: row.relationships ?? null,
           qualityOfLife: row.qualityOfLife ?? null,
           wellbeing: row.wellbeing ?? null,
+          influence: row.influence ?? null,
+          decisionMaking: row.decisionMaking ?? null,
+          community: row.community ?? null,
+          network: row.network ?? null,
+          achievement: row.achievement ?? null,
+          satisfaction: row.satisfaction ?? null,
+          balance: row.balance ?? null,
+          health: row.health ?? null,
         });
         validRows++;
 

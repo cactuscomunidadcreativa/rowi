@@ -384,3 +384,4 @@ async function parseExcel(buffer: Buffer): Promise<Record<string, any>[]> {
   const sheet = workbook.Sheets[sheetName];
   return XLSX.utils.sheet_to_json(sheet);
 }
+// Force redeploy Fri Jan 30 21:20:07 -05 2026

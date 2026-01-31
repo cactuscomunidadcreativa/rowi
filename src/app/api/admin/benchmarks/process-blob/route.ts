@@ -177,6 +177,27 @@ export async function POST(req: NextRequest) {
           satisfaction: row.satisfaction ?? null,
           balance: row.balance ?? null,
           health: row.health ?? null,
+          // Brain Talents - FOCUS cluster
+          dataMining: row.dataMining ?? null,
+          modeling: row.modeling ?? null,
+          prioritizing: row.prioritizing ?? null,
+          connection: row.connection ?? null,
+          emotionalInsight: row.emotionalInsight ?? null,
+          collaboration: row.collaboration ?? null,
+          // Brain Talents - DECISIONS cluster
+          reflecting: row.reflecting ?? null,
+          adaptability: row.adaptability ?? null,
+          criticalThinking: row.criticalThinking ?? null,
+          resilience: row.resilience ?? null,
+          riskTolerance: row.riskTolerance ?? null,
+          imagination: row.imagination ?? null,
+          // Brain Talents - DRIVE cluster
+          proactivity: row.proactivity ?? null,
+          commitment: row.commitment ?? null,
+          problemSolving: row.problemSolving ?? null,
+          vision: row.vision ?? null,
+          designing: row.designing ?? null,
+          entrepreneurship: row.entrepreneurship ?? null,
         });
         validRows++;
 

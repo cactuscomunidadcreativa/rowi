@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Building2,
   RefreshCcw,
+  Calculator,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -77,6 +78,7 @@ export default function BenchmarkDashboardPage() {
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [topCorrelations, setTopCorrelations] = useState<Correlation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calculatingCorrelations, setCalculatingCorrelations] = useState(false);
 
   async function loadData() {
     setLoading(true);
@@ -111,6 +113,32 @@ export default function BenchmarkDashboardPage() {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  // Calcular correlaciones globales
+  async function calculateCorrelations() {
+    setCalculatingCorrelations(true);
+    try {
+      const res = await fetch(`/api/admin/benchmarks/${id}/correlations/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // Sin filtros = global
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        toast.success(t("admin.benchmarks.correlations.calculated"));
+        // Recargar para mostrar las nuevas correlaciones
+        loadData();
+      } else {
+        toast.error(data.error || t("common.error"));
+      }
+    } catch (error) {
+      toast.error(t("common.error"));
+    } finally {
+      setCalculatingCorrelations(false);
+    }
+  }
 
   if (!benchmark) {
     return (
@@ -294,9 +322,22 @@ export default function BenchmarkDashboardPage() {
           </div>
 
           {topCorrelations.length === 0 && (
-            <p className="text-sm text-[var(--rowi-muted)] text-center py-4">
-              {t("admin.benchmarks.stats.noData")}
-            </p>
+            <div className="text-center py-4">
+              <p className="text-sm text-[var(--rowi-muted)] mb-3">
+                {t("admin.benchmarks.stats.noData")}
+              </p>
+              <AdminButton
+                variant="primary"
+                size="sm"
+                icon={calculatingCorrelations ? RefreshCcw : Calculator}
+                onClick={calculateCorrelations}
+                disabled={calculatingCorrelations}
+              >
+                {calculatingCorrelations
+                  ? t("admin.benchmarks.correlations.calculating")
+                  : t("admin.benchmarks.correlations.generate")}
+              </AdminButton>
+            </div>
           )}
         </AdminCard>
 

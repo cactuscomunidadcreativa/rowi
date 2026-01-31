@@ -236,13 +236,9 @@ export default function TopPerformersPage() {
     return value !== "";
   };
 
-  // Calcular top performers con filtros
+  // Calcular top performers con filtros (o global si no hay filtros)
   async function calculateWithFilters() {
     const hasFilters = Object.values(filters).some(hasValue);
-    if (!hasFilters) {
-      loadTopPerformers();
-      return;
-    }
 
     setCalculating(true);
     try {
@@ -263,10 +259,19 @@ export default function TopPerformersPage() {
 
       if (data.ok) {
         setTopPerformers(data.topPerformers);
-        setIsFiltered(true);
+        setIsFiltered(hasFilters);
         setWarnings(data.warnings || []);
         setMethodology(data.methodology || null);
+
+        // Si no hay filtros, también guardar como global
+        if (!hasFilters) {
+          setGlobalTopPerformers(data.topPerformers);
+        }
+
         toast.success(t("admin.benchmarks.topPerformers.calculated"));
+
+        // También calcular y guardar correlaciones en background
+        calculateCorrelations(hasFilters ? filters : {});
       } else {
         toast.error(t("common.error"));
       }
@@ -274,6 +279,31 @@ export default function TopPerformersPage() {
       toast.error(t("common.error"));
     } finally {
       setCalculating(false);
+    }
+  }
+
+  // Calcular correlaciones y guardarlas en DB
+  async function calculateCorrelations(filterParams: Record<string, FilterValue>) {
+    try {
+      const body: Record<string, any> = {};
+
+      Object.entries(filterParams).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+          body[key] = value[0]; // Por ahora solo primer valor para correlaciones
+        } else if (value && typeof value === 'string') {
+          body[key] = value;
+        }
+      });
+
+      await fetch(`/api/admin/benchmarks/${id}/correlations/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      console.log('✅ Correlaciones calculadas y guardadas');
+    } catch (error) {
+      console.error('Error calculating correlations:', error);
     }
   }
 
@@ -510,7 +540,7 @@ export default function TopPerformersPage() {
               variant="primary"
               size="sm"
               onClick={calculateWithFilters}
-              disabled={calculating || !hasActiveFilters}
+              disabled={calculating}
               icon={calculating ? RefreshCw : undefined}
             >
               {calculating ? t("admin.benchmarks.topPerformers.calculating") : t("admin.benchmarks.topPerformers.calculate")}

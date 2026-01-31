@@ -13,6 +13,7 @@ import {
   SOH_COLUMN_MAPPING,
   NUMERIC_COLUMNS,
   OUTCOMES,
+  BRAIN_TALENTS,
   normalizeAgeRange,
   detectGeneration,
   extractDateInfo,
@@ -290,7 +291,202 @@ export async function POST(req: NextRequest) {
       console.log(`📊 Calculated ${correlations.length} correlations`);
     }
 
-    // Fase 5: Finalizar
+    // Fase 5: Calcular top performers automáticamente
+    await prisma.benchmarkUploadJob.update({
+      where: { id: jobId },
+      data: {
+        currentPhase: "top-performers",
+        progress: 93,
+      },
+    });
+
+    console.log(`🏆 Calculating top performers...`);
+
+    const topPerformersToCreate: any[] = [];
+    const PERCENTILE_THRESHOLD = 90;
+
+    for (const outcome of OUTCOMES) {
+      // Contar registros con este outcome
+      const count = await prisma.benchmarkDataPoint.count({
+        where: { benchmarkId, [outcome]: { not: null } },
+      });
+
+      if (count < 30) continue;
+
+      // Calcular umbral P90
+      const p90Index = Math.floor(count * 0.9);
+      const thresholdRecord = await prisma.benchmarkDataPoint.findFirst({
+        where: { benchmarkId, [outcome]: { not: null } },
+        orderBy: { [outcome]: "asc" },
+        skip: p90Index,
+        select: { [outcome]: true },
+      });
+
+      if (!thresholdRecord || (thresholdRecord as any)[outcome] === null) continue;
+      const threshold = (thresholdRecord as any)[outcome];
+
+      // Obtener top performers para este outcome
+      const topPerformerData = await prisma.benchmarkDataPoint.findMany({
+        where: { benchmarkId, [outcome]: { gte: threshold } },
+        select: {
+          K: true, C: true, G: true,
+          EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+          dataMining: true, modeling: true, prioritizing: true, connection: true,
+          emotionalInsight: true, collaboration: true, reflecting: true, adaptability: true,
+          criticalThinking: true, resilience: true, riskTolerance: true,
+          imagination: true, proactivity: true, commitment: true, problemSolving: true,
+          vision: true, designing: true, entrepreneurship: true,
+          [outcome]: true,
+        },
+      });
+
+      const sampleSize = topPerformerData.length;
+      if (sampleSize < 30) continue;
+
+      // Acumuladores para promedios
+      const compAccumulators: Record<string, { sum: number; count: number }> = {};
+      const talentAccumulators: Record<string, { sum: number; count: number }> = {};
+      const pairCounts: Record<string, { count: number; outcomeSum: number }> = {};
+      const talentPairCounts: Record<string, { count: number; outcomeSum: number }> = {};
+
+      for (const comp of ["K", "C", "G", ...EQ_COMPETENCIES]) {
+        compAccumulators[comp] = { sum: 0, count: 0 };
+      }
+      for (const talent of BRAIN_TALENTS) {
+        talentAccumulators[talent] = { sum: 0, count: 0 };
+      }
+
+      for (const dp of topPerformerData) {
+        const dpAny = dp as any;
+
+        // Acumular competencias
+        for (const comp of ["K", "C", "G", ...EQ_COMPETENCIES]) {
+          const val = dpAny[comp];
+          if (typeof val === "number") {
+            compAccumulators[comp].sum += val;
+            compAccumulators[comp].count++;
+          }
+        }
+
+        // Acumular talentos
+        for (const talent of BRAIN_TALENTS) {
+          const val = dpAny[talent];
+          if (typeof val === "number") {
+            talentAccumulators[talent].sum += val;
+            talentAccumulators[talent].count++;
+          }
+        }
+
+        // Detectar top 3 competencias para patrones
+        const compScores = EQ_COMPETENCIES
+          .map(comp => ({ key: comp, score: dpAny[comp] || 0 }))
+          .filter(c => c.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        const outcomeValue = dpAny[outcome] || 0;
+
+        for (let j = 0; j < compScores.length; j++) {
+          for (let k = j + 1; k < compScores.length; k++) {
+            const pair = [compScores[j].key, compScores[k].key].sort().join("+");
+            if (!pairCounts[pair]) pairCounts[pair] = { count: 0, outcomeSum: 0 };
+            pairCounts[pair].count++;
+            pairCounts[pair].outcomeSum += outcomeValue;
+          }
+        }
+
+        // Detectar top 3 talentos para patrones
+        const talentScores = BRAIN_TALENTS
+          .map(talent => ({ key: talent, score: dpAny[talent] || 0 }))
+          .filter(t => t.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        for (let j = 0; j < talentScores.length; j++) {
+          for (let k = j + 1; k < talentScores.length; k++) {
+            const pair = [talentScores[j].key, talentScores[k].key].sort().join("+");
+            if (!talentPairCounts[pair]) talentPairCounts[pair] = { count: 0, outcomeSum: 0 };
+            talentPairCounts[pair].count++;
+            talentPairCounts[pair].outcomeSum += outcomeValue;
+          }
+        }
+      }
+
+      const getAvg = (acc: { sum: number; count: number }) => acc.count > 0 ? acc.sum / acc.count : null;
+
+      const topCompetencies = EQ_COMPETENCIES
+        .map(comp => ({
+          key: comp,
+          avgScore: getAvg(compAccumulators[comp]) || 0,
+          importance: Math.min(100, getAvg(compAccumulators[comp]) || 0),
+          diffFromAvg: 0,
+        }))
+        .filter(c => c.avgScore > 0)
+        .sort((a, b) => b.avgScore - a.avgScore);
+
+      const topTalents = BRAIN_TALENTS
+        .map(talent => ({
+          key: talent,
+          avgScore: getAvg(talentAccumulators[talent]) || 0,
+          importance: Math.min(100, getAvg(talentAccumulators[talent]) || 0),
+        }))
+        .filter(t => t.avgScore > 0)
+        .sort((a, b) => b.importance - a.importance);
+
+      const commonPatterns = Object.entries(pairCounts)
+        .map(([pair, data]) => ({
+          competencies: pair.split("+"),
+          frequency: Math.round((data.count / sampleSize) * 100),
+          avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
+        }))
+        .filter(p => p.frequency >= 20)
+        .sort((a, b) => b.frequency - a.frequency)
+        .slice(0, 5);
+
+      const talentPatterns = Object.entries(talentPairCounts)
+        .map(([pair, data]) => ({
+          talents: pair.split("+"),
+          frequency: Math.round((data.count / sampleSize) * 100),
+          avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
+        }))
+        .filter(p => p.frequency >= 10)
+        .sort((a, b) => b.frequency - a.frequency)
+        .slice(0, 6);
+
+      topPerformersToCreate.push({
+        benchmarkId,
+        outcomeKey: outcome,
+        percentileThreshold: PERCENTILE_THRESHOLD,
+        sampleSize,
+        avgK: getAvg(compAccumulators["K"]),
+        avgC: getAvg(compAccumulators["C"]),
+        avgG: getAvg(compAccumulators["G"]),
+        avgEL: getAvg(compAccumulators["EL"]),
+        avgRP: getAvg(compAccumulators["RP"]),
+        avgACT: getAvg(compAccumulators["ACT"]),
+        avgNE: getAvg(compAccumulators["NE"]),
+        avgIM: getAvg(compAccumulators["IM"]),
+        avgOP: getAvg(compAccumulators["OP"]),
+        avgEMP: getAvg(compAccumulators["EMP"]),
+        avgNG: getAvg(compAccumulators["NG"]),
+        topCompetencies,
+        topTalents,
+        commonPatterns,
+        talentPatterns,
+      });
+
+      console.log(`🏆 ${outcome}: ${sampleSize} top performers`);
+    }
+
+    if (topPerformersToCreate.length > 0) {
+      await prisma.benchmarkTopPerformer.createMany({
+        data: topPerformersToCreate,
+        skipDuplicates: true,
+      });
+    }
+    console.log(`🏆 Created ${topPerformersToCreate.length} top performer profiles`);
+
+    // Fase 6: Finalizar
     await prisma.benchmarkUploadJob.update({
       where: { id: jobId },
       data: {

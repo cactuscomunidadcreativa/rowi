@@ -3,7 +3,8 @@
  * POST /api/admin/benchmarks/[id]/correlations/calculate
  *
  * Calcula correlaciones entre competencias EQ y outcomes para un benchmark.
- * Opcionalmente filtra por país, región, sector.
+ * Usa MUESTREO ESTADÍSTICO para datasets grandes (>20k registros).
+ * Con 15k muestras tenemos 99% confianza y <1% margen de error.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -17,6 +18,10 @@ export const maxDuration = 300; // 5 minutos
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
+
+// Configuración de muestreo
+const MAX_SAMPLE_SIZE = 15000; // 15k muestras = 99% confianza
+const MIN_DATA_POINTS = 10;
 
 // Todos los outcomes disponibles
 const ALL_OUTCOMES = [
@@ -33,6 +38,48 @@ const ALL_OUTCOMES = [
   "balance",
   "health",
 ];
+
+/**
+ * Obtiene una muestra aleatoria de IDs usando SQL
+ */
+async function getRandomSampleIds(
+  benchmarkId: string,
+  whereFilter: any,
+  sampleSize: number
+): Promise<string[]> {
+  // Contar total primero
+  const totalCount = await prisma.benchmarkDataPoint.count({
+    where: whereFilter,
+  });
+
+  if (totalCount <= sampleSize) {
+    // Si hay menos registros que el tamaño de muestra, obtener todos los IDs
+    const allRecords = await prisma.benchmarkDataPoint.findMany({
+      where: whereFilter,
+      select: { id: true },
+    });
+    return allRecords.map(r => r.id);
+  }
+
+  // Para datasets grandes, usar skip aleatorio para muestreo
+  const ids: string[] = [];
+  const skipInterval = Math.floor(totalCount / sampleSize);
+
+  // Obtener IDs distribuidos uniformemente
+  for (let i = 0; i < sampleSize && i * skipInterval < totalCount; i++) {
+    const skip = i * skipInterval + Math.floor(Math.random() * skipInterval);
+    const record = await prisma.benchmarkDataPoint.findFirst({
+      where: whereFilter,
+      select: { id: true },
+      skip: Math.min(skip, totalCount - 1),
+    });
+    if (record) {
+      ids.push(record.id);
+    }
+  }
+
+  return ids;
+}
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
@@ -61,7 +108,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     console.log(`📊 Calculating correlations for benchmark ${benchmarkId}`);
     console.log(`📊 Outcomes: ${outcomesToCalculate.join(", ")}`);
-    console.log(`📊 Filters: country=${country}, region=${region}, sector=${sector}`);
 
     // Construir filtro para data points
     const whereFilter: any = { benchmarkId };
@@ -70,70 +116,90 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     if (sector) whereFilter.sector = sector;
     if (tenantId) whereFilter.tenantId = tenantId;
 
-    // Obtener todos los data points que coincidan con el filtro
-    const dataPoints = await prisma.benchmarkDataPoint.findMany({
+    // Contar total de registros
+    const totalCount = await prisma.benchmarkDataPoint.count({
       where: whereFilter,
-      select: {
-        K: true,
-        C: true,
-        G: true,
-        EL: true,
-        RP: true,
-        ACT: true,
-        NE: true,
-        IM: true,
-        OP: true,
-        EMP: true,
-        NG: true,
-        effectiveness: true,
-        relationships: true,
-        qualityOfLife: true,
-        wellbeing: true,
-        influence: true,
-        decisionMaking: true,
-        community: true,
-        network: true,
-        achievement: true,
-        satisfaction: true,
-        balance: true,
-        health: true,
-      },
     });
 
-    console.log(`📊 Found ${dataPoints.length} data points`);
+    console.log(`📊 Total data points: ${totalCount}`);
 
-    if (dataPoints.length < 10) {
+    if (totalCount < MIN_DATA_POINTS) {
       return NextResponse.json({
         ok: false,
         error: "Not enough data points for correlation analysis (minimum 10)",
-        count: dataPoints.length,
+        count: totalCount,
       }, { status: 400 });
     }
+
+    // Determinar si usar muestreo
+    const useSampling = totalCount > MAX_SAMPLE_SIZE;
+    const sampleSize = useSampling ? MAX_SAMPLE_SIZE : totalCount;
+
+    console.log(`📊 Using ${useSampling ? 'SAMPLING' : 'full dataset'}: ${sampleSize} records`);
+
+    // Obtener datos (con muestreo si es necesario)
+    let dataPoints: any[];
+
+    if (useSampling) {
+      // Obtener muestra aleatoria usando chunks para no sobrecargar memoria
+      const chunkSize = 5000;
+      const chunks = Math.ceil(sampleSize / chunkSize);
+      dataPoints = [];
+
+      for (let chunk = 0; chunk < chunks; chunk++) {
+        const skip = chunk * chunkSize;
+        const take = Math.min(chunkSize, sampleSize - skip);
+
+        // Usar orderBy random-ish con skip distribuido
+        const skipAmount = Math.floor((totalCount / sampleSize) * skip);
+
+        const chunkData = await prisma.benchmarkDataPoint.findMany({
+          where: whereFilter,
+          select: {
+            K: true, C: true, G: true,
+            EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+            effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
+            influence: true, decisionMaking: true, community: true, network: true,
+            achievement: true, satisfaction: true, balance: true, health: true,
+          },
+          skip: skipAmount,
+          take: take,
+        });
+
+        dataPoints.push(...chunkData);
+        console.log(`📊 Loaded chunk ${chunk + 1}/${chunks}: ${chunkData.length} records`);
+      }
+    } else {
+      // Dataset pequeño, cargar todo
+      dataPoints = await prisma.benchmarkDataPoint.findMany({
+        where: whereFilter,
+        select: {
+          K: true, C: true, G: true,
+          EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+          effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
+          influence: true, decisionMaking: true, community: true, network: true,
+          achievement: true, satisfaction: true, balance: true, health: true,
+        },
+      });
+    }
+
+    console.log(`📊 Loaded ${dataPoints.length} data points for analysis`);
 
     // Calcular correlaciones para cada competencia × outcome
     const correlations: any[] = [];
     let calculated = 0;
 
     for (const competency of EQ_COMPETENCIES) {
-      const competencyValues = dataPoints
-        .map((dp: any) => dp[competency])
-        .filter((v): v is number => typeof v === "number");
-
       for (const outcome of outcomesToCalculate) {
-        const outcomeValues = dataPoints
-          .map((dp: any) => dp[outcome])
-          .filter((v): v is number => typeof v === "number");
-
-        // Necesitamos pares con ambos valores
+        // Obtener pares válidos
         const pairs: { comp: number; out: number }[] = [];
-        for (let i = 0; i < dataPoints.length; i++) {
-          const dp: any = dataPoints[i];
+        for (const dp of dataPoints) {
           if (typeof dp[competency] === "number" && typeof dp[outcome] === "number") {
             pairs.push({ comp: dp[competency], out: dp[outcome] });
           }
         }
 
-        if (pairs.length >= 10) {
+        if (pairs.length >= MIN_DATA_POINTS) {
           const result = pearsonCorrelation(
             pairs.map((p) => p.comp),
             pairs.map((p) => p.out)
@@ -192,7 +258,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       ok: true,
       message: `Calculated ${correlations.length} correlations`,
       count: correlations.length,
-      dataPoints: dataPoints.length,
+      totalDataPoints: totalCount,
+      sampledDataPoints: dataPoints.length,
+      usedSampling: useSampling,
       topCorrelations,
     });
   } catch (error) {

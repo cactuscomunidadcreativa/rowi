@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
         isLearning: isLearning || false,
         status: "PROCESSING",
         totalRows: 0,
+        uploadedBy: session.user.email,
       },
     });
 

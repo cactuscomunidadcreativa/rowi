@@ -86,8 +86,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Procesar e insertar filas en batches
-    const BATCH_SIZE = 1000;
+    // Procesar e insertar filas en batches más pequeños para evitar timeout
+    const BATCH_SIZE = 500; // Reducido para evitar problemas de conexión
+    const PROGRESS_UPDATE_INTERVAL = 5000; // Actualizar progreso cada 5000 filas
     let processedRows = 0;
     let validRows = 0;
 
@@ -149,17 +150,18 @@ export async function POST(req: NextRequest) {
 
       processedRows += batch.length;
 
-      // Actualizar progreso (25-85%)
-      const progress = 25 + Math.round((processedRows / totalRows) * 60);
-      await prisma.benchmarkUploadJob.update({
-        where: { id: jobId },
-        data: {
-          processedRows: validRows,
-          progress,
-        },
-      });
-
-      console.log(`📊 Processed ${processedRows}/${totalRows} rows (${validRows} valid)`);
+      // Actualizar progreso menos frecuentemente para no saturar conexiones
+      if (processedRows % PROGRESS_UPDATE_INTERVAL === 0 || processedRows >= totalRows) {
+        const progress = 25 + Math.round((processedRows / totalRows) * 60);
+        await prisma.benchmarkUploadJob.update({
+          where: { id: jobId },
+          data: {
+            processedRows: validRows,
+            progress,
+          },
+        });
+        console.log(`📊 Processed ${processedRows}/${totalRows} rows (${validRows} valid)`);
+      }
     }
 
     // Calcular estadísticas
@@ -198,6 +200,9 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`✅ Benchmark ${benchmarkId} completed with ${finalCount} rows`);
+
+    // Desconectar Prisma para liberar conexiones
+    await prisma.$disconnect();
 
     return NextResponse.json({
       ok: true,

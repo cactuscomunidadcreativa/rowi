@@ -3,8 +3,9 @@
  * POST /api/admin/benchmarks/[id]/correlations/calculate
  *
  * Calcula correlaciones entre competencias EQ y outcomes para un benchmark.
- * Usa MUESTREO ESTADÍSTICO para datasets grandes (>20k registros).
- * Con 15k muestras tenemos 99% confianza y <1% margen de error.
+ * - Calcula correlaciones GLOBALES (todos los años)
+ * - Calcula correlaciones POR AÑO (para comparar evolución)
+ * - Usa MUESTREO ESTADÍSTICO para datasets grandes (>10k registros por grupo)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -20,8 +21,8 @@ interface RouteParams {
 }
 
 // Configuración de muestreo
-const MAX_SAMPLE_SIZE = 15000; // 15k muestras = 99% confianza
-const MIN_DATA_POINTS = 10;
+const MAX_SAMPLE_SIZE = 10000; // 10k muestras por grupo = alta confianza
+const MIN_DATA_POINTS = 30; // Mínimo para correlaciones válidas
 
 // Todos los outcomes disponibles
 const ALL_OUTCOMES = [
@@ -40,45 +41,113 @@ const ALL_OUTCOMES = [
 ];
 
 /**
- * Obtiene una muestra aleatoria de IDs usando SQL
+ * Obtiene datos con muestreo si es necesario
  */
-async function getRandomSampleIds(
-  benchmarkId: string,
+async function getDataWithSampling(
   whereFilter: any,
-  sampleSize: number
-): Promise<string[]> {
-  // Contar total primero
+  maxSample: number
+): Promise<{ data: any[]; total: number; sampled: boolean }> {
   const totalCount = await prisma.benchmarkDataPoint.count({
     where: whereFilter,
   });
 
-  if (totalCount <= sampleSize) {
-    // Si hay menos registros que el tamaño de muestra, obtener todos los IDs
-    const allRecords = await prisma.benchmarkDataPoint.findMany({
+  if (totalCount <= maxSample) {
+    // Dataset pequeño, cargar todo
+    const data = await prisma.benchmarkDataPoint.findMany({
       where: whereFilter,
-      select: { id: true },
+      select: {
+        year: true,
+        K: true, C: true, G: true,
+        EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+        effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
+        influence: true, decisionMaking: true, community: true, network: true,
+        achievement: true, satisfaction: true, balance: true, health: true,
+      },
     });
-    return allRecords.map(r => r.id);
+    return { data, total: totalCount, sampled: false };
   }
 
-  // Para datasets grandes, usar skip aleatorio para muestreo
-  const ids: string[] = [];
-  const skipInterval = Math.floor(totalCount / sampleSize);
+  // Dataset grande, usar muestreo por chunks
+  const chunkSize = 5000;
+  const chunks = Math.ceil(maxSample / chunkSize);
+  const data: any[] = [];
 
-  // Obtener IDs distribuidos uniformemente
-  for (let i = 0; i < sampleSize && i * skipInterval < totalCount; i++) {
-    const skip = i * skipInterval + Math.floor(Math.random() * skipInterval);
-    const record = await prisma.benchmarkDataPoint.findFirst({
+  for (let chunk = 0; chunk < chunks; chunk++) {
+    const skip = chunk * chunkSize;
+    const take = Math.min(chunkSize, maxSample - skip);
+    const skipAmount = Math.floor((totalCount / maxSample) * skip);
+
+    const chunkData = await prisma.benchmarkDataPoint.findMany({
       where: whereFilter,
-      select: { id: true },
-      skip: Math.min(skip, totalCount - 1),
+      select: {
+        year: true,
+        K: true, C: true, G: true,
+        EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+        effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
+        influence: true, decisionMaking: true, community: true, network: true,
+        achievement: true, satisfaction: true, balance: true, health: true,
+      },
+      skip: skipAmount,
+      take: take,
     });
-    if (record) {
-      ids.push(record.id);
+
+    data.push(...chunkData);
+  }
+
+  return { data, total: totalCount, sampled: true };
+}
+
+/**
+ * Calcula correlaciones para un conjunto de datos
+ */
+function calculateCorrelationsForData(
+  dataPoints: any[],
+  benchmarkId: string,
+  outcomesToCalculate: string[],
+  filters: { country?: string; region?: string; sector?: string; year?: number; tenantId?: string }
+): any[] {
+  const correlations: any[] = [];
+  const { country, region, sector, year, tenantId } = filters;
+
+  for (const competency of EQ_COMPETENCIES) {
+    for (const outcome of outcomesToCalculate) {
+      // Obtener pares válidos
+      const pairs: { comp: number; out: number }[] = [];
+      for (const dp of dataPoints) {
+        if (typeof dp[competency] === "number" && typeof dp[outcome] === "number") {
+          pairs.push({ comp: dp[competency], out: dp[outcome] });
+        }
+      }
+
+      if (pairs.length >= MIN_DATA_POINTS) {
+        const result = pearsonCorrelation(
+          pairs.map((p) => p.comp),
+          pairs.map((p) => p.out)
+        );
+
+        const yearStr = year ? String(year) : "all";
+        correlations.push({
+          id: `${benchmarkId}_${competency}_${outcome}_${country || "all"}_${region || "all"}_${sector || "all"}_${yearStr}`,
+          benchmarkId,
+          country: country || null,
+          region: region || null,
+          sector: sector || null,
+          year: year || null,
+          tenantId: tenantId || null,
+          competencyKey: competency,
+          outcomeKey: outcome,
+          correlation: result.correlation,
+          pValue: result.pValue,
+          n: result.n,
+          strength: result.strength,
+          direction: result.direction,
+          calculatedAt: new Date(),
+        });
+      }
     }
   }
 
-  return ids;
+  return correlations;
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
@@ -109,126 +178,89 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     console.log(`📊 Calculating correlations for benchmark ${benchmarkId}`);
     console.log(`📊 Outcomes: ${outcomesToCalculate.join(", ")}`);
 
-    // Construir filtro para data points
-    const whereFilter: any = { benchmarkId };
-    if (country) whereFilter.country = country;
-    if (region) whereFilter.region = region;
-    if (sector) whereFilter.sector = sector;
-    if (tenantId) whereFilter.tenantId = tenantId;
+    // Construir filtro base
+    const baseFilter: any = { benchmarkId };
+    if (country) baseFilter.country = country;
+    if (region) baseFilter.region = region;
+    if (sector) baseFilter.sector = sector;
+    if (tenantId) baseFilter.tenantId = tenantId;
 
-    // Contar total de registros
-    const totalCount = await prisma.benchmarkDataPoint.count({
-      where: whereFilter,
+    // =========================================================
+    // 1. Obtener años disponibles
+    // =========================================================
+    const yearsData = await prisma.benchmarkDataPoint.groupBy({
+      by: ['year'],
+      where: { ...baseFilter, year: { not: null } },
+      _count: { year: true },
     });
 
-    console.log(`📊 Total data points: ${totalCount}`);
+    const availableYears = yearsData
+      .filter(y => y.year !== null && y._count.year >= MIN_DATA_POINTS)
+      .map(y => y.year as number)
+      .sort((a, b) => a - b);
 
-    if (totalCount < MIN_DATA_POINTS) {
-      return NextResponse.json({
-        ok: false,
-        error: "Not enough data points for correlation analysis (minimum 10)",
-        count: totalCount,
-      }, { status: 400 });
-    }
+    console.log(`📊 Available years: ${availableYears.join(", ")}`);
 
-    // Determinar si usar muestreo
-    const useSampling = totalCount > MAX_SAMPLE_SIZE;
-    const sampleSize = useSampling ? MAX_SAMPLE_SIZE : totalCount;
+    // =========================================================
+    // 2. Calcular correlaciones GLOBALES (todos los años)
+    // =========================================================
+    console.log(`📊 Calculating GLOBAL correlations...`);
 
-    console.log(`📊 Using ${useSampling ? 'SAMPLING' : 'full dataset'}: ${sampleSize} records`);
+    const { data: globalData, total: globalTotal, sampled: globalSampled } =
+      await getDataWithSampling(baseFilter, MAX_SAMPLE_SIZE);
 
-    // Obtener datos (con muestreo si es necesario)
-    let dataPoints: any[];
+    console.log(`📊 Global: ${globalData.length} data points (total: ${globalTotal}, sampled: ${globalSampled})`);
 
-    if (useSampling) {
-      // Obtener muestra aleatoria usando chunks para no sobrecargar memoria
-      const chunkSize = 5000;
-      const chunks = Math.ceil(sampleSize / chunkSize);
-      dataPoints = [];
+    const globalCorrelations = calculateCorrelationsForData(
+      globalData,
+      benchmarkId,
+      outcomesToCalculate,
+      { country, region, sector, tenantId, year: undefined }
+    );
 
-      for (let chunk = 0; chunk < chunks; chunk++) {
-        const skip = chunk * chunkSize;
-        const take = Math.min(chunkSize, sampleSize - skip);
+    console.log(`📊 Global correlations calculated: ${globalCorrelations.length}`);
 
-        // Usar orderBy random-ish con skip distribuido
-        const skipAmount = Math.floor((totalCount / sampleSize) * skip);
+    // =========================================================
+    // 3. Calcular correlaciones POR AÑO
+    // =========================================================
+    const yearCorrelations: any[] = [];
 
-        const chunkData = await prisma.benchmarkDataPoint.findMany({
-          where: whereFilter,
-          select: {
-            K: true, C: true, G: true,
-            EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
-            effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
-            influence: true, decisionMaking: true, community: true, network: true,
-            achievement: true, satisfaction: true, balance: true, health: true,
-          },
-          skip: skipAmount,
-          take: take,
-        });
+    for (const year of availableYears) {
+      console.log(`📊 Calculating correlations for year ${year}...`);
 
-        dataPoints.push(...chunkData);
-        console.log(`📊 Loaded chunk ${chunk + 1}/${chunks}: ${chunkData.length} records`);
-      }
-    } else {
-      // Dataset pequeño, cargar todo
-      dataPoints = await prisma.benchmarkDataPoint.findMany({
-        where: whereFilter,
-        select: {
-          K: true, C: true, G: true,
-          EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
-          effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
-          influence: true, decisionMaking: true, community: true, network: true,
-          achievement: true, satisfaction: true, balance: true, health: true,
-        },
-      });
-    }
+      const yearFilter = { ...baseFilter, year };
+      const { data: yearData, total: yearTotal, sampled: yearSampled } =
+        await getDataWithSampling(yearFilter, MAX_SAMPLE_SIZE);
 
-    console.log(`📊 Loaded ${dataPoints.length} data points for analysis`);
+      if (yearData.length >= MIN_DATA_POINTS) {
+        console.log(`📊 Year ${year}: ${yearData.length} data points (total: ${yearTotal}, sampled: ${yearSampled})`);
 
-    // Calcular correlaciones para cada competencia × outcome
-    const correlations: any[] = [];
-    let calculated = 0;
+        const correlations = calculateCorrelationsForData(
+          yearData,
+          benchmarkId,
+          outcomesToCalculate,
+          { country, region, sector, tenantId, year }
+        );
 
-    for (const competency of EQ_COMPETENCIES) {
-      for (const outcome of outcomesToCalculate) {
-        // Obtener pares válidos
-        const pairs: { comp: number; out: number }[] = [];
-        for (const dp of dataPoints) {
-          if (typeof dp[competency] === "number" && typeof dp[outcome] === "number") {
-            pairs.push({ comp: dp[competency], out: dp[outcome] });
-          }
-        }
-
-        if (pairs.length >= MIN_DATA_POINTS) {
-          const result = pearsonCorrelation(
-            pairs.map((p) => p.comp),
-            pairs.map((p) => p.out)
-          );
-
-          correlations.push({
-            id: `${benchmarkId}_${competency}_${outcome}_${country || "all"}_${region || "all"}_${sector || "all"}`,
-            benchmarkId,
-            country: country || null,
-            region: region || null,
-            sector: sector || null,
-            tenantId: tenantId || null,
-            competencyKey: competency,
-            outcomeKey: outcome,
-            correlation: result.correlation,
-            pValue: result.pValue,
-            n: result.n,
-            strength: result.strength,
-            direction: result.direction,
-            calculatedAt: new Date(),
-          });
-          calculated++;
-        }
+        yearCorrelations.push(...correlations);
+        console.log(`📊 Year ${year}: ${correlations.length} correlations`);
+      } else {
+        console.log(`⚠️ Year ${year}: Not enough data (${yearData.length} < ${MIN_DATA_POINTS})`);
       }
     }
 
-    console.log(`📊 Calculated ${calculated} correlations`);
+    // =========================================================
+    // 4. Combinar todas las correlaciones
+    // =========================================================
+    const allCorrelations = [...globalCorrelations, ...yearCorrelations];
 
-    // Eliminar correlaciones existentes con los mismos filtros
+    console.log(`📊 Total correlations: ${allCorrelations.length} (global: ${globalCorrelations.length}, by year: ${yearCorrelations.length})`);
+
+    // =========================================================
+    // 5. Guardar en base de datos
+    // =========================================================
+
+    // Eliminar correlaciones existentes con los mismos filtros base
     await prisma.benchmarkCorrelation.deleteMany({
       where: {
         benchmarkId,
@@ -240,28 +272,51 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     });
 
     // Insertar nuevas correlaciones
-    if (correlations.length > 0) {
+    if (allCorrelations.length > 0) {
       await prisma.benchmarkCorrelation.createMany({
-        data: correlations,
+        data: allCorrelations,
         skipDuplicates: true,
       });
     }
 
-    console.log(`✅ Saved ${correlations.length} correlations`);
+    console.log(`✅ Saved ${allCorrelations.length} correlations`);
 
-    // Obtener top correlaciones para mostrar
-    const topCorrelations = correlations
+    // =========================================================
+    // 6. Preparar respuesta
+    // =========================================================
+
+    // Top correlaciones globales
+    const topGlobalCorrelations = globalCorrelations
       .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation))
-      .slice(0, 20);
+      .slice(0, 10);
+
+    // Resumen por año
+    const yearSummary = availableYears.map(year => {
+      const yearCorrs = yearCorrelations.filter(c => c.year === year);
+      const avgCorr = yearCorrs.length > 0
+        ? yearCorrs.reduce((sum, c) => sum + Math.abs(c.correlation), 0) / yearCorrs.length
+        : 0;
+      return {
+        year,
+        correlationsCount: yearCorrs.length,
+        avgAbsCorrelation: avgCorr,
+      };
+    });
 
     return NextResponse.json({
       ok: true,
-      message: `Calculated ${correlations.length} correlations`,
-      count: correlations.length,
-      totalDataPoints: totalCount,
-      sampledDataPoints: dataPoints.length,
-      usedSampling: useSampling,
-      topCorrelations,
+      message: `Calculated ${allCorrelations.length} correlations`,
+      summary: {
+        totalCorrelations: allCorrelations.length,
+        globalCorrelations: globalCorrelations.length,
+        yearCorrelations: yearCorrelations.length,
+        totalDataPoints: globalTotal,
+        sampledDataPoints: globalData.length,
+        usedSampling: globalSampled,
+        availableYears,
+      },
+      yearSummary,
+      topGlobalCorrelations,
     });
   } catch (error) {
     console.error("❌ Error calculating correlations:", error);

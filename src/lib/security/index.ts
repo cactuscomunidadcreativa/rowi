@@ -18,5 +18,19 @@
 export * from './rate-limit';
 export * from './validation';
 export * from './secrets';
+
+// Redis-based rate limiting (for production/distributed environments)
+// Uses Upstash Redis with in-memory fallback
+export {
+  rateLimit as rateLimitRedis,
+  rateLimiters_redis,
+  getIdentifier,
+  getRouteIdentifier,
+  getUserIdentifier,
+  checkRedisHealth,
+  getRateLimitInfo,
+  type RateLimitResult,
+} from './rateLimitRedis';
+
 // Note: api-helpers.ts is NOT exported here to avoid Next.js deps in tests
 // Import directly: import { validateBody } from '@/lib/security/api-helpers';

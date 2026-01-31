@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { getServerAuthUser } from "@/core/auth";
-import OpenAI from "openai";
+import { getOpenAIClient } from "@/lib/openai/client";
 import { recordActivity } from "@/services/gamification";
+import { secureLog } from "@/lib/logging";
 
 export const runtime = "nodejs";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
 
 /* =========================================================
    🧠 Helpers
@@ -157,10 +154,43 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback legacy por X-Hub-Key (si quieres mantenerlo)
+    // 🔐 SEGURIDAD: Acceso por HUB_ACCESS_KEY (solo para servicios internos)
+    // ---------------------------------------------------------
+    // Este método de acceso está DEPRECADO y será removido.
+    // Solo se permite para llamadas desde servicios internos conocidos.
+    // Se registra cada uso para auditoría.
     const hubKey = req.headers.get("x-hub-key") || req.headers.get("X-Hub-Key");
     const envKey = process.env.HUB_ACCESS_KEY?.trim();
+
     if (!auth && hubKey && envKey && hubKey === envKey) {
+      // Registrar uso para auditoría
+      const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+      const userAgent = req.headers.get("user-agent") || "unknown";
+
+      secureLog.security("HUB_ACCESS_KEY used", { ip: clientIp, userAgent: userAgent?.slice(0, 50), path: "/api/rowi" });
+
+      // Solo permitir si viene de IPs internas o Vercel
+      const allowedPatterns = [
+        /^127\.0\.0\./,           // localhost
+        /^192\.168\./,            // red privada
+        /^10\./,                  // red privada
+        /^::1$/,                  // localhost IPv6
+        /vercel/i,                // Vercel functions
+      ];
+
+      const isAllowedSource =
+        clientIp === "unknown" || // Permitir si no hay IP (llamada interna)
+        allowedPatterns.some(p => p.test(clientIp)) ||
+        (userAgent && /vercel|node-fetch|axios/i.test(userAgent));
+
+      if (!isAllowedSource) {
+        secureLog.security("HUB_ACCESS_KEY blocked from external source", { ip: clientIp });
+        return NextResponse.json(
+          { ok: false, error: "Invalid access method" },
+          { status: 403 }
+        );
+      }
+
       accessLevel = "hub";
       auth = {
         id: "hub-control-user",
@@ -169,6 +199,7 @@ export async function POST(req: NextRequest) {
         hubs: [],
         superHubs: [],
         permissions: [],
+        _accessMethod: "HUB_ACCESS_KEY", // Marcar método de acceso
       };
     }
 
@@ -240,6 +271,7 @@ export async function POST(req: NextRequest) {
     /* =========================================================
      🤖 5. Llamar a OpenAI
     ========================================================== */
+    const openai = await getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model,
       messages,

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { getServerAuthUser } from "@/core/auth";
+import { requireAdmin, requireSuperAdmin, canDeleteUser } from "@/lib/auth";
+import {
+  userCreateSchema,
+  userUpdateSchema,
+  userDeleteSchema,
+  parsePagination,
+  parseBody,
+} from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,21 +15,29 @@ export const preferredRegion = "auto";
 
 /* =========================================================
    🧠 GET — Listar usuarios (paginación + búsqueda)
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Requiere permisos de admin
+   - SuperAdmin: ve todos los usuarios
+   - Admin de tenant: solo ve usuarios de su tenant
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser().catch(() => null);
-    const url = new URL(req.url);
-    const q = url.searchParams.get("q") ?? undefined;
-    const page = Number(url.searchParams.get("page") ?? "1");
-    const limit = Number(url.searchParams.get("limit") ?? "50");
-    const skip = (page - 1) * limit;
+    // 🔐 Verificar permisos de admin
+    const authResult = await requireAdmin();
+    if (!authResult.success) return authResult.error;
+    const auth = authResult.user;
 
-    const baseWhere = auth
-      ? auth.organizationRole === "ADMIN"
+    // 🛡️ Validación de parámetros con Zod
+    const url = new URL(req.url);
+    const { page, limit, skip, q } = parsePagination(url.searchParams);
+
+    // 🔐 Filtrar según nivel de acceso
+    // SuperAdmin ve todo, Admin normal solo su tenant
+    const baseWhere = auth.isSuperAdmin
+      ? {}
+      : auth.primaryTenantId
         ? { primaryTenantId: auth.primaryTenantId }
-        : {}
-      : {};
+        : { id: auth.id }; // Si no tiene tenant, solo puede verse a sí mismo
 
     const where = q
       ? {
@@ -58,7 +73,6 @@ export async function GET(req: NextRequest) {
             },
           },
 
-          // 🔥 FIX FINAL: SuperHub aparece en el panel
           hubMemberships: {
             include: {
               hub: {
@@ -100,10 +114,11 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-  } catch (err: any) {
-    console.error("❌ Error GET /api/admin/users:", err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al listar usuarios";
+    console.error("❌ Error GET /api/admin/users:", message);
     return NextResponse.json(
-      { ok: false, error: err.message || "Error al listar usuarios", stack: process.env.NODE_ENV === "development" ? err.stack : undefined },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
@@ -111,28 +126,38 @@ export async function GET(req: NextRequest) {
 
 /* =========================================================
    ➕ POST — Crear nuevo usuario
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Solo SuperAdmin puede crear usuarios
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, tenantId, planId } = await req.json();
+    // 🔐 Solo SuperAdmin puede crear usuarios
+    const authResult = await requireSuperAdmin();
+    if (!authResult.success) return authResult.error;
 
-    if (!email || !name)
+    const body = await req.json();
+
+    // 🛡️ Validación con Zod
+    const validation = parseBody(body, userCreateSchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { ok: false, error: "Faltan campos obligatorios (nombre o email)" },
+        { ok: false, error: validation.error },
         { status: 400 }
       );
-
+    }
+    const { name, email, tenantId, planId } = validation.data;
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing)
+    if (existing) {
       return NextResponse.json(
         { ok: false, error: "El usuario ya existe" },
         { status: 409 }
       );
+    }
 
     const user = await prisma.user.create({
       data: {
         name,
-        email: email.toLowerCase(),
+        email,
         primaryTenantId: tenantId || null,
         planId: planId || null,
         organizationRole: "VIEWER",
@@ -147,13 +172,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      message: "✅ Usuario creado correctamente",
+      message: "Usuario creado correctamente",
       user,
     });
-  } catch (err: any) {
-    console.error("❌ Error POST /api/admin/users:", err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al crear usuario";
+    console.error("❌ Error POST /api/admin/users:", message);
     return NextResponse.json(
-      { ok: false, error: err.message || "Error al crear usuario" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
@@ -162,19 +188,27 @@ export async function POST(req: NextRequest) {
 /* =========================================================
    ✏️ PATCH — Editar usuario (actualización completa)
    ---------------------------------------------------------
-   Soporta: datos básicos, plan, rol, jerarquía completa
-   (tenant, organization, hub, superHub)
+   🔐 SEGURIDAD:
+   - SuperAdmin puede editar cualquier usuario
+   - Admin puede editar usuarios de su tenant (excepto SuperAdmins)
 ========================================================= */
 export async function PATCH(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser().catch(() => null);
-    if (!auth)
-      return NextResponse.json(
-        { ok: false, error: "No autorizado" },
-        { status: 401 }
-      );
+    // 🔐 Verificar permisos de admin
+    const authResult = await requireAdmin();
+    if (!authResult.success) return authResult.error;
+    const auth = authResult.user;
 
     const body = await req.json();
+
+    // 🛡️ Validación con Zod
+    const validation = parseBody(body, userUpdateSchema);
+    if (!validation.success) {
+      return NextResponse.json(
+        { ok: false, error: validation.error },
+        { status: 400 }
+      );
+    }
     const {
       id,
       name,
@@ -184,31 +218,67 @@ export async function PATCH(req: NextRequest) {
       planId,
       allowAI,
       active,
-      // Jerarquía
       organizationId,
       hubId,
-      superHubId,
-      // Rol en organización (opcional)
       orgRole,
-    } = body;
+    } = validation.data;
 
-    if (!id)
+    // 🔐 Verificar que el usuario objetivo existe y que tenemos permiso
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        primaryTenantId: true,
+        organizationRole: true,
+      },
+    });
+
+    if (!targetUser) {
       return NextResponse.json(
-        { ok: false, error: "Falta el ID del usuario" },
-        { status: 400 }
+        { ok: false, error: "Usuario no encontrado" },
+        { status: 404 }
       );
+    }
 
-    // 1️⃣ Actualizar datos básicos del usuario
+    // 🔐 Verificar permisos para modificar este usuario
+    if (!auth.isSuperAdmin) {
+      // No puede modificar SuperAdmins
+      const targetIsSuperAdmin = targetUser.organizationRole?.toUpperCase() === "SUPERADMIN";
+      if (targetIsSuperAdmin) {
+        return NextResponse.json(
+          { ok: false, error: "No tienes permisos para modificar a un SuperAdmin" },
+          { status: 403 }
+        );
+      }
+
+      // Solo puede modificar usuarios de su tenant
+      if (targetUser.primaryTenantId !== auth.primaryTenantId) {
+        return NextResponse.json(
+          { ok: false, error: "No tienes permisos para modificar usuarios de otro tenant" },
+          { status: 403 }
+        );
+      }
+
+      // 🔐 Admin normal no puede asignar rol SUPERADMIN
+      if (organizationRole?.toUpperCase() === "SUPERADMIN") {
+        return NextResponse.json(
+          { ok: false, error: "No tienes permisos para asignar el rol SuperAdmin" },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 1️⃣ Actualizar datos básicos del usuario (email ya validado por Zod)
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
-        name,
-        email: email?.toLowerCase(),
-        organizationRole,
-        primaryTenantId,
-        planId: planId || null,
-        allowAI: allowAI ?? true,
-        active: active ?? true,
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(organizationRole !== undefined && { organizationRole }),
+        ...(primaryTenantId !== undefined && { primaryTenantId }),
+        ...(planId !== undefined && { planId: planId || null }),
+        ...(allowAI !== undefined && { allowAI }),
+        ...(active !== undefined && { active }),
       },
       include: {
         plan: { select: { id: true, name: true, priceUsd: true } },
@@ -218,12 +288,10 @@ export async function PATCH(req: NextRequest) {
 
     // 2️⃣ Manejar membresía de organización
     if (organizationId !== undefined) {
-      // Eliminar membresías existentes
       await prisma.orgMembership.deleteMany({
         where: { userId: id },
       });
 
-      // Crear nueva membresía si se especificó organización
       if (organizationId) {
         await prisma.orgMembership.create({
           data: {
@@ -237,12 +305,10 @@ export async function PATCH(req: NextRequest) {
 
     // 3️⃣ Manejar membresía de hub
     if (hubId !== undefined) {
-      // Eliminar membresías existentes de hub
       await prisma.hubMembership.deleteMany({
         where: { userId: id },
       });
 
-      // Crear nueva membresía si se especificó hub
       if (hubId) {
         await prisma.hubMembership.create({
           data: {
@@ -279,13 +345,14 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      message: "✅ Usuario actualizado correctamente",
+      message: "Usuario actualizado correctamente",
       user: finalUser,
     });
-  } catch (err: any) {
-    console.error("❌ Error PATCH /api/admin/users:", err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar usuario";
+    console.error("❌ Error PATCH /api/admin/users:", message);
     return NextResponse.json(
-      { ok: false, error: err.message || "Error al actualizar usuario" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
@@ -293,33 +360,61 @@ export async function PATCH(req: NextRequest) {
 
 /* =========================================================
    🗑️ DELETE — Eliminar usuario
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Solo SuperAdmin puede eliminar usuarios
+   Nadie puede eliminarse a sí mismo
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser().catch(() => null);
-    if (!auth)
-      return NextResponse.json(
-        { ok: false, error: "No autorizado" },
-        { status: 401 }
-      );
+    // 🔐 Solo SuperAdmin puede eliminar usuarios
+    const authResult = await requireSuperAdmin();
+    if (!authResult.success) return authResult.error;
+    const auth = authResult.user;
 
-    const { id } = await req.json();
-    if (!id)
+    const body = await req.json();
+
+    // 🛡️ Validación con Zod
+    const validation = parseBody(body, userDeleteSchema);
+    if (!validation.success) {
       return NextResponse.json(
-        { ok: false, error: "Falta el ID del usuario" },
+        { ok: false, error: validation.error },
         { status: 400 }
       );
+    }
+    const { id } = validation.data;
+
+    // 🔐 No puede eliminarse a sí mismo
+    if (!canDeleteUser(auth, id)) {
+      return NextResponse.json(
+        { ok: false, error: "No puedes eliminarte a ti mismo" },
+        { status: 403 }
+      );
+    }
+
+    // Verificar que el usuario existe
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { ok: false, error: "Usuario no encontrado" },
+        { status: 404 }
+      );
+    }
 
     await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({
       ok: true,
-      message: "🗑️ Usuario eliminado correctamente",
+      message: "Usuario eliminado correctamente",
     });
-  } catch (err: any) {
-    console.error("❌ Error DELETE /api/admin/users:", err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al eliminar usuario";
+    console.error("❌ Error DELETE /api/admin/users:", message);
     return NextResponse.json(
-      { ok: false, error: err.message || "Error al eliminar usuario" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }

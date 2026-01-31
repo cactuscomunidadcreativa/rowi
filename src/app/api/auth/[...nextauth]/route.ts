@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/core/prisma";
 import bcrypt from "bcryptjs";
+import { logSecurityEvent } from "@/lib/audit/auditLog";
 
 /* =========================================================
    🔧 Helper: Cargar perfil MINIMO para JWT
@@ -73,7 +74,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
+      // ⚠️ SEGURIDAD: Deshabilitado para prevenir account takeover
+      // Un atacante podría vincular su cuenta Google a cualquier email existente
+      allowDangerousEmailAccountLinking: false,
     }),
 
     CredentialsProvider({
@@ -86,12 +89,47 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = credentials.email.toLowerCase();
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+            accounts: {
+              where: { provider: "credentials" },
+              select: { access_token: true },
+            },
+          },
+        });
 
-        if (!user || !user.password) return null;
+        if (!user) {
+          // 🔐 Log failed login - user not found
+          logSecurityEvent("LOGIN_FAILED", {
+            email,
+            reason: "User not found",
+          }).catch(() => {}); // Non-blocking
+          return null;
+        }
 
-        const valid = await bcrypt.compare(credentials.password, user.password);
-        if (!valid) return null;
+        // Password está guardado en access_token de la cuenta credentials
+        const credentialsAccount = user.accounts?.[0];
+        const hashedPassword = credentialsAccount?.access_token;
+
+        if (!hashedPassword) {
+          // Usuario existe pero no tiene cuenta de credentials (solo OAuth)
+          logSecurityEvent("LOGIN_FAILED", {
+            email,
+            reason: "No credentials account",
+          }).catch(() => {}); // Non-blocking
+          return null;
+        }
+
+        const valid = await bcrypt.compare(credentials.password, hashedPassword);
+        if (!valid) {
+          // 🔐 Log failed login attempt
+          logSecurityEvent("LOGIN_FAILED", {
+            email,
+            reason: "Invalid password",
+          }).catch(() => {}); // Non-blocking
+          return null;
+        }
 
         return { id: user.id, email: user.email, name: user.name };
       },
@@ -100,15 +138,50 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    // 🔐 Token expira en 7 días (más corto = más seguro)
+    maxAge: 7 * 24 * 60 * 60, // 7 días
+    // 🔐 Actualizar el token cada 24 horas (rotation)
+    updateAge: 24 * 60 * 60, // 24 horas
   },
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      const now = Math.floor(Date.now() / 1000);
+
+      // 🔐 Nuevo login: cargar perfil completo y establecer timestamps
       if (user) {
         const profile = await loadAuthProfile(user.id as string);
-        if (profile) Object.assign(token, profile);
+        if (profile) {
+          Object.assign(token, profile);
+          // Timestamps para rotation
+          token.iat = now;
+          token.refreshedAt = now;
+        }
+        return token;
       }
+
+      // 🔐 JWT Rotation: refrescar token cada 24 horas
+      // Esto previene que tokens robados sean usados indefinidamente
+      const refreshedAt = (token.refreshedAt as number) || now;
+      const shouldRefresh = now - refreshedAt > 24 * 60 * 60; // 24 horas
+
+      if (shouldRefresh || trigger === "update") {
+        // Recargar datos del usuario para mantenerlos actualizados
+        const userId = token.id as string;
+        if (userId) {
+          try {
+            const profile = await loadAuthProfile(userId);
+            if (profile) {
+              Object.assign(token, profile);
+              token.refreshedAt = now;
+            }
+          } catch (error) {
+            console.error("Error refreshing token:", error);
+            // En caso de error, mantener token existente
+          }
+        }
+      }
+
       return token;
     },
 
@@ -134,6 +207,17 @@ export const authOptions: NextAuthOptions = {
     },
 
     async signIn({ user, account }) {
+      // 🔐 Log successful login
+      try {
+        await logSecurityEvent("LOGIN_SUCCESS", {
+          userId: user.id as string,
+          email: user.email || undefined,
+          reason: `Login via ${account?.provider || "credentials"}`,
+        });
+      } catch {
+        // Non-blocking logging
+      }
+
       // Auto-create user for Google OAuth
       if (account?.provider === "google" && user.email) {
         const email = user.email.toLowerCase();
@@ -156,7 +240,8 @@ export const authOptions: NextAuthOptions = {
 
   pages: { signIn: "/hub/login" },
 
-  secret: process.env.NEXTAUTH_SECRET ?? "rowi_dev_secret",
+  // ⚠️ SEGURIDAD: El secret es obligatorio, no usar fallbacks predecibles
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
 };
 

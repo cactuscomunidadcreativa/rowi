@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { Prisma } from "@prisma/client";
 
 export const maxDuration = 300; // 5 minutos
 
@@ -112,6 +113,18 @@ function getPercentileInterpolated(sortedValues: number[], percentile: number): 
   return sortedValues[lower] * (1 - weight) + sortedValues[upper] * weight;
 }
 
+// 🔐 SEGURIDAD: Lista blanca de columnas permitidas para queries SQL
+// Esto previene SQL injection al usar nombres de columnas dinámicos
+const ALLOWED_COLUMNS = new Set([
+  ...EQ_ALL,
+  ...BRAIN_TALENTS,
+  ...OUTCOMES,
+]);
+
+function validateColumnName(column: string): boolean {
+  return ALLOWED_COLUMNS.has(column);
+}
+
 // =========================================================
 // Endpoint principal
 // =========================================================
@@ -168,12 +181,20 @@ export async function POST(
       const count = (result._count as any)[metric] || 0;
 
       if (count > 1) {
+        // 🔐 SEGURIDAD: Validar nombre de columna contra whitelist
+        if (!validateColumnName(metric)) {
+          console.error(`Invalid metric column: ${metric}`);
+          continue;
+        }
+
         // Calcular stdDev con SQL para evitar cargar todos los datos
-        const varianceResult: any[] = await prisma.$queryRawUnsafe(`
-          SELECT COALESCE(STDDEV_SAMP("${metric}"), 0) as std_dev
+        // Nota: Prisma no soporta columnas dinámicas con $queryRaw parametrizado,
+        // pero validamos el nombre de columna contra una whitelist estricta arriba
+        const varianceResult: any[] = await prisma.$queryRaw`
+          SELECT COALESCE(STDDEV_SAMP(${Prisma.raw(`"${metric}"`)})::float, 0) as std_dev
           FROM "benchmark_data_point"
-          WHERE "benchmarkId" = '${benchmarkId}' AND "${metric}" IS NOT NULL
-        `);
+          WHERE "benchmarkId" = ${benchmarkId} AND ${Prisma.raw(`"${metric}"`)} IS NOT NULL
+        `;
         const stdDev = parseFloat(varianceResult[0]?.std_dev) || 0;
         globalStats[metric] = { mean, stdDev, n: count };
       } else {
@@ -204,12 +225,21 @@ export async function POST(
         continue;
       }
 
+      // 🔐 SEGURIDAD: Validar nombre de columna contra whitelist
+      if (!validateColumnName(outcome)) {
+        console.error(`Invalid outcome column: ${outcome}`);
+        warnings.push(`${outcome}: columna inválida`);
+        continue;
+      }
+
       // Calcular percentil P90 directamente con SQL
-      const p90Result: any[] = await prisma.$queryRawUnsafe(`
-        SELECT PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY "${outcome}") as p90
+      // Nota: Usamos Prisma.raw para nombres de columna (validados contra whitelist)
+      // y parámetros para valores de usuario (benchmarkId)
+      const p90Result: any[] = await prisma.$queryRaw`
+        SELECT PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY ${Prisma.raw(`"${outcome}"`)})::float as p90
         FROM "benchmark_data_point"
-        WHERE "benchmarkId" = '${benchmarkId}' AND "${outcome}" IS NOT NULL
-      `);
+        WHERE "benchmarkId" = ${benchmarkId} AND ${Prisma.raw(`"${outcome}"`)} IS NOT NULL
+      `;
       const threshold = parseFloat(p90Result[0]?.p90) || 0;
 
       let lowConfidenceSample = false;

@@ -75,20 +75,20 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
   }, [handleScroll]);
 
   return (
-    <div className="flex min-h-screen w-full bg-[var(--rowi-background)] text-[var(--rowi-foreground)] transition-colors duration-300">
-      {/* Sidebar lateral fijo */}
-      <aside className="flex-none w-64 border-r border-[var(--rowi-border)] bg-[var(--rowi-card)]/70 backdrop-blur-sm">
+    <div className="flex w-full pt-16 bg-[var(--rowi-background)] text-[var(--rowi-foreground)] transition-colors duration-300">
+      {/* Sidebar lateral fijo - posición fixed, debajo del NavBar global (top-16 = 64px) */}
+      <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-[var(--rowi-border)] bg-[var(--rowi-card)]/70 backdrop-blur-sm z-40 overflow-y-auto">
         <Sidebar />
       </aside>
 
-      {/* Contenido principal */}
-      <section className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Barra superior del usuario con auto-hide */}
+      {/* Contenido principal - con margin-left para compensar sidebar fijo */}
+      <section className="flex-1 flex flex-col min-h-[calc(100vh-4rem)] ml-64">
+        {/* Barra superior del usuario con auto-hide - sticky relativo al contenedor */}
         <header
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={`
-            sticky top-0 z-30
+            sticky top-16 z-30
             bg-[var(--rowi-card)]/80 backdrop-blur-md
             border-b border-[var(--rowi-primary)]/20
             transition-transform duration-300 ease-in-out

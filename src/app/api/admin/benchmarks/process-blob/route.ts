@@ -2,8 +2,8 @@
  * 📊 API: Process Benchmark from Vercel Blob
  * POST /api/admin/benchmarks/process-blob
  *
- * Procesa el archivo en chunks para evitar timeouts.
- * Se llama múltiples veces hasta completar todo el archivo.
+ * Procesa el archivo completo en una sola llamada de hasta 5 minutos.
+ * Usa batches pequeños para inserts y actualiza progreso frecuentemente.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -21,11 +21,10 @@ interface ProcessBlobBody {
   benchmarkId: string;
   jobId: string;
   blobUrl: string;
-  startRow?: number; // Fila desde donde empezar (para procesamiento en chunks)
 }
 
-const ROWS_PER_CALL = 25000; // Procesar 25k filas por llamada (reducido para evitar timeouts)
-const BATCH_SIZE = 1000; // Insertar en batches de 1000
+const BATCH_SIZE = 500; // Batches pequeños para inserts rápidos
+const PROGRESS_UPDATE_INTERVAL = 5000; // Actualizar progreso cada 5k filas
 
 export async function POST(req: NextRequest) {
   let benchmarkId: string | undefined;
@@ -35,7 +34,7 @@ export async function POST(req: NextRequest) {
     const body: ProcessBlobBody = await req.json();
     benchmarkId = body.benchmarkId;
     jobId = body.jobId;
-    const { blobUrl, startRow = 0 } = body;
+    const { blobUrl } = body;
 
     if (!benchmarkId || !jobId || !blobUrl) {
       return NextResponse.json(
@@ -44,205 +43,153 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isFirstCall = startRow === 0;
+    // Fase 1: Descarga
+    await prisma.benchmarkUploadJob.update({
+      where: { id: jobId },
+      data: {
+        status: "processing",
+        currentPhase: "downloading",
+        progress: 5,
+      },
+    });
 
-    // Solo actualizar fase en la primera llamada
-    if (isFirstCall) {
-      await prisma.benchmarkUploadJob.update({
-        where: { id: jobId },
-        data: {
-          status: "processing",
-          currentPhase: "downloading",
-          progress: 5,
-        },
-      });
-    }
+    console.log(`📥 Downloading from blob: ${blobUrl}`);
+    const startDownload = Date.now();
 
-    // Descargar archivo desde Blob
-    console.log(`📥 Downloading from blob: ${blobUrl} (startRow: ${startRow})`);
     const response = await fetch(blobUrl);
     if (!response.ok) {
       throw new Error(`Failed to download blob: ${response.status}`);
     }
 
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const isCSV = blobUrl.toLowerCase().includes(".csv");
+    const text = await response.text();
+    console.log(`📥 Download completed in ${Date.now() - startDownload}ms (${(text.length / 1024 / 1024).toFixed(1)}MB)`);
 
-    if (isFirstCall) {
-      await prisma.benchmarkUploadJob.update({
-        where: { id: jobId },
-        data: {
-          currentPhase: "parsing",
-          progress: 10,
-        },
-      });
-    }
-
-    // Parsear archivo
-    console.log(`📊 Parsing ${isCSV ? "CSV" : "Excel"} file...`);
-    let allRows: Record<string, any>[];
-
-    if (isCSV) {
-      allRows = await parseCSV(buffer);
-    } else {
-      allRows = await parseExcel(buffer);
-    }
-
-    const totalRows = allRows.length;
-    console.log(`📊 Total rows in file: ${totalRows}, starting from: ${startRow}`);
-
-    // Obtener solo las filas para esta llamada
-    const endRow = Math.min(startRow + ROWS_PER_CALL, totalRows);
-    const rows = allRows.slice(startRow, endRow);
-    const isLastChunk = endRow >= totalRows;
-
-    if (isFirstCall) {
-      await prisma.benchmarkUploadJob.update({
-        where: { id: jobId },
-        data: {
-          totalRows,
-          currentPhase: "importing",
-          progress: 15,
-        },
-      });
-    }
-
-    // Procesar e insertar filas en batches
-    let processedInThisCall = 0;
-    let validRowsInThisCall = 0;
-
-    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-      const batch = rows.slice(i, i + BATCH_SIZE);
-      const dataPoints = [];
-
-      for (const row of batch) {
-        const hasEQData = EQ_COMPETENCIES.some(
-          (c) => row[c] !== null && row[c] !== undefined && !isNaN(parseFloat(row[c]))
-        );
-
-        if (hasEQData) {
-          const dateInfo = extractDateInfo(row.year || row.Year || row.sourceDate);
-
-          dataPoints.push({
-            benchmarkId,
-            sourceType: "soh",
-            country: row.country || row.Country || null,
-            region: row.region || row.Region || null,
-            jobFunction: row.jobFunction || row.Job_Function || null,
-            jobRole: row.jobRole || row.Job_Role || null,
-            sector: row.sector || row.Sector || null,
-            ageRange: normalizeAgeRange(row.ageRange || row.Age_Range),
-            gender: row.gender || row.Gender || null,
-            education: row.education || row.Education || null,
-            generation: row.generation || detectGeneration(normalizeAgeRange(row.ageRange || row.Age_Range)),
-            year: dateInfo.year,
-            month: dateInfo.month,
-            quarter: dateInfo.quarter,
-            K: parseFloatOrNull(row.K),
-            C: parseFloatOrNull(row.C),
-            G: parseFloatOrNull(row.G),
-            eqTotal: parseFloatOrNull(row.eqTotal || row.EQ),
-            EL: parseFloatOrNull(row.EL),
-            RP: parseFloatOrNull(row.RP),
-            ACT: parseFloatOrNull(row.ACT),
-            NE: parseFloatOrNull(row.NE),
-            IM: parseFloatOrNull(row.IM),
-            OP: parseFloatOrNull(row.OP),
-            EMP: parseFloatOrNull(row.EMP),
-            NG: parseFloatOrNull(row.NG),
-            effectiveness: parseFloatOrNull(row.effectiveness || row.Effectiveness),
-            relationships: parseFloatOrNull(row.relationships || row.Relationships),
-            qualityOfLife: parseFloatOrNull(row.qualityOfLife || row.Quality_of_Life),
-            wellbeing: parseFloatOrNull(row.wellbeing || row.Wellbeing),
-          });
-          validRowsInThisCall++;
-        }
-      }
-
-      if (dataPoints.length > 0) {
-        await prisma.benchmarkDataPoint.createMany({
-          data: dataPoints,
-          skipDuplicates: true,
-        });
-      }
-
-      processedInThisCall += batch.length;
-    }
-
-    // Calcular progreso total
-    const totalProcessed = startRow + processedInThisCall;
-    const progress = Math.min(15 + Math.round((totalProcessed / totalRows) * 75), 90);
-
-    // Contar filas válidas totales en la base de datos
-    const currentValidRows = await prisma.benchmarkDataPoint.count({
-      where: { benchmarkId },
+    // Fase 2: Parsing
+    await prisma.benchmarkUploadJob.update({
+      where: { id: jobId },
+      data: {
+        currentPhase: "parsing",
+        progress: 15,
+      },
     });
+
+    console.log(`📊 Parsing CSV...`);
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+    if (lines.length < 2) {
+      throw new Error("CSV vacío o sin datos");
+    }
+
+    const headers = parseCSVLine(lines[0]);
+    const totalDataRows = lines.length - 1;
+
+    console.log(`📊 Total rows to process: ${totalDataRows}`);
 
     await prisma.benchmarkUploadJob.update({
       where: { id: jobId },
       data: {
-        processedRows: currentValidRows,
-        progress,
+        totalRows: totalDataRows,
+        currentPhase: "importing",
+        progress: 20,
       },
     });
 
-    console.log(`📊 Chunk completed: ${startRow}-${endRow} of ${totalRows} (${currentValidRows} valid total)`);
+    // Fase 3: Importar en batches
+    let processedRows = 0;
+    let validRows = 0;
+    let dataPoints: any[] = [];
+    let lastProgressUpdate = 0;
 
-    // Si no es el último chunk, programar la siguiente llamada
-    if (!isLastChunk) {
-      // Disconnect antes de llamar al siguiente chunk para liberar conexiones
-      await prisma.$disconnect();
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.trim()) continue;
 
-      // Usar dominio de producción fijo para evitar llamadas a preview deployments
-      const baseUrl = "https://www.rowiia.com";
-      const nextCallUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
+      const values = parseCSVLine(line);
+      const row: Record<string, any> = {};
+      headers.forEach((header, idx) => {
+        row[header] = values[idx] ?? null;
+      });
 
-      console.log(`📤 Calling next chunk: ${nextCallUrl} (startRow: ${endRow})`);
+      const hasEQData = EQ_COMPETENCIES.some(
+        (c) => row[c] !== null && row[c] !== undefined && !isNaN(parseFloat(row[c]))
+      );
 
-      // Llamar al siguiente chunk - usar try/catch y no esperar respuesta
-      try {
-        // Usamos fetch con un timeout corto - solo queremos enviar la request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+      if (hasEQData) {
+        const dateInfo = extractDateInfo(row.year || row.Year || row.sourceDate);
 
-        fetch(nextCallUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            benchmarkId,
-            jobId,
-            blobUrl,
-            startRow: endRow,
-          }),
-          signal: controller.signal,
-        }).then(() => {
-          clearTimeout(timeoutId);
-          console.log(`✅ Next chunk request sent successfully`);
-        }).catch((err) => {
-          clearTimeout(timeoutId);
-          if (err.name !== 'AbortError') {
-            console.error("Error calling next chunk:", err);
-          }
+        dataPoints.push({
+          benchmarkId,
+          sourceType: "soh",
+          country: row.country || row.Country || null,
+          region: row.region || row.Region || null,
+          jobFunction: row.jobFunction || row.Job_Function || null,
+          jobRole: row.jobRole || row.Job_Role || null,
+          sector: row.sector || row.Sector || null,
+          ageRange: normalizeAgeRange(row.ageRange || row.Age_Range),
+          gender: row.gender || row.Gender || null,
+          education: row.education || row.Education || null,
+          generation: row.generation || detectGeneration(normalizeAgeRange(row.ageRange || row.Age_Range)),
+          year: dateInfo.year,
+          month: dateInfo.month,
+          quarter: dateInfo.quarter,
+          K: parseFloatOrNull(row.K),
+          C: parseFloatOrNull(row.C),
+          G: parseFloatOrNull(row.G),
+          eqTotal: parseFloatOrNull(row.eqTotal || row.EQ),
+          EL: parseFloatOrNull(row.EL),
+          RP: parseFloatOrNull(row.RP),
+          ACT: parseFloatOrNull(row.ACT),
+          NE: parseFloatOrNull(row.NE),
+          IM: parseFloatOrNull(row.IM),
+          OP: parseFloatOrNull(row.OP),
+          EMP: parseFloatOrNull(row.EMP),
+          NG: parseFloatOrNull(row.NG),
+          effectiveness: parseFloatOrNull(row.effectiveness || row.Effectiveness),
+          relationships: parseFloatOrNull(row.relationships || row.Relationships),
+          qualityOfLife: parseFloatOrNull(row.qualityOfLife || row.Quality_of_Life),
+          wellbeing: parseFloatOrNull(row.wellbeing || row.Wellbeing),
         });
+        validRows++;
 
-        // Dar tiempo para que la request se envíe
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (err) {
-        console.error("Error initiating next chunk:", err);
+        // Insertar en batches
+        if (dataPoints.length >= BATCH_SIZE) {
+          await prisma.benchmarkDataPoint.createMany({
+            data: dataPoints,
+            skipDuplicates: true,
+          });
+          dataPoints = [];
+        }
       }
 
-      return NextResponse.json({
-        ok: true,
-        status: "processing",
-        processedRows: totalProcessed,
-        totalRows,
-        nextStartRow: endRow,
-        message: `Processed rows ${startRow}-${endRow}, continuing...`,
+      processedRows++;
+
+      // Actualizar progreso periódicamente
+      if (processedRows - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL) {
+        const progress = Math.min(20 + Math.round((processedRows / totalDataRows) * 70), 90);
+        await prisma.benchmarkUploadJob.update({
+          where: { id: jobId },
+          data: {
+            processedRows: validRows,
+            currentRow: processedRows,
+            progress,
+          },
+        });
+        console.log(`📊 Progress: ${processedRows}/${totalDataRows} (${validRows} valid)`);
+        lastProgressUpdate = processedRows;
+      }
+    }
+
+    // Insertar remaining
+    if (dataPoints.length > 0) {
+      await prisma.benchmarkDataPoint.createMany({
+        data: dataPoints,
+        skipDuplicates: true,
       });
     }
 
-    // ===== ÚLTIMO CHUNK - FINALIZAR =====
+    console.log(`📊 Import completed: ${validRows} valid rows from ${processedRows} total`);
 
+    // Fase 4: Finalizar
     await prisma.benchmarkUploadJob.update({
       where: { id: jobId },
       data: {
@@ -251,12 +198,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Contar registros finales
     const finalCount = await prisma.benchmarkDataPoint.count({
       where: { benchmarkId },
     });
 
-    // Actualizar benchmark a completado
     await prisma.benchmark.update({
       where: { id: benchmarkId },
       data: {
@@ -291,7 +236,6 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Error processing blob:", error);
 
-    // Marcar como fallido
     try {
       if (jobId) {
         await prisma.benchmarkUploadJob.update({
@@ -326,32 +270,6 @@ function parseFloatOrNull(value: any): number | null {
   return isNaN(num) ? null : num;
 }
 
-async function parseCSV(buffer: Buffer): Promise<Record<string, any>[]> {
-  const text = buffer.toString("utf-8");
-  const lines = text.split(/\r?\n/).filter((line) => line.trim());
-
-  if (lines.length < 2) {
-    throw new Error("CSV vacío o sin datos");
-  }
-
-  const headers = parseCSVLine(lines[0]);
-  const rows: Record<string, any>[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.trim()) {
-      const values = parseCSVLine(line);
-      const row: Record<string, any> = {};
-      headers.forEach((header, idx) => {
-        row[header] = values[idx] ?? null;
-      });
-      rows.push(row);
-    }
-  }
-
-  return rows;
-}
-
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = "";
@@ -376,12 +294,3 @@ function parseCSVLine(line: string): string[] {
   result.push(current.trim());
   return result;
 }
-
-async function parseExcel(buffer: Buffer): Promise<Record<string, any>[]> {
-  const XLSX = await import("xlsx");
-  const workbook = XLSX.read(buffer, { type: "buffer" });
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  return XLSX.utils.sheet_to_json(sheet);
-}
-// Force redeploy Fri Jan 30 21:20:07 -05 2026

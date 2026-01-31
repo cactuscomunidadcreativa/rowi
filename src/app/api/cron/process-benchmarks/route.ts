@@ -23,8 +23,12 @@ const BATCH_SIZE = 1000;
 
 export async function GET(req: NextRequest) {
   // Verificar que es una llamada de Vercel Cron
+  // Vercel envía el header "x-vercel-cron" cuando es una llamada de cron
+  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const hasValidSecret = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+  if (!isVercelCron && !hasValidSecret) {
     // En desarrollo permitir sin auth
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

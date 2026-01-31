@@ -3629,6 +3629,14 @@ model BenchmarkTopPerformer {
   commonPatterns      Json?   // Combinaciones de competencias que se repiten
   talentPatterns      Json?   // Combinaciones de talentos que se repiten
 
+  // Métricas estadísticas adicionales
+  statistics          Json?   // {significantCompetencies, significantTalents, avgEffectSize, globalMeans}
+  thresholdValue      Float?  // Valor del umbral P90
+  totalPopulation     Int?    // Total de registros
+  confidenceLevel     String? // high, medium, low
+  lowConfidenceSample Boolean @default(false)
+  insufficientReason  String?
+
   calculatedAt DateTime @default(now())
 
   benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)

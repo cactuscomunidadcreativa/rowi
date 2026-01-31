@@ -1,7 +1,7 @@
 /**
  * 📊 API: Top Performers
  * GET /api/admin/benchmarks/[id]/top-performers - Top performers por outcome
- * Devuelve datos pre-calculados enriquecidos con métricas estadísticas
+ * Devuelve datos pre-calculados con todas las métricas estadísticas
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -13,7 +13,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// Constantes de configuración (mismas que calculate)
+// Constantes de configuración
 const CONFIDENCE_HIGH = 385;
 const CONFIDENCE_MEDIUM = 100;
 
@@ -69,23 +69,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       });
 
       if (fallbackData) {
-        // Obtener población total para este outcome
         const totalPopulation = await prisma.benchmarkDataPoint.count({
           where: { benchmarkId: id, [outcomeKey]: { not: null } },
         });
 
-        const enrichedFallback = {
-          ...fallbackData,
-          totalPopulation,
-          confidenceLevel: getConfidenceLevel(fallbackData.sampleSize),
-          thresholdValue: null,
-          statistics: {
-            significantCompetencies: 0,
-            significantTalents: 0,
-            avgEffectSizeCompetencies: 0,
-            avgEffectSizeTalents: 0,
-          },
-        };
+        const enrichedFallback = enrichTopPerformer(fallbackData, totalPopulation);
 
         return NextResponse.json({
           ok: true,
@@ -96,75 +84,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Enriquecer los datos pre-calculados con las nuevas métricas
+    // Enriquecer los datos pre-calculados
     const topPerformers = await Promise.all(
       topPerformersRaw.map(async (tp) => {
-        // Obtener población total para este outcome
         const totalPopulation = await prisma.benchmarkDataPoint.count({
           where: { benchmarkId: id, [tp.outcomeKey]: { not: null } },
         });
 
-        // Calcular nivel de confianza basado en sample size
-        const confidenceLevel = getConfidenceLevel(tp.sampleSize);
-
-        // Parsear topCompetencies y topTalents si son JSON strings
-        let topCompetencies = tp.topCompetencies;
-        let topTalents = tp.topTalents;
-        let topTalentsSummary = (tp as any).topTalentsSummary;
-
-        if (typeof topCompetencies === "string") {
-          try {
-            topCompetencies = JSON.parse(topCompetencies);
-          } catch {
-            topCompetencies = [];
-          }
-        }
-        if (typeof topTalents === "string") {
-          try {
-            topTalents = JSON.parse(topTalents);
-          } catch {
-            topTalents = [];
-          }
-        }
-        if (typeof topTalentsSummary === "string") {
-          try {
-            topTalentsSummary = JSON.parse(topTalentsSummary);
-          } catch {
-            topTalentsSummary = [];
-          }
-        }
-
-        // Contar competencias y talentos "significativos" (diffFromAvg > 3)
-        const significantCompetencies = Array.isArray(topCompetencies)
-          ? topCompetencies.filter((c: any) => c.diffFromAvg > 3).length
-          : 0;
-        const significantTalents = Array.isArray(topTalents)
-          ? topTalents.filter((t: any) => t.diffFromAvg > 3).length
-          : 0;
-
-        // Calcular effect size promedio aproximado (diffFromAvg / 15 como proxy)
-        const avgEffectSizeCompetencies = Array.isArray(topCompetencies) && topCompetencies.length > 0
-          ? topCompetencies.reduce((acc: number, c: any) => acc + (c.diffFromAvg || 0), 0) / topCompetencies.length / 15
-          : 0;
-        const avgEffectSizeTalents = Array.isArray(topTalents) && topTalents.length > 0
-          ? topTalents.reduce((acc: number, t: any) => acc + (t.diffFromAvg || 0), 0) / topTalents.length / 15
-          : 0;
-
-        return {
-          ...tp,
-          topCompetencies,
-          topTalents,
-          topTalentsSummary,
-          totalPopulation,
-          confidenceLevel,
-          thresholdValue: null, // No disponible en pre-calculados
-          statistics: {
-            significantCompetencies,
-            significantTalents,
-            avgEffectSizeCompetencies: Math.round(avgEffectSizeCompetencies * 100) / 100,
-            avgEffectSizeTalents: Math.round(avgEffectSizeTalents * 100) / 100,
-          },
-        };
+        return enrichTopPerformer(tp, totalPopulation);
       })
     );
 
@@ -180,4 +107,94 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Enriquece un top performer con datos parseados y estadísticas
+ */
+function enrichTopPerformer(tp: any, totalPopulation: number) {
+  // Parsear JSON fields si es necesario
+  let topCompetencies = parseJsonField(tp.topCompetencies);
+  let topTalents = parseJsonField(tp.topTalents);
+  let topTalentsSummary = parseJsonField(tp.topTalentsSummary);
+  let commonPatterns = parseJsonField(tp.commonPatterns);
+  let talentPatterns = parseJsonField(tp.talentPatterns);
+  let statistics = parseJsonField(tp.statistics);
+
+  // Calcular nivel de confianza
+  const confidenceLevel = tp.confidenceLevel || getConfidenceLevel(tp.sampleSize);
+
+  // Si hay statistics guardados, usarlos directamente
+  if (statistics && typeof statistics === 'object') {
+    // Ya tenemos las estadísticas completas del /generate endpoint
+    return {
+      ...tp,
+      topCompetencies,
+      topTalents,
+      topTalentsSummary,
+      commonPatterns,
+      talentPatterns,
+      totalPopulation,
+      confidenceLevel,
+      thresholdValue: tp.thresholdValue || null,
+      statistics: {
+        globalMeans: statistics.globalMeans || {},
+        significantCompetencies: statistics.significantCompetencies || 0,
+        significantTalents: statistics.significantTalents || 0,
+        avgEffectSizeCompetencies: roundTo2(statistics.avgEffectSizeCompetencies || 0),
+        avgEffectSizeTalents: roundTo2(statistics.avgEffectSizeTalents || 0),
+      },
+    };
+  }
+
+  // Fallback: calcular estadísticas desde los datos disponibles
+  const significantCompetencies = Array.isArray(topCompetencies)
+    ? topCompetencies.filter((c: any) => c.isSignificant === true || (c.effectSize && Math.abs(c.effectSize) >= 0.5)).length
+    : 0;
+
+  const significantTalents = Array.isArray(topTalents)
+    ? topTalents.filter((t: any) => t.isSignificant === true || (t.effectSize && Math.abs(t.effectSize) >= 0.5)).length
+    : 0;
+
+  const avgEffectSizeCompetencies = Array.isArray(topCompetencies) && topCompetencies.length > 0
+    ? topCompetencies.reduce((acc: number, c: any) => acc + Math.abs(c.effectSize || 0), 0) / topCompetencies.length
+    : 0;
+
+  const avgEffectSizeTalents = Array.isArray(topTalents) && topTalents.length > 0
+    ? topTalents.reduce((acc: number, t: any) => acc + Math.abs(t.effectSize || 0), 0) / topTalents.length
+    : 0;
+
+  return {
+    ...tp,
+    topCompetencies,
+    topTalents,
+    topTalentsSummary,
+    commonPatterns,
+    talentPatterns,
+    totalPopulation,
+    confidenceLevel,
+    thresholdValue: tp.thresholdValue || null,
+    statistics: {
+      significantCompetencies,
+      significantTalents,
+      avgEffectSizeCompetencies: roundTo2(avgEffectSizeCompetencies),
+      avgEffectSizeTalents: roundTo2(avgEffectSizeTalents),
+    },
+  };
+}
+
+function parseJsonField(field: any): any {
+  if (field === null || field === undefined) return [];
+  if (typeof field === 'string') {
+    try {
+      return JSON.parse(field);
+    } catch {
+      return [];
+    }
+  }
+  return field;
+}
+
+function roundTo2(num: number): number {
+  return Math.round(num * 100) / 100;
 }

@@ -552,9 +552,50 @@ async function main() {
   }
 
   // ============================================================
-  // 4. SUPERHUB - Six Seconds
+  // 4. TENANT ROWI GLOBAL - Para usuarios públicos
   // ============================================================
-  console.log("\n4. Creando SuperHub Six Seconds...");
+  console.log("\n4. Creando Tenant Rowi Global (para usuarios públicos)...");
+
+  const rowiGlobalTenant = await prisma.tenant.upsert({
+    where: { slug: "rowi-global" },
+    update: {},
+    create: {
+      name: "Rowi Global Community",
+      slug: "rowi-global",
+      billingEmail: "admin@rowiia.com",
+      rowiVerseId: rowiverse.id,
+      systemId: system.id,
+      planId: plans["free"].id,
+    },
+  });
+  console.log("   ✅ Rowi Global Tenant:", rowiGlobalTenant.id);
+
+  // Crear TenantBranding para Rowi Global
+  await prisma.tenantBranding.upsert({
+    where: { tenantId: rowiGlobalTenant.id },
+    update: {},
+    create: {
+      tenantId: rowiGlobalTenant.id,
+      logoUrl: "/rowi-logo.png",
+      primaryColor: "#6366F1",
+      secondaryColor: "#F97316",
+      backgroundColor: "#ffffff",
+      textColor: "#1f2937",
+      colorK: "#3b82f6",
+      colorC: "#10b981",
+      colorG: "#f59e0b",
+      fontHeading: "Inter",
+      fontBody: "Inter",
+      defaultTheme: "light",
+      isActive: true,
+    },
+  });
+  console.log("   ✅ Rowi Global Branding creado");
+
+  // ============================================================
+  // 5. SUPERHUB - Six Seconds (cliente específico)
+  // ============================================================
+  console.log("\n5. Creando SuperHub Six Seconds...");
 
   const superHub = await prisma.superHub.upsert({
     where: { slug: "six-seconds" },
@@ -572,9 +613,9 @@ async function main() {
   console.log("   ✅ SuperHub:", superHub.id);
 
   // ============================================================
-  // 5. TENANT - Six Seconds Global
+  // 6. TENANT - Six Seconds Global (cliente específico)
   // ============================================================
-  console.log("\n5. Creando Tenant Six Seconds...");
+  console.log("\n6. Creando Tenant Six Seconds...");
 
   const tenant = await prisma.tenant.upsert({
     where: { slug: "six-seconds-global" },
@@ -739,6 +780,30 @@ async function main() {
   });
   console.log("   ✅ Josh (Admin):", josh.id);
 
+  // Patty - Admin Six Seconds
+  const patty = await prisma.user.upsert({
+    where: { email: "patty@6seconds.org" },
+    update: {
+      organizationRole: "ADMIN",
+      primaryTenantId: tenant.id,
+      planId: plans["enterprise"].id,
+      active: true,
+      allowAI: true,
+    },
+    create: {
+      name: "Patty Freedman",
+      email: "patty@6seconds.org",
+      organizationRole: "ADMIN",
+      primaryTenantId: tenant.id,
+      planId: plans["enterprise"].id,
+      active: true,
+      allowAI: true,
+      language: "en",
+      country: "US",
+    },
+  });
+  console.log("   ✅ Patty (Admin):", patty.id);
+
   // ============================================================
   // 9. ROWIVERSE USERS - Identidades globales
   // ============================================================
@@ -786,10 +851,25 @@ async function main() {
     },
   });
 
+  const rvPatty = await prisma.rowiVerseUser.upsert({
+    where: { email: "patty@6seconds.org" },
+    update: {},
+    create: {
+      email: "patty@6seconds.org",
+      name: "Patty Freedman",
+      userId: patty.id,
+      rowiVerseId: rowiverse.id,
+      verified: true,
+      active: true,
+      status: "active",
+    },
+  });
+
   // Vincular users con rowiverse
   await prisma.user.update({ where: { id: eduardo.id }, data: { rowiverseId: rvEduardo.id } });
   await prisma.user.update({ where: { id: eduardo6s.id }, data: { rowiverseId: rvEduardo6s.id } });
   await prisma.user.update({ where: { id: josh.id }, data: { rowiverseId: rvJosh.id } });
+  await prisma.user.update({ where: { id: patty.id }, data: { rowiverseId: rvPatty.id } });
 
   console.log("   ✅ RowiVerse Users creados y vinculados");
 
@@ -900,6 +980,40 @@ async function main() {
     },
   });
 
+  // Patty - Admin
+  await prisma.membership.upsert({
+    where: { userId_tenantId: { userId: patty.id, tenantId: tenant.id } },
+    update: { role: "ADMIN" },
+    create: {
+      userId: patty.id,
+      tenantId: tenant.id,
+      role: "ADMIN",
+      planId: plans["enterprise"].id,
+      tokenQuota: 999999,
+    },
+  });
+
+  await prisma.orgMembership.upsert({
+    where: { organizationId_userId: { organizationId: org.id, userId: patty.id } },
+    update: { role: "ADMIN" },
+    create: {
+      organizationId: org.id,
+      userId: patty.id,
+      role: "ADMIN",
+      status: "ACTIVE",
+    },
+  });
+
+  await prisma.hubMembership.upsert({
+    where: { hubId_userId: { hubId: hub.id, userId: patty.id } },
+    update: { access: "admin" },
+    create: {
+      hubId: hub.id,
+      userId: patty.id,
+      access: "admin",
+    },
+  });
+
   console.log("   ✅ Memberships creados");
 
   // ============================================================
@@ -986,6 +1100,32 @@ async function main() {
     console.log(`   ✅ Josh: ${perm.scopeType} → ${perm.role}`);
   }
 
+  // Patty - Admin de Six Seconds
+  const pattyPermissions = [
+    { scopeType: "superhub" as const, scopeId: superHub.id, role: "ADMIN", scope: superHub.id },
+    { scopeType: "tenant" as const, scopeId: tenant.id, role: "ADMIN", scope: tenant.id },
+    { scopeType: "hub" as const, scopeId: hub.id, role: "ADMIN", scope: hub.id },
+    { scopeType: "organization" as const, scopeId: org.id, role: "ADMIN", scope: org.id },
+  ];
+
+  for (const perm of pattyPermissions) {
+    const permId = `perm-patty-${perm.scopeType.toLowerCase()}-${perm.scopeId}`;
+    await prisma.userPermission.upsert({
+      where: { id: permId },
+      update: { role: perm.role },
+      create: {
+        id: permId,
+        userId: patty.id,
+        role: perm.role,
+        scope: perm.scope,
+        scopeType: perm.scopeType,
+        scopeId: perm.scopeId,
+        tenantId: tenant.id,
+      },
+    });
+    console.log(`   ✅ Patty: ${perm.scopeType} → ${perm.role}`);
+  }
+
   // ============================================================
   // 12. COMUNIDAD - Comunidad principal de Six Seconds
   // ============================================================
@@ -1034,6 +1174,21 @@ async function main() {
       rowiverseUserId: rvJosh.id,
       email: "josh@6seconds.org",
       name: "Josh Freedman",
+      role: "admin",
+      status: "active",
+    },
+  });
+
+  await prisma.rowiCommunityUser.upsert({
+    where: { id: `member-patty-${community.id}` },
+    update: {},
+    create: {
+      id: `member-patty-${community.id}`,
+      communityId: community.id,
+      userId: patty.id,
+      rowiverseUserId: rvPatty.id,
+      email: "patty@6seconds.org",
+      name: "Patty Freedman",
       role: "admin",
       status: "active",
     },
@@ -1158,16 +1313,38 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
     console.log(`   🤖 [GLOBAL] ${agent.name}`);
   }
 
-  // Crear agentes para TENANT Six Seconds
-  const tenantCulture = {
-    culturePrompt: `CULTURA SIX SECONDS:
-- Pioneros en inteligencia emocional aplicada desde 1997
-- Valoramos autenticidad, empatia y crecimiento continuo
-- Lenguaje cercano pero profesional basado en ciencia`,
-    companyValues: ["Empatia", "Crecimiento", "Autenticidad", "Colaboracion", "Ciencia"],
-    companyMission: "Democratizar la inteligencia emocional para un mundo mejor",
-    companyTone: "Calido, inspirador, cercano pero profesional",
-    industryContext: "EdTech/HRTech - Inteligencia Emocional",
+  // Crear agentes para TENANT Six Seconds con cultura oficial
+  // VISION: By 2039, we will engage 1 billion people practicing emotional intelligence
+  // MISSION: To support one billion people practicing the skills of emotional intelligence
+  const sixSecondsCulture = {
+    culturePrompt: `SIX SECONDS CULTURE & VALUES:
+
+VISION: By 2039, we will engage 1 billion people practicing emotional intelligence.
+
+MISSION: To support people to create positive change - everywhere, all the time.
+
+CORE VALUES:
+- Connection: We prioritize relationships and authentic human connection
+- Hope: We believe in human potential and the power to change
+- Safety: We create environments where people feel secure to grow
+- Belonging: Everyone deserves to feel part of a community
+
+THE SIX SECONDS MODEL:
+- KNOW YOURSELF: Enhance Emotional Literacy, Recognize Patterns
+- CHOOSE YOURSELF: Apply Consequential Thinking, Navigate Emotions, Engage Intrinsic Motivation, Exercise Optimism
+- GIVE YOURSELF: Increase Empathy, Pursue Noble Goals
+
+COMMUNICATION STYLE:
+- Science-based but accessible and warm
+- Empathetic and non-judgmental
+- Action-oriented with practical tools
+- Inspiring hope while being realistic
+- Always connect EQ to meaningful purpose`,
+    companyValues: ["Connection", "Hope", "Safety", "Belonging", "Authenticity", "Growth", "Science-Based Action"],
+    companyMission: "To support people to create positive change - everywhere, all the time",
+    companyVision: "By 2039, we will engage 1 billion people practicing emotional intelligence",
+    companyTone: "Warm, inspiring, science-based yet accessible, action-oriented",
+    industryContext: "EdTech/HRTech - Emotional Intelligence & Leadership Development",
   };
 
   for (const agent of agentsData) {
@@ -1193,14 +1370,50 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
           isActive: true,
           autoLearn: true,
           tools: { web_search: true, code_interpreter: false },
-          culturePrompt: tenantCulture.culturePrompt,
-          companyValues: tenantCulture.companyValues,
-          companyMission: tenantCulture.companyMission,
-          companyTone: tenantCulture.companyTone,
-          industryContext: tenantCulture.industryContext,
+          culturePrompt: sixSecondsCulture.culturePrompt,
+          companyValues: sixSecondsCulture.companyValues,
+          companyMission: sixSecondsCulture.companyMission,
+          companyTone: sixSecondsCulture.companyTone,
+          industryContext: sixSecondsCulture.industryContext,
         },
       });
       console.log(`   🤖 [TENANT] ${agent.name}`);
+    }
+  }
+
+  // Crear agentes para HUB Six Seconds (estos son los que heredan cultura específica del Hub)
+  for (const agent of agentsData) {
+    const existingHub = await prisma.agentConfig.findFirst({
+      where: { slug: agent.slug, hubId: hub.id },
+    });
+
+    if (!existingHub) {
+      await prisma.agentConfig.create({
+        data: {
+          slug: agent.slug,
+          name: agent.name,
+          description: agent.description,
+          avatar: agent.avatar,
+          type: agent.type,
+          model: agent.model,
+          prompt: agent.prompt,
+          tone: agent.tone,
+          accessLevel: "hub",
+          visibility: "hub",
+          hubId: hub.id,
+          tenantId: tenant.id,
+          systemId: system.id,
+          isActive: true,
+          autoLearn: true,
+          tools: { web_search: true, code_interpreter: false },
+          culturePrompt: sixSecondsCulture.culturePrompt,
+          companyValues: sixSecondsCulture.companyValues,
+          companyMission: sixSecondsCulture.companyMission,
+          companyTone: sixSecondsCulture.companyTone,
+          industryContext: sixSecondsCulture.industryContext,
+        },
+      });
+      console.log(`   🤖 [HUB] ${agent.name}`);
     }
   }
 
@@ -1232,100 +1445,7 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log(`   ✅ ${settingsData.length} settings creados`);
 
   // ============================================================
-  // 16. EQ SNAPSHOT - Datos EQ de ejemplo para Eduardo
-  // ============================================================
-  console.log("\n16. Creando EQ Snapshot para Eduardo...");
-
-  const eduardoEQ = await prisma.eqSnapshot.upsert({
-    where: { id: "sei-eduardo-demo" },
-    update: {},
-    create: {
-      id: "sei-eduardo-demo",
-      user: { connect: { id: eduardo.id } },
-      rowiverseUser: { connect: { id: rvEduardo.id } },
-      email: "eduardo@cactuscomunidadcreativa.com",
-      dataset: "Six Seconds Demo",
-      project: "Rowi Core Team",
-      owner: "Sistema",
-      at: new Date(),
-      K: 115,
-      C: 116,
-      G: 105,
-      EL: 122,
-      RP: 108,
-      ACT: 124,
-      NE: 124,
-      IM: 104,
-      OP: 114,
-      EMP: 93,
-      NG: 118,
-      brainStyle: "Strategist",
-      recentMood: "Confianza",
-      moodIntensity: "Seguro",
-      overall4: 111.66,
-      country: "PE",
-      gender: "M",
-      age: 39,
-      reliabilityIndex: 85.69,
-      positiveImpressionRange: "Average",
-    },
-  });
-
-  // Crear competencias EQ
-  const eqCompetencies = [
-    { key: "EL", label: "Enhance Emotional Literacy", score: 121.93 },
-    { key: "RP", label: "Recognize Patterns", score: 108.12 },
-    { key: "ACT", label: "Apply Consequential Thinking", score: 124.10 },
-    { key: "NE", label: "Navigate Emotions", score: 124.12 },
-    { key: "IM", label: "Engage Intrinsic Motivation", score: 104.42 },
-    { key: "OP", label: "Exercise Optimism", score: 113.84 },
-    { key: "EMP", label: "Increase Empathy", score: 92.76 },
-    { key: "NG", label: "Pursue Noble Goals", score: 118.00 },
-  ];
-
-  for (const comp of eqCompetencies) {
-    await prisma.eqCompetencySnapshot.upsert({
-      where: { id: `${eduardoEQ.id}-${comp.key}` },
-      update: { score: comp.score },
-      create: {
-        id: `${eduardoEQ.id}-${comp.key}`,
-        snapshot: { connect: { id: eduardoEQ.id } },
-        key: comp.key,
-        label: comp.label,
-        score: comp.score,
-      },
-    });
-  }
-  console.log("   ✅ EQ Snapshot y competencias creadas");
-
-  // ============================================================
-  // 17. AVATAR EVOLUTION - Gamificación
-  // ============================================================
-  console.log("\n17. Creando Avatar Evolution...");
-
-  await prisma.avatarEvolution.upsert({
-    where: { userId: eduardo.id },
-    update: {},
-    create: {
-      userId: eduardo.id,
-      stage: "YOUNG",
-      experience: 1500,
-      hatched: true,
-      hatchProgress: 100,
-      sixSecondsLevel: 4,
-      evolutionScore: 4.6,
-      daysActive: 90,
-      brainStyle: "Strategist",
-      personality: {
-        strengths: ["strategic_thinking", "emotional_awareness", "leadership"],
-        challenges: ["patience", "delegation"],
-      },
-    },
-  });
-  console.log("   ✅ Avatar Evolution creado");
-
-  // ============================================================
-  // 18. EMOTIONAL CONFIG - Configuración emocional
+  // 16. EMOTIONAL CONFIG - Configuración emocional
   // ============================================================
   console.log("\n18. Creando Emotional Config...");
 
@@ -1380,31 +1500,10 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   }
   console.log(`   ✅ ${achievementsData.length} achievements creados`);
 
-  // Dar algunos logros a Eduardo
-  const eduardoAchievements = ["first_login", "profile_complete", "first_sei", "avatar_hatched"];
-  for (const achSlug of eduardoAchievements) {
-    const ach = await prisma.achievement.findUnique({ where: { slug: achSlug } });
-    if (ach) {
-      await prisma.userAchievement.upsert({
-        where: { id: `${eduardo.id}-${achSlug}` },
-        update: {},
-        create: {
-          id: `${eduardo.id}-${achSlug}`,
-          userId: eduardo.id,
-          achievementId: ach.id,
-          completed: true,
-          completedAt: new Date(),
-          progress: 100,
-        },
-      });
-    }
-  }
-  console.log("   ✅ Achievements asignados a Eduardo");
-
   // ============================================================
-  // 20. LEVEL DEFINITIONS - Definiciones de niveles
+  // 18. LEVEL DEFINITIONS - Definiciones de niveles
   // ============================================================
-  console.log("\n20. Creando Level Definitions...");
+  console.log("\n18. Creando Level Definitions...");
 
   const levelsData = [
     { level: 1, minPoints: 0, maxPoints: 99, title: "Explorador Emocional", titleEN: "Emotional Explorer", color: "#6B7280", multiplier: 1.0 },
@@ -1444,18 +1543,314 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   }
   console.log(`   ✅ ${levelsData.length} niveles creados`);
 
-  // Crear UserLevel para Eduardo
-  await prisma.userLevel.upsert({
-    where: { userId: eduardo.id },
-    update: {},
-    create: {
-      userId: eduardo.id,
-      level: 4,
-      totalPoints: 650,
-      currentLevelPoints: 50,
-    },
-  });
-  console.log("   ✅ UserLevel para Eduardo creado");
+  // ============================================================
+  // 19. TRADUCCIONES - Admin UI i18n (COMPLETAS - 212 pares)
+  // ============================================================
+  console.log("\n19. Creando Traducciones...");
+
+  // Todas las traducciones del sistema
+  const translationPairs = [
+    // ============ Common ============
+    { ns: "common", key: "loading", es: "Cargando...", en: "Loading..." },
+    { ns: "common", key: "error", es: "Ocurrió un error", en: "An error occurred" },
+    { ns: "common", key: "success", es: "Éxito", en: "Success" },
+    { ns: "common", key: "save", es: "Guardar", en: "Save" },
+    { ns: "common", key: "cancel", es: "Cancelar", en: "Cancel" },
+    { ns: "common", key: "delete", es: "Eliminar", en: "Delete" },
+    { ns: "common", key: "edit", es: "Editar", en: "Edit" },
+    { ns: "common", key: "create", es: "Crear", en: "Create" },
+    { ns: "common", key: "search", es: "Buscar", en: "Search" },
+    { ns: "common", key: "filter", es: "Filtrar", en: "Filter" },
+    { ns: "common", key: "yes", es: "Sí", en: "Yes" },
+    { ns: "common", key: "no", es: "No", en: "No" },
+    { ns: "common", key: "confirm", es: "Confirmar", en: "Confirm" },
+
+    // ============ Admin Common ============
+    { ns: "admin", key: "common.search", es: "Buscar...", en: "Search..." },
+    { ns: "admin", key: "common.refresh", es: "Actualizar", en: "Refresh" },
+    { ns: "admin", key: "common.save", es: "Guardar", en: "Save" },
+    { ns: "admin", key: "common.cancel", es: "Cancelar", en: "Cancel" },
+    { ns: "admin", key: "common.edit", es: "Editar", en: "Edit" },
+    { ns: "admin", key: "common.delete", es: "Eliminar", en: "Delete" },
+    { ns: "admin", key: "common.preview", es: "Vista previa", en: "Preview" },
+    { ns: "admin", key: "common.details", es: "Detalles", en: "Details" },
+    { ns: "admin", key: "common.actions", es: "Acciones", en: "Actions" },
+    { ns: "admin", key: "common.status", es: "Estado", en: "Status" },
+    { ns: "admin", key: "common.name", es: "Nombre", en: "Name" },
+    { ns: "admin", key: "common.description", es: "Descripción", en: "Description" },
+    { ns: "admin", key: "common.type", es: "Tipo", en: "Type" },
+    { ns: "admin", key: "common.category", es: "Categoría", en: "Category" },
+    { ns: "admin", key: "common.version", es: "Versión", en: "Version" },
+    { ns: "admin", key: "common.config", es: "Configuración", en: "Configuration" },
+    { ns: "admin", key: "common.enabled", es: "Habilitado", en: "Enabled" },
+    { ns: "admin", key: "common.disabled", es: "Deshabilitado", en: "Disabled" },
+    { ns: "admin", key: "common.active", es: "Activo", en: "Active" },
+    { ns: "admin", key: "common.inactive", es: "Inactivo", en: "Inactive" },
+    { ns: "admin", key: "common.all", es: "Todos", en: "All" },
+    { ns: "admin", key: "common.none", es: "Ninguno", en: "None" },
+    { ns: "admin", key: "common.select", es: "Seleccionar", en: "Select" },
+    { ns: "admin", key: "common.close", es: "Cerrar", en: "Close" },
+    { ns: "admin", key: "common.back", es: "Volver", en: "Back" },
+    { ns: "admin", key: "common.next", es: "Siguiente", en: "Next" },
+    { ns: "admin", key: "common.previous", es: "Anterior", en: "Previous" },
+    { ns: "admin", key: "common.finish", es: "Finalizar", en: "Finish" },
+    { ns: "admin", key: "common.add", es: "Agregar", en: "Add" },
+    { ns: "admin", key: "common.remove", es: "Quitar", en: "Remove" },
+    { ns: "admin", key: "common.new", es: "Nuevo", en: "New" },
+
+    // ============ Admin Navigation ============
+    { ns: "admin", key: "nav.dashboard", es: "Dashboard", en: "Dashboard" },
+    { ns: "admin", key: "nav.pages", es: "Páginas", en: "Pages" },
+    { ns: "admin", key: "nav.layouts", es: "Layouts", en: "Layouts" },
+    { ns: "admin", key: "nav.components", es: "Componentes", en: "Components" },
+    { ns: "admin", key: "nav.translations", es: "Traducciones", en: "Translations" },
+    { ns: "admin", key: "nav.agents", es: "Agentes", en: "Agents" },
+    { ns: "admin", key: "nav.users", es: "Usuarios", en: "Users" },
+    { ns: "admin", key: "nav.settings", es: "Configuración", en: "Settings" },
+    { ns: "admin", key: "nav.tenants", es: "Tenants", en: "Tenants" },
+    { ns: "admin", key: "nav.organizations", es: "Organizaciones", en: "Organizations" },
+    { ns: "admin", key: "nav.superhubs", es: "SuperHubs", en: "SuperHubs" },
+    { ns: "admin", key: "nav.api", es: "API", en: "API" },
+    { ns: "admin", key: "nav.logs", es: "Logs", en: "Logs" },
+    { ns: "admin", key: "nav.analytics", es: "Analíticas", en: "Analytics" },
+    { ns: "admin", key: "nav.media", es: "Media", en: "Media" },
+    { ns: "admin", key: "nav.forms", es: "Formularios", en: "Forms" },
+    { ns: "admin", key: "nav.menus", es: "Menús", en: "Menus" },
+    { ns: "admin", key: "nav.themes", es: "Temas", en: "Themes" },
+    { ns: "admin", key: "nav.benchmarks", es: "Benchmarks", en: "Benchmarks" },
+
+    // ============ Admin Pages ============
+    { ns: "admin", key: "pages.title", es: "Páginas", en: "Pages" },
+    { ns: "admin", key: "pages.description", es: "Gestiona las páginas del CMS", en: "Manage CMS pages" },
+    { ns: "admin", key: "pages.noPages", es: "No hay páginas", en: "No pages found" },
+    { ns: "admin", key: "pages.new", es: "Nueva página", en: "New page" },
+    { ns: "admin", key: "pages.edit", es: "Editar página", en: "Edit page" },
+    { ns: "admin", key: "pages.scan", es: "Escanear", en: "Scan" },
+    { ns: "admin", key: "pages.created", es: "Página creada", en: "Page created" },
+    { ns: "admin", key: "pages.updated", es: "Página actualizada", en: "Page updated" },
+    { ns: "admin", key: "pages.deleted", es: "Página eliminada", en: "Page deleted" },
+    { ns: "admin", key: "pages.confirmDelete", es: "¿Eliminar esta página?", en: "Delete this page?" },
+    { ns: "admin", key: "pages.newPages", es: "páginas nuevas", en: "new pages" },
+    { ns: "admin", key: "pages.updatedPages", es: "páginas actualizadas", en: "updated pages" },
+    { ns: "admin", key: "pages.untitled", es: "Sin título", en: "Untitled" },
+    { ns: "admin", key: "pages.titleField", es: "Título", en: "Title" },
+    { ns: "admin", key: "pages.slug", es: "Slug (URL)", en: "Slug (URL)" },
+    { ns: "admin", key: "pages.summary", es: "Resumen", en: "Summary" },
+    { ns: "admin", key: "pages.content", es: "Contenido", en: "Content" },
+    { ns: "admin", key: "pages.language", es: "Idioma", en: "Language" },
+    { ns: "admin", key: "pages.visibility", es: "Visibilidad", en: "Visibility" },
+    { ns: "admin", key: "pages.accessLevel", es: "Nivel de acceso", en: "Access level" },
+    { ns: "admin", key: "pages.seoConfig", es: "Configuración SEO", en: "SEO Configuration" },
+    { ns: "admin", key: "pages.public", es: "Público", en: "Public" },
+    { ns: "admin", key: "pages.private", es: "Privado", en: "Private" },
+    { ns: "admin", key: "pages.internal", es: "Interno", en: "Internal" },
+    { ns: "admin", key: "pages.organization", es: "Organización", en: "Organization" },
+    { ns: "admin", key: "pages.tab.general", es: "General", en: "General" },
+    { ns: "admin", key: "pages.tab.content", es: "Contenido", en: "Content" },
+    { ns: "admin", key: "pages.tab.seo", es: "SEO", en: "SEO" },
+    { ns: "admin", key: "pages.tab.access", es: "Acceso", en: "Access" },
+
+    // ============ Admin Layouts ============
+    { ns: "admin", key: "layouts.title", es: "Layouts", en: "Layouts" },
+    { ns: "admin", key: "layouts.description", es: "Diseña la estructura de tus páginas", en: "Design the structure of your pages" },
+    { ns: "admin", key: "layouts.noLayouts", es: "No hay layouts", en: "No layouts found" },
+    { ns: "admin", key: "layouts.new", es: "Nuevo layout", en: "New layout" },
+    { ns: "admin", key: "layouts.edit", es: "Editar layout", en: "Edit layout" },
+    { ns: "admin", key: "layouts.editDescription", es: "Arrastra y suelta componentes", en: "Drag and drop components" },
+    { ns: "admin", key: "layouts.created", es: "Layout creado", en: "Layout created" },
+    { ns: "admin", key: "layouts.updated", es: "Layout actualizado", en: "Layout updated" },
+    { ns: "admin", key: "layouts.deleted", es: "Layout eliminado", en: "Layout deleted" },
+    { ns: "admin", key: "layouts.confirmDelete", es: "¿Eliminar este layout?", en: "Delete this layout?" },
+    { ns: "admin", key: "layouts.header", es: "Header", en: "Header" },
+    { ns: "admin", key: "layouts.main", es: "Principal", en: "Main" },
+    { ns: "admin", key: "layouts.footer", es: "Footer", en: "Footer" },
+    { ns: "admin", key: "layouts.empty", es: "Zona vacía", en: "Empty zone" },
+    { ns: "admin", key: "layouts.addComponent", es: "Agregar componente", en: "Add component" },
+    { ns: "admin", key: "layouts.searchComponent", es: "Buscar componente...", en: "Search component..." },
+    { ns: "admin", key: "layouts.componentCatalog", es: "Catálogo de componentes", en: "Component catalog" },
+
+    // ============ Admin Components ============
+    { ns: "admin", key: "components.title", es: "Componentes", en: "Components" },
+    { ns: "admin", key: "components.description", es: "Gestiona los componentes reutilizables", en: "Manage reusable components" },
+    { ns: "admin", key: "components.noComponents", es: "No hay componentes", en: "No components found" },
+    { ns: "admin", key: "components.new", es: "Nuevo componente", en: "New component" },
+    { ns: "admin", key: "components.edit", es: "Editar componente", en: "Edit component" },
+    { ns: "admin", key: "components.created", es: "Componente creado", en: "Component created" },
+    { ns: "admin", key: "components.updated", es: "Componente actualizado", en: "Component updated" },
+    { ns: "admin", key: "components.deleted", es: "Componente eliminado", en: "Component deleted" },
+    { ns: "admin", key: "components.confirmDelete", es: "¿Eliminar este componente?", en: "Delete this component?" },
+    { ns: "admin", key: "components.allLevels", es: "Todos los niveles", en: "All levels" },
+    { ns: "admin", key: "components.version", es: "Versión", en: "Version" },
+    { ns: "admin", key: "components.category", es: "Categoría", en: "Category" },
+    { ns: "admin", key: "components.showMore", es: "Ver más", en: "Show more" },
+    { ns: "admin", key: "components.showLess", es: "Ver menos", en: "Show less" },
+
+    // ============ Admin Translations ============
+    { ns: "admin", key: "translations.title", es: "Traducciones", en: "Translations" },
+    { ns: "admin", key: "translations.description", es: "Gestiona las traducciones del sistema", en: "Manage system translations" },
+    { ns: "admin", key: "translations.noTranslations", es: "No hay traducciones", en: "No translations found" },
+    { ns: "admin", key: "translations.new", es: "Nueva traducción", en: "New translation" },
+    { ns: "admin", key: "translations.edit", es: "Editar traducción", en: "Edit translation" },
+    { ns: "admin", key: "translations.created", es: "Traducción creada", en: "Translation created" },
+    { ns: "admin", key: "translations.updated", es: "Traducción actualizada", en: "Translation updated" },
+    { ns: "admin", key: "translations.deleted", es: "Traducción eliminada", en: "Translation deleted" },
+    { ns: "admin", key: "translations.confirmDelete", es: "¿Eliminar esta traducción?", en: "Delete this translation?" },
+    { ns: "admin", key: "translations.namespace", es: "Namespace", en: "Namespace" },
+    { ns: "admin", key: "translations.key", es: "Clave", en: "Key" },
+    { ns: "admin", key: "translations.value", es: "Valor", en: "Value" },
+    { ns: "admin", key: "translations.language", es: "Idioma", en: "Language" },
+    { ns: "admin", key: "translations.export", es: "Exportar", en: "Export" },
+    { ns: "admin", key: "translations.import", es: "Importar", en: "Import" },
+    { ns: "admin", key: "translations.scan", es: "Escanear claves", en: "Scan keys" },
+    { ns: "admin", key: "translations.autoTranslate", es: "Auto traducir", en: "Auto translate" },
+    { ns: "admin", key: "translations.missing", es: "Faltantes", en: "Missing" },
+    { ns: "admin", key: "translations.all", es: "Todas", en: "All" },
+    { ns: "admin", key: "translations.filterByNs", es: "Filtrar por namespace", en: "Filter by namespace" },
+    { ns: "admin", key: "translations.filterByLang", es: "Filtrar por idioma", en: "Filter by language" },
+    { ns: "admin", key: "translations.total", es: "Total", en: "Total" },
+    { ns: "admin", key: "translations.translated", es: "Traducidas", en: "Translated" },
+    { ns: "admin", key: "translations.pending", es: "Pendientes", en: "Pending" },
+
+    // ============ Admin Agents ============
+    { ns: "admin", key: "agents.title", es: "Agentes IA", en: "AI Agents" },
+    { ns: "admin", key: "agents.description", es: "Gestiona los agentes de inteligencia artificial", en: "Manage AI agents" },
+    { ns: "admin", key: "agents.noAgents", es: "No hay agentes", en: "No agents found" },
+    { ns: "admin", key: "agents.new", es: "Nuevo agente", en: "New agent" },
+    { ns: "admin", key: "agents.edit", es: "Editar agente", en: "Edit agent" },
+    { ns: "admin", key: "agents.created", es: "Agente creado", en: "Agent created" },
+    { ns: "admin", key: "agents.updated", es: "Agente actualizado", en: "Agent updated" },
+    { ns: "admin", key: "agents.deleted", es: "Agente eliminado", en: "Agent deleted" },
+    { ns: "admin", key: "agents.confirmDelete", es: "¿Eliminar este agente?", en: "Delete this agent?" },
+    { ns: "admin", key: "agents.name", es: "Nombre", en: "Name" },
+    { ns: "admin", key: "agents.systemPrompt", es: "System Prompt", en: "System Prompt" },
+    { ns: "admin", key: "agents.model", es: "Modelo", en: "Model" },
+    { ns: "admin", key: "agents.temperature", es: "Temperatura", en: "Temperature" },
+    { ns: "admin", key: "agents.maxTokens", es: "Max Tokens", en: "Max Tokens" },
+    { ns: "admin", key: "agents.enabled", es: "Habilitado", en: "Enabled" },
+    { ns: "admin", key: "agents.disabled", es: "Deshabilitado", en: "Disabled" },
+    { ns: "admin", key: "agents.test", es: "Probar", en: "Test" },
+    { ns: "admin", key: "agents.duplicate", es: "Duplicar", en: "Duplicate" },
+
+    // ============ Admin Users ============
+    { ns: "admin", key: "users.title", es: "Usuarios", en: "Users" },
+    { ns: "admin", key: "users.description", es: "Gestiona los usuarios del sistema", en: "Manage system users" },
+    { ns: "admin", key: "users.noUsers", es: "No hay usuarios", en: "No users found" },
+    { ns: "admin", key: "users.new", es: "Nuevo usuario", en: "New user" },
+    { ns: "admin", key: "users.edit", es: "Editar usuario", en: "Edit user" },
+    { ns: "admin", key: "users.created", es: "Usuario creado", en: "User created" },
+    { ns: "admin", key: "users.updated", es: "Usuario actualizado", en: "User updated" },
+    { ns: "admin", key: "users.deleted", es: "Usuario eliminado", en: "User deleted" },
+    { ns: "admin", key: "users.confirmDelete", es: "¿Eliminar este usuario?", en: "Delete this user?" },
+    { ns: "admin", key: "users.email", es: "Email", en: "Email" },
+    { ns: "admin", key: "users.password", es: "Contraseña", en: "Password" },
+    { ns: "admin", key: "users.role", es: "Rol", en: "Role" },
+    { ns: "admin", key: "users.active", es: "Activo", en: "Active" },
+    { ns: "admin", key: "users.inactive", es: "Inactivo", en: "Inactive" },
+    { ns: "admin", key: "users.lastLogin", es: "Último acceso", en: "Last login" },
+    { ns: "admin", key: "users.createdAt", es: "Fecha de creación", en: "Created at" },
+
+    // ============ Admin Settings ============
+    { ns: "admin", key: "settings.title", es: "Configuración", en: "Settings" },
+    { ns: "admin", key: "settings.description", es: "Configuración general del sistema", en: "General system settings" },
+    { ns: "admin", key: "settings.general", es: "General", en: "General" },
+    { ns: "admin", key: "settings.appearance", es: "Apariencia", en: "Appearance" },
+    { ns: "admin", key: "settings.security", es: "Seguridad", en: "Security" },
+    { ns: "admin", key: "settings.integrations", es: "Integraciones", en: "Integrations" },
+    { ns: "admin", key: "settings.saved", es: "Configuración guardada", en: "Settings saved" },
+    { ns: "admin", key: "settings.siteName", es: "Nombre del sitio", en: "Site name" },
+    { ns: "admin", key: "settings.siteDescription", es: "Descripción del sitio", en: "Site description" },
+    { ns: "admin", key: "settings.defaultLanguage", es: "Idioma predeterminado", en: "Default language" },
+    { ns: "admin", key: "settings.timezone", es: "Zona horaria", en: "Timezone" },
+    { ns: "admin", key: "settings.theme", es: "Tema", en: "Theme" },
+    { ns: "admin", key: "settings.light", es: "Claro", en: "Light" },
+    { ns: "admin", key: "settings.dark", es: "Oscuro", en: "Dark" },
+    { ns: "admin", key: "settings.auto", es: "Automático", en: "Auto" },
+
+    // ============ Admin Dashboard ============
+    { ns: "admin", key: "dashboard.title", es: "Dashboard", en: "Dashboard" },
+    { ns: "admin", key: "dashboard.description", es: "Resumen general del sistema", en: "System overview" },
+    { ns: "admin", key: "dashboard.totalUsers", es: "Total usuarios", en: "Total users" },
+    { ns: "admin", key: "dashboard.totalPages", es: "Total páginas", en: "Total pages" },
+    { ns: "admin", key: "dashboard.totalComponents", es: "Total componentes", en: "Total components" },
+    { ns: "admin", key: "dashboard.totalAgents", es: "Total agentes", en: "Total agents" },
+    { ns: "admin", key: "dashboard.recentActivity", es: "Actividad reciente", en: "Recent activity" },
+    { ns: "admin", key: "dashboard.quickActions", es: "Acciones rápidas", en: "Quick actions" },
+    { ns: "admin", key: "dashboard.systemStatus", es: "Estado del sistema", en: "System status" },
+    { ns: "admin", key: "dashboard.healthy", es: "Saludable", en: "Healthy" },
+    { ns: "admin", key: "dashboard.warning", es: "Advertencia", en: "Warning" },
+    { ns: "admin", key: "dashboard.critical", es: "Crítico", en: "Critical" },
+
+    // ============ Benchmarks ============
+    { ns: "admin", key: "benchmarks.title", es: "Benchmarks", en: "Benchmarks" },
+    { ns: "admin", key: "benchmarks.upload", es: "Subir Benchmark", en: "Upload Benchmark" },
+    { ns: "admin", key: "benchmarks.processing", es: "Procesando...", en: "Processing..." },
+    { ns: "admin", key: "benchmarks.completed", es: "Completado", en: "Completed" },
+    { ns: "admin", key: "benchmarks.failed", es: "Fallido", en: "Failed" },
+    { ns: "admin", key: "benchmarks.topPerformers", es: "Top Performers", en: "Top Performers" },
+    { ns: "admin", key: "benchmarks.correlations", es: "Correlaciones", en: "Correlations" },
+    { ns: "admin", key: "benchmarks.generate", es: "Generar", en: "Generate" },
+    { ns: "admin", key: "benchmarks.dataPoints", es: "Puntos de datos", en: "Data points" },
+
+    // ============ EQ Metrics ============
+    { ns: "admin", key: "benchmarks.metrics.K", es: "Know Yourself", en: "Know Yourself" },
+    { ns: "admin", key: "benchmarks.metrics.C", es: "Choose Yourself", en: "Choose Yourself" },
+    { ns: "admin", key: "benchmarks.metrics.G", es: "Give Yourself", en: "Give Yourself" },
+    { ns: "admin", key: "benchmarks.metrics.eqTotal", es: "EQ Total", en: "EQ Total" },
+    { ns: "admin", key: "benchmarks.metrics.EL", es: "Enhance Emotional Literacy", en: "Enhance Emotional Literacy" },
+    { ns: "admin", key: "benchmarks.metrics.RP", es: "Recognize Patterns", en: "Recognize Patterns" },
+    { ns: "admin", key: "benchmarks.metrics.ACT", es: "Apply Consequential Thinking", en: "Apply Consequential Thinking" },
+    { ns: "admin", key: "benchmarks.metrics.NE", es: "Navigate Emotions", en: "Navigate Emotions" },
+    { ns: "admin", key: "benchmarks.metrics.IM", es: "Engage Intrinsic Motivation", en: "Engage Intrinsic Motivation" },
+    { ns: "admin", key: "benchmarks.metrics.OP", es: "Exercise Optimism", en: "Exercise Optimism" },
+    { ns: "admin", key: "benchmarks.metrics.EMP", es: "Increase Empathy", en: "Increase Empathy" },
+    { ns: "admin", key: "benchmarks.metrics.NG", es: "Pursue Noble Goals", en: "Pursue Noble Goals" },
+
+    // ============ Outcomes ============
+    { ns: "admin", key: "benchmarks.outcomes.effectiveness", es: "Efectividad", en: "Effectiveness" },
+    { ns: "admin", key: "benchmarks.outcomes.relationships", es: "Relaciones", en: "Relationships" },
+    { ns: "admin", key: "benchmarks.outcomes.qualityOfLife", es: "Calidad de Vida", en: "Quality of Life" },
+    { ns: "admin", key: "benchmarks.outcomes.wellbeing", es: "Bienestar", en: "Wellbeing" },
+    { ns: "admin", key: "benchmarks.outcomes.influence", es: "Influencia", en: "Influence" },
+    { ns: "admin", key: "benchmarks.outcomes.decisionMaking", es: "Toma de Decisiones", en: "Decision Making" },
+    { ns: "admin", key: "benchmarks.outcomes.community", es: "Comunidad", en: "Community" },
+    { ns: "admin", key: "benchmarks.outcomes.network", es: "Red de Contactos", en: "Network" },
+    { ns: "admin", key: "benchmarks.outcomes.achievement", es: "Logro", en: "Achievement" },
+    { ns: "admin", key: "benchmarks.outcomes.satisfaction", es: "Satisfacción", en: "Satisfaction" },
+    { ns: "admin", key: "benchmarks.outcomes.balance", es: "Balance", en: "Balance" },
+    { ns: "admin", key: "benchmarks.outcomes.health", es: "Salud", en: "Health" },
+
+    // ============ Brain Talents ============
+    { ns: "admin", key: "benchmarks.talents.dataMining", es: "Minería de Datos", en: "Data Mining" },
+    { ns: "admin", key: "benchmarks.talents.modeling", es: "Modelado", en: "Modeling" },
+    { ns: "admin", key: "benchmarks.talents.prioritizing", es: "Priorización", en: "Prioritizing" },
+    { ns: "admin", key: "benchmarks.talents.connection", es: "Conexión", en: "Connection" },
+    { ns: "admin", key: "benchmarks.talents.emotionalInsight", es: "Insight Emocional", en: "Emotional Insight" },
+    { ns: "admin", key: "benchmarks.talents.collaboration", es: "Colaboración", en: "Collaboration" },
+    { ns: "admin", key: "benchmarks.talents.reflecting", es: "Reflexión", en: "Reflecting" },
+    { ns: "admin", key: "benchmarks.talents.adaptability", es: "Adaptabilidad", en: "Adaptability" },
+    { ns: "admin", key: "benchmarks.talents.criticalThinking", es: "Pensamiento Crítico", en: "Critical Thinking" },
+    { ns: "admin", key: "benchmarks.talents.resilience", es: "Resiliencia", en: "Resilience" },
+    { ns: "admin", key: "benchmarks.talents.riskTolerance", es: "Tolerancia al Riesgo", en: "Risk Tolerance" },
+    { ns: "admin", key: "benchmarks.talents.imagination", es: "Imaginación", en: "Imagination" },
+    { ns: "admin", key: "benchmarks.talents.proactivity", es: "Proactividad", en: "Proactivity" },
+    { ns: "admin", key: "benchmarks.talents.commitment", es: "Compromiso", en: "Commitment" },
+    { ns: "admin", key: "benchmarks.talents.problemSolving", es: "Resolución de Problemas", en: "Problem Solving" },
+    { ns: "admin", key: "benchmarks.talents.vision", es: "Visión", en: "Vision" },
+    { ns: "admin", key: "benchmarks.talents.designing", es: "Diseño", en: "Designing" },
+    { ns: "admin", key: "benchmarks.talents.entrepreneurship", es: "Emprendimiento", en: "Entrepreneurship" },
+  ];
+
+  // Crear traducciones para cada idioma usando createMany (más eficiente)
+  // No borramos las existentes, solo agregamos las que faltan con skipDuplicates
+
+  const translationsToCreate: { systemId: string; ns: string; key: string; lang: string; value: string }[] = [];
+  for (const t of translationPairs) {
+    translationsToCreate.push({ systemId: system.id, ns: t.ns, key: t.key, lang: "es", value: t.es });
+    translationsToCreate.push({ systemId: system.id, ns: t.ns, key: t.key, lang: "en", value: t.en });
+  }
+
+  await prisma.translation.createMany({ data: translationsToCreate, skipDuplicates: true });
+  console.log(`   ✅ ${translationsToCreate.length} traducciones creadas (ES + EN)`);
 
   // ============================================================
   // RESUMEN FINAL
@@ -1466,18 +1861,22 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("=".repeat(60));
   console.log("\n");
   console.log("Estructura creada:");
-  console.log("  - RowiVerse: rowiverse");
+  console.log("  - RowiVerse: rowiverse (ecosistema global)");
   console.log("  - System: rowi");
-  console.log("  - SuperHub: Six Seconds");
-  console.log("  - Tenant: Six Seconds Global");
-  console.log("  - Hub: Six Seconds Hub");
-  console.log("  - Organization: Six Seconds Organization");
-  console.log("  - Comunidad: Six Seconds Global");
+  console.log("  - Tenant Global: rowi-global (para usuarios públicos)");
+  console.log("");
+  console.log("  Six Seconds (Cliente):");
+  console.log("    - SuperHub: Six Seconds");
+  console.log("    - Tenant: Six Seconds Global");
+  console.log("    - Hub: Six Seconds Hub");
+  console.log("    - Organization: Six Seconds Organization");
+  console.log("    - Comunidad: Six Seconds Global");
   console.log("\n");
-  console.log("Usuarios:");
+  console.log("Usuarios (4):");
   console.log("  - eduardo@cactuscomunidadcreativa.com (SUPERADMIN global)");
   console.log("  - eduardo.gonzalez@6seconds.org (ADMIN Six Seconds)");
   console.log("  - josh@6seconds.org (ADMIN Six Seconds)");
+  console.log("  - patty@6seconds.org (ADMIN Six Seconds)");
   console.log("\n");
   console.log("Planes (6):");
   console.log("  🆓 Free ROWI - Exploración");
@@ -1491,8 +1890,9 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("  - Eduardo: SUPERADMIN (Global, RowiVerse, SuperHub, Tenant, Hub, Org)");
   console.log("  - Eduardo 6S: ADMIN (SuperHub, Tenant, Hub, Org)");
   console.log("  - Josh: ADMIN (SuperHub, Tenant, Hub, Org)");
+  console.log("  - Patty: ADMIN (SuperHub, Tenant, Hub, Org)");
   console.log("\n");
-  console.log("Agentes IA (6):");
+  console.log("Agentes IA (18 total = 6 Global + 6 Tenant + 6 Hub):");
   console.log("  🤖 Super Rowi - Asistente principal");
   console.log("  🧠 Rowi EQ - Coach de inteligencia emocional");
   console.log("  💚 Rowi Affinity - Experto en relaciones");
@@ -1500,14 +1900,25 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("  🏋️ Rowi Trainer - Entrenador personal");
   console.log("  💼 Rowi Sales - Coach de ventas");
   console.log("\n");
-  console.log("Datos de prueba:");
-  console.log("  - EQ Snapshot para Eduardo (SEI completo)");
-  console.log("  - Avatar Evolution con milestones");
+  console.log("Cultura Six Seconds (aplicada a Tenant y Hub):");
+  console.log("  🎯 Vision: By 2039, 1 billion people practicing EQ");
+  console.log("  🚀 Mission: To support people to create positive change");
+  console.log("  ❤️ Values: Connection, Hope, Safety, Belonging");
+  console.log("\n");
+  console.log("Gamificación:");
   console.log("  - 7 Achievements disponibles");
+  console.log("  - 10 Level Definitions (Explorador → Leyenda Rowi)");
   console.log("  - System Settings configurados");
   console.log("  - Emotional Config activo");
+  console.log("  - 518+ Traducciones ES/EN incluidas");
   console.log("\n");
-  console.log("¡Rowi está listo para pruebas! 🚀");
+  console.log("Flujo de registro:");
+  console.log("  1. Usuario se registra → crea User");
+  console.log("  2. Se crea RowiVerseUser → identidad global");
+  console.log("  3. Se asigna a Tenant rowi-global (no Six Seconds)");
+  console.log("  4. Six Seconds es cliente específico con su propio SuperHub");
+  console.log("\n");
+  console.log("¡Rowi está listo para producción! 🚀");
   console.log("\n");
 }
 

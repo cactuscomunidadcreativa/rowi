@@ -204,12 +204,13 @@ export async function POST(req: NextRequest) {
         console.log(`✅ Usuario ${normalizedEmail} vinculado a RowiVerse`);
       }
 
-      // Buscar tenant principal para dar acceso básico
+      // Buscar tenant GLOBAL de Rowi para dar acceso básico a usuarios públicos
+      // (NO Six Seconds, que es un cliente específico)
       const rowiTenant = await prisma.tenant.findFirst({
         where: {
           OR: [
-            { slug: "six-seconds-global" },
-            { slug: "rowi-master" },
+            { slug: "rowi-global" },      // Tenant global de Rowi
+            { slug: "rowi-community" },   // Alternativa
           ]
         },
       });

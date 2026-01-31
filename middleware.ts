@@ -28,6 +28,7 @@ const PUBLIC_API_PATHS = [
   "/api/i18n",
   "/api/public",
   "/api/plans",
+  "/api/health", // Health check for monitoring
   "/api/admin/benchmarks/process-blob", // Internal processing endpoint
   "/api/cron", // Cron jobs
 ];

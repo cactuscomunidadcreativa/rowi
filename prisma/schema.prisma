@@ -3788,14 +3788,18 @@ model BenchmarkUserComparison {
   @@map("benchmark_user_comparison")
 }
 
-/// Upload Job — Procesamiento de archivos
+/// Upload Job — Procesamiento de archivos (con soporte para Cron)
 model BenchmarkUploadJob {
   id           String    @id @default(cuid())
   benchmarkId  String?
 
-  status       String    @default("pending")
+  status       String    @default("pending")  // pending, processing, completed, failed
   progress     Int       @default(0)
   currentPhase String?
+
+  // Para procesamiento con Cron
+  blobUrl      String?                        // URL del archivo en Vercel Blob
+  currentRow   Int       @default(0)          // Fila actual para continuar procesamiento
 
   totalRows     Int      @default(0)
   processedRows Int      @default(0)

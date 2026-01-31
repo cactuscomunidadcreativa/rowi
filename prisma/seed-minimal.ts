@@ -1402,6 +1402,62 @@ Usas tecnicas de inteligencia emocional y persuasion etica.`,
   console.log("   ✅ Achievements asignados a Eduardo");
 
   // ============================================================
+  // 20. LEVEL DEFINITIONS - Definiciones de niveles
+  // ============================================================
+  console.log("\n20. Creando Level Definitions...");
+
+  const levelsData = [
+    { level: 1, minPoints: 0, maxPoints: 99, title: "Explorador Emocional", titleEN: "Emotional Explorer", color: "#6B7280", multiplier: 1.0 },
+    { level: 2, minPoints: 100, maxPoints: 299, title: "Aprendiz Consciente", titleEN: "Conscious Learner", color: "#3B82F6", multiplier: 1.1 },
+    { level: 3, minPoints: 300, maxPoints: 599, title: "Practicante Emocional", titleEN: "Emotional Practitioner", color: "#10B981", multiplier: 1.2 },
+    { level: 4, minPoints: 600, maxPoints: 999, title: "Navegante Interior", titleEN: "Inner Navigator", color: "#8B5CF6", multiplier: 1.3 },
+    { level: 5, minPoints: 1000, maxPoints: 1499, title: "Maestro de Emociones", titleEN: "Emotion Master", color: "#F59E0B", multiplier: 1.5 },
+    { level: 6, minPoints: 1500, maxPoints: 2499, title: "Guía Emocional", titleEN: "Emotional Guide", color: "#EF4444", multiplier: 1.7 },
+    { level: 7, minPoints: 2500, maxPoints: 3999, title: "Sabio del Corazón", titleEN: "Heart Sage", color: "#EC4899", multiplier: 2.0 },
+    { level: 8, minPoints: 4000, maxPoints: 5999, title: "Iluminado EQ", titleEN: "EQ Enlightened", color: "#06B6D4", multiplier: 2.5 },
+    { level: 9, minPoints: 6000, maxPoints: 9999, title: "Guardián Emocional", titleEN: "Emotional Guardian", color: "#84CC16", multiplier: 3.0 },
+    { level: 10, minPoints: 10000, maxPoints: null, title: "Leyenda Rowi", titleEN: "Rowi Legend", color: "#FFD700", multiplier: 4.0 },
+  ];
+
+  for (const lvl of levelsData) {
+    await prisma.levelDefinition.upsert({
+      where: { level: lvl.level },
+      update: {
+        minPoints: lvl.minPoints,
+        maxPoints: lvl.maxPoints,
+        title: lvl.title,
+        titleEN: lvl.titleEN,
+        color: lvl.color,
+        multiplier: lvl.multiplier,
+      },
+      create: {
+        level: lvl.level,
+        minPoints: lvl.minPoints,
+        maxPoints: lvl.maxPoints,
+        title: lvl.title,
+        titleEN: lvl.titleEN,
+        color: lvl.color,
+        multiplier: lvl.multiplier,
+        icon: "star",
+      },
+    });
+  }
+  console.log(`   ✅ ${levelsData.length} niveles creados`);
+
+  // Crear UserLevel para Eduardo
+  await prisma.userLevel.upsert({
+    where: { userId: eduardo.id },
+    update: {},
+    create: {
+      userId: eduardo.id,
+      level: 4,
+      totalPoints: 650,
+      currentLevelPoints: 50,
+    },
+  });
+  console.log("   ✅ UserLevel para Eduardo creado");
+
+  // ============================================================
   // RESUMEN FINAL
   // ============================================================
   console.log("\n");

@@ -1,5 +1,8 @@
 {
   "functions": {
+    "src/app/api/cron/process-benchmarks/route.ts": {
+      "maxDuration": 300
+    },
     "src/app/api/admin/benchmarks/upload/route.ts": {
       "maxDuration": 300
     },
@@ -14,6 +17,10 @@
     }
   },
   "crons": [
+    {
+      "path": "/api/cron/process-benchmarks",
+      "schedule": "* * * * *"
+    },
     {
       "path": "/api/affinity/recalculate?project=execution",
       "schedule": "0 5 */15 * *"

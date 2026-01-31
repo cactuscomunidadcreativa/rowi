@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Crear el job de upload
+    // Crear el job de upload con blobUrl para que el cron lo procese
     const job = await prisma.benchmarkUploadJob.create({
       data: {
         benchmarkId: benchmark.id,
@@ -57,30 +57,19 @@ export async function POST(req: NextRequest) {
         progress: 0,
         totalRows: 0,
         processedRows: 0,
-        currentPhase: "starting",
+        currentRow: 0,
+        currentPhase: "queued",
+        blobUrl, // El cron usará esta URL para descargar y procesar
       },
     });
 
-    // Iniciar procesamiento en background (no await)
-    const processUrl = new URL("/api/admin/benchmarks/process-blob", req.url);
-
-    fetch(processUrl.toString(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        benchmarkId: benchmark.id,
-        jobId: job.id,
-        blobUrl,
-      }),
-    }).catch((err) => {
-      console.error("Error starting background processing:", err);
-    });
+    console.log(`📊 Job ${job.id} created for benchmark ${benchmark.id}, waiting for cron`);
 
     return NextResponse.json({
       ok: true,
       benchmarkId: benchmark.id,
       jobId: job.id,
-      message: "Processing started",
+      message: "Job queued for processing (cron will pick it up)",
     });
   } catch (error) {
     console.error("❌ Error starting processing:", error);

@@ -1,33 +1,35 @@
 import { PrismaClient } from "@prisma/client";
 
 /* =========================================================
-   🔥 PrismaClient — Versión estable para Next.js 13-15
+   🔥 PrismaClient — Optimizado para Neon + Vercel Serverless
    ---------------------------------------------------------
    - Evita instancias duplicadas
-   - Evita errores del engine "not yet connected"
+   - Optimizado para connection pooling de Neon (5 conexiones)
    - Funciona en App Router + Route Handlers
 ========================================================= */
 
 declare global {
-  // Asegura que prisma esté disponible en desarrollo sin re-instanciar
   var prismaGlobal: PrismaClient | undefined;
 }
 
-// 🔹 Instancia única (modo recomendado)
+// 🔹 Instancia única con configuración optimizada para serverless
 export const prisma =
   globalThis.prismaGlobal ??
   new PrismaClient({
-    log: ["query", "info", "warn", "error"],
+    // Solo logs de errores en producción para reducir overhead
+    log: process.env.NODE_ENV === "production"
+      ? ["error"]
+      : ["query", "info", "warn", "error"],
   });
 
-// 🔥 SOLUCIÓN DEFINITIVA:
-// Forzar conexión al engine una sola vez.
-// Esto evita el error: "Engine is not yet connected"
-prisma
-  .$connect()
-  .catch((err) => {
+// 🔥 Conexión lazy - no forzar $connect() en serverless
+// Prisma se conectará automáticamente en la primera query
+if (process.env.NODE_ENV !== "production") {
+  // Solo en desarrollo conectamos eagerly
+  prisma.$connect().catch((err) => {
     console.error("❌ Prisma failed to connect:", err);
   });
+}
 
 // 🔹 Guardar instancia en desarrollo (HMR seguro)
 if (process.env.NODE_ENV !== "production") {

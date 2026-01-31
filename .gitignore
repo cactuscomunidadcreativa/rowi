@@ -68,3 +68,4 @@ src/data/seeds/*.json
 *.bak
 *.old
 *.backup
+.env.production

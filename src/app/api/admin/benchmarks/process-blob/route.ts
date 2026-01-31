@@ -3,13 +3,15 @@
  * POST /api/admin/benchmarks/process-blob
  *
  * Procesa el archivo completo en una sola llamada de hasta 5 minutos.
- * Usa batches pequeños para inserts y actualiza progreso frecuentemente.
+ * Usa el SOH_COLUMN_MAPPING para mapear columnas del Excel a campos del modelo.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import {
   EQ_COMPETENCIES,
+  SOH_COLUMN_MAPPING,
+  NUMERIC_COLUMNS,
   normalizeAgeRange,
   detectGeneration,
   extractDateInfo,
@@ -23,8 +25,8 @@ interface ProcessBlobBody {
   blobUrl: string;
 }
 
-const BATCH_SIZE = 500; // Batches pequeños para inserts rápidos
-const PROGRESS_UPDATE_INTERVAL = 5000; // Actualizar progreso cada 5k filas
+const BATCH_SIZE = 500;
+const PROGRESS_UPDATE_INTERVAL = 5000;
 
 export async function POST(req: NextRequest) {
   let benchmarkId: string | undefined;
@@ -80,9 +82,14 @@ export async function POST(req: NextRequest) {
       throw new Error("CSV vacío o sin datos");
     }
 
-    const headers = parseCSVLine(lines[0]);
-    const totalDataRows = lines.length - 1;
+    const rawHeaders = parseCSVLine(lines[0]);
+    console.log(`📊 Raw headers (first 10): ${rawHeaders.slice(0, 10).join(", ")}`);
 
+    // Mapear headers usando SOH_COLUMN_MAPPING
+    const mappedHeaders = rawHeaders.map(h => SOH_COLUMN_MAPPING[h] || h);
+    console.log(`📊 Mapped headers (first 10): ${mappedHeaders.slice(0, 10).join(", ")}`);
+
+    const totalDataRows = lines.length - 1;
     console.log(`📊 Total rows to process: ${totalDataRows}`);
 
     await prisma.benchmarkUploadJob.update({
@@ -105,49 +112,60 @@ export async function POST(req: NextRequest) {
       if (!line.trim()) continue;
 
       const values = parseCSVLine(line);
+
+      // Crear row con headers mapeados
       const row: Record<string, any> = {};
-      headers.forEach((header, idx) => {
-        row[header] = values[idx] ?? null;
+      mappedHeaders.forEach((header, idx) => {
+        const value = values[idx];
+        // Convertir a número si es una columna numérica
+        if (NUMERIC_COLUMNS.includes(header)) {
+          const num = parseFloat(value);
+          row[header] = isNaN(num) ? null : num;
+        } else {
+          row[header] = value || null;
+        }
       });
 
+      // Verificar si tiene datos EQ (ahora con los nombres mapeados)
       const hasEQData = EQ_COMPETENCIES.some(
-        (c) => row[c] !== null && row[c] !== undefined && !isNaN(parseFloat(row[c]))
+        (c) => row[c] !== null && row[c] !== undefined && typeof row[c] === 'number'
       );
 
       if (hasEQData) {
-        const dateInfo = extractDateInfo(row.year || row.Year || row.sourceDate);
+        const dateInfo = extractDateInfo(row.year || row.sourceDate);
+        const ageRange = normalizeAgeRange(row.ageRange);
 
         dataPoints.push({
           benchmarkId,
           sourceType: "soh",
-          country: row.country || row.Country || null,
-          region: row.region || row.Region || null,
-          jobFunction: row.jobFunction || row.Job_Function || null,
-          jobRole: row.jobRole || row.Job_Role || null,
-          sector: row.sector || row.Sector || null,
-          ageRange: normalizeAgeRange(row.ageRange || row.Age_Range),
-          gender: row.gender || row.Gender || null,
-          education: row.education || row.Education || null,
-          generation: row.generation || detectGeneration(normalizeAgeRange(row.ageRange || row.Age_Range)),
+          country: row.country || null,
+          region: row.region || null,
+          jobFunction: row.jobFunction || null,
+          jobRole: row.jobRole || null,
+          sector: row.sector || null,
+          ageRange: ageRange,
+          gender: row.gender || null,
+          education: row.education || null,
+          generation: row.generation || detectGeneration(ageRange),
           year: dateInfo.year,
           month: dateInfo.month,
           quarter: dateInfo.quarter,
-          K: parseFloatOrNull(row.K),
-          C: parseFloatOrNull(row.C),
-          G: parseFloatOrNull(row.G),
-          eqTotal: parseFloatOrNull(row.eqTotal || row.EQ),
-          EL: parseFloatOrNull(row.EL),
-          RP: parseFloatOrNull(row.RP),
-          ACT: parseFloatOrNull(row.ACT),
-          NE: parseFloatOrNull(row.NE),
-          IM: parseFloatOrNull(row.IM),
-          OP: parseFloatOrNull(row.OP),
-          EMP: parseFloatOrNull(row.EMP),
-          NG: parseFloatOrNull(row.NG),
-          effectiveness: parseFloatOrNull(row.effectiveness || row.Effectiveness),
-          relationships: parseFloatOrNull(row.relationships || row.Relationships),
-          qualityOfLife: parseFloatOrNull(row.qualityOfLife || row.Quality_of_Life),
-          wellbeing: parseFloatOrNull(row.wellbeing || row.Wellbeing),
+          K: row.K ?? null,
+          C: row.C ?? null,
+          G: row.G ?? null,
+          eqTotal: row.eqTotal ?? null,
+          EL: row.EL ?? null,
+          RP: row.RP ?? null,
+          ACT: row.ACT ?? null,
+          NE: row.NE ?? null,
+          IM: row.IM ?? null,
+          OP: row.OP ?? null,
+          EMP: row.EMP ?? null,
+          NG: row.NG ?? null,
+          effectiveness: row.effectiveness ?? null,
+          relationships: row.relationships ?? null,
+          qualityOfLife: row.qualityOfLife ?? null,
+          wellbeing: row.wellbeing ?? null,
         });
         validRows++;
 
@@ -262,12 +280,6 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function parseFloatOrNull(value: any): number | null {
-  if (value === null || value === undefined || value === "") return null;
-  const num = parseFloat(String(value));
-  return isNaN(num) ? null : num;
 }
 
 function parseCSVLine(line: string): string[] {

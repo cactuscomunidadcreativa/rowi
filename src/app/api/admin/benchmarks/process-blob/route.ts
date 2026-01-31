@@ -193,24 +193,45 @@ export async function POST(req: NextRequest) {
       // Disconnect antes de llamar al siguiente chunk para liberar conexiones
       await prisma.$disconnect();
 
-      const nextCallUrl = new URL("/api/admin/benchmarks/process-blob", req.url);
+      // Construir URL absoluta para el siguiente chunk
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXTAUTH_URL || req.url.split('/api')[0];
+      const nextCallUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
 
-      // Esperar 500ms antes de llamar al siguiente chunk para evitar sobrecarga
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log(`📤 Calling next chunk: ${nextCallUrl} (startRow: ${endRow})`);
 
-      // Llamar al siguiente chunk en background
-      fetch(nextCallUrl.toString(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          benchmarkId,
-          jobId,
-          blobUrl,
-          startRow: endRow,
-        }),
-      }).catch((err) => {
-        console.error("Error calling next chunk:", err);
-      });
+      // Llamar al siguiente chunk - usar try/catch y no esperar respuesta
+      try {
+        // Usamos fetch con un timeout corto - solo queremos enviar la request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+        fetch(nextCallUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            benchmarkId,
+            jobId,
+            blobUrl,
+            startRow: endRow,
+          }),
+          signal: controller.signal,
+        }).then(() => {
+          clearTimeout(timeoutId);
+          console.log(`✅ Next chunk request sent successfully`);
+        }).catch((err) => {
+          clearTimeout(timeoutId);
+          if (err.name !== 'AbortError') {
+            console.error("Error calling next chunk:", err);
+          }
+        });
+
+        // Dar tiempo para que la request se envíe
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (err) {
+        console.error("Error initiating next chunk:", err);
+      }
 
       return NextResponse.json({
         ok: true,

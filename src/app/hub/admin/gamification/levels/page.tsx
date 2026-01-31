@@ -137,8 +137,9 @@ export default function LevelsPage() {
 
   async function updateLevel(levelData: Partial<LevelDefinition>) {
     try {
+      const isNew = !levelData.id;
       const res = await fetch("/api/admin/gamification/levels", {
-        method: "PATCH",
+        method: isNew ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(levelData),
       });
@@ -189,7 +190,21 @@ export default function LevelsPage() {
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+        <button
+          onClick={() => setEditingLevel({
+            id: "",
+            level: levels.length + 1,
+            minPoints: levels.length > 0 ? (levels[levels.length - 1].maxPoints || 0) + 1 : 0,
+            maxPoints: null,
+            title: "",
+            titleEN: "",
+            description: "",
+            icon: "⭐",
+            color: "#8B5CF6",
+            multiplier: 1,
+          })}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+        >
           <Plus className="w-4 h-4" />
           {labels.newLevel}
         </button>

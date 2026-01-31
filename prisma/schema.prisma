@@ -119,6 +119,8 @@ model User {
   integrationConnections IntegrationConnection[]
   calendarEvents        CalendarEvent[]
   notificationQueue     NotificationQueue[]
+  notificationPreference NotificationPreference?
+  pushSubscriptions     PushSubscription[]
 
   // 🎮 Gamificación
   achievements          UserAchievement[]
@@ -132,7 +134,9 @@ model User {
   weekFlowContributions WeekFlowContribution[]
   weekFlowMoodCheckins  WeekFlowMoodCheckin[]
   weekFlowComments      WeekFlowComment[]
-  rowiTasks             RowiTask[]
+  rowiTasksOwned        RowiTask[]           @relation("TaskOwner")
+  rowiTasksAssigned     RowiTask[]           @relation("TaskAssignee")
+  taskCollaborations    TaskCollaborator[]
   taskReflections       TaskReflection[]
   emotionVocabulary     EmotionVocabulary?
 
@@ -435,6 +439,15 @@ model Hub {
   weekFlowSessions WeekFlowSession[]
   rowiTasks        RowiTask[]
 
+  // ⚙️ Configuración de Affinity
+  affinityConfigs AffinityConfig[]
+
+  // 🏢 Configuración de Cultura IA
+  aiCultureConfigs AiCultureConfig[]
+
+  // 📬 Notificaciones del Hub
+  notifications NotificationQueue[]
+
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([slug])
@@ -576,6 +589,12 @@ model Tenant {
   weekFlowConfigs  WeekFlowConfig[]
   weekFlowSessions WeekFlowSession[]
   rowiTasks        RowiTask[]
+
+  // ⚙️ Configuración de Affinity
+  affinityConfigs AffinityConfig[]
+
+  // 🏢 Configuración de Cultura IA
+  aiCultureConfigs AiCultureConfig[]
 
   @@index([name])
   @@index([slug])
@@ -744,6 +763,12 @@ model Organization {
   // 📊 Benchmarks vinculados a esta Organización
   benchmarks Benchmark[] @relation("OrganizationToBenchmark")
 
+  // ⚙️ Configuración de Affinity
+  affinityConfigs AffinityConfig[]
+
+  // 🏢 Configuración de Cultura IA
+  aiCultureConfigs AiCultureConfig[]
+
   @@index([rowiVerseId])
   @@index([superHubId])
   @@index([hubId])
@@ -867,6 +892,7 @@ model CommunityMember {
   emotions             EmotionalEvent[]
   progress             EqProgress[]
   snapshots            EqSnapshot[]
+  taskCollaborations   TaskCollaborator[]
 
   @@index([tenantId])
   @@index([hubId])
@@ -2384,6 +2410,100 @@ model AffinityProfile {
 }
 
 /// =========================================================
+/// ⚙️ AFFINITY CONFIG — Configuración por scope jerárquico
+/// =========================================================
+/// Permite configurar el motor de Affinity a diferentes niveles:
+/// global → tenant → hub → organization → team
+/// La configuración más específica tiene prioridad (cascada inversa)
+model AffinityConfig {
+  id        String   @id @default(cuid())
+  scope     String   // "global" | "tenant" | "hub" | "organization" | "team"
+  scopeId   String?  // ID del scope (null si es global)
+
+  // Pesos por contexto (JSON con growth, collab, understand para cada contexto)
+  contextWeights Json @default("{}")
+
+  // Parámetros de aprendizaje automático
+  learningParams Json @default("{}")
+
+  // Umbrales de banda (hot, warm, cold)
+  bandThresholds Json @default("{}")
+
+  // Multiplicadores de cercanía (cercano, neutral, lejano)
+  closenessMultipliers Json @default("{}")
+
+  // Metadata
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  // Relaciones opcionales para integridad referencial
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String?
+  hub          Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId        String?
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+
+  @@unique([scope, scopeId])
+  @@index([scope])
+  @@index([tenantId])
+  @@index([hubId])
+  @@index([organizationId])
+  @@map("affinity_config")
+}
+
+/// =========================================================
+/// 🏢 AI CULTURE CONFIG — Contexto cultural para agentes IA
+/// =========================================================
+/// Configuración jerárquica del contexto cultural que los
+/// agentes IA usarán para adaptar su comunicación.
+/// Herencia: team → organization → hub → tenant → global
+model AiCultureConfig {
+  id        String   @id @default(cuid())
+  scope     String   // "global" | "tenant" | "hub" | "organization" | "team"
+  scopeId   String?  // ID del scope (null si es global)
+
+  // Identidad organizacional
+  mission   String?  // Misión de la organización
+  vision    String?  // Visión de la organización
+  values    Json     @default("[]") // Array de valores corporativos
+  industry  String?  // Industria/sector
+
+  // Comunicación
+  tone      String   @default("professional") // Tono: professional, friendly, casual, formal, inspirational
+  language  String   @default("es") // Idioma preferido
+  keywords  Json     @default("[]") // Palabras clave/terminología específica
+
+  // Directrices para agentes
+  guidelines   String? // Lo que los agentes DEBEN hacer
+  restrictions String? // Lo que los agentes NO deben hacer
+
+  // Metadata
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  // Relaciones opcionales
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String?
+  hub          Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId        String?
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+
+  @@unique([scope, scopeId])
+  @@index([scope])
+  @@index([tenantId])
+  @@index([hubId])
+  @@index([organizationId])
+  @@map("ai_culture_config")
+}
+
+/// =========================================================
 /// 🧠 INSIGHT RECORD — Resultados de IA Cognitiva Manual
 /// =========================================================
 model InsightRecord {
@@ -3036,6 +3156,9 @@ model AvatarEvolution {
   // Rachas del avatar
   streaks      AvatarStreak[]
 
+  // Hitos del avatar
+  milestones   AvatarMilestone[]
+
   @@index([stage])
   @@index([sixSecondsLevel])
   @@map("avatar_evolution")
@@ -3059,8 +3182,27 @@ model AvatarStreak {
   @@map("avatar_streak")
 }
 
-// NOTA: AvatarMilestone fue unificado con Achievement/UserAchievement
-// Los hitos del avatar ahora se manejan a través del sistema de logros
+/// =========================================================
+/// 🏆 AVATAR MILESTONE — Hitos del avatar (evolución, logros)
+/// =========================================================
+model AvatarMilestone {
+  id          String        @id @default(cuid())
+  avatarId    String
+  type        MilestoneType
+  title       String
+  description String?
+  xpReward    Int           @default(0)
+  rarity      String        @default("common") // common, uncommon, rare, epic, legendary
+  metadata    Json?
+  unlockedAt  DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+
+  avatar AvatarEvolution @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@index([avatarId])
+  @@index([type])
+  @@map("avatar_milestone")
+}
 
 /// =========================================================
 /// 📊 TOP PERFORMER METRIC — Rankings de desempeño emocional
@@ -3329,28 +3471,213 @@ model NotificationQueue {
   id            String   @id @default(cuid())
   userId        String
   tenantId      String?
-  channel       String
-  type          String
+  hubId         String?
+  channel       NotificationChannel
+  type          NotificationType
   title         String?
   message       String
   metadata      Json?
   priority      Int      @default(5)
   scheduledFor  DateTime?
   sentAt        DateTime?
-  status        String   @default("pending")
+  status        NotificationStatus @default(PENDING)
   attempts      Int      @default(0)
   lastError     String?
+  externalId    String?  // ID from external provider (Twilio SID, etc.)
+  deliveredAt   DateTime?
+  readAt        DateTime?
+  actionUrl     String?  // Deep link to action in app
+  scope         NotificationScope @default(PERSONAL)
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenant Tenant? @relation(fields: [tenantId], references: [id])
+  hub    Hub?    @relation(fields: [hubId], references: [id])
 
   @@index([userId, status])
   @@index([scheduledFor])
   @@index([channel])
+  @@index([status, scheduledFor])
+  @@index([tenantId, status])
+  @@index([hubId, status])
   @@map("notification_queue")
+}
+
+/// =========================================================
+/// 📱 NOTIFICATION PREFERENCES — User notification settings
+/// =========================================================
+model NotificationPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+
+  // Channel toggles
+  emailEnabled      Boolean  @default(true)
+  pushEnabled       Boolean  @default(true)
+  smsEnabled        Boolean  @default(false)
+  whatsappEnabled   Boolean  @default(false)
+  slackEnabled      Boolean  @default(false)
+  teamsEnabled      Boolean  @default(false)
+
+  // Type preferences (JSON for flexibility)
+  typePreferences   Json     @default("{}")  // { "ACHIEVEMENT": ["email", "push"], "TASK": ["push"] }
+
+  // Quiet hours
+  quietHoursEnabled Boolean  @default(false)
+  quietHoursStart   String?  // "22:00"
+  quietHoursEnd     String?  // "08:00"
+  timezone          String   @default("America/Mexico_City")
+
+  // Frequency limits
+  digestEnabled     Boolean  @default(false)
+  digestFrequency   String   @default("daily")  // daily, weekly
+  digestTime        String   @default("09:00")
+
+  // Contact info for SMS/WhatsApp
+  phoneNumber       String?
+  phoneVerified     Boolean  @default(false)
+  whatsappNumber    String?
+  whatsappVerified  Boolean  @default(false)
+
+  // Integration tokens
+  slackWebhookUrl   String?
+  teamsWebhookUrl   String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preference")
+}
+
+/// =========================================================
+/// 📲 PUSH SUBSCRIPTION — Web push subscriptions
+/// =========================================================
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String   @unique
+  p256dh        String   // Public key for encryption
+  auth          String   // Auth secret
+  userAgent     String?  // Device info
+  deviceName    String?
+  active        Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastUsedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscription")
+}
+
+/// =========================================================
+/// 📊 NOTIFICATION LOG — Delivery tracking and analytics
+/// =========================================================
+model NotificationLog {
+  id              String   @id @default(cuid())
+  notificationId  String
+  event           String   // sent, delivered, opened, clicked, bounced, failed
+  channel         NotificationChannel
+  externalId      String?
+  metadata        Json?
+
+  createdAt       DateTime @default(now())
+
+  @@index([notificationId])
+  @@index([channel, event])
+  @@index([createdAt])
+  @@map("notification_log")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 📬 NOTIFICATION ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum NotificationChannel {
+  EMAIL
+  PUSH
+  SMS
+  WHATSAPP
+  SLACK
+  TEAMS
+  IN_APP
+}
+
+enum NotificationType {
+  // Progress & Achievements
+  ACHIEVEMENT_UNLOCKED
+  LEVEL_UP
+  STREAK_MILESTONE
+  XP_EARNED
+  AVATAR_EVOLVED
+
+  // Learning & Development
+  MICROLEARNING_AVAILABLE
+  MICROLEARNING_REMINDER
+  COURSE_RECOMMENDATION
+  CERTIFICATION_EARNED
+  LEARNING_STREAK
+
+  // Tasks & WeekFlow
+  TASK_ASSIGNED
+  TASK_DUE_SOON
+  TASK_OVERDUE
+  TASK_COMPLETED
+  WEEKFLOW_REMINDER
+  WEEKFLOW_SUMMARY
+
+  // Affinity & Relationships
+  AFFINITY_CALCULATED
+  AFFINITY_IMPROVED
+  NEW_CONNECTION
+  RELATIONSHIP_INSIGHT
+
+  // Team & Hub
+  HUB_INVITATION
+  HUB_ANNOUNCEMENT
+  TEAM_UPDATE
+  MEMBER_JOINED
+  ROLE_CHANGED
+
+  // EQ & Insights
+  EQ_ASSESSMENT_READY
+  EQ_INSIGHT_AVAILABLE
+  EMOTIONAL_PATTERN_DETECTED
+  COACHING_SUGGESTION
+
+  // System
+  WELCOME
+  PROFILE_INCOMPLETE
+  SECURITY_ALERT
+  SYSTEM_UPDATE
+
+  // Social
+  MENTION
+  COMMENT
+  REACTION
+  MESSAGE_RECEIVED
+}
+
+enum NotificationStatus {
+  PENDING
+  PROCESSING
+  SENT
+  DELIVERED
+  FAILED
+  CANCELLED
+  SCHEDULED
+}
+
+enum NotificationScope {
+  PERSONAL      // Solo para ti
+  HUB           // Para tu equipo/hub
+  TENANT        // Para toda la organización
+  ROWIVERSE     // Para todo el Rowiverse
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -5167,16 +5494,57 @@ model RowiTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User             @relation(fields: [userId], references: [id])
-  tenant      Tenant?          @relation(fields: [tenantId], references: [id])
-  hub         Hub?             @relation(fields: [hubId], references: [id])
-  reflections TaskReflection[]
+  // Colaboradores
+  assigneeId    String?         // Usuario asignado (puede ser diferente del creador)
+
+  user          User             @relation("TaskOwner", fields: [userId], references: [id])
+  assignee      User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  tenant        Tenant?          @relation(fields: [tenantId], references: [id])
+  hub           Hub?             @relation(fields: [hubId], references: [id])
+  reflections   TaskReflection[]
+  collaborators TaskCollaborator[]
 
   @@index([userId, status])
+  @@index([assigneeId])
   @@index([tenantId])
   @@index([hubId])
   @@index([dueDate])
   @@map("rowi_task")
+}
+
+// =========================================================
+// ✅ TASK COLLABORATORS - Colaboradores de Tareas
+// =========================================================
+model TaskCollaborator {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String?               // Usuario de la plataforma (si existe)
+  memberId  String?               // Miembro de comunidad (si no es usuario)
+  role      CollaboratorRole      @default(VIEWER)
+
+  // Notificaciones
+  notifyOnUpdate    Boolean @default(true)
+  notifyOnComplete  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task    RowiTask         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user    User?            @relation(fields: [userId], references: [id])
+  member  CommunityMember? @relation(fields: [memberId], references: [id])
+
+  @@unique([taskId, userId])
+  @@unique([taskId, memberId])
+  @@index([taskId])
+  @@index([userId])
+  @@index([memberId])
+  @@map("task_collaborator")
+}
+
+enum CollaboratorRole {
+  VIEWER      // Solo puede ver la tarea
+  CONTRIBUTOR // Puede comentar y agregar notas
+  EDITOR      // Puede editar la tarea
 }
 
 enum RowiTaskStatus {
@@ -5319,5 +5687,28 @@ model WeekFlowMetrics {
 }
 
 // MetricPeriodType fue unificado con MetricPeriod (ver arriba)
+
+// =========================================================
+// 🔐 SYSTEM CONFIG — Configuración global del sistema
+// =========================================================
+
+/// Configuración global del sistema (API keys, secrets, etc.)
+/// Las claves se almacenan encriptadas en la base de datos
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique          // Nombre de la clave (ej: "OPENAI_API_KEY")
+  value       String                    // Valor encriptado
+  category    String   @default("general") // Categoría: "ai", "auth", "email", "payments", "general"
+  description String?                   // Descripción de la clave
+  isSecret    Boolean  @default(true)   // Si debe mostrarse oculta en UI
+  isActive    Boolean  @default(true)   // Si está activa
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?                   // ID del usuario que la actualizó
+
+  @@index([category])
+  @@index([isActive])
+  @@map("system_config")
+}
 
 

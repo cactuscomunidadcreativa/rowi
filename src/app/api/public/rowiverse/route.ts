@@ -160,9 +160,9 @@ export async function GET() {
     }
 
     try {
-      totalConversations = await prisma.message.count();
+      totalConversations = await prisma.rowiChat.count();
     } catch (e) {
-      console.warn("Could not count messages:", e);
+      console.warn("Could not count chats:", e);
     }
 
     // Get users by country

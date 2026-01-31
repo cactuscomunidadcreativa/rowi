@@ -1,5 +1,4 @@
 // src/ai/agents/super.ts
-import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { EqAgent } from "./eq";
@@ -8,8 +7,7 @@ import { SalesAgent } from "./sales";
 import { EcoAgent } from "./eco";
 import { registerUsage } from "../client/registerUsage";
 import { getTenantCulture, buildSuperAgentPrompt } from "./getAgentConfig";
-
-const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { getOpenAIClient } from "@/lib/openai/client";
 
 export const SuperAgent = {
   id: "super",
@@ -36,7 +34,10 @@ export const SuperAgent = {
     audio?: string;
   }): Promise<{ text: string; audioUrl?: string }> {
     try {
-      /* 🏢 0. Cargar cultura corporativa COMPLETA del tenant (todos los agentes) */
+      /* 🔐 0. Obtener cliente de OpenAI */
+      const ai = await getOpenAIClient();
+
+      /* 🏢 0.1 Cargar cultura corporativa COMPLETA del tenant (todos los agentes) */
       const tenantCulture = await getTenantCulture(tenantId);
 
       /* =========================================================

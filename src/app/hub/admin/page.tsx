@@ -122,148 +122,150 @@ export default function AdminDashboard() {
         </AdminButton>
       }
     >
-      {/* Quick Stats */}
-      <AdminGrid cols={3} className="mb-6">
-        {quickLinks.map((link) => (
-          <Link key={link.href} href={link.href}>
-            <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${link.color} flex items-center justify-center shadow-lg`}>
-                  <link.icon className="w-6 h-6 text-white" />
+      <div className="space-y-6">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {quickLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="block">
+              <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${link.color} flex items-center justify-center shadow-lg flex-shrink-0`}>
+                    <link.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-2xl font-bold text-[var(--rowi-foreground)]">
+                      {link.count.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-[var(--rowi-muted)] truncate">
+                      {t(link.labelKey)}
+                    </p>
+                  </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <TrendingUp className="w-5 h-5 text-[var(--rowi-primary)]" />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-2xl font-bold text-[var(--rowi-foreground)]">
-                    {link.count.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-[var(--rowi-muted)]">
-                    {t(link.labelKey)}
-                  </p>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <TrendingUp className="w-5 h-5 text-[var(--rowi-primary)]" />
-                </div>
+              </AdminCard>
+            </Link>
+          ))}
+        </div>
+
+        {/* Token Usage & Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Token Usage Summary */}
+          <AdminCard>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center flex-shrink-0">
+                <Gauge className="w-5 h-5 text-white" />
               </div>
-            </AdminCard>
-          </Link>
-        ))}
-      </AdminGrid>
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                  {t("admin.dashboard.tokenUsage")}
+                </h3>
+                <p className="text-xs text-[var(--rowi-muted)]">
+                  {t("admin.dashboard.totalTokens")}
+                </p>
+              </div>
+            </div>
 
-      {/* Token Usage & Activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Token Usage Summary */}
+            <div className="text-center py-6">
+              <p className="text-4xl font-bold bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] bg-clip-text text-transparent">
+                {stats.tokenUsage.toLocaleString()}
+              </p>
+              <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                {t("admin.dashboard.tokensUsed")}
+              </p>
+            </div>
+
+            <Link href="/hub/admin/tokens" className="block">
+              <AdminButton variant="secondary" size="sm" className="w-full">
+                {t("admin.dashboard.viewDetails")}
+              </AdminButton>
+            </Link>
+          </AdminCard>
+
+          {/* System Health */}
+          <AdminCard>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                  {t("admin.dashboard.systemStatus")}
+                </h3>
+                <p className="text-xs text-[var(--rowi-muted)]">
+                  {t("admin.dashboard.allSystems")}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--rowi-muted)]">API</span>
+                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--rowi-muted)]">Database</span>
+                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--rowi-muted)]">AI Services</span>
+                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--rowi-muted)]">Auth</span>
+                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+              </div>
+            </div>
+
+            <Link href="/hub/admin/system-health" className="block mt-4">
+              <AdminButton variant="secondary" size="sm" className="w-full">
+                {t("admin.dashboard.viewDetails")}
+              </AdminButton>
+            </Link>
+          </AdminCard>
+        </div>
+
+        {/* Quick Actions */}
         <AdminCard>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
-              <Gauge className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center flex-shrink-0">
+              <LayoutDashboard className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-                {t("admin.dashboard.tokenUsage")}
+                {t("admin.dashboard.quickActions")}
               </h3>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {t("admin.dashboard.totalTokens")}
+                {t("admin.dashboard.commonTasks")}
               </p>
             </div>
           </div>
 
-          <div className="text-center py-6">
-            <p className="text-4xl font-bold bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] bg-clip-text text-transparent">
-              {stats.tokenUsage.toLocaleString()}
-            </p>
-            <p className="text-xs text-[var(--rowi-muted)] mt-1">
-              {t("admin.dashboard.tokensUsed")}
-            </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Link href="/hub/admin/users" className="block">
+              <AdminButton variant="secondary" size="sm" icon={Users} className="w-full">
+                {t("admin.dashboard.addUser")}
+              </AdminButton>
+            </Link>
+            <Link href="/hub/admin/tenants" className="block">
+              <AdminButton variant="secondary" size="sm" icon={Building2} className="w-full">
+                {t("admin.dashboard.newTenant")}
+              </AdminButton>
+            </Link>
+            <Link href="/hub/admin/communities" className="block">
+              <AdminButton variant="secondary" size="sm" icon={HeartHandshake} className="w-full">
+                {t("admin.dashboard.newCommunity")}
+              </AdminButton>
+            </Link>
+            <Link href="/hub/admin/branding" className="block">
+              <AdminButton variant="secondary" size="sm" icon={LayoutDashboard} className="w-full">
+                {t("admin.dashboard.customizeBrand")}
+              </AdminButton>
+            </Link>
           </div>
-
-          <Link href="/hub/admin/tokens">
-            <AdminButton variant="secondary" size="sm" className="w-full">
-              {t("admin.dashboard.viewDetails")}
-            </AdminButton>
-          </Link>
-        </AdminCard>
-
-        {/* System Health */}
-        <AdminCard>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-                {t("admin.dashboard.systemStatus")}
-              </h3>
-              <p className="text-xs text-[var(--rowi-muted)]">
-                {t("admin.dashboard.allSystems")}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--rowi-muted)]">API</span>
-              <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--rowi-muted)]">Database</span>
-              <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--rowi-muted)]">AI Services</span>
-              <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[var(--rowi-muted)]">Auth</span>
-              <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-            </div>
-          </div>
-
-          <Link href="/hub/admin/system-health">
-            <AdminButton variant="secondary" size="sm" className="w-full mt-4">
-              {t("admin.dashboard.viewDetails")}
-            </AdminButton>
-          </Link>
         </AdminCard>
       </div>
-
-      {/* Quick Actions */}
-      <AdminCard className="mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
-            <LayoutDashboard className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-              {t("admin.dashboard.quickActions")}
-            </h3>
-            <p className="text-xs text-[var(--rowi-muted)]">
-              {t("admin.dashboard.commonTasks")}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Link href="/hub/admin/users">
-            <AdminButton variant="secondary" size="sm" icon={Users} className="w-full">
-              {t("admin.dashboard.addUser")}
-            </AdminButton>
-          </Link>
-          <Link href="/hub/admin/tenants">
-            <AdminButton variant="secondary" size="sm" icon={Building2} className="w-full">
-              {t("admin.dashboard.newTenant")}
-            </AdminButton>
-          </Link>
-          <Link href="/hub/admin/communities">
-            <AdminButton variant="secondary" size="sm" icon={HeartHandshake} className="w-full">
-              {t("admin.dashboard.newCommunity")}
-            </AdminButton>
-          </Link>
-          <Link href="/hub/admin/branding">
-            <AdminButton variant="secondary" size="sm" icon={LayoutDashboard} className="w-full">
-              {t("admin.dashboard.customizeBrand")}
-            </AdminButton>
-          </Link>
-        </div>
-      </AdminCard>
     </AdminPage>
   );
 }

@@ -2,13 +2,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
+import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
 
 /* =========================================================
    🔍 GET — Listar Tenants (con relaciones)
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Requiere permisos de admin
+   - SuperAdmin: ve todos los tenants
+   - Admin: solo ve su tenant
 ========================================================= */
 export async function GET() {
   try {
+    // 🔐 Verificar permisos de admin
+    const authResult = await requireAdmin();
+    if (!authResult.success) return authResult.error;
+    const auth = authResult.user;
+
+    // Filtrar según nivel de acceso
+    const where = auth.isSuperAdmin
+      ? {}
+      : { id: auth.primaryTenantId || "none" };
+
     const tenants = await prisma.tenant.findMany({
+      where,
       include: {
         plan: { select: { id: true, name: true, priceUsd: true } },
         superHub: { select: { id: true, name: true } },
@@ -19,72 +35,147 @@ export async function GET() {
     });
 
     return NextResponse.json(tenants);
-  } catch (error: any) {
-    console.error("❌ Error GET /api/admin/tenants:", error);
-    return NextResponse.json({ error: "Error al obtener tenants" }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al obtener tenants";
+    console.error("❌ Error GET /api/admin/tenants:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 /* =========================================================
    ➕ POST — Crear Tenant (con clonación de agentes)
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Solo SuperAdmin puede crear tenants
 ========================================================= */
 export async function POST(req: Request) {
   try {
+    // 🔐 Solo SuperAdmin puede crear tenants
+    const authResult = await requireSuperAdmin();
+    if (!authResult.success) return authResult.error;
+
     const data = await req.json();
 
+    // Validación básica
+    if (!data.name || typeof data.name !== "string" || data.name.trim().length < 2) {
+      return NextResponse.json(
+        { error: "Nombre del tenant es requerido (mínimo 2 caracteres)" },
+        { status: 400 }
+      );
+    }
+
+    if (!data.slug || typeof data.slug !== "string") {
+      return NextResponse.json(
+        { error: "Slug del tenant es requerido" },
+        { status: 400 }
+      );
+    }
+
     // 🧱 Crear Tenant
-    const tenant = await prisma.tenant.create({ data });
+    const tenant = await prisma.tenant.create({
+      data: {
+        name: data.name.trim(),
+        slug: data.slug.toLowerCase().trim(),
+        ...(data.planId && { planId: data.planId }),
+        ...(data.superHubId && { superHubId: data.superHubId }),
+      },
+    });
 
     // 🤖 Clonar agentes globales automáticamente
     try {
       await cloneAgentsForContext({ tenantId: tenant.id });
       console.log(`✅ Agentes IA clonados para Tenant: ${tenant.name}`);
-    } catch (e: any) {
-      console.warn(`⚠️ No se pudieron clonar los agentes para ${tenant.name}:`, e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error desconocido";
+      console.warn(`⚠️ No se pudieron clonar los agentes para ${tenant.name}:`, msg);
     }
 
     return NextResponse.json(tenant);
-  } catch (error: any) {
-    console.error("❌ Error POST /api/admin/tenants:", error);
-    return NextResponse.json({ error: "Error al crear tenant" }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al crear tenant";
+    console.error("❌ Error POST /api/admin/tenants:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 /* =========================================================
    ✏️ PUT — Actualizar Tenant
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Solo SuperAdmin puede actualizar tenants
 ========================================================= */
 export async function PUT(req: Request) {
   try {
+    // 🔐 Solo SuperAdmin puede actualizar tenants
+    const authResult = await requireSuperAdmin();
+    if (!authResult.success) return authResult.error;
+
     const { id, planId, ...data } = await req.json();
+
+    if (!id || typeof id !== "string") {
+      return NextResponse.json(
+        { error: "ID del tenant es requerido" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el tenant existe
+    const existing = await prisma.tenant.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Tenant no encontrado" },
+        { status: 404 }
+      );
+    }
 
     const tenant = await prisma.tenant.update({
       where: { id },
       data: {
         ...data,
-        planId: planId ?? null, // 👈 CLAVE: guardar planId
+        planId: planId ?? null,
       },
     });
 
     return NextResponse.json(tenant);
-  } catch (error: any) {
-    console.error("❌ Error PUT /api/admin/tenants:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar tenant" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al actualizar tenant";
+    console.error("❌ Error PUT /api/admin/tenants:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 /* =========================================================
    🗑️ DELETE — Eliminar Tenant
+   ---------------------------------------------------------
+   🔐 SEGURIDAD: Solo SuperAdmin puede eliminar tenants
 ========================================================= */
 export async function DELETE(req: Request) {
   try {
+    // 🔐 Solo SuperAdmin puede eliminar tenants
+    const authResult = await requireSuperAdmin();
+    if (!authResult.success) return authResult.error;
+
     const { id } = await req.json();
+
+    if (!id || typeof id !== "string") {
+      return NextResponse.json(
+        { error: "ID del tenant es requerido" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el tenant existe
+    const existing = await prisma.tenant.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Tenant no encontrado" },
+        { status: 404 }
+      );
+    }
+
     await prisma.tenant.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("❌ Error DELETE /api/admin/tenants:", error);
-    return NextResponse.json({ error: "Error al eliminar tenant" }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al eliminar tenant";
+    console.error("❌ Error DELETE /api/admin/tenants:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

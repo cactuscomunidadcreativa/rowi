@@ -6,11 +6,13 @@ import { prisma } from "@/core/prisma";
 ========================================================= */
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
+
     const layout = await prisma.layout.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         tenant: { select: { id: true, name: true, slug: true } },
         superHub: { select: { id: true, name: true } },
@@ -51,13 +53,14 @@ export async function GET(
 ========================================================= */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const body = await req.json();
 
     const layout = await prisma.layout.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         description: body.description,
@@ -87,10 +90,11 @@ export async function PATCH(
 ========================================================= */
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.layout.delete({ where: { id: params.id } });
+    const { id } = await context.params;
+    await prisma.layout.delete({ where: { id } });
     return NextResponse.json({ ok: true, message: "Layout eliminado" });
   } catch (err: any) {
     console.error("❌ Error DELETE /admin/layouts/[id]:", err);

@@ -4,11 +4,16 @@
  *
  * Crea los productos y precios en Stripe basándose en los planes de la BD
  * y actualiza los planes con los IDs de Stripe
+ *
+ * ⚠️ PROTEGIDO: Solo accesible para administradores del sistema
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import Stripe from "stripe";
+import { logStripeSync } from "@/lib/audit/auditLog";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +22,27 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-05-28.basil" as any })
   : null;
 
+/**
+ * Verifica si el usuario es administrador del sistema
+ */
+async function isSystemAdmin(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  const hubAdmins = process.env.HUB_ADMINS || "";
+  const adminEmails = hubAdmins.split(",").map(e => e.trim().toLowerCase());
+  return adminEmails.includes(email.toLowerCase());
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     if (!stripe) {
       return NextResponse.json(
         { ok: false, error: "Stripe no está configurado. Falta STRIPE_SECRET_KEY." },
@@ -150,9 +174,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 📝 Log de auditoría
+    const syncedCount = results.filter(r => r.status === "synced").length;
+    const errorCount = results.filter(r => r.status === "error").length;
+    await logStripeSync(
+      session.user.id || null,
+      "products",
+      { created: syncedCount, updated: 0, errors: errorCount },
+      req
+    );
+
     return NextResponse.json({
       ok: true,
-      message: `Sincronización completada. ${results.filter(r => r.status === "synced").length} planes sincronizados.`,
+      message: `Sincronización completada. ${syncedCount} planes sincronizados.`,
       results,
     });
 
@@ -168,6 +202,15 @@ export async function POST(req: NextRequest) {
 // GET - Ver estado actual de sincronización
 export async function GET(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     const plans = await prisma.plan.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },

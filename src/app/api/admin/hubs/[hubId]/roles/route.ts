@@ -62,7 +62,6 @@ export async function POST(
       data: {
         hubId,
         name: body.name,
-        description: body.description ?? null,
         permissions,
         color: body.color ?? null,
         icon: body.icon ?? null,

@@ -43,7 +43,17 @@ export async function getServerAuthUser() {
           },
         },
       },
-      plan: { select: { id: true, name: true } },
+      plan: {
+        select: {
+          id: true,
+          name: true,
+          weekflowAccess: true,
+          weekflowInsights: true,
+          rowiAffinityAccess: true,
+          maxUsers: true,
+          maxCommunities: true,
+        }
+      },
     },
   });
 

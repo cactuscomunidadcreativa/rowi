@@ -4,18 +4,42 @@
  * POST /api/admin/plans - Crear nuevo plan
  * PATCH /api/admin/plans - Actualizar plan
  * DELETE /api/admin/plans - Eliminar plan
+ *
+ * ⚠️ PROTEGIDO: Solo accesible para administradores del sistema
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
+import { logPlanChange } from "@/lib/audit/auditLog";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Verifica si el usuario es administrador del sistema
+ */
+async function isSystemAdmin(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  const hubAdmins = process.env.HUB_ADMINS || "";
+  const adminEmails = hubAdmins.split(",").map(e => e.trim().toLowerCase());
+  return adminEmails.includes(email.toLowerCase());
+}
 
 // =========================================================
 // GET — Listar todos los Planes
 // =========================================================
 export async function GET(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const includeInactive = searchParams.get("includeInactive") === "true";
     const publicOnly = searchParams.get("publicOnly") === "true";
@@ -62,6 +86,15 @@ export async function GET(req: NextRequest) {
 // =========================================================
 export async function POST(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     const body = await req.json();
     const {
       name,
@@ -149,6 +182,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // 📝 Log de auditoría
+    await logPlanChange(
+      session.user.id || null,
+      created.id,
+      "PLAN_CREATED",
+      { name, slug: finalSlug, priceUsd, priceCents },
+      req
+    );
+
     return NextResponse.json({
       ok: true,
       message: "Plan creado correctamente",
@@ -168,6 +210,15 @@ export async function POST(req: NextRequest) {
 // =========================================================
 export async function PATCH(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     const body = await req.json();
     const { id, ...data } = body;
 
@@ -246,6 +297,15 @@ export async function PATCH(req: NextRequest) {
       data: updateData,
     });
 
+    // 📝 Log de auditoría
+    await logPlanChange(
+      session.user.id || null,
+      id,
+      "PLAN_UPDATED",
+      { previousValues: existing, newValues: updateData },
+      req
+    );
+
     return NextResponse.json({
       ok: true,
       message: "Plan actualizado correctamente",
@@ -265,6 +325,15 @@ export async function PATCH(req: NextRequest) {
 // =========================================================
 export async function DELETE(req: NextRequest) {
   try {
+    // 🔐 Verificar autenticación y permisos
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
+    if (!(await isSystemAdmin(session.user.email))) {
+      return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
+    }
+
     const { id } = await req.json();
 
     if (!id) {
@@ -289,7 +358,19 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    // Obtener plan antes de eliminar para log
+    const planToDelete = await prisma.plan.findUnique({ where: { id } });
+
     await prisma.plan.delete({ where: { id } });
+
+    // 📝 Log de auditoría
+    await logPlanChange(
+      session.user.id || null,
+      id,
+      "PLAN_DELETED",
+      { deletedPlan: planToDelete?.name },
+      req
+    );
 
     return NextResponse.json({
       ok: true,

@@ -1,9 +1,9 @@
 // src/app/api/eco/compose/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { isEcoLLMEnabled } from "@/domains/eco/libAI";
+import { getOpenAIClient } from "@/lib/openai/client";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +24,6 @@ type ComposeInput = {
   ask?: string;
   locale?: "es" | "en" | "pt" | "it";
 };
-
-/* =========================================================
-   ⚙️ Setup IA (si está permitido)
-========================================================= */
-const ai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 /* =========================================================
    🧠 Brain Style Preferences - Cómo comunicarse con cada estilo
@@ -437,7 +432,8 @@ Responde SOLO en formato JSON:
 
     const userPrompt = generateAIPrompt();
 
-    const completion = await ai!.chat.completions.create({
+    const ai = await getOpenAIClient();
+    const completion = await ai.chat.completions.create({
       model: "gpt-4o-mini", // Usar mini para ahorrar tokens
       temperature: 0.7,
       max_tokens: 500,

@@ -11,7 +11,7 @@ import {
   Brain, LineChart, FileText, BarChart3, TrendingUp, Target, Activity,
   Coins, Scale, Receipt, FileSpreadsheet, ClipboardList, ShoppingCart, Wallet,
   CreditCard, Briefcase, Package, ChartPie, HardDrive,
-  Calendar, ClipboardCheck, Clock,
+  Calendar, ClipboardCheck, Clock, CheckSquare, ListTodo, Ticket,
   GraduationCap, BookOpen, Users2,
   Zap, Workflow,
   Settings2, Bell, Database, SlidersHorizontal,
@@ -74,11 +74,11 @@ export default function Sidebar() {
       icon: Brain,
       priority: 95,
       items: [
-        { href: "/hub/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
+        { href: "/hub/admin/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
         { href: "/hub/admin/eq-upload", labelKey: "admin.nav.eqUpload", icon: Upload, badge: "NEW" },
-        { href: "/hub/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
-        { href: "/hub/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
-        { href: "/hub/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
+        { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
+        { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
+        { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
       ],
     },
 
@@ -96,6 +96,22 @@ export default function Sidebar() {
         { href: "/hub/admin/gamification/streaks", labelKey: "admin.nav.streaks", icon: Flame },
         { href: "/hub/admin/gamification/leaderboards", labelKey: "admin.nav.leaderboards", icon: Crown },
         { href: "/hub/admin/gamification/rewards", labelKey: "admin.nav.rewards", icon: Gift },
+        { href: "/hub/admin/gamification/coupons", labelKey: "admin.nav.coupons", icon: Ticket, badge: "NEW" },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // ✅ PRODUCTIVIDAD (Tasks & WeekFlow)
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.productivity",
+      icon: CheckSquare,
+      priority: 89,
+      items: [
+        { href: "/hub/admin/tasks", labelKey: "admin.nav.tasksDashboard", icon: CheckSquare },
+        { href: "/hub/admin/tasks/settings", labelKey: "admin.nav.tasksSettings", icon: Settings },
+        { href: "/hub/admin/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow },
+        { href: "/hub/admin/weekflow/settings", labelKey: "admin.nav.weekflowSettings", icon: Settings },
       ],
     },
 
@@ -328,6 +344,7 @@ export default function Sidebar() {
         { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
         { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
         { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
+        { href: "/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow, badge: "NEW" },
       ],
     },
 
@@ -340,6 +357,7 @@ export default function Sidebar() {
       priority: 10,
       items: [
         { href: "/hub/admin/settings", labelKey: "admin.nav.settings", icon: Settings2 },
+        { href: "/hub/admin/notifications", labelKey: "admin.nav.notifications", icon: Bell, badge: "NEW" },
         { href: "/hub/admin/tokens", labelKey: "admin.nav.tokens", icon: Gauge },
         { href: "/hub/admin/integrations", labelKey: "admin.nav.integrations", icon: Network },
         { href: "/hub/admin/database", labelKey: "admin.nav.database", icon: Database },

@@ -1,30 +1,66 @@
-// src/ai/learning/affinityAutoRecalc.ts
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { summarizeSignals, upsertAdaptiveSnapshot } from "@/ai/learning/affinityLearning";
 
 /**
- * ✅ Auto Recalc de Afinidad Inteligente (v1.3)
- * ------------------------------------------------------------
- * Este módulo recalcula la afinidad entre el usuario (A) y sus miembros (B)
- * aplicando aprendizaje basado en señales reales (interacciones, tono, efectividad).
+ * =========================================================
+ * 🔄 POST /api/affinity/recalculate
+ * ---------------------------------------------------------
+ * Recalcula la afinidad entre el usuario y sus miembros
+ * aplicando aprendizaje basado en señales reales.
  *
- * Se usa en:
- *  - /api/affinity/recalculate
- *  - Cron jobs periódicos (cada 15 días)
- *  - Eventos de alta interacción (≥ 10 interacciones / mes)
+ * Body (opcional):
+ *  - context: string (default: "execution")
+ *  - force: boolean (recalcular aunque no hayan pasado 15 días)
+ *  - days: number (ventana de aprendizaje, default: 30)
+ * =========================================================
  */
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
+    const userId = session.user.id;
+    const body = await req.json().catch(() => ({}));
+    const context = body.context || "execution";
+    const days = body.days || 30;
+
+    const result = await autoRecalcAffinity({ userId, context, days });
+
+    if (!result.ok) {
+      return NextResponse.json(
+        { ok: false, error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error("❌ Error POST /api/affinity/recalculate:", error);
+    return NextResponse.json(
+      { ok: false, error: error.message || "Error interno" },
+      { status: 500 }
+    );
+  }
+}
+
+/* =========================================================
+   🔧 Auto Recalc de Afinidad Inteligente
+========================================================= */
 type AutoRecalcOptions = {
   userId: string;
   context?: string;
-  force?: boolean; // recalcular incluso si no ha pasado 15 días
-  days?: number;   // ventana de aprendizaje (default: 30 días)
+  force?: boolean;
+  days?: number;
 };
 
-export async function autoRecalcAffinity({
+async function autoRecalcAffinity({
   userId,
   context = "execution",
-  force = false,
   days = 30,
 }: AutoRecalcOptions) {
   const start = Date.now();
@@ -32,23 +68,16 @@ export async function autoRecalcAffinity({
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("Usuario no encontrado");
 
-    /* =========================================================
-       👥 Obtener miembros del usuario (propietario)
-       ✅ CAMBIO: ownerUserId → ownerId
-    ========================================================== */
     const members = await prisma.communityMember.findMany({
-      where: { ownerId: userId }, // ✅ campo correcto
+      where: { ownerId: userId },
       select: { id: true, name: true, closeness: true },
-      orderBy: { joinedAt: "desc" }, // ✅ usa joinedAt existente
+      orderBy: { joinedAt: "desc" },
       take: 500,
     });
 
     const results: any[] = [];
 
     for (const m of members) {
-      /* =========================================================
-         🧭 Aprendizaje: resumen de señales (últimos X días)
-      ========================================================== */
       const signals = await summarizeSignals(userId, m.id, days);
       const biasAdj = signals.effAvg >= 0.8 ? 1.08 : signals.effAvg <= 0.4 ? 0.92 : 1.0;
       const closenessDynamic =
@@ -58,9 +87,6 @@ export async function autoRecalcAffinity({
           ? "Lejano"
           : "Neutral";
 
-      /* =========================================================
-         📈 Cálculo rápido de afinidad (fallback si no hay snapshot)
-      ========================================================== */
       const snapUser = await prisma.eqSnapshot.findFirst({
         where: { userId, dataset: "actual" },
         orderBy: { at: "desc" },
@@ -86,9 +112,6 @@ export async function autoRecalcAffinity({
       const baseHeat = ((avgUser + avgMember) / 2) * biasAdj;
       const heat135 = Math.min(135, Math.round(baseHeat));
 
-      /* =========================================================
-         💾 Guardar Snapshot adaptativo (Rowi Learning)
-      ========================================================== */
       await upsertAdaptiveSnapshot({
         userId,
         memberId: m.id,
@@ -108,20 +131,16 @@ export async function autoRecalcAffinity({
       });
     }
 
-    /* =========================================================
-       🪶 Registrar lote en Batch (para histórico / auditoría)
-       ✅ CAMBIO: ownerUserId → ownerId + startedAt
-    ========================================================== */
     const duration = ((Date.now() - start) / 1000).toFixed(1);
     await prisma.batch.create({
       data: {
-        ownerId: userId, // ✅ campo correcto
+        ownerId: userId,
         name: `AutoRecalc Affinity (${context})`,
         description: `Recalculadas ${results.length} relaciones en ${duration}s.`,
         type: "affinity",
         count: results.length,
         status: "completado",
-        startedAt: new Date(), // ✅ agregado
+        startedAt: new Date(),
       },
     });
 
@@ -147,9 +166,6 @@ export async function autoRecalcAffinity({
   }
 }
 
-/* =========================================================
-   🔧 Utilidad interna: promedio ponderado 135
-========================================================= */
 function avg135(xs: Array<number | null | undefined>): number {
   const valid = xs.filter((x): x is number => typeof x === "number" && x > 0);
   if (!valid.length) return 90;

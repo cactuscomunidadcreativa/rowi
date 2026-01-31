@@ -202,7 +202,8 @@ export async function GET(req: NextRequest) {
         ssoProvider: "six-seconds",
         ssoUserId: userInfo.ssoUserId,
       },
-      secret: process.env.NEXTAUTH_SECRET || "rowi_dev_secret",
+      // ⚠️ SEGURIDAD: El secret es obligatorio
+      secret: process.env.NEXTAUTH_SECRET!,
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 

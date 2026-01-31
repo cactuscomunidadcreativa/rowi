@@ -173,11 +173,16 @@ export default function AffinityPage() {
     if (!members.length) return;
 
     const cacheKey = `affinity-cache-${normalizedProject}`;
-    const last = Number(localStorage.getItem(cacheKey) || 0);
-    const expired = Date.now() - last > 24 * 60 * 60 * 1000;
 
-    if (!force && !expired && Object.keys(affByMember).length) {
-      return;
+    // Always recalculate if affByMember is empty (first load or context change)
+    const hasData = Object.keys(affByMember).length > 0;
+    if (!force && hasData) {
+      // Only skip if we already have data AND not forcing
+      const last = Number(localStorage.getItem(cacheKey) || 0);
+      const expired = Date.now() - last > 24 * 60 * 60 * 1000;
+      if (!expired) {
+        return;
+      }
     }
 
     setLoadingAll(true);
@@ -222,13 +227,9 @@ export default function AffinityPage() {
     if (members.length > 0) {
       // Clear previous affinity data when changing context (different context = different affinity scores)
       setAffByMember({});
-      // Only load if we have cached data for this context, otherwise wait for user to click "Recalcular"
-      const cacheKey = `affinity-cache-${normalizedProject}`;
-      const last = Number(localStorage.getItem(cacheKey) || 0);
-      const hasRecentCache = Date.now() - last < 24 * 60 * 60 * 1000;
-      if (hasRecentCache) {
-        loadAffinityAll(false);
-      }
+      // Always load affinity data automatically when page opens or context changes
+      // This ensures the "Overall Affinity" metric always shows a value
+      loadAffinityAll(false);
     }
   }, [normalizedProject, members.length]);
 
@@ -413,12 +414,29 @@ export default function AffinityPage() {
 
   /* =========================================================
      🧮 Promedio general
+     Combina datos de affByMember con los precalculados de members
   ========================================================= */
   const overallAffinity = useMemo(() => {
-    const vals = Object.values(affByMember).map((v) => v.heat100 ?? 0);
-    if (!vals.length) return 0;
-    return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
-  }, [affByMember]);
+    // Combinar todas las fuentes de datos de afinidad
+    const allValues: number[] = [];
+
+    members.forEach((m) => {
+      // Primero intentar con datos calculados en tiempo real (affByMember)
+      const realtimeVal = affByMember[m.id]?.heat100;
+      if (typeof realtimeVal === "number" && realtimeVal > 0) {
+        allValues.push(realtimeVal);
+      } else if (typeof m.affinityPercent === "number" && m.affinityPercent > 0) {
+        // Sino usar los datos precalculados del miembro
+        allValues.push(m.affinityPercent);
+      }
+    });
+
+    if (allValues.length > 0) {
+      return Math.round(allValues.reduce((a, b) => a + b, 0) / allValues.length);
+    }
+
+    return 0;
+  }, [affByMember, members]);
 
   const overallLevel = useMemo(() => {
     const h135 = Math.round((overallAffinity * 135) / 100);

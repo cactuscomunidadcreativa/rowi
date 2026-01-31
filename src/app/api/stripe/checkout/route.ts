@@ -1,15 +1,37 @@
 /**
  * 💳 API: Stripe Checkout
  * POST /api/stripe/checkout - Crear sesión de checkout
+ *
+ * ⚠️ Rate Limited: 5 intentos por minuto por IP
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createCheckoutSession } from "@/lib/stripe/subscription-service";
+import { rateLimiters, getClientIdentifier } from "@/lib/security/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
+    // 🛡️ Rate limiting: 5 intentos por minuto
+    const clientIp = getClientIdentifier(req);
+    const { success, remaining, resetAt } = await rateLimiters.checkout(clientIp);
+
+    if (!success) {
+      const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(resetAt),
+          },
+        }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email || !session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import DOMPurify from "isomorphic-dompurify";
 import {
   HeroSection,
   FeaturesSection,
@@ -85,12 +86,29 @@ function renderSection(type: string, content: any, config: any) {
       return <RowiEvolution />;
 
     case "CUSTOM":
-      // Para secciones personalizadas, renderizar HTML seguro
+      // Para secciones personalizadas, renderizar HTML sanitizado con DOMPurify
+      // ⚠️ SEGURIDAD: Sanitizar HTML para prevenir XSS
+      const sanitizedHtml = DOMPurify.sanitize(content.html || "", {
+        ALLOWED_TAGS: [
+          "p", "br", "strong", "em", "u", "s", "a", "ul", "ol", "li",
+          "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code",
+          "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td",
+          "div", "span", "section", "article", "header", "footer", "nav",
+        ],
+        ALLOWED_ATTR: [
+          "href", "src", "alt", "title", "class", "id", "style",
+          "target", "rel", "width", "height",
+        ],
+        ALLOW_DATA_ATTR: false,
+        ADD_ATTR: ["target"],
+        FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "button"],
+        FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+      });
       return (
         <section className="py-20 px-4">
           <div
             className="max-w-7xl mx-auto prose prose-lg dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: content.html || "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         </section>
       );

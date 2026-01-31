@@ -1,9 +1,7 @@
-import OpenAI from "openai";
 import { buildMessagesAffinity } from "../prompts/modules/affinity";
 import { registerUsage } from "../client/registerUsage";
 import { getAgentConfig, buildCultureEnrichedPrompt } from "./getAgentConfig";
-
-const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { getOpenAIClient } from "@/lib/openai/client";
 
 export const AffinityAgent = {
   id: "affinity",
@@ -33,6 +31,9 @@ async run({
   tenantId?: string;
 }) {
       try {
+      /* 🔐 Obtener cliente de OpenAI */
+      const ai = await getOpenAIClient();
+
       /* 🏢 0. Cargar cultura corporativa del tenant */
       const agentConfig = await getAgentConfig("affinity", tenantId);
 

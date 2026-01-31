@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Heart,
-  Settings,
   Users,
   Brain,
   TrendingUp,
   RefreshCw,
   Save,
   AlertCircle,
-  CheckCircle,
   Info,
   Sliders,
   Target,
@@ -21,14 +19,23 @@ import {
   BarChart3,
   Clock,
   Percent,
+  Globe,
+  Building2,
+  Layers,
+  Network,
+  ChevronDown,
+  Check,
+  GitBranch,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/useI18n";
 
 /* =========================================================
    🎯 Configuración de Affinity - Pesos y Parámetros
    =========================================================
    Esta página permite configurar los parámetros del motor
-   de Affinity para personalizar cálculos según el tenant.
+   de Affinity a diferentes niveles jerárquicos:
+   global → tenant → hub → organization → team
 ========================================================= */
 
 // Tipos
@@ -39,7 +46,6 @@ interface ContextWeights {
 }
 
 interface AffinityConfig {
-  // Pesos por contexto
   contextWeights: {
     innovation: ContextWeights;
     execution: ContextWeights;
@@ -48,7 +54,6 @@ interface AffinityConfig {
     relationship: ContextWeights;
     decision: ContextWeights;
   };
-  // Parámetros de learning
   learning: {
     windowDays: number;
     highEffThreshold: number;
@@ -58,12 +63,10 @@ interface AffinityConfig {
     cronIntervalDays: number;
     maxMembersPerRun: number;
   };
-  // Umbrales de banda
   bands: {
     hotThreshold: number;
     warmThreshold: number;
   };
-  // Closeness multipliers
   closeness: {
     cercano: number;
     neutral: number;
@@ -71,7 +74,15 @@ interface AffinityConfig {
   };
 }
 
-// Valores por defecto (basados en el motor actual)
+type Scope = "global" | "tenant" | "hub" | "organization" | "team";
+
+interface ScopeOption {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
+// Valores por defecto
 const DEFAULT_CONFIG: AffinityConfig = {
   contextWeights: {
     innovation: { growth: 0.40, collab: 0.35, understand: 0.25 },
@@ -101,103 +112,225 @@ const DEFAULT_CONFIG: AffinityConfig = {
   },
 };
 
-// Descripciones de contextos
-const CONTEXT_INFO = {
-  innovation: {
-    icon: Lightbulb,
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
-    title: "Innovación",
-    desc: "Creatividad, diseño, nuevas ideas y toma de riesgos",
-  },
-  execution: {
-    icon: Target,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    title: "Ejecución",
-    desc: "Acción, foco, disciplina y entrega de resultados",
-  },
-  leadership: {
-    icon: Users,
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
-    title: "Liderazgo",
-    desc: "Influencia, visión, dirección y gestión de equipos",
-  },
-  conversation: {
-    icon: MessageCircle,
-    color: "text-green-500",
-    bg: "bg-green-500/10",
-    title: "Conversación",
-    desc: "Comunicación, escucha activa y diálogo profundo",
-  },
-  relationship: {
-    icon: Heart,
-    color: "text-pink-500",
-    bg: "bg-pink-500/10",
-    title: "Relación",
-    desc: "Conexión emocional, empatía y vínculos personales",
-  },
-  decision: {
-    icon: Brain,
-    color: "text-indigo-500",
-    bg: "bg-indigo-500/10",
-    title: "Decisión",
-    desc: "Análisis, juicio crítico y toma de decisiones",
-  },
+// Iconos por scope
+const SCOPE_ICONS: Record<Scope, any> = {
+  global: Globe,
+  tenant: Building2,
+  hub: Layers,
+  organization: Network,
+  team: Users,
 };
+
+const SCOPE_COLORS: Record<Scope, { color: string; bg: string }> = {
+  global: { color: "text-blue-500", bg: "bg-blue-500/10" },
+  tenant: { color: "text-purple-500", bg: "bg-purple-500/10" },
+  hub: { color: "text-green-500", bg: "bg-green-500/10" },
+  organization: { color: "text-orange-500", bg: "bg-orange-500/10" },
+  team: { color: "text-pink-500", bg: "bg-pink-500/10" },
+};
+
+// Iconos por contexto
+const CONTEXT_ICONS = {
+  innovation: Lightbulb,
+  execution: Target,
+  leadership: Users,
+  conversation: MessageCircle,
+  relationship: Heart,
+  decision: Brain,
+};
+
+const CONTEXT_COLORS = {
+  innovation: { color: "text-yellow-500", bg: "bg-yellow-500/10" },
+  execution: { color: "text-blue-500", bg: "bg-blue-500/10" },
+  leadership: { color: "text-purple-500", bg: "bg-purple-500/10" },
+  conversation: { color: "text-green-500", bg: "bg-green-500/10" },
+  relationship: { color: "text-pink-500", bg: "bg-pink-500/10" },
+  decision: { color: "text-indigo-500", bg: "bg-indigo-500/10" },
+};
+
+// Componente selector de scope
+function ScopeSelector({
+  scope,
+  scopeId,
+  onScopeChange,
+  onScopeIdChange,
+  scopeOptions,
+  t,
+  configSource,
+}: {
+  scope: Scope;
+  scopeId: string | null;
+  onScopeChange: (scope: Scope) => void;
+  onScopeIdChange: (id: string | null) => void;
+  scopeOptions: Record<Scope, ScopeOption[]>;
+  t: (key: string, fallback?: string) => string;
+  configSource?: Record<string, string>;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const Icon = SCOPE_ICONS[scope];
+  const colors = SCOPE_COLORS[scope];
+
+  const selectedOption = scopeOptions[scope]?.find((o) => o.id === scopeId);
+
+  return (
+    <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <GitBranch className="w-4 h-4 text-[var(--rowi-primary)]" />
+        <span className="font-medium text-[var(--rowi-foreground)]">
+          {t("admin.affinity.scope.title")}
+        </span>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {(Object.keys(SCOPE_ICONS) as Scope[]).map((s) => {
+          const ScopeIcon = SCOPE_ICONS[s];
+          const sColors = SCOPE_COLORS[s];
+          const isActive = scope === s;
+
+          return (
+            <button
+              key={s}
+              onClick={() => {
+                onScopeChange(s);
+                onScopeIdChange(null);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                isActive
+                  ? `${sColors.bg} ${sColors.color} ring-2 ring-offset-1 ring-[var(--rowi-primary)]`
+                  : "bg-[var(--rowi-muted)]/10 text-[var(--rowi-muted)] hover:bg-[var(--rowi-muted)]/20"
+              }`}
+            >
+              <ScopeIcon className="w-3.5 h-3.5" />
+              <span>{t(`admin.affinity.scope.${s}`)}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {scope !== "global" && (
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-[var(--rowi-border)]
+              bg-[var(--rowi-background)] hover:bg-[var(--rowi-muted)]/5 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Icon className={`w-4 h-4 ${colors.color}`} />
+              <span className="text-[var(--rowi-foreground)]">
+                {selectedOption?.name || t("admin.affinity.scope.selectScope")}
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[var(--rowi-card)] border border-[var(--rowi-border)]
+              rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {scopeOptions[scope]?.length > 0 ? (
+                scopeOptions[scope].map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      onScopeIdChange(option.id);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 hover:bg-[var(--rowi-muted)]/10 transition-colors ${
+                      scopeId === option.id ? "bg-[var(--rowi-primary)]/10" : ""
+                    }`}
+                  >
+                    <div>
+                      <span className="text-[var(--rowi-foreground)]">{option.name}</span>
+                      {option.slug && (
+                        <span className="text-xs text-[var(--rowi-muted)] ml-2">({option.slug})</span>
+                      )}
+                    </div>
+                    {scopeId === option.id && <Check className="w-4 h-4 text-[var(--rowi-primary)]" />}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-[var(--rowi-muted)]">
+                  {t("admin.affinity.scope.noOptions")}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mostrar fuente de configuración */}
+      {configSource && (
+        <div className="mt-4 p-3 rounded-lg bg-[var(--rowi-muted)]/5">
+          <p className="text-xs text-[var(--rowi-muted)] mb-2">{t("admin.affinity.scope.inheritance")}:</p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(configSource).map(([key, source]) => (
+              <span key={key} className="text-xs px-2 py-1 rounded bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]">
+                {key}: {source}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Componente de peso por contexto
 function ContextWeightCard({
   context,
   weights,
   onChange,
+  t,
 }: {
-  context: keyof typeof CONTEXT_INFO;
+  context: keyof typeof CONTEXT_ICONS;
   weights: ContextWeights;
   onChange: (field: keyof ContextWeights, value: number) => void;
+  t: (key: string, fallback?: string) => string;
 }) {
-  const info = CONTEXT_INFO[context];
-  const Icon = info.icon;
+  const Icon = CONTEXT_ICONS[context];
+  const colors = CONTEXT_COLORS[context];
   const total = weights.growth + weights.collab + weights.understand;
   const isValid = Math.abs(total - 1) < 0.01;
 
   return (
-    <div className={`rounded-xl border p-4 ${info.bg} border-[var(--rowi-border)]`}>
+    <div className={`rounded-xl border p-4 ${colors.bg} border-[var(--rowi-border)]`}>
       <div className="flex items-center gap-3 mb-4">
-        <div className={`p-2 rounded-lg ${info.bg}`}>
-          <Icon className={`w-5 h-5 ${info.color}`} />
+        <div className={`p-2 rounded-lg ${colors.bg}`}>
+          <Icon className={`w-5 h-5 ${colors.color}`} />
         </div>
         <div className="flex-1">
-          <h4 className="font-medium text-[var(--rowi-foreground)]">{info.title}</h4>
-          <p className="text-xs text-[var(--rowi-muted)]">{info.desc}</p>
+          <h4 className="font-medium text-[var(--rowi-foreground)]">
+            {t(`admin.affinity.contexts.${context}.title`)}
+          </h4>
+          <p className="text-xs text-[var(--rowi-muted)]">
+            {t(`admin.affinity.contexts.${context}.desc`)}
+          </p>
         </div>
         {!isValid && (
           <div className="flex items-center gap-1 text-amber-500 text-xs">
             <AlertCircle className="w-3 h-3" />
-            <span>Suma: {(total * 100).toFixed(0)}%</span>
+            <span>{t("admin.affinity.sum")}: {(total * 100).toFixed(0)}%</span>
           </div>
         )}
       </div>
 
       <div className="space-y-3">
         <WeightSlider
-          label="Crecimiento"
-          sublabel="Competencias SEI"
+          label={t("admin.affinity.weights.growth")}
+          sublabel={t("admin.affinity.weights.growthSub")}
           value={weights.growth}
           onChange={(v) => onChange("growth", v)}
           color="bg-emerald-500"
         />
         <WeightSlider
-          label="Colaboración"
-          sublabel="Estilos + Talentos"
+          label={t("admin.affinity.weights.collab")}
+          sublabel={t("admin.affinity.weights.collabSub")}
           value={weights.collab}
           onChange={(v) => onChange("collab", v)}
           color="bg-blue-500"
         />
         <WeightSlider
-          label="Comprensión"
-          sublabel="Subfactores/Outcomes"
+          label={t("admin.affinity.weights.understand")}
+          sublabel={t("admin.affinity.weights.understandSub")}
           value={weights.understand}
           onChange={(v) => onChange("understand", v)}
           color="bg-purple-500"
@@ -206,7 +339,7 @@ function ContextWeightCard({
 
       <div className="mt-3 pt-3 border-t border-[var(--rowi-border)]">
         <div className="flex justify-between text-xs">
-          <span className="text-[var(--rowi-muted)]">Total:</span>
+          <span className="text-[var(--rowi-muted)]">{t("admin.affinity.total")}:</span>
           <span className={isValid ? "text-green-500" : "text-amber-500"}>
             {(total * 100).toFixed(0)}%
           </span>
@@ -216,7 +349,7 @@ function ContextWeightCard({
   );
 }
 
-// Componente de slider de peso
+// Componente de slider
 function WeightSlider({
   label,
   sublabel,
@@ -302,27 +435,124 @@ function MetricCard({
 
 // Página principal
 export default function AffinityAdminPage() {
+  const { t } = useI18n();
   const [config, setConfig] = useState<AffinityConfig>(DEFAULT_CONFIG);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"weights" | "learning" | "stats">("weights");
 
-  // Cargar configuración existente
+  // Scope management
+  const [scope, setScope] = useState<Scope>("global");
+  const [scopeId, setScopeId] = useState<string | null>(null);
+  const [scopeOptions, setScopeOptions] = useState<Record<Scope, ScopeOption[]>>({
+    global: [],
+    tenant: [],
+    hub: [],
+    organization: [],
+    team: [],
+  });
+  const [configSource, setConfigSource] = useState<Record<string, string>>({});
+  const [hasCustomConfig, setHasCustomConfig] = useState(false);
+
+  // Cargar opciones de scope
+  useEffect(() => {
+    loadScopeOptions();
+  }, []);
+
+  // Cargar configuración cuando cambia el scope
   useEffect(() => {
     loadConfig();
+  }, [scope, scopeId]);
+
+  useEffect(() => {
     loadStats();
   }, []);
 
-  const loadConfig = async () => {
+  const loadScopeOptions = async () => {
     try {
-      // TODO: Cargar desde API cuando exista
-      // const res = await fetch("/api/admin/affinity/config");
-      // if (res.ok) setConfig(await res.json());
+      // Cargar tenants
+      const tenantsRes = await fetch("/api/admin/tenants");
+      if (tenantsRes.ok) {
+        const tenantsData = await tenantsRes.json();
+        setScopeOptions((prev) => ({
+          ...prev,
+          tenant: tenantsData.tenants?.map((t: any) => ({ id: t.id, name: t.name, slug: t.slug })) || [],
+        }));
+      }
+
+      // Cargar hubs
+      const hubsRes = await fetch("/api/admin/hubs");
+      if (hubsRes.ok) {
+        const hubsData = await hubsRes.json();
+        setScopeOptions((prev) => ({
+          ...prev,
+          hub: hubsData.hubs?.map((h: any) => ({ id: h.id, name: h.name, slug: h.slug })) || [],
+        }));
+      }
+
+      // Cargar organizations
+      const orgsRes = await fetch("/api/admin/organizations");
+      if (orgsRes.ok) {
+        const orgsData = await orgsRes.json();
+        setScopeOptions((prev) => ({
+          ...prev,
+          organization: orgsData.organizations?.map((o: any) => ({ id: o.id, name: o.name, slug: o.slug })) || [],
+          team: orgsData.organizations?.filter((o: any) => o.unitType === "TEAM")
+            .map((o: any) => ({ id: o.id, name: o.name, slug: o.slug })) || [],
+        }));
+      }
     } catch (error) {
-      console.error("Error loading config:", error);
+      console.error("Error loading scope options:", error);
     }
   };
+
+  const loadConfig = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        scope,
+        resolve: "true",
+      });
+      if (scopeId) params.set("scopeId", scopeId);
+
+      const res = await fetch(`/api/affinity/config?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.config) {
+          // Mapear la configuración de la API al formato local
+          setConfig({
+            contextWeights: data.config.contextWeights || DEFAULT_CONFIG.contextWeights,
+            learning: {
+              windowDays: data.config.learningParams?.windowDays || DEFAULT_CONFIG.learning.windowDays,
+              highEffThreshold: data.config.learningParams?.highEffThreshold || DEFAULT_CONFIG.learning.highEffThreshold,
+              lowEffThreshold: data.config.learningParams?.lowEffThreshold || DEFAULT_CONFIG.learning.lowEffThreshold,
+              highBiasMultiplier: data.config.learningParams?.highBiasMultiplier || DEFAULT_CONFIG.learning.highBiasMultiplier,
+              lowBiasMultiplier: data.config.learningParams?.lowBiasMultiplier || DEFAULT_CONFIG.learning.lowBiasMultiplier,
+              cronIntervalDays: data.config.learningParams?.cronIntervalDays || DEFAULT_CONFIG.learning.cronIntervalDays,
+              maxMembersPerRun: data.config.learningParams?.maxMembersPerRun || DEFAULT_CONFIG.learning.maxMembersPerRun,
+            },
+            bands: {
+              hotThreshold: data.config.bandThresholds?.hotThreshold || DEFAULT_CONFIG.bands.hotThreshold,
+              warmThreshold: data.config.bandThresholds?.warmThreshold || DEFAULT_CONFIG.bands.warmThreshold,
+            },
+            closeness: data.config.closenessMultipliers || DEFAULT_CONFIG.closeness,
+          });
+          setConfigSource(data.source || {});
+          setHasCustomConfig(true);
+        } else {
+          setConfig(DEFAULT_CONFIG);
+          setConfigSource({});
+          setHasCustomConfig(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading config:", error);
+      setConfig(DEFAULT_CONFIG);
+    } finally {
+      setLoading(false);
+    }
+  }, [scope, scopeId]);
 
   const loadStats = async () => {
     try {
@@ -339,15 +569,39 @@ export default function AffinityAdminPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: Guardar en API cuando exista
-      // await fetch("/api/admin/affinity/config", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(config),
-      // });
-      toast.success("Configuración guardada correctamente");
+      const payload = {
+        scope,
+        scopeId: scope === "global" ? null : scopeId,
+        contextWeights: config.contextWeights,
+        learningParams: {
+          windowDays: config.learning.windowDays,
+          highEffThreshold: config.learning.highEffThreshold,
+          lowEffThreshold: config.learning.lowEffThreshold,
+          highBiasMultiplier: config.learning.highBiasMultiplier,
+          lowBiasMultiplier: config.learning.lowBiasMultiplier,
+          cronIntervalDays: config.learning.cronIntervalDays,
+          maxMembersPerRun: config.learning.maxMembersPerRun,
+        },
+        bandThresholds: config.bands,
+        closenessMultipliers: config.closeness,
+      };
+
+      const res = await fetch("/api/affinity/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast.success(t("admin.affinity.saveSuccess"));
+        setHasCustomConfig(true);
+        loadConfig(); // Recargar para actualizar fuentes
+      } else {
+        const data = await res.json();
+        toast.error(data.error || t("admin.affinity.saveError"));
+      }
     } catch (error) {
-      toast.error("Error al guardar configuración");
+      toast.error(t("admin.affinity.saveError"));
     } finally {
       setSaving(false);
     }
@@ -363,13 +617,13 @@ export default function AffinityAdminPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        toast.success(`Recalculadas ${data.processed || 0} relaciones de afinidad`);
+        toast.success(t("admin.affinity.recalcSuccess", `Recalculated ${data.processed || 0} relations`));
         loadStats();
       } else {
-        toast.error("Error al recalcular afinidad");
+        toast.error(t("admin.affinity.recalcError"));
       }
     } catch (error) {
-      toast.error("Error al recalcular afinidad");
+      toast.error(t("admin.affinity.recalcError"));
     } finally {
       setLoading(false);
     }
@@ -377,7 +631,7 @@ export default function AffinityAdminPage() {
 
   const handleReset = () => {
     setConfig(DEFAULT_CONFIG);
-    toast.info("Configuración restaurada a valores por defecto");
+    toast.info(t("admin.affinity.resetSuccess"));
   };
 
   const updateContextWeight = (
@@ -414,10 +668,10 @@ export default function AffinityAdminPage() {
         <div>
           <h1 className="text-2xl font-bold text-[var(--rowi-foreground)] flex items-center gap-2">
             <Heart className="w-7 h-7 text-pink-500" />
-            Configuración de Affinity
+            {t("admin.affinity.title")}
           </h1>
           <p className="text-[var(--rowi-muted)] mt-1">
-            Personaliza los parámetros del motor de afinidad emocional
+            {t("admin.affinity.description")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -429,20 +683,46 @@ export default function AffinityAdminPage() {
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            <span>Recalcular Todo</span>
+            <span>{t("admin.affinity.recalculateAll")}</span>
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || (scope !== "global" && !scopeId)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg
               bg-[var(--rowi-primary)] text-white hover:opacity-90 transition-opacity
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? "Guardando..." : "Guardar"}</span>
+            <span>{saving ? t("admin.affinity.saving") : t("actions.save")}</span>
           </button>
         </div>
       </div>
+
+      {/* Scope Selector */}
+      <ScopeSelector
+        scope={scope}
+        scopeId={scopeId}
+        onScopeChange={setScope}
+        onScopeIdChange={setScopeId}
+        scopeOptions={scopeOptions}
+        t={t}
+        configSource={hasCustomConfig ? configSource : undefined}
+      />
+
+      {/* Warning si no hay scopeId seleccionado */}
+      {scope !== "global" && !scopeId && (
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="text-[var(--rowi-foreground)] font-medium">
+              {t("admin.affinity.scope.selectRequired")}
+            </p>
+            <p className="text-[var(--rowi-muted)] mt-1">
+              {t("admin.affinity.scope.selectRequiredDesc")}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-[var(--rowi-border)] pb-2">
@@ -455,7 +735,7 @@ export default function AffinityAdminPage() {
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span>Pesos por Contexto</span>
+          <span>{t("admin.affinity.tabs.weights")}</span>
         </button>
         <button
           onClick={() => setActiveTab("learning")}
@@ -466,7 +746,7 @@ export default function AffinityAdminPage() {
           }`}
         >
           <Brain className="w-4 h-4" />
-          <span>Aprendizaje</span>
+          <span>{t("admin.affinity.tabs.learning")}</span>
         </button>
         <button
           onClick={() => setActiveTab("stats")}
@@ -477,29 +757,25 @@ export default function AffinityAdminPage() {
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Estadísticas</span>
+          <span>{t("admin.affinity.tabs.stats")}</span>
         </button>
       </div>
 
       {/* Tab: Pesos por Contexto */}
       {activeTab === "weights" && (
         <div className="space-y-6">
-          {/* Info box */}
           <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
             <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="text-[var(--rowi-foreground)] font-medium">
-                Cómo funcionan los pesos
+                {t("admin.affinity.weightsInfo.title")}
               </p>
               <p className="text-[var(--rowi-muted)] mt-1">
-                Cada contexto pondera 3 componentes: <strong>Crecimiento</strong> (competencias SEI),
-                <strong> Colaboración</strong> (estilos cerebrales + talentos) y <strong>Comprensión</strong> (subfactores).
-                Los pesos deben sumar 100% para cada contexto.
+                {t("admin.affinity.weightsInfo.desc")}
               </p>
             </div>
           </div>
 
-          {/* Grid de contextos */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {(Object.keys(config.contextWeights) as Array<keyof typeof config.contextWeights>).map(
               (context) => (
@@ -508,12 +784,12 @@ export default function AffinityAdminPage() {
                   context={context}
                   weights={config.contextWeights[context]}
                   onChange={(field, value) => updateContextWeight(context, field, value)}
+                  t={t}
                 />
               )
             )}
           </div>
 
-          {/* Botón de reset */}
           <div className="flex justify-end">
             <button
               onClick={handleReset}
@@ -521,7 +797,7 @@ export default function AffinityAdminPage() {
                 transition-colors flex items-center gap-1"
             >
               <RefreshCw className="w-3 h-3" />
-              Restaurar valores por defecto
+              {t("admin.affinity.resetDefaults")}
             </button>
           </div>
         </div>
@@ -530,17 +806,14 @@ export default function AffinityAdminPage() {
       {/* Tab: Aprendizaje */}
       {activeTab === "learning" && (
         <div className="space-y-6">
-          {/* Info box */}
           <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
             <Brain className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="text-[var(--rowi-foreground)] font-medium">
-                Sistema de Aprendizaje Adaptativo
+                {t("admin.affinity.learningInfo.title")}
               </p>
               <p className="text-[var(--rowi-muted)] mt-1">
-                El motor ajusta automáticamente los multiplicadores de afinidad basándose en las
-                interacciones reales entre usuarios. Las interacciones con alta efectividad aumentan
-                el bias, mientras que las tensas lo reducen.
+                {t("admin.affinity.learningInfo.desc")}
               </p>
             </div>
           </div>
@@ -550,12 +823,12 @@ export default function AffinityAdminPage() {
             <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
               <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
                 <Clock className="w-4 h-4 text-[var(--rowi-primary)]" />
-                Ventana de Aprendizaje
+                {t("admin.affinity.learning.windowTitle")}
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Días de historial para analizar
+                    {t("admin.affinity.learning.historyDays")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -574,7 +847,7 @@ export default function AffinityAdminPage() {
                 </div>
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Intervalo de recálculo automático (CRON)
+                    {t("admin.affinity.learning.cronInterval")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -593,7 +866,7 @@ export default function AffinityAdminPage() {
                 </div>
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Máximo de miembros por ejecución
+                    {t("admin.affinity.learning.maxMembers")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -617,12 +890,12 @@ export default function AffinityAdminPage() {
             <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
               <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
                 <Percent className="w-4 h-4 text-[var(--rowi-primary)]" />
-                Umbrales de Efectividad
+                {t("admin.affinity.learning.thresholdsTitle")}
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Alta efectividad (aumenta afinidad)
+                    {t("admin.affinity.learning.highEff")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -639,13 +912,13 @@ export default function AffinityAdminPage() {
                     </span>
                   </div>
                   <p className="text-xs text-[var(--rowi-muted)] mt-1">
-                    Multiplicador: {config.learning.highBiasMultiplier.toFixed(2)}x (+
+                    {t("admin.affinity.learning.multiplier")}: {config.learning.highBiasMultiplier.toFixed(2)}x (+
                     {((config.learning.highBiasMultiplier - 1) * 100).toFixed(0)}%)
                   </p>
                 </div>
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Baja efectividad (reduce afinidad)
+                    {t("admin.affinity.learning.lowEff")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -662,7 +935,7 @@ export default function AffinityAdminPage() {
                     </span>
                   </div>
                   <p className="text-xs text-[var(--rowi-muted)] mt-1">
-                    Multiplicador: {config.learning.lowBiasMultiplier.toFixed(2)}x (
+                    {t("admin.affinity.learning.multiplier")}: {config.learning.lowBiasMultiplier.toFixed(2)}x (
                     {((config.learning.lowBiasMultiplier - 1) * 100).toFixed(0)}%)
                   </p>
                 </div>
@@ -673,27 +946,27 @@ export default function AffinityAdminPage() {
             <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
               <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
                 <Heart className="w-4 h-4 text-pink-500" />
-                Multiplicadores de Cercanía
+                {t("admin.affinity.closeness.title")}
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-sm">Cercano</span>
+                    <span className="text-sm">{t("admin.affinity.closeness.close")}</span>
                   </div>
                   <span className="font-mono text-green-500">{config.closeness.cercano.toFixed(2)}x</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-amber-500" />
-                    <span className="text-sm">Neutral</span>
+                    <span className="text-sm">{t("admin.affinity.closeness.neutral")}</span>
                   </div>
                   <span className="font-mono text-amber-500">{config.closeness.neutral.toFixed(2)}x</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-sm">Lejano</span>
+                    <span className="text-sm">{t("admin.affinity.closeness.distant")}</span>
                   </div>
                   <span className="font-mono text-red-500">{config.closeness.lejano.toFixed(2)}x</span>
                 </div>
@@ -704,12 +977,12 @@ export default function AffinityAdminPage() {
             <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
               <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-[var(--rowi-primary)]" />
-                Umbrales de Banda (Heat)
+                {t("admin.affinity.bands.title")}
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Banda "Hot" (alta afinidad)
+                    {t("admin.affinity.bands.hot")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -733,7 +1006,7 @@ export default function AffinityAdminPage() {
                 </div>
                 <div>
                   <label className="text-sm text-[var(--rowi-muted)] block mb-2">
-                    Banda "Warm" (afinidad media)
+                    {t("admin.affinity.bands.warm")}
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -757,12 +1030,12 @@ export default function AffinityAdminPage() {
                 </div>
                 <div className="mt-4 p-3 rounded-lg bg-[var(--rowi-muted)]/5">
                   <div className="flex items-center gap-2 text-xs text-[var(--rowi-muted)]">
-                    <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-500">Hot ≥{config.bands.hotThreshold}</span>
+                    <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-500">🔥 Hot ≥{config.bands.hotThreshold}</span>
                     <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500">
-                      Warm {config.bands.warmThreshold}-{config.bands.hotThreshold - 1}
+                      ☀️ Warm {config.bands.warmThreshold}-{config.bands.hotThreshold - 1}
                     </span>
                     <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500">
-                      Cold &lt;{config.bands.warmThreshold}
+                      ❄️ Cold &lt;{config.bands.warmThreshold}
                     </span>
                   </div>
                 </div>
@@ -775,35 +1048,34 @@ export default function AffinityAdminPage() {
       {/* Tab: Estadísticas */}
       {activeTab === "stats" && (
         <div className="space-y-6">
-          {/* Métricas principales */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <MetricCard
               icon={Heart}
-              label="Afinidad Promedio"
+              label={t("admin.affinity.stats.avgAffinity")}
               value={stats?.globalAverage?.toFixed(1) || "—"}
               suffix="/100"
-              description="Promedio de todas las relaciones"
+              description={t("admin.affinity.stats.avgAffinityDesc")}
               trend="neutral"
             />
             <MetricCard
               icon={Users}
-              label="Relaciones Activas"
+              label={t("admin.affinity.stats.activeRelations")}
               value={stats?.totalRelations || 0}
-              description="Total de snapshots calculados"
+              description={t("admin.affinity.stats.activeRelationsDesc")}
               trend="up"
             />
             <MetricCard
               icon={Activity}
-              label="Interacciones (30d)"
+              label={t("admin.affinity.stats.interactions")}
               value={stats?.recentInteractions || 0}
-              description="Micro-interacciones registradas"
+              description={t("admin.affinity.stats.interactionsDesc")}
               trend="up"
             />
             <MetricCard
               icon={Zap}
-              label="Última Recalculación"
+              label={t("admin.affinity.stats.lastRecalc")}
               value={stats?.lastRecalc ? new Date(stats.lastRecalc).toLocaleDateString() : "—"}
-              description="Fecha del último batch"
+              description={t("admin.affinity.stats.lastRecalcDesc")}
             />
           </div>
 
@@ -811,28 +1083,30 @@ export default function AffinityAdminPage() {
           <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
             <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-[var(--rowi-primary)]" />
-              Distribución por Contexto
+              {t("admin.affinity.stats.byContext")}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {(Object.keys(CONTEXT_INFO) as Array<keyof typeof CONTEXT_INFO>).map((context) => {
-                const info = CONTEXT_INFO[context];
-                const Icon = info.icon;
+              {(Object.keys(CONTEXT_ICONS) as Array<keyof typeof CONTEXT_ICONS>).map((context) => {
+                const Icon = CONTEXT_ICONS[context];
+                const colors = CONTEXT_COLORS[context];
                 const avg = stats?.contextAverages?.[context] || 0;
                 return (
                   <div
                     key={context}
-                    className={`p-4 rounded-xl ${info.bg} border border-[var(--rowi-border)]`}
+                    className={`p-4 rounded-xl ${colors.bg} border border-[var(--rowi-border)]`}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Icon className={`w-4 h-4 ${info.color}`} />
-                      <span className="text-xs text-[var(--rowi-muted)]">{info.title}</span>
+                      <Icon className={`w-4 h-4 ${colors.color}`} />
+                      <span className="text-xs text-[var(--rowi-muted)]">
+                        {t(`admin.affinity.contexts.${context}.title`)}
+                      </span>
                     </div>
                     <div className="text-2xl font-bold text-[var(--rowi-foreground)]">
                       {avg > 0 ? avg.toFixed(0) : "—"}
                     </div>
                     <div className="mt-2 h-1.5 bg-[var(--rowi-muted)]/20 rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${info.color.replace("text-", "bg-")}`}
+                        className={`h-full ${colors.color.replace("text-", "bg-")}`}
                         style={{ width: `${(avg / 100) * 100}%` }}
                       />
                     </div>
@@ -847,7 +1121,7 @@ export default function AffinityAdminPage() {
             <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
               <h3 className="font-medium text-[var(--rowi-foreground)] flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-green-500" />
-                Top 5 Conexiones Más Fuertes
+                {t("admin.affinity.stats.topConnections")}
               </h3>
               <div className="space-y-3">
                 {stats.topConnections.slice(0, 5).map((conn: any, i: number) => (
@@ -863,7 +1137,7 @@ export default function AffinityAdminPage() {
                         {conn.userName} ↔ {conn.memberName}
                       </div>
                       <div className="text-xs text-[var(--rowi-muted)]">
-                        Contexto: {conn.context}
+                        {t("admin.affinity.context")}: {conn.context}
                       </div>
                     </div>
                     <div className="text-right">
@@ -884,10 +1158,10 @@ export default function AffinityAdminPage() {
           <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--rowi-muted)]/5 border border-[var(--rowi-border)]">
             <div>
               <p className="font-medium text-[var(--rowi-foreground)]">
-                ¿Necesitas actualizar las estadísticas?
+                {t("admin.affinity.stats.needUpdate")}
               </p>
               <p className="text-sm text-[var(--rowi-muted)]">
-                El recálculo puede tomar unos minutos dependiendo del número de usuarios.
+                {t("admin.affinity.stats.needUpdateDesc")}
               </p>
             </div>
             <button
@@ -897,7 +1171,7 @@ export default function AffinityAdminPage() {
                 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-              <span>{loading ? "Recalculando..." : "Recalcular Ahora"}</span>
+              <span>{loading ? t("admin.affinity.recalculating") : t("admin.affinity.recalculateNow")}</span>
             </button>
           </div>
         </div>

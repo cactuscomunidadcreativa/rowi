@@ -15,10 +15,10 @@ import { prisma } from "@/core/prisma";
 // 🔹 PATCH → Editar un rol dinámico
 export async function PATCH(
   req: Request,
-  { params }: { params: { hubId: string; roleId: string } }
+  context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
-    const { roleId } = params;
+    const { roleId } = await context.params;
     const body = await req.json();
 
     const permissions =
@@ -30,7 +30,6 @@ export async function PATCH(
       where: { id: roleId },
       data: {
         name: body.name ?? undefined,
-        description: body.description ?? undefined,
         permissions: permissions ?? undefined,
         color: body.color ?? undefined,
         icon: body.icon ?? undefined,
@@ -54,10 +53,10 @@ export async function PATCH(
 // 🔹 DELETE → Eliminar un rol dinámico
 export async function DELETE(
   _req: Request,
-  { params }: { params: { hubId: string; roleId: string } }
+  context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
-    const { roleId } = params;
+    const { roleId } = await context.params;
 
     await prisma.hubRoleDynamic.delete({ where: { id: roleId } });
 

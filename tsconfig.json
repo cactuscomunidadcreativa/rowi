@@ -50,7 +50,8 @@
       "react",
       "next",
       "next/types/global",
-      "next/navigation"
+      "next/navigation",
+      "jest"
     ],
     "plugins": [
       {

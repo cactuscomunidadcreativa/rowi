@@ -13,7 +13,7 @@
  * Las claves se almacenan encriptadas en la BD usando AES-256-GCM
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/core/prisma";
 import crypto from "crypto";
 
 // Clave de encriptación derivada del NEXTAUTH_SECRET

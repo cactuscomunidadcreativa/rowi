@@ -75,9 +75,9 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
   }, [handleScroll]);
 
   return (
-    <div className="flex w-full pt-16 bg-[var(--rowi-background)] text-[var(--rowi-foreground)] transition-colors duration-300">
+    <div className="flex w-full pt-16 bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       {/* Sidebar lateral fijo - posición fixed, debajo del NavBar global (top-16 = 64px) */}
-      <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-[var(--rowi-border)] bg-[var(--rowi-card)]/70 backdrop-blur-sm z-40 overflow-y-auto">
+      <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-gray-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm z-40 overflow-y-auto">
         <Sidebar />
       </aside>
 
@@ -89,8 +89,8 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
           onMouseLeave={() => setIsHovering(false)}
           className={`
             sticky top-16 z-30
-            bg-[var(--rowi-card)]/80 backdrop-blur-md
-            border-b border-[var(--rowi-primary)]/20
+            bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md
+            border-b border-indigo-500/20
             transition-transform duration-300 ease-in-out
             ${isHeaderVisible || isHovering ? "translate-y-0" : "-translate-y-full"}
           `}
@@ -101,7 +101,7 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
         {/* Área de contenido scrollable */}
         <main
           ref={mainRef}
-          className="flex-1 overflow-y-auto p-6 bg-[var(--rowi-background)]"
+          className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-zinc-900"
         >
           {children}
         </main>

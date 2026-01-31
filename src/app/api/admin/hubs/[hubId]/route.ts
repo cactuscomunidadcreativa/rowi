@@ -14,9 +14,9 @@ import { NextResponse } from "next/server";
  */
 export async function GET(
   _req: Request,
-  ctx: { params: { hubId: string } }
+  ctx: { params: Promise<{ hubId: string }> }
 ) {
-  const { hubId } = ctx.params || {};
+  const { hubId } = await ctx.params;
 
   return NextResponse.json(
     {

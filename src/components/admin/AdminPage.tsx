@@ -170,9 +170,10 @@ export function AdminCard({
 interface AdminGridProps {
   children: ReactNode;
   cols?: 1 | 2 | 3 | 4;
+  className?: string;
 }
 
-export function AdminGrid({ children, cols = 3 }: AdminGridProps) {
+export function AdminGrid({ children, cols = 3, className = "" }: AdminGridProps) {
   const colsClass = {
     1: "grid-cols-1",
     2: "grid-cols-1 sm:grid-cols-2",
@@ -180,7 +181,7 @@ export function AdminGrid({ children, cols = 3 }: AdminGridProps) {
     4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
   }[cols];
 
-  return <div className={`grid ${colsClass} gap-3`}>{children}</div>;
+  return <div className={`grid ${colsClass} gap-4 ${className}`}>{children}</div>;
 }
 
 /* =========================================================

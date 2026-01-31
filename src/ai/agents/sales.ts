@@ -1,10 +1,8 @@
 // src/ai/agents/sales.ts
-import OpenAI from "openai";
 import { buildMessagesSales } from "../prompts/modules/sales";
 import { registerUsage } from "../client/registerUsage";
 import { getAgentConfig, buildCultureEnrichedPrompt } from "./getAgentConfig";
-
-const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { getOpenAIClient } from "@/lib/openai/client";
 
 export const SalesAgent = {
   id: "sales",
@@ -24,6 +22,9 @@ export const SalesAgent = {
     language?: string;
   }) {
     try {
+      /* 🔐 Obtener cliente de OpenAI */
+      const ai = await getOpenAIClient();
+
       /* 🏢 0. Cargar cultura corporativa del tenant */
       const agentConfig = await getAgentConfig("sales", tenantId);
 

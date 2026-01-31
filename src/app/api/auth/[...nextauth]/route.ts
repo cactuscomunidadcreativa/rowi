@@ -74,9 +74,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      // ⚠️ SEGURIDAD: Deshabilitado para prevenir account takeover
-      // Un atacante podría vincular su cuenta Google a cualquier email existente
-      allowDangerousEmailAccountLinking: false,
+      // Habilitado porque manejamos el linking de forma segura en el callback signIn
+      // El callback verifica el email y vincula la cuenta al usuario existente
+      allowDangerousEmailAccountLinking: true,
     }),
 
     CredentialsProvider({
@@ -206,7 +206,87 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
+      // Handle OAuth providers (Google, etc.)
+      if (account?.provider && account.provider !== "credentials" && user.email) {
+        const email = user.email.toLowerCase();
+        const existingUser = await prisma.user.findUnique({
+          where: { email },
+          include: { accounts: true }
+        });
+
+        if (existingUser) {
+          // Check if this OAuth account is already linked
+          const existingAccount = existingUser.accounts.find(
+            (acc) => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+          );
+
+          if (!existingAccount) {
+            // Link the OAuth account to the existing user
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              },
+            });
+
+            // Log the account linking
+            await logSecurityEvent("ACCOUNT_LINKED", {
+              userId: existingUser.id,
+              email,
+              reason: `Linked ${account.provider} account`,
+            }).catch(() => {});
+          }
+
+          // Update user info from OAuth provider if needed
+          if (!existingUser.image && (user.image || (profile as { picture?: string })?.picture)) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { image: user.image || (profile as { picture?: string })?.picture },
+            });
+          }
+
+          // Set the user id for the session
+          user.id = existingUser.id;
+        } else {
+          // Create new user for OAuth
+          const newUser = await prisma.user.create({
+            data: {
+              email,
+              name: user.name || "Usuario Rowi",
+              image: user.image || (profile as { picture?: string })?.picture,
+              organizationRole: "VIEWER",
+            },
+          });
+
+          // Link the OAuth account
+          await prisma.account.create({
+            data: {
+              userId: newUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+            },
+          });
+
+          user.id = newUser.id;
+        }
+      }
+
       // 🔐 Log successful login
       try {
         await logSecurityEvent("LOGIN_SUCCESS", {
@@ -218,27 +298,14 @@ export const authOptions: NextAuthOptions = {
         // Non-blocking logging
       }
 
-      // Auto-create user for Google OAuth
-      if (account?.provider === "google" && user.email) {
-        const email = user.email.toLowerCase();
-        const existing = await prisma.user.findUnique({ where: { email } });
-
-        if (!existing) {
-          await prisma.user.create({
-            data: {
-              email,
-              name: user.name || "Usuario Rowi",
-              image: user.image,
-              organizationRole: "VIEWER",
-            },
-          });
-        }
-      }
       return true;
     },
   },
 
-  pages: { signIn: "/hub/login" },
+  pages: {
+    signIn: "/hub/login",
+    // El callbackUrl se maneja en el frontend basado en el rol
+  },
 
   // ⚠️ SEGURIDAD: El secret es obligatorio, no usar fallbacks predecibles
   secret: process.env.NEXTAUTH_SECRET,

@@ -4,9 +4,16 @@
  *
  * Procesa el archivo completo en una sola llamada de hasta 5 minutos.
  * Usa el SOH_COLUMN_MAPPING para mapear columnas del Excel a campos del modelo.
+ *
+ * ⚠️ SEGURIDAD:
+ * - Requiere autenticación de admin o token de servicio
+ * - Solo acepta URLs de dominios permitidos (Vercel Blob)
+ * - Límite de tamaño de archivo
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import {
   EQ_COMPETENCIES,
@@ -22,6 +29,49 @@ import {
 
 export const maxDuration = 300; // 5 minutos
 
+// 🔐 Dominios permitidos para blobUrl (prevenir SSRF)
+const ALLOWED_BLOB_DOMAINS = [
+  "blob.vercel-storage.com",
+  "public.blob.vercel-storage.com",
+  "*.blob.vercel-storage.com",
+];
+
+// 📏 Límites de seguridad
+const MAX_FILE_SIZE_MB = 100; // 100MB máximo
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const DOWNLOAD_TIMEOUT_MS = 60000; // 60 segundos para descarga
+
+/**
+ * Verifica si el usuario es administrador del sistema
+ */
+async function isSystemAdmin(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  const hubAdmins = process.env.HUB_ADMINS || "";
+  const adminEmails = hubAdmins.split(",").map(e => e.trim().toLowerCase());
+  return adminEmails.includes(email.toLowerCase());
+}
+
+/**
+ * Valida que la URL sea de un dominio permitido
+ */
+function isAllowedBlobUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+
+    return ALLOWED_BLOB_DOMAINS.some(domain => {
+      if (domain.startsWith("*.")) {
+        // Wildcard match
+        const baseDomain = domain.slice(2);
+        return hostname.endsWith(baseDomain) || hostname === baseDomain.slice(1);
+      }
+      return hostname === domain;
+    });
+  } catch {
+    return false;
+  }
+}
+
 interface ProcessBlobBody {
   benchmarkId: string;
   jobId: string;
@@ -36,6 +86,30 @@ export async function POST(req: NextRequest) {
   let jobId: string | undefined;
 
   try {
+    // 🔐 Verificar autenticación: sesión de admin O token de servicio
+    const serviceToken = req.headers.get("x-service-token");
+    const expectedToken = process.env.BENCHMARK_SERVICE_TOKEN;
+
+    // Si hay token de servicio válido, permitir
+    const hasValidServiceToken = serviceToken && expectedToken && serviceToken === expectedToken;
+
+    if (!hasValidServiceToken) {
+      // Verificar sesión de usuario admin
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.email) {
+        return NextResponse.json(
+          { error: "Unauthorized - Authentication required" },
+          { status: 401 }
+        );
+      }
+      if (!(await isSystemAdmin(session.user.email))) {
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
+    }
+
     const body: ProcessBlobBody = await req.json();
     benchmarkId = body.benchmarkId;
     jobId = body.jobId;
@@ -44,6 +118,36 @@ export async function POST(req: NextRequest) {
     if (!benchmarkId || !jobId || !blobUrl) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // 🛡️ Validar que blobUrl sea de un dominio permitido (prevenir SSRF)
+    if (!isAllowedBlobUrl(blobUrl)) {
+      console.error(`⚠️ Blocked SSRF attempt: ${blobUrl}`);
+      return NextResponse.json(
+        { error: "Invalid blob URL - only Vercel Blob URLs are allowed" },
+        { status: 400 }
+      );
+    }
+
+    // 🔍 Verificar que el benchmark existe y pertenece al job
+    const benchmark = await prisma.benchmark.findUnique({
+      where: { id: benchmarkId },
+    });
+    if (!benchmark) {
+      return NextResponse.json(
+        { error: "Benchmark not found" },
+        { status: 404 }
+      );
+    }
+
+    const job = await prisma.benchmarkUploadJob.findUnique({
+      where: { id: jobId },
+    });
+    if (!job || job.benchmarkId !== benchmarkId) {
+      return NextResponse.json(
+        { error: "Invalid job or job does not match benchmark" },
         { status: 400 }
       );
     }
@@ -61,12 +165,42 @@ export async function POST(req: NextRequest) {
     console.log(`📥 Downloading from blob: ${blobUrl}`);
     const startDownload = Date.now();
 
-    const response = await fetch(blobUrl);
+    // 📏 Fetch con timeout y validación de tamaño
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+      response = await fetch(blobUrl, {
+        signal: controller.signal,
+        headers: {
+          "Accept": "text/csv, text/plain, application/csv",
+        },
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!response.ok) {
       throw new Error(`Failed to download blob: ${response.status}`);
     }
 
+    // Verificar Content-Length si está disponible
+    const contentLength = response.headers.get("content-length");
+    if (contentLength) {
+      const size = parseInt(contentLength, 10);
+      if (size > MAX_FILE_SIZE_BYTES) {
+        throw new Error(`File too large: ${(size / 1024 / 1024).toFixed(1)}MB exceeds ${MAX_FILE_SIZE_MB}MB limit`);
+      }
+    }
+
     const text = await response.text();
+
+    // Verificar tamaño después de descargar (por si no había Content-Length)
+    if (text.length > MAX_FILE_SIZE_BYTES) {
+      throw new Error(`File too large: ${(text.length / 1024 / 1024).toFixed(1)}MB exceeds ${MAX_FILE_SIZE_MB}MB limit`);
+    }
+
     console.log(`📥 Download completed in ${Date.now() - startDownload}ms (${(text.length / 1024 / 1024).toFixed(1)}MB)`);
 
     // Fase 2: Parsing

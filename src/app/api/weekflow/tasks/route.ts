@@ -17,16 +17,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
+    // Personal tasks are available for everyone (no plan check)
+    // Team features (hubId filter) require weekflowAccess
+    const { searchParams } = new URL(req.url);
+    const hubId = searchParams.get("hubId");
+
+    if (hubId && !auth.plan?.weekflowAccess) {
       return NextResponse.json(
         { ok: false, error: "weekflow.errors.planRequired" },
         { status: 403 }
       );
     }
 
-    const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
-    const hubId = searchParams.get("hubId");
     const includeCompleted = searchParams.get("includeCompleted") === "true";
 
     const where: Record<string, unknown> = {
@@ -54,6 +57,15 @@ export async function GET(req: NextRequest) {
         reflections: {
           orderBy: { createdAt: "desc" },
           take: 5,
+        },
+        assignee: {
+          select: { id: true, name: true, email: true },
+        },
+        collaborators: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+            member: { select: { id: true, name: true, email: true } },
+          },
         },
       },
     });
@@ -93,14 +105,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
+    const body = await req.json();
+
+    // Personal tasks (no hubId) are available for everyone
+    // Team tasks (with hubId) require weekflowAccess plan
+    if (body.hubId && !auth.plan?.weekflowAccess) {
       return NextResponse.json(
         { ok: false, error: "weekflow.errors.planRequired" },
         { status: 403 }
       );
     }
-
-    const body = await req.json();
     const {
       title,
       description,
@@ -115,6 +129,8 @@ export async function POST(req: NextRequest) {
       weekFlowSessionId,
       sourceType,
       sourceId,
+      assigneeId,
+      collaborators, // Array de { userId?, memberId?, role? }
     } = body;
 
     if (!title) {
@@ -154,6 +170,24 @@ export async function POST(req: NextRequest) {
         weekFlowSessionId: weekFlowSessionId || null,
         sourceType: sourceType || "manual",
         sourceId: sourceId || null,
+        assigneeId: assigneeId || null,
+        // Crear colaboradores si se proporcionan
+        collaborators: collaborators?.length > 0 ? {
+          create: collaborators.map((c: { userId?: string; memberId?: string; role?: string }) => ({
+            userId: c.userId || null,
+            memberId: c.memberId || null,
+            role: c.role || "VIEWER",
+          })),
+        } : undefined,
+      },
+      include: {
+        collaborators: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+            member: { select: { id: true, name: true, email: true } },
+          },
+        },
+        assignee: { select: { id: true, name: true, email: true } },
       },
     });
 
@@ -187,13 +221,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
-
     const body = await req.json();
     const {
       id,
@@ -221,6 +248,14 @@ export async function PUT(req: NextRequest) {
 
     if (!existing) {
       return NextResponse.json({ ok: false, error: "Task not found" }, { status: 404 });
+    }
+
+    // Team tasks (with hubId) require weekflowAccess plan
+    if (existing.hubId && !auth.plan?.weekflowAccess) {
+      return NextResponse.json(
+        { ok: false, error: "weekflow.errors.planRequired" },
+        { status: 403 }
+      );
     }
 
     if (existing.userId !== auth.id) {
@@ -319,13 +354,6 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
-
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -344,6 +372,14 @@ export async function DELETE(req: NextRequest) {
 
     if (existing.userId !== auth.id) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    // Team tasks (with hubId) require weekflowAccess plan
+    if (existing.hubId && !auth.plan?.weekflowAccess) {
+      return NextResponse.json(
+        { ok: false, error: "weekflow.errors.planRequired" },
+        { status: 403 }
+      );
     }
 
     // Soft delete (cambiar status a CANCELLED)

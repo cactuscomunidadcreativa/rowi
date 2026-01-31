@@ -6,11 +6,10 @@ import { prisma } from "@/core/prisma";
 ========================================================= */
 export async function GET(
   req: NextRequest,
-  context: Promise<{ params: { hubId: string } }>
+  context: { params: Promise<{ hubId: string }> }
 ) {
   try {
-    const { params } = await context;
-    const hubId = params.hubId;
+    const { hubId } = await context.params;
 
     const hub = await prisma.hub.findUnique({ where: { id: hubId } });
     if (!hub) {
@@ -59,10 +58,9 @@ export async function GET(
 ========================================================= */
 export async function POST(
   req: NextRequest,
-  context: Promise<{ params: { hubId: string } }>
+  context: { params: Promise<{ hubId: string }> }
 ) {
-  const { params } = await context;
-  const hubId = params.hubId;
+  const { hubId } = await context.params;
   const body = await req.json();
   const { userId } = body;
 

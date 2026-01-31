@@ -1,10 +1,8 @@
 // src/ai/agents/trainer.ts
-import OpenAI from "openai";
 import { buildMessagesTrainer } from "../prompts/modules/trainer";
 import { registerUsage } from "../client/registerUsage";
 import { getAgentConfig, buildCultureEnrichedPrompt } from "./getAgentConfig";
-
-const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { getOpenAIClient } from "@/lib/openai/client";
 
 export const TrainerAgent = {
   id: "trainer",
@@ -28,6 +26,9 @@ export const TrainerAgent = {
     memory?: any[];
   }) {
     try {
+      /* 🔐 Obtener cliente de OpenAI */
+      const ai = await getOpenAIClient();
+
       /* 🏢 0. Cargar cultura corporativa del tenant */
       const agentConfig = await getAgentConfig("trainer", tenantId);
 

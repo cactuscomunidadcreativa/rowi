@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -120,11 +121,18 @@ const translations = {
 export default function AvatarPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
+  const { data: session, status } = useSession();
 
-  const { data, isLoading } = useSWR("/api/avatar", fetcher);
+  // Solo fetch si hay sesión activa
+  const isAuthenticated = status === "authenticated" && !!session?.user;
+  const { data, isLoading } = useSWR(
+    isAuthenticated ? "/api/avatar" : null,
+    fetcher
+  );
   const avatar = data?.data;
 
-  if (isLoading) {
+  // Mostrar loading mientras carga la sesión o el avatar
+  if (status === "loading" || (isAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950">
         <div className="text-center">
@@ -142,6 +150,15 @@ export default function AvatarPage() {
           </motion.div>
           <p className="text-gray-500 dark:text-gray-400 mt-4">{t.loading}</p>
         </div>
+      </div>
+    );
+  }
+
+  // Si no hay sesión, mostrar mensaje
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">{lang === "es" ? "Inicia sesión para ver tu avatar" : "Sign in to see your avatar"}</p>
       </div>
     );
   }

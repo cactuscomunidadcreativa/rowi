@@ -18,10 +18,6 @@
   },
   "crons": [
     {
-      "path": "/api/cron/process-benchmarks",
-      "schedule": "* * * * *"
-    },
-    {
       "path": "/api/affinity/recalculate?project=execution",
       "schedule": "0 5 */15 * *"
     },

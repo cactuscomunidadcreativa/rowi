@@ -12,9 +12,11 @@ import {
   EQ_COMPETENCIES,
   SOH_COLUMN_MAPPING,
   NUMERIC_COLUMNS,
+  OUTCOMES,
   normalizeAgeRange,
   detectGeneration,
   extractDateInfo,
+  pearsonCorrelation,
 } from "@/lib/benchmarks";
 
 export const maxDuration = 300; // 5 minutos
@@ -207,7 +209,80 @@ export async function POST(req: NextRequest) {
 
     console.log(`📊 Import completed: ${validRows} valid rows from ${processedRows} total`);
 
-    // Fase 4: Finalizar
+    // Fase 4: Calcular correlaciones automáticamente
+    await prisma.benchmarkUploadJob.update({
+      where: { id: jobId },
+      data: {
+        currentPhase: "correlations",
+        progress: 90,
+      },
+    });
+
+    console.log(`📊 Calculating correlations...`);
+
+    // Obtener data points para calcular correlaciones
+    const correlationDataPoints = await prisma.benchmarkDataPoint.findMany({
+      where: { benchmarkId },
+      select: {
+        K: true, C: true, G: true, EL: true, RP: true, ACT: true,
+        NE: true, IM: true, OP: true, EMP: true, NG: true,
+        effectiveness: true, relationships: true, qualityOfLife: true,
+        wellbeing: true, influence: true, decisionMaking: true,
+        community: true, network: true, achievement: true,
+        satisfaction: true, balance: true, health: true,
+      },
+    });
+
+    const correlations: any[] = [];
+
+    if (correlationDataPoints.length >= 10) {
+      for (const competency of EQ_COMPETENCIES) {
+        for (const outcome of OUTCOMES) {
+          const pairs: { comp: number; out: number }[] = [];
+          for (const dp of correlationDataPoints) {
+            const compVal = (dp as any)[competency];
+            const outVal = (dp as any)[outcome];
+            if (typeof compVal === "number" && typeof outVal === "number") {
+              pairs.push({ comp: compVal, out: outVal });
+            }
+          }
+
+          if (pairs.length >= 10) {
+            const result = pearsonCorrelation(
+              pairs.map((p) => p.comp),
+              pairs.map((p) => p.out)
+            );
+
+            correlations.push({
+              id: `${benchmarkId}_${competency}_${outcome}_all_all_all`,
+              benchmarkId,
+              country: null,
+              region: null,
+              sector: null,
+              tenantId: null,
+              competencyKey: competency,
+              outcomeKey: outcome,
+              correlation: result.correlation,
+              pValue: result.pValue,
+              n: result.n,
+              strength: result.strength,
+              direction: result.direction,
+              calculatedAt: new Date(),
+            });
+          }
+        }
+      }
+
+      if (correlations.length > 0) {
+        await prisma.benchmarkCorrelation.createMany({
+          data: correlations,
+          skipDuplicates: true,
+        });
+      }
+      console.log(`📊 Calculated ${correlations.length} correlations`);
+    }
+
+    // Fase 5: Finalizar
     await prisma.benchmarkUploadJob.update({
       where: { id: jobId },
       data: {

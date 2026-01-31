@@ -18,6 +18,8 @@ import {
   Clock,
   AlertCircle,
   Archive,
+  Calculator,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -51,6 +53,7 @@ interface Benchmark {
     dataPoints: number;
     statistics: number;
     topPerformers: number;
+    correlations: number;
   };
 }
 
@@ -58,6 +61,7 @@ export default function BenchmarksPage() {
   const { t, ready } = useI18n();
   const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calculatingId, setCalculatingId] = useState<string | null>(null);
 
   async function loadBenchmarks() {
     setLoading(true);
@@ -94,6 +98,28 @@ export default function BenchmarksPage() {
       }
     } catch {
       toast.error(t("common.error"));
+    }
+  }
+
+  async function calculateCorrelations(id: string) {
+    setCalculatingId(id);
+    try {
+      const res = await fetch(`/api/admin/benchmarks/${id}/correlations/calculate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(t("admin.benchmarks.correlations.calculated"));
+        loadBenchmarks();
+      } else {
+        toast.error(data.error || t("common.error"));
+      }
+    } catch {
+      toast.error(t("common.error"));
+    } finally {
+      setCalculatingId(null);
     }
   }
 
@@ -251,6 +277,11 @@ export default function BenchmarksPage() {
                       <span className="font-medium">{benchmark._count.topPerformers}</span>
                       <span className="text-[var(--rowi-muted)]">{t("admin.benchmarks.topPerformers.title")}</span>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3 text-[var(--rowi-muted)]" />
+                      <span className="font-medium">{benchmark._count.correlations}</span>
+                      <span className="text-[var(--rowi-muted)]">{t("admin.benchmarks.correlations.title")}</span>
+                    </div>
                     {benchmark.isLearning && (
                       <div className="flex items-center gap-1 text-green-600">
                         <RefreshCcw className="w-3 h-3" />
@@ -264,7 +295,20 @@ export default function BenchmarksPage() {
                 <div className="flex flex-col items-end gap-3">
                   {getStatusBadge(benchmark.status)}
 
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-wrap justify-end">
+                    {benchmark.status === "COMPLETED" && benchmark._count.correlations === 0 && (
+                      <AdminButton
+                        variant="primary"
+                        size="sm"
+                        icon={calculatingId === benchmark.id ? Loader2 : Calculator}
+                        onClick={() => calculateCorrelations(benchmark.id)}
+                        disabled={calculatingId === benchmark.id}
+                      >
+                        {calculatingId === benchmark.id
+                          ? t("admin.benchmarks.correlations.calculating")
+                          : t("admin.benchmarks.correlations.generate")}
+                      </AdminButton>
+                    )}
                     <Link href={`/hub/admin/benchmarks/${benchmark.id}`}>
                       <AdminButton variant="secondary" size="sm" icon={Eye}>
                         {t("admin.benchmarks.viewDetails")}

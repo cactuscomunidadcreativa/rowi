@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
             dataPoints: true,
             statistics: true,
             topPerformers: true,
+            correlations: true,
           },
         },
       },

@@ -103,6 +103,7 @@
   "admin.benchmarks.correlations.calculating": "Calculating...",
   "admin.benchmarks.correlations.description": "Correlations between competencies and outcomes",
   "admin.benchmarks.correlations.generate": "Generate correlations",
+  "admin.benchmarks.correlations.title": "Correlations",
   "admin.benchmarks.dashboard.countries": "Countries",
   "admin.benchmarks.dashboard.overview": "Overview",
   "admin.benchmarks.dashboard.sectors": "Sectors",

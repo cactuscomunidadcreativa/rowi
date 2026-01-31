@@ -148,31 +148,40 @@ export async function POST(
     const baseWhere = { benchmarkId };
 
     // =========================================================
-    // Calcular estadísticas globales para TODO el benchmark
+    // Calcular estadísticas globales usando agregaciones SQL
+    // (Optimizado para datasets grandes - no carga todo en memoria)
     // =========================================================
-    console.log("📊 Calculating global statistics...");
+    console.log("📊 Calculating global statistics (optimized)...");
     const globalStats: Record<string, { mean: number; stdDev: number; n: number }> = {};
 
-    for (const metric of [...EQ_ALL, ...BRAIN_TALENTS]) {
-      const dataPoints = await prisma.benchmarkDataPoint.findMany({
+    // Usar agregaciones SQL directamente para cada métrica
+    const allMetrics = [...EQ_ALL, ...BRAIN_TALENTS];
+
+    for (const metric of allMetrics) {
+      const result = await prisma.benchmarkDataPoint.aggregate({
         where: { ...baseWhere, [metric]: { not: null } },
-        select: { [metric]: true },
+        _avg: { [metric]: true },
+        _count: { [metric]: true },
       });
 
-      const values = dataPoints
-        .map((dp: any) => dp[metric])
-        .filter((v): v is number => v !== null && v !== undefined);
+      const mean = (result._avg as any)[metric] || 0;
+      const count = (result._count as any)[metric] || 0;
 
-      if (values.length > 0) {
-        const mean = values.reduce((a, b) => a + b, 0) / values.length;
-        const stdDev = calculateStdDev(values, mean);
-        globalStats[metric] = { mean, stdDev, n: values.length };
+      if (count > 1) {
+        // Calcular stdDev con SQL para evitar cargar todos los datos
+        const varianceResult: any[] = await prisma.$queryRawUnsafe(`
+          SELECT COALESCE(STDDEV_SAMP("${metric}"), 0) as std_dev
+          FROM "benchmark_data_point"
+          WHERE "benchmarkId" = '${benchmarkId}' AND "${metric}" IS NOT NULL
+        `);
+        const stdDev = parseFloat(varianceResult[0]?.std_dev) || 0;
+        globalStats[metric] = { mean, stdDev, n: count };
       } else {
-        globalStats[metric] = { mean: 0, stdDev: 0, n: 0 };
+        globalStats[metric] = { mean, stdDev: 0, n: count };
       }
     }
 
-    console.log("✅ Global statistics calculated");
+    console.log("✅ Global statistics calculated (optimized)");
 
     // =========================================================
     // Calcular top performers para cada outcome
@@ -183,25 +192,25 @@ export async function POST(
     for (const outcome of OUTCOMES) {
       console.log(`📈 Processing outcome: ${outcome}`);
 
-      // Obtener todos los valores del outcome ordenados
-      const allOutcomeData = await prisma.benchmarkDataPoint.findMany({
+      // Obtener count y percentil P90 directamente con SQL (optimizado)
+      const countResult = await prisma.benchmarkDataPoint.count({
         where: { ...baseWhere, [outcome]: { not: null } },
-        select: { [outcome]: true },
-        orderBy: { [outcome]: "asc" },
       });
-
-      const outcomeValues = allOutcomeData
-        .map((dp: any) => dp[outcome])
-        .filter((v): v is number => v !== null && v !== undefined)
-        .sort((a, b) => a - b);
-
-      const totalCount = outcomeValues.length;
+      const totalCount = countResult;
 
       if (totalCount === 0) {
         console.log(`⚠️ ${outcome}: No data available, skipping`);
         warnings.push(`${outcome}: sin datos disponibles`);
         continue;
       }
+
+      // Calcular percentil P90 directamente con SQL
+      const p90Result: any[] = await prisma.$queryRawUnsafe(`
+        SELECT PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY "${outcome}") as p90
+        FROM "benchmark_data_point"
+        WHERE "benchmarkId" = '${benchmarkId}' AND "${outcome}" IS NOT NULL
+      `);
+      const threshold = parseFloat(p90Result[0]?.p90) || 0;
 
       let lowConfidenceSample = false;
       let insufficientReason = "";
@@ -211,9 +220,6 @@ export async function POST(
         lowConfidenceSample = true;
         insufficientReason = "small_total_sample";
       }
-
-      // Calcular umbral P90 con interpolación
-      const threshold = getPercentileInterpolated(outcomeValues, 90);
 
       // Obtener top performers (>= P90)
       const topPerformerData = await prisma.benchmarkDataPoint.findMany({

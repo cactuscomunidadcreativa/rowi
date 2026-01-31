@@ -7,9 +7,12 @@ export const metadata = {
   title: "Rowi SIA",
   description: "App de Inteligencia Emocional",
   icons: {
-    icon: "/owl.png",
-    shortcut: "/owl.png",
-    apple: "/owl.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/owl.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 

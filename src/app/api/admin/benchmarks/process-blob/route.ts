@@ -193,10 +193,8 @@ export async function POST(req: NextRequest) {
       // Disconnect antes de llamar al siguiente chunk para liberar conexiones
       await prisma.$disconnect();
 
-      // Construir URL absoluta para el siguiente chunk
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXTAUTH_URL || req.url.split('/api')[0];
+      // Usar dominio de producción fijo para evitar llamadas a preview deployments
+      const baseUrl = "https://www.rowiia.com";
       const nextCallUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
 
       console.log(`📤 Calling next chunk: ${nextCallUrl} (startRow: ${endRow})`);

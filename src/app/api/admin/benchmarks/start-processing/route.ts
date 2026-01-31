@@ -66,10 +66,8 @@ export async function POST(req: NextRequest) {
     console.log(`📊 Job ${job.id} created for benchmark ${benchmark.id}`);
 
     // Iniciar procesamiento inmediatamente (fire-and-forget)
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || "https://www.rowiia.com";
-
+    // Usar dominio de producción fijo para evitar llamadas a preview deployments
+    const baseUrl = "https://www.rowiia.com";
     const processUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
 
     // Iniciar el primer chunk sin esperar respuesta

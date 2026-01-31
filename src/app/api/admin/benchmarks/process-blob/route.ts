@@ -24,8 +24,8 @@ interface ProcessBlobBody {
   startRow?: number; // Fila desde donde empezar (para procesamiento en chunks)
 }
 
-const ROWS_PER_CALL = 50000; // Procesar 50k filas por llamada
-const BATCH_SIZE = 500; // Insertar en batches de 500
+const ROWS_PER_CALL = 25000; // Procesar 25k filas por llamada (reducido para evitar timeouts)
+const BATCH_SIZE = 1000; // Insertar en batches de 1000
 
 export async function POST(req: NextRequest) {
   let benchmarkId: string | undefined;
@@ -190,7 +190,13 @@ export async function POST(req: NextRequest) {
 
     // Si no es el último chunk, programar la siguiente llamada
     if (!isLastChunk) {
+      // Disconnect antes de llamar al siguiente chunk para liberar conexiones
+      await prisma.$disconnect();
+
       const nextCallUrl = new URL("/api/admin/benchmarks/process-blob", req.url);
+
+      // Esperar 500ms antes de llamar al siguiente chunk para evitar sobrecarga
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Llamar al siguiente chunk en background
       fetch(nextCallUrl.toString(), {

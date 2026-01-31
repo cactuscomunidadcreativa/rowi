@@ -62,6 +62,7 @@ export default function BenchmarksPage() {
   const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculatingId, setCalculatingId] = useState<string | null>(null);
+  const [calculatingTopId, setCalculatingTopId] = useState<string | null>(null);
 
   async function loadBenchmarks() {
     setLoading(true);
@@ -120,6 +121,28 @@ export default function BenchmarksPage() {
       toast.error(t("common.error"));
     } finally {
       setCalculatingId(null);
+    }
+  }
+
+  async function calculateTopPerformers(id: string) {
+    setCalculatingTopId(id);
+    try {
+      const res = await fetch(`/api/admin/benchmarks/${id}/top-performers/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(t("admin.benchmarks.topPerformers.calculated"));
+        loadBenchmarks();
+      } else {
+        toast.error(data.error || t("common.error"));
+      }
+    } catch {
+      toast.error(t("common.error"));
+    } finally {
+      setCalculatingTopId(null);
     }
   }
 
@@ -296,9 +319,22 @@ export default function BenchmarksPage() {
                   {getStatusBadge(benchmark.status)}
 
                   <div className="flex gap-1 flex-wrap justify-end">
-                    {benchmark.status === "COMPLETED" && benchmark._count.correlations === 0 && (
+                    {benchmark.status === "COMPLETED" && benchmark._count.topPerformers === 0 && (
                       <AdminButton
                         variant="primary"
+                        size="sm"
+                        icon={calculatingTopId === benchmark.id ? Loader2 : Brain}
+                        onClick={() => calculateTopPerformers(benchmark.id)}
+                        disabled={calculatingTopId === benchmark.id}
+                      >
+                        {calculatingTopId === benchmark.id
+                          ? t("admin.benchmarks.topPerformers.calculating")
+                          : t("admin.benchmarks.topPerformers.generate")}
+                      </AdminButton>
+                    )}
+                    {benchmark.status === "COMPLETED" && benchmark._count.correlations === 0 && (
+                      <AdminButton
+                        variant="secondary"
                         size="sm"
                         icon={calculatingId === benchmark.id ? Loader2 : Calculator}
                         onClick={() => calculateCorrelations(benchmark.id)}

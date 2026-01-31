@@ -23,17 +23,31 @@ const BATCH_SIZE = 1000;
 
 export async function GET(req: NextRequest) {
   // Verificar que es una llamada de Vercel Cron
-  // Vercel envía el header "x-vercel-cron" cuando es una llamada de cron
-  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
+  // Vercel envía Authorization: Bearer <CRON_SECRET> cuando hay CRON_SECRET configurado
   const authHeader = req.headers.get("authorization");
-  const hasValidSecret = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (!isVercelCron && !hasValidSecret) {
-    // En desarrollo permitir sin auth
-    if (process.env.NODE_ENV === "production") {
+  // Log para debug (remover después)
+  console.log("🔐 Cron auth check:", {
+    hasAuthHeader: !!authHeader,
+    hasCronSecret: !!cronSecret,
+    authHeaderStart: authHeader?.substring(0, 20),
+  });
+
+  // Verificar autenticación en producción
+  if (process.env.NODE_ENV === "production") {
+    if (!cronSecret) {
+      console.error("❌ CRON_SECRET not configured");
+      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      console.error("❌ Invalid cron authorization");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
+
+  console.log("✅ Cron authorized, processing...");
 
   try {
     // Buscar un job pendiente o en proceso

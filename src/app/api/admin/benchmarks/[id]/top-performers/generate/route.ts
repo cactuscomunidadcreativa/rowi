@@ -2,17 +2,119 @@
  * 📊 API: Generate Top Performers for Benchmark
  * POST /api/admin/benchmarks/[id]/top-performers/generate
  *
- * Calcula el perfil de top performers (P90) para cada outcome.
- * Esto permite comparar a los usuarios con los mejores.
+ * Calcula y GUARDA el perfil completo de top performers (P90) para cada outcome.
+ * Incluye todas las estadísticas: effect size, significancia, intervalos de confianza.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/core/auth";
 import { prisma } from "@/core/prisma";
-import { EQ_COMPETENCIES, OUTCOMES, BRAIN_TALENTS } from "@/lib/benchmarks";
 
 export const maxDuration = 300; // 5 minutos
+
+// Constantes de configuración
+const MIN_TOTAL_SAMPLE = 100;
+const MIN_TOP_PERFORMER_SAMPLE = 30;
+const CONFIDENCE_HIGH = 385;
+const CONFIDENCE_MEDIUM = 100;
+const Z_SCORE_95 = 1.96;
+
+const EQ_COMPETENCIES = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
+const EQ_ALL = ["K", "C", "G", ...EQ_COMPETENCIES];
+
+const BRAIN_TALENTS_FOCUS = ["dataMining", "modeling", "prioritizing", "connection", "emotionalInsight", "collaboration"];
+const BRAIN_TALENTS_DECISIONS = ["reflecting", "adaptability", "criticalThinking", "resilience", "riskTolerance", "imagination"];
+const BRAIN_TALENTS_DRIVE = ["proactivity", "commitment", "problemSolving", "vision", "designing", "entrepreneurship"];
+const BRAIN_TALENTS = [...BRAIN_TALENTS_FOCUS, ...BRAIN_TALENTS_DECISIONS, ...BRAIN_TALENTS_DRIVE];
+
+const OUTCOMES = [
+  "effectiveness", "relationships", "qualityOfLife", "wellbeing",
+  "influence", "decisionMaking", "community", "network",
+  "achievement", "satisfaction", "balance", "health",
+];
+
+// =========================================================
+// Funciones estadísticas
+// =========================================================
+
+function calculateStdDev(values: number[], mean: number): number {
+  if (values.length < 2) return 0;
+  const variance = values.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
+function calculateStdError(stdDev: number, n: number): number {
+  return n > 0 ? stdDev / Math.sqrt(n) : 0;
+}
+
+function calculateConfidenceInterval(mean: number, stdError: number): [number, number] {
+  const marginOfError = Z_SCORE_95 * stdError;
+  return [mean - marginOfError, mean + marginOfError];
+}
+
+function calculateCohenD(
+  topMean: number,
+  topStd: number,
+  topN: number,
+  globalMean: number,
+  globalStd: number,
+  globalN: number
+): number {
+  const pooledStd = Math.sqrt(
+    ((topN - 1) * Math.pow(topStd, 2) + (globalN - 1) * Math.pow(globalStd, 2)) /
+    (topN + globalN - 2)
+  );
+  if (pooledStd === 0) return 0;
+  return (topMean - globalMean) / pooledStd;
+}
+
+function calculateTTest(
+  topMean: number,
+  topStd: number,
+  topN: number,
+  globalMean: number,
+  globalStd: number,
+  globalN: number
+): { tStatistic: number; isSignificant: boolean } {
+  const pooledStd = Math.sqrt(
+    ((topN - 1) * Math.pow(topStd, 2) + (globalN - 1) * Math.pow(globalStd, 2)) /
+    (topN + globalN - 2)
+  );
+  if (pooledStd === 0) return { tStatistic: 0, isSignificant: false };
+  const tStatistic = (topMean - globalMean) / (pooledStd * Math.sqrt(1/topN + 1/globalN));
+  const isSignificant = Math.abs(tStatistic) > Z_SCORE_95;
+  return { tStatistic, isSignificant };
+}
+
+function getConfidenceLevel(n: number): "high" | "medium" | "low" {
+  if (n >= CONFIDENCE_HIGH) return "high";
+  if (n >= CONFIDENCE_MEDIUM) return "medium";
+  return "low";
+}
+
+function interpretEffectSize(d: number): "negligible" | "small" | "medium" | "large" {
+  const absD = Math.abs(d);
+  if (absD < 0.2) return "negligible";
+  if (absD < 0.5) return "small";
+  if (absD < 0.8) return "medium";
+  return "large";
+}
+
+function getPercentileInterpolated(sortedValues: number[], percentile: number): number {
+  if (sortedValues.length === 0) return 0;
+  if (sortedValues.length === 1) return sortedValues[0];
+  const index = (percentile / 100) * (sortedValues.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const weight = index - lower;
+  if (upper >= sortedValues.length) return sortedValues[sortedValues.length - 1];
+  return sortedValues[lower] * (1 - weight) + sortedValues[upper] * weight;
+}
+
+// =========================================================
+// Endpoint principal
+// =========================================================
 
 export async function POST(
   req: NextRequest,
@@ -36,119 +138,292 @@ export async function POST(
       return NextResponse.json({ error: "Benchmark not found" }, { status: 404 });
     }
 
-    console.log(`🏆 Generating top performers for benchmark: ${benchmark.name}`);
+    console.log(`🏆 Generating FULL top performers for benchmark: ${benchmark.name}`);
 
     // Eliminar top performers anteriores
     await prisma.benchmarkTopPerformer.deleteMany({
       where: { benchmarkId },
     });
 
-    const topPerformersToCreate: any[] = [];
-    const PERCENTILE_THRESHOLD = 90;
+    const baseWhere = { benchmarkId };
 
-    for (const outcome of OUTCOMES) {
-      // Contar registros con este outcome
-      const count = await prisma.benchmarkDataPoint.count({
-        where: { benchmarkId, [outcome]: { not: null } },
+    // =========================================================
+    // Calcular estadísticas globales para TODO el benchmark
+    // =========================================================
+    console.log("📊 Calculating global statistics...");
+    const globalStats: Record<string, { mean: number; stdDev: number; n: number }> = {};
+
+    for (const metric of [...EQ_ALL, ...BRAIN_TALENTS]) {
+      const dataPoints = await prisma.benchmarkDataPoint.findMany({
+        where: { ...baseWhere, [metric]: { not: null } },
+        select: { [metric]: true },
       });
 
-      if (count < 30) {
-        console.log(`⚠️ ${outcome}: Only ${count} records, skipping`);
+      const values = dataPoints
+        .map((dp: any) => dp[metric])
+        .filter((v): v is number => v !== null && v !== undefined);
+
+      if (values.length > 0) {
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const stdDev = calculateStdDev(values, mean);
+        globalStats[metric] = { mean, stdDev, n: values.length };
+      } else {
+        globalStats[metric] = { mean: 0, stdDev: 0, n: 0 };
+      }
+    }
+
+    console.log("✅ Global statistics calculated");
+
+    // =========================================================
+    // Calcular top performers para cada outcome
+    // =========================================================
+    const topPerformersToCreate: any[] = [];
+    const warnings: string[] = [];
+
+    for (const outcome of OUTCOMES) {
+      console.log(`📈 Processing outcome: ${outcome}`);
+
+      // Obtener todos los valores del outcome ordenados
+      const allOutcomeData = await prisma.benchmarkDataPoint.findMany({
+        where: { ...baseWhere, [outcome]: { not: null } },
+        select: { [outcome]: true },
+        orderBy: { [outcome]: "asc" },
+      });
+
+      const outcomeValues = allOutcomeData
+        .map((dp: any) => dp[outcome])
+        .filter((v): v is number => v !== null && v !== undefined)
+        .sort((a, b) => a - b);
+
+      const totalCount = outcomeValues.length;
+
+      if (totalCount === 0) {
+        console.log(`⚠️ ${outcome}: No data available, skipping`);
+        warnings.push(`${outcome}: sin datos disponibles`);
         continue;
       }
 
-      // Calcular umbral P90
-      const p90Index = Math.floor(count * 0.9);
-      const thresholdRecord = await prisma.benchmarkDataPoint.findFirst({
-        where: { benchmarkId, [outcome]: { not: null } },
-        orderBy: { [outcome]: "asc" },
-        skip: p90Index,
-        select: { [outcome]: true },
-      });
+      let lowConfidenceSample = false;
+      let insufficientReason = "";
 
-      if (!thresholdRecord || (thresholdRecord as any)[outcome] === null) continue;
-      const threshold = (thresholdRecord as any)[outcome];
+      if (totalCount < MIN_TOTAL_SAMPLE) {
+        warnings.push(`${outcome}: muestra pequeña (${totalCount} < ${MIN_TOTAL_SAMPLE} recomendados)`);
+        lowConfidenceSample = true;
+        insufficientReason = "small_total_sample";
+      }
 
-      // Obtener top performers para este outcome
+      // Calcular umbral P90 con interpolación
+      const threshold = getPercentileInterpolated(outcomeValues, 90);
+
+      // Obtener top performers (>= P90)
       const topPerformerData = await prisma.benchmarkDataPoint.findMany({
-        where: { benchmarkId, [outcome]: { gte: threshold } },
+        where: { ...baseWhere, [outcome]: { gte: threshold } },
         select: {
           K: true, C: true, G: true,
           EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
           dataMining: true, modeling: true, prioritizing: true, connection: true,
           emotionalInsight: true, collaboration: true, reflecting: true, adaptability: true,
-          criticalThinking: true, resilience: true, riskTolerance: true,
-          imagination: true, proactivity: true, commitment: true, problemSolving: true,
-          vision: true, designing: true, entrepreneurship: true,
+          criticalThinking: true, resilience: true, riskTolerance: true, imagination: true,
+          proactivity: true, commitment: true, problemSolving: true, vision: true,
+          designing: true, entrepreneurship: true,
           [outcome]: true,
         },
       });
 
       const sampleSize = topPerformerData.length;
-      if (sampleSize < 30) continue;
 
-      // Acumuladores para promedios
-      const compAccumulators: Record<string, { sum: number; count: number }> = {};
-      const talentAccumulators: Record<string, { sum: number; count: number }> = {};
+      if (sampleSize === 0) {
+        console.log(`⚠️ ${outcome}: No top performers found, skipping`);
+        warnings.push(`${outcome}: sin top performers encontrados`);
+        continue;
+      }
+
+      if (sampleSize < MIN_TOP_PERFORMER_SAMPLE) {
+        warnings.push(`${outcome}: muestra top performers pequeña (${sampleSize} < ${MIN_TOP_PERFORMER_SAMPLE} recomendados)`);
+        lowConfidenceSample = true;
+        insufficientReason = insufficientReason || "small_top_sample";
+      }
+
+      const confidenceLevel = getConfidenceLevel(sampleSize);
+
+      // =========================================================
+      // Calcular estadísticas de COMPETENCIAS
+      // =========================================================
+      const compStats: Record<string, {
+        mean: number;
+        stdDev: number;
+        n: number;
+        stdError: number;
+        ci95: [number, number];
+        effectSize: number;
+        effectInterpretation: string;
+        isSignificant: boolean;
+      }> = {};
+
+      for (const comp of EQ_ALL) {
+        const values = topPerformerData
+          .map((dp: any) => dp[comp])
+          .filter((v): v is number => v !== null && v !== undefined);
+
+        if (values.length > 0) {
+          const mean = values.reduce((a, b) => a + b, 0) / values.length;
+          const stdDev = calculateStdDev(values, mean);
+          const stdError = calculateStdError(stdDev, values.length);
+          const ci95 = calculateConfidenceInterval(mean, stdError);
+
+          const global = globalStats[comp];
+          const effectSize = calculateCohenD(mean, stdDev, values.length, global.mean, global.stdDev, global.n);
+          const { isSignificant } = calculateTTest(mean, stdDev, values.length, global.mean, global.stdDev, global.n);
+
+          compStats[comp] = {
+            mean, stdDev, n: values.length, stdError, ci95,
+            effectSize,
+            effectInterpretation: interpretEffectSize(effectSize),
+            isSignificant,
+          };
+        } else {
+          compStats[comp] = {
+            mean: 0, stdDev: 0, n: 0, stdError: 0, ci95: [0, 0],
+            effectSize: 0, effectInterpretation: "negligible", isSignificant: false,
+          };
+        }
+      }
+
+      // =========================================================
+      // Calcular estadísticas de TALENTOS
+      // =========================================================
+      const talentStats: Record<string, {
+        mean: number;
+        stdDev: number;
+        n: number;
+        stdError: number;
+        ci95: [number, number];
+        effectSize: number;
+        effectInterpretation: string;
+        isSignificant: boolean;
+      }> = {};
+
+      for (const talent of BRAIN_TALENTS) {
+        const values = topPerformerData
+          .map((dp: any) => dp[talent])
+          .filter((v): v is number => v !== null && v !== undefined);
+
+        if (values.length > 0) {
+          const mean = values.reduce((a, b) => a + b, 0) / values.length;
+          const stdDev = calculateStdDev(values, mean);
+          const stdError = calculateStdError(stdDev, values.length);
+          const ci95 = calculateConfidenceInterval(mean, stdError);
+
+          const global = globalStats[talent];
+          const effectSize = calculateCohenD(mean, stdDev, values.length, global.mean, global.stdDev, global.n);
+          const { isSignificant } = calculateTTest(mean, stdDev, values.length, global.mean, global.stdDev, global.n);
+
+          talentStats[talent] = {
+            mean, stdDev, n: values.length, stdError, ci95,
+            effectSize,
+            effectInterpretation: interpretEffectSize(effectSize),
+            isSignificant,
+          };
+        } else {
+          talentStats[talent] = {
+            mean: 0, stdDev: 0, n: 0, stdError: 0, ci95: [0, 0],
+            effectSize: 0, effectInterpretation: "negligible", isSignificant: false,
+          };
+        }
+      }
+
+      // =========================================================
+      // Formatear top competencies (ordenadas por effect size)
+      // =========================================================
+      const topCompetencies = EQ_COMPETENCIES.map((comp) => {
+        const stats = compStats[comp];
+        const globalAvg = globalStats[comp]?.mean || 0;
+        const diffFromAvg = stats.mean - globalAvg;
+        return {
+          key: comp,
+          avgScore: stats.mean,
+          stdDev: stats.stdDev,
+          stdError: stats.stdError,
+          ci95: stats.ci95,
+          importance: Math.max(0, diffFromAvg * 10),
+          diffFromAvg,
+          effectSize: stats.effectSize,
+          effectInterpretation: stats.effectInterpretation,
+          isSignificant: stats.isSignificant,
+        };
+      })
+        .filter((c) => c.avgScore > 0)
+        .sort((a, b) => b.effectSize - a.effectSize);
+
+      // =========================================================
+      // Formatear top talents (ordenados por cluster)
+      // =========================================================
+      const topTalents = BRAIN_TALENTS.map((talent) => {
+        const stats = talentStats[talent];
+        const globalAvg = globalStats[talent]?.mean || 0;
+        const diffFromAvg = stats.mean - globalAvg;
+        let cluster = "focus";
+        if (BRAIN_TALENTS_DECISIONS.includes(talent)) cluster = "decisions";
+        if (BRAIN_TALENTS_DRIVE.includes(talent)) cluster = "drive";
+        return {
+          key: talent,
+          avgScore: stats.mean,
+          stdDev: stats.stdDev,
+          stdError: stats.stdError,
+          ci95: stats.ci95,
+          importance: Math.max(0, diffFromAvg * 10),
+          diffFromAvg,
+          effectSize: stats.effectSize,
+          effectInterpretation: stats.effectInterpretation,
+          isSignificant: stats.isSignificant,
+          cluster,
+        };
+      }).filter((t) => t.avgScore > 0);
+
+      // Top 5 talentos más distintivos (por effect size)
+      const topTalentsSummary = [...topTalents]
+        .sort((a, b) => b.effectSize - a.effectSize)
+        .slice(0, 5);
+
+      // =========================================================
+      // Calcular PATRONES de competencias
+      // =========================================================
       const pairCounts: Record<string, { count: number; outcomeSum: number }> = {};
       const talentPairCounts: Record<string, { count: number; outcomeSum: number }> = {};
 
-      for (const comp of ["K", "C", "G", ...EQ_COMPETENCIES]) {
-        compAccumulators[comp] = { sum: 0, count: 0 };
-      }
-      for (const talent of BRAIN_TALENTS) {
-        talentAccumulators[talent] = { sum: 0, count: 0 };
-      }
-
       for (const dp of topPerformerData) {
-        const dpAny = dp as any;
+        const outcomeValue = (dp as any)[outcome] || 0;
 
-        // Acumular competencias
-        for (const comp of ["K", "C", "G", ...EQ_COMPETENCIES]) {
-          const val = dpAny[comp];
-          if (typeof val === "number") {
-            compAccumulators[comp].sum += val;
-            compAccumulators[comp].count++;
-          }
-        }
-
-        // Acumular talentos
-        for (const talent of BRAIN_TALENTS) {
-          const val = dpAny[talent];
-          if (typeof val === "number") {
-            talentAccumulators[talent].sum += val;
-            talentAccumulators[talent].count++;
-          }
-        }
-
-        // Detectar top 3 competencias para patrones
-        const compScores = EQ_COMPETENCIES
-          .map(comp => ({ key: comp, score: dpAny[comp] || 0 }))
-          .filter(c => c.score > 0)
+        // Top 3 competencias de esta persona
+        const compScores = EQ_COMPETENCIES.map((comp) => ({
+          key: comp,
+          score: (dp as any)[comp] || 0,
+        }))
+          .filter((c) => c.score > 0)
           .sort((a, b) => b.score - a.score)
           .slice(0, 3);
 
-        const outcomeValue = dpAny[outcome] || 0;
-
-        for (let j = 0; j < compScores.length; j++) {
-          for (let k = j + 1; k < compScores.length; k++) {
-            const pair = [compScores[j].key, compScores[k].key].sort().join("+");
+        for (let i = 0; i < compScores.length; i++) {
+          for (let j = i + 1; j < compScores.length; j++) {
+            const pair = [compScores[i].key, compScores[j].key].sort().join("+");
             if (!pairCounts[pair]) pairCounts[pair] = { count: 0, outcomeSum: 0 };
             pairCounts[pair].count++;
             pairCounts[pair].outcomeSum += outcomeValue;
           }
         }
 
-        // Detectar top 3 talentos para patrones
-        const talentScores = BRAIN_TALENTS
-          .map(talent => ({ key: talent, score: dpAny[talent] || 0 }))
-          .filter(t => t.score > 0)
+        // Top 3 talentos de esta persona
+        const talentScores = BRAIN_TALENTS.map((talent) => ({
+          key: talent,
+          score: (dp as any)[talent] || 0,
+        }))
+          .filter((t) => t.score > 0)
           .sort((a, b) => b.score - a.score)
           .slice(0, 3);
 
-        for (let j = 0; j < talentScores.length; j++) {
-          for (let k = j + 1; k < talentScores.length; k++) {
-            const pair = [talentScores[j].key, talentScores[k].key].sort().join("+");
+        for (let i = 0; i < talentScores.length; i++) {
+          for (let j = i + 1; j < talentScores.length; j++) {
+            const pair = [talentScores[i].key, talentScores[j].key].sort().join("+");
             if (!talentPairCounts[pair]) talentPairCounts[pair] = { count: 0, outcomeSum: 0 };
             talentPairCounts[pair].count++;
             talentPairCounts[pair].outcomeSum += outcomeValue;
@@ -156,72 +431,121 @@ export async function POST(
         }
       }
 
-      const getAvg = (acc: { sum: number; count: number }) => acc.count > 0 ? acc.sum / acc.count : null;
+      // Formatear patrones con estadísticas
+      const commonPatternsRaw = Object.entries(pairCounts)
+        .map(([pair, data]) => {
+          const frequency = (data.count / sampleSize) * 100;
+          const stdError = Math.sqrt((frequency * (100 - frequency)) / sampleSize);
+          return {
+            competencies: pair.split("+"),
+            frequency: Math.round(frequency),
+            frequencyCI: [
+              Math.max(0, Math.round(frequency - Z_SCORE_95 * stdError)),
+              Math.min(100, Math.round(frequency + Z_SCORE_95 * stdError)),
+            ] as [number, number],
+            avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
+            pairKey: pair,
+            count: data.count,
+          };
+        })
+        .filter((p) => p.frequency >= 10)
+        .sort((a, b) => b.frequency - a.frequency);
 
-      const topCompetencies = EQ_COMPETENCIES
-        .map(comp => ({
-          key: comp,
-          avgScore: getAvg(compAccumulators[comp]) || 0,
-          importance: Math.min(100, getAvg(compAccumulators[comp]) || 0),
-          diffFromAvg: 0,
-        }))
-        .filter(c => c.avgScore > 0)
-        .sort((a, b) => b.avgScore - a.avgScore);
+      const seenCompPairs = new Set<string>();
+      const commonPatterns = commonPatternsRaw
+        .filter((p) => {
+          if (seenCompPairs.has(p.pairKey)) return false;
+          seenCompPairs.add(p.pairKey);
+          return true;
+        })
+        .slice(0, 6)
+        .map(({ pairKey, ...rest }) => rest);
 
-      const topTalents = BRAIN_TALENTS
-        .map(talent => ({
-          key: talent,
-          avgScore: getAvg(talentAccumulators[talent]) || 0,
-          importance: Math.min(100, getAvg(talentAccumulators[talent]) || 0),
-        }))
-        .filter(t => t.avgScore > 0)
-        .sort((a, b) => b.importance - a.importance);
+      const talentPatternsRaw = Object.entries(talentPairCounts)
+        .map(([pair, data]) => {
+          const frequency = (data.count / sampleSize) * 100;
+          const stdError = Math.sqrt((frequency * (100 - frequency)) / sampleSize);
+          return {
+            talents: pair.split("+"),
+            frequency: Math.round(frequency),
+            frequencyCI: [
+              Math.max(0, Math.round(frequency - Z_SCORE_95 * stdError)),
+              Math.min(100, Math.round(frequency + Z_SCORE_95 * stdError)),
+            ] as [number, number],
+            avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
+            pairKey: pair,
+            count: data.count,
+          };
+        })
+        .filter((p) => p.frequency >= 10)
+        .sort((a, b) => b.frequency - a.frequency);
 
-      const commonPatterns = Object.entries(pairCounts)
-        .map(([pair, data]) => ({
-          competencies: pair.split("+"),
-          frequency: Math.round((data.count / sampleSize) * 100),
-          avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
-        }))
-        .filter(p => p.frequency >= 20)
-        .sort((a, b) => b.frequency - a.frequency)
-        .slice(0, 5);
+      const seenTalentPairs = new Set<string>();
+      const talentPatterns = talentPatternsRaw
+        .filter((p) => {
+          if (seenTalentPairs.has(p.pairKey)) return false;
+          seenTalentPairs.add(p.pairKey);
+          return true;
+        })
+        .slice(0, 6)
+        .map(({ pairKey, ...rest }) => rest);
 
-      const talentPatterns = Object.entries(talentPairCounts)
-        .map(([pair, data]) => ({
-          talents: pair.split("+"),
-          frequency: Math.round((data.count / sampleSize) * 100),
-          avgOutcome: data.count > 0 ? data.outcomeSum / data.count : 0,
-        }))
-        .filter(p => p.frequency >= 10)
-        .sort((a, b) => b.frequency - a.frequency)
-        .slice(0, 6);
-
+      // =========================================================
+      // Crear el registro completo para guardar
+      // =========================================================
       topPerformersToCreate.push({
         benchmarkId,
         outcomeKey: outcome,
-        percentileThreshold: PERCENTILE_THRESHOLD,
+        percentileThreshold: 90,
+        thresholdValue: threshold,
         sampleSize,
-        avgK: getAvg(compAccumulators["K"]),
-        avgC: getAvg(compAccumulators["C"]),
-        avgG: getAvg(compAccumulators["G"]),
-        avgEL: getAvg(compAccumulators["EL"]),
-        avgRP: getAvg(compAccumulators["RP"]),
-        avgACT: getAvg(compAccumulators["ACT"]),
-        avgNE: getAvg(compAccumulators["NE"]),
-        avgIM: getAvg(compAccumulators["IM"]),
-        avgOP: getAvg(compAccumulators["OP"]),
-        avgEMP: getAvg(compAccumulators["EMP"]),
-        avgNG: getAvg(compAccumulators["NG"]),
+        totalPopulation: totalCount,
+        confidenceLevel: lowConfidenceSample ? "low" : confidenceLevel,
+        lowConfidenceSample,
+        insufficientReason: insufficientReason || null,
+
+        // Promedios de competencias
+        avgK: compStats["K"]?.mean || null,
+        avgC: compStats["C"]?.mean || null,
+        avgG: compStats["G"]?.mean || null,
+        avgEL: compStats["EL"]?.mean || null,
+        avgRP: compStats["RP"]?.mean || null,
+        avgACT: compStats["ACT"]?.mean || null,
+        avgNE: compStats["NE"]?.mean || null,
+        avgIM: compStats["IM"]?.mean || null,
+        avgOP: compStats["OP"]?.mean || null,
+        avgEMP: compStats["EMP"]?.mean || null,
+        avgNG: compStats["NG"]?.mean || null,
+
+        // Datos enriquecidos (JSON)
         topCompetencies,
         topTalents,
+        topTalentsSummary,
         commonPatterns,
         talentPatterns,
+
+        // Metadata estadística
+        statistics: {
+          globalMeans: Object.fromEntries(
+            Object.entries(globalStats).map(([k, v]) => [k, v.mean])
+          ),
+          significantCompetencies: topCompetencies.filter(c => c.isSignificant).length,
+          significantTalents: topTalents.filter(t => t.isSignificant).length,
+          avgEffectSizeCompetencies: topCompetencies.length > 0
+            ? topCompetencies.reduce((a, b) => a + b.effectSize, 0) / topCompetencies.length
+            : 0,
+          avgEffectSizeTalents: topTalents.length > 0
+            ? topTalents.reduce((a, b) => a + b.effectSize, 0) / topTalents.length
+            : 0,
+        },
       });
 
-      console.log(`🏆 ${outcome}: ${sampleSize} top performers (threshold: ${threshold})`);
+      console.log(`🏆 ${outcome}: ${sampleSize} top performers (threshold: ${threshold.toFixed(2)}, confidence: ${confidenceLevel})`);
     }
 
+    // =========================================================
+    // Guardar todos los top performers
+    // =========================================================
     if (topPerformersToCreate.length > 0) {
       await prisma.benchmarkTopPerformer.createMany({
         data: topPerformersToCreate,
@@ -229,12 +553,13 @@ export async function POST(
       });
     }
 
-    console.log(`✅ Created ${topPerformersToCreate.length} top performer profiles`);
+    console.log(`✅ Created ${topPerformersToCreate.length} FULL top performer profiles`);
 
     return NextResponse.json({
       ok: true,
       created: topPerformersToCreate.length,
       outcomes: topPerformersToCreate.map(tp => tp.outcomeKey),
+      warnings: warnings.length > 0 ? warnings : undefined,
     });
   } catch (error) {
     console.error("❌ Error generating top performers:", error);

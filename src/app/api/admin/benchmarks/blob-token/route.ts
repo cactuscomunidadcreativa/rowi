@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
             'application/octet-stream', // Para archivos sin MIME type específico
           ],
           maximumSizeInBytes: 500 * 1024 * 1024, // 500MB
+          addRandomSuffix: true, // Evitar conflictos con archivos existentes
           tokenPayload: JSON.stringify({
             uploadedBy: session.user.email,
           }),

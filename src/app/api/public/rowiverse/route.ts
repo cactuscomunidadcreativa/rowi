@@ -147,32 +147,51 @@ const COUNTRY_NAMES: Record<string, { es: string; en: string }> = {
 
 export async function GET() {
   try {
-    // Get real stats from database
-    const [totalUsers, totalConversations, totalCommunities] = await Promise.all([
-      prisma.user.count(),
-      prisma.message.count(),
-      prisma.community.count(),
-    ]);
+    // Get real stats from database with error handling for missing tables
+    let totalUsers = 0;
+    let totalConversations = 0;
+    let usersByCountry: { country: string | null; _count: { id: number } }[] = [];
+    let newUsersByCountry: { country: string | null; _count: { id: number } }[] = [];
+
+    try {
+      totalUsers = await prisma.user.count();
+    } catch (e) {
+      console.warn("Could not count users:", e);
+    }
+
+    try {
+      totalConversations = await prisma.message.count();
+    } catch (e) {
+      console.warn("Could not count messages:", e);
+    }
 
     // Get users by country
-    const usersByCountry = await prisma.user.groupBy({
-      by: ["country"],
-      _count: { id: true },
-      where: { country: { not: null } },
-    });
+    try {
+      usersByCountry = await prisma.user.groupBy({
+        by: ["country"],
+        _count: { id: true },
+        where: { country: { not: null } },
+      });
+    } catch (e) {
+      console.warn("Could not group users by country:", e);
+    }
 
     // Get new users (last 3 months)
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
-    const newUsersByCountry = await prisma.user.groupBy({
-      by: ["country"],
-      _count: { id: true },
-      where: {
-        country: { not: null },
-        createdAt: { gte: threeMonthsAgo },
-      },
-    });
+    try {
+      newUsersByCountry = await prisma.user.groupBy({
+        by: ["country"],
+        _count: { id: true },
+        where: {
+          country: { not: null },
+          createdAt: { gte: threeMonthsAgo },
+        },
+      });
+    } catch (e) {
+      console.warn("Could not group new users by country:", e);
+    }
 
     // Build map data
     const countryMap: Record<string, any> = {};

@@ -59,6 +59,9 @@ importers:
       '@vercel/blob':
         specifier: ^2.0.1
         version: 2.0.1
+      '@vercel/functions':
+        specifier: ^3.4.0
+        version: 3.4.0
       bcrypt:
         specifier: 6.0.0
         version: 6.0.0
@@ -3480,6 +3483,19 @@ packages:
 
   '@vercel/edge@1.2.2':
     resolution: {integrity: sha512-1+y+f6rk0Yc9ss9bRDgz/gdpLimwoRteKHhrcgHvEpjbP1nyT3ByqEMWm2BTcpIO5UtDmIFXc8zdq4LR190PDA==}
+
+  '@vercel/functions@3.4.0':
+    resolution: {integrity: sha512-lKWDWEhFcpt/zL3ueWqII8W5BY73MC5WUuZyudditbbya6mP8jCLQEuXBxJetpEKgnEn+5xCyK962rw4v1RSVA==}
+    engines: {node: '>= 20'}
+    peerDependencies:
+      '@aws-sdk/credential-provider-web-identity': '*'
+    peerDependenciesMeta:
+      '@aws-sdk/credential-provider-web-identity':
+        optional: true
+
+  '@vercel/oidc@3.1.0':
+    resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
+    engines: {node: '>= 20'}
 
   '@vercel/stega@0.1.2':
     resolution: {integrity: sha512-P7mafQXjkrsoyTRppnt0N21udKS9wUmLXHRyP9saLXLHw32j/FgUJ3FscSWgvSqRs4cj7wKZtwqJEvWJ2jbGmA==}
@@ -12469,6 +12485,12 @@ snapshots:
       undici: 6.23.0
 
   '@vercel/edge@1.2.2': {}
+
+  '@vercel/functions@3.4.0':
+    dependencies:
+      '@vercel/oidc': 3.1.0
+
+  '@vercel/oidc@3.1.0': {}
 
   '@vercel/stega@0.1.2': {}
 

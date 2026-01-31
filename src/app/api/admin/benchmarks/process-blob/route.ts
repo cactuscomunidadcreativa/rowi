@@ -2,8 +2,8 @@
  * 📊 API: Process Benchmark from Vercel Blob
  * POST /api/admin/benchmarks/process-blob
  *
- * Descarga el archivo desde Blob y lo procesa.
- * Diseñado para correr en background después del upload.
+ * Procesa el archivo en chunks para evitar timeouts.
+ * Se llama múltiples veces hasta completar todo el archivo.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -21,12 +21,21 @@ interface ProcessBlobBody {
   benchmarkId: string;
   jobId: string;
   blobUrl: string;
+  startRow?: number; // Fila desde donde empezar (para procesamiento en chunks)
 }
 
+const ROWS_PER_CALL = 50000; // Procesar 50k filas por llamada
+const BATCH_SIZE = 500; // Insertar en batches de 500
+
 export async function POST(req: NextRequest) {
+  let benchmarkId: string | undefined;
+  let jobId: string | undefined;
+
   try {
     const body: ProcessBlobBody = await req.json();
-    const { benchmarkId, jobId, blobUrl } = body;
+    benchmarkId = body.benchmarkId;
+    jobId = body.jobId;
+    const { blobUrl, startRow = 0 } = body;
 
     if (!benchmarkId || !jobId || !blobUrl) {
       return NextResponse.json(
@@ -35,18 +44,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Actualizar job a procesando
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        status: "processing",
-        currentPhase: "downloading",
-        progress: 5,
-      },
-    });
+    const isFirstCall = startRow === 0;
+
+    // Solo actualizar fase en la primera llamada
+    if (isFirstCall) {
+      await prisma.benchmarkUploadJob.update({
+        where: { id: jobId },
+        data: {
+          status: "processing",
+          currentPhase: "downloading",
+          progress: 5,
+        },
+      });
+    }
 
     // Descargar archivo desde Blob
-    console.log(`📥 Downloading from blob: ${blobUrl}`);
+    console.log(`📥 Downloading from blob: ${blobUrl} (startRow: ${startRow})`);
     const response = await fetch(blobUrl);
     if (!response.ok) {
       throw new Error(`Failed to download blob: ${response.status}`);
@@ -55,49 +68,54 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await response.arrayBuffer());
     const isCSV = blobUrl.toLowerCase().includes(".csv");
 
-    // Actualizar progreso
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        currentPhase: "parsing",
-        progress: 15,
-      },
-    });
+    if (isFirstCall) {
+      await prisma.benchmarkUploadJob.update({
+        where: { id: jobId },
+        data: {
+          currentPhase: "parsing",
+          progress: 10,
+        },
+      });
+    }
 
     // Parsear archivo
     console.log(`📊 Parsing ${isCSV ? "CSV" : "Excel"} file...`);
-    let rows: Record<string, any>[];
+    let allRows: Record<string, any>[];
 
     if (isCSV) {
-      rows = await parseCSV(buffer);
+      allRows = await parseCSV(buffer);
     } else {
-      rows = await parseExcel(buffer);
+      allRows = await parseExcel(buffer);
     }
 
-    const totalRows = rows.length;
-    console.log(`📊 Found ${totalRows} rows to process`);
+    const totalRows = allRows.length;
+    console.log(`📊 Total rows in file: ${totalRows}, starting from: ${startRow}`);
 
-    await prisma.benchmarkUploadJob.update({
-      where: { id: jobId },
-      data: {
-        totalRows,
-        currentPhase: "importing",
-        progress: 25,
-      },
-    });
+    // Obtener solo las filas para esta llamada
+    const endRow = Math.min(startRow + ROWS_PER_CALL, totalRows);
+    const rows = allRows.slice(startRow, endRow);
+    const isLastChunk = endRow >= totalRows;
 
-    // Procesar e insertar filas en batches más pequeños para evitar timeout
-    const BATCH_SIZE = 500; // Reducido para evitar problemas de conexión
-    const PROGRESS_UPDATE_INTERVAL = 5000; // Actualizar progreso cada 5000 filas
-    let processedRows = 0;
-    let validRows = 0;
+    if (isFirstCall) {
+      await prisma.benchmarkUploadJob.update({
+        where: { id: jobId },
+        data: {
+          totalRows,
+          currentPhase: "importing",
+          progress: 15,
+        },
+      });
+    }
+
+    // Procesar e insertar filas en batches
+    let processedInThisCall = 0;
+    let validRowsInThisCall = 0;
 
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
       const batch = rows.slice(i, i + BATCH_SIZE);
       const dataPoints = [];
 
       for (const row of batch) {
-        // Validar que tenga datos de EQ
         const hasEQData = EQ_COMPETENCIES.some(
           (c) => row[c] !== null && row[c] !== undefined && !isNaN(parseFloat(row[c]))
         );
@@ -137,7 +155,7 @@ export async function POST(req: NextRequest) {
             qualityOfLife: parseFloatOrNull(row.qualityOfLife || row.Quality_of_Life),
             wellbeing: parseFloatOrNull(row.wellbeing || row.Wellbeing),
           });
-          validRows++;
+          validRowsInThisCall++;
         }
       }
 
@@ -148,28 +166,63 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      processedRows += batch.length;
-
-      // Actualizar progreso menos frecuentemente para no saturar conexiones
-      if (processedRows % PROGRESS_UPDATE_INTERVAL === 0 || processedRows >= totalRows) {
-        const progress = 25 + Math.round((processedRows / totalRows) * 60);
-        await prisma.benchmarkUploadJob.update({
-          where: { id: jobId },
-          data: {
-            processedRows: validRows,
-            progress,
-          },
-        });
-        console.log(`📊 Processed ${processedRows}/${totalRows} rows (${validRows} valid)`);
-      }
+      processedInThisCall += batch.length;
     }
 
-    // Calcular estadísticas
+    // Calcular progreso total
+    const totalProcessed = startRow + processedInThisCall;
+    const progress = Math.min(15 + Math.round((totalProcessed / totalRows) * 75), 90);
+
+    // Contar filas válidas totales en la base de datos
+    const currentValidRows = await prisma.benchmarkDataPoint.count({
+      where: { benchmarkId },
+    });
+
+    await prisma.benchmarkUploadJob.update({
+      where: { id: jobId },
+      data: {
+        processedRows: currentValidRows,
+        progress,
+      },
+    });
+
+    console.log(`📊 Chunk completed: ${startRow}-${endRow} of ${totalRows} (${currentValidRows} valid total)`);
+
+    // Si no es el último chunk, programar la siguiente llamada
+    if (!isLastChunk) {
+      const nextCallUrl = new URL("/api/admin/benchmarks/process-blob", req.url);
+
+      // Llamar al siguiente chunk en background
+      fetch(nextCallUrl.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          benchmarkId,
+          jobId,
+          blobUrl,
+          startRow: endRow,
+        }),
+      }).catch((err) => {
+        console.error("Error calling next chunk:", err);
+      });
+
+      return NextResponse.json({
+        ok: true,
+        status: "processing",
+        processedRows: totalProcessed,
+        totalRows,
+        nextStartRow: endRow,
+        message: `Processed rows ${startRow}-${endRow}, continuing...`,
+      });
+    }
+
+    // ===== ÚLTIMO CHUNK - FINALIZAR =====
+
     await prisma.benchmarkUploadJob.update({
       where: { id: jobId },
       data: {
         currentPhase: "statistics",
-        progress: 90,
+        progress: 95,
       },
     });
 
@@ -201,11 +254,11 @@ export async function POST(req: NextRequest) {
 
     console.log(`✅ Benchmark ${benchmarkId} completed with ${finalCount} rows`);
 
-    // Desconectar Prisma para liberar conexiones
     await prisma.$disconnect();
 
     return NextResponse.json({
       ok: true,
+      status: "completed",
       benchmarkId,
       totalRows: finalCount,
       message: "Processing completed",
@@ -213,12 +266,11 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Error processing blob:", error);
 
-    // Marcar como fallido si tenemos los IDs
+    // Marcar como fallido
     try {
-      const body = await req.clone().json();
-      if (body.jobId) {
+      if (jobId) {
         await prisma.benchmarkUploadJob.update({
-          where: { id: body.jobId },
+          where: { id: jobId },
           data: {
             status: "failed",
             errorMessage: error instanceof Error ? error.message : "Unknown error",
@@ -226,13 +278,15 @@ export async function POST(req: NextRequest) {
           },
         });
       }
-      if (body.benchmarkId) {
+      if (benchmarkId) {
         await prisma.benchmark.update({
-          where: { id: body.benchmarkId },
+          where: { id: benchmarkId },
           data: { status: "FAILED" },
         });
       }
     } catch {}
+
+    await prisma.$disconnect();
 
     return NextResponse.json(
       { error: "Processing failed", details: error instanceof Error ? error.message : "Unknown" },

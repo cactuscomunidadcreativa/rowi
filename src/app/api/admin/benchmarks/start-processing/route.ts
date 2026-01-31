@@ -63,13 +63,36 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`📊 Job ${job.id} created for benchmark ${benchmark.id}, waiting for cron`);
+    console.log(`📊 Job ${job.id} created for benchmark ${benchmark.id}`);
+
+    // Iniciar procesamiento inmediatamente (fire-and-forget)
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || "https://www.rowiia.com";
+
+    const processUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
+
+    // Iniciar el primer chunk sin esperar respuesta
+    fetch(processUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        benchmarkId: benchmark.id,
+        jobId: job.id,
+        blobUrl,
+        startRow: 0,
+      }),
+    }).catch((err) => {
+      console.error("Error initiating processing:", err);
+    });
+
+    console.log(`🚀 Processing started for benchmark ${benchmark.id}`);
 
     return NextResponse.json({
       ok: true,
       benchmarkId: benchmark.id,
       jobId: job.id,
-      message: "Job queued for processing (cron will pick it up)",
+      message: "Processing started",
     });
   } catch (error) {
     console.error("❌ Error starting processing:", error);

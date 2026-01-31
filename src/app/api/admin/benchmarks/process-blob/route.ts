@@ -126,9 +126,9 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      // Verificar si tiene datos EQ (ahora con los nombres mapeados)
+      // Verificar si tiene datos EQ (acepta 0 como valor válido)
       const hasEQData = EQ_COMPETENCIES.some(
-        (c) => row[c] !== null && row[c] !== undefined && typeof row[c] === 'number'
+        (c) => typeof row[c] === 'number' // 0 es válido, null/undefined/NaN no
       );
 
       if (hasEQData) {

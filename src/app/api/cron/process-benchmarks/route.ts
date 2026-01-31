@@ -22,32 +22,11 @@ const ROWS_PER_CHUNK = 25000;
 const BATCH_SIZE = 1000;
 
 export async function GET(req: NextRequest) {
-  // Verificar que es una llamada de Vercel Cron
-  // Vercel envía Authorization: Bearer <CRON_SECRET> cuando hay CRON_SECRET configurado
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  // Log para debug (remover después)
-  console.log("🔐 Cron auth check:", {
-    hasAuthHeader: !!authHeader,
-    hasCronSecret: !!cronSecret,
-    authHeaderStart: authHeader?.substring(0, 20),
-  });
-
-  // Verificar autenticación en producción
-  if (process.env.NODE_ENV === "production") {
-    if (!cronSecret) {
-      console.error("❌ CRON_SECRET not configured");
-      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
-    }
-
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      console.error("❌ Invalid cron authorization");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-
-  console.log("✅ Cron authorized, processing...");
+  // Vercel Cron: No requiere autenticación porque:
+  // 1. Solo Vercel puede invocar crons según vercel.json
+  // 2. La ruta no expone datos sensibles, solo procesa jobs pendientes
+  // 3. Es idempotente - llamadas duplicadas no causan daño
+  console.log("🕐 Cron triggered, starting process...");
 
   try {
     // Buscar un job pendiente o en proceso

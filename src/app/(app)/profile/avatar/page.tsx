@@ -20,57 +20,77 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
  * - Nivel 5 (Experto) → Rowi-06.png - Rowi adulto completo
  */
 
-// Configuración de evolución basada en nivel Six Seconds
-const EVOLUTION_CONFIG = {
-  1: {
+// Configuración de evolución basada en el STAGE del avatar (determinado por evolutionScore)
+// evolutionScore = (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
+const STAGE_CONFIG: Record<string, {
+  image: string;
+  name: { es: string; en: string };
+  emoji: string;
+  color: string;
+  bgGradient: string;
+  glowColor: string;
+  particles: string[];
+  description: { es: string; en: string };
+}> = {
+  EGG: {
     image: "/rowivectors/Rowi-01.png",
-    name: { es: "Desafío", en: "Challenge" },
-    emoji: "🔴",
-    color: "#ef4444",
-    bgGradient: "from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30",
-    glowColor: "shadow-red-500/30",
-    particles: ["🔴", "⚡", "🧩"],
-    description: { es: "Tu Rowi está en su huevo, listo para crecer", en: "Your Rowi is in its egg, ready to grow" },
+    name: { es: "Huevito", en: "Egg" },
+    emoji: "🥚",
+    color: "#94a3b8",
+    bgGradient: "from-slate-100 to-gray-100 dark:from-slate-900/30 dark:to-gray-900/30",
+    glowColor: "shadow-slate-500/30",
+    particles: ["🥚", "✨", "💫"],
+    description: { es: "Tu Rowi está incubando, esperando crecer contigo", en: "Your Rowi is incubating, waiting to grow with you" },
   },
-  2: {
+  HATCHING: {
     image: "/rowivectors/Rowi-02.png",
-    name: { es: "Emergente", en: "Emerging" },
-    emoji: "🟠",
-    color: "#f59e0b",
+    name: { es: "Eclosionando", en: "Hatching" },
+    emoji: "🐣",
+    color: "#fbbf24",
     bgGradient: "from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30",
     glowColor: "shadow-amber-500/30",
-    particles: ["🟠", "🌱", "💫"],
+    particles: ["🐣", "🌱", "💫"],
     description: { es: "El huevo comienza a agrietarse", en: "The egg is starting to crack" },
   },
-  3: {
+  BABY: {
     image: "/rowivectors/Rowi-04.png",
-    name: { es: "Funcional", en: "Functional" },
-    emoji: "🔵",
+    name: { es: "Bebé", en: "Baby" },
+    emoji: "🐥",
+    color: "#fb923c",
+    bgGradient: "from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30",
+    glowColor: "shadow-orange-500/30",
+    particles: ["🐥", "🧠", "✨"],
+    description: { es: "Tu Rowi bebé recién nacido", en: "Your newborn baby Rowi" },
+  },
+  YOUNG: {
+    image: "/rowivectors/Rowi-05.png",
+    name: { es: "Joven", en: "Young" },
+    emoji: "🦉",
     color: "#3b82f6",
     bgGradient: "from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30",
     glowColor: "shadow-blue-500/30",
-    particles: ["🔵", "🧠", "✨"],
-    description: { es: "Tu Rowi asoma del huevo", en: "Your Rowi peeks out of the egg" },
+    particles: ["🦉", "🎯", "💪"],
+    description: { es: "Tu Rowi joven y curioso", en: "Your young and curious Rowi" },
   },
-  4: {
-    image: "/rowivectors/Rowi-05.png",
-    name: { es: "Diestro", en: "Skilled" },
-    emoji: "🎯",
+  ADULT: {
+    image: "/rowivectors/Rowi-06.png",
+    name: { es: "Adulto", en: "Adult" },
+    emoji: "🦅",
     color: "#8b5cf6",
     bgGradient: "from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30",
     glowColor: "shadow-purple-500/30",
-    particles: ["🟣", "🎯", "💪"],
-    description: { es: "Tu Rowi sale del huevo con confianza", en: "Your Rowi emerges with confidence" },
+    particles: ["🦅", "🌟", "👑"],
+    description: { es: "Tu Rowi adulto y equilibrado", en: "Your adult and balanced Rowi" },
   },
-  5: {
+  WISE: {
     image: "/rowivectors/Rowi-06.png",
-    name: { es: "Experto", en: "Expert" },
-    emoji: "🌟",
+    name: { es: "Sabio", en: "Wise" },
+    emoji: "🪶",
     color: "#10b981",
     bgGradient: "from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30",
     glowColor: "shadow-emerald-500/30",
-    particles: ["🟢", "🌟", "👑"],
-    description: { es: "Tu Rowi ha alcanzado su máximo potencial", en: "Your Rowi has reached its full potential" },
+    particles: ["🪶", "🌟", "👑"],
+    description: { es: "Tu Rowi sabio y maestro", en: "Your wise master Rowi" },
   },
 };
 
@@ -171,9 +191,10 @@ export default function AvatarPage() {
     );
   }
 
-  // Obtener configuración basada en nivel Six Seconds (1-5)
-  const sixSecondsLevel = Math.min(5, Math.max(1, avatar.sixSecondsLevel || 1));
-  const evolutionConfig = EVOLUTION_CONFIG[sixSecondsLevel as keyof typeof EVOLUTION_CONFIG];
+  // Obtener configuración basada en el STAGE actual (determinado por evolutionScore)
+  // evolutionScore = (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
+  const currentStage = avatar.currentStage || "EGG";
+  const stageConfig = STAGE_CONFIG[currentStage] || STAGE_CONFIG.EGG;
   const rowiLevelName = t.rowiLevelNames[avatar.rowiLevel as keyof typeof t.rowiLevelNames] || t.rowiLevelNames[1];
 
   return (
@@ -203,11 +224,11 @@ export default function AvatarPage() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className={`relative bg-gradient-to-br ${evolutionConfig.bgGradient} rounded-3xl shadow-2xl ${evolutionConfig.glowColor} p-8 overflow-hidden`}
+          className={`relative bg-gradient-to-br ${stageConfig.bgGradient} rounded-3xl shadow-2xl ${stageConfig.glowColor} p-8 overflow-hidden`}
         >
           {/* Floating Particles */}
           <AnimatePresence>
-            {evolutionConfig.particles.map((particle, i) => (
+            {stageConfig.particles.map((particle, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, scale: 0 }}
@@ -241,15 +262,15 @@ export default function AvatarPage() {
               className="relative w-48 h-48 md:w-64 md:h-64"
             >
               <Image
-                src={evolutionConfig.image}
+                src={stageConfig.image}
                 alt="Tu Rowi"
                 fill
                 className="object-contain drop-shadow-2xl"
                 priority
               />
 
-              {/* Efectos especiales para nivel 5 (Experto) */}
-              {sixSecondsLevel === 5 && (
+              {/* Efectos especiales para WISE (máximo nivel) */}
+              {currentStage === "WISE" && (
                 <>
                   <motion.div
                     animate={{ y: [-5, 0, -5], opacity: [0.8, 1, 0.8] }}
@@ -275,8 +296,8 @@ export default function AvatarPage() {
                 </>
               )}
 
-              {/* Efectos para nivel 4 (Diestro) */}
-              {sixSecondsLevel === 4 && (
+              {/* Efectos para ADULT */}
+              {currentStage === "ADULT" && (
                 <>
                   <motion.div
                     animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.1, 1] }}
@@ -305,12 +326,12 @@ export default function AvatarPage() {
             >
               <h2
                 className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2"
-                style={{ color: evolutionConfig.color }}
+                style={{ color: stageConfig.color }}
               >
-                {evolutionConfig.emoji} {evolutionConfig.name[lang as "es" | "en"]}
+                {stageConfig.emoji} {stageConfig.name[lang as "es" | "en"]}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {evolutionConfig.description[lang as "es" | "en"]}
+                {stageConfig.description[lang as "es" | "en"]}
               </p>
             </motion.div>
 
@@ -326,13 +347,13 @@ export default function AvatarPage() {
                   animate={{ width: `${avatar.progressToNext}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
                   className="h-full rounded-full"
-                  style={{ backgroundColor: evolutionConfig.color }}
+                  style={{ backgroundColor: stageConfig.color }}
                 />
               </div>
-              {sixSecondsLevel < 5 ? (
+              {avatar.nextStage ? (
                 <p className="text-sm text-gray-500 mt-2 text-center">
-                  {t.nextStage}: {EVOLUTION_CONFIG[(sixSecondsLevel + 1) as keyof typeof EVOLUTION_CONFIG]?.emoji}{" "}
-                  {EVOLUTION_CONFIG[(sixSecondsLevel + 1) as keyof typeof EVOLUTION_CONFIG]?.name[lang as "es" | "en"]}
+                  {t.nextStage}: {STAGE_CONFIG[avatar.nextStage]?.emoji}{" "}
+                  {STAGE_CONFIG[avatar.nextStage]?.name[lang as "es" | "en"]}
                 </p>
               ) : (
                 <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2 text-center font-medium">
@@ -355,9 +376,9 @@ export default function AvatarPage() {
             <div className="flex items-center gap-3 mb-4">
               <div
                 className="p-3 rounded-xl"
-                style={{ backgroundColor: `${evolutionConfig.color}20` }}
+                style={{ backgroundColor: `${stageConfig.color}20` }}
               >
-                <Brain className="w-6 h-6" style={{ color: evolutionConfig.color }} />
+                <Brain className="w-6 h-6" style={{ color: stageConfig.color }} />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -369,8 +390,8 @@ export default function AvatarPage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold" style={{ color: evolutionConfig.color }}>
-                  {evolutionConfig.emoji} {evolutionConfig.name[lang as "es" | "en"]}
+                <p className="text-3xl font-bold" style={{ color: stageConfig.color }}>
+                  {stageConfig.emoji} {stageConfig.name[lang as "es" | "en"]}
                 </p>
                 <p className="text-sm text-gray-500">
                   Level {avatar.sixSecondsLevel} / 5
@@ -378,7 +399,7 @@ export default function AvatarPage() {
               </div>
               <div
                 className="h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-                style={{ backgroundColor: evolutionConfig.color }}
+                style={{ backgroundColor: stageConfig.color }}
               >
                 L{avatar.sixSecondsLevel}
               </div>
@@ -475,15 +496,17 @@ export default function AvatarPage() {
           </h3>
 
           <div className="flex justify-between items-center">
-            {[1, 2, 3, 4, 5].map((level) => {
-              const config = EVOLUTION_CONFIG[level as keyof typeof EVOLUTION_CONFIG];
-              const isActive = level <= sixSecondsLevel;
-              const isCurrent = level === sixSecondsLevel;
+            {(["EGG", "HATCHING", "BABY", "YOUNG", "ADULT", "WISE"] as const).map((stage, index) => {
+              const config = STAGE_CONFIG[stage];
+              const stages = ["EGG", "HATCHING", "BABY", "YOUNG", "ADULT", "WISE"];
+              const currentIndex = stages.indexOf(currentStage);
+              const isActive = index <= currentIndex;
+              const isCurrent = stage === currentStage;
 
               return (
-                <div key={level} className="flex flex-col items-center">
+                <div key={stage} className="flex flex-col items-center">
                   <motion.div
-                    className={`relative w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center ${
+                    className={`relative w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center ${
                       isActive ? "" : "opacity-40 grayscale"
                     } ${isCurrent ? "ring-4 ring-offset-2" : ""}`}
                     style={{
@@ -496,8 +519,8 @@ export default function AvatarPage() {
                     <Image
                       src={config.image}
                       alt={config.name.en}
-                      width={40}
-                      height={40}
+                      width={32}
+                      height={32}
                       className="object-contain"
                     />
                   </motion.div>
@@ -518,10 +541,10 @@ export default function AvatarPage() {
           <div className="relative h-1 bg-gray-200 dark:bg-zinc-700 rounded-full mt-4 mx-6">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${((sixSecondsLevel - 1) / 4) * 100}%` }}
+              animate={{ width: `${(["EGG", "HATCHING", "BABY", "YOUNG", "ADULT", "WISE"].indexOf(currentStage) / 5) * 100}%` }}
               transition={{ duration: 1, delay: 0.5 }}
               className="absolute h-full rounded-full"
-              style={{ backgroundColor: evolutionConfig.color }}
+              style={{ backgroundColor: stageConfig.color }}
             />
           </div>
         </motion.div>

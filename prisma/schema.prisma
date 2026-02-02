@@ -514,6 +514,7 @@ model Tenant {
   billingEmail    String?
   visibilityScope String?
   emotionalAccess Json?
+  meta            Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -4287,10 +4288,14 @@ enum PaymentStatus {
 model Coupon {
   id          String   @id @default(cuid())
   code        String   @unique
+  name        String?  // Nombre descriptivo del cupón
 
   // Tipo de descuento
   discountType    CouponType @default(PERCENTAGE)
   discountValue   Float      // Porcentaje o monto fijo
+
+  // Categoría de cupón
+  category        CouponCategory @default(GENERAL)
 
   // Restricciones
   maxUses         Int?       // Usos máximos totales
@@ -4308,8 +4313,23 @@ model Coupon {
   // Estado
   active          Boolean    @default(true)
 
+  // Código personalizado para usuarios específicos
+  targetUserId    String?    // Si es personalizado para un usuario
+  targetEmail     String?    // Email del destinatario (para envío)
+  sentAt          DateTime?  // Cuándo se envió el código
+
+  // Gamificación
+  achievementId   String?    // ID del logro que desbloquea este cupón
+  isGamificationReward Boolean @default(false)
+
+  // Notas internas
+  notes           String?
+
   // Stripe
   stripeCouponId  String?    @unique
+
+  // Creador del cupón
+  createdBy       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4323,6 +4343,16 @@ enum CouponType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_TRIAL_DAYS
+  FREE_ACCESS      // Acceso gratuito completo
+}
+
+enum CouponCategory {
+  GENERAL          // Cupón general
+  PROMOTIONAL      // Promoción de marketing
+  PERSONAL         // Código personalizado para un usuario
+  GAMIFICATION     // Premio por logro/gamificación
+  REFERRAL         // Código de referido
+  PARTNER          // Código de partner/aliado
 }
 
 /// 🎟️ Redención de cupones

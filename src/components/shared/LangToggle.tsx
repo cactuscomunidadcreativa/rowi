@@ -15,6 +15,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 const AVAILABLE_LANGS = [
   { code: "es", label: "ES", name: "Español" },
   { code: "en", label: "EN", name: "English" },
+  { code: "pt", label: "PT", name: "Português" },
+  { code: "it", label: "IT", name: "Italiano" },
 ] as const;
 
 export type SupportedLang = "es" | "en" | "pt" | "it" | "fr" | "de";

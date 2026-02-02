@@ -142,7 +142,7 @@ export default function EQDashboardGlobal() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-[var(--rowi-muted)]">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{txt.loading}</span>
         </div>
@@ -155,17 +155,17 @@ export default function EQDashboardGlobal() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-            <Brain className="w-6 h-6 text-violet-400" />
+          <div className="p-3 rounded-2xl bg-[var(--rowi-secondary)]/20">
+            <Brain className="w-6 h-6 text-[var(--rowi-secondary)]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-            <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+            <h1 className="text-2xl font-bold text-[var(--rowi-foreground)]">{txt.title}</h1>
+            <p className="text-[var(--rowi-muted)] text-sm">{txt.subtitle}</p>
           </div>
         </div>
         <a
           href="/hub/eq/snapshots"
-          className="flex items-center gap-2 px-4 py-2 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 rounded-xl transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--rowi-secondary)]/10 hover:bg-[var(--rowi-secondary)]/20 text-[var(--rowi-secondary)] rounded-xl transition-colors"
         >
           {txt.viewSnapshots}
           <ChevronRight className="w-4 h-4" />
@@ -175,90 +175,90 @@ export default function EQDashboardGlobal() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Snapshots */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 rounded-xl bg-blue-500/20">
-              <BarChart3 className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-primary)]/10">
+              <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +12%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">
+          <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
             {stats?.totalSnapshots?.toLocaleString() || "0"}
           </div>
-          <p className="text-sm text-gray-400">{txt.totalSnapshots}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.totalSnapshots}</p>
         </div>
 
         {/* Total Users */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 rounded-xl bg-purple-500/20">
-              <Users className="w-5 h-5 text-purple-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-secondary)]/10">
+              <Users className="w-5 h-5 text-[var(--rowi-secondary)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +8%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">
+          <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
             {stats?.totalUsers?.toLocaleString() || "0"}
           </div>
-          <p className="text-sm text-gray-400">{txt.totalUsers}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.totalUsers}</p>
         </div>
 
         {/* Average EQ */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 rounded-xl bg-amber-500/20">
-              <Activity className="w-5 h-5 text-amber-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-warning)]/10">
+              <Activity className="w-5 h-5 text-[var(--rowi-warning)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +3%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">
+          <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
             {stats?.avgTotal?.toFixed(1) || "0"}
           </div>
-          <p className="text-sm text-gray-400">{txt.avgEQ}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.avgEQ}</p>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 rounded-xl bg-green-500/20">
-              <Calendar className="w-5 h-5 text-green-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-success)]/10">
+              <Calendar className="w-5 h-5 text-[var(--rowi-success)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-red-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-error)] bg-[var(--rowi-error)]/10 px-2 py-0.5 rounded-full">
               <ArrowDownRight className="w-3 h-3" />
               -5%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">
+          <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
             {stats?.recentSnapshots?.toLocaleString() || "0"}
           </div>
-          <p className="text-sm text-gray-400">{txt.recentActivity}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.recentActivity}</p>
         </div>
       </div>
 
       {/* K-C-G Section */}
-      <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-        <h3 className="text-white font-semibold mb-6">{txt.pursuits}</h3>
+      <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+        <h3 className="text-[var(--rowi-foreground)] font-semibold mb-6">{txt.pursuits}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Know */}
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-3">
-              <Brain className="w-8 h-8 text-blue-400" />
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--rowi-primary)]/20 flex items-center justify-center mb-3">
+              <Brain className="w-8 h-8 text-[var(--rowi-primary)]" />
             </div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
               {stats?.avgKnow?.toFixed(1) || "0"}
             </div>
-            <p className="text-sm text-gray-400 mb-3">{txt.know}</p>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+            <p className="text-sm text-[var(--rowi-muted)] mb-3">{txt.know}</p>
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                className="h-full bg-gradient-to-r from-[var(--rowi-primary)] to-cyan-500"
                 style={{ width: `${((stats?.avgKnow || 0) / 135) * 100}%` }}
               />
             </div>
@@ -266,16 +266,16 @@ export default function EQDashboardGlobal() {
 
           {/* Choose */}
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 flex items-center justify-center mb-3">
-              <Target className="w-8 h-8 text-purple-400" />
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--rowi-secondary)]/20 flex items-center justify-center mb-3">
+              <Target className="w-8 h-8 text-[var(--rowi-secondary)]" />
             </div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
               {stats?.avgChoose?.toFixed(1) || "0"}
             </div>
-            <p className="text-sm text-gray-400 mb-3">{txt.choose}</p>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+            <p className="text-sm text-[var(--rowi-muted)] mb-3">{txt.choose}</p>
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-purple-500 to-violet-500"
+                className="h-full bg-gradient-to-r from-[var(--rowi-secondary)] to-violet-500"
                 style={{ width: `${((stats?.avgChoose || 0) / 135) * 100}%` }}
               />
             </div>
@@ -283,14 +283,14 @@ export default function EQDashboardGlobal() {
 
           {/* Give */}
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center mb-3">
-              <Heart className="w-8 h-8 text-pink-400" />
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-pink-500/20 flex items-center justify-center mb-3">
+              <Heart className="w-8 h-8 text-pink-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-3xl font-bold text-[var(--rowi-foreground)] mb-1">
               {stats?.avgGive?.toFixed(1) || "0"}
             </div>
-            <p className="text-sm text-gray-400 mb-3">{txt.give}</p>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+            <p className="text-sm text-[var(--rowi-muted)] mb-3">{txt.give}</p>
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-pink-500 to-rose-500"
                 style={{ width: `${((stats?.avgGive || 0) / 135) * 100}%` }}
@@ -303,20 +303,20 @@ export default function EQDashboardGlobal() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Competencies Radar */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-          <h3 className="text-white font-semibold mb-4">{txt.competencies}</h3>
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="text-[var(--rowi-foreground)] font-semibold mb-4">{txt.competencies}</h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={competencyData}>
-                <PolarGrid stroke="#374151" />
+                <PolarGrid stroke="var(--rowi-border)" />
                 <PolarAngleAxis
                   dataKey="name"
-                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  tick={{ fill: "var(--rowi-muted)", fontSize: 12 }}
                 />
                 <PolarRadiusAxis
                   angle={22.5}
                   domain={[0, 100]}
-                  tick={{ fill: "#6B7280", fontSize: 10 }}
+                  tick={{ fill: "var(--rowi-muted)", fontSize: 10 }}
                 />
                 <Radar
                   name="EQ"
@@ -327,9 +327,10 @@ export default function EQDashboardGlobal() {
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1F2937",
-                    border: "1px solid #374151",
+                    backgroundColor: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: "8px",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number, name: string, props: any) => [
                     `${value}`,
@@ -342,8 +343,8 @@ export default function EQDashboardGlobal() {
         </div>
 
         {/* Monthly Trend */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-          <h3 className="text-white font-semibold mb-4">{txt.monthlyTrend}</h3>
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="text-[var(--rowi-foreground)] font-semibold mb-4">{txt.monthlyTrend}</h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyData}>
@@ -353,14 +354,15 @@ export default function EQDashboardGlobal() {
                     <stop offset="95%" stopColor={ROWI_BLUE} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
-                <YAxis domain={[60, 100]} stroke="#6B7280" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis dataKey="month" stroke="var(--rowi-muted)" fontSize={12} />
+                <YAxis domain={[60, 100]} stroke="var(--rowi-muted)" fontSize={12} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1F2937",
-                    border: "1px solid #374151",
+                    backgroundColor: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: "8px",
+                    color: "var(--rowi-foreground)",
                   }}
                 />
                 <Area
@@ -380,8 +382,8 @@ export default function EQDashboardGlobal() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Brain Styles Distribution */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-          <h3 className="text-white font-semibold mb-4">{txt.brainStyles}</h3>
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="text-[var(--rowi-foreground)] font-semibold mb-4">{txt.brainStyles}</h3>
           <div style={{ height: 250 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -400,9 +402,10 @@ export default function EQDashboardGlobal() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1F2937",
-                    border: "1px solid #374151",
+                    backgroundColor: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: "8px",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number) => [`${value}%`, ""]}
                 />
@@ -416,7 +419,7 @@ export default function EQDashboardGlobal() {
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: style.color }}
                 />
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-[var(--rowi-muted)]">
                   {style.name} ({style.value}%)
                 </span>
               </div>
@@ -425,8 +428,8 @@ export default function EQDashboardGlobal() {
         </div>
 
         {/* Top Countries */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-          <h3 className="text-white font-semibold mb-4">{txt.topCountries}</h3>
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="text-[var(--rowi-foreground)] font-semibold mb-4">{txt.topCountries}</h3>
           {stats?.topCountries && stats.topCountries.length > 0 ? (
             <div style={{ height: 280 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -435,20 +438,21 @@ export default function EQDashboardGlobal() {
                   layout="vertical"
                   margin={{ left: 60 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
-                  <XAxis type="number" stroke="#6B7280" fontSize={12} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" horizontal={false} />
+                  <XAxis type="number" stroke="var(--rowi-muted)" fontSize={12} />
                   <YAxis
                     type="category"
                     dataKey="country"
-                    stroke="#6B7280"
+                    stroke="var(--rowi-muted)"
                     fontSize={12}
                     width={50}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#1F2937",
-                      border: "1px solid #374151",
+                      backgroundColor: "var(--rowi-surface)",
+                      border: "1px solid var(--rowi-border)",
                       borderRadius: "8px",
+                      color: "var(--rowi-foreground)",
                     }}
                   />
                   <Bar
@@ -460,7 +464,7 @@ export default function EQDashboardGlobal() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[280px] text-gray-500">
+            <div className="flex items-center justify-center h-[280px] text-[var(--rowi-muted)]">
               <div className="text-center">
                 <Globe className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>{txt.noData}</p>

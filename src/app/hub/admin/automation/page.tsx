@@ -206,7 +206,7 @@ export default function AutomationPage() {
             onClick={() => loadAutomations()}
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-border)]
-              bg-[var(--rowi-card)] hover:bg-[var(--rowi-muted)]/10 transition-colors
+              bg-[var(--rowi-surface)] hover:bg-[var(--rowi-muted)]/10 transition-colors
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -233,14 +233,14 @@ export default function AutomationPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-[var(--rowi-muted)] mb-2">
             <Workflow className="w-4 h-4" />
             <span className="text-xs">{t("admin.automation.stats.total")}</span>
           </div>
           <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{automations.length}</p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-green-500 mb-2">
             <Play className="w-4 h-4" />
             <span className="text-xs">{t("admin.automation.stats.active")}</span>
@@ -249,7 +249,7 @@ export default function AutomationPage() {
             {automations.filter((a) => a.isActive).length}
           </p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-blue-500 mb-2">
             <Activity className="w-4 h-4" />
             <span className="text-xs">{t("admin.automation.stats.executions")}</span>
@@ -258,7 +258,7 @@ export default function AutomationPage() {
             {automations.reduce((sum, a) => sum + a.executionCount, 0)}
           </p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-purple-500 mb-2">
             <Clock className="w-4 h-4" />
             <span className="text-xs">{t("admin.automation.stats.lastRun")}</span>
@@ -276,7 +276,7 @@ export default function AutomationPage() {
           <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-muted)]" />
         </div>
       ) : automations.length === 0 ? (
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-12 text-center">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-12 text-center">
           <Zap className="w-12 h-12 mx-auto mb-3 text-[var(--rowi-muted)] opacity-50" />
           <p className="text-[var(--rowi-foreground)] font-medium mb-1">{t("admin.automation.noAutomations")}</p>
           <p className="text-[var(--rowi-muted)] text-sm mb-4">{t("admin.automation.noAutomationsDesc")}</p>
@@ -298,7 +298,7 @@ export default function AutomationPage() {
             return (
               <div
                 key={automation.id}
-                className={`bg-[var(--rowi-card)] rounded-xl border transition-all ${
+                className={`bg-[var(--rowi-surface)] rounded-xl border transition-all ${
                   automation.isActive ? "border-[var(--rowi-border)]" : "border-[var(--rowi-border)] opacity-60"
                 }`}
               >
@@ -424,7 +424,7 @@ export default function AutomationPage() {
       {/* New Automation Modal */}
       {showNewModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="p-5 border-b border-[var(--rowi-border)]">
               <h3 className="text-lg font-semibold text-[var(--rowi-foreground)]">
                 {t("admin.automation.newAutomation")}

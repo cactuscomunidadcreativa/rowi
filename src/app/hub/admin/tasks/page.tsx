@@ -155,8 +155,8 @@ export default function TasksAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4 text-gray-400">
-          <CheckSquare className="w-16 h-16 text-blue-500 animate-pulse" />
+        <div className="flex flex-col items-center gap-4 text-[var(--rowi-muted)]">
+          <CheckSquare className="w-16 h-16 text-[var(--rowi-primary)] animate-pulse" />
           <span>{txt.loading}</span>
         </div>
       </div>
@@ -168,19 +168,19 @@ export default function TasksAdminPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
-            <CheckSquare className="w-7 h-7 text-blue-400" />
+          <div className="p-3 rounded-2xl bg-[var(--rowi-primary)]/20">
+            <CheckSquare className="w-7 h-7 text-[var(--rowi-primary)]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-            <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+            <h1 className="text-2xl font-bold text-[var(--rowi-foreground)]">{txt.title}</h1>
+            <p className="text-[var(--rowi-muted)] text-sm">{txt.subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-blue-500 focus:outline-none"
+            className="px-4 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] text-[var(--rowi-foreground)] text-sm focus:border-[var(--rowi-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-primary)]/20"
           >
             <option value="week">{txt.week}</option>
             <option value="month">{txt.month}</option>
@@ -188,14 +188,14 @@ export default function TasksAdminPage() {
           </select>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors text-white text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--rowi-primary)] hover:opacity-90 transition-colors text-white text-sm font-medium shadow-sm"
           >
             <Download className="w-4 h-4" />
             {txt.export}
           </button>
           <a
             href="/hub/admin/tasks/settings"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 transition-colors text-white text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] hover:bg-[var(--rowi-background)] transition-colors text-[var(--rowi-foreground)] text-sm font-medium"
           >
             <Settings className="w-4 h-4" />
             {txt.configuration}
@@ -205,135 +205,145 @@ export default function TasksAdminPage() {
 
       {/* Main Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 rounded-2xl border border-blue-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-blue-500/20">
-              <CheckSquare className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-primary)]/10">
+              <CheckSquare className="w-5 h-5 text-[var(--rowi-primary)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +12%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.totalTasks.toLocaleString()}</p>
-          <p className="text-sm text-gray-400">{txt.totalTasks}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats.totalTasks.toLocaleString()}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.totalTasks}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl border border-emerald-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-emerald-500/20">
-              <CheckCircle className="w-5 h-5 text-emerald-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-success)]/10">
+              <CheckCircle className="w-5 h-5 text-[var(--rowi-success)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +8%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.completedTasks.toLocaleString()}</p>
-          <p className="text-sm text-gray-400">{txt.completed}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats.completedTasks.toLocaleString()}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.completed}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 rounded-2xl border border-amber-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-amber-500/20">
-              <Clock className="w-5 h-5 text-amber-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-warning)]/10">
+              <Clock className="w-5 h-5 text-[var(--rowi-warning)]" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.pendingTasks.toLocaleString()}</p>
-          <p className="text-sm text-gray-400">{txt.pending}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats.pendingTasks.toLocaleString()}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.pending}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500/10 to-rose-600/10 rounded-2xl border border-red-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-red-500/20">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-error)]/10">
+              <AlertTriangle className="w-5 h-5 text-[var(--rowi-error)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-red-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-error)] bg-[var(--rowi-error)]/10 px-2 py-0.5 rounded-full">
               <ArrowDownRight className="w-3 h-3" />
               -5%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.overdueTasks}</p>
-          <p className="text-sm text-gray-400">{txt.overdue}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats.overdueTasks}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.overdue}</p>
         </div>
       </div>
 
       {/* Secondary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <Target className="w-5 h-5 text-violet-400" />
-            <span className="text-gray-400">{txt.completionRate}</span>
+            <div className="p-2 rounded-lg bg-[var(--rowi-secondary)]/10">
+              <Target className="w-5 h-5 text-[var(--rowi-secondary)]" />
+            </div>
+            <span className="text-[var(--rowi-muted)]">{txt.completionRate}</span>
           </div>
-          <p className="text-4xl font-bold text-white">{stats.completionRate}%</p>
-          <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
+          <p className="text-4xl font-bold text-[var(--rowi-foreground)]">{stats.completionRate}%</p>
+          <div className="h-2.5 bg-[var(--rowi-border)] rounded-full mt-3 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-violet-500 to-purple-500"
+              className="h-full bg-gradient-to-r from-[var(--rowi-secondary)] to-[var(--rowi-primary)] rounded-full"
               style={{ width: `${stats.completionRate}%` }}
             />
           </div>
         </div>
 
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <Clock className="w-5 h-5 text-blue-400" />
-            <span className="text-gray-400">{txt.avgTime}</span>
+            <div className="p-2 rounded-lg bg-[var(--rowi-primary)]/10">
+              <Clock className="w-5 h-5 text-[var(--rowi-primary)]" />
+            </div>
+            <span className="text-[var(--rowi-muted)]">{txt.avgTime}</span>
           </div>
-          <p className="text-4xl font-bold text-white">{stats.avgCompletionTime} <span className="text-lg text-gray-400">{txt.days}</span></p>
+          <p className="text-4xl font-bold text-[var(--rowi-foreground)]">{stats.avgCompletionTime} <span className="text-lg text-[var(--rowi-muted)]">{txt.days}</span></p>
         </div>
 
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <Users className="w-5 h-5 text-emerald-400" />
-            <span className="text-gray-400">{txt.activeUsers}</span>
+            <div className="p-2 rounded-lg bg-[var(--rowi-success)]/10">
+              <Users className="w-5 h-5 text-[var(--rowi-success)]" />
+            </div>
+            <span className="text-[var(--rowi-muted)]">{txt.activeUsers}</span>
           </div>
-          <p className="text-4xl font-bold text-white">{stats.activeUsers}</p>
+          <p className="text-4xl font-bold text-[var(--rowi-foreground)]">{stats.activeUsers}</p>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Trend */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-[var(--rowi-primary)]/10">
+              <TrendingUp className="w-5 h-5 text-[var(--rowi-primary)]" />
+            </div>
             {txt.weeklyTrend}
           </h3>
           <div style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={WEEKLY_TREND}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="week" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis dataKey="week" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                 />
-                <Bar dataKey="created" fill={ROWI_BLUE} radius={[4, 4, 0, 0]} name={txt.created} />
-                <Bar dataKey="completed" fill={ROWI_TEAL} radius={[4, 4, 0, 0]} name={txt.completed} />
+                <Bar dataKey="created" fill={ROWI_BLUE} radius={[6, 6, 0, 0]} name={txt.created} />
+                <Bar dataKey="completed" fill={ROWI_TEAL} radius={[6, 6, 0, 0]} name={txt.completed} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Emotional Insights */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-violet-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-[var(--rowi-secondary)]/10">
+              <Brain className="w-5 h-5 text-[var(--rowi-secondary)]" />
+            </div>
             {txt.emotionalInsights}
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {EMOTIONAL_INSIGHTS.map((insight) => (
               <div key={insight.emotion}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-300">{insight.emotion}</span>
-                  <span className="text-sm font-semibold text-white">{insight.count} {txt.tasks}</span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-[var(--rowi-foreground)]">{insight.emotion}</span>
+                  <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{insight.count} {txt.tasks}</span>
                 </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-[var(--rowi-border)] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${(insight.count / 200) * 100}%`, backgroundColor: insight.color }}
@@ -348,22 +358,24 @@ export default function TasksAdminPage() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Priority Distribution */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-amber-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-[var(--rowi-warning)]/10">
+              <BarChart3 className="w-5 h-5 text-[var(--rowi-warning)]" />
+            </div>
             {txt.priorityDist}
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {PRIORITY_DIST.map((priority) => (
               <div key={priority.name}>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: priority.color }} />
-                    <span className="text-sm text-gray-300">{priority.name}</span>
+                    <span className="text-sm font-medium text-[var(--rowi-foreground)]">{priority.name}</span>
                   </div>
-                  <span className="text-sm font-semibold text-white">{priority.value}%</span>
+                  <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{priority.value}%</span>
                 </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-[var(--rowi-border)] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${priority.value}%`, backgroundColor: priority.color }}
@@ -375,22 +387,24 @@ export default function TasksAdminPage() {
         </div>
 
         {/* Top Contributors */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-emerald-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-[var(--rowi-success)]/10">
+              <Users className="w-5 h-5 text-[var(--rowi-success)]" />
+            </div>
             {txt.topContributors}
           </h3>
           <div className="space-y-3">
             {TOP_CONTRIBUTORS.map((user, idx) => (
-              <div key={user.name} className="flex items-center gap-4 p-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-sm">
+              <div key={user.name} className="flex items-center gap-4 p-3 rounded-xl bg-[var(--rowi-background)] hover:bg-[var(--rowi-border)] transition-colors">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center text-white font-bold text-sm shadow-lg">
                   {idx + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-gray-400">{user.completed}/{user.tasks} {txt.tasks}</p>
+                  <p className="font-medium text-[var(--rowi-foreground)]">{user.name}</p>
+                  <p className="text-xs text-[var(--rowi-muted)]">{user.completed}/{user.tasks} {txt.tasks}</p>
                 </div>
-                <span className="text-emerald-400 font-semibold">{user.rate}%</span>
+                <span className="text-[var(--rowi-success)] font-bold bg-[var(--rowi-success)]/10 px-2.5 py-1 rounded-lg">{user.rate}%</span>
               </div>
             ))}
           </div>

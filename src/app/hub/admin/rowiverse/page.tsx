@@ -137,7 +137,7 @@ export default function RowiVersePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={loadData}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-background)] transition-colors text-sm"
           >
             <RefreshCw className="w-4 h-4" />
             {text.refresh}
@@ -195,7 +195,7 @@ export default function RowiVersePage() {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)]">
+      <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)]">
         <span className="text-sm font-medium text-[var(--rowi-muted)]">{text.legend}:</span>
         <LegendItem color="#8b5cf6" label={text.benchmarks} />
         <LegendItem color="#3b82f6" label={text.users} />
@@ -212,8 +212,8 @@ export default function RowiVersePage() {
       {/* Bottom Section: Top Countries + Emotions */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top Countries */}
-        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-4">
-          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+        <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-[var(--rowi-primary)]" />
             {text.topCountries}
           </h3>
@@ -221,25 +221,25 @@ export default function RowiVersePage() {
             {(data?.mapData || []).slice(0, 10).map((country, i) => (
               <div
                 key={country.code}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--rowi-border)]/50 transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--rowi-background)] transition-colors"
               >
                 <span className="w-6 h-6 rounded-full bg-[var(--rowi-primary)]/10 flex items-center justify-center text-xs font-bold text-[var(--rowi-primary)]">
                   {i + 1}
                 </span>
-                <span className="flex-1 font-medium truncate">{country.name}</span>
+                <span className="flex-1 font-medium truncate text-[var(--rowi-foreground)]">{country.name}</span>
                 <div className="flex items-center gap-2 text-xs">
                   {country.benchmarks > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]">
                       {formatNumber(country.benchmarks)} bench
                     </span>
                   )}
                   {country.users > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]">
                       {formatNumber(country.users)} users
                     </span>
                   )}
                   {country.newUsers > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--rowi-success)]/10 text-[var(--rowi-success)]">
                       +{country.newUsers} new
                     </span>
                   )}
@@ -250,8 +250,8 @@ export default function RowiVersePage() {
         </div>
 
         {/* Top Emotions */}
-        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-4">
-          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+        <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
             <Heart className="w-4 h-4 text-pink-500" />
             {text.topEmotions}
           </h3>
@@ -259,10 +259,10 @@ export default function RowiVersePage() {
             {(summary?.topEmotions || []).map((emotion) => (
               <div
                 key={emotion.tag}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--rowi-border)]/50 transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--rowi-background)] transition-colors"
               >
                 <span className="text-2xl">{getEmotionEmoji(emotion.tag)}</span>
-                <span className="flex-1 font-medium capitalize">{emotion.tag}</span>
+                <span className="flex-1 font-medium capitalize text-[var(--rowi-foreground)]">{emotion.tag}</span>
                 <span className="text-sm text-[var(--rowi-muted)]">
                   {formatNumber(emotion.count)}
                 </span>
@@ -294,20 +294,20 @@ function StatCard({
   subtext?: string;
 }) {
   const colorClasses: Record<string, string> = {
-    purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-    green: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
-    orange: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
-    pink: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
-    teal: "bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400",
+    purple: "bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]",
+    blue: "bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]",
+    green: "bg-[var(--rowi-success)]/10 text-[var(--rowi-success)]",
+    orange: "bg-[var(--rowi-warning)]/10 text-[var(--rowi-warning)]",
+    pink: "bg-pink-500/10 text-pink-500",
+    teal: "bg-teal-500/10 text-teal-500",
   };
 
   return (
-    <div className="flex items-center gap-3 bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-xl p-4">
+    <div className="flex items-center gap-3 bg-[var(--rowi-surface)] border border-[var(--rowi-border)] rounded-xl p-4 hover:border-[var(--rowi-borderHover)] transition-colors">
       <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
       <div>
         <p className="text-xs uppercase text-[var(--rowi-muted)]">{label}</p>
-        <p className="text-xl font-bold">{value}</p>
+        <p className="text-xl font-bold text-[var(--rowi-foreground)]">{value}</p>
         {subtext && <p className="text-xs text-[var(--rowi-muted)]">{subtext}</p>}
       </div>
     </div>

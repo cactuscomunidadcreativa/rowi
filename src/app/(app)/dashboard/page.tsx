@@ -406,8 +406,8 @@ export default function ClientDashboard() {
               .filter(([k]) => k.toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
-                value: toPercentOf135(v ?? 0),
-                raw: v ?? null,
+                value: toPercentOf135(typeof v === "number" ? v : 0),
+                raw: typeof v === "number" ? v : null,
               }))}
           />
           <TalentCard
@@ -418,8 +418,8 @@ export default function ClientDashboard() {
               .filter(([k]) => k.toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
-                value: toPercentOf135(v ?? 0),
-                raw: v ?? null,
+                value: toPercentOf135(typeof v === "number" ? v : 0),
+                raw: typeof v === "number" ? v : null,
               }))}
           />
           <TalentCard
@@ -430,8 +430,8 @@ export default function ClientDashboard() {
               .filter(([k]) => k.toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
-                value: toPercentOf135(v ?? 0),
-                raw: v ?? null,
+                value: toPercentOf135(typeof v === "number" ? v : 0),
+                raw: typeof v === "number" ? v : null,
               }))}
           />
         </div>

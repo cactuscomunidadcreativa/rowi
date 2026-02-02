@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     /* =========================================================
        🔒 Plan Free → fallback sin IA
     ========================================================== */
-    if (user.plan === "free") {
+    if (user.plan?.name === "free" || !user.plan) {
       const g = summary.global;
       const topGroup = summary.byGroup?.[0] || { name: "Trabajo", heat: g.heat };
       const fallback: Record<string, string> = {
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       subIntent: "community",
       locale: lang,
       tenantId: user.primaryTenantId || "rowi-master",
-      plan: user.plan,
+      plan: user.plan?.name || "free",
       payload: { summary, project: "global" },
     });
 
@@ -77,8 +77,9 @@ export async function POST(req: NextRequest) {
        📊 Registrar uso IA (UserUsage)
     ========================================================== */
     if (result?.meta?.tokens) {
-      const tokensIn = result.meta.tokens.input || 0;
-      const tokensOut = result.meta.tokens.output || 0;
+      const tokens = result.meta.tokens as { input?: number; output?: number; prompt_tokens?: number; completion_tokens?: number };
+      const tokensIn = tokens.input ?? tokens.prompt_tokens ?? 0;
+      const tokensOut = tokens.output ?? tokens.completion_tokens ?? 0;
       const todayDate = new Date();
       todayDate.setHours(0, 0, 0, 0);
 

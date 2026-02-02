@@ -3,10 +3,21 @@
 import { Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-const LANGS = [
+/* =========================================================
+   🌐 Idiomas disponibles
+   ---------------------------------------------------------
+   Estos idiomas tienen archivos de traducción en:
+   /src/lib/i18n/locales/{code}.json
+
+   Para agregar más idiomas, usa el admin de traducciones:
+   /hub/admin/translations -> "Agregar Idioma"
+========================================================= */
+const AVAILABLE_LANGS = [
   { code: "es", label: "ES", name: "Español" },
   { code: "en", label: "EN", name: "English" },
 ] as const;
+
+export type SupportedLang = "es" | "en" | "pt" | "it" | "fr" | "de";
 
 export default function LangToggle() {
   const { lang, setLang } = useI18n();
@@ -16,7 +27,7 @@ export default function LangToggle() {
       <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
       <select
         value={lang}
-        onChange={(e) => setLang(e.target.value as "es" | "en")}
+        onChange={(e) => setLang(e.target.value as SupportedLang)}
         title={lang === "es" ? "Cambiar idioma" : "Change language"}
         className="
           rounded-md border border-gray-300 dark:border-zinc-700
@@ -31,7 +42,7 @@ export default function LangToggle() {
           shadow-sm cursor-pointer
         "
       >
-        {LANGS.map((l) => (
+        {AVAILABLE_LANGS.map((l) => (
           <option
             key={l.code}
             value={l.code}
@@ -44,3 +55,8 @@ export default function LangToggle() {
     </div>
   );
 }
+
+/* =========================================================
+   📋 Exportar lista de idiomas para uso en otros componentes
+========================================================= */
+export { AVAILABLE_LANGS };

@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
         // 📌 Identidad jerárquica
         primaryTenantId: auth.primaryTenantId,
-        superHubId: auth.superHubId,
+        superHubs: auth.superHubs,
 
         // 🤖 IA y uso
         allowAI: true,

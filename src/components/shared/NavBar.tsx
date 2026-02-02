@@ -5,12 +5,14 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import useSWR from "swr";
+import ContextSwitcher from "./ContextSwitcher";
+import { useUserContext } from "@/contexts/UserContextProvider";
 
 // Fetcher para SWR
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -38,6 +40,15 @@ const translations = {
       myRowi: "Mi Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Nivel Rowi",
+      // Nuevos links por rol
+      team: "Mi Equipo",
+      reports: "Reportes",
+      hr: "Recursos Humanos",
+      coaching: "Coaching",
+      clients: "Clientes",
+      finance: "Finanzas",
+      admin: "Admin",
+      research: "Investigación",
     },
   },
   en: {
@@ -59,6 +70,15 @@ const translations = {
       myRowi: "My Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Rowi Level",
+      // New role-based links
+      team: "My Team",
+      reports: "Reports",
+      hr: "Human Resources",
+      coaching: "Coaching",
+      clients: "Clients",
+      finance: "Finance",
+      admin: "Admin",
+      research: "Research",
     },
   },
 };
@@ -83,16 +103,43 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 };
 
 /* =========================================================
-   🔗 Links principales del navbar
+   🔗 Links principales del navbar (base)
 ========================================================= */
-const LINKS = [
-  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
-  { href: "/community", key: "community", icon: Users },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck },
-  { href: "/affinity", key: "affinity", icon: Heart },
-  { href: "/benchmark", key: "benchmark", icon: BarChart3 },
-  { href: "/eco", key: "eco", icon: Satellite },
-  { href: "/rowi", key: "rowicoach", icon: Bot },
+const BASE_LINKS = [
+  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
+  { href: "/community", key: "community", icon: Users, roles: ["*"] },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"] },
+  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"] },
+  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
+  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
+];
+
+/* =========================================================
+   🔗 Links adicionales por rol
+========================================================= */
+const ROLE_LINKS = [
+  // Team/Manager views
+  { href: "/team", key: "team", icon: Users, roles: ["TEAM_LEADER", "MANAGER", "ADMIN", "OWNER"] },
+  { href: "/reports", key: "reports", icon: FileText, roles: ["MANAGER", "ADMIN", "OWNER", "REGION_LEADER"] },
+
+  // HR views
+  { href: "/hr", key: "hr", icon: Briefcase, roles: ["HR", "ADMIN", "OWNER"] },
+
+  // Coach views
+  { href: "/coaching", key: "coaching", icon: GraduationCap, roles: ["COACH", "MENTOR", "CONSULTANT"] },
+
+  // Consultant views
+  { href: "/clients", key: "clients", icon: Briefcase, roles: ["CONSULTANT"] },
+
+  // Finance views
+  { href: "/finance", key: "finance", icon: DollarSign, roles: ["FINANCIAL", "BILLING", "ADMIN", "OWNER"] },
+
+  // Research views (Academic Researcher)
+  { href: "/research", key: "research", icon: FlaskConical, roles: ["RESEARCHER", "ACADEMIC", "ADMIN", "SUPERADMIN"] },
+
+  // Admin views
+  { href: "/admin", key: "admin", icon: Shield, roles: ["ADMIN", "SUPERADMIN", "OWNER"] },
 ];
 
 export default function NavBar() {
@@ -101,11 +148,39 @@ export default function NavBar() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations]?.nav || translations.es.nav;
 
+  // Hook de contexto multi-rol
+  let userContext;
+  try {
+    userContext = useUserContext();
+  } catch {
+    // Si no está dentro del provider, usar valores por defecto
+    userContext = {
+      currentContext: { type: "personal", id: null, name: "Dashboard", role: "USER" },
+      hasMultipleContexts: false,
+      isConsultant: false,
+      isCoach: false,
+      isAdmin: false,
+    };
+  }
+  const { currentContext, hasMultipleContexts, isConsultant, isCoach, isAdmin } = userContext;
+
   const isLogged = !!data?.user?.email;
   const userInitial = (data?.user?.name || data?.user?.email || "U")
     .slice(0, 1)
     .toUpperCase();
   const userName = data?.user?.name || data?.user?.email || "";
+
+  // Calcular links visibles basados en rol actual
+  const currentRole = currentContext?.role || "USER";
+  const visibleLinks = [
+    ...BASE_LINKS,
+    ...ROLE_LINKS.filter(link =>
+      link.roles.includes(currentRole) ||
+      (isAdmin && link.roles.includes("ADMIN")) ||
+      (isConsultant && link.roles.includes("CONSULTANT")) ||
+      (isCoach && link.roles.includes("COACH"))
+    ),
+  ];
 
   // Fetch avatar data
   const { data: avatarData } = useSWR(
@@ -119,6 +194,16 @@ export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("avatar"); // Seccion expandida por defecto
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  // Fetch notificaciones
+  const { data: notificationsData, mutate: refreshNotifications } = useSWR(
+    isLogged ? "/api/notifications?limit=10&unreadOnly=false" : null,
+    fetcher,
+    { revalidateOnFocus: true, refreshInterval: 60000 } // Refresh cada minuto
+  );
+  const notifications = notificationsData?.notifications || [];
+  const unreadCount = notificationsData?.unreadCount || 0;
 
   // Control de visibilidad del navbar (hide on scroll down, show on scroll up)
   const [isVisible, setIsVisible] = useState(true);
@@ -157,10 +242,39 @@ export default function NavBar() {
     const onDoc = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest?.("#rowi-user-menu")) setMenuOpen(false);
+      if (!target.closest?.("#rowi-notifications-menu")) setNotificationsOpen(false);
     };
     document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
   }, []);
+
+  // Marcar notificación como leída
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds: [notificationId] }),
+      });
+      refreshNotifications();
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+
+  // Marcar todas como leídas
+  const markAllAsRead = async () => {
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAllRead: true }),
+      });
+      refreshNotifications();
+    } catch (err) {
+      console.error("Error marking all as read:", err);
+    }
+  };
 
   return (
     <header
@@ -170,16 +284,25 @@ export default function NavBar() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="mx-auto max-w-6xl h-16 px-4 flex items-center justify-between gap-3">
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/rowi-logo.png" alt="Rowi" width={32} height={32} className="rounded-lg" />
-          <span className="font-bold text-lg rowi-gradient-text hidden sm:block">Rowi</span>
-        </Link>
+      <div className="mx-auto max-w-7xl h-16 px-4 flex items-center justify-between gap-4">
+        {/* Logo + Context Switcher */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Image src="/rowi-logo.png" alt="Rowi" width={32} height={32} className="rounded-lg flex-shrink-0" />
+            <span className="font-bold text-lg rowi-gradient-text hidden sm:block">Rowi</span>
+          </Link>
+
+          {/* Context Switcher - Solo si tiene múltiples contextos */}
+          {isLogged && hasMultipleContexts && (
+            <div className="hidden lg:block">
+              <ContextSwitcher />
+            </div>
+          )}
+        </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
-          {LINKS.map((l) => {
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+          {visibleLinks.slice(0, 7).map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
             const label = t[l.key as keyof typeof t] || l.key;
@@ -204,6 +327,130 @@ export default function NavBar() {
         <div className="flex items-center gap-2">
           <LangToggle />
           <ThemeToggle />
+
+          {/* Notifications Bell */}
+          {isLogged && (
+            <div id="rowi-notifications-menu" className="relative">
+              <button
+                onClick={() => setNotificationsOpen((v) => !v)}
+                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                title={lang === "es" ? "Notificaciones" : "Notifications"}
+              >
+                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-80 max-h-[70vh] rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {lang === "es" ? "Notificaciones" : "Notifications"}
+                      </h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
+                        >
+                          {lang === "es" ? "Marcar todo leído" : "Mark all read"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Notifications List */}
+                    <div className="max-h-[50vh] overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="py-8 text-center">
+                          <Bell className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-2" />
+                          <p className="text-sm text-gray-500">
+                            {lang === "es" ? "Sin notificaciones" : "No notifications"}
+                          </p>
+                        </div>
+                      ) : (
+                        notifications.map((notif: any) => (
+                          <div
+                            key={notif.id}
+                            className={`px-4 py-3 border-b border-gray-100 dark:border-zinc-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${
+                              !notif.readAt ? "bg-violet-50/50 dark:bg-violet-900/10" : ""
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`mt-0.5 p-1.5 rounded-full ${
+                                notif.priority === "HIGH" || notif.priority === "URGENT"
+                                  ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
+                              }`}>
+                                <Bell className="w-3 h-3" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                  {notif.message}
+                                </p>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                  {new Date(notif.createdAt).toLocaleDateString(lang, {
+                                    day: "numeric",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {notif.actionUrl && (
+                                  <Link
+                                    href={notif.actionUrl}
+                                    onClick={() => {
+                                      markAsRead(notif.id);
+                                      setNotificationsOpen(false);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-violet-600 rounded"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </Link>
+                                )}
+                                {!notif.readAt && (
+                                  <button
+                                    onClick={() => markAsRead(notif.id)}
+                                    className="p-1 text-gray-400 hover:text-green-600 rounded"
+                                    title={lang === "es" ? "Marcar leído" : "Mark read"}
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <Link
+                      href="/settings/notifications"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="block px-4 py-2.5 text-center text-sm text-violet-600 hover:bg-gray-50 dark:hover:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800"
+                    >
+                      {lang === "es" ? "Ver todas las notificaciones" : "View all notifications"}
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {!isLogged ? (
             <button
@@ -396,8 +643,18 @@ export default function NavBar() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800"
           >
+            {/* Context Switcher en Mobile */}
+            {isLogged && hasMultipleContexts && (
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
+                <p className="text-xs text-gray-500 mb-2">
+                  {lang === "es" ? "Contexto actual" : "Current context"}
+                </p>
+                <ContextSwitcher />
+              </div>
+            )}
+
             <nav className="px-4 py-4 space-y-1">
-              {LINKS.map((l) => {
+              {visibleLinks.map((l) => {
                 const active = pathname?.startsWith(l.href);
                 const Icon = l.icon;
                 const label = t[l.key as keyof typeof t] || l.key;

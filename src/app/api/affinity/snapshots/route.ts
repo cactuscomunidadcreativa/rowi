@@ -168,13 +168,14 @@ export async function GET(req: NextRequest) {
        💬 IA opcional — solo para planes Pro o Enterprise
     ========================================================== */
     let interpretation: string | null = null;
-    if (["pro", "enterprise"].includes(me.plan)) {
+    const planName = typeof me.plan === "object" ? me.plan?.name : me.plan;
+    if (planName && ["pro", "enterprise"].includes(planName)) {
       try {
         const aiRes = await runAffinityRouter({
           subIntent: "community",
           locale: "es",
           tenantId: "rowi-master",
-          plan: me.plan,
+          plan: planName,
           payload: {
             summary: {
               global: { heat: globalHeat, level: globalLevel },

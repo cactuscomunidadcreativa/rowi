@@ -50,7 +50,8 @@ export default function WeekFlowPage() {
 
   // Check plan access for team features (hubs)
   // Individual tasks are available for everyone
-  const hasTeamAccess = user?.plan?.weekflowAccess;
+  // TEMPORALMENTE: Abierto para todos durante desarrollo
+  const hasTeamAccess = true; // user?.plan?.weekflowAccess;
 
   if (authLoading || isLoading) {
     return (

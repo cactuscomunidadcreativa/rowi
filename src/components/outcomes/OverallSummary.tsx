@@ -6,6 +6,8 @@ import { getEqLevel, EQ_MAX } from "@/domains/eq/lib/eqLevels";
 type Props = {
   overall4: number | null;
   notes?: string[]; // Ejemplo: ["Fortaleza: Relationships", "Atención: Wellbeing"]
+  subtitle?: string;
+  color?: string;
 };
 
 export default function OverallSummary({ overall4, notes }: Props) {

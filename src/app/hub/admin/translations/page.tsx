@@ -78,7 +78,7 @@ const AVAILABLE_LANGUAGES = [
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500];
 
 export default function TranslationsPage() {
-  const { t, ready } = useI18n();
+  const { t, ready, lang } = useI18n();
   const [translations, setTranslations] = useState<Record<string, Record<string, string>>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -132,7 +132,10 @@ export default function TranslationsPage() {
   // 💾 Guardar traducciones
   // =========================================================
   async function saveTranslations() {
-    if (!confirm("¿Guardar cambios en los archivos de traducción?")) return;
+    const confirmMsg = lang === "es"
+      ? "¿Guardar cambios en los archivos de traducción?"
+      : "Save changes to translation files?";
+    if (!confirm(confirmMsg)) return;
 
     setSaving(true);
     try {
@@ -167,7 +170,7 @@ export default function TranslationsPage() {
 
       setScanReport(json);
       setShowScanReport(true);
-      toast.success("Scan completado (solo lectura)");
+      toast.success(t("admin.translations.scanComplete"));
     } catch (e) {
       console.error(e);
       toast.error(t("common.error"));
@@ -181,12 +184,12 @@ export default function TranslationsPage() {
   // =========================================================
   async function addLanguageWithTranslation() {
     if (!newLangCode) {
-      toast.error("Selecciona un idioma");
+      toast.error(t("admin.translations.selectLanguageError"));
       return;
     }
 
     if (activeLangs.includes(newLangCode)) {
-      toast.error("Este idioma ya existe");
+      toast.error(t("admin.translations.languageExists"));
       return;
     }
 
@@ -203,7 +206,7 @@ export default function TranslationsPage() {
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Error al traducir");
+      if (!res.ok) throw new Error(json.error || t("common.error"));
 
       // Agregar las traducciones al estado
       setTranslations(prev => ({
@@ -211,7 +214,10 @@ export default function TranslationsPage() {
         [newLangCode]: json.translations,
       }));
 
-      toast.success(`Idioma ${newLangCode.toUpperCase()} agregado con ${Object.keys(json.translations).length} traducciones`);
+      const successMsg = t("admin.translations.languageAdded")
+        .replace("{lang}", newLangCode.toUpperCase())
+        .replace("{count}", Object.keys(json.translations).length.toString());
+      toast.success(successMsg);
       setShowAddLanguage(false);
       setNewLangCode("");
     } catch (e: any) {
@@ -250,7 +256,7 @@ export default function TranslationsPage() {
     a.href = URL.createObjectURL(blob);
     a.download = `translations-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
-    toast.success("CSV exportado");
+    toast.success(t("admin.translations.csvExported"));
   }
 
   // =========================================================
@@ -344,7 +350,7 @@ export default function TranslationsPage() {
   // =========================================================
   function copyMissingKey(key: string) {
     navigator.clipboard.writeText(`"${key}": "",`);
-    toast.success("Clave copiada");
+    toast.success(t("admin.translations.keyCopied"));
   }
 
   return (
@@ -361,7 +367,7 @@ export default function TranslationsPage() {
             onClick={() => setShowAddLanguage(true)}
             size="sm"
           >
-            Agregar Idioma
+            {t("admin.translations.addLanguage")}
           </AdminButton>
           <AdminButton
             variant="secondary"
@@ -370,13 +376,13 @@ export default function TranslationsPage() {
             disabled={scanning}
             size="sm"
           >
-            {scanning ? "Escaneando..." : "Scan"}
+            {scanning ? t("admin.translations.scanning") : t("admin.translations.scan")}
           </AdminButton>
           <AdminButton variant="secondary" icon={Download} onClick={exportCSV} size="sm">
             CSV
           </AdminButton>
           <AdminButton icon={Save} onClick={saveTranslations} loading={saving} size="sm">
-            Guardar
+            {t("admin.translations.save")}
           </AdminButton>
         </div>
       }
@@ -388,7 +394,7 @@ export default function TranslationsPage() {
             <div className="p-4 border-b border-[var(--rowi-border)] flex items-center justify-between">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Globe className="w-5 h-5" />
-                Agregar Nuevo Idioma
+                {t("admin.translations.addNewLanguage")}
               </h3>
               <button onClick={() => setShowAddLanguage(false)} className="p-1 hover:bg-[var(--rowi-border)] rounded">
                 <X className="w-5 h-5" />
@@ -397,13 +403,13 @@ export default function TranslationsPage() {
 
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Nuevo idioma</label>
+                <label className="block text-sm font-medium mb-2">{t("admin.translations.newLanguage")}</label>
                 <select
                   value={newLangCode}
                   onChange={(e) => setNewLangCode(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
                 >
-                  <option value="">Seleccionar idioma...</option>
+                  <option value="">{t("admin.translations.selectLanguage")}</option>
                   {AVAILABLE_LANGUAGES.filter(l => !activeLangs.includes(l.code)).map(lang => (
                     <option key={lang.code} value={lang.code}>
                       {lang.flag} {lang.name} ({lang.code.toUpperCase()})
@@ -413,7 +419,7 @@ export default function TranslationsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Traducir desde</label>
+                <label className="block text-sm font-medium mb-2">{t("admin.translations.translateFrom")}</label>
                 <select
                   value={sourceLang}
                   onChange={(e) => setSourceLang(e.target.value)}
@@ -423,7 +429,7 @@ export default function TranslationsPage() {
                     const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === lang);
                     return (
                       <option key={lang} value={lang}>
-                        {langInfo?.flag || "🌐"} {langInfo?.name || lang.toUpperCase()} ({stats[lang]?.total || 0} claves)
+                        {langInfo?.flag || "🌐"} {langInfo?.name || lang.toUpperCase()} ({stats[lang]?.total || 0} {t("admin.translations.keys")})
                       </option>
                     );
                   })}
@@ -434,10 +440,9 @@ export default function TranslationsPage() {
                 <div className="flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-blue-500 mt-0.5" />
                   <div>
-                    <p className="font-medium text-blue-600 dark:text-blue-400">Traducción automática con IA</p>
+                    <p className="font-medium text-blue-600 dark:text-blue-400">{t("admin.translations.autoTranslate")}</p>
                     <p className="text-xs text-[var(--rowi-muted)] mt-1">
-                      Se generarán traducciones automáticas para todas las {stats[sourceLang]?.total || 0} claves.
-                      Podrás editarlas después si es necesario.
+                      {t("admin.translations.autoTranslateDesc").replace("{count}", (stats[sourceLang]?.total || 0).toString())}
                     </p>
                   </div>
                 </div>
@@ -445,7 +450,7 @@ export default function TranslationsPage() {
 
               <div className="flex justify-end gap-2 pt-2">
                 <AdminButton variant="secondary" onClick={() => setShowAddLanguage(false)}>
-                  Cancelar
+                  {t("admin.translations.cancel")}
                 </AdminButton>
                 <AdminButton
                   icon={translating ? Loader2 : Sparkles}
@@ -453,7 +458,7 @@ export default function TranslationsPage() {
                   loading={translating}
                   disabled={!newLangCode || translating}
                 >
-                  {translating ? "Traduciendo..." : "Generar Traducciones"}
+                  {translating ? t("admin.translations.translating") : t("admin.translations.generateTranslations")}
                 </AdminButton>
               </div>
             </div>
@@ -468,10 +473,10 @@ export default function TranslationsPage() {
             <div className="p-4 border-b border-[var(--rowi-border)] flex items-center justify-between">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Reporte de Scan (Solo Lectura)
+                {t("admin.translations.scanReport")}
               </h3>
               <AdminButton variant="ghost" size="sm" onClick={() => setShowScanReport(false)}>
-                Cerrar
+                {t("admin.translations.close")}
               </AdminButton>
             </div>
 
@@ -480,21 +485,21 @@ export default function TranslationsPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
                   <div className="text-2xl font-bold">{scanReport.summary.keysFoundInCode}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">Claves en código</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t("admin.translations.keysFoundInCode")}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
                   <div className="text-2xl font-bold text-green-500">{scanReport.summary.keysInEs}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">Claves en ES</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t("admin.translations.keysInEs")}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
                   <div className="text-2xl font-bold text-blue-500">{scanReport.summary.keysInEn}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">Claves en EN</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t("admin.translations.keysInEn")}</div>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--rowi-background)]">
                   <div className="text-2xl font-bold text-orange-500">
                     {scanReport.summary.missingInEs + scanReport.summary.missingInEn}
                   </div>
-                  <div className="text-xs text-[var(--rowi-muted)]">Total faltantes</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t("admin.translations.totalMissing")}</div>
                 </div>
               </div>
 
@@ -503,13 +508,13 @@ export default function TranslationsPage() {
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2 text-orange-500">
                     <AlertTriangle className="w-4 h-4" />
-                    Claves usadas en código pero no en traducciones
+                    {t("admin.translations.missingInCode")}
                   </h4>
 
                   {scanReport.missingKeys.es.length > 0 && (
                     <div>
                       <div className="text-sm font-medium mb-2">
-                        Faltantes en ES ({scanReport.summary.missingInEs}):
+                        {t("admin.translations.missingInEs")} ({scanReport.summary.missingInEs}):
                       </div>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
                         {scanReport.missingKeys.es.map(({ key }) => (
@@ -533,7 +538,7 @@ export default function TranslationsPage() {
                   {scanReport.missingKeys.en.length > 0 && (
                     <div>
                       <div className="text-sm font-medium mb-2">
-                        Faltantes en EN ({scanReport.summary.missingInEn}):
+                        {t("admin.translations.missingInEn")} ({scanReport.summary.missingInEn}):
                       </div>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
                         {scanReport.missingKeys.en.map(({ key }) => (
@@ -560,12 +565,12 @@ export default function TranslationsPage() {
               {scanReport.summary.missingInEs === 0 && scanReport.summary.missingInEn === 0 && (
                 <div className="flex items-center gap-2 text-green-500 p-4 bg-green-500/10 rounded-lg">
                   <CheckCircle className="w-5 h-5" />
-                  <span>Todas las claves usadas en el código tienen traducción</span>
+                  <span>{t("admin.translations.allKeysTranslated")}</span>
                 </div>
               )}
 
               <p className="text-xs text-[var(--rowi-muted)] mt-4">
-                Este scan es de SOLO LECTURA. No se modificaron archivos.
+                {t("admin.translations.scanReportNote")}
               </p>
             </div>
           </div>
@@ -575,7 +580,7 @@ export default function TranslationsPage() {
       {/* Stats Bar */}
       <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
         <span className="text-[var(--rowi-muted)]">
-          Total: <b className="text-[var(--rowi-foreground)]">{filteredKeys.length}</b> claves
+          {t("admin.translations.totalKeys")}: <b className="text-[var(--rowi-foreground)]">{filteredKeys.length}</b> {t("admin.translations.keys")}
         </span>
         <div className="flex gap-3 flex-wrap">
           {activeLangs.map(l => {
@@ -594,7 +599,7 @@ export default function TranslationsPage() {
         </div>
         {scanReport && (
           <AdminButton variant="ghost" size="xs" icon={Eye} onClick={() => setShowScanReport(true)}>
-            Ver scan
+            {t("admin.translations.viewScan")}
           </AdminButton>
         )}
       </div>
@@ -606,27 +611,27 @@ export default function TranslationsPage() {
             <AdminInput
               value={search}
               onChange={setSearch}
-              placeholder="Buscar clave o valor..."
+              placeholder={t("admin.translations.search")}
             />
           </div>
           <AdminSelect
             value={filterMode}
             onChange={(v) => setFilterMode(v as "all" | "missing" | "filled")}
             options={[
-              { value: "all", label: "Todas" },
-              { value: "filled", label: "Traducidas" },
-              { value: "missing", label: "Sin traducir" },
+              { value: "all", label: t("admin.translations.all") },
+              { value: "filled", label: t("admin.translations.filled") },
+              { value: "missing", label: t("admin.translations.untranslated") },
             ]}
           />
           <AdminSelect
             value={selectedLang}
             onChange={(v) => setSelectedLang(v)}
-            options={activeLangs.map(l => ({ value: l, label: `Filtrar por ${l.toUpperCase()}` }))}
+            options={activeLangs.map(l => ({ value: l, label: `${t("admin.translations.filterBy")} ${l.toUpperCase()}` }))}
           />
           <AdminSelect
             value={pageSize.toString()}
             onChange={(v) => setPageSize(parseInt(v))}
-            options={PAGE_SIZE_OPTIONS.map(n => ({ value: n.toString(), label: `${n} por página` }))}
+            options={PAGE_SIZE_OPTIONS.map(n => ({ value: n.toString(), label: `${n} ${t("admin.translations.perPage")}` }))}
           />
         </div>
       </AdminCard>
@@ -637,7 +642,7 @@ export default function TranslationsPage() {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-[var(--rowi-surface)] border-b border-[var(--rowi-border)] z-10">
               <tr>
-                <th className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)] w-1/4">Clave</th>
+                <th className="px-3 py-2 text-left font-medium text-[var(--rowi-muted)] w-1/4">{t("admin.translations.key")}</th>
                 {activeLangs.map(lang => {
                   const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === lang);
                   return (
@@ -684,7 +689,7 @@ export default function TranslationsPage() {
 
           {filteredKeys.length === 0 && (
             <div className="p-8 text-center text-[var(--rowi-muted)]">
-              No se encontraron traducciones
+              {t("admin.translations.noKeysFound")}
             </div>
           )}
         </div>
@@ -693,7 +698,7 @@ export default function TranslationsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--rowi-border)] bg-[var(--rowi-surface)]">
             <div className="text-xs text-[var(--rowi-muted)]">
-              Mostrando {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredKeys.length)} de {filteredKeys.length} claves
+              {t("admin.translations.showing")} {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredKeys.length)} {t("admin.translations.of")} {filteredKeys.length} {t("admin.translations.keys")}
             </div>
             <div className="flex items-center gap-2">
               <AdminButton
@@ -703,7 +708,7 @@ export default function TranslationsPage() {
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
-                Anterior
+                {t("admin.translations.previous")}
               </AdminButton>
 
               <div className="flex items-center gap-1">
@@ -741,7 +746,7 @@ export default function TranslationsPage() {
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
               >
-                Siguiente
+                {t("admin.translations.next")}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </AdminButton>
             </div>

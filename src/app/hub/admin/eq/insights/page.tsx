@@ -49,7 +49,7 @@ const KEY_INSIGHTS = [
     title: "Intrinsic Motivation en aumento",
     description: "La motivación intrínseca ha crecido un 12% en el último trimestre. Los usuarios muestran mayor compromiso con sus metas.",
     metric: "+12%",
-    color: "emerald",
+    color: "success",
   },
   {
     type: "warning",
@@ -57,7 +57,7 @@ const KEY_INSIGHTS = [
     title: "Navigate Emotions necesita atención",
     description: "Esta competencia muestra el menor crecimiento. Considerar programas de coaching específicos.",
     metric: "+2%",
-    color: "amber",
+    color: "warning",
   },
   {
     type: "positive",
@@ -65,7 +65,7 @@ const KEY_INSIGHTS = [
     title: "Empathy líder en mejora",
     description: "La empatía es la competencia con mayor mejora este mes, reflejando mejor comunicación en equipos.",
     metric: "+15%",
-    color: "emerald",
+    color: "success",
   },
   {
     type: "info",
@@ -73,7 +73,7 @@ const KEY_INSIGHTS = [
     title: "Brain Styles balanceados",
     description: "La distribución de estilos cerebrales es equilibrada, favoreciendo la diversidad cognitiva.",
     metric: "Óptimo",
-    color: "blue",
+    color: "primary",
   },
 ];
 
@@ -144,11 +144,11 @@ export default function EQInsightsAdminPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "excellent": return "text-emerald-400 bg-emerald-500/20";
-      case "strong": return "text-blue-400 bg-blue-500/20";
-      case "growing": return "text-amber-400 bg-amber-500/20";
-      case "needs_attention": return "text-red-400 bg-red-500/20";
-      default: return "text-gray-400 bg-gray-500/20";
+      case "excellent": return "text-[var(--rowi-success)] bg-[var(--rowi-success)]/10";
+      case "strong": return "text-[var(--rowi-primary)] bg-[var(--rowi-primary)]/10";
+      case "growing": return "text-[var(--rowi-warning)] bg-[var(--rowi-warning)]/10";
+      case "needs_attention": return "text-[var(--rowi-error)] bg-[var(--rowi-error)]/10";
+      default: return "text-[var(--rowi-muted)] bg-[var(--rowi-muted)]/10";
     }
   };
 
@@ -164,10 +164,19 @@ export default function EQInsightsAdminPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "border-red-500/50 bg-red-500/10";
-      case "medium": return "border-amber-500/50 bg-amber-500/10";
-      case "low": return "border-blue-500/50 bg-blue-500/10";
-      default: return "border-gray-500/50 bg-gray-500/10";
+      case "high": return "border-[var(--rowi-error)]/50 bg-[var(--rowi-error)]/5";
+      case "medium": return "border-[var(--rowi-warning)]/50 bg-[var(--rowi-warning)]/5";
+      case "low": return "border-[var(--rowi-primary)]/50 bg-[var(--rowi-primary)]/5";
+      default: return "border-[var(--rowi-border)] bg-[var(--rowi-background)]";
+    }
+  };
+
+  const getInsightColor = (color: string) => {
+    switch (color) {
+      case "success": return { border: "border-[var(--rowi-success)]/30 bg-[var(--rowi-success)]/5", icon: "bg-[var(--rowi-success)]/20", text: "text-[var(--rowi-success)]" };
+      case "warning": return { border: "border-[var(--rowi-warning)]/30 bg-[var(--rowi-warning)]/5", icon: "bg-[var(--rowi-warning)]/20", text: "text-[var(--rowi-warning)]" };
+      case "primary": return { border: "border-[var(--rowi-primary)]/30 bg-[var(--rowi-primary)]/5", icon: "bg-[var(--rowi-primary)]/20", text: "text-[var(--rowi-primary)]" };
+      default: return { border: "border-[var(--rowi-border)]", icon: "bg-[var(--rowi-muted)]/20", text: "text-[var(--rowi-muted)]" };
     }
   };
 
@@ -179,10 +188,10 @@ export default function EQInsightsAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4 text-gray-400">
+        <div className="flex flex-col items-center gap-4 text-[var(--rowi-muted)]">
           <div className="relative">
-            <Lightbulb className="w-16 h-16 text-amber-500 animate-pulse" />
-            <Sparkles className="w-6 h-6 text-violet-400 absolute -top-1 -right-1 animate-bounce" />
+            <Lightbulb className="w-16 h-16 text-[var(--rowi-warning)] animate-pulse" />
+            <Sparkles className="w-6 h-6 text-[var(--rowi-secondary)] absolute -top-1 -right-1 animate-bounce" />
           </div>
           <span>{txt.loading}</span>
         </div>
@@ -194,65 +203,42 @@ export default function EQInsightsAdminPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20">
-          <Lightbulb className="w-7 h-7 text-amber-400" />
+        <div className="p-3 rounded-2xl bg-[var(--rowi-warning)]/20">
+          <Lightbulb className="w-7 h-7 text-[var(--rowi-warning)]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-          <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+          <h1 className="text-2xl font-bold text-[var(--rowi-foreground)]">{txt.title}</h1>
+          <p className="text-[var(--rowi-muted)] text-sm">{txt.subtitle}</p>
         </div>
       </div>
 
       {/* Key Insights Grid */}
       <div>
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Zap className="w-5 h-5 text-amber-400" />
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+          <Zap className="w-5 h-5 text-[var(--rowi-warning)]" />
           {txt.keyInsights}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {KEY_INSIGHTS.map((insight, idx) => {
             const Icon = insight.icon;
+            const colors = getInsightColor(insight.color);
             return (
               <div
                 key={idx}
-                className={`rounded-2xl border p-5 ${
-                  insight.color === "emerald"
-                    ? "border-emerald-500/30 bg-emerald-500/5"
-                    : insight.color === "amber"
-                    ? "border-amber-500/30 bg-amber-500/5"
-                    : "border-blue-500/30 bg-blue-500/5"
-                }`}
+                className={`rounded-2xl border p-5 ${colors.border}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-xl ${
-                    insight.color === "emerald"
-                      ? "bg-emerald-500/20"
-                      : insight.color === "amber"
-                      ? "bg-amber-500/20"
-                      : "bg-blue-500/20"
-                  }`}>
-                    <Icon className={`w-5 h-5 ${
-                      insight.color === "emerald"
-                        ? "text-emerald-400"
-                        : insight.color === "amber"
-                        ? "text-amber-400"
-                        : "text-blue-400"
-                    }`} />
+                  <div className={`p-2 rounded-xl ${colors.icon}`}>
+                    <Icon className={`w-5 h-5 ${colors.text}`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-semibold text-white">{insight.title}</h4>
-                      <span className={`text-sm font-bold ${
-                        insight.color === "emerald"
-                          ? "text-emerald-400"
-                          : insight.color === "amber"
-                          ? "text-amber-400"
-                          : "text-blue-400"
-                      }`}>
+                      <h4 className="font-semibold text-[var(--rowi-foreground)]">{insight.title}</h4>
+                      <span className={`text-sm font-bold ${colors.text}`}>
                         {insight.metric}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400">{insight.description}</p>
+                    <p className="text-sm text-[var(--rowi-muted)]">{insight.description}</p>
                   </div>
                 </div>
               </div>
@@ -264,23 +250,23 @@ export default function EQInsightsAdminPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Competency Analysis */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-violet-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-[var(--rowi-secondary)]" />
             {txt.competencyAnalysis}
           </h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={COMPETENCY_INSIGHTS}>
-                <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                <PolarAngleAxis dataKey="key" tick={{ fill: "#9CA3AF", fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 135]} tick={{ fill: "#9CA3AF", fontSize: 10 }} axisLine={false} />
+                <PolarGrid stroke="var(--rowi-border)" />
+                <PolarAngleAxis dataKey="key" tick={{ fill: "var(--rowi-muted)", fontSize: 11 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 135]} tick={{ fill: "var(--rowi-muted)", fontSize: 10 }} axisLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number, name: string, props: any) => [
                     `${value} (${txt.trend}: +${props.payload.trend}%)`,
@@ -294,23 +280,23 @@ export default function EQInsightsAdminPage() {
         </div>
 
         {/* Department Comparison */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
             {txt.departmentComparison}
           </h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={DEPARTMENT_SCORES} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" domain={[70, 110]} tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="dept" tick={{ fill: "#fff", fontSize: 12 }} axisLine={false} tickLine={false} width={90} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis type="number" domain={[70, 110]} tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="dept" tick={{ fill: "var(--rowi-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} width={90} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                 />
                 <defs>
@@ -327,19 +313,19 @@ export default function EQInsightsAdminPage() {
       </div>
 
       {/* Competency Status Grid */}
-      <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-        <h3 className="font-semibold text-white mb-4">{txt.competencyAnalysis}</h3>
+      <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4">{txt.competencyAnalysis}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {COMPETENCY_INSIGHTS.map((comp) => (
-            <div key={comp.key} className="bg-gray-700/30 rounded-xl p-4 hover:bg-gray-700/50 transition-colors">
+            <div key={comp.key} className="bg-[var(--rowi-background)] rounded-xl p-4 hover:bg-[var(--rowi-border)] transition-colors">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-violet-400">{comp.key}</span>
+                <span className="text-xs font-bold text-[var(--rowi-secondary)]">{comp.key}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(comp.status)}`}>
                   {getStatusLabel(comp.status)}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-white mb-1">{comp.score}</p>
-              <div className="flex items-center gap-1 text-emerald-400 text-xs">
+              <p className="text-2xl font-bold text-[var(--rowi-foreground)] mb-1">{comp.score}</p>
+              <div className="flex items-center gap-1 text-[var(--rowi-success)] text-xs">
                 <TrendingUp className="w-3 h-3" />
                 +{comp.trend}%
               </div>
@@ -350,8 +336,8 @@ export default function EQInsightsAdminPage() {
 
       {/* Recommendations */}
       <div>
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Target className="w-5 h-5 text-emerald-400" />
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-[var(--rowi-success)]" />
           {txt.recommendations}
         </h3>
         <div className="space-y-3">
@@ -362,25 +348,25 @@ export default function EQInsightsAdminPage() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white mb-1">{rec.title}</h4>
-                  <p className="text-sm text-gray-400 mb-2">{rec.description}</p>
+                  <h4 className="font-semibold text-[var(--rowi-foreground)] mb-1">{rec.title}</h4>
+                  <p className="text-sm text-[var(--rowi-muted)] mb-2">{rec.description}</p>
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="flex items-center gap-1 text-gray-500">
+                    <span className="flex items-center gap-1 text-[var(--rowi-muted)]">
                       <Users className="w-3 h-3" />
                       {rec.users} {txt.affectedUsers}
                     </span>
                     <span className={`${
                       rec.priority === "high"
-                        ? "text-red-400"
+                        ? "text-[var(--rowi-error)]"
                         : rec.priority === "medium"
-                        ? "text-amber-400"
-                        : "text-blue-400"
+                        ? "text-[var(--rowi-warning)]"
+                        : "text-[var(--rowi-primary)]"
                     }`}>
                       {rec.impact}
                     </span>
                   </div>
                 </div>
-                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm transition-colors">
+                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--rowi-background)] hover:bg-[var(--rowi-border)] text-[var(--rowi-foreground)] text-sm transition-colors">
                   {txt.viewDetails}
                   <ArrowRight className="w-3 h-3" />
                 </button>

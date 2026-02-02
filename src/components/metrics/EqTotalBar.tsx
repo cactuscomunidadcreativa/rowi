@@ -2,7 +2,13 @@
 
 import { EQ_MAX } from "@/domains/eq/lib/eqLevels"; // ✅ añadimos referencia a 135
 
-export function EqTotalBar({ value }: { value: number | null }) {
+type Props = {
+  value: number | null;
+  label?: string;
+  color?: string;
+};
+
+export function EqTotalBar({ value, label, color }: Props) {
   // ✅ Limitamos entre 0 y EQ_MAX (135)
   const v =
     typeof value === "number"

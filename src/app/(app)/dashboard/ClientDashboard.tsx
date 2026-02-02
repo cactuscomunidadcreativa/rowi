@@ -110,8 +110,8 @@ export default function ClientDashboard() {
           color="#1E88E5"
           talents={Object.entries(base.eq.talents?.focus || {}).map(([k, v]) => ({
             label: k,
-            value: toPercentOf135(v ?? 0),
-            raw: v ?? null,
+            value: toPercentOf135(typeof v === "number" ? v : 0),
+            raw: typeof v === "number" ? v : null,
           }))}
         />
         <TalentCluster
@@ -119,8 +119,8 @@ export default function ClientDashboard() {
           color="#E53935"
           talents={Object.entries(base.eq.talents?.decisions || {}).map(([k, v]) => ({
             label: k,
-            value: toPercentOf135(v ?? 0),
-            raw: v ?? null,
+            value: toPercentOf135(typeof v === "number" ? v : 0),
+            raw: typeof v === "number" ? v : null,
           }))}
         />
         <TalentCluster
@@ -128,8 +128,8 @@ export default function ClientDashboard() {
           color="#43A047"
           talents={Object.entries(base.eq.talents?.drive || {}).map(([k, v]) => ({
             label: k,
-            value: toPercentOf135(v ?? 0),
-            raw: v ?? null,
+            value: toPercentOf135(typeof v === "number" ? v : 0),
+            raw: typeof v === "number" ? v : null,
           }))}
         />
       </div>

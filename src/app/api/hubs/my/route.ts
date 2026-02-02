@@ -28,8 +28,6 @@ export async function GET() {
             slug: true,
             description: true,
             visibility: true,
-            logoUrl: true,
-            colorTheme: true,
             superHubId: true,
             superHub: {
               select: {
@@ -40,22 +38,23 @@ export async function GET() {
             },
             _count: {
               select: {
-                members: true,
+                memberships: true,
               },
             },
           },
         },
+        role: true, // HubRoleDynamic
       },
       orderBy: {
-        createdAt: "desc",
+        joinedAt: "desc",
       },
     });
 
     const hubs = memberships.map((m) => ({
       ...m.hub,
-      role: m.role,
-      joinedAt: m.createdAt,
-      memberCount: m.hub._count.members,
+      role: m.role?.name || m.access || "MEMBER",
+      joinedAt: m.joinedAt,
+      memberCount: m.hub._count.memberships,
     }));
 
     return NextResponse.json({

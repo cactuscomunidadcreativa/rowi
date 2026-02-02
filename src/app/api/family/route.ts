@@ -9,6 +9,18 @@ import { getToken } from "next-auth/jwt";
 
 export const dynamic = "force-dynamic";
 
+interface MembershipWithUser {
+  userId: string;
+  role: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    createdAt: Date;
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -18,29 +30,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    // Obtener usuario con su plan y tenant
+    // Obtener usuario con su plan
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
         plan: true,
-        primaryTenant: {
-          include: {
-            memberships: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    image: true,
-                    createdAt: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        usage: true,
       },
     });
 
@@ -61,16 +55,36 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Obtener miembros del tenant (familia)
-    const tenant = user.primaryTenant;
-    const memberships = tenant?.memberships || [];
+    // Obtener tenant del usuario si existe
+    let memberships: MembershipWithUser[] = [];
+    if (user.primaryTenantId) {
+      const tenantMemberships = await prisma.membership.findMany({
+        where: { tenantId: user.primaryTenantId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+      memberships = tenantMemberships.map(m => ({
+        userId: m.userId,
+        role: m.role,
+        user: m.user,
+      }));
+    }
 
     // Transformar a formato de respuesta
     const members = memberships.map((m) => ({
       id: m.user.id,
       name: m.user.name || "",
       email: m.user.email || "",
-      role: m.userId === user.id ? "owner" : m.role?.toLowerCase() || "member",
+      role: m.userId === user.id ? "owner" : (m.role?.toLowerCase() || "member"),
       status: "active" as const,
       joinedAt: m.user.createdAt?.toISOString(),
       avatarUrl: m.user.image || undefined,
@@ -84,11 +98,21 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Agregar invitados pendientes
+    // Agregar invitados pendientes como lista separada para evitar conflicto de tipos
+    const invitedMembers: Array<{
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+      status: "active" | "invited";
+      joinedAt: string;
+      avatarUrl: string | undefined;
+    }> = members.map(m => ({ ...m, status: "active" as const }));
+
     for (const invite of pendingInvites) {
       // Verificar que no esté ya en members
-      if (!members.find((m) => m.email === invite.email)) {
-        members.push({
+      if (!invitedMembers.find((m) => m.email === invite.email)) {
+        invitedMembers.push({
           id: invite.id,
           name: "",
           email: invite.email,
@@ -102,28 +126,41 @@ export async function GET(req: NextRequest) {
 
     // Calcular tokens
     const tokensMonthly = plan.tokensMonthly || 500;
-    const tokensUsed = user.usage?.tokensUsed || 0;
+
+    // Obtener uso de tokens del usuario (agregando todos los registros del mes actual)
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const userUsageRecords = await prisma.userUsage.findMany({
+      where: {
+        userId: user.id,
+        day: { gte: startOfMonth },
+      },
+    });
+    const tokensUsed = userUsageRecords.reduce((sum, u) => sum + (u.tokensInput || 0) + (u.tokensOutput || 0), 0);
 
     const planInfo = {
       planName: plan.name,
       maxMembers: plan.maxUsers || 6,
-      currentMembers: members.length,
+      currentMembers: invitedMembers.length,
       tokensMonthly,
       tokensUsed,
       tokensRemaining: Math.max(0, tokensMonthly - tokensUsed),
       isOwner: true, // El que consulta siempre es el dueño si tiene el plan
-      canInvite: members.length < (plan.maxUsers || 6),
+      canInvite: invitedMembers.length < (plan.maxUsers || 6),
     };
 
     return NextResponse.json({
       ok: true,
       planInfo,
-      members,
+      members: invitedMembers,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Error obteniendo datos";
     console.error("❌ Error GET /api/family:", err);
     return NextResponse.json(
-      { ok: false, error: err.message || "Error obteniendo datos" },
+      { ok: false, error: errorMessage },
       { status: 500 }
     );
   }

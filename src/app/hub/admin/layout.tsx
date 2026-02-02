@@ -1,7 +1,7 @@
 "use client";
 import { ReactNode, useEffect, useState, useRef, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
-import UserStatusBar from "@/components/shared/UserStatusBar";
+import AdminHeader from "./components/AdminHeader";
 import { defaultTokens, tokensToCSS } from "@/lib/theme/tokens";
 
 /**
@@ -83,19 +83,19 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
 
       {/* Contenido principal - con margin-left para compensar sidebar fijo */}
       <section className="flex-1 flex flex-col min-h-[calc(100vh-4rem)] ml-64">
-        {/* Barra superior del usuario con auto-hide - sticky relativo al contenedor */}
+        {/* Barra superior admin con búsqueda, acciones y notificaciones */}
         <header
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={`
             sticky top-16 z-30
-            bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md
-            border-b border-indigo-500/20
+            bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md
+            border-b border-gray-200 dark:border-zinc-700
             transition-transform duration-300 ease-in-out
             ${isHeaderVisible || isHovering ? "translate-y-0" : "-translate-y-full"}
           `}
         >
-          <UserStatusBar />
+          <AdminHeader />
         </header>
 
         {/* Área de contenido scrollable */}

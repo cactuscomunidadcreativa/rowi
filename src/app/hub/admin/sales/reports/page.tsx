@@ -138,12 +138,12 @@ export default function SalesReportsPage() {
               <TrendingUp className="w-4 h-4 text-green-500" />
               {t("admin.sales.reports.revenueChart")}
             </h3>
-            <div className="flex items-end gap-4 h-48">
+            <div className="flex items-end gap-4 h-48 pt-8">
               {monthlyData.map((data) => (
                 <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full bg-[var(--rowi-muted)]/10 rounded-t-lg relative" style={{ height: `${(data.revenue / maxRevenue) * 100}%` }}>
+                  <div className="w-full rounded-t-lg relative" style={{ height: `${(data.revenue / maxRevenue) * 100}%`, minHeight: "20px" }}>
                     <div className="absolute inset-0 bg-indigo-500/80 rounded-t-lg" />
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium text-[var(--rowi-foreground)]">
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 text-xs font-medium text-[var(--rowi-foreground)] whitespace-nowrap">
                       ${(data.revenue / 1000).toFixed(1)}k
                     </div>
                   </div>

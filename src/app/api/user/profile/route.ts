@@ -34,7 +34,6 @@ export async function GET(req: NextRequest) {
             name: true,
             slug: true,
             seiIncluded: true,
-            maxSeiRetakes: true,
           },
         },
         eqSnapshots: {
@@ -43,7 +42,6 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             at: true,
-            total: true,
             K: true,
             C: true,
             G: true,
@@ -74,8 +72,11 @@ export async function GET(req: NextRequest) {
     // Calcular estado SEI
     const lastSei = user.eqSnapshots?.[0];
     const seiCount = user.eqSnapshots?.length || 0;
-    const maxRetakes = user.plan?.maxSeiRetakes || 1;
+    const maxRetakes = 1; // Default, could be from plan in future
     const hasFreeSei = seiCount < maxRetakes;
+
+    // Calcular total del EQ (K + C + G)
+    const lastSeiTotal = lastSei ? (lastSei.K || 0) + (lastSei.C || 0) + (lastSei.G || 0) : null;
 
     // Calcular si puede retomar (6 meses desde última evaluación)
     const sixMonthsAgo = new Date();
@@ -124,7 +125,7 @@ export async function GET(req: NextRequest) {
         completedAt: user.seiCompletedAt,
         daysSinceRequest,
         pendingArrival: user.seiRequested && !user.seiCompletedAt && daysSinceRequest !== null && daysSinceRequest < 3,
-        lastSnapshot: lastSei,
+        lastSnapshot: lastSei ? { ...lastSei, total: lastSeiTotal } : null,
         snapshotCount: seiCount,
         hasFreeSei,
         canRetakeFreely,
@@ -146,10 +147,11 @@ export async function GET(req: NextRequest) {
         traits: user.affinityProfile?.traits || {},
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Internal error";
     console.error("❌ Error GET /api/user/profile:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Internal error" },
+      { ok: false, error: errorMessage },
       { status: 500 }
     );
   }
@@ -180,9 +182,6 @@ export async function PATCH(req: NextRequest) {
       allowAI,
       contributeToRowiverse,
 
-      // Preferencias de comunicación
-      prefs,
-
       // Emails adicionales
       addEmail,
       removeEmailId,
@@ -204,7 +203,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Construir datos de actualización
-    const updateData: any = { updatedAt: new Date() };
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     if (name !== undefined) updateData.name = name;
     if (headline !== undefined) updateData.headline = headline;
@@ -277,10 +276,11 @@ export async function PATCH(req: NextRequest) {
       message: "Profile updated",
       user: updatedUser,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Internal error";
     console.error("❌ Error PATCH /api/user/profile:", error);
     return NextResponse.json(
-      { ok: false, error: error.message || "Internal error" },
+      { ok: false, error: errorMessage },
       { status: 500 }
     );
   }

@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     const avgHeat = (arr: number[]) =>
       arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : 0;
     const heats = snapshots.map((s) =>
-      Math.min(100, Math.round((s.lastHeat135 / 135) * 100))
+      Math.min(100, Math.round(((s.lastHeat135 ?? 0) / 135) * 100))
     );
     const globalHeat = avgHeat(heats);
     const band =
@@ -63,14 +63,14 @@ export async function GET(req: NextRequest) {
 
     // Top 5 conexiones más fuertes
     const topMembers = snapshots
-      .sort((a, b) => b.lastHeat135 - a.lastHeat135)
+      .sort((a, b) => (b.lastHeat135 ?? 0) - (a.lastHeat135 ?? 0))
       .slice(0, 5)
       .map((s) => ({
         memberId: s.memberId,
         memberName: s.member?.name || "Sin nombre",
         brainStyle: s.member?.brainStyle || null,
-        heat: Math.round((s.lastHeat135 / 135) * 100),
-        band: s.lastHeat135 >= 95 ? "hot" : s.lastHeat135 >= 62 ? "warm" : "cold",
+        heat: Math.round(((s.lastHeat135 ?? 0) / 135) * 100),
+        band: (s.lastHeat135 ?? 0) >= 95 ? "hot" : (s.lastHeat135 ?? 0) >= 62 ? "warm" : "cold",
         context: s.context,
         closeness: s.closeness,
         updatedAt: s.updatedAt,

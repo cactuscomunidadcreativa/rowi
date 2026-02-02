@@ -15,6 +15,28 @@ export const metadata = {
     shortcut: "/favicon.ico?v=2",
     apple: "/apple-touch-icon.png?v=2",
   },
+  openGraph: {
+    title: "Rowi SIA",
+    description: "App de Inteligencia Emocional - Desarrolla tu potencial",
+    url: "https://www.rowiia.com",
+    siteName: "Rowi SIA",
+    images: [
+      {
+        url: "https://www.rowiia.com/rowi-logo.png",
+        width: 512,
+        height: 512,
+        alt: "Rowi SIA - Inteligencia Emocional",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Rowi SIA",
+    description: "App de Inteligencia Emocional - Desarrolla tu potencial",
+    images: ["https://www.rowiia.com/rowi-logo.png"],
+  },
 };
 
 export default async function RootLayout({

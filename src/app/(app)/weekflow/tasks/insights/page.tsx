@@ -93,8 +93,8 @@ export default function TaskInsightsPage() {
     }
   };
 
-  // Check plan access
-  if (!authLoading && !user?.plan?.weekflowInsights) {
+  // Check plan access - TEMPORALMENTE ABIERTO PARA TODOS
+  if (false && !authLoading && !user?.plan?.weekflowInsights) {
     return (
       <div className="container max-w-2xl mx-auto py-12 px-4">
         <Card className="text-center">

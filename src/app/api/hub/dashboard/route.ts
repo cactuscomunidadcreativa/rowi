@@ -21,21 +21,17 @@ export async function GET(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        userLevel: true,
+        level: true, // UserLevel relation
         memberships: {
           include: {
             tenant: true,
           },
         },
         communityMemberships: {
+          where: { status: "ACTIVE" },
           include: {
-            community: {
-              include: {
-                _count: {
-                  select: { members: true },
-                },
-              },
-            },
+            hub: true,
+            tenant: true,
           },
           take: 5,
         },
@@ -46,9 +42,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verificar permisos de admin
+    // Verificar permisos de admin usando UserPermission
     const adminRoles = ["SUPERADMIN", "ADMIN", "OWNER"];
-    const permissions = await prisma.hierarchicalPermission.findMany({
+    const permissions = await prisma.userPermission.findMany({
       where: { userId: user.id },
     });
 
@@ -58,7 +54,7 @@ export async function GET(req: NextRequest) {
     // Obtener agentes disponibles para el usuario
     const agents = await prisma.agentConfig.findMany({
       where: {
-        enabled: true,
+        isActive: true,
         OR: [
           { tenantId: null }, // Agentes globales
           { tenantId: user.primaryTenantId || undefined }, // Agentes del tenant
@@ -73,11 +69,19 @@ export async function GET(req: NextRequest) {
       take: 6,
     });
 
-    // Formatear comunidades
-    const communities = user.communityMemberships.map((cm) => ({
-      id: cm.community.id,
-      name: cm.community.name,
-      memberCount: cm.community._count.members,
+    // Formatear comunidades desde CommunityMember
+    interface CommunityMemberWithRelations {
+      id: string;
+      name: string | null;
+      email: string | null;
+      hub: { name: string } | null;
+      tenant: { name: string };
+    }
+    const communities = user.communityMemberships.map((cm: CommunityMemberWithRelations) => ({
+      id: cm.id,
+      name: cm.name || cm.email || "Comunidad",
+      hubName: cm.hub?.name,
+      tenantName: cm.tenant?.name,
     }));
 
     // Respuesta
@@ -85,8 +89,8 @@ export async function GET(req: NextRequest) {
       user: {
         name: user.name,
         email: user.email,
-        level: user.userLevel?.level || 1,
-        xp: user.userLevel?.xp || 0,
+        level: user.level?.level || 1,
+        xp: user.level?.totalPoints || 0,
         streak: 0, // TODO: Implementar streaks
         isAdmin,
         isSuperAdmin,

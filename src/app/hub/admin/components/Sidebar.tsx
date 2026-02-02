@@ -132,6 +132,18 @@ export default function Sidebar() {
     },
 
     // ═══════════════════════════════════════════════════════
+    // 🔬 INVESTIGACIÓN ACADÉMICA
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.research",
+      icon: Target,
+      priority: 87,
+      items: [
+        { href: "/research", labelKey: "admin.nav.researchCenter", icon: Target, badge: "NEW" },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
     // 🎯 SIX SECONDS & SEI
     // ═══════════════════════════════════════════════════════
     {
@@ -228,6 +240,7 @@ export default function Sidebar() {
       items: [
         { href: "/hub/admin/sales/dashboard", labelKey: "admin.nav.salesDashboard", icon: TrendingUp },
         { href: "/hub/admin/sales/subscriptions", labelKey: "admin.nav.subscriptions", icon: CreditCard },
+        { href: "/hub/admin/sales/coupons", labelKey: "admin.nav.coupons", icon: Ticket },
         { href: "/hub/admin/sales/opportunities", labelKey: "admin.nav.opportunities", icon: Briefcase },
         { href: "/hub/admin/sales/clients", labelKey: "admin.nav.clients", icon: Users2 },
         { href: "/hub/admin/sales/products", labelKey: "admin.nav.products", icon: Package },
@@ -373,14 +386,14 @@ export default function Sidebar() {
   const sortedSections = [...sections].sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
   return (
-    <aside className="h-full flex flex-col bg-[var(--rowi-card)]">
+    <aside className="h-full flex flex-col bg-white dark:bg-zinc-900">
       {/* Logo */}
-      <div className="p-4 border-b border-[var(--rowi-border)]">
+      <div className="p-4 border-b border-gray-200 dark:border-zinc-700">
         <Link href="/hub/admin" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
             <span className="text-white font-bold text-sm">R</span>
           </div>
-          <span className="font-heading text-lg font-bold bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] bg-clip-text text-transparent">
+          <span className="font-heading text-lg font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
             Rowi Admin
           </span>
         </Link>
@@ -399,8 +412,8 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-[var(--rowi-border)]">
-        <p className="text-xs text-[var(--rowi-muted)] text-center">
+      <div className="p-4 border-t border-gray-200 dark:border-zinc-700">
+        <p className="text-xs text-gray-500 dark:text-zinc-400 text-center">
           Rowi SIA © {new Date().getFullYear()}
         </p>
       </div>
@@ -469,8 +482,8 @@ function SidebarSection({ section, pathname, t }: SidebarSectionProps) {
           flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg
           transition-colors duration-200
           ${open
-            ? "bg-gradient-to-r from-[var(--rowi-primary)]/10 to-[var(--rowi-secondary)]/10 text-[var(--rowi-primary)]"
-            : "text-[var(--rowi-foreground)] hover:bg-[var(--rowi-border)]"
+            ? "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300"
+            : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
           }
         `}
       >
@@ -529,8 +542,8 @@ function SidebarLink({ item, pathname, t }: SidebarLinkProps) {
         flex items-center gap-2 px-3 py-1.5 text-sm rounded-md
         transition-colors duration-200
         ${active
-          ? "bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] font-medium border-l-2 border-[var(--rowi-primary)] ml-0 pl-2.5"
-          : "text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
+          ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-medium border-l-2 border-violet-500 ml-0 pl-2.5"
+          : "text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-zinc-200"
         }
       `}
     >
@@ -595,13 +608,13 @@ function NestedGroup({ item, pathname, t }: NestedGroupProps) {
           flex items-center justify-between w-full px-3 py-1.5 text-sm rounded-md
           transition-colors duration-200
           ${isActive
-            ? "bg-[var(--rowi-primary)]/5 text-[var(--rowi-primary)] font-medium"
-            : "text-[var(--rowi-muted)] hover:bg-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
+            ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 font-medium"
+            : "text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-zinc-200"
           }
         `}
       >
         <span className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${isActive ? "text-[var(--rowi-primary)]" : ""}`} />
+          <Icon className={`w-4 h-4 ${isActive ? "text-violet-600 dark:text-violet-400" : ""}`} />
           <span className="truncate">{t(item.labelKey)}</span>
           {item.badge && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">

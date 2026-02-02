@@ -159,7 +159,7 @@ export default function RowiverseContributionsPage() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] transition-colors text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-background)] transition-colors text-sm disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             {text.refresh}
@@ -239,7 +239,7 @@ export default function RowiverseContributionsPage() {
       {stats ? (
         <div className="grid md:grid-cols-2 gap-6">
           {/* By Source */}
-          <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+          <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[var(--rowi-primary)]" />
               {text.bySource}
@@ -283,7 +283,7 @@ export default function RowiverseContributionsPage() {
           </div>
 
           {/* Top Countries */}
-          <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+          <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-green-500" />
               {text.topCountries}
@@ -315,7 +315,7 @@ export default function RowiverseContributionsPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-12 text-center">
+        <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-12 text-center">
           <Database className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-2">{text.noData}</h3>
           <p className="text-sm text-[var(--rowi-muted)]">{text.noDataDesc}</p>
@@ -324,7 +324,7 @@ export default function RowiverseContributionsPage() {
 
       {/* Recent Activity */}
       {stats?.lastContribution && (
-        <div className="rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] p-5">
+        <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 text-green-500" />
             {text.recentActivity}
@@ -377,17 +377,17 @@ function StatCard({
   color: string;
 }) {
   const colorClasses: Record<string, string> = {
-    purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-    green: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
-    orange: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
-    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+    purple: "bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]",
+    green: "bg-[var(--rowi-success)]/10 text-[var(--rowi-success)]",
+    orange: "bg-[var(--rowi-warning)]/10 text-[var(--rowi-warning)]",
+    blue: "bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]",
   };
 
   return (
-    <div className="flex items-center gap-3 bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-xl p-4">
+    <div className="flex items-center gap-3 bg-[var(--rowi-surface)] border border-[var(--rowi-border)] rounded-xl p-4 hover:border-[var(--rowi-borderHover)] transition-colors">
       <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
       <div>
-        <p className="text-xl font-bold">{value}</p>
+        <p className="text-xl font-bold text-[var(--rowi-foreground)]">{value}</p>
         <p className="text-xs text-[var(--rowi-muted)]">{label}</p>
       </div>
     </div>

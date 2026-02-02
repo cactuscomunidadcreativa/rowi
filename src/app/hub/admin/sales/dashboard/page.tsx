@@ -117,7 +117,7 @@ export default function SalesDashboardPage() {
       actions={
         <div className="flex items-center gap-2">
           {/* Period Selector */}
-          <div className="flex items-center bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-lg overflow-hidden">
+          <div className="flex items-center bg-[var(--rowi-surface)] border border-[var(--rowi-border)] rounded-lg overflow-hidden">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
@@ -144,7 +144,7 @@ export default function SalesDashboardPage() {
       }
     >
       {data && (
-        <>
+        <div className="space-y-6">
           {/* Main Metrics */}
           <AdminGrid cols={4}>
             <MetricCard
@@ -349,7 +349,7 @@ export default function SalesDashboardPage() {
               </div>
             </AdminCard>
           </AdminGrid>
-        </>
+        </div>
       )}
     </AdminPage>
   );

@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     });
 
     const heats = snapshots.map((s) =>
-      Math.round((s.lastHeat135 / 135) * 100)
+      Math.round(((s.lastHeat135 ?? 0) / 135) * 100)
     );
 
     const avgHeat =
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
     for (const s of snapshots) {
       const ctx = s.context || "general";
       if (!byContext[ctx]) byContext[ctx] = [];
-      byContext[ctx].push(Math.round((s.lastHeat135 / 135) * 100));
+      byContext[ctx].push(Math.round(((s.lastHeat135 ?? 0) / 135) * 100));
     }
 
     const contextStats = Object.entries(byContext).map(([ctx, arr]) => {
@@ -150,7 +150,7 @@ export async function GET(req: NextRequest) {
     const userHeats: Record<string, number[]> = {};
     for (const s of snapshots) {
       if (!userHeats[s.userId]) userHeats[s.userId] = [];
-      userHeats[s.userId].push(Math.round((s.lastHeat135 / 135) * 100));
+      userHeats[s.userId].push(Math.round(((s.lastHeat135 ?? 0) / 135) * 100));
     }
 
     const ranking = Object.entries(userHeats)

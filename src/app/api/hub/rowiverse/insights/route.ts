@@ -158,13 +158,9 @@ export async function GET() {
     });
 
     // ═══════════════════════════════════════════════════════════════
-    // 4️⃣ ORGANIZACIONES/COMUNIDADES por país
+    // 4️⃣ COMUNIDADES TOTALES (conteo simple)
     // ═══════════════════════════════════════════════════════════════
-    const communitiesByCountry = await prisma.rowiCommunity.groupBy({
-      by: ["country"],
-      where: { country: { not: null }, isActive: true },
-      _count: { _all: true },
-    });
+    const totalCommunities = await prisma.rowiCommunity.count();
 
     // ═══════════════════════════════════════════════════════════════
     // 5️⃣ EQ SNAPSHOTS por país (datos reales de evaluaciones)
@@ -179,10 +175,9 @@ export async function GET() {
     // ═══════════════════════════════════════════════════════════════
     // 6️⃣ ESTADÍSTICAS GLOBALES
     // ═══════════════════════════════════════════════════════════════
-    const [totalUsers, newUsersTotal, totalCommunities, totalSnapshots] = await Promise.all([
+    const [totalUsers, newUsersTotal, totalSnapshots] = await Promise.all([
       prisma.user.count({ where: { active: true } }),
       prisma.user.count({ where: { active: true, createdAt: { gte: threeMonthsAgo } } }),
-      prisma.rowiCommunity.count({ where: { isActive: true } }),
       prisma.eqSnapshot.count(),
     ]);
 
@@ -263,14 +258,6 @@ export async function GET() {
       }
     }
 
-    // Agregar comunidades
-    for (const c of communitiesByCountry) {
-      const { code } = normalizeCountry(c.country);
-      if (countryMap.has(code)) {
-        countryMap.get(code)!.communities = c._count._all;
-      }
-    }
-
     // Agregar EQ snapshots
     for (const e of eqByCountry) {
       const { code } = normalizeCountry(e.country);
@@ -338,12 +325,13 @@ export async function GET() {
           communities: c.communities,
         };
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, { count: number; avgEQ: number; avgAffinity: number; topEmotion: string; users: number; newUsers: number; benchmarks: number; communities: number }>),
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Error al generar insights";
     console.error("❌ Error RowiVerse Insights:", err);
     return NextResponse.json(
-      { ok: false, error: "Error al generar insights" },
+      { ok: false, error: errorMessage },
       { status: 500 }
     );
   }

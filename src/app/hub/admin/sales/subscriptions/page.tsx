@@ -106,25 +106,25 @@ export default function SubscriptionsPage() {
           </h1>
           <p className="text-[var(--rowi-muted)] mt-1">{t("admin.sales.subscriptions.description")}</p>
         </div>
-        <button onClick={() => loadSubscriptions()} disabled={loading} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-card)] hover:bg-[var(--rowi-muted)]/10 transition-colors disabled:opacity-50">
+        <button onClick={() => loadSubscriptions()} disabled={loading} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] hover:bg-[var(--rowi-muted)]/10 transition-colors disabled:opacity-50">
           <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-[var(--rowi-muted)] mb-2"><Users className="w-4 h-4" /><span className="text-xs">{t("admin.sales.subscriptions.stats.total")}</span></div>
           <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{stats.total}</p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-green-500 mb-2"><CheckCircle className="w-4 h-4" /><span className="text-xs">{t("admin.sales.subscriptions.stats.active")}</span></div>
           <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{stats.active}</p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-blue-500 mb-2"><DollarSign className="w-4 h-4" /><span className="text-xs">MRR</span></div>
           <p className="text-2xl font-bold text-[var(--rowi-foreground)]">${stats.mrr.toFixed(0)}</p>
         </div>
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-4">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] p-4">
           <div className="flex items-center gap-2 text-purple-500 mb-2"><Clock className="w-4 h-4" /><span className="text-xs">{t("admin.sales.subscriptions.stats.trialing")}</span></div>
           <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{stats.trialing}</p>
         </div>
@@ -147,7 +147,7 @@ export default function SubscriptionsPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-muted)]" /></div>
       ) : (
-        <div className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] overflow-hidden">
+        <div className="bg-[var(--rowi-surface)] rounded-xl border border-[var(--rowi-border)] overflow-hidden">
           <table className="w-full">
             <thead className="bg-[var(--rowi-muted)]/5 border-b border-[var(--rowi-border)]">
               <tr>

@@ -95,10 +95,10 @@ export default function EQProgressAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4 text-gray-400">
+        <div className="flex flex-col items-center gap-4 text-[var(--rowi-muted)]">
           <div className="relative">
-            <TrendingUp className="w-16 h-16 text-emerald-500 animate-pulse" />
-            <Sparkles className="w-6 h-6 text-amber-400 absolute -top-1 -right-1 animate-bounce" />
+            <TrendingUp className="w-16 h-16 text-[var(--rowi-success)] animate-pulse" />
+            <Sparkles className="w-6 h-6 text-[var(--rowi-warning)] absolute -top-1 -right-1 animate-bounce" />
           </div>
           <span>{txt.loading}</span>
         </div>
@@ -110,66 +110,66 @@ export default function EQProgressAdminPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-500/20">
-          <TrendingUp className="w-7 h-7 text-emerald-400" />
+        <div className="p-3 rounded-2xl bg-[var(--rowi-success)]/20">
+          <TrendingUp className="w-7 h-7 text-[var(--rowi-success)]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-          <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+          <h1 className="text-2xl font-bold text-[var(--rowi-foreground)]">{txt.title}</h1>
+          <p className="text-[var(--rowi-muted)] text-sm">{txt.subtitle}</p>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl border border-emerald-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-emerald-500/20">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-success)]/10">
+              <TrendingUp className="w-5 h-5 text-[var(--rowi-success)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-emerald-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +12.6%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">+8.4</p>
-          <p className="text-sm text-gray-400">{txt.avgGrowth}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">+8.4</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.avgGrowth}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 rounded-2xl border border-blue-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-blue-500/20">
-              <Users className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-primary)]/10">
+              <Users className="w-5 h-5 text-[var(--rowi-primary)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-emerald-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +5%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">847</p>
-          <p className="text-sm text-gray-400">{txt.activeUsers}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">847</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.activeUsers}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 rounded-2xl border border-amber-500/30 p-5">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-amber-500/20">
-              <Award className="w-5 h-5 text-amber-400" />
+            <div className="p-2 rounded-xl bg-[var(--rowi-warning)]/10">
+              <Award className="w-5 h-5 text-[var(--rowi-warning)]" />
             </div>
-            <span className="flex items-center gap-1 text-xs text-emerald-400">
+            <span className="flex items-center gap-1 text-xs text-[var(--rowi-success)] bg-[var(--rowi-success)]/10 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" />
               +18%
             </span>
           </div>
-          <p className="text-3xl font-bold text-white">1,256</p>
-          <p className="text-sm text-gray-400">{txt.completedGoals}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">1,256</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{txt.completedGoals}</p>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Progress Trend */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
             {txt.monthlyTrend}
           </h3>
           <div style={{ height: 300 }}>
@@ -181,15 +181,15 @@ export default function EQProgressAdminPage() {
                     <stop offset="95%" stopColor={ROWI_BLUE} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[70, 110]} tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis dataKey="month" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[70, 110]} tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                 />
                 <Area type="monotone" dataKey="total" stroke={ROWI_BLUE} strokeWidth={2} fill="url(#totalGradient)" />
@@ -199,23 +199,23 @@ export default function EQProgressAdminPage() {
         </div>
 
         {/* K-C-G Progress */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-violet-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-[var(--rowi-secondary)]" />
             {txt.pursuitProgress}
           </h3>
           <div style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={MONTHLY_PROGRESS}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[70, 110]} tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis dataKey="month" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[70, 110]} tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                 />
                 <Line type="monotone" dataKey="know" stroke={ROWI_BLUE} strokeWidth={2} dot={{ fill: ROWI_BLUE, r: 4 }} name="Know" />
@@ -230,25 +230,25 @@ export default function EQProgressAdminPage() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Competency Growth */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-emerald-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-[var(--rowi-success)]" />
             {txt.competencyGrowth}
           </h3>
           <div className="space-y-3">
             {COMPETENCY_GROWTH.map((comp) => (
               <div key={comp.key} className="flex items-center gap-3">
-                <span className="w-10 text-xs font-bold text-violet-400">{comp.key}</span>
+                <span className="w-10 text-xs font-bold text-[var(--rowi-secondary)]">{comp.key}</span>
                 <div className="flex-1">
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[var(--rowi-success)] to-emerald-400 transition-all duration-500"
                       style={{ width: `${(comp.current / 135) * 100}%` }}
                     />
                   </div>
                 </div>
-                <span className="text-sm text-white font-medium w-12 text-right">{comp.current}</span>
-                <span className="flex items-center gap-0.5 text-xs text-emerald-400 w-14">
+                <span className="text-sm text-[var(--rowi-foreground)] font-medium w-12 text-right">{comp.current}</span>
+                <span className="flex items-center gap-0.5 text-xs text-[var(--rowi-success)] w-14">
                   <ArrowUpRight className="w-3 h-3" />
                   +{comp.growth}
                 </span>
@@ -258,22 +258,22 @@ export default function EQProgressAdminPage() {
         </div>
 
         {/* Top Improvers */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <Award className="w-5 h-5 text-[var(--rowi-warning)]" />
             {txt.topImprovers}
           </h3>
           <div className="space-y-3">
             {TOP_IMPROVERS.map((user, idx) => (
-              <div key={user.name} className="flex items-center gap-4 p-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm">
+              <div key={user.name} className="flex items-center gap-4 p-3 rounded-xl bg-[var(--rowi-background)] hover:bg-[var(--rowi-border)] transition-colors">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--rowi-warning)] to-orange-600 flex items-center justify-center text-white font-bold text-sm">
                   {idx + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-gray-400">{txt.current}: {user.current}</p>
+                  <p className="font-medium text-[var(--rowi-foreground)]">{user.name}</p>
+                  <p className="text-xs text-[var(--rowi-muted)]">{txt.current}: {user.current}</p>
                 </div>
-                <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                <span className="flex items-center gap-1 text-[var(--rowi-success)] font-semibold">
                   <ArrowUpRight className="w-4 h-4" />
                   +{user.improvement}
                 </span>

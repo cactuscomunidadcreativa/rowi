@@ -218,10 +218,10 @@ export default function EQSnapshotsAdminPage() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 105) return "text-green-400";
-    if (score >= 95) return "text-blue-400";
-    if (score >= 85) return "text-amber-400";
-    return "text-red-400";
+    if (score >= 105) return "text-[var(--rowi-success)]";
+    if (score >= 95) return "text-[var(--rowi-primary)]";
+    if (score >= 85) return "text-[var(--rowi-warning)]";
+    return "text-[var(--rowi-error)]";
   };
 
   function formatTimeAgo(dateStr: string) {
@@ -309,10 +309,10 @@ export default function EQSnapshotsAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4 text-gray-400">
+        <div className="flex flex-col items-center gap-4 text-[var(--rowi-muted)]">
           <div className="relative">
-            <Brain className="w-16 h-16 text-violet-500 animate-pulse" />
-            <Sparkles className="w-6 h-6 text-amber-400 absolute -top-1 -right-1 animate-bounce" />
+            <Brain className="w-16 h-16 text-[var(--rowi-secondary)] animate-pulse" />
+            <Sparkles className="w-6 h-6 text-[var(--rowi-warning)] absolute -top-1 -right-1 animate-bounce" />
           </div>
           <span>{txt.loading}</span>
         </div>
@@ -325,19 +325,19 @@ export default function EQSnapshotsAdminPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-            <Globe2 className="w-7 h-7 text-violet-400" />
+          <div className="p-3 rounded-2xl bg-[var(--rowi-secondary)]/20">
+            <Globe2 className="w-7 h-7 text-[var(--rowi-secondary)]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-            <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+            <h1 className="text-2xl font-bold text-[var(--rowi-foreground)]">{txt.title}</h1>
+            <p className="text-[var(--rowi-muted)] text-sm">{txt.subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-violet-500 focus:outline-none"
+            className="px-4 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] text-[var(--rowi-foreground)] text-sm focus:border-[var(--rowi-secondary)] focus:outline-none"
           >
             <option value="all">{txt.all}</option>
             <option value="month">{txt.lastMonth}</option>
@@ -347,13 +347,13 @@ export default function EQSnapshotsAdminPage() {
           <button
             onClick={loadRowiverseData}
             disabled={loading}
-            className="p-2 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] hover:bg-[var(--rowi-background)] transition-colors disabled:opacity-50"
           >
-            <RefreshCcw className={`w-4 h-4 text-gray-400 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCcw className={`w-4 h-4 text-[var(--rowi-muted)] ${loading ? "animate-spin" : ""}`} />
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition-colors text-white text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--rowi-secondary)] hover:opacity-90 transition-colors text-white text-sm"
           >
             <Download className="w-4 h-4" />
             {txt.export}
@@ -363,61 +363,61 @@ export default function EQSnapshotsAdminPage() {
 
       {/* Main Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500/10 to-purple-600/10 rounded-2xl border border-violet-500/30 p-5">
-          <div className="flex items-center gap-2 text-violet-400 mb-2">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
+          <div className="flex items-center gap-2 text-[var(--rowi-secondary)] mb-2">
             <Brain className="w-5 h-5" />
             <span className="text-sm">{txt.totalSnapshots}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats?.totalSnapshots.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats?.totalSnapshots.toLocaleString()}</p>
         </div>
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 rounded-2xl border border-blue-500/30 p-5">
-          <div className="flex items-center gap-2 text-blue-400 mb-2">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
+          <div className="flex items-center gap-2 text-[var(--rowi-primary)] mb-2">
             <Users className="w-5 h-5" />
             <span className="text-sm">{txt.activeUsers}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats?.totalUsers.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats?.totalUsers.toLocaleString()}</p>
         </div>
-        <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl border border-emerald-500/30 p-5">
-          <div className="flex items-center gap-2 text-emerald-400 mb-2">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
+          <div className="flex items-center gap-2 text-[var(--rowi-success)] mb-2">
             <Target className="w-5 h-5" />
             <span className="text-sm">{txt.avgEQ}</span>
           </div>
           <p className={`text-3xl font-bold ${getScoreColor(stats?.avgTotal || 0)}`}>{stats?.avgTotal.toFixed(1)}</p>
         </div>
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 rounded-2xl border border-amber-500/30 p-5">
-          <div className="flex items-center gap-2 text-amber-400 mb-2">
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm hover:border-[var(--rowi-borderHover)] transition-colors">
+          <div className="flex items-center gap-2 text-[var(--rowi-warning)] mb-2">
             <Zap className="w-5 h-5" />
             <span className="text-sm">{txt.recentActivity}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats?.recentSnapshots.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-[var(--rowi-foreground)]">{stats?.recentSnapshots.toLocaleString()}</p>
         </div>
       </div>
 
       {/* K-C-G Cards */}
-      <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-violet-400" />
+      <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-6 shadow-sm">
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-[var(--rowi-secondary)]" />
           {txt.kcgTitle}
         </h3>
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl p-4 text-center">
-            <div className="text-sm text-blue-300 mb-1">{txt.know}</div>
+          <div className="bg-[var(--rowi-primary)]/5 rounded-xl p-4 text-center border border-[var(--rowi-primary)]/20">
+            <div className="text-sm text-[var(--rowi-primary)] mb-1">{txt.know}</div>
             <div className={`text-3xl font-bold ${getScoreColor(stats?.avgKnow || 0)}`}>{stats?.avgKnow.toFixed(1)}</div>
-            <div className="h-2 bg-gray-700 rounded-full mt-2 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-500" style={{ width: `${((stats?.avgKnow || 0) / 135) * 100}%` }} />
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full mt-2 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[var(--rowi-primary)] to-cyan-400 transition-all duration-500" style={{ width: `${((stats?.avgKnow || 0) / 135) * 100}%` }} />
             </div>
           </div>
-          <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl p-4 text-center">
-            <div className="text-sm text-purple-300 mb-1">{txt.choose}</div>
+          <div className="bg-[var(--rowi-secondary)]/5 rounded-xl p-4 text-center border border-[var(--rowi-secondary)]/20">
+            <div className="text-sm text-[var(--rowi-secondary)] mb-1">{txt.choose}</div>
             <div className={`text-3xl font-bold ${getScoreColor(stats?.avgChoose || 0)}`}>{stats?.avgChoose.toFixed(1)}</div>
-            <div className="h-2 bg-gray-700 rounded-full mt-2 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-purple-500 to-violet-400 transition-all duration-500" style={{ width: `${((stats?.avgChoose || 0) / 135) * 100}%` }} />
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full mt-2 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[var(--rowi-secondary)] to-violet-400 transition-all duration-500" style={{ width: `${((stats?.avgChoose || 0) / 135) * 100}%` }} />
             </div>
           </div>
-          <div className="bg-gradient-to-br from-pink-500/20 to-pink-600/10 rounded-xl p-4 text-center">
-            <div className="text-sm text-pink-300 mb-1">{txt.give}</div>
+          <div className="bg-pink-500/5 rounded-xl p-4 text-center border border-pink-500/20">
+            <div className="text-sm text-pink-500 mb-1">{txt.give}</div>
             <div className={`text-3xl font-bold ${getScoreColor(stats?.avgGive || 0)}`}>{stats?.avgGive.toFixed(1)}</div>
-            <div className="h-2 bg-gray-700 rounded-full mt-2 overflow-hidden">
+            <div className="h-2 bg-[var(--rowi-border)] rounded-full mt-2 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-pink-500 to-rose-400 transition-all duration-500" style={{ width: `${((stats?.avgGive || 0) / 135) * 100}%` }} />
             </div>
           </div>
@@ -427,23 +427,23 @@ export default function EQSnapshotsAdminPage() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Competencies Radar */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
             {txt.competenciesTitle}
           </h3>
           <div style={{ height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={competencies}>
-                <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                <PolarAngleAxis dataKey="key" tick={{ fill: "#9CA3AF", fontSize: 11 }} />
-                <PolarRadiusAxis angle={30} domain={[65, 135]} tick={{ fill: "#9CA3AF", fontSize: 10 }} axisLine={false} />
+                <PolarGrid stroke="var(--rowi-border)" />
+                <PolarAngleAxis dataKey="key" tick={{ fill: "var(--rowi-muted)", fontSize: 11 }} />
+                <PolarRadiusAxis angle={30} domain={[65, 135]} tick={{ fill: "var(--rowi-muted)", fontSize: 10 }} axisLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number, name: string, props: any) => [
                     `${value} / 135`,
@@ -464,23 +464,23 @@ export default function EQSnapshotsAdminPage() {
         </div>
 
         {/* Monthly Trends */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-emerald-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-[var(--rowi-success)]" />
             {txt.trendsTitle}
           </h3>
           <div style={{ height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis dataKey="month" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number, name: string) => [
                     value,
@@ -500,9 +500,9 @@ export default function EQSnapshotsAdminPage() {
         </div>
 
         {/* Brain Styles */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-[var(--rowi-secondary)]" />
             {txt.brainStylesTitle}
           </h3>
           <div className="space-y-4">
@@ -516,11 +516,11 @@ export default function EQSnapshotsAdminPage() {
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: bgColor }}
                       />
-                      <span className="text-sm text-gray-300">{style.style}</span>
+                      <span className="text-sm text-[var(--rowi-foreground)]">{style.style}</span>
                     </div>
-                    <span className="text-sm font-semibold text-white">{style.percentage}%</span>
+                    <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{style.percentage}%</span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${style.percentage}%`, backgroundColor: bgColor }}
@@ -533,23 +533,23 @@ export default function EQSnapshotsAdminPage() {
         </div>
 
         {/* Top Countries */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-amber-400" />
+        <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+          <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-[var(--rowi-warning)]" />
             {txt.countriesTitle}
           </h3>
           <div style={{ height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats?.topCountries.slice(0, 8)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="country" tick={{ fill: "#fff", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--rowi-border)" />
+                <XAxis type="number" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="country" tick={{ fill: "var(--rowi-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--rowi-surface)",
+                    border: "1px solid var(--rowi-border)",
                     borderRadius: 8,
-                    color: "#fff",
+                    color: "var(--rowi-foreground)",
                   }}
                   formatter={(value: number) => [value, txt.evaluations]}
                 />
@@ -568,14 +568,14 @@ export default function EQSnapshotsAdminPage() {
       </div>
 
       {/* Competency Details Grid */}
-      <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-        <h3 className="font-semibold text-white mb-4">{txt.competenciesTitle}</h3>
+      <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4">{txt.competenciesTitle}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {competencies.map((comp, idx) => {
             const color = ROWI_COLORS[idx % ROWI_COLORS.length];
             const barWidth = `${((comp.score - 65) / 70) * 100}%`;
             return (
-              <div key={comp.key} className="bg-gray-700/30 rounded-xl p-4 hover:bg-gray-700/50 transition-colors">
+              <div key={comp.key} className="bg-[var(--rowi-background)] rounded-xl p-4 hover:bg-[var(--rowi-border)] transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className="text-xs font-bold px-2 py-0.5 rounded"
@@ -585,10 +585,10 @@ export default function EQSnapshotsAdminPage() {
                   </span>
                   <span className={`text-lg font-bold ${getScoreColor(comp.score)}`}>{comp.score}</span>
                 </div>
-                <p className="text-xs text-gray-400 truncate mb-2">
+                <p className="text-xs text-[var(--rowi-muted)] truncate mb-2">
                   {locale === "es" ? competencyLabelsES[comp.key] : comp.label}
                 </p>
-                <div className="h-1.5 bg-gray-600 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-[var(--rowi-border)] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: barWidth, backgroundColor: color }}
@@ -601,24 +601,24 @@ export default function EQSnapshotsAdminPage() {
       </div>
 
       {/* Recent Evaluations */}
-      <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-5 shadow-sm">
+        <h3 className="font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
           <Clock className="w-5 h-5 text-cyan-400" />
           {txt.recentTitle}
         </h3>
         <div className="space-y-3">
           {recentSnapshots.map((snap) => (
-            <div key={snap.id} className="flex items-center gap-4 p-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+            <div key={snap.id} className="flex items-center gap-4 p-3 rounded-xl bg-[var(--rowi-background)] hover:bg-[var(--rowi-border)] transition-colors">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-secondary)] to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                 {snap.userName.split(" ").map(n => n[0]).join("")}
               </div>
               <div className="flex-1">
-                <p className="font-medium text-white">{snap.userName}</p>
-                <p className="text-xs text-gray-400">{formatTimeAgo(snap.at)} • {snap.brainStyle}</p>
+                <p className="font-medium text-[var(--rowi-foreground)]">{snap.userName}</p>
+                <p className="text-xs text-[var(--rowi-muted)]">{formatTimeAgo(snap.at)} • {snap.brainStyle}</p>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <span className="text-blue-400">K: {snap.K}</span>
-                <span className="text-purple-400">C: {snap.C}</span>
+                <span className="text-[var(--rowi-primary)]">K: {snap.K}</span>
+                <span className="text-[var(--rowi-secondary)]">C: {snap.C}</span>
                 <span className="text-pink-400">G: {snap.G}</span>
               </div>
             </div>

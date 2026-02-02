@@ -274,9 +274,10 @@ const PURSUIT_COLORS = {
 type Props = {
   profile?: any;
   compact?: boolean;
+  insights?: any; // Allow passing insights directly
 };
 
-export default function CoachPanel({ profile, compact = false }: Props) {
+export default function CoachPanel({ profile, compact = false, insights: passedInsights }: Props) {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
   const langKey = (lang === "en" ? "en" : "es") as "es" | "en";

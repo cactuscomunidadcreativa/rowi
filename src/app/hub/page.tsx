@@ -75,64 +75,94 @@ export default function HubDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
 
-  // Traducciones
-  const txt = {
-    loading: locale === "en" ? "Loading your hub..." : "Cargando tu hub...",
-    welcome: locale === "en" ? "Welcome back" : "Bienvenido de nuevo",
-    subtitle: locale === "en" ? "Your emotional intelligence journey continues" : "Tu viaje de inteligencia emocional continúa",
-
-    // Quick actions
-    quickActions: locale === "en" ? "Quick Actions" : "Acciones Rápidas",
-
-    // EQ Section
-    myEQ: locale === "en" ? "My EQ" : "Mi EQ",
-    eqScore: locale === "en" ? "EQ Score" : "Puntuación EQ",
-    noEQData: locale === "en" ? "No EQ data yet" : "Sin datos EQ aún",
-    linkAssessment: locale === "en" ? "Link SEI Assessment" : "Vincular SEI",
-    viewProfile: locale === "en" ? "View full profile" : "Ver perfil completo",
-
-    // AI Agents
-    aiAgents: locale === "en" ? "AI Coaches" : "Coaches IA",
-    chatWith: locale === "en" ? "Chat with" : "Chatear con",
-    startChat: locale === "en" ? "Start chat" : "Iniciar chat",
-
-    // Communities
-    communities: locale === "en" ? "My Communities" : "Mis Comunidades",
-    members: locale === "en" ? "members" : "miembros",
-    viewAll: locale === "en" ? "View all" : "Ver todas",
-    noCommunities: locale === "en" ? "No communities yet" : "Sin comunidades aún",
-    exploreCommunities: locale === "en" ? "Explore communities" : "Explorar comunidades",
-
-    // Progress
-    progress: locale === "en" ? "Progress" : "Progreso",
-    level: locale === "en" ? "Level" : "Nivel",
-    xp: "XP",
-    streak: locale === "en" ? "Day streak" : "Días seguidos",
-
-    // Quick links
-    eqDashboard: locale === "en" ? "EQ Dashboard" : "Dashboard EQ",
-    eqDashboardDesc: locale === "en" ? "Your emotional intelligence" : "Tu inteligencia emocional",
-    brainTalents: locale === "en" ? "Brain Talents" : "Talentos Cerebrales",
-    brainTalentsDesc: locale === "en" ? "Your 18 brain talents" : "Tus 18 talentos",
-    coach: locale === "en" ? "AI Coach" : "Coach IA",
-    coachDesc: locale === "en" ? "Chat with Rowi" : "Chatea con Rowi",
-    learn: locale === "en" ? "Learn" : "Aprender",
-    learnDesc: locale === "en" ? "EQ microlearning" : "Microlearning EQ",
-    achievements: locale === "en" ? "Achievements" : "Logros",
-    achievementsDesc: locale === "en" ? "Your badges" : "Tus insignias",
-    settings: locale === "en" ? "Settings" : "Configuración",
-    settingsDesc: locale === "en" ? "Account settings" : "Tu cuenta",
-
-    // Admin section
-    adminPanel: locale === "en" ? "Admin Panel" : "Panel Admin",
-    adminPanelDesc: locale === "en" ? "System administration" : "Administración",
-    adminDashboard: locale === "en" ? "Dashboard" : "Dashboard",
-    adminUsers: locale === "en" ? "Users" : "Usuarios",
-    adminAgents: locale === "en" ? "AI Agents" : "Agentes IA",
-    adminBenchmarks: locale === "en" ? "Benchmarks" : "Benchmarks",
-    adminCMS: locale === "en" ? "CMS" : "CMS",
-    adminBranding: locale === "en" ? "Branding" : "Marca",
+  // Traducciones multi-idioma
+  const i18n: Record<string, Record<string, string>> = {
+    es: {
+      loading: "Cargando tu hub...", welcome: "Bienvenido de nuevo",
+      subtitle: "Tu viaje de inteligencia emocional continúa",
+      quickActions: "Acciones Rápidas",
+      myEQ: "Mi EQ", eqScore: "Puntuación EQ", noEQData: "Sin datos EQ aún",
+      linkAssessment: "Vincular SEI", viewProfile: "Ver perfil completo",
+      aiAgents: "Coaches IA", chatWith: "Chatear con", startChat: "Iniciar chat",
+      communities: "Mis Comunidades", members: "miembros", viewAll: "Ver todas",
+      noCommunities: "Sin comunidades aún", exploreCommunities: "Explorar comunidades",
+      progress: "Progreso", level: "Nivel", xp: "XP", streak: "Días seguidos",
+      eqDashboard: "Dashboard EQ", eqDashboardDesc: "Tu inteligencia emocional",
+      brainTalents: "Talentos Cerebrales", brainTalentsDesc: "Tus 18 talentos",
+      coach: "Coach IA", coachDesc: "Chatea con Rowi",
+      learn: "Aprender", learnDesc: "Microlearning EQ",
+      achievements: "Logros", achievementsDesc: "Tus insignias",
+      settings: "Configuración", settingsDesc: "Tu cuenta",
+      adminPanel: "Panel Admin", adminPanelDesc: "Administración",
+      adminDashboard: "Dashboard", adminUsers: "Usuarios",
+      adminAgents: "Agentes IA", adminBenchmarks: "Benchmarks",
+      adminCMS: "CMS", adminBranding: "Marca",
+    },
+    en: {
+      loading: "Loading your hub...", welcome: "Welcome back",
+      subtitle: "Your emotional intelligence journey continues",
+      quickActions: "Quick Actions",
+      myEQ: "My EQ", eqScore: "EQ Score", noEQData: "No EQ data yet",
+      linkAssessment: "Link SEI Assessment", viewProfile: "View full profile",
+      aiAgents: "AI Coaches", chatWith: "Chat with", startChat: "Start chat",
+      communities: "My Communities", members: "members", viewAll: "View all",
+      noCommunities: "No communities yet", exploreCommunities: "Explore communities",
+      progress: "Progress", level: "Level", xp: "XP", streak: "Day streak",
+      eqDashboard: "EQ Dashboard", eqDashboardDesc: "Your emotional intelligence",
+      brainTalents: "Brain Talents", brainTalentsDesc: "Your 18 brain talents",
+      coach: "AI Coach", coachDesc: "Chat with Rowi",
+      learn: "Learn", learnDesc: "EQ microlearning",
+      achievements: "Achievements", achievementsDesc: "Your badges",
+      settings: "Settings", settingsDesc: "Account settings",
+      adminPanel: "Admin Panel", adminPanelDesc: "System administration",
+      adminDashboard: "Dashboard", adminUsers: "Users",
+      adminAgents: "AI Agents", adminBenchmarks: "Benchmarks",
+      adminCMS: "CMS", adminBranding: "Branding",
+    },
+    pt: {
+      loading: "Carregando seu hub...", welcome: "Bem-vindo de volta",
+      subtitle: "Sua jornada de inteligência emocional continua",
+      quickActions: "Ações Rápidas",
+      myEQ: "Meu EQ", eqScore: "Pontuação EQ", noEQData: "Sem dados EQ ainda",
+      linkAssessment: "Vincular SEI", viewProfile: "Ver perfil completo",
+      aiAgents: "Coaches IA", chatWith: "Conversar com", startChat: "Iniciar chat",
+      communities: "Minhas Comunidades", members: "membros", viewAll: "Ver todas",
+      noCommunities: "Sem comunidades ainda", exploreCommunities: "Explorar comunidades",
+      progress: "Progresso", level: "Nível", xp: "XP", streak: "Dias seguidos",
+      eqDashboard: "Dashboard EQ", eqDashboardDesc: "Sua inteligência emocional",
+      brainTalents: "Talentos Cerebrais", brainTalentsDesc: "Seus 18 talentos",
+      coach: "Coach IA", coachDesc: "Converse com Rowi",
+      learn: "Aprender", learnDesc: "Microlearning EQ",
+      achievements: "Conquistas", achievementsDesc: "Suas insígnias",
+      settings: "Configurações", settingsDesc: "Sua conta",
+      adminPanel: "Painel Admin", adminPanelDesc: "Administração",
+      adminDashboard: "Dashboard", adminUsers: "Usuários",
+      adminAgents: "Agentes IA", adminBenchmarks: "Benchmarks",
+      adminCMS: "CMS", adminBranding: "Marca",
+    },
+    it: {
+      loading: "Caricamento del hub...", welcome: "Bentornato",
+      subtitle: "Il tuo viaggio nell'intelligenza emotiva continua",
+      quickActions: "Azioni Rapide",
+      myEQ: "Il mio EQ", eqScore: "Punteggio EQ", noEQData: "Nessun dato EQ ancora",
+      linkAssessment: "Collega SEI", viewProfile: "Vedi profilo completo",
+      aiAgents: "Coach IA", chatWith: "Chatta con", startChat: "Inizia chat",
+      communities: "Le mie Comunità", members: "membri", viewAll: "Vedi tutte",
+      noCommunities: "Nessuna comunità ancora", exploreCommunities: "Esplora comunità",
+      progress: "Progresso", level: "Livello", xp: "XP", streak: "Giorni consecutivi",
+      eqDashboard: "Dashboard EQ", eqDashboardDesc: "La tua intelligenza emotiva",
+      brainTalents: "Talenti Cerebrali", brainTalentsDesc: "I tuoi 18 talenti",
+      coach: "Coach IA", coachDesc: "Chatta con Rowi",
+      learn: "Imparare", learnDesc: "Microlearning EQ",
+      achievements: "Traguardi", achievementsDesc: "I tuoi badge",
+      settings: "Impostazioni", settingsDesc: "Il tuo account",
+      adminPanel: "Pannello Admin", adminPanelDesc: "Amministrazione",
+      adminDashboard: "Dashboard", adminUsers: "Utenti",
+      adminAgents: "Agenti IA", adminBenchmarks: "Benchmarks",
+      adminCMS: "CMS", adminBranding: "Brand",
+    },
   };
+  const txt = i18n[locale] || i18n["es"];
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -175,9 +205,9 @@ export default function HubDashboardPage() {
           eq: { total: null, hasData: false },
           communities: [],
           agents: [
-            { id: "1", slug: "super-rowi", name: "Super Rowi", description: locale === "en" ? "Your main EQ assistant" : "Tu asistente principal de EQ" },
-            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: locale === "en" ? "Emotional intelligence coach" : "Coach de inteligencia emocional" },
-            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: locale === "en" ? "Relationships expert" : "Experto en relaciones" },
+            { id: "1", slug: "super-rowi", name: "Super Rowi", description: ({ es: "Tu asistente principal de EQ", en: "Your main EQ assistant", pt: "Seu assistente principal de EQ", it: "Il tuo assistente principale EQ" })[locale] || "Tu asistente principal de EQ" },
+            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: ({ es: "Coach de inteligencia emocional", en: "Emotional intelligence coach", pt: "Coach de inteligência emocional", it: "Coach di intelligenza emotiva" })[locale] || "Coach de inteligencia emocional" },
+            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: ({ es: "Experto en relaciones", en: "Relationships expert", pt: "Especialista em relacionamentos", it: "Esperto in relazioni" })[locale] || "Experto en relaciones" },
           ],
         });
       }

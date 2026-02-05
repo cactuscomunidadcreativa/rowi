@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { upload } from "@vercel/blob/client";
 import {
@@ -93,6 +94,7 @@ const PHASE_MESSAGES = {
 export default function UploadBenchmarkPage() {
   const { t, lang } = useI18n();
   const router = useRouter();
+  const { data: session } = useSession();
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -176,6 +178,9 @@ export default function UploadBenchmarkPage() {
       const blob = await upload(file.name, file, {
         access: "public",
         handleUploadUrl: "/api/admin/benchmarks/blob-token",
+        headers: {
+          "x-user-email": session?.user?.email || "",
+        },
         onUploadProgress: (progressEvent) => {
           const percent = Math.round((progressEvent.loaded / progressEvent.total) * 40);
           setUploadState({

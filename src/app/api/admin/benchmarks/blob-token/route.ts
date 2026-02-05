@@ -12,13 +12,18 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
 export async function POST(req: NextRequest) {
   try {
-    // Usar getToken en lugar de getServerSession para mejor compatibilidad con cookies
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Intentar obtener email del header (enviado desde el cliente)
+    // o del token JWT como fallback
+    let userEmail = req.headers.get("x-user-email");
+
+    if (!userEmail) {
+      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+      userEmail = token?.email as string;
     }
 
-    const userEmail = token.email as string;
+    if (!userEmail) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json() as HandleUploadBody;
 

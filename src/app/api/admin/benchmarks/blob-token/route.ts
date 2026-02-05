@@ -7,16 +7,18 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getToken } from "next-auth/jwt";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    // Usar getToken en lugar de getServerSession para mejor compatibilidad con cookies
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const userEmail = token.email as string;
 
     const body = await req.json() as HandleUploadBody;
 
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
           maximumSizeInBytes: 500 * 1024 * 1024, // 500MB
           addRandomSuffix: true, // Evitar conflictos con archivos existentes
           tokenPayload: JSON.stringify({
-            uploadedBy: session.user.email,
+            uploadedBy: userEmail,
           }),
         };
       },

@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
               // Imágenes
               "img-src 'self' data: blob: https: http:",
               // Conexiones (APIs)
-              "connect-src 'self' https://api.stripe.com https://api.openai.com https://*.vercel-insights.com https://*.google-analytics.com wss:",
+              "connect-src 'self' https://api.stripe.com https://api.openai.com https://*.vercel-insights.com https://*.google-analytics.com https://*.blob.vercel-storage.com wss:",
               // Frames (para Stripe checkout)
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
               // Objetos embebidos

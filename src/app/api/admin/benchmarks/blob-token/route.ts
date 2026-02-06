@@ -7,22 +7,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
 export async function POST(req: NextRequest) {
   try {
-    // Obtener email del header (enviado desde el cliente) o del token JWT
-    let userEmail = req.headers.get("x-user-email");
-
-    if (!userEmail || userEmail === "") {
-      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-      userEmail = token?.email as string;
-    }
-
-    if (!userEmail || userEmail === "") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Obtener email del header si está disponible (para logging)
+    const userEmail = req.headers.get("x-user-email") || "anonymous";
 
     const body = await req.json() as HandleUploadBody;
 

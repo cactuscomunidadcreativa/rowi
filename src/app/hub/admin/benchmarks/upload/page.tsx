@@ -4,7 +4,6 @@ import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { upload } from "@vercel/blob/client";
 import {
   Upload,
   FileSpreadsheet,
@@ -157,7 +156,7 @@ export default function UploadBenchmarkPage() {
   };
 
   // =========================================================
-  // 🚀 UPLOAD CON VERCEL BLOB (client-side)
+  // 🚀 UPLOAD DIRECTO AL SERVIDOR (evita problemas del cliente Vercel Blob)
   // =========================================================
   const handleUpload = async () => {
     if (!file || !name.trim()) {
@@ -174,47 +173,61 @@ export default function UploadBenchmarkPage() {
         message: messages.uploading,
       });
 
-      // 1. Subir archivo directamente a Vercel Blob
-      const blob = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/admin/benchmarks/blob-token",
-        headers: {
-          "x-user-email": session?.user?.email || "",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded / progressEvent.total) * 40);
-          setUploadState({
-            phase: "uploading",
-            progress: percent,
-            message: `${messages.uploading} ${Math.round(progressEvent.loaded / 1024 / 1024)}MB / ${Math.round(progressEvent.total / 1024 / 1024)}MB`,
-          });
-        },
+      // Crear FormData con el archivo y metadatos
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("name", name.trim());
+      formData.append("type", type);
+      formData.append("scope", scope);
+      formData.append("isLearning", String(isLearning));
+
+      // Usar XMLHttpRequest para tener progreso de upload
+      const xhr = new XMLHttpRequest();
+
+      const uploadPromise = new Promise<{ ok: boolean; jobId: string; benchmarkId: string; error?: string }>((resolve, reject) => {
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 45);
+            setUploadState({
+              phase: "uploading",
+              progress: percent,
+              message: `${messages.uploading} ${Math.round(event.loaded / 1024 / 1024)}MB / ${Math.round(event.total / 1024 / 1024)}MB`,
+            });
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch {
+              reject(new Error("Invalid response"));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.error || `Error ${xhr.status}`));
+            } catch {
+              reject(new Error(`Error ${xhr.status}`));
+            }
+          }
+        });
+
+        xhr.addEventListener("error", () => reject(new Error("Network error")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
+
+        xhr.open("POST", "/api/admin/benchmarks/upload-direct");
+        xhr.setRequestHeader("x-user-email", session?.user?.email || "");
+        xhr.send(formData);
       });
 
-      setUploadState({
-        phase: "uploading",
-        progress: 45,
-        message: "Iniciando procesamiento...",
-      });
+      // Conectar abort controller
+      abortControllerRef.current.signal.addEventListener("abort", () => xhr.abort());
 
-      // 2. Notificar al backend para procesar el archivo
-      const response = await fetch("/api/admin/benchmarks/start-processing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          blobUrl: blob.url,
-          name: name.trim(),
-          type,
-          scope,
-          isLearning,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
-
-      const data = await response.json();
+      const data = await uploadPromise;
 
       if (!data.ok) {
-        throw new Error(data.error || "Error iniciando procesamiento");
+        throw new Error(data.error || "Error en upload");
       }
 
       setUploadState({
@@ -223,7 +236,7 @@ export default function UploadBenchmarkPage() {
         message: messages.processing,
       });
 
-      // 3. Polling del estado del job
+      // Polling del estado del job
       pollJobStatus(data.jobId, data.benchmarkId);
 
     } catch (error: any) {

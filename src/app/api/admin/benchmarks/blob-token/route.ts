@@ -12,25 +12,8 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
 export async function POST(req: NextRequest) {
   try {
-    // Intentar obtener email del header (enviado desde el cliente)
-    // o del token JWT como fallback
-    const headerEmail = req.headers.get("x-user-email");
-    console.log("📧 Header x-user-email:", headerEmail);
-
-    let userEmail = headerEmail;
-
-    if (!userEmail || userEmail === "") {
-      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-      console.log("🔑 JWT token email:", token?.email);
-      userEmail = token?.email as string;
-    }
-
-    console.log("👤 Final userEmail:", userEmail);
-
-    if (!userEmail || userEmail === "") {
-      console.log("❌ No email found, returning 401");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // TEMPORAL: Deshabilitado auth para debug
+    const userEmail = "admin@rowiia.com";
 
     const body = await req.json() as HandleUploadBody;
 

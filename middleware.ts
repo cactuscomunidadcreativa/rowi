@@ -30,6 +30,7 @@ const PUBLIC_API_PATHS = [
   "/api/plans",
   "/api/health", // Health check for monitoring
   "/api/cron", // Cron jobs (secured by CRON_SECRET)
+  "/api/admin/benchmarks/blob-token", // Vercel Blob client uploads
 ];
 
 /* =========================================================

@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
+import * as XLSX from "xlsx";
 import {
   EQ_COMPETENCIES,
   SOH_COLUMN_MAPPING,
@@ -166,6 +167,10 @@ export async function POST(req: NextRequest) {
     console.log(`📥 Downloading from blob: ${blobUrl}`);
     const startDownload = Date.now();
 
+    // Detectar si es Excel basado en la URL
+    const isExcelFile = blobUrl.toLowerCase().includes('.xlsx') ||
+                        blobUrl.toLowerCase().includes('.xls');
+
     // 📏 Fetch con timeout y validación de tamaño
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
@@ -174,9 +179,9 @@ export async function POST(req: NextRequest) {
     try {
       response = await fetch(blobUrl, {
         signal: controller.signal,
-        headers: {
-          "Accept": "text/csv, text/plain, application/csv",
-        },
+        headers: isExcelFile
+          ? { "Accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, application/octet-stream" }
+          : { "Accept": "text/csv, text/plain, application/csv" },
       });
     } finally {
       clearTimeout(timeoutId);
@@ -195,14 +200,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const text = await response.text();
+    // Para Excel, obtener como ArrayBuffer; para CSV, como texto
+    let text: string;
+    let fileBuffer: ArrayBuffer | null = null;
 
-    // Verificar tamaño después de descargar (por si no había Content-Length)
-    if (text.length > MAX_FILE_SIZE_BYTES) {
-      throw new Error(`File too large: ${(text.length / 1024 / 1024).toFixed(1)}MB exceeds ${MAX_FILE_SIZE_MB}MB limit`);
+    if (isExcelFile) {
+      fileBuffer = await response.arrayBuffer();
+      text = Buffer.from(fileBuffer).toString('binary'); // Para compatibilidad con xlsx
+      console.log(`📥 Download completed in ${Date.now() - startDownload}ms (${(fileBuffer.byteLength / 1024 / 1024).toFixed(2)}MB) [Excel]`);
+    } else {
+      text = await response.text();
+      console.log(`📥 Download completed in ${Date.now() - startDownload}ms (${(text.length / 1024 / 1024).toFixed(2)}MB) [CSV]`);
     }
 
-    console.log(`📥 Download completed in ${Date.now() - startDownload}ms (${(text.length / 1024 / 1024).toFixed(1)}MB)`);
+    // Verificar tamaño después de descargar (por si no había Content-Length)
+    const downloadedSize = fileBuffer ? fileBuffer.byteLength : text.length;
+    if (downloadedSize > MAX_FILE_SIZE_BYTES) {
+      throw new Error(`File too large: ${(downloadedSize / 1024 / 1024).toFixed(1)}MB exceeds ${MAX_FILE_SIZE_MB}MB limit`);
+    }
 
     // Fase 2: Parsing
     await prisma.benchmarkUploadJob.update({
@@ -213,21 +228,60 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`📊 Parsing CSV...`);
-    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    let rows: Record<string, any>[] = [];
+    let rawHeaders: string[] = [];
 
-    if (lines.length < 2) {
-      throw new Error("CSV vacío o sin datos");
+    if (isExcelFile) {
+      console.log(`📊 Parsing Excel file...`);
+      // Parse Excel usando xlsx - usar el buffer directamente
+      const buffer = fileBuffer ? Buffer.from(fileBuffer) : Buffer.from(text, 'binary');
+      const workbook = XLSX.read(buffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      console.log(`📊 Excel sheet: ${sheetName}, sheets available: ${workbook.SheetNames.join(", ")}`);
+
+      // Obtener como JSON con headers
+      rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+
+      if (rows.length === 0) {
+        throw new Error("Excel vacío o sin datos");
+      }
+
+      // Extraer headers del primer objeto
+      rawHeaders = Object.keys(rows[0]);
+      console.log(`📊 Excel parsed: ${rows.length} rows, ${rawHeaders.length} columns`);
+      console.log(`📊 Sample headers: ${rawHeaders.slice(0, 15).join(", ")}`);
+    } else {
+      console.log(`📊 Parsing CSV...`);
+      const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+      if (lines.length < 2) {
+        throw new Error("CSV vacío o sin datos");
+      }
+
+      rawHeaders = parseCSVLine(lines[0]);
+
+      // Convertir CSV a array de objetos
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        const values = parseCSVLine(line);
+        const rowObj: Record<string, any> = {};
+        rawHeaders.forEach((header, idx) => {
+          rowObj[header] = values[idx] || null;
+        });
+        rows.push(rowObj);
+      }
     }
 
-    const rawHeaders = parseCSVLine(lines[0]);
     console.log(`📊 Raw headers (first 10): ${rawHeaders.slice(0, 10).join(", ")}`);
 
     // Mapear headers usando SOH_COLUMN_MAPPING
     const mappedHeaders = rawHeaders.map(h => SOH_COLUMN_MAPPING[h] || h);
     console.log(`📊 Mapped headers (first 10): ${mappedHeaders.slice(0, 10).join(", ")}`);
 
-    const totalDataRows = lines.length - 1;
+    const totalDataRows = rows.length;
     console.log(`📊 Total rows to process: ${totalDataRows}`);
 
     await prisma.benchmarkUploadJob.update({
@@ -245,22 +299,20 @@ export async function POST(req: NextRequest) {
     let dataPoints: any[] = [];
     let lastProgressUpdate = 0;
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line.trim()) continue;
-
-      const values = parseCSVLine(line);
+    for (let i = 0; i < rows.length; i++) {
+      const rawRow = rows[i];
 
       // Crear row con headers mapeados
       const row: Record<string, any> = {};
-      mappedHeaders.forEach((header, idx) => {
-        const value = values[idx];
+      rawHeaders.forEach((header) => {
+        const mappedHeader = SOH_COLUMN_MAPPING[header] || header;
+        const value = rawRow[header];
         // Convertir a número si es una columna numérica
-        if (NUMERIC_COLUMNS.includes(header)) {
+        if (NUMERIC_COLUMNS.includes(mappedHeader)) {
           const num = parseFloat(value);
-          row[header] = isNaN(num) ? null : num;
+          row[mappedHeader] = isNaN(num) ? null : num;
         } else {
-          row[header] = value || null;
+          row[mappedHeader] = value || null;
         }
       });
 

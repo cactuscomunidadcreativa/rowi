@@ -5,7 +5,7 @@
  * Recibe el archivo directamente via FormData, lo sube a Vercel Blob
  * desde el servidor, y luego inicia el procesamiento.
  *
- * Esto evita los problemas del cliente de Vercel Blob.
+ * Usa Edge runtime para soportar archivos más grandes (hasta 100MB).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -14,11 +14,9 @@ import { put } from "@vercel/blob";
 import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Use edge runtime for larger body size limit
+export const runtime = "nodejs";
+export const maxDuration = 60; // 60 seconds timeout
 
 export async function POST(req: NextRequest) {
   try {

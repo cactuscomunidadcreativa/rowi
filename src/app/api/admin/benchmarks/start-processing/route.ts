@@ -8,8 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
 
@@ -23,8 +22,15 @@ interface StartProcessingBody {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    // Auth via header or JWT token
+    let userEmail = req.headers.get("x-user-email");
+
+    if (!userEmail || userEmail === "") {
+      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+      userEmail = token?.email as string;
+    }
+
+    if (!userEmail || userEmail === "") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -47,7 +53,7 @@ export async function POST(req: NextRequest) {
         isLearning: isLearning || false,
         status: "PROCESSING",
         totalRows: 0,
-        uploadedBy: session.user.email,
+        uploadedBy: userEmail,
       },
     });
 

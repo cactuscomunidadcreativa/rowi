@@ -72,7 +72,10 @@ export async function POST(req: NextRequest) {
     waitUntil(
       fetch(processUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-call": "true",
+        },
         body: JSON.stringify({
           benchmarkId: benchmark.id,
           jobId: job.id,

@@ -30,9 +30,7 @@ const PUBLIC_API_PATHS = [
   "/api/plans",
   "/api/health", // Health check for monitoring
   "/api/cron", // Cron jobs (secured by CRON_SECRET)
-  "/api/admin/benchmarks/blob-token", // Vercel Blob client uploads
-  "/api/admin/benchmarks/start-processing", // Benchmark processing (auth via header)
-  "/api/admin/benchmarks/job", // Job status polling
+  "/api/admin/benchmarks", // All benchmark APIs (auth handled internally)
 ];
 
 /* =========================================================

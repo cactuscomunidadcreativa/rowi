@@ -14,8 +14,11 @@ interface RouteParams {
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
+    // Allow auth via session or x-user-email header (for client polling)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const headerEmail = req.headers.get("x-user-email");
+
+    if (!session?.user?.email && !headerEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

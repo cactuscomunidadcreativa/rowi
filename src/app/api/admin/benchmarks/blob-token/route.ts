@@ -12,8 +12,17 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
 export async function POST(req: NextRequest) {
   try {
-    // TEMPORAL: Deshabilitado auth para debug
-    const userEmail = "admin@rowiia.com";
+    // Obtener email del header (enviado desde el cliente) o del token JWT
+    let userEmail = req.headers.get("x-user-email");
+
+    if (!userEmail || userEmail === "") {
+      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+      userEmail = token?.email as string;
+    }
+
+    if (!userEmail || userEmail === "") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json() as HandleUploadBody;
 
@@ -32,10 +41,10 @@ export async function POST(req: NextRequest) {
             'text/csv',
             'application/vnd.ms-excel',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/octet-stream', // Para archivos sin MIME type específico
+            'application/octet-stream',
           ],
           maximumSizeInBytes: 500 * 1024 * 1024, // 500MB
-          addRandomSuffix: true, // Evitar conflictos con archivos existentes
+          addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             uploadedBy: userEmail,
           }),
@@ -55,4 +64,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-// Build trigger: 1770312248

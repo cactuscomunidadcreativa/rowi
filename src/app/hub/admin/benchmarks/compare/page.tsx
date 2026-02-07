@@ -162,10 +162,40 @@ export default function CompareBenchmarksPage() {
   const [comparing, setComparing] = useState(false);
   const [activeTab, setActiveTab] = useState<"stats" | "topPerformers">("stats");
 
+  // Metric groups filter
+  const [selectedMetricGroups, setSelectedMetricGroups] = useState<Set<string>>(
+    new Set(["core", "competencies", "outcomes", "talents"])
+  );
+
   // Outcome selector for Top Performers analysis
   const [selectedOutcome, setSelectedOutcome] = useState<string>("effectiveness");
   const [topPerformersByOutcome, setTopPerformersByOutcome] = useState<TopPerformerByOutcome[]>([]);
   const [loadingTopPerformers, setLoadingTopPerformers] = useState(false);
+
+  // Cross-benchmark segment comparison
+  const [crossBenchmarkMode, setCrossBenchmarkMode] = useState(false);
+  const [segmentBenchmarkIds, setSegmentBenchmarkIds] = useState<string[]>(["", ""]);
+  const [segmentFiltersData, setSegmentFiltersData] = useState<(FiltersData | null)[]>([null, null]);
+
+  // Toggle metric group selection
+  const toggleMetricGroup = (group: string) => {
+    setSelectedMetricGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) {
+        // Don't allow deselecting all
+        if (next.size > 1) next.delete(group);
+      } else {
+        next.add(group);
+      }
+      return next;
+    });
+  };
+
+  // Get visible metrics based on selected groups
+  const getVisibleMetrics = (group: keyof typeof METRIC_GROUPS) => {
+    if (!selectedMetricGroups.has(group)) return [];
+    return METRIC_GROUPS[group];
+  };
 
   // Load benchmarks list
   useEffect(() => {
@@ -224,6 +254,70 @@ export default function CompareBenchmarksPage() {
       console.error("Error loading filters:", error);
     }
   }
+
+  // Load filters for a specific benchmark (cross-benchmark mode)
+  async function loadFiltersForBenchmark(benchmarkId: string, segmentIndex: number) {
+    if (!benchmarkId) {
+      setSegmentFiltersData((prev) => {
+        const next = [...prev];
+        next[segmentIndex] = null;
+        return next;
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/benchmarks/${benchmarkId}`);
+      const data = await res.json();
+
+      if (data.ok && data.benchmark) {
+        const filters: FiltersData = {
+          countries: data.benchmark.countries || [],
+          regions: data.benchmark.regions || [],
+          sectors: data.benchmark.sectors || [],
+          jobFunctions: data.benchmark.jobFunctions || [],
+          jobRoles: data.benchmark.jobRoles || [],
+          ageRanges: data.benchmark.ageRanges || [],
+          genders: data.benchmark.genders || [],
+          educations: data.benchmark.educations || [],
+          years: data.benchmark.years || [],
+          months: data.benchmark.months || [],
+          quarters: data.benchmark.quarters || [],
+          countryToRegion: data.benchmark.countryToRegion || {},
+        };
+        setSegmentFiltersData((prev) => {
+          const next = [...prev];
+          next[segmentIndex] = filters;
+          return next;
+        });
+      }
+    } catch (error) {
+      console.error("Error loading filters for benchmark:", error);
+    }
+  }
+
+  // Update segment benchmark ID (cross-benchmark mode)
+  const updateSegmentBenchmarkId = (index: number, benchmarkId: string) => {
+    setSegmentBenchmarkIds((prev) => {
+      const next = [...prev];
+      next[index] = benchmarkId;
+      return next;
+    });
+    // Clear segment filters when changing benchmark
+    updateSegment(index, "country", "");
+    updateSegment(index, "region", "");
+    updateSegment(index, "sector", "");
+    updateSegment(index, "jobFunction", "");
+    updateSegment(index, "jobRole", "");
+    updateSegment(index, "ageRange", "");
+    updateSegment(index, "gender", "");
+    updateSegment(index, "education", "");
+    updateSegment(index, "year", "");
+    updateSegment(index, "month", "");
+    updateSegment(index, "quarter", "");
+    // Load filters for new benchmark
+    loadFiltersForBenchmark(benchmarkId, index);
+  };
 
   const toggleBenchmarkSelection = (id: string) => {
     setSelectedIds((prev) =>
@@ -294,6 +388,18 @@ export default function CompareBenchmarksPage() {
   };
 
   const compareSegments = async () => {
+    // Cross-benchmark mode validation
+    if (crossBenchmarkMode) {
+      const validBenchmarks = segmentBenchmarkIds.filter((id) => id);
+      if (validBenchmarks.length < 2) {
+        toast.error(t("admin.benchmarks.compare.selectBenchmarkForEach"));
+        return;
+      }
+      await compareCrossBenchmarkSegments();
+      return;
+    }
+
+    // Normal single-benchmark mode
     if (!selectedBenchmarkId) {
       toast.error(t("admin.benchmarks.compare.selectBenchmark"));
       return;
@@ -315,6 +421,38 @@ export default function CompareBenchmarksPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ segments }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        setComparison(data.comparison);
+        setSegmentSummaries(data.segments);
+        setComparedBenchmarks([]);
+        toast.success(t("admin.benchmarks.compare.success"));
+      } else {
+        toast.error(data.error || t("common.error"));
+      }
+    } catch (error) {
+      toast.error(t("common.error"));
+    } finally {
+      setComparing(false);
+    }
+  };
+
+  // Compare segments from different benchmarks
+  const compareCrossBenchmarkSegments = async () => {
+    setComparing(true);
+    try {
+      const res = await fetch("/api/admin/benchmarks/compare-cross-segments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          segments: segments.map((seg, idx) => ({
+            ...seg,
+            benchmarkId: segmentBenchmarkIds[idx],
+          })),
+          metricGroups: Array.from(selectedMetricGroups),
+        }),
       });
       const data = await res.json();
 
@@ -462,12 +600,22 @@ export default function CompareBenchmarksPage() {
 
   // Obtener países filtrados por región para cada segmento
   const getFilteredCountriesForSegment = (segmentIndex: number): FilterOption[] => {
-    if (!filtersData) return [];
+    // In cross-benchmark mode, use segment-specific filters
+    const filters = crossBenchmarkMode ? segmentFiltersData[segmentIndex] : filtersData;
+    if (!filters) return [];
     const regionFilter = segments[segmentIndex].region;
-    if (!regionFilter) return filtersData.countries;
-    return filtersData.countries.filter(
-      (c) => filtersData.countryToRegion[c.value] === regionFilter
+    if (!regionFilter) return filters.countries;
+    return filters.countries.filter(
+      (c) => filters.countryToRegion[c.value] === regionFilter
     );
+  };
+
+  // Get filters data for a segment (cross-benchmark or normal mode)
+  const getFiltersForSegment = (segmentIndex: number): FiltersData | null => {
+    if (crossBenchmarkMode) {
+      return segmentFiltersData[segmentIndex];
+    }
+    return filtersData;
   };
 
   // Renderizar filtro con SearchableSelect
@@ -558,6 +706,25 @@ export default function CompareBenchmarksPage() {
     return segmentSummaries.map((s) => ({ id: s.name, name: s.name }));
   };
 
+  // Check if a metric group has any data
+  const hasDataForMetricGroup = (group: keyof typeof METRIC_GROUPS) => {
+    if (!comparison) return false;
+    const metrics = METRIC_GROUPS[group];
+    const columns = getColumnNames();
+
+    for (const metric of metrics) {
+      const metricData = comparison.statistics[metric];
+      if (metricData) {
+        for (const col of columns) {
+          if (metricData[col.id]?.n > 0) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
   return (
     <AdminPage
       titleKey="admin.benchmarks.compare.title"
@@ -626,85 +793,190 @@ export default function CompareBenchmarksPage() {
             </div>
           </div>
 
-          {/* Benchmark Selector */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-[var(--rowi-foreground)] mb-2">
-              {t("admin.benchmarks.compare.selectBaseBenchmark")}
+          {/* Cross-benchmark Toggle */}
+          <div className="mb-4 p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-card-border)]">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={crossBenchmarkMode}
+                onChange={(e) => {
+                  setCrossBenchmarkMode(e.target.checked);
+                  if (e.target.checked) {
+                    // Initialize segment benchmark IDs
+                    const initial = segments.map(() => benchmarks[0]?.id || "");
+                    setSegmentBenchmarkIds(initial);
+                    // Load filters for each
+                    initial.forEach((id, idx) => loadFiltersForBenchmark(id, idx));
+                  }
+                }}
+                className="w-4 h-4 rounded border-[var(--rowi-card-border)] text-[var(--rowi-primary)] focus:ring-[var(--rowi-primary)]"
+              />
+              <div>
+                <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+                  {t("admin.benchmarks.compare.crossBenchmarkMode")}
+                </span>
+                <p className="text-xs text-[var(--rowi-muted)]">
+                  {t("admin.benchmarks.compare.crossBenchmarkDesc")}
+                </p>
+              </div>
             </label>
-            <select
-              value={selectedBenchmarkId}
-              onChange={(e) => setSelectedBenchmarkId(e.target.value)}
-              className="w-full md:w-96 px-3 py-2 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
-            >
-              {benchmarks.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name} ({b.totalRows?.toLocaleString() || 0} registros)
-                </option>
-              ))}
-            </select>
           </div>
+
+          {/* Metric Groups Filter */}
+          <div className="mb-4 p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-card-border)]">
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="w-4 h-4 text-[var(--rowi-muted)]" />
+              <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+                {t("admin.benchmarks.compare.selectMetricGroups")}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "core", label: t("admin.benchmarks.stats.coreEQ"), count: METRIC_GROUPS.core.length },
+                { key: "competencies", label: t("admin.benchmarks.stats.competencies"), count: METRIC_GROUPS.competencies.length },
+                { key: "outcomes", label: t("admin.benchmarks.stats.group.outcomes"), count: METRIC_GROUPS.outcomes.length },
+                { key: "talents", label: t("admin.benchmarks.stats.group.talents"), count: METRIC_GROUPS.talents.length },
+              ].map((group) => (
+                <button
+                  key={group.key}
+                  onClick={() => toggleMetricGroup(group.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    selectedMetricGroups.has(group.key)
+                      ? "bg-[var(--rowi-primary)] text-white"
+                      : "bg-[var(--rowi-card)] text-[var(--rowi-muted)] border border-[var(--rowi-card-border)] hover:border-[var(--rowi-primary)]"
+                  }`}
+                >
+                  {group.label}
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                    selectedMetricGroups.has(group.key) ? "bg-white/20" : "bg-[var(--rowi-muted)]/20"
+                  }`}>
+                    {group.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Benchmark Selector (only in normal mode) */}
+          {!crossBenchmarkMode && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[var(--rowi-foreground)] mb-2">
+                {t("admin.benchmarks.compare.selectBaseBenchmark")}
+              </label>
+              <select
+                value={selectedBenchmarkId}
+                onChange={(e) => setSelectedBenchmarkId(e.target.value)}
+                className="w-full md:w-96 px-3 py-2 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
+              >
+                {benchmarks.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.totalRows?.toLocaleString() || 0} registros)
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Segments Definition */}
           <div className="space-y-4">
-            {segments.map((segment, idx) => (
-              <div key={idx} className={`p-4 rounded-lg border-2 ${idx === 0 ? "border-[var(--rowi-primary)]" : "border-[var(--rowi-card-border)]"} bg-[var(--rowi-background)]`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded ${idx === 0 ? "bg-[var(--rowi-primary)] text-white" : "bg-[var(--rowi-muted)]/20 text-[var(--rowi-muted)]"}`}>
-                      {idx === 0 ? "Base" : `#${idx + 1}`}
-                    </span>
-                    <input
-                      type="text"
-                      value={segment.name}
-                      onChange={(e) => updateSegment(idx, "name", e.target.value)}
-                      className="text-sm font-semibold text-[var(--rowi-foreground)] bg-transparent border-b border-dashed border-[var(--rowi-card-border)] focus:border-[var(--rowi-primary)] outline-none px-1 min-w-[150px]"
-                      placeholder={idx === 0 ? "Ej: Latinoamérica" : idx === 1 ? "Ej: Norteamérica" : `Segmento ${idx + 1}`}
-                    />
-                  </div>
-                  {segments.length > 2 && (
-                    <button
-                      onClick={() => removeSegment(idx)}
-                      className="p-1 text-[var(--rowi-muted)] hover:text-red-500 transition-colors"
-                      title="Eliminar segmento"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+            {segments.map((segment, idx) => {
+              const segFilters = getFiltersForSegment(idx);
+              const benchmarkForSegment = crossBenchmarkMode
+                ? benchmarks.find((b) => b.id === segmentBenchmarkIds[idx])
+                : benchmarks.find((b) => b.id === selectedBenchmarkId);
 
-                {filtersData ? (
-                  <>
-                    {/* Smart Filter Command para este segmento */}
-                    <div className="mb-3">
-                      <SmartFilterCommand
-                        categories={getSegmentFilterCategories(idx)}
-                        selectedFilters={getSegmentSelectedFilters(idx)}
-                        onFilterChange={(key, value) => handleSegmentFilterChange(idx, key, value)}
-                        onClearAll={() => clearSegmentFilters(idx)}
-                        placeholder={t("admin.benchmarks.stats.searchFiltersFor").replace("{name}", segment.name)}
+              return (
+                <div key={idx} className={`p-4 rounded-lg border-2 ${idx === 0 ? "border-[var(--rowi-primary)]" : "border-[var(--rowi-card-border)]"} bg-[var(--rowi-background)]`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded ${idx === 0 ? "bg-[var(--rowi-primary)] text-white" : "bg-[var(--rowi-muted)]/20 text-[var(--rowi-muted)]"}`}>
+                        {idx === 0 ? "Base" : `#${idx + 1}`}
+                      </span>
+                      <input
+                        type="text"
+                        value={segment.name}
+                        onChange={(e) => updateSegment(idx, "name", e.target.value)}
+                        className="text-sm font-semibold text-[var(--rowi-foreground)] bg-transparent border-b border-dashed border-[var(--rowi-card-border)] focus:border-[var(--rowi-primary)] outline-none px-1 min-w-[150px]"
+                        placeholder={idx === 0 ? "Ej: Latinoamérica" : idx === 1 ? "Ej: Norteamérica" : `Segmento ${idx + 1}`}
                       />
                     </div>
-                    {/* Filtros detallados */}
-                    <div className="flex flex-wrap gap-3">
-                      {filtersData.regions.length > 0 && renderSearchableFilter(idx, "region", filtersData.regions, t("admin.benchmarks.stats.region"))}
-                      {filtersData.countries.length > 0 && renderSearchableFilter(idx, "country", getFilteredCountriesForSegment(idx), t("admin.benchmarks.stats.country"))}
-                      {filtersData.sectors.length > 0 && renderSearchableFilter(idx, "sector", filtersData.sectors, t("admin.benchmarks.stats.sector"))}
-                      {filtersData.jobFunctions.length > 0 && renderSearchableFilter(idx, "jobFunction", filtersData.jobFunctions, t("admin.benchmarks.stats.jobFunction"))}
-                      {filtersData.genders.length > 0 && renderSearchableFilter(idx, "gender", filtersData.genders, t("admin.benchmarks.stats.gender"))}
-                      {filtersData.ageRanges.length > 0 && renderSearchableFilter(idx, "ageRange", filtersData.ageRanges, t("admin.benchmarks.stats.age"))}
-                      {filtersData.years.length > 0 && renderSearchableFilter(idx, "year", filtersData.years, t("admin.benchmarks.stats.year"))}
-                      {filtersData.months.length > 0 && renderSearchableFilter(idx, "month", filtersData.months, t("admin.benchmarks.stats.month"))}
-                      {filtersData.quarters.length > 0 && renderSearchableFilter(idx, "quarter", filtersData.quarters, t("admin.benchmarks.stats.quarter"))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-xs text-[var(--rowi-muted)] flex items-center gap-2">
-                    <RefreshCw className="w-3 h-3 animate-spin" />
-                    {t("common.loading")}
+                    {segments.length > 2 && (
+                      <button
+                        onClick={() => removeSegment(idx)}
+                        className="p-1 text-[var(--rowi-muted)] hover:text-red-500 transition-colors"
+                        title="Eliminar segmento"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Benchmark selector per segment (cross-benchmark mode) */}
+                  {crossBenchmarkMode && (
+                    <div className="mb-3">
+                      <label className="block text-xs text-[var(--rowi-muted)] mb-1">
+                        {t("admin.benchmarks.compare.benchmarkForSegment")}
+                      </label>
+                      <select
+                        value={segmentBenchmarkIds[idx] || ""}
+                        onChange={(e) => updateSegmentBenchmarkId(idx, e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] text-[var(--rowi-foreground)] text-sm"
+                      >
+                        <option value="">{t("admin.benchmarks.compare.selectBenchmark")}</option>
+                        {benchmarks.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name} ({b.totalRows?.toLocaleString() || 0})
+                          </option>
+                        ))}
+                      </select>
+                      {benchmarkForSegment && (
+                        <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                          {benchmarkForSegment.scope} - {benchmarkForSegment.type}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {segFilters ? (
+                    <>
+                      {/* Smart Filter Command para este segmento */}
+                      <div className="mb-3">
+                        <SmartFilterCommand
+                          categories={getSegmentFilterCategories(idx)}
+                          selectedFilters={getSegmentSelectedFilters(idx)}
+                          onFilterChange={(key, value) => handleSegmentFilterChange(idx, key, value)}
+                          onClearAll={() => clearSegmentFilters(idx)}
+                          placeholder={t("admin.benchmarks.stats.searchFiltersFor").replace("{name}", segment.name)}
+                        />
+                      </div>
+                      {/* Filtros detallados */}
+                      <div className="flex flex-wrap gap-3">
+                        {segFilters.regions.length > 0 && renderSearchableFilter(idx, "region", segFilters.regions, t("admin.benchmarks.stats.region"))}
+                        {segFilters.countries.length > 0 && renderSearchableFilter(idx, "country", getFilteredCountriesForSegment(idx), t("admin.benchmarks.stats.country"))}
+                        {segFilters.sectors.length > 0 && renderSearchableFilter(idx, "sector", segFilters.sectors, t("admin.benchmarks.stats.sector"))}
+                        {segFilters.jobFunctions.length > 0 && renderSearchableFilter(idx, "jobFunction", segFilters.jobFunctions, t("admin.benchmarks.stats.jobFunction"))}
+                        {segFilters.genders.length > 0 && renderSearchableFilter(idx, "gender", segFilters.genders, t("admin.benchmarks.stats.gender"))}
+                        {segFilters.ageRanges.length > 0 && renderSearchableFilter(idx, "ageRange", segFilters.ageRanges, t("admin.benchmarks.stats.age"))}
+                        {segFilters.years.length > 0 && renderSearchableFilter(idx, "year", segFilters.years, t("admin.benchmarks.stats.year"))}
+                        {segFilters.months.length > 0 && renderSearchableFilter(idx, "month", segFilters.months, t("admin.benchmarks.stats.month"))}
+                        {segFilters.quarters.length > 0 && renderSearchableFilter(idx, "quarter", segFilters.quarters, t("admin.benchmarks.stats.quarter"))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-[var(--rowi-muted)] flex items-center gap-2">
+                      {crossBenchmarkMode && !segmentBenchmarkIds[idx] ? (
+                        <span>{t("admin.benchmarks.compare.selectBenchmarkFirst")}</span>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          {t("common.loading")}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </AdminCard>
       )}
@@ -885,6 +1157,20 @@ export default function CompareBenchmarksPage() {
 
           {activeTab === "stats" && (
             <>
+              {/* Active Metric Groups Info */}
+              <div className="flex items-center gap-2 mb-4 text-xs text-[var(--rowi-muted)]">
+                <BarChart3 className="w-4 h-4" />
+                <span>{t("admin.benchmarks.compare.showingGroups")}:</span>
+                {Array.from(selectedMetricGroups).map((group) => (
+                  <span key={group} className="px-2 py-0.5 bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] rounded">
+                    {group === "core" ? t("admin.benchmarks.stats.coreEQ") :
+                     group === "competencies" ? t("admin.benchmarks.stats.competencies") :
+                     group === "outcomes" ? t("admin.benchmarks.stats.group.outcomes") :
+                     t("admin.benchmarks.stats.group.talents")}
+                  </span>
+                ))}
+              </div>
+
               {/* Summary Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {getColumnNames().map((col, idx) => {
@@ -925,6 +1211,7 @@ export default function CompareBenchmarksPage() {
               </div>
 
               {/* Core EQ */}
+              {selectedMetricGroups.has("core") && (
               <AdminCard className="mb-6">
                 <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4">
                   {t("admin.benchmarks.stats.coreEQ")}
@@ -990,8 +1277,10 @@ export default function CompareBenchmarksPage() {
                   </table>
                 </div>
               </AdminCard>
+              )}
 
               {/* Competencias */}
+              {selectedMetricGroups.has("competencies") && (
               <AdminCard className="mb-6">
                 <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4">
                   {t("admin.benchmarks.stats.competencies")}
@@ -1056,12 +1345,21 @@ export default function CompareBenchmarksPage() {
                   </table>
                 </div>
               </AdminCard>
+              )}
 
               {/* Outcomes */}
+              {selectedMetricGroups.has("outcomes") && (
               <AdminCard className="mb-6">
                 <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4">
                   {t("admin.benchmarks.stats.group.outcomes")}
                 </h3>
+                {!hasDataForMetricGroup("outcomes") ? (
+                  <div className="text-center py-6 text-[var(--rowi-muted)]">
+                    <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">{t("admin.benchmarks.compare.noOutcomesData")}</p>
+                    <p className="text-xs mt-1">{t("admin.benchmarks.compare.noOutcomesDataHint")}</p>
+                  </div>
+                ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -1122,13 +1420,23 @@ export default function CompareBenchmarksPage() {
                     </tbody>
                   </table>
                 </div>
+                )}
               </AdminCard>
+              )}
 
               {/* Talents */}
+              {selectedMetricGroups.has("talents") && (
               <AdminCard className="mb-6">
                 <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-4">
                   {t("admin.benchmarks.stats.group.talents")}
                 </h3>
+                {!hasDataForMetricGroup("talents") ? (
+                  <div className="text-center py-6 text-[var(--rowi-muted)]">
+                    <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">{t("admin.benchmarks.compare.noTalentsData")}</p>
+                    <p className="text-xs mt-1">{t("admin.benchmarks.compare.noTalentsDataHint")}</p>
+                  </div>
+                ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -1189,7 +1497,9 @@ export default function CompareBenchmarksPage() {
                     </tbody>
                   </table>
                 </div>
+                )}
               </AdminCard>
+              )}
             </>
           )}
 

@@ -23,6 +23,63 @@ const OUTCOMES = [
   "influence", "decisionMaking", "community", "network",
   "achievement", "satisfaction", "balance", "health",
 ];
+const BRAIN_TALENTS = [
+  "dataMining", "modeling", "prioritizing", "connection", "emotionalInsight", "collaboration",
+  "reflecting", "adaptability", "criticalThinking", "resilience", "riskTolerance", "imagination",
+  "proactivity", "commitment", "problemSolving", "vision", "designing", "entrepreneurship",
+];
+
+// Calcular estadísticas en tiempo real desde dataPoints
+async function calculateStatsFromDataPoints(benchmarkId: string, metrics: string[]) {
+  const statistics = [];
+
+  for (const metric of metrics) {
+    const dataPoints = await prisma.benchmarkDataPoint.findMany({
+      where: {
+        benchmarkId,
+        [metric]: { not: null },
+      },
+      select: { [metric]: true },
+    });
+
+    const values = dataPoints
+      .map((dp: any) => dp[metric])
+      .filter((v: any) => v !== null && v !== undefined)
+      .sort((a: number, b: number) => a - b);
+
+    const n = values.length;
+    if (n === 0) continue;
+
+    const sum = values.reduce((a: number, b: number) => a + b, 0);
+    const mean = sum / n;
+
+    const variance = values.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) / n;
+    const stdDev = Math.sqrt(variance);
+
+    const getPercentile = (p: number) => {
+      const idx = Math.floor((p / 100) * (n - 1));
+      return values[idx];
+    };
+
+    statistics.push({
+      metricKey: metric,
+      n,
+      mean,
+      median: getPercentile(50),
+      stdDev,
+      min: values[0],
+      max: values[n - 1],
+      p10: getPercentile(10),
+      p25: getPercentile(25),
+      p50: getPercentile(50),
+      p75: getPercentile(75),
+      p90: getPercentile(90),
+      p95: getPercentile(95),
+    });
+  }
+
+  return statistics;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,15 +123,23 @@ export async function POST(req: NextRequest) {
     const metricsToCompare = metrics || [...CORE_METRICS, ...COMPETENCIES];
     const outcomesToCompare = outcomes || OUTCOMES;
 
-    // Obtener estadísticas de cada benchmark
+    // Obtener estadísticas de cada benchmark (pre-calculadas o en tiempo real)
     const statsComparison = await Promise.all(
       benchmarkIds.map(async (benchmarkId) => {
-        const stats = await prisma.benchmarkStatistic.findMany({
+        // Primero intentar obtener estadísticas pre-calculadas
+        let stats = await prisma.benchmarkStatistic.findMany({
           where: {
             benchmarkId,
             metricKey: { in: metricsToCompare },
           },
         });
+
+        // Si no hay estadísticas pre-calculadas, calcular en tiempo real
+        if (stats.length === 0) {
+          console.log(`📊 Calculating stats on-the-fly for benchmark ${benchmarkId}...`);
+          stats = await calculateStatsFromDataPoints(benchmarkId, metricsToCompare);
+        }
+
         return { benchmarkId, stats };
       })
     );

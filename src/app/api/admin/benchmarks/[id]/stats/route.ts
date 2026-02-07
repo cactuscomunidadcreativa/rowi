@@ -28,8 +28,11 @@ const ALL_METRICS = [
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
+    // Allow auth via session or x-user-email header
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const headerEmail = req.headers.get("x-user-email");
+
+    if (!session?.user?.email && !headerEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -65,11 +68,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       // Calcular estadísticas en tiempo real desde dataPoints
       statistics = await calculateStatsFromDataPoints(where);
     } else {
-      // Usar estadísticas pre-calculadas
+      // Intentar usar estadísticas pre-calculadas
       statistics = await prisma.benchmarkStatistic.findMany({
         where: { benchmarkId: id },
         orderBy: { metricKey: "asc" },
       });
+
+      // Si no hay estadísticas pre-calculadas, calcular en tiempo real
+      if (statistics.length === 0) {
+        console.log(`📊 No pre-calculated stats for benchmark ${id}, calculating on-the-fly...`);
+        statistics = await calculateStatsFromDataPoints(where);
+      }
     }
 
     return NextResponse.json({

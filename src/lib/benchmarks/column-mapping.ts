@@ -252,10 +252,29 @@ export function normalizeCountry(country: string | null): string | null {
 
 /**
  * Normaliza el rango de edad
+ * Soporta tanto rangos de texto ("30-39") como edades numéricas (64)
  */
-export function normalizeAgeRange(age: string | null): string | null {
-  if (!age) return null;
+export function normalizeAgeRange(age: string | number | null): string | null {
+  if (age === null || age === undefined) return null;
+
+  // Si es un número, convertir a rango
+  if (typeof age === 'number') {
+    if (age < 30) return "under30";
+    if (age < 40) return "30to40";
+    if (age < 50) return "40to50";
+    return "over50";
+  }
+
   const ageStr = age.toString().trim().toLowerCase();
+
+  // Si es un número en formato string
+  const numericAge = parseFloat(ageStr);
+  if (!isNaN(numericAge) && numericAge > 0 && numericAge < 120) {
+    if (numericAge < 30) return "under30";
+    if (numericAge < 40) return "30to40";
+    if (numericAge < 50) return "40to50";
+    return "over50";
+  }
 
   // Mapeo de formatos comunes
   if (ageStr.includes("under") || ageStr.includes("<") || ageStr.includes("18-29") || ageStr.includes("20-29")) {

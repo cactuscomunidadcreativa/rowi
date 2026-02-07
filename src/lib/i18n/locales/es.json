@@ -103,6 +103,7 @@
   "admin.benchmarks.correlations.calculating": "Calculando...",
   "admin.benchmarks.correlations.description": "Correlaciones entre competencias y resultados",
   "admin.benchmarks.correlations.generate": "Generar correlaciones",
+  "admin.benchmarks.correlations.pageDescription": "Visualiza cómo las competencias EQ impactan en los resultados de vida y trabajo",
   "admin.benchmarks.correlations.title": "Correlaciones",
   "admin.benchmarks.dashboard.countries": "Países",
   "admin.benchmarks.dashboard.overview": "Resumen",

@@ -157,6 +157,13 @@ export default function BenchmarkDashboardPage() {
       color: "from-blue-500 to-blue-600",
     },
     {
+      href: `/hub/admin/benchmarks/${id}/correlations`,
+      icon: Brain,
+      labelKey: "admin.benchmarks.correlations.title",
+      count: benchmark._count.correlations,
+      color: "from-orange-500 to-red-600",
+    },
+    {
       href: `/hub/admin/benchmarks/${id}/top-performers`,
       icon: TrendingUp,
       labelKey: "admin.benchmarks.topPerformers.title",
@@ -261,7 +268,7 @@ export default function BenchmarkDashboardPage() {
       </AdminGrid>
 
       {/* Quick Links */}
-      <AdminGrid cols={3} className="mb-6">
+      <AdminGrid cols={4} className="mb-6">
         {quickLinks.map((link) => (
           <Link key={link.href} href={link.href}>
             <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer">

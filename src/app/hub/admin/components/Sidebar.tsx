@@ -67,6 +67,32 @@ export default function Sidebar() {
     },
 
     // ═══════════════════════════════════════════════════════
+    // 🏢 TELEPERFORMANCE DEMO (Enterprise Client)
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.tpDemo",
+      icon: Building2,
+      priority: 96,
+      items: [
+        { href: "/hub/admin/tp", labelKey: "admin.nav.tpHub", icon: Building2, badge: "TP" },
+        {
+          href: "/hub/admin/tp/dashboard",
+          labelKey: "admin.nav.tpDashboard",
+          icon: LayoutDashboard,
+          children: [
+            { href: "/hub/admin/tp/dashboard", labelKey: "admin.nav.tpEQDashboard", icon: LayoutDashboard },
+            { href: "/hub/admin/tp/benchmark", labelKey: "admin.nav.tpBenchmark", icon: BarChart3 },
+          ],
+        },
+        { href: "/hub/admin/tp/affinity", labelKey: "admin.nav.tpAffinity", icon: Heart },
+        { href: "/hub/admin/tp/eco", labelKey: "admin.nav.tpECO", icon: MessageSquareCode },
+        { href: "/hub/admin/tp/coach", labelKey: "admin.nav.tpCoach", icon: Bot },
+        { href: "/hub/admin/tp/community", labelKey: "admin.nav.tpCommunity", icon: HeartHandshake },
+        { href: "/hub/admin/tp/onboarding", labelKey: "admin.nav.tpOnboarding", icon: GraduationCap },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
     // 💓 INTELIGENCIA EMOCIONAL (Core del producto)
     // ═══════════════════════════════════════════════════════
     {

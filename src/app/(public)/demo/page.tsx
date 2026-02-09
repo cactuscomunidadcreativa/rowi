@@ -15,6 +15,8 @@ import {
   Brain,
   Users,
   TrendingUp,
+  Building2,
+  BarChart3,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -53,6 +55,11 @@ const translations = {
       title: "Rowi Coach",
       desc: "Tu coach de inteligencia emocional disponible 24/7 para guiarte en tu crecimiento.",
       features: ["Chat con IA", "Consejos personalizados", "Seguimiento continuo"],
+    },
+    tp: {
+      title: "Benchmark TP",
+      desc: "Demo real con 14,886 evaluaciones SEI de Teleperformance. Benchmarking corporativo en acción.",
+      features: ["14,886 evaluaciones reales", "Insights por región y rol", "Perfiles cerebrales"],
     },
 
     viewDemo: "Ver demo",
@@ -93,6 +100,11 @@ const translations = {
       desc: "Your emotional intelligence coach available 24/7 to guide you in your growth.",
       features: ["AI Chat", "Personalized advice", "Continuous tracking"],
     },
+    tp: {
+      title: "TP Benchmark",
+      desc: "Real demo with 14,886 SEI assessments from Teleperformance. Corporate benchmarking in action.",
+      features: ["14,886 real assessments", "Insights by region & role", "Brain profiles"],
+    },
 
     viewDemo: "View demo",
 
@@ -130,6 +142,13 @@ const modules = [
     icon: Bot,
     gradient: "from-blue-500 to-cyan-600",
     image: "/rowivectors/Rowi-03.png",
+  },
+  {
+    key: "tp",
+    href: "/hub/admin/tp",
+    icon: BarChart3,
+    gradient: "from-purple-600 to-pink-600",
+    image: "/rowivectors/Rowi-01.png",
   },
 ];
 

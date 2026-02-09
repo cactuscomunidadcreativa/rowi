@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
-import { COLUMN_MAPPING } from "@/lib/benchmarks/column-mapping";
+import { SOH_COLUMN_MAPPING as COLUMN_MAPPING } from "@/lib/benchmarks/column-mapping";
 
 interface RouteParams {
   params: Promise<{ id: string }>;

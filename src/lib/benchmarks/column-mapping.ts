@@ -107,6 +107,15 @@ export const SOH_COLUMN_MAPPING: Record<string, string> = {
   "Dedication Score": "dedication",
   "Energy Score": "energy",
   "Integrity Score": "integrity",
+
+  // TP-Specific Columns (Teleperformance)
+  "TP EmployeeOrApplicationID": "tpEmployeeId",
+  "TP Current Role": "tpCurrentRole",
+  "TP Role Applied": "tpRoleApplied",
+  NewHire: "tpNewHire",
+  "Consistency Index": "consistencyIndex",
+  "Positive Impression Score": "positiveImpressionScore",
+  "Positive Impression Range": "positiveImpressionRange",
 };
 
 // Columnas numéricas (métricas)

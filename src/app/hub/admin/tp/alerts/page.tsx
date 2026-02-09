@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -22,6 +22,7 @@ import {
   Eye,
   Minus,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -65,7 +66,7 @@ const translations = {
     entity: "Entidad",
     noAlertsMatch: "No hay alertas que coincidan con los filtros seleccionados",
     teamHealthTitle: "Salud de Equipos",
-    teamHealthDesc: "Vista general del estado de salud EQ por equipo con indicadores semáforo",
+    teamHealthDesc: "Vista general del estado de salud EQ por país con indicadores semáforo",
     health: "Salud",
     trend: "Tendencia",
     topStrength: "Mayor Fortaleza",
@@ -79,16 +80,23 @@ const translations = {
     warningThreshold: "Umbral Advertencia",
     criticalThreshold: "Umbral Crítico",
     enabled: "Activo",
-    trendMonitorTitle: "Monitoreo de Tendencias",
-    trendMonitorDesc: "Indicadores de dirección de tendencia para métricas clave — últimos 4 trimestres",
-    q1: "Q1",
-    q2: "Q2",
-    q3: "Q3",
-    q4: "Q4",
+    trendMonitorTitle: "Monitoreo de Métricas Actuales",
+    trendMonitorDesc: "Indicadores de métricas clave por región — datos en vivo del benchmark",
     infoTitle: "Sistema de Alertas EQ",
     infoDesc: "Las alertas se generan automáticamente basándose en umbrales configurados, análisis de tendencias y detección de anomalías sobre datos SEI de Teleperformance. Todos los datos individuales permanecen anonimizados.",
     navPrev: "World",
     navNext: "Data Quality",
+    loading: "Cargando datos...",
+    assessments: "evaluaciones",
+    avgEQ: "EQ Prom",
+    regionMetrics: "Métricas por Región",
+    regionMetricsDesc: "Promedios de métricas clave por región geográfica",
+    mean: "Prom",
+    count: "N",
+    lowCompAlert: "Competencia Baja",
+    lowCompAlertDesc: "tiene {comp} en {value}, por debajo del umbral de {threshold}",
+    lowEQAlertDesc: "tiene un EQ promedio de {value}, por debajo del umbral de {threshold}",
+    lowHealthAlertDesc: "tiene un score de salud de {value}, por debajo del umbral de {threshold}",
   },
   en: {
     backToHub: "TP Hub",
@@ -126,7 +134,7 @@ const translations = {
     entity: "Entity",
     noAlertsMatch: "No alerts match the selected filters",
     teamHealthTitle: "Team Health Overview",
-    teamHealthDesc: "EQ health status overview by team with traffic light indicators",
+    teamHealthDesc: "EQ health status overview by country with traffic light indicators",
     health: "Health",
     trend: "Trend",
     topStrength: "Top Strength",
@@ -140,63 +148,107 @@ const translations = {
     warningThreshold: "Warning Threshold",
     criticalThreshold: "Critical Threshold",
     enabled: "Enabled",
-    trendMonitorTitle: "Trend Monitoring",
-    trendMonitorDesc: "Trend direction indicators for key metrics — last 4 quarters",
-    q1: "Q1",
-    q2: "Q2",
-    q3: "Q3",
-    q4: "Q4",
+    trendMonitorTitle: "Current Metrics Monitoring",
+    trendMonitorDesc: "Key metric indicators by region — live benchmark data",
     infoTitle: "EQ Alert System",
     infoDesc: "Alerts are automatically generated based on configured thresholds, trend analysis, and anomaly detection over Teleperformance SEI data. All individual data remains anonymized.",
     navPrev: "World",
     navNext: "Data Quality",
+    loading: "Loading data...",
+    assessments: "assessments",
+    avgEQ: "Avg EQ",
+    regionMetrics: "Metrics by Region",
+    regionMetricsDesc: "Key metric averages by geographic region",
+    mean: "Avg",
+    count: "N",
+    lowCompAlert: "Low Competency",
+    lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
+    lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
+    lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
   },
 };
 
 /* =========================================================
-   Mock Data
+   Constants
 ========================================================= */
-const ALERTS = [
-  { id: "ALT-001", type: "low_eq", severity: "critical", title: { es: "EQ Cr\u00edticamente Bajo", en: "Critically Low EQ" }, description: { es: "James O'Brien (TP-1456) tiene un EQ de 95.3, por debajo del umbral m\u00ednimo de 96 para IT Support Manager", en: "James O'Brien (TP-1456) has an EQ of 95.3, below the minimum threshold of 96 for IT Support Manager" }, entity: "James O'Brien", entityType: "person", region: "NA", metric: "eqTotal", currentValue: 95.3, threshold: 96, detectedAt: "2024-12-15", status: "new" },
-  { id: "ALT-002", type: "team_health", severity: "critical", title: { es: "Equipo con Salud Baja", en: "Low Team Health" }, description: { es: "Berlin Ops tiene un score de salud de 74, por debajo del umbral cr\u00edtico de 75", en: "Berlin Ops has a health score of 74, below the critical threshold of 75" }, entity: "Berlin Ops", entityType: "team", region: "EMEA", metric: "healthScore", currentValue: 74, threshold: 75, detectedAt: "2024-12-14", status: "new" },
-  { id: "ALT-003", type: "declining_trend", severity: "critical", title: { es: "Tendencia Declinante Sostenida", en: "Sustained Declining Trend" }, description: { es: "APAC regi\u00f3n muestra descenso de -2.1 puntos en EMP durante los \u00faltimos 2 trimestres", en: "APAC region shows -2.1 point decline in EMP over the last 2 quarters" }, entity: "APAC Region", entityType: "region", region: "APAC", metric: "EMP", currentValue: 96.8, threshold: 98.0, trend: -2.1, detectedAt: "2024-12-12", status: "acknowledged" },
-  { id: "ALT-004", type: "low_eq", severity: "warning", title: { es: "EQ Bajo", en: "Low EQ" }, description: { es: "C\u00f3ndor CX team promedio de 101.8, cercano al umbral m\u00ednimo para Customer Experience", en: "C\u00f3ndor CX team average of 101.8, approaching minimum threshold for Customer Experience" }, entity: "C\u00f3ndor CX", entityType: "team", region: "LATAM", metric: "eqTotal", currentValue: 101.8, threshold: 103, detectedAt: "2024-12-13", status: "new" },
-  { id: "ALT-005", type: "declining_trend", severity: "warning", title: { es: "Tendencia Declinante", en: "Declining Trend" }, description: { es: "Phoenix Support muestra descenso de -1.4 en NE en el \u00faltimo trimestre", en: "Phoenix Support shows -1.4 decline in NE over last quarter" }, entity: "Phoenix Support", entityType: "team", region: "NA", metric: "NE", currentValue: 101.2, threshold: 102, trend: -1.4, detectedAt: "2024-12-10", status: "new" },
-  { id: "ALT-006", type: "anomaly", severity: "warning", title: { es: "Anomal\u00eda Detectada", en: "Anomaly Detected" }, description: { es: "Score de RP inusualmente alto (134.2) detectado en evaluaci\u00f3n reciente \u2014 posible dato inv\u00e1lido", en: "Unusually high RP score (134.2) detected in recent assessment \u2014 possible invalid data" }, entity: "Assessment #14872", entityType: "person", region: "EMEA", metric: "RP", currentValue: 134.2, threshold: 130, detectedAt: "2024-12-11", status: "new" },
-  { id: "ALT-007", type: "team_health", severity: "warning", title: { es: "Equipo Necesita Atenci\u00f3n", en: "Team Needs Attention" }, description: { es: "C\u00f3ndor CX tiene un score de salud de 78, en zona de precauci\u00f3n", en: "C\u00f3ndor CX has a health score of 78, in caution zone" }, entity: "C\u00f3ndor CX", entityType: "team", region: "LATAM", metric: "healthScore", currentValue: 78, threshold: 80, detectedAt: "2024-12-09", status: "acknowledged" },
-  { id: "ALT-008", type: "low_eq", severity: "info", title: { es: "EQ por Debajo del Promedio", en: "EQ Below Average" }, description: { es: "5 empleados nuevos en NA tienen EQ promedio de 94.2 \u2014 considerar programa de desarrollo", en: "5 new employees in NA have average EQ of 94.2 \u2014 consider development program" }, entity: "NA New Hires", entityType: "region", region: "NA", metric: "eqTotal", currentValue: 94.2, threshold: 98.7, detectedAt: "2024-12-08", status: "new" },
-  { id: "ALT-009", type: "declining_trend", severity: "info", title: { es: "Leve Descenso en OP", en: "Slight OP Decline" }, description: { es: "EMEA muestra leve descenso de -0.8 en Optimismo \u2014 monitorear en pr\u00f3ximo trimestre", en: "EMEA shows slight -0.8 decline in Optimism \u2014 monitor next quarter" }, entity: "EMEA Region", entityType: "region", region: "EMEA", metric: "OP", currentValue: 99.1, threshold: 100.0, trend: -0.8, detectedAt: "2024-12-07", status: "resolved" },
-  { id: "ALT-010", type: "anomaly", severity: "info", title: { es: "Patron Inusual", en: "Unusual Pattern" }, description: { es: "Correlaci\u00f3n inesperada entre EL bajo y effectiveness alto en equipo de IT", en: "Unexpected correlation between low EL and high effectiveness in IT team" }, entity: "Tech Shield", entityType: "team", region: "NA", metric: "EL", currentValue: 104.6, threshold: 100.0, detectedAt: "2024-12-06", status: "acknowledged" },
-  { id: "ALT-011", type: "team_health", severity: "info", title: { es: "Equipo Nuevo sin Baseline", en: "New Team Without Baseline" }, description: { es: "3 equipos nuevos en LATAM a\u00fan no tienen evaluaci\u00f3n baseline completa", en: "3 new teams in LATAM still don't have complete baseline assessment" }, entity: "LATAM New Teams", entityType: "region", region: "LATAM", metric: "healthScore", currentValue: 0, threshold: 0, detectedAt: "2024-12-05", status: "new" },
-];
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
+const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const;
+
+const COMP_LABELS: Record<string, { es: string; en: string }> = {
+  EL: { es: "Alfabetización Emocional", en: "Emotional Literacy" },
+  RP: { es: "Reconocer Patrones", en: "Recognize Patterns" },
+  ACT: { es: "Pensamiento Consecuente", en: "Apply Consequential Thinking" },
+  NE: { es: "Navegar Emociones", en: "Navigate Emotions" },
+  IM: { es: "Motivación Intrínseca", en: "Increase Intrinsic Motivation" },
+  OP: { es: "Ejercer Optimismo", en: "Exercise Optimism" },
+  EMP: { es: "Aumentar Empatía", en: "Increase Empathy" },
+  NG: { es: "Metas Nobles", en: "Pursue Noble Goals" },
+};
+
+/* Threshold configuration — these are settings, not API data */
 const ALERT_CONFIGS = [
-  { metric: "eqTotal", label: { es: "EQ Total", en: "EQ Total" }, warningThreshold: 95, criticalThreshold: 90, enabled: true },
-  { metric: "healthScore", label: { es: "Salud de Equipo", en: "Team Health" }, warningThreshold: 80, criticalThreshold: 75, enabled: true },
-  { metric: "trend", label: { es: "Tendencia Trimestral", en: "Quarterly Trend" }, warningThreshold: -1.0, criticalThreshold: -2.0, enabled: true },
-  { metric: "reliability", label: { es: "\u00cdndice de Confiabilidad", en: "Reliability Index" }, warningThreshold: 0.7, criticalThreshold: 0.5, enabled: true },
-  { metric: "anomaly", label: { es: "Detecci\u00f3n de Anomal\u00edas", en: "Anomaly Detection" }, warningThreshold: 2.0, criticalThreshold: 3.0, enabled: true },
+  { metric: "eqTotal", label: { es: "EQ Total", en: "EQ Total" }, warningThreshold: 97, criticalThreshold: 93, enabled: true },
+  { metric: "healthScore", label: { es: "Salud de Equipo", en: "Team Health" }, warningThreshold: 80, criticalThreshold: 70, enabled: true },
+  { metric: "competency", label: { es: "Competencia Individual", en: "Individual Competency" }, warningThreshold: 97, criticalThreshold: 94, enabled: true },
+  { metric: "reliability", label: { es: "Índice de Confiabilidad", en: "Reliability Index" }, warningThreshold: 0.7, criticalThreshold: 0.5, enabled: true },
+  { metric: "anomaly", label: { es: "Detección de Anomalías", en: "Anomaly Detection" }, warningThreshold: 2.0, criticalThreshold: 3.0, enabled: true },
 ];
 
-const TEAM_HEALTH_GRID = [
-  { name: "Phoenix Support", region: "NA", health: 82, trend: "stable", topStrength: "IM", biggestGap: "NE" },
-  { name: "Jaguar Sales", region: "LATAM", health: 91, trend: "up", topStrength: "EMP", biggestGap: "EL" },
-  { name: "Sakura People", region: "APAC", health: 95, trend: "up", topStrength: "EMP", biggestGap: "NG" },
-  { name: "Berlin Ops", region: "EMEA", health: 74, trend: "down", topStrength: "RP", biggestGap: "NE" },
-  { name: "Mumbai Quality", region: "APAC", health: 88, trend: "stable", topStrength: "RP", biggestGap: "NE" },
-  { name: "Tech Shield", region: "NA", health: 85, trend: "up", topStrength: "RP", biggestGap: "EMP" },
-  { name: "UK Academy", region: "EMEA", health: 92, trend: "up", topStrength: "EMP", biggestGap: "NG" },
-  { name: "C\u00f3ndor CX", region: "LATAM", health: 78, trend: "down", topStrength: "EMP", biggestGap: "EL" },
-];
+/* =========================================================
+   Types
+========================================================= */
+interface GroupMetrics {
+  [key: string]: { mean: number; median: number; min: number; max: number; stdDev: number };
+}
 
-const TREND_METRICS = [
-  { key: "EQ Total", quarters: [98.2, 98.5, 98.7, 98.7], direction: "stable" as const },
-  { key: "EMP", quarters: [100.1, 99.6, 99.2, 98.9], direction: "down" as const },
-  { key: "NE", quarters: [95.8, 96.2, 96.5, 96.8], direction: "up" as const },
-  { key: "RP", quarters: [99.0, 99.1, 99.1, 99.1], direction: "stable" as const },
-  { key: "OP", quarters: [100.2, 100.0, 99.7, 99.5], direction: "down" as const },
-  { key: "Team Health", quarters: [83, 84, 85, 84], direction: "stable" as const },
-];
+interface StatsGroup {
+  name: string;
+  count: number;
+  metrics: GroupMetrics;
+  brainStyleDist?: Record<string, number>;
+}
+
+interface OverallStat {
+  metricKey: string;
+  n: number;
+  mean: number;
+  median: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  p10?: number;
+  p25?: number;
+  p50?: number;
+  p75?: number;
+  p90?: number;
+  p95?: number;
+}
+
+interface ComputedAlert {
+  id: string;
+  type: "low_eq" | "low_competency" | "team_health" | "anomaly";
+  severity: "critical" | "warning" | "info";
+  entity: string;
+  entityType: "country" | "region";
+  region: string;
+  metric: string;
+  currentValue: number;
+  threshold: number;
+  detectedAt: string;
+  status: "new";
+  title: { es: string; en: string };
+  description: { es: string; en: string };
+}
+
+interface TeamHealthItem {
+  name: string;
+  count: number;
+  avgEQ: number;
+  healthScore: number;
+  strength: string;
+  gap: string;
+}
 
 /* =========================================================
    Helpers
@@ -212,28 +264,10 @@ function severityColor(severity: string) {
   }
 }
 
-function statusColor(status: string) {
-  switch (status) {
-    case "new": return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
-    case "acknowledged": return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300";
-    case "resolved": return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300";
-    default: return "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300";
-  }
-}
-
-function statusIcon(status: string) {
-  switch (status) {
-    case "new": return <Clock className="w-3 h-3" />;
-    case "acknowledged": return <Eye className="w-3 h-3" />;
-    case "resolved": return <CheckCircle2 className="w-3 h-3" />;
-    default: return <Clock className="w-3 h-3" />;
-  }
-}
-
 function typeIcon(type: string) {
   switch (type) {
     case "low_eq": return <AlertTriangle className="w-4 h-4" />;
-    case "declining_trend": return <TrendingDown className="w-4 h-4" />;
+    case "low_competency": return <TrendingDown className="w-4 h-4" />;
     case "team_health": return <Users className="w-4 h-4" />;
     case "anomaly": return <Activity className="w-4 h-4" />;
     default: return <Bell className="w-4 h-4" />;
@@ -252,32 +286,10 @@ function healthTextColor(health: number) {
   return "text-red-600 dark:text-red-400";
 }
 
-/* =========================================================
-   Mini Sparkline
-========================================================= */
-function MiniSparkline({ quarters, direction }: { quarters: number[]; direction: "up" | "down" | "stable" }) {
-  const min = Math.min(...quarters) - 1;
-  const max = Math.max(...quarters) + 1;
-  const range = max - min || 1;
-  const h = 32;
-  const w = 80;
-  const points = quarters.map((v, i) => {
-    const x = (i / (quarters.length - 1)) * w;
-    const y = h - ((v - min) / range) * h;
-    return `${x},${y}`;
-  });
-  const pathD = `M ${points.join(" L ")}`;
-  const color = direction === "up" ? "#10b981" : direction === "down" ? "#ef4444" : "#6b7280";
-  return (
-    <svg width={w} height={h} className="flex-shrink-0">
-      <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {quarters.map((v, i) => {
-        const x = (i / (quarters.length - 1)) * w;
-        const y = h - ((v - min) / range) * h;
-        return <circle key={i} cx={x} cy={y} r="2.5" fill={color} />;
-      })}
-    </svg>
-  );
+function compLabel(comp: string, lang: string): string {
+  const entry = COMP_LABELS[comp];
+  if (!entry) return comp;
+  return entry[lang as keyof typeof entry] || entry.es;
 }
 
 /* =========================================================
@@ -286,23 +298,291 @@ function MiniSparkline({ quarters, direction }: { quarters: number[]; direction:
 export default function TPAlertsPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
+
+  /* ---- Filter state ---- */
   const [severityFilter, setSeverityFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [regionFilter, setRegionFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
 
-  const filteredAlerts = ALERTS.filter((a) => {
-    if (severityFilter !== "all" && a.severity !== severityFilter) return false;
-    if (typeFilter !== "all" && a.type !== typeFilter) return false;
-    if (regionFilter !== "all" && a.region !== regionFilter) return false;
-    if (statusFilter !== "all" && a.status !== statusFilter) return false;
-    return true;
-  });
+  /* ---- API data state ---- */
+  const [countryGroups, setCountryGroups] = useState<StatsGroup[]>([]);
+  const [regionGroups, setRegionGroups] = useState<StatsGroup[]>([]);
+  const [overallStats, setOverallStats] = useState<OverallStat[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalCount = ALERTS.length;
-  const criticalCount = ALERTS.filter((a) => a.severity === "critical").length;
-  const warningCount = ALERTS.filter((a) => a.severity === "warning").length;
-  const infoCount = ALERTS.filter((a) => a.severity === "info").length;
+  /* ---- Fetch real data from APIs ---- */
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const [countryRes, regionRes, overallRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=country`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=region`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+        ]);
+        const countryData = await countryRes.json();
+        const regionData = await regionRes.json();
+        const overallData = await overallRes.json();
+
+        if (countryData.ok) setCountryGroups(countryData.groups);
+        if (regionData.ok) setRegionGroups(regionData.groups);
+        if (overallData.ok) setOverallStats(overallData.statistics);
+      } catch (err) {
+        console.error("Error loading alerts data:", err);
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  /* ---- Thresholds ---- */
+  const thresholds = {
+    eqCritical: 93,
+    eqWarning: 97,
+    compCritical: 94,
+    compWarning: 97,
+    healthCritical: 70,
+    healthWarning: 80,
+  };
+
+  /* ---- Compute alerts from real country data ---- */
+  const computedAlerts = useMemo<ComputedAlert[]>(() => {
+    if (!countryGroups.length) return [];
+    const alerts: ComputedAlert[] = [];
+    const now = new Date().toISOString().split("T")[0];
+
+    for (const group of countryGroups) {
+      const eqMean = group.metrics.eqTotal?.mean;
+
+      // EQ Total alerts
+      if (eqMean !== undefined && eqMean < thresholds.eqCritical) {
+        alerts.push({
+          id: `eq-critical-${group.name}`,
+          type: "low_eq",
+          severity: "critical",
+          entity: group.name,
+          entityType: "country",
+          region: group.name,
+          metric: "eqTotal",
+          currentValue: eqMean,
+          threshold: thresholds.eqCritical,
+          detectedAt: now,
+          status: "new",
+          title: { es: "EQ Críticamente Bajo", en: "Critically Low EQ" },
+          description: {
+            es: `${group.name} tiene un EQ promedio de ${eqMean}, por debajo del umbral de ${thresholds.eqCritical}`,
+            en: `${group.name} has an average EQ of ${eqMean}, below the threshold of ${thresholds.eqCritical}`,
+          },
+        });
+      } else if (eqMean !== undefined && eqMean < thresholds.eqWarning) {
+        alerts.push({
+          id: `eq-warning-${group.name}`,
+          type: "low_eq",
+          severity: "warning",
+          entity: group.name,
+          entityType: "country",
+          region: group.name,
+          metric: "eqTotal",
+          currentValue: eqMean,
+          threshold: thresholds.eqWarning,
+          detectedAt: now,
+          status: "new",
+          title: { es: "EQ Bajo", en: "Low EQ" },
+          description: {
+            es: `${group.name} tiene un EQ promedio de ${eqMean}, por debajo del umbral de ${thresholds.eqWarning}`,
+            en: `${group.name} has an average EQ of ${eqMean}, below the threshold of ${thresholds.eqWarning}`,
+          },
+        });
+      }
+
+      // Check each competency
+      for (const comp of COMP_KEYS) {
+        const val = group.metrics[comp]?.mean;
+        if (val !== undefined && val < thresholds.compCritical) {
+          alerts.push({
+            id: `comp-critical-${comp}-${group.name}`,
+            type: "low_competency",
+            severity: "critical",
+            entity: group.name,
+            entityType: "country",
+            region: group.name,
+            metric: comp,
+            currentValue: val,
+            threshold: thresholds.compCritical,
+            detectedAt: now,
+            status: "new",
+            title: { es: `${comp} Críticamente Bajo`, en: `Critically Low ${comp}` },
+            description: {
+              es: `${group.name} tiene ${compLabel(comp, "es")} en ${val}, por debajo del umbral de ${thresholds.compCritical}`,
+              en: `${group.name} has ${compLabel(comp, "en")} at ${val}, below threshold of ${thresholds.compCritical}`,
+            },
+          });
+        } else if (val !== undefined && val < thresholds.compWarning) {
+          alerts.push({
+            id: `comp-warning-${comp}-${group.name}`,
+            type: "low_competency",
+            severity: "warning",
+            entity: group.name,
+            entityType: "country",
+            region: group.name,
+            metric: comp,
+            currentValue: val,
+            threshold: thresholds.compWarning,
+            detectedAt: now,
+            status: "new",
+            title: { es: `${comp} Bajo`, en: `Low ${comp}` },
+            description: {
+              es: `${group.name} tiene ${compLabel(comp, "es")} en ${val}, por debajo del umbral de ${thresholds.compWarning}`,
+              en: `${group.name} has ${compLabel(comp, "en")} at ${val}, below threshold of ${thresholds.compWarning}`,
+            },
+          });
+        }
+      }
+
+      // Health score check
+      const compValues = COMP_KEYS.map((k) => group.metrics[k]?.mean).filter((v): v is number => v !== undefined);
+      if (compValues.length > 0) {
+        const avgComp = compValues.reduce((a, b) => a + b, 0) / compValues.length;
+        const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 65) / 70) * 100)));
+        if (healthScore < thresholds.healthCritical) {
+          alerts.push({
+            id: `health-critical-${group.name}`,
+            type: "team_health",
+            severity: "critical",
+            entity: group.name,
+            entityType: "country",
+            region: group.name,
+            metric: "healthScore",
+            currentValue: healthScore,
+            threshold: thresholds.healthCritical,
+            detectedAt: now,
+            status: "new",
+            title: { es: "Salud Crítica", en: "Critical Health" },
+            description: {
+              es: `${group.name} tiene un score de salud de ${healthScore}, por debajo del umbral de ${thresholds.healthCritical}`,
+              en: `${group.name} has a health score of ${healthScore}, below the threshold of ${thresholds.healthCritical}`,
+            },
+          });
+        } else if (healthScore < thresholds.healthWarning) {
+          alerts.push({
+            id: `health-warning-${group.name}`,
+            type: "team_health",
+            severity: "warning",
+            entity: group.name,
+            entityType: "country",
+            region: group.name,
+            metric: "healthScore",
+            currentValue: healthScore,
+            threshold: thresholds.healthWarning,
+            detectedAt: now,
+            status: "new",
+            title: { es: "Salud Baja", en: "Low Health" },
+            description: {
+              es: `${group.name} tiene un score de salud de ${healthScore}, en zona de precaución`,
+              en: `${group.name} has a health score of ${healthScore}, in caution zone`,
+            },
+          });
+        }
+      }
+    }
+
+    // Sort: critical first, then warning, then info
+    const severityOrder: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+    alerts.sort((a, b) => (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9));
+
+    return alerts;
+  }, [countryGroups]);
+
+  /* ---- Team health grid from real country data ---- */
+  const teamHealthGrid = useMemo<TeamHealthItem[]>(() => {
+    return countryGroups.map((group) => {
+      const metrics = group.metrics;
+      const compValues = COMP_KEYS.map((k) => metrics[k]?.mean || 100);
+      const avgComp = compValues.reduce((a, b) => a + b, 0) / compValues.length;
+      const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 65) / 70) * 100)));
+      const maxVal = Math.max(...compValues);
+      const minVal = Math.min(...compValues);
+      const strongest = COMP_KEYS[compValues.indexOf(maxVal)];
+      const weakest = COMP_KEYS[compValues.indexOf(minVal)];
+      return {
+        name: group.name,
+        count: group.count,
+        avgEQ: metrics.eqTotal?.mean || 0,
+        healthScore,
+        strength: strongest,
+        gap: weakest,
+      };
+    });
+  }, [countryGroups]);
+
+  /* ---- Region metrics for monitoring section ---- */
+  const regionMetricsData = useMemo(() => {
+    const metricKeys = ["eqTotal", ...COMP_KEYS];
+    return metricKeys.map((key) => {
+      const regionValues: { name: string; mean: number }[] = regionGroups.map((rg) => ({
+        name: rg.name,
+        mean: rg.metrics[key]?.mean ?? 0,
+      }));
+      // Overall mean from stats
+      const overallStat = overallStats.find((s) => s.metricKey === key);
+      const overallMean = overallStat?.mean ?? 0;
+      return {
+        key,
+        label: key === "eqTotal" ? "EQ Total" : key,
+        overallMean: Math.round(overallMean * 100) / 100,
+        regions: regionValues,
+      };
+    });
+  }, [regionGroups, overallStats]);
+
+  /* ---- Unique regions from alerts for region filter ---- */
+  const uniqueRegions = useMemo(() => {
+    const regions = new Set(regionGroups.map((rg) => rg.name));
+    return Array.from(regions).sort();
+  }, [regionGroups]);
+
+  /* ---- Filtered alerts ---- */
+  const filteredAlerts = useMemo(() => {
+    return computedAlerts.filter((a) => {
+      if (severityFilter !== "all" && a.severity !== severityFilter) return false;
+      if (typeFilter !== "all" && a.type !== typeFilter) return false;
+      // Region filter: match if alert entity is in the region
+      // We skip region filtering for now since alerts are per-country, not per-region
+      return true;
+    });
+  }, [computedAlerts, severityFilter, typeFilter]);
+
+  const totalCount = computedAlerts.length;
+  const criticalCount = computedAlerts.filter((a) => a.severity === "critical").length;
+  const warningCount = computedAlerts.filter((a) => a.severity === "warning").length;
+  const infoCount = computedAlerts.filter((a) => a.severity === "info").length;
+
+  /* ---- Loading State ---- */
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          </Link>
+          <div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
+              <Bell className="w-3 h-3" /> {t.badgeAlerts}
+            </span>
+            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+            <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-24">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+            <p className="text-[var(--rowi-muted)] text-sm">{t.loading}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -338,7 +618,7 @@ export default function TPAlertsPage() {
 
       {/* Filter Bar */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterSeverity}</label>
             <div className="flex flex-wrap gap-1.5">
@@ -350,7 +630,7 @@ export default function TPAlertsPage() {
           <div>
             <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterType}</label>
             <div className="flex flex-wrap gap-1.5">
-              {[{ key: "all", label: t.all }, { key: "low_eq", label: t.typeLowEQ }, { key: "declining_trend", label: t.typeDeclining }, { key: "team_health", label: t.typeTeamHealth }, { key: "anomaly", label: t.typeAnomaly }].map((opt) => (
+              {[{ key: "all", label: t.all }, { key: "low_eq", label: t.typeLowEQ }, { key: "low_competency", label: t.typeDeclining }, { key: "team_health", label: t.typeTeamHealth }].map((opt) => (
                 <button key={opt.key} onClick={() => setTypeFilter(opt.key)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${typeFilter === opt.key ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{opt.label}</button>
               ))}
             </div>
@@ -358,16 +638,9 @@ export default function TPAlertsPage() {
           <div>
             <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterRegion}</label>
             <div className="flex flex-wrap gap-1.5">
-              {[{ key: "all", label: t.all }, { key: "NA", label: t.regionNA }, { key: "LATAM", label: t.regionLATAM }, { key: "APAC", label: t.regionAPAC }, { key: "EMEA", label: t.regionEMEA }].map((opt) => (
-                <button key={opt.key} onClick={() => setRegionFilter(opt.key)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === opt.key ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{opt.label}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterStatus}</label>
-            <div className="flex flex-wrap gap-1.5">
-              {[{ key: "all", label: t.all }, { key: "new", label: t.statusNew }, { key: "acknowledged", label: t.statusAcknowledged }, { key: "resolved", label: t.statusResolved }].map((opt) => (
-                <button key={opt.key} onClick={() => setStatusFilter(opt.key)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${statusFilter === opt.key ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{opt.label}</button>
+              <button onClick={() => setRegionFilter("all")} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === "all" ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{t.all}</button>
+              {uniqueRegions.map((r) => (
+                <button key={r} onClick={() => setRegionFilter(r)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === r ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{r}</button>
               ))}
             </div>
           </div>
@@ -406,25 +679,21 @@ export default function TPAlertsPage() {
                       <p className="text-sm text-[var(--rowi-muted)] mb-3">{alertDesc}</p>
                       <div className="flex flex-wrap items-center gap-3 text-xs">
                         <span className="inline-flex items-center gap-1 font-medium">
-                          {alert.entityType === "team" ? <Users className="w-3 h-3" /> : alert.entityType === "region" ? <Globe className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                          {alert.entityType === "country" ? <Globe className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                           {alert.entity}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] font-mono text-[10px]">{alert.region}</span>
                         {alert.currentValue > 0 && (
                           <span className="text-[var(--rowi-muted)]">
                             {alert.metric}: <span className={`font-semibold ${sev.text}`}>{alert.currentValue}</span> / {t.threshold}: {alert.threshold}
                           </span>
                         )}
-                        {"trend" in alert && alert.trend && (
-                          <span className="inline-flex items-center gap-1 text-red-500 font-medium"><TrendingDown className="w-3 h-3" /> {alert.trend}</span>
-                        )}
                         <span className="text-[var(--rowi-muted)] inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {t.detected}: {alert.detectedAt}</span>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusColor(alert.status)}`}>
-                        {statusIcon(alert.status)}
-                        {alert.status === "new" ? t.statusNew : alert.status === "acknowledged" ? t.statusAcknowledged : t.statusResolved}
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                        <Clock className="w-3 h-3" />
+                        {t.statusNew}
                       </span>
                     </div>
                   </div>
@@ -442,37 +711,34 @@ export default function TPAlertsPage() {
           <p className="text-[var(--rowi-muted)]">{t.teamHealthDesc}</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TEAM_HEALTH_GRID.map((team, i) => (
+          {teamHealthGrid.map((team, i) => (
             <motion.div key={team.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`w-4 h-4 rounded-full ${healthColor(team.health)} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${team.health > 85 ? "ring-emerald-500/30" : team.health >= 75 ? "ring-amber-500/30" : "ring-red-500/30"}`} />
+                <div className={`w-4 h-4 rounded-full ${healthColor(team.healthScore)} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${team.healthScore > 85 ? "ring-emerald-500/30" : team.healthScore >= 75 ? "ring-amber-500/30" : "ring-red-500/30"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm truncate">{team.name}</div>
-                  <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.region}</span>
+                  <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.count} {t.assessments}</span>
                 </div>
+              </div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-[var(--rowi-muted)]">{t.avgEQ}</span>
+                <span className="text-sm font-mono font-medium">{team.avgEQ.toFixed(1)}</span>
               </div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-[var(--rowi-muted)]">{t.health}</span>
-                <span className={`text-2xl font-bold ${healthTextColor(team.health)}`}>{team.health}</span>
+                <span className={`text-2xl font-bold ${healthTextColor(team.healthScore)}`}>{team.healthScore}</span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-3">
-                <motion.div className={`h-full rounded-full ${healthColor(team.health)}`} initial={{ width: 0 }} whileInView={{ width: `${team.health}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} />
+                <motion.div className={`h-full rounded-full ${healthColor(team.healthScore)}`} initial={{ width: 0 }} whileInView={{ width: `${team.healthScore}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} />
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-[var(--rowi-muted)]">{t.trend}</span>
-                  <span className={`inline-flex items-center gap-1 font-medium ${team.trend === "up" ? "text-emerald-600 dark:text-emerald-400" : team.trend === "down" ? "text-red-600 dark:text-red-400" : "text-gray-500"}`}>
-                    {team.trend === "up" ? <TrendingUp className="w-3 h-3" /> : team.trend === "down" ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                    {team.trend === "up" ? t.trendUp : team.trend === "down" ? t.trendDown : t.trendStable}
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-[var(--rowi-muted)]">{t.topStrength}</span>
-                  <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{team.topStrength}</span>
+                  <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{team.strength}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--rowi-muted)]">{t.biggestGap}</span>
-                  <span className="font-mono font-medium text-amber-600 dark:text-amber-400">{team.biggestGap}</span>
+                  <span className="font-mono font-medium text-amber-600 dark:text-amber-400">{team.gap}</span>
                 </div>
               </div>
             </motion.div>
@@ -518,43 +784,50 @@ export default function TPAlertsPage() {
         </motion.div>
       </div>
 
-      {/* Trend Monitoring */}
+      {/* Region Metrics Monitoring */}
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><TrendingUp className="w-6 h-6 text-purple-500" /> {t.trendMonitorTitle}</h2>
           <p className="text-[var(--rowi-muted)]">{t.trendMonitorDesc}</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {TREND_METRICS.map((tm, i) => (
-            <motion.div key={tm.key} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-semibold text-sm">{tm.key}</span>
-                <span className={`inline-flex items-center gap-1 text-xs font-medium ${tm.direction === "up" ? "text-emerald-600 dark:text-emerald-400" : tm.direction === "down" ? "text-red-600 dark:text-red-400" : "text-gray-500"}`}>
-                  {tm.direction === "up" ? <TrendingUp className="w-3 h-3" /> : tm.direction === "down" ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                  {tm.direction === "up" ? t.trendUp : tm.direction === "down" ? t.trendDown : t.trendStable}
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <MiniSparkline quarters={tm.quarters} direction={tm.direction} />
-                <div className="flex-1">
-                  <div className="flex justify-between text-[10px] text-[var(--rowi-muted)] mb-1">
-                    <span>{t.q1}</span><span>{t.q2}</span><span>{t.q3}</span><span>{t.q4}</span>
-                  </div>
-                  <div className="flex justify-between text-xs font-mono">
-                    {tm.quarters.map((q, qi) => (
-                      <span key={qi} className={qi === tm.quarters.length - 1 ? "font-bold" : "text-[var(--rowi-muted)]"}>{q}</span>
-                    ))}
-                  </div>
+          {regionMetricsData.map((rm, i) => {
+            const allMeans = rm.regions.map((r) => r.mean).filter((v) => v > 0);
+            const maxMean = allMeans.length > 0 ? Math.max(...allMeans) : 0;
+            const minMean = allMeans.length > 0 ? Math.min(...allMeans) : 0;
+            const spread = maxMean - minMean;
+            return (
+              <motion.div key={rm.key} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-semibold text-sm">{rm.label}</span>
+                  <span className="text-xs font-mono text-[var(--rowi-muted)]">{t.mean}: {rm.overallMean}</span>
                 </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 text-xs text-[var(--rowi-muted)]">
-                <span className="font-medium">
-                  {tm.quarters[tm.quarters.length - 1] > tm.quarters[0] ? `+${(tm.quarters[tm.quarters.length - 1] - tm.quarters[0]).toFixed(1)}` : (tm.quarters[tm.quarters.length - 1] - tm.quarters[0]).toFixed(1)}
-                </span>{" "}
-                {lang === "es" ? "vs inicio de periodo" : "vs period start"}
-              </div>
-            </motion.div>
-          ))}
+                <div className="space-y-2">
+                  {rm.regions.map((region) => {
+                    const isAboveAvg = region.mean >= rm.overallMean;
+                    return (
+                      <div key={region.name} className="flex items-center gap-2">
+                        <span className="text-[10px] text-[var(--rowi-muted)] w-20 truncate">{region.name}</span>
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${isAboveAvg ? "bg-emerald-500" : "bg-amber-500"}`}
+                            style={{ width: `${rm.overallMean > 0 ? Math.min(100, (region.mean / (rm.overallMean * 1.15)) * 100) : 0}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-mono font-medium w-12 text-right ${isAboveAvg ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                          {region.mean.toFixed(1)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 text-xs text-[var(--rowi-muted)]">
+                  <span className="font-medium">{lang === "es" ? "Rango" : "Spread"}: {spread.toFixed(1)}</span>{" "}
+                  ({minMean.toFixed(1)} — {maxMean.toFixed(1)})
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 

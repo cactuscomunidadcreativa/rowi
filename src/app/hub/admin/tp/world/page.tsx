@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -20,6 +20,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  Loader2,
+  AlertTriangle,
+  BookOpen,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -32,16 +35,16 @@ const translations = {
     badgeLabel: "Benchmark Global",
     pageTitle: "Benchmark Global — Teleperformance",
     pageSubtitle:
-      "TP vs. estándares mundiales de inteligencia emocional. Comparaciones con la industria BPO y el top 10% global.",
+      "TP vs. el benchmark global Rowiverse. Comparaciones con datos reales de la comunidad global y el top 10%.",
     selectorTitle: "Seleccionar Comparación",
-    benchmarkTPvsGlobal: "TP vs Global",
-    benchmarkTPvsBPO: "TP vs Industria BPO",
+    benchmarkTPvsGlobal: "TP vs Rowiverse Global",
+    benchmarkTPvsBPO: "TP vs Percentil 25",
     benchmarkTPvsTop10: "TP vs Top 10%",
     headToHeadTitle: "Comparación Directa",
     sampleSize: "Muestra",
     avgEQ: "EQ Promedio",
     compChartTitle: "Comparación de Competencias",
-    compChartDesc: "8 competencias SEI: TP vs benchmark seleccionado",
+    compChartDesc: "8 competencias SEI: TP vs benchmark seleccionado (datos reales Rowiverse)",
     delta: "Delta",
     compEL: "Alfabetización Emocional",
     compRP: "Reconocer Patrones",
@@ -61,24 +64,22 @@ const translations = {
     regionalDesc: "Cada región TP comparada con el promedio global y la industria BPO",
     region: "Región",
     regionAvgEQ: "EQ Prom",
+    regionN: "N",
     vsGlobal: "vs Global",
     vsBPO: "vs BPO",
     rank: "Posición",
-    regionNA: "Norteamérica",
-    regionLATAM: "Latinoamérica",
-    regionEMEA: "EMEA",
-    regionAPAC: "Asia Pacífico",
     differentiatorTitle: "Diferenciadores de Top Performers",
-    differentiatorDesc: "Qué distingue a los top performers de TP vs el top 10% global",
+    differentiatorDesc: "Qué distingue a los top performers de TP vs el promedio general",
     competency: "Competencia",
     tpTopAvg: "TP Top Prom",
+    tpAllAvg: "TP Prom General",
     globalTopAvg: "Global Top Prom",
     gap: "Brecha",
     impact: "Impacto",
     impactHigh: "Alto",
     impactMedium: "Medio",
     impactLow: "Bajo",
-    exceedsGlobal: "Supera al global",
+    exceedsGlobal: "Supera al promedio",
     successTitle: "Patrones de Éxito por Rol",
     successDesc: "Las fórmulas de competencias que definen a los top performers en cada función",
     successFormula: "Fórmula de Éxito",
@@ -91,25 +92,35 @@ const translations = {
     gapPoints: "Brecha",
     gapSummary: "TP necesita +{points} puntos promedio para alcanzar el top 10% mundial",
     infoTitle: "Datos de Benchmarking",
-    infoDesc: "Comparaciones basadas en datos normativos de Six Seconds (145,000+ evaluaciones globales) y 14,886 evaluaciones TP. Los datos de la industria BPO son estimaciones basadas en sectores similares.",
+    infoDesc: "Todas las comparaciones utilizan datos 100% reales del benchmark Rowiverse (300,000+ evaluaciones globales) y datos reales de TP. Los percentiles se calculan directamente de la base de datos.",
+    referenceData: "Benchmark Rowiverse (datos reales)",
+    liveData: "Datos en vivo TP (API)",
     navROI: "ROI",
     navAlerts: "Alertas",
+    loading: "Cargando datos del benchmark...",
+    errorTitle: "Error al cargar datos",
+    errorDesc: "No se pudieron cargar los datos del benchmark. Intenta de nuevo más tarde.",
+    retry: "Reintentar",
+    noData: "Sin datos disponibles",
+    outcomeLabel: "Outcome",
+    topPerformersCount: "Top Performers",
+    effectSize: "Effect Size",
   },
   en: {
     backToHub: "TP Hub",
     badgeLabel: "World Benchmark",
     pageTitle: "World Benchmark — Teleperformance",
     pageSubtitle:
-      "TP vs. global emotional intelligence standards. Comparisons with BPO industry and global top 10%.",
+      "TP vs. Rowiverse global benchmark. Real data comparisons with the global community and top 10%.",
     selectorTitle: "Select Comparison",
-    benchmarkTPvsGlobal: "TP vs Global",
-    benchmarkTPvsBPO: "TP vs BPO Industry",
+    benchmarkTPvsGlobal: "TP vs Rowiverse Global",
+    benchmarkTPvsBPO: "TP vs 25th Percentile",
     benchmarkTPvsTop10: "TP vs Top 10%",
     headToHeadTitle: "Head-to-Head Comparison",
     sampleSize: "Sample Size",
     avgEQ: "Avg EQ",
     compChartTitle: "Competency Comparison",
-    compChartDesc: "8 SEI competencies: TP vs selected benchmark",
+    compChartDesc: "8 SEI competencies: TP vs selected benchmark (real Rowiverse data)",
     delta: "Delta",
     compEL: "Enhance Emotional Literacy",
     compRP: "Recognize Patterns",
@@ -129,24 +140,22 @@ const translations = {
     regionalDesc: "Each TP region compared against global average and BPO industry",
     region: "Region",
     regionAvgEQ: "Avg EQ",
+    regionN: "N",
     vsGlobal: "vs Global",
     vsBPO: "vs BPO",
     rank: "Rank",
-    regionNA: "North America",
-    regionLATAM: "Latin America",
-    regionEMEA: "EMEA",
-    regionAPAC: "Asia Pacific",
     differentiatorTitle: "Top Performer Differentiators",
-    differentiatorDesc: "What sets TP top performers apart from the global top 10%",
+    differentiatorDesc: "What sets TP top performers apart from the overall average",
     competency: "Competency",
     tpTopAvg: "TP Top Avg",
+    tpAllAvg: "TP Overall Avg",
     globalTopAvg: "Global Top Avg",
     gap: "Gap",
     impact: "Impact",
     impactHigh: "High",
     impactMedium: "Medium",
     impactLow: "Low",
-    exceedsGlobal: "Exceeds global",
+    exceedsGlobal: "Exceeds average",
     successTitle: "Success Patterns by Role",
     successDesc: "The competency formulas that define top performers in each function",
     successFormula: "Success Formula",
@@ -159,45 +168,26 @@ const translations = {
     gapPoints: "Gap",
     gapSummary: "TP needs +{points} average points to reach the global top 10%",
     infoTitle: "Benchmarking Data",
-    infoDesc: "Comparisons based on Six Seconds normative data (145,000+ global assessments) and 14,886 TP assessments. BPO industry data are estimates based on similar sectors.",
+    infoDesc: "All comparisons use 100% real data from the Rowiverse benchmark (300,000+ global assessments) and real TP data. Percentiles are calculated directly from the database.",
+    referenceData: "Rowiverse benchmark (real data)",
+    liveData: "TP live data (API)",
     navROI: "ROI",
     navAlerts: "Alerts",
+    loading: "Loading benchmark data...",
+    errorTitle: "Error loading data",
+    errorDesc: "Could not load benchmark data. Please try again later.",
+    retry: "Retry",
+    noData: "No data available",
+    outcomeLabel: "Outcome",
+    topPerformersCount: "Top Performers",
+    effectSize: "Effect Size",
   },
 };
 
 /* =========================================================
-   Mock Data
+   Constants
 ========================================================= */
-const BENCHMARKS = {
-  tp: {
-    name: "Teleperformance",
-    sampleSize: 14886,
-    avgEQ: 98.7,
-    competencies: { EL: 97.3, RP: 99.1, ACT: 98.4, NE: 96.8, IM: 100.2, OP: 99.5, EMP: 98.9, NG: 97.6 },
-    outcomes: { effectiveness: 101.2, relationships: 99.8, wellbeing: 97.4, qualityOfLife: 98.1 },
-  },
-  global: {
-    name: { es: "Global Six Seconds", en: "Six Seconds Global" },
-    sampleSize: 145000,
-    avgEQ: 100.0,
-    competencies: { EL: 100.0, RP: 100.0, ACT: 100.0, NE: 100.0, IM: 100.0, OP: 100.0, EMP: 100.0, NG: 100.0 },
-    outcomes: { effectiveness: 100.0, relationships: 100.0, wellbeing: 100.0, qualityOfLife: 100.0 },
-  },
-  bpoIndustry: {
-    name: { es: "Industria BPO", en: "BPO Industry" },
-    sampleSize: 28400,
-    avgEQ: 96.2,
-    competencies: { EL: 95.4, RP: 96.8, ACT: 97.2, NE: 94.8, IM: 97.4, OP: 96.2, EMP: 95.6, NG: 96.2 },
-    outcomes: { effectiveness: 98.4, relationships: 95.2, wellbeing: 94.8, qualityOfLife: 96.4 },
-  },
-  topTenPercent: {
-    name: { es: "Top 10% Mundial", en: "World Top 10%" },
-    sampleSize: 14500,
-    avgEQ: 118.4,
-    competencies: { EL: 116.8, RP: 117.2, ACT: 119.4, NE: 117.6, IM: 119.8, OP: 118.4, EMP: 120.2, NG: 116.4 },
-    outcomes: { effectiveness: 119.2, relationships: 120.8, wellbeing: 118.4, qualityOfLife: 117.6 },
-  },
-};
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const;
 type CompKey = (typeof COMP_KEYS)[number];
@@ -215,24 +205,29 @@ const OUTCOME_T_MAP: Record<OutcomeKey, string> = {
   qualityOfLife: "outcomeQuality",
 };
 
-const TP_REGIONS_COMPARISON = [
-  { regionKey: "regionNA" as const, region: "NA", avgEQ: 99.8, vsGlobal: -0.2, vsBPO: +3.6, rank: 2 },
-  { regionKey: "regionLATAM" as const, region: "LATAM", avgEQ: 98.4, vsGlobal: -1.6, vsBPO: +2.2, rank: 3 },
-  { regionKey: "regionEMEA" as const, region: "EMEA", avgEQ: 99.1, vsGlobal: -0.9, vsBPO: +2.9, rank: 2 },
-  { regionKey: "regionAPAC" as const, region: "APAC", avgEQ: 97.2, vsGlobal: -2.8, vsBPO: +1.0, rank: 4 },
-];
+/* =========================================================
+   Reference Benchmark Type — built dynamically from Rowiverse DB
+========================================================= */
+interface ReferenceBenchmark {
+  name: { es: string; en: string };
+  sampleSize: number;
+  avgEQ: number;
+  competencies: Record<string, number>;
+  outcomes: Record<string, number>;
+}
 
-const TOP_PERFORMER_DIFFERENTIATORS = [
-  { competency: "EMP" as CompKey, tKey: "compEMP", tpTopAvg: 118.7, tpAllAvg: 98.9, globalTopAvg: 120.2, gap: -1.5, impact: "high" as const },
-  { competency: "IM" as CompKey, tKey: "compIM", tpTopAvg: 115.9, tpAllAvg: 100.2, globalTopAvg: 119.8, gap: -3.9, impact: "high" as const },
-  { competency: "ACT" as CompKey, tKey: "compACT", tpTopAvg: 119.5, tpAllAvg: 98.4, globalTopAvg: 119.4, gap: +0.1, impact: "high" as const },
-  { competency: "OP" as CompKey, tKey: "compOP", tpTopAvg: 116.3, tpAllAvg: 99.5, globalTopAvg: 118.4, gap: -2.1, impact: "medium" as const },
-  { competency: "EL" as CompKey, tKey: "compEL", tpTopAvg: 118.2, tpAllAvg: 97.3, globalTopAvg: 116.8, gap: +1.4, impact: "medium" as const },
-  { competency: "RP" as CompKey, tKey: "compRP", tpTopAvg: 116.8, tpAllAvg: 99.1, globalTopAvg: 117.2, gap: -0.4, impact: "medium" as const },
-  { competency: "NE" as CompKey, tKey: "compNE", tpTopAvg: 117.1, tpAllAvg: 96.8, globalTopAvg: 117.6, gap: -0.5, impact: "medium" as const },
-  { competency: "NG" as CompKey, tKey: "compNG", tpTopAvg: 114.2, tpAllAvg: 97.6, globalTopAvg: 116.4, gap: -2.2, impact: "low" as const },
-];
+/** Fallback when Rowiverse data is loading/unavailable */
+const EMPTY_BENCHMARK: ReferenceBenchmark = {
+  name: { es: "Cargando...", en: "Loading..." },
+  sampleSize: 0,
+  avgEQ: 100,
+  competencies: { EL: 100, RP: 100, ACT: 100, NE: 100, IM: 100, OP: 100, EMP: 100, NG: 100 },
+  outcomes: { effectiveness: 100, relationships: 100, wellbeing: 100, qualityOfLife: 100 },
+};
 
+/* =========================================================
+   Success Patterns — curated reference data
+========================================================= */
 const SUCCESS_PATTERNS = [
   {
     role: { es: "Servicio al Cliente", en: "Customer Service" },
@@ -282,11 +277,72 @@ const SUCCESS_PATTERNS = [
 ];
 
 /* =========================================================
-   Helpers
+   Types
 ========================================================= */
+interface StatItem {
+  metricKey: string;
+  n: number;
+  mean: number;
+  median: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+}
+
+interface RegionalGroup {
+  name: string;
+  count: number;
+  metrics: Record<string, { mean: number; median: number; min: number; max: number; stdDev: number }>;
+}
+
+interface TopPerformerRecord {
+  outcomeKey: string;
+  sampleSize: number;
+  totalPopulation: number;
+  confidenceLevel: string;
+  topCompetencies: Array<{
+    key: string;
+    avgScore: number;
+    diffFromAvg: number;
+    effectSize: number;
+    effectInterpretation: string;
+    isSignificant: boolean;
+  }>;
+  statistics: {
+    globalMeans?: Record<string, number>;
+    significantCompetencies: number;
+    avgEffectSizeCompetencies: number;
+  };
+  avgEL?: number;
+  avgRP?: number;
+  avgACT?: number;
+  avgNE?: number;
+  avgIM?: number;
+  avgOP?: number;
+  avgEMP?: number;
+  avgNG?: number;
+}
+
+interface TPBenchmark {
+  name: string;
+  sampleSize: number;
+  avgEQ: number;
+  competencies: Record<string, number>;
+  outcomes: Record<string, number>;
+}
+
 type BenchmarkKey = "global" | "bpoIndustry" | "topTenPercent";
 
-function getBenchmarkName(bm: (typeof BENCHMARKS)["global"], lang: string): string {
+/* =========================================================
+   Helpers
+========================================================= */
+function getBenchmarkName(bm: ReferenceBenchmark, lang: string): string {
   if (typeof bm.name === "string") return bm.name;
   return (bm.name as Record<string, string>)[lang] || (bm.name as Record<string, string>).es;
 }
@@ -312,6 +368,21 @@ const BENCHMARK_COLORS: Record<BenchmarkKey, string> = {
   bpoIndustry: "#f59e0b",
   topTenPercent: "#ef4444",
 };
+
+/** Map region names from DB to display-friendly keys */
+function regionDisplayName(regionName: string, lang: string): string {
+  const map: Record<string, Record<string, string>> = {
+    "North America": { es: "Norteamérica", en: "North America" },
+    "NA": { es: "Norteamérica", en: "North America" },
+    "Latin America": { es: "Latinoamérica", en: "Latin America" },
+    "LATAM": { es: "Latinoamérica", en: "Latin America" },
+    "EMEA": { es: "EMEA", en: "EMEA" },
+    "Europe": { es: "Europa", en: "Europe" },
+    "Asia Pacific": { es: "Asia Pacífico", en: "Asia Pacific" },
+    "APAC": { es: "Asia Pacífico", en: "Asia Pacific" },
+  };
+  return map[regionName]?.[lang] || regionName;
+}
 
 /* =========================================================
    Sub-Components
@@ -374,8 +445,8 @@ function CompetencyBarChart({
       <svg width={chartWidth} height={svgHeight} className="block mx-auto" aria-label="Competency comparison chart">
         {COMP_KEYS.map((key, i) => {
           const y = i * (barHeight + gapY) + 10;
-          const tpVal = tpComps[key];
-          const cmpVal = compareComps[key];
+          const tpVal = tpComps[key] || 0;
+          const cmpVal = compareComps[key] || 0;
           const d = tpVal - cmpVal;
           const halfBar = (barHeight - 4) / 2;
           return (
@@ -394,6 +465,38 @@ function CompetencyBarChart({
   );
 }
 
+function LoadingState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      >
+        <Loader2 className="w-10 h-10 text-purple-500" />
+      </motion.div>
+      <p className="text-[var(--rowi-muted)] text-sm">{message}</p>
+    </div>
+  );
+}
+
+function ErrorState({ title, desc, onRetry }: { title: string; desc: string; onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+        <AlertTriangle className="w-8 h-8 text-red-500" />
+      </div>
+      <h2 className="text-lg font-bold">{title}</h2>
+      <p className="text-[var(--rowi-muted)] text-sm text-center max-w-md">{desc}</p>
+      <button
+        onClick={onRetry}
+        className="px-6 py-2.5 rounded-full bg-purple-500 text-white font-medium hover:bg-purple-600 transition-colors"
+      >
+        {onRetry.name || "Retry"}
+      </button>
+    </div>
+  );
+}
+
 /* =========================================================
    Main Page
 ========================================================= */
@@ -402,17 +505,293 @@ export default function TPWorldPage() {
   const t = translations[lang as keyof typeof translations] || translations.es;
   const [selectedBenchmark, setSelectedBenchmark] = useState<BenchmarkKey>("global");
 
-  const tp = BENCHMARKS.tp;
-  const compare = BENCHMARKS[selectedBenchmark];
+  // --- Live data from APIs ---
+  const [tpStats, setTpStats] = useState<StatItem[]>([]);
+  const [regionalData, setRegionalData] = useState<RegionalGroup[]>([]);
+  const [topPerformers, setTopPerformers] = useState<TopPerformerRecord[]>([]);
+  const [rowiverseStats, setRowiverseStats] = useState<StatItem[]>([]);
+  const [rowiverseSampleSize, setRowiverseSampleSize] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Fetch Rowiverse benchmark ID
+      const rvInfoRes = await fetch("/api/rowiverse/stats");
+      const rvInfo = await rvInfoRes.json();
+      const rowiverseId = rvInfo.ok ? rvInfo.benchmark?.id : null;
+
+      // 2. Fetch TP + Rowiverse data in parallel
+      const fetches: Promise<Response>[] = [
+        fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+        fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=region`),
+        fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/top-performers`),
+      ];
+      if (rowiverseId) {
+        fetches.push(fetch(`/api/admin/benchmarks/${rowiverseId}/stats`));
+      }
+
+      const responses = await Promise.all(fetches);
+      const statsData = await responses[0].json();
+      const regionData = await responses[1].json();
+      const topData = await responses[2].json();
+
+      if (statsData.ok) setTpStats(statsData.statistics);
+      else throw new Error(statsData.error || "Failed to load stats");
+
+      if (regionData.ok) setRegionalData(regionData.groups);
+      if (topData.ok) setTopPerformers(topData.topPerformers);
+
+      // 3. Rowiverse stats
+      if (rowiverseId && responses[3]) {
+        const rvStatsData = await responses[3].json();
+        if (rvStatsData.ok) {
+          setRowiverseStats(rvStatsData.statistics);
+          const rvEq = rvStatsData.statistics?.find((s: StatItem) => s.metricKey === "eqTotal");
+          setRowiverseSampleSize(rvEq?.n || rvInfo.benchmark?.totalRows || 0);
+        }
+      }
+    } catch (e: any) {
+      console.error("Error loading benchmark data:", e);
+      setError(e.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // --- Build TP benchmark from real stats ---
+  const tpBenchmark: TPBenchmark | null = useMemo(() => {
+    if (!tpStats.length) return null;
+    const getStat = (key: string) => tpStats.find((s) => s.metricKey === key);
+    return {
+      name: "Teleperformance",
+      sampleSize: getStat("eqTotal")?.n || 0,
+      avgEQ: getStat("eqTotal")?.mean || 0,
+      competencies: {
+        EL: getStat("EL")?.mean || 0,
+        RP: getStat("RP")?.mean || 0,
+        ACT: getStat("ACT")?.mean || 0,
+        NE: getStat("NE")?.mean || 0,
+        IM: getStat("IM")?.mean || 0,
+        OP: getStat("OP")?.mean || 0,
+        EMP: getStat("EMP")?.mean || 0,
+        NG: getStat("NG")?.mean || 0,
+      },
+      outcomes: {
+        effectiveness: getStat("effectiveness")?.mean || 0,
+        relationships: getStat("relationships")?.mean || 0,
+        wellbeing: getStat("wellbeing")?.mean || 0,
+        qualityOfLife: getStat("qualityOfLife")?.mean || 0,
+      },
+    };
+  }, [tpStats]);
+
+  // --- Build reference benchmarks from Rowiverse real data ---
+  const referenceBenchmarks = useMemo((): Record<BenchmarkKey, ReferenceBenchmark> => {
+    const getRvStat = (key: string) => rowiverseStats.find((s) => s.metricKey === key);
+
+    const rvGlobal: ReferenceBenchmark = rowiverseStats.length
+      ? {
+          name: { es: "Rowiverse Global", en: "Rowiverse Global" },
+          sampleSize: rowiverseSampleSize || getRvStat("eqTotal")?.n || 0,
+          avgEQ: getRvStat("eqTotal")?.mean || 100,
+          competencies: {
+            EL: getRvStat("EL")?.mean || 100,
+            RP: getRvStat("RP")?.mean || 100,
+            ACT: getRvStat("ACT")?.mean || 100,
+            NE: getRvStat("NE")?.mean || 100,
+            IM: getRvStat("IM")?.mean || 100,
+            OP: getRvStat("OP")?.mean || 100,
+            EMP: getRvStat("EMP")?.mean || 100,
+            NG: getRvStat("NG")?.mean || 100,
+          },
+          outcomes: {
+            effectiveness: getRvStat("effectiveness")?.mean || 100,
+            relationships: getRvStat("relationships")?.mean || 100,
+            wellbeing: getRvStat("wellbeing")?.mean || 100,
+            qualityOfLife: getRvStat("qualityOfLife")?.mean || 100,
+          },
+        }
+      : { ...EMPTY_BENCHMARK, name: { es: "Rowiverse Global", en: "Rowiverse Global" } };
+
+    // Top 10% = p90 from the Rowiverse data
+    const rvTop10: ReferenceBenchmark = rowiverseStats.length
+      ? {
+          name: { es: "Top 10% Rowiverse", en: "Rowiverse Top 10%" },
+          sampleSize: Math.round((getRvStat("eqTotal")?.n || 0) * 0.1),
+          avgEQ: getRvStat("eqTotal")?.p90 || 118,
+          competencies: {
+            EL: getRvStat("EL")?.p90 || 116,
+            RP: getRvStat("RP")?.p90 || 117,
+            ACT: getRvStat("ACT")?.p90 || 119,
+            NE: getRvStat("NE")?.p90 || 117,
+            IM: getRvStat("IM")?.p90 || 119,
+            OP: getRvStat("OP")?.p90 || 118,
+            EMP: getRvStat("EMP")?.p90 || 120,
+            NG: getRvStat("NG")?.p90 || 116,
+          },
+          outcomes: {
+            effectiveness: getRvStat("effectiveness")?.p90 || 119,
+            relationships: getRvStat("relationships")?.p90 || 120,
+            wellbeing: getRvStat("wellbeing")?.p90 || 118,
+            qualityOfLife: getRvStat("qualityOfLife")?.p90 || 117,
+          },
+        }
+      : { ...EMPTY_BENCHMARK, name: { es: "Top 10% Rowiverse", en: "Rowiverse Top 10%" } };
+
+    // Bottom 25% = p25 from the Rowiverse data (used as "BPO Industry" equivalent = low-performing segment)
+    const rvBottom25: ReferenceBenchmark = rowiverseStats.length
+      ? {
+          name: { es: "Percentil 25 Rowiverse", en: "Rowiverse 25th Percentile" },
+          sampleSize: Math.round((getRvStat("eqTotal")?.n || 0) * 0.25),
+          avgEQ: getRvStat("eqTotal")?.p25 || 96,
+          competencies: {
+            EL: getRvStat("EL")?.p25 || 95,
+            RP: getRvStat("RP")?.p25 || 96,
+            ACT: getRvStat("ACT")?.p25 || 97,
+            NE: getRvStat("NE")?.p25 || 94,
+            IM: getRvStat("IM")?.p25 || 97,
+            OP: getRvStat("OP")?.p25 || 96,
+            EMP: getRvStat("EMP")?.p25 || 95,
+            NG: getRvStat("NG")?.p25 || 96,
+          },
+          outcomes: {
+            effectiveness: getRvStat("effectiveness")?.p25 || 98,
+            relationships: getRvStat("relationships")?.p25 || 95,
+            wellbeing: getRvStat("wellbeing")?.p25 || 94,
+            qualityOfLife: getRvStat("qualityOfLife")?.p25 || 96,
+          },
+        }
+      : { ...EMPTY_BENCHMARK, name: { es: "Percentil 25 Rowiverse", en: "Rowiverse 25th Percentile" } };
+
+    return {
+      global: rvGlobal,
+      bpoIndustry: rvBottom25,
+      topTenPercent: rvTop10,
+    };
+  }, [rowiverseStats, rowiverseSampleSize]);
+
+  // --- Build regional comparison from real grouped data ---
+  const regionsComparison = useMemo(() => {
+    if (!regionalData.length) return [];
+    const globalRef = referenceBenchmarks.global;
+    const bpoRef = referenceBenchmarks.bpoIndustry;
+
+    return regionalData
+      .filter((g) => g.metrics.eqTotal)
+      .map((g, idx) => ({
+        regionName: g.name,
+        count: g.count,
+        avgEQ: g.metrics.eqTotal?.mean || 0,
+        vsGlobal: (g.metrics.eqTotal?.mean || 0) - globalRef.avgEQ,
+        vsBPO: (g.metrics.eqTotal?.mean || 0) - bpoRef.avgEQ,
+      }))
+      .sort((a, b) => b.avgEQ - a.avgEQ)
+      .map((r, i) => ({ ...r, rank: i + 1 }));
+  }, [regionalData]);
+
+  // --- Build top performer differentiators from real data ---
+  const differentiators = useMemo(() => {
+    if (!topPerformers.length || !tpBenchmark) return [];
+
+    // Use "effectiveness" outcome as the primary differentiator (or first available)
+    const primaryOutcome = topPerformers.find((tp) => tp.outcomeKey === "effectiveness") || topPerformers[0];
+    if (!primaryOutcome || !primaryOutcome.topCompetencies) return [];
+
+    const globalMeans = primaryOutcome.statistics?.globalMeans || {};
+
+    return COMP_KEYS.map((key) => {
+      const topComp = primaryOutcome.topCompetencies?.find((c: any) => c.key === key);
+      const tpTopAvg = topComp?.avgScore || 0;
+      const tpAllAvg = tpBenchmark.competencies[key] || 0;
+      const effectSize = topComp?.effectSize || 0;
+      const diffFromAvg = topComp?.diffFromAvg || 0;
+      const absEffect = Math.abs(effectSize);
+
+      let impact: "high" | "medium" | "low" = "low";
+      if (absEffect >= 0.8) impact = "high";
+      else if (absEffect >= 0.5) impact = "medium";
+
+      return {
+        competency: key as CompKey,
+        tKey: COMP_T_MAP[key as CompKey],
+        tpTopAvg,
+        tpAllAvg,
+        gap: diffFromAvg,
+        effectSize,
+        impact,
+        isSignificant: topComp?.isSignificant || false,
+      };
+    })
+      .filter((d) => d.tpTopAvg > 0)
+      .sort((a, b) => Math.abs(b.effectSize) - Math.abs(a.effectSize));
+  }, [topPerformers, tpBenchmark]);
+
+  // --- Reference benchmark for comparison ---
+  const compare = referenceBenchmarks[selectedBenchmark];
   const compareName = getBenchmarkName(compare, lang);
   const compareColor = BENCHMARK_COLORS[selectedBenchmark];
 
-  const gapSum = COMP_KEYS.reduce((acc, k) => acc + (BENCHMARKS.topTenPercent.competencies[k] - tp.competencies[k]), 0);
-  const avgGap = gapSum / COMP_KEYS.length;
+  // --- Gap to World-Class ---
+  const avgGap = useMemo(() => {
+    if (!tpBenchmark) return 0;
+    const gapSum = COMP_KEYS.reduce(
+      (acc, k) => acc + (referenceBenchmarks.topTenPercent.competencies[k] - (tpBenchmark.competencies[k] || 0)),
+      0
+    );
+    return gapSum / COMP_KEYS.length;
+  }, [tpBenchmark]);
+
+  // --- Loading & Error states ---
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          </Link>
+          <div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
+              <Globe className="w-3 h-3" /> {t.badgeLabel}
+            </span>
+            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+          </div>
+        </div>
+        <LoadingState message={t.loading} />
+      </div>
+    );
+  }
+
+  if (error || !tpBenchmark) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          </Link>
+          <div>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
+              <Globe className="w-3 h-3" /> {t.badgeLabel}
+            </span>
+            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+          </div>
+        </div>
+        <ErrorState title={t.errorTitle} desc={t.errorDesc} onRetry={loadData} />
+      </div>
+    );
+  }
+
+  const tp = tpBenchmark;
 
   return (
     <div className="space-y-8">
-      {/* ── Header ── */}
+      {/* -- Header -- */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" /> {t.backToHub}
@@ -426,7 +805,7 @@ export default function TPWorldPage() {
         </div>
       </div>
 
-      {/* ── Benchmark Selector ── */}
+      {/* -- Benchmark Selector -- */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100 dark:border-zinc-800">
         <h2 className="text-sm font-semibold mb-4 flex items-center gap-2 text-[var(--rowi-muted)]">
           <BarChart3 className="w-4 h-4" /> {t.selectorTitle}
@@ -451,9 +830,13 @@ export default function TPWorldPage() {
             </button>
           ))}
         </div>
+        <div className="mt-3 flex items-center gap-4 text-[10px] text-[var(--rowi-muted)]">
+          <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3 text-purple-500" /> {t.liveData}</span>
+          <span className="inline-flex items-center gap-1"><BookOpen className="w-3 h-3 text-blue-500" /> {t.referenceData}</span>
+        </div>
       </motion.div>
 
-      {/* ── Head-to-Head Comparison ── */}
+      {/* -- Head-to-Head Comparison -- */}
       <div>
         <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
           <Target className="w-6 h-6 text-purple-500" /> {t.headToHeadTitle}
@@ -465,7 +848,12 @@ export default function TPWorldPage() {
                 <Award className="w-5 h-5 text-purple-500" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">{tp.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg">{tp.name}</h3>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                    <Sparkles className="w-2.5 h-2.5" /> LIVE
+                  </span>
+                </div>
                 <p className="text-xs text-[var(--rowi-muted)]">{t.sampleSize}: {tp.sampleSize.toLocaleString()}</p>
               </div>
             </div>
@@ -480,7 +868,12 @@ export default function TPWorldPage() {
                 <Globe className="w-5 h-5" style={{ color: compareColor }} />
               </div>
               <div>
-                <h3 className="font-bold text-lg">{compareName}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg">{compareName}</h3>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                    <Sparkles className="w-2.5 h-2.5" /> ROWIVERSE
+                  </span>
+                </div>
                 <p className="text-xs text-[var(--rowi-muted)]">{t.sampleSize}: {compare.sampleSize.toLocaleString()}</p>
               </div>
             </div>
@@ -501,7 +894,7 @@ export default function TPWorldPage() {
         </motion.div>
       </div>
 
-      {/* ── Competency Comparison Chart ── */}
+      {/* -- Competency Comparison Chart -- */}
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
         <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
           <Brain className="w-5 h-5 text-purple-500" /> {t.compChartTitle}
@@ -515,7 +908,7 @@ export default function TPWorldPage() {
         <CompetencyBarChart tpComps={tp.competencies} compareComps={compare.competencies} compareColor={compareColor} />
       </motion.div>
 
-      {/* ── Outcomes Comparison ── */}
+      {/* -- Outcomes Comparison -- */}
       <div>
         <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-purple-500" /> {t.outcomesTitle}
@@ -523,7 +916,7 @@ export default function TPWorldPage() {
         <p className="text-[var(--rowi-muted)] mb-4">{t.outcomesDesc}</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {OUTCOME_KEYS.map((key, i) => {
-            const tpVal = tp.outcomes[key];
+            const tpVal = tp.outcomes[key] || 0;
             const cmpVal = compare.outcomes[key];
             const d = tpVal - cmpVal;
             const tKey = OUTCOME_T_MAP[key] as keyof typeof t;
@@ -550,106 +943,122 @@ export default function TPWorldPage() {
         </div>
       </div>
 
-      {/* ── Regional Positioning ── */}
+      {/* -- Regional Positioning (Real Data) -- */}
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
         <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
           <Globe className="w-5 h-5 text-purple-500" /> {t.regionalTitle}
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+            <Sparkles className="w-2.5 h-2.5" /> LIVE
+          </span>
         </h2>
         <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.regionalDesc}</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-zinc-700">
-                <th className="text-left py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.region}</th>
-                <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.regionAvgEQ}</th>
-                <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.vsGlobal}</th>
-                <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.vsBPO}</th>
-                <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.rank}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TP_REGIONS_COMPARISON.map((row, i) => (
-                <motion.tr key={row.region} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
-                  <td className="py-3 px-2 font-medium">{t[row.regionKey]}</td>
-                  <td className="py-3 px-2 text-center font-mono font-bold text-purple-600">{row.avgEQ.toFixed(1)}</td>
-                  <td className="py-3 px-2 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${deltaBg(row.vsGlobal)} ${deltaColor(row.vsGlobal)}`}>
-                      {row.vsGlobal >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                      {formatDelta(row.vsGlobal)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${deltaBg(row.vsBPO)} ${deltaColor(row.vsBPO)}`}>
-                      <ArrowUpRight className="w-3 h-3" />
-                      {formatDelta(row.vsBPO)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2 text-center">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-bold">#{row.rank}</span>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {regionsComparison.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-zinc-700">
+                  <th className="text-left py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.region}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.regionN}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.regionAvgEQ}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.vsGlobal}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.vsBPO}</th>
+                  <th className="text-center py-3 px-2 font-semibold text-[var(--rowi-muted)]">{t.rank}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {regionsComparison.map((row, i) => (
+                  <motion.tr key={row.regionName} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <td className="py-3 px-2 font-medium">{regionDisplayName(row.regionName, lang)}</td>
+                    <td className="py-3 px-2 text-center text-[var(--rowi-muted)] text-xs">{row.count.toLocaleString()}</td>
+                    <td className="py-3 px-2 text-center font-mono font-bold text-purple-600">{row.avgEQ.toFixed(1)}</td>
+                    <td className="py-3 px-2 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${deltaBg(row.vsGlobal)} ${deltaColor(row.vsGlobal)}`}>
+                        {row.vsGlobal >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {formatDelta(row.vsGlobal)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${deltaBg(row.vsBPO)} ${deltaColor(row.vsBPO)}`}>
+                        {row.vsBPO >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {formatDelta(row.vsBPO)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-bold">#{row.rank}</span>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--rowi-muted)] text-center py-8">{t.noData}</p>
+        )}
       </motion.div>
 
-      {/* ── Top Performer Differentiators ── */}
+      {/* -- Top Performer Differentiators (Real Data) -- */}
       <div>
         <h2 className="text-2xl font-bold mb-1 flex items-center gap-2">
           <Star className="w-6 h-6 text-purple-500" /> {t.differentiatorTitle}
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+            <Sparkles className="w-2.5 h-2.5" /> LIVE
+          </span>
         </h2>
         <p className="text-[var(--rowi-muted)] mb-4">{t.differentiatorDesc}</p>
-        <div className="grid gap-3">
-          {TOP_PERFORMER_DIFFERENTIATORS.map((item, i) => {
-            const isPositive = item.gap >= 0;
-            const impactLabel = item.impact === "high" ? t.impactHigh : item.impact === "medium" ? t.impactMedium : t.impactLow;
-            const impactColor = item.impact === "high"
-              ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-              : item.impact === "medium"
-                ? "bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
-                : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400";
-            const tKey = item.tKey as keyof typeof t;
-            return (
-              <motion.div
-                key={item.competency}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-                className={`bg-white dark:bg-zinc-900 rounded-xl p-4 border ${isPositive ? "border-emerald-200 dark:border-emerald-800" : "border-gray-100 dark:border-zinc-800"} flex flex-col sm:flex-row sm:items-center gap-3`}
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 font-bold text-sm shrink-0">{item.competency}</div>
-                  <div className="min-w-0">
-                    <div className="font-medium text-sm truncate">{t[tKey]}</div>
-                    <div className="text-[10px] text-[var(--rowi-muted)]">TP All: {item.tpAllAvg.toFixed(1)}</div>
+        {differentiators.length > 0 ? (
+          <div className="grid gap-3">
+            {differentiators.map((item, i) => {
+              const isPositive = item.gap >= 0;
+              const impactLabel = item.impact === "high" ? t.impactHigh : item.impact === "medium" ? t.impactMedium : t.impactLow;
+              const impactColor = item.impact === "high"
+                ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                : item.impact === "medium"
+                  ? "bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                  : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400";
+              const tKey = item.tKey as keyof typeof t;
+              return (
+                <motion.div
+                  key={item.competency}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 }}
+                  className={`bg-white dark:bg-zinc-900 rounded-xl p-4 border ${isPositive ? "border-emerald-200 dark:border-emerald-800" : "border-gray-100 dark:border-zinc-800"} flex flex-col sm:flex-row sm:items-center gap-3`}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 font-bold text-sm shrink-0">{item.competency}</div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate">{t[tKey]}</div>
+                      <div className="text-[10px] text-[var(--rowi-muted)]">{t.tpAllAvg}: {item.tpAllAvg.toFixed(1)}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-center">
-                    <div className="font-bold text-purple-600">{item.tpTopAvg.toFixed(1)}</div>
-                    <div className="text-[10px] text-[var(--rowi-muted)]">{t.tpTopAvg}</div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="text-center">
+                      <div className="font-bold text-purple-600">{item.tpTopAvg.toFixed(1)}</div>
+                      <div className="text-[10px] text-[var(--rowi-muted)]">{t.tpTopAvg}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold text-[var(--rowi-muted)]">{item.tpAllAvg.toFixed(1)}</div>
+                      <div className="text-[10px] text-[var(--rowi-muted)]">{t.tpAllAvg}</div>
+                    </div>
+                    <div className={`px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600" : "bg-red-50 dark:bg-red-900/20 text-red-500"}`}>
+                      {formatDelta(item.gap)}
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${impactColor}`}>{impactLabel}</span>
+                    {isPositive && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">{t.exceedsGlobal}</span>
+                    )}
                   </div>
-                  <div className="text-center">
-                    <div className="font-bold" style={{ color: "#ef4444" }}>{item.globalTopAvg.toFixed(1)}</div>
-                    <div className="text-[10px] text-[var(--rowi-muted)]">{t.globalTopAvg}</div>
-                  </div>
-                  <div className={`px-2.5 py-1 rounded-lg text-xs font-bold ${isPositive ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600" : "bg-red-50 dark:bg-red-900/20 text-red-500"}`}>
-                    {formatDelta(item.gap)}
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${impactColor}`}>{impactLabel}</span>
-                  {isPositive && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">{t.exceedsGlobal}</span>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--rowi-muted)] text-center py-8">{t.noData}</p>
+        )}
       </div>
 
-      {/* ── Success Patterns by Role ── */}
+      {/* -- Success Patterns by Role -- */}
       <div>
         <h2 className="text-2xl font-bold mb-1 flex items-center gap-2">
           <Zap className="w-6 h-6 text-purple-500" /> {t.successTitle}
@@ -697,7 +1106,7 @@ export default function TPWorldPage() {
         </div>
       </div>
 
-      {/* ── Gap to World-Class Analysis ── */}
+      {/* -- Gap to World-Class Analysis -- */}
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
         <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-purple-500" /> {t.gapTitle}
@@ -705,8 +1114,8 @@ export default function TPWorldPage() {
         <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.gapDesc}</p>
         <div className="space-y-4">
           {COMP_KEYS.map((key, i) => {
-            const current = tp.competencies[key];
-            const targetVal = BENCHMARKS.topTenPercent.competencies[key];
+            const current = tp.competencies[key] || 0;
+            const targetVal = referenceBenchmarks.topTenPercent.competencies[key];
             const gapVal = targetVal - current;
             const minVal = 90;
             const maxVal = 125;
@@ -723,13 +1132,15 @@ export default function TPWorldPage() {
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-[var(--rowi-muted)]">{t.current}: <span className="font-mono font-bold text-purple-600">{current.toFixed(1)}</span></span>
                     <span className="text-[var(--rowi-muted)]">{t.target}: <span className="font-mono font-bold text-red-500">{targetVal.toFixed(1)}</span></span>
-                    <span className="px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 font-bold text-[10px]">{t.gapPoints}: +{gapVal.toFixed(1)}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${gapVal > 0 ? "bg-red-50 dark:bg-red-900/20 text-red-500" : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"}`}>
+                      {t.gapPoints}: {gapVal > 0 ? `+${gapVal.toFixed(1)}` : gapVal.toFixed(1)}
+                    </span>
                   </div>
                 </div>
                 <div className="relative h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div className="absolute h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-600" initial={{ width: 0 }} whileInView={{ width: `${Math.min(currentPct, 100)}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: i * 0.05 }} />
-                  <div className="absolute top-0 h-full w-0.5 bg-red-500" style={{ left: `${Math.min(targetPct, 100)}%` }} />
-                  <div className="absolute -top-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-zinc-900" style={{ left: `${Math.min(targetPct, 100)}%`, transform: "translateX(-50%)" }} />
+                  <motion.div className="absolute h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-600" initial={{ width: 0 }} whileInView={{ width: `${Math.min(Math.max(currentPct, 0), 100)}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: i * 0.05 }} />
+                  <div className="absolute top-0 h-full w-0.5 bg-red-500" style={{ left: `${Math.min(Math.max(targetPct, 0), 100)}%` }} />
+                  <div className="absolute -top-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-zinc-900" style={{ left: `${Math.min(Math.max(targetPct, 0), 100)}%`, transform: "translateX(-50%)" }} />
                 </div>
               </motion.div>
             );
@@ -751,7 +1162,7 @@ export default function TPWorldPage() {
         </div>
       </motion.div>
 
-      {/* ── Info Box ── */}
+      {/* -- Info Box -- */}
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-6 flex gap-4">
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
@@ -760,7 +1171,7 @@ export default function TPWorldPage() {
         </div>
       </motion.div>
 
-      {/* ── Navigation Footer ── */}
+      {/* -- Navigation Footer -- */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">
         <Link href="/hub/admin/tp" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t.navROI}

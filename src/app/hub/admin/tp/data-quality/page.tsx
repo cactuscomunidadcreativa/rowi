@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -15,12 +15,17 @@ import {
   ChevronDown,
   ChevronUp,
   BarChart3,
-  FileWarning,
   TrendingDown,
   Activity,
   Info,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+
+/* =========================================================
+   Constants
+========================================================= */
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
    Translations
@@ -30,7 +35,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeLabel: "Calidad de Datos",
     pageTitle: "Calidad de Datos y Detección de Duplicados",
-    pageSubtitle: "Análisis de integridad, completitud y confiabilidad de 14,886 evaluaciones SEI de Teleperformance",
+    pageSubtitle: "Análisis de integridad, completitud y confiabilidad de las evaluaciones SEI de Teleperformance",
     overallQuality: "Calidad General de Datos",
     recordsAnalyzed: "registros analizados",
     qualityExcellent: "Excelente",
@@ -42,77 +47,59 @@ const translations = {
     groups: "grupos",
     records: "registros",
     outliersDetected: "Outliers",
-    lowReliability: "Baja Confiabilidad",
+    avgReliability: "Confiabilidad Promedio",
     assessments: "evaluaciones",
     completenessTitle: "Completitud de Datos por Campo",
     completenessDesc: "Porcentaje de registros con valores válidos por cada campo — ordenado de menor a mayor completitud",
     fieldName: "Campo",
     completeness: "Completitud",
-    validValues: "Valores Válidos",
+    present: "Presentes",
+    missing: "Faltantes",
     totalLabel: "Total",
-    issues: "Problemas",
     outliers: "Outliers",
     duplicatesTitle: "Detección de Duplicados",
-    duplicatesDesc: "Grupos de registros potencialmente duplicados identificados por coincidencia de ID exacto, nombre aproximado o datos demográficos",
-    matchExactId: "ID Exacto",
-    matchFuzzyName: "Nombre Aproximado",
-    matchDemographic: "Coincidencia Demográfica",
-    confidence: "Confianza",
-    recommendation: "Recomendación",
-    recMerge: "Fusionar",
-    recReview: "Revisar",
-    recKeepSeparate: "Mantener Separado",
+    duplicatesDesc: "Grupos de registros duplicados identificados por coincidencia de ID fuente exacto",
+    showRecords: "Ver registros",
+    hideRecords: "Ocultar registros",
     colSourceId: "ID Fuente",
-    colName: "Nombre",
     colDate: "Fecha",
     colEqTotal: "EQ Total",
     colCountry: "País",
+    colRegion: "Región",
     colRole: "Rol",
-    showRecords: "Ver registros",
-    hideRecords: "Ocultar registros",
+    colBrainStyle: "Estilo Cerebral",
     reliabilityTitle: "Distribución del Índice de Confiabilidad",
-    reliabilityDesc: "Distribución de las evaluaciones según su índice de confiabilidad — valores por debajo de 0.5 sugieren evaluaciones potencialmente inválidas",
+    reliabilityDesc: "Distribución de las evaluaciones según su índice de confiabilidad agrupadas en rangos",
+    reliabilityCount: "evaluaciones",
+    reliabilityMean: "Media",
+    reliabilityMedian: "Mediana",
+    reliabilityMin: "Mínimo",
+    reliabilityMax: "Máximo",
     outliersTitle: "Registros Atípicos (Outliers)",
-    outliersDesc: "Evaluaciones con valores fuera del rango esperado que requieren revisión manual",
-    colField: "Campo",
-    colValue: "Valor",
-    colExpected: "Rango Esperado",
-    colSeverity: "Severidad",
-    colNote: "Nota",
-    severityCritical: "Crítico",
-    severityWarning: "Advertencia",
-    severityInfo: "Info",
-    issuesTitle: "Registro de Problemas de Datos",
-    issuesDesc: "Log de problemas detectados durante el análisis de calidad — filtra por estado para priorizar acciones",
-    colId: "ID",
+    outliersDesc: "Evaluaciones con EQ Total fuera de ±2σ del promedio que requieren revisión",
+    colZScore: "Z-Score",
     colType: "Tipo",
-    colDescription: "Descripción",
-    colAffected: "Afectados",
-    colDetected: "Detectado",
-    colStatus: "Estado",
-    typeMissingData: "Datos Faltantes",
-    typeInconsistentData: "Datos Inconsistentes",
-    typeOutlier: "Outlier",
-    typeDuplicate: "Duplicado",
-    typeLowReliability: "Baja Confiabilidad",
-    statusOpen: "Abierto",
-    statusAcknowledged: "Reconocido",
-    statusResolved: "Resuelto",
-    filterAll: "Todos",
-    filterOpen: "Abiertos",
-    filterAcknowledged: "Reconocidos",
-    filterResolved: "Resueltos",
+    typeHigh: "Alto",
+    typeLow: "Bajo",
+    outlierStatsTitle: "Estadísticas de Outliers",
+    outlierStatsMean: "Media EQ Total",
+    outlierStatsStdDev: "Desviación Estándar",
+    outlierStatsThresholdHigh: "Umbral Alto (μ+2σ)",
+    outlierStatsThresholdLow: "Umbral Bajo (μ-2σ)",
+    outlierStatsTotalOutliers: "Total Outliers",
     infoTitle: "Análisis de Calidad de Datos TP",
-    infoDesc: "Este módulo analiza la integridad de 14,886 evaluaciones SEI de Teleperformance. Los duplicados se detectan por coincidencia de ID, nombre y datos demográficos. Todos los datos individuales están anonimizados.",
+    infoDesc: "Este módulo analiza la integridad de las evaluaciones SEI de Teleperformance. Los duplicados se detectan por coincidencia de ID fuente. Los outliers se calculan como registros con EQ Total fuera de ±2 desviaciones estándar. Todos los datos individuales están anonimizados.",
     navAlerts: "Alertas",
     navHub: "TP Hub",
-    noIssuesFilter: "No hay problemas con este filtro",
+    loading: "Cargando datos de calidad...",
+    errorLoading: "Error al cargar datos de calidad",
+    noData: "No hay datos disponibles",
   },
   en: {
     backToHub: "TP Hub",
     badgeLabel: "Data Quality",
     pageTitle: "Data Quality & Duplicate Detection",
-    pageSubtitle: "Integrity, completeness, and reliability analysis of 14,886 Teleperformance SEI assessments",
+    pageSubtitle: "Integrity, completeness, and reliability analysis of Teleperformance SEI assessments",
     overallQuality: "Overall Data Quality",
     recordsAnalyzed: "records analyzed",
     qualityExcellent: "Excellent",
@@ -124,164 +111,130 @@ const translations = {
     groups: "groups",
     records: "records",
     outliersDetected: "Outliers",
-    lowReliability: "Low Reliability",
+    avgReliability: "Avg Reliability",
     assessments: "assessments",
     completenessTitle: "Data Completeness by Field",
     completenessDesc: "Percentage of records with valid values per field — sorted from lowest to highest completeness",
     fieldName: "Field",
     completeness: "Completeness",
-    validValues: "Valid Values",
+    present: "Present",
+    missing: "Missing",
     totalLabel: "Total",
-    issues: "Issues",
     outliers: "Outliers",
     duplicatesTitle: "Duplicate Detection",
-    duplicatesDesc: "Groups of potentially duplicated records identified by exact ID match, fuzzy name, or demographic data",
-    matchExactId: "Exact ID",
-    matchFuzzyName: "Fuzzy Name",
-    matchDemographic: "Demographic Match",
-    confidence: "Confidence",
-    recommendation: "Recommendation",
-    recMerge: "Merge",
-    recReview: "Review",
-    recKeepSeparate: "Keep Separate",
+    duplicatesDesc: "Groups of duplicated records identified by exact source ID match",
+    showRecords: "Show records",
+    hideRecords: "Hide records",
     colSourceId: "Source ID",
-    colName: "Name",
     colDate: "Date",
     colEqTotal: "EQ Total",
     colCountry: "Country",
+    colRegion: "Region",
     colRole: "Role",
-    showRecords: "Show records",
-    hideRecords: "Hide records",
+    colBrainStyle: "Brain Style",
     reliabilityTitle: "Reliability Index Distribution",
-    reliabilityDesc: "Distribution of assessments by reliability index — values below 0.5 suggest potentially invalid assessments",
+    reliabilityDesc: "Distribution of assessments by reliability index grouped in ranges",
+    reliabilityCount: "assessments",
+    reliabilityMean: "Mean",
+    reliabilityMedian: "Median",
+    reliabilityMin: "Min",
+    reliabilityMax: "Max",
     outliersTitle: "Outlier Records",
-    outliersDesc: "Assessments with values outside the expected range that require manual review",
-    colField: "Field",
-    colValue: "Value",
-    colExpected: "Expected Range",
-    colSeverity: "Severity",
-    colNote: "Note",
-    severityCritical: "Critical",
-    severityWarning: "Warning",
-    severityInfo: "Info",
-    issuesTitle: "Data Issues Log",
-    issuesDesc: "Log of issues detected during quality analysis — filter by status to prioritize actions",
-    colId: "ID",
+    outliersDesc: "Assessments with EQ Total outside +/-2 std dev from the mean that require review",
+    colZScore: "Z-Score",
     colType: "Type",
-    colDescription: "Description",
-    colAffected: "Affected",
-    colDetected: "Detected",
-    colStatus: "Status",
-    typeMissingData: "Missing Data",
-    typeInconsistentData: "Inconsistent Data",
-    typeOutlier: "Outlier",
-    typeDuplicate: "Duplicate",
-    typeLowReliability: "Low Reliability",
-    statusOpen: "Open",
-    statusAcknowledged: "Acknowledged",
-    statusResolved: "Resolved",
-    filterAll: "All",
-    filterOpen: "Open",
-    filterAcknowledged: "Acknowledged",
-    filterResolved: "Resolved",
+    typeHigh: "High",
+    typeLow: "Low",
+    outlierStatsTitle: "Outlier Statistics",
+    outlierStatsMean: "EQ Total Mean",
+    outlierStatsStdDev: "Standard Deviation",
+    outlierStatsThresholdHigh: "High Threshold (μ+2σ)",
+    outlierStatsThresholdLow: "Low Threshold (μ-2σ)",
+    outlierStatsTotalOutliers: "Total Outliers",
     infoTitle: "TP Data Quality Analysis",
-    infoDesc: "This module analyzes the integrity of 14,886 Teleperformance SEI assessments. Duplicates are detected by ID match, name similarity, and demographic data. All individual data is anonymized.",
+    infoDesc: "This module analyzes the integrity of Teleperformance SEI assessments. Duplicates are detected by source ID match. Outliers are calculated as records with EQ Total outside +/-2 standard deviations. All individual data is anonymized.",
     navAlerts: "Alerts",
     navHub: "TP Hub",
-    noIssuesFilter: "No issues match this filter",
+    loading: "Loading quality data...",
+    errorLoading: "Error loading quality data",
+    noData: "No data available",
   },
 };
 
 /* =========================================================
-   Mock Data
+   Types
 ========================================================= */
-const DATA_QUALITY_SCORE = 87.4;
+interface CompletenessField {
+  field: string;
+  present: number;
+  missing: number;
+  percentage: number;
+}
 
-const QUALITY_METRICS = [
-  { field: "eqTotal", label: { es: "EQ Total", en: "EQ Total" }, completeness: 100, validValues: 14886, totalRecords: 14886, outliers: 12, issues: 0 },
-  { field: "country", label: { es: "País", en: "Country" }, completeness: 99.8, validValues: 14856, totalRecords: 14886, outliers: 0, issues: 30 },
-  { field: "region", label: { es: "Región", en: "Region" }, completeness: 99.9, validValues: 14872, totalRecords: 14886, outliers: 0, issues: 14 },
-  { field: "jobFunction", label: { es: "Función Laboral", en: "Job Function" }, completeness: 96.2, validValues: 14320, totalRecords: 14886, outliers: 0, issues: 566 },
-  { field: "jobRole", label: { es: "Rol", en: "Job Role" }, completeness: 94.8, validValues: 14112, totalRecords: 14886, outliers: 0, issues: 774 },
-  { field: "ageRange", label: { es: "Rango de Edad", en: "Age Range" }, completeness: 92.4, validValues: 13754, totalRecords: 14886, outliers: 0, issues: 1132 },
-  { field: "gender", label: { es: "Género", en: "Gender" }, completeness: 91.8, validValues: 13664, totalRecords: 14886, outliers: 0, issues: 1222 },
-  { field: "education", label: { es: "Educación", en: "Education" }, completeness: 88.6, validValues: 13188, totalRecords: 14886, outliers: 0, issues: 1698 },
-  { field: "brainStyle", label: { es: "Estilo Cerebral", en: "Brain Style" }, completeness: 99.2, validValues: 14766, totalRecords: 14886, outliers: 0, issues: 120 },
-  { field: "reliabilityIndex", label: { es: "Índice de Confiabilidad", en: "Reliability Index" }, completeness: 98.4, validValues: 14648, totalRecords: 14886, outliers: 48, issues: 238 },
-];
+interface DuplicateRecord {
+  id: string;
+  sourceId: string | null;
+  sourceDate: string | null;
+  country: string | null;
+  region: string | null;
+  jobRole: string | null;
+  eqTotal: number | null;
+  brainStyle: string | null;
+}
 
-const DUPLICATE_GROUPS = [
-  {
-    id: "DUP-001", sourceId: "TP-4821", matchType: "exact_id" as const, confidence: 100,
-    records: [
-      { sourceId: "TP-4821", name: "Carlos Méndez", date: "2023-02-15", eqTotal: 96.4, country: "México", role: "Customer Service" },
-      { sourceId: "TP-4821", name: "Carlos Méndez", date: "2023-08-20", eqTotal: 100.2, country: "México", role: "Customer Service" },
-      { sourceId: "TP-4821", name: "Carlos Mendez", date: "2024-01-18", eqTotal: 104.8, country: "Mexico", role: "Customer Service Lead" },
-      { sourceId: "TP-4821", name: "Carlos Méndez", date: "2024-09-12", eqTotal: 108.4, country: "México", role: "Customer Service Lead" },
-    ],
-    recommendation: "merge" as const,
-  },
-  {
-    id: "DUP-002", sourceId: "TP-7293", matchType: "exact_id" as const, confidence: 100,
-    records: [
-      { sourceId: "TP-7293", name: "Sarah Chen", date: "2023-05-10", eqTotal: 106.8, country: "Philippines", role: "Sales Rep" },
-      { sourceId: "TP-7293", name: "Sarah Chen", date: "2024-02-22", eqTotal: 110.2, country: "Philippines", role: "Sales Manager" },
-      { sourceId: "TP-7293", name: "Sarah Chen", date: "2024-11-05", eqTotal: 112.7, country: "Philippines", role: "Sales Manager" },
-    ],
-    recommendation: "merge" as const,
-  },
-  {
-    id: "DUP-003", sourceId: "TP-1456", matchType: "exact_id" as const, confidence: 100,
-    records: [
-      { sourceId: "TP-1456", name: "James O'Brien", date: "2023-03-08", eqTotal: 89.2, country: "USA", role: "IT Support" },
-      { sourceId: "TP-1456", name: "James OBrien", date: "2023-09-15", eqTotal: 91.8, country: "USA", role: "IT Support" },
-      { sourceId: "TP-1456", name: "James O'Brien", date: "2024-03-20", eqTotal: 93.4, country: "USA", role: "IT Support Manager" },
-      { sourceId: "TP-1456", name: "James O'Brien", date: "2024-08-28", eqTotal: 95.3, country: "USA", role: "IT Support Manager" },
-    ],
-    recommendation: "merge" as const,
-  },
-  {
-    id: "DUP-004", sourceId: null, matchType: "fuzzy_name" as const, confidence: 72,
-    records: [
-      { sourceId: "TP-9102", name: "Ana Maria Garcia", date: "2023-06-14", eqTotal: 102.4, country: "Argentina", role: "Team Lead" },
-      { sourceId: "TP-9381", name: "Ana García", date: "2024-04-20", eqTotal: 107.5, country: "Argentina", role: "Team Lead" },
-    ],
-    recommendation: "review" as const,
-  },
-  {
-    id: "DUP-005", sourceId: null, matchType: "demographic_match" as const, confidence: 58,
-    records: [
-      { sourceId: "TP-6200", name: "M. Weber", date: "2023-02-28", eqTotal: 97.2, country: "Germany", role: "Operations" },
-      { sourceId: "TP-3169", name: "Marcus Weber", date: "2023-04-18", eqTotal: 97.8, country: "Germany", role: "Operations Lead" },
-    ],
-    recommendation: "review" as const,
-  },
-];
+interface DuplicateGroup {
+  sourceId: string;
+  count: number;
+  records: DuplicateRecord[];
+}
 
-const RELIABILITY_DISTRIBUTION = [
-  { range: "0.0 - 0.3", label: { es: "Muy Baja", en: "Very Low" }, count: 42, percentage: 0.3, color: "#ef4444" },
-  { range: "0.3 - 0.5", label: { es: "Baja", en: "Low" }, count: 186, percentage: 1.2, color: "#f97316" },
-  { range: "0.5 - 0.7", label: { es: "Moderada", en: "Moderate" }, count: 1248, percentage: 8.4, color: "#eab308" },
-  { range: "0.7 - 0.85", label: { es: "Buena", en: "Good" }, count: 5842, percentage: 39.2, color: "#22c55e" },
-  { range: "0.85 - 1.0", label: { es: "Excelente", en: "Excellent" }, count: 7568, percentage: 50.9, color: "#10b981" },
-];
+interface OutlierRecord {
+  id: string;
+  sourceId: string | null;
+  country: string | null;
+  region: string | null;
+  jobRole: string | null;
+  eqTotal: number | null;
+  brainStyle: string | null;
+  reliabilityIndex: number | null;
+  zScore: number;
+  type: "high" | "low";
+}
 
-const OUTLIER_RECORDS = [
-  { sourceId: "TP-09834", field: "reliabilityIndex", value: 0.12, expected: "0.5-1.0", severity: "critical" as const, note: { es: "Evaluación posiblemente inválida", en: "Possibly invalid assessment" } },
-  { sourceId: "TP-12456", field: "reliabilityIndex", value: 0.18, expected: "0.5-1.0", severity: "critical" as const, note: { es: "Índice de confiabilidad extremadamente bajo", en: "Extremely low reliability index" } },
-  { sourceId: "TP-14201", field: "eqTotal", value: 134.8, expected: "65-135", severity: "warning" as const, note: { es: "Valor cercano al máximo de la escala", en: "Value near scale maximum" } },
-  { sourceId: "TP-08442", field: "RP", value: 134.9, expected: "65-135", severity: "warning" as const, note: { es: "RP extremadamente alto", en: "Extremely high RP" } },
-  { sourceId: "TP-05671", field: "eqTotal", value: 67.1, expected: "65-135", severity: "warning" as const, note: { es: "EQ Total muy por debajo del promedio", en: "EQ Total far below average" } },
-  { sourceId: "TP-11283", field: "NE", value: 66.2, expected: "65-135", severity: "info" as const, note: { es: "NE extremadamente bajo", en: "Extremely low NE" } },
-];
+interface OutlierStats {
+  mean: number;
+  stdDev: number;
+  thresholdHigh: number;
+  thresholdLow: number;
+  totalOutliers: number;
+}
 
-const DATA_ISSUES_LOG = [
-  { id: "ISS-001", type: "missing_data" as const, severity: "warning" as const, description: { es: "566 registros sin función laboral asignada", en: "566 records without assigned job function" }, field: "jobFunction", affectedRecords: 566, detectedAt: "2024-12-01", status: "open" as const },
-  { id: "ISS-002", type: "inconsistent_data" as const, severity: "warning" as const, description: { es: "30 registros con país no reconocido en el catálogo estándar", en: "30 records with unrecognized country in standard catalog" }, field: "country", affectedRecords: 30, detectedAt: "2024-12-01", status: "open" as const },
-  { id: "ISS-003", type: "outlier" as const, severity: "info" as const, description: { es: "12 evaluaciones con EQ total fuera de rango esperado (\u00B12\u03C3)", en: "12 assessments with EQ total outside expected range (\u00B12\u03C3)" }, field: "eqTotal", affectedRecords: 12, detectedAt: "2024-12-01", status: "acknowledged" as const },
-  { id: "ISS-004", type: "duplicate" as const, severity: "info" as const, description: { es: "5 grupos de registros duplicados detectados \u2014 3 por ID exacto, 2 por coincidencia demográfica", en: "5 duplicate record groups detected \u2014 3 by exact ID, 2 by demographic match" }, field: "sourceId", affectedRecords: 13, detectedAt: "2024-12-01", status: "open" as const },
-  { id: "ISS-005", type: "low_reliability" as const, severity: "warning" as const, description: { es: "228 evaluaciones con índice de confiabilidad < 0.5 \u2014 considerar exclusión del benchmark", en: "228 assessments with reliability index < 0.5 \u2014 consider excluding from benchmark" }, field: "reliabilityIndex", affectedRecords: 228, detectedAt: "2024-12-01", status: "open" as const },
-];
+interface ReliabilityBucket {
+  range: string;
+  count: number;
+}
+
+interface ReliabilityDistribution {
+  count: number;
+  mean: number;
+  median: number;
+  min: number;
+  max: number;
+  buckets: ReliabilityBucket[];
+}
+
+interface DataQualityResponse {
+  ok: boolean;
+  totalRecords: number;
+  qualityScore: number;
+  completeness: CompletenessField[];
+  duplicates: DuplicateGroup[];
+  totalDuplicateGroups: number;
+  totalDuplicateRecords: number;
+  outliers: OutlierRecord[];
+  outlierStats: OutlierStats;
+  reliabilityDistribution: ReliabilityDistribution;
+}
 
 /* =========================================================
    Helper Components
@@ -326,81 +279,6 @@ function QualityGauge({ score }: { score: number }) {
   );
 }
 
-function SeverityBadge({ severity, t }: { severity: "critical" | "warning" | "info"; t: typeof translations.es }) {
-  const config = {
-    critical: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400", label: t.severityCritical },
-    warning: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", label: t.severityWarning },
-    info: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400", label: t.severityInfo },
-  };
-  const c = config[severity];
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-      {severity === "critical" && <XCircle className="w-3 h-3" />}
-      {severity === "warning" && <AlertTriangle className="w-3 h-3" />}
-      {severity === "info" && <Info className="w-3 h-3" />}
-      {c.label}
-    </span>
-  );
-}
-
-function MatchTypeBadge({ matchType, t }: { matchType: "exact_id" | "fuzzy_name" | "demographic_match"; t: typeof translations.es }) {
-  const config = {
-    exact_id: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", label: t.matchExactId },
-    fuzzy_name: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", label: t.matchFuzzyName },
-    demographic_match: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400", label: t.matchDemographic },
-  };
-  const c = config[matchType];
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-      {c.label}
-    </span>
-  );
-}
-
-function RecommendationBadge({ rec, t }: { rec: "merge" | "review" | "keep_separate"; t: typeof translations.es }) {
-  const config = {
-    merge: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", label: t.recMerge },
-    review: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", label: t.recReview },
-    keep_separate: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400", label: t.recKeepSeparate },
-  };
-  const c = config[rec];
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-      {c.label}
-    </span>
-  );
-}
-
-function StatusBadge({ status, t }: { status: "open" | "acknowledged" | "resolved"; t: typeof translations.es }) {
-  const config = {
-    open: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400", label: t.statusOpen, icon: <XCircle className="w-3 h-3" /> },
-    acknowledged: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", label: t.statusAcknowledged, icon: <AlertTriangle className="w-3 h-3" /> },
-    resolved: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", label: t.statusResolved, icon: <CheckCircle2 className="w-3 h-3" /> },
-  };
-  const c = config[status];
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-      {c.icon} {c.label}
-    </span>
-  );
-}
-
-function IssueTypeLabel({ type, t }: { type: string; t: typeof translations.es }) {
-  const map: Record<string, { icon: React.ReactNode; label: string }> = {
-    missing_data: { icon: <FileWarning className="w-3.5 h-3.5" />, label: t.typeMissingData },
-    inconsistent_data: { icon: <AlertTriangle className="w-3.5 h-3.5" />, label: t.typeInconsistentData },
-    outlier: { icon: <TrendingDown className="w-3.5 h-3.5" />, label: t.typeOutlier },
-    duplicate: { icon: <Copy className="w-3.5 h-3.5" />, label: t.typeDuplicate },
-    low_reliability: { icon: <Activity className="w-3.5 h-3.5" />, label: t.typeLowReliability },
-  };
-  const entry = map[type] || { icon: <Info className="w-3.5 h-3.5" />, label: type };
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-[var(--rowi-muted)]">
-      {entry.icon} {entry.label}
-    </span>
-  );
-}
-
 function CompletenessBar({ value }: { value: number }) {
   const color = value >= 95 ? "bg-green-500" : value >= 90 ? "bg-yellow-500" : "bg-red-500";
   return (
@@ -425,22 +303,6 @@ function CompletenessBar({ value }: { value: number }) {
   );
 }
 
-function highlightNameDiff(name: string, baselineName: string) {
-  if (name === baselineName) return <span>{name}</span>;
-  return (
-    <span>
-      {name.split("").map((char, i) => {
-        const isDiff = i >= baselineName.length || char !== baselineName[i];
-        return isDiff ? (
-          <span key={i} className="text-red-500 font-semibold underline">{char}</span>
-        ) : (
-          <span key={i}>{char}</span>
-        );
-      })}
-    </span>
-  );
-}
-
 /* =========================================================
    Main Page
 ========================================================= */
@@ -448,8 +310,32 @@ export default function TPDataQualityPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
+  const [data, setData] = useState<DataQualityResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [issueFilter, setIssueFilter] = useState<"all" | "open" | "acknowledged" | "resolved">("all");
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(false);
+      try {
+        const res = await fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/data-quality`);
+        const json = await res.json();
+        if (json.ok) {
+          setData(json);
+        } else {
+          setError(true);
+        }
+      } catch (e) {
+        console.error(e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const toggleGroup = (id: string) => {
     setExpandedGroups((prev) => {
@@ -460,22 +346,44 @@ export default function TPDataQualityPage() {
     });
   };
 
-  const sortedMetrics = [...QUALITY_METRICS].sort((a, b) => a.completeness - b.completeness);
+  const qualityLabel = data
+    ? data.qualityScore >= 80
+      ? t.qualityExcellent
+      : data.qualityScore >= 60
+      ? t.qualityGood
+      : data.qualityScore >= 40
+      ? t.qualityFair
+      : t.qualityPoor
+    : "";
 
-  const filteredIssues = DATA_ISSUES_LOG.filter((issue) => {
-    if (issueFilter === "all") return true;
-    return issue.status === issueFilter;
-  });
+  const qualityLabelColor = data
+    ? data.qualityScore >= 80
+      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+      : data.qualityScore >= 60
+      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+    : "";
 
-  const totalDuplicateRecords = DUPLICATE_GROUPS.reduce((sum, g) => sum + g.records.length, 0);
+  const sortedCompleteness = data
+    ? [...data.completeness].sort((a, b) => a.percentage - b.percentage)
+    : [];
 
-  const qualityLabel = DATA_QUALITY_SCORE >= 80
-    ? t.qualityExcellent
-    : DATA_QUALITY_SCORE >= 60
-    ? t.qualityGood
-    : DATA_QUALITY_SCORE >= 40
-    ? t.qualityFair
-    : t.qualityPoor;
+  // Reliability bucket colors
+  const bucketColors: Record<string, string> = {
+    "0-20": "#ef4444",
+    "20-40": "#f97316",
+    "40-60": "#eab308",
+    "60-80": "#22c55e",
+    "80-100": "#10b981",
+  };
+
+  const bucketLabels: Record<string, { es: string; en: string }> = {
+    "0-20": { es: "Muy Baja", en: "Very Low" },
+    "20-40": { es: "Baja", en: "Low" },
+    "40-60": { es: "Moderada", en: "Moderate" },
+    "60-80": { es: "Buena", en: "Good" },
+    "80-100": { es: "Excelente", en: "Excellent" },
+  };
 
   return (
     <div className="space-y-8">
@@ -494,383 +402,413 @@ export default function TPDataQualityPage() {
         </div>
       </div>
 
-      {/* Overall Quality Score */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800 flex flex-col items-center"
-      >
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-purple-500" /> {t.overallQuality}
-        </h2>
-        <QualityGauge score={DATA_QUALITY_SCORE} />
-        <div className="mt-4 text-center">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-            <CheckCircle2 className="w-4 h-4" /> {qualityLabel}
-          </span>
-          <p className="text-sm text-[var(--rowi-muted)] mt-2">
-            14,886 {t.recordsAnalyzed}
-          </p>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-10 h-10 text-purple-500 animate-spin mb-4" />
+          <p className="text-[var(--rowi-muted)] text-sm">{t.loading}</p>
         </div>
-      </motion.div>
+      )}
 
-      {/* Quality Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { icon: <Database className="w-5 h-5" />, label: t.totalRecords, value: "14,886", sub: null, color: "text-purple-500" },
-          { icon: <Copy className="w-5 h-5" />, label: t.duplicatesFound, value: `${DUPLICATE_GROUPS.length}`, sub: `${DUPLICATE_GROUPS.length} ${t.groups}, ${totalDuplicateRecords} ${t.records}`, color: "text-orange-500" },
-          { icon: <TrendingDown className="w-5 h-5" />, label: t.outliersDetected, value: "12", sub: null, color: "text-yellow-500" },
-          { icon: <Activity className="w-5 h-5" />, label: t.lowReliability, value: "228", sub: t.assessments, color: "text-red-500" },
-        ].map((card, i) => (
+      {/* Error State */}
+      {!loading && error && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <XCircle className="w-10 h-10 text-red-500 mb-4" />
+          <p className="text-red-600 dark:text-red-400 text-sm">{t.errorLoading}</p>
+        </div>
+      )}
+
+      {/* No Data State */}
+      {!loading && !error && data && data.totalRecords === 0 && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Database className="w-10 h-10 text-[var(--rowi-muted)] mb-4 opacity-40" />
+          <p className="text-[var(--rowi-muted)] text-sm">{t.noData}</p>
+        </div>
+      )}
+
+      {/* Data Loaded */}
+      {!loading && !error && data && data.totalRecords > 0 && (
+        <>
+          {/* Overall Quality Score */}
           <motion.div
-            key={card.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800"
+            className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800 flex flex-col items-center"
           >
-            <div className={`mb-2 ${card.color}`}>{card.icon}</div>
-            <div className="text-2xl font-bold">{card.value}</div>
-            <div className="text-sm text-[var(--rowi-muted)]">{card.label}</div>
-            {card.sub && <div className="text-xs text-[var(--rowi-muted)] mt-1">{card.sub}</div>}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Data Completeness Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-      >
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-purple-500" /> {t.completenessTitle}
-        </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.completenessDesc}</p>
-
-        <div className="hidden md:grid md:grid-cols-[200px_1fr_140px_80px_80px] gap-4 px-4 py-2 text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 mb-2">
-          <span>{t.fieldName}</span>
-          <span>{t.completeness}</span>
-          <span className="text-right">{t.validValues}</span>
-          <span className="text-right">{t.outliers}</span>
-          <span className="text-right">{t.issues}</span>
-        </div>
-
-        <div className="space-y-1">
-          {sortedMetrics.map((metric, i) => (
-            <motion.div
-              key={metric.field}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.04 }}
-              className="grid grid-cols-1 md:grid-cols-[200px_1fr_140px_80px_80px] gap-2 md:gap-4 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors items-center"
-            >
-              <span className="font-medium text-sm">
-                {metric.label[lang as keyof typeof metric.label] || metric.label.es}
-              </span>
-              <CompletenessBar value={metric.completeness} />
-              <span className="text-sm text-[var(--rowi-muted)] text-right font-mono">
-                {metric.validValues.toLocaleString()} / {metric.totalRecords.toLocaleString()}
-              </span>
-              <span className={`text-sm text-right font-mono ${metric.outliers > 0 ? "text-yellow-600 dark:text-yellow-400 font-semibold" : "text-[var(--rowi-muted)]"}`}>
-                {metric.outliers}
-              </span>
-              <span className={`text-sm text-right font-mono ${metric.issues > 0 ? "text-red-600 dark:text-red-400 font-semibold" : "text-[var(--rowi-muted)]"}`}>
-                {metric.issues.toLocaleString()}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Duplicate Detection Panel */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-      >
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Copy className="w-5 h-5 text-purple-500" /> {t.duplicatesTitle}
-        </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.duplicatesDesc}</p>
-
-        <div className="space-y-4">
-          {DUPLICATE_GROUPS.map((group) => {
-            const isExpanded = expandedGroups.has(group.id);
-            const baselineName = group.records[0]?.name || "";
-
-            return (
-              <div key={group.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => toggleGroup(group.id)}
-                  className="w-full flex flex-wrap items-center gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
-                >
-                  <span className="font-mono font-bold text-sm text-purple-600 dark:text-purple-400">{group.id}</span>
-                  {group.sourceId && (
-                    <span className="text-xs text-[var(--rowi-muted)] font-mono">{group.sourceId}</span>
-                  )}
-                  <MatchTypeBadge matchType={group.matchType} t={t} />
-                  <span className="text-xs text-[var(--rowi-muted)]">
-                    {t.confidence}: <span className="font-bold">{group.confidence}%</span>
-                  </span>
-                  <span className="text-xs text-[var(--rowi-muted)]">
-                    {group.records.length} {t.records}
-                  </span>
-                  <RecommendationBadge rec={group.recommendation} t={t} />
-                  <span className="ml-auto flex items-center gap-1 text-xs text-[var(--rowi-muted)]">
-                    {isExpanded ? t.hideRecords : t.showRecords}
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </span>
-                </button>
-
-                {isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    transition={{ duration: 0.2 }}
-                    className="border-t border-gray-100 dark:border-zinc-800"
-                  >
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
-                            <th className="px-4 py-2 text-left font-semibold">{t.colSourceId}</th>
-                            <th className="px-4 py-2 text-left font-semibold">{t.colName}</th>
-                            <th className="px-4 py-2 text-left font-semibold">{t.colDate}</th>
-                            <th className="px-4 py-2 text-right font-semibold">{t.colEqTotal}</th>
-                            <th className="px-4 py-2 text-left font-semibold">{t.colCountry}</th>
-                            <th className="px-4 py-2 text-left font-semibold">{t.colRole}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {group.records.map((rec, ri) => (
-                            <tr
-                              key={ri}
-                              className="border-t border-gray-50 dark:border-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/30"
-                            >
-                              <td className="px-4 py-2.5 font-mono text-xs">{rec.sourceId}</td>
-                              <td className="px-4 py-2.5">
-                                {highlightNameDiff(rec.name, baselineName)}
-                              </td>
-                              <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.date}</td>
-                              <td className="px-4 py-2.5 text-right font-mono font-medium">{rec.eqTotal.toFixed(1)}</td>
-                              <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.country}</td>
-                              <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.role}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
-
-      {/* Reliability Index Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-      >
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-500" /> {t.reliabilityTitle}
-        </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.reliabilityDesc}</p>
-
-        <div className="space-y-4">
-          {RELIABILITY_DISTRIBUTION.map((bucket, i) => (
-            <motion.div
-              key={bucket.range}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="flex items-center gap-4"
-            >
-              <div className="w-28 sm:w-36 flex-shrink-0">
-                <div className="text-sm font-medium">{bucket.range}</div>
-                <div className="text-xs text-[var(--rowi-muted)]">
-                  {bucket.label[lang as keyof typeof bucket.label] || bucket.label.es}
-                </div>
-              </div>
-              <div className="flex-1 h-8 bg-gray-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
-                <motion.div
-                  className="h-full rounded-lg flex items-center justify-end pr-3"
-                  style={{ backgroundColor: bucket.color }}
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${Math.max(bucket.percentage * 1.8, 4)}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, ease: "easeOut", delay: i * 0.08 }}
-                >
-                  {bucket.percentage > 5 && (
-                    <span className="text-xs font-bold text-white">{bucket.percentage}%</span>
-                  )}
-                </motion.div>
-                {bucket.percentage <= 5 && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[var(--rowi-muted)]">
-                    {bucket.percentage}%
-                  </span>
-                )}
-              </div>
-              <div className="w-20 text-right flex-shrink-0">
-                <span className="text-sm font-mono font-medium">{bucket.count.toLocaleString()}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Outlier Records Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-      >
-        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-purple-500" /> {t.outliersTitle}
-        </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.outliersDesc}</p>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
-                <th className="px-4 py-3 text-left font-semibold">{t.colSourceId}</th>
-                <th className="px-4 py-3 text-left font-semibold">{t.colField}</th>
-                <th className="px-4 py-3 text-right font-semibold">{t.colValue}</th>
-                <th className="px-4 py-3 text-left font-semibold">{t.colExpected}</th>
-                <th className="px-4 py-3 text-center font-semibold">{t.colSeverity}</th>
-                <th className="px-4 py-3 text-left font-semibold">{t.colNote}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {OUTLIER_RECORDS.map((rec, i) => (
-                <motion.tr
-                  key={rec.sourceId + rec.field}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="border-t border-gray-100 dark:border-zinc-800 hover:bg-gray-50/50 dark:hover:bg-zinc-800/30"
-                >
-                  <td className="px-4 py-3 font-mono text-xs font-medium">{rec.sourceId}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{rec.field}</td>
-                  <td className={`px-4 py-3 text-right font-mono font-bold ${
-                    rec.severity === "critical" ? "text-red-600 dark:text-red-400"
-                      : rec.severity === "warning" ? "text-yellow-600 dark:text-yellow-400"
-                      : "text-blue-600 dark:text-blue-400"
-                  }`}>
-                    {rec.value}
-                  </td>
-                  <td className="px-4 py-3 text-[var(--rowi-muted)] font-mono text-xs">{rec.expected}</td>
-                  <td className="px-4 py-3 text-center">
-                    <SeverityBadge severity={rec.severity} t={t} />
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--rowi-muted)]">
-                    {rec.note[lang as keyof typeof rec.note] || rec.note.es}
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
-
-      {/* Data Issues Log */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <FileWarning className="w-5 h-5 text-purple-500" /> {t.issuesTitle}
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-purple-500" /> {t.overallQuality}
             </h2>
-            <p className="text-sm text-[var(--rowi-muted)] mt-1">{t.issuesDesc}</p>
+            <QualityGauge score={data.qualityScore} />
+            <div className="mt-4 text-center">
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${qualityLabelColor}`}>
+                <CheckCircle2 className="w-4 h-4" /> {qualityLabel}
+              </span>
+              <p className="text-sm text-[var(--rowi-muted)] mt-2">
+                {data.totalRecords.toLocaleString()} {t.recordsAnalyzed}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Quality Summary Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                icon: <Database className="w-5 h-5" />,
+                label: t.totalRecords,
+                value: data.totalRecords.toLocaleString(),
+                sub: null,
+                color: "text-purple-500",
+              },
+              {
+                icon: <Copy className="w-5 h-5" />,
+                label: t.duplicatesFound,
+                value: data.totalDuplicateGroups.toString(),
+                sub: `${data.totalDuplicateGroups} ${t.groups}, ${data.totalDuplicateRecords} ${t.records}`,
+                color: "text-orange-500",
+              },
+              {
+                icon: <TrendingDown className="w-5 h-5" />,
+                label: t.outliersDetected,
+                value: data.outlierStats.totalOutliers.toString(),
+                sub: null,
+                color: "text-yellow-500",
+              },
+              {
+                icon: <Activity className="w-5 h-5" />,
+                label: t.avgReliability,
+                value: data.reliabilityDistribution.mean.toFixed(1),
+                sub: `${data.reliabilityDistribution.count.toLocaleString()} ${t.assessments}`,
+                color: "text-blue-500",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800"
+              >
+                <div className={`mb-2 ${card.color}`}>{card.icon}</div>
+                <div className="text-2xl font-bold">{card.value}</div>
+                <div className="text-sm text-[var(--rowi-muted)]">{card.label}</div>
+                {card.sub && <div className="text-xs text-[var(--rowi-muted)] mt-1">{card.sub}</div>}
+              </motion.div>
+            ))}
           </div>
 
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
-            {(["all", "open", "acknowledged", "resolved"] as const).map((filter) => {
-              const filterLabels = {
-                all: t.filterAll,
-                open: t.filterOpen,
-                acknowledged: t.filterAcknowledged,
-                resolved: t.filterResolved,
-              };
-              return (
-                <button
-                  key={filter}
-                  onClick={() => setIssueFilter(filter)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    issueFilter === filter
-                      ? "bg-white dark:bg-zinc-700 shadow-sm text-purple-600 dark:text-purple-400"
-                      : "text-[var(--rowi-muted)] hover:text-purple-500"
-                  }`}
+          {/* Data Completeness Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+          >
+            <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-purple-500" /> {t.completenessTitle}
+            </h2>
+            <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.completenessDesc}</p>
+
+            <div className="hidden md:grid md:grid-cols-[200px_1fr_140px_100px] gap-4 px-4 py-2 text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 mb-2">
+              <span>{t.fieldName}</span>
+              <span>{t.completeness}</span>
+              <span className="text-right">{t.present}</span>
+              <span className="text-right">{t.missing}</span>
+            </div>
+
+            <div className="space-y-1">
+              {sortedCompleteness.map((field, i) => (
+                <motion.div
+                  key={field.field}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.04 }}
+                  className="grid grid-cols-1 md:grid-cols-[200px_1fr_140px_100px] gap-2 md:gap-4 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors items-center"
                 >
-                  {filterLabels[filter]}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  <span className="font-medium text-sm font-mono">
+                    {field.field}
+                  </span>
+                  <CompletenessBar value={field.percentage} />
+                  <span className="text-sm text-[var(--rowi-muted)] text-right font-mono">
+                    {field.present.toLocaleString()}
+                  </span>
+                  <span className={`text-sm text-right font-mono ${field.missing > 0 ? "text-red-600 dark:text-red-400 font-semibold" : "text-[var(--rowi-muted)]"}`}>
+                    {field.missing.toLocaleString()}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
 
-        <div className="space-y-3">
-          {filteredIssues.map((issue, i) => (
+          {/* Duplicate Detection Panel */}
+          {data.duplicates.length > 0 && (
             <motion.div
-              key={issue.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 rounded-xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-colors"
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 w-16 flex-shrink-0">
-                  {issue.id}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <IssueTypeLabel type={issue.type} t={t} />
-                    <SeverityBadge severity={issue.severity} t={t} />
-                  </div>
-                  <p className="text-sm truncate">
-                    {issue.description[lang as keyof typeof issue.description] || issue.description.es}
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                <Copy className="w-5 h-5 text-purple-500" /> {t.duplicatesTitle}
+              </h2>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.duplicatesDesc}</p>
 
-              <div className="flex items-center gap-4 flex-shrink-0">
-                <div className="text-right">
-                  <div className="text-sm font-mono font-medium">{issue.affectedRecords.toLocaleString()}</div>
-                  <div className="text-[10px] text-[var(--rowi-muted)] uppercase">{t.colAffected}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-mono text-[var(--rowi-muted)]">{issue.detectedAt}</div>
-                  <div className="text-[10px] text-[var(--rowi-muted)] uppercase">{t.colDetected}</div>
-                </div>
-                <StatusBadge status={issue.status} t={t} />
+              <div className="space-y-4">
+                {data.duplicates.map((group) => {
+                  const groupKey = group.sourceId;
+                  const isExpanded = expandedGroups.has(groupKey);
+
+                  return (
+                    <div key={groupKey} className="border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => toggleGroup(groupKey)}
+                        className="w-full flex flex-wrap items-center gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
+                      >
+                        <span className="font-mono font-bold text-sm text-purple-600 dark:text-purple-400">
+                          {group.sourceId}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+                          {group.count} {t.records}
+                        </span>
+                        <span className="ml-auto flex items-center gap-1 text-xs text-[var(--rowi-muted)]">
+                          {isExpanded ? t.hideRecords : t.showRecords}
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          transition={{ duration: 0.2 }}
+                          className="border-t border-gray-100 dark:border-zinc-800"
+                        >
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colSourceId}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colDate}</th>
+                                  <th className="px-4 py-2 text-right font-semibold">{t.colEqTotal}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colCountry}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colRegion}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colRole}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t.colBrainStyle}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {group.records.map((rec, ri) => (
+                                  <tr
+                                    key={ri}
+                                    className="border-t border-gray-50 dark:border-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/30"
+                                  >
+                                    <td className="px-4 py-2.5 font-mono text-xs">{rec.sourceId || "—"}</td>
+                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">
+                                      {rec.sourceDate ? new Date(rec.sourceDate).toLocaleDateString() : "—"}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-right font-mono font-medium">
+                                      {rec.eqTotal != null ? rec.eqTotal.toFixed(1) : "—"}
+                                    </td>
+                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.country || "—"}</td>
+                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.region || "—"}</td>
+                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.jobRole || "—"}</td>
+                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.brainStyle || "—"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
-          ))}
-
-          {filteredIssues.length === 0 && (
-            <div className="text-center py-8 text-[var(--rowi-muted)] text-sm">
-              <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              {t.noIssuesFilter}
-            </div>
           )}
-        </div>
-      </motion.div>
+
+          {/* Reliability Index Distribution */}
+          {data.reliabilityDistribution.buckets.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+            >
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-purple-500" /> {t.reliabilityTitle}
+              </h2>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.reliabilityDesc}</p>
+
+              {/* Stats summary row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: t.reliabilityMean, value: data.reliabilityDistribution.mean.toFixed(1) },
+                  { label: t.reliabilityMedian, value: data.reliabilityDistribution.median.toFixed(1) },
+                  { label: t.reliabilityMin, value: data.reliabilityDistribution.min.toFixed(1) },
+                  { label: t.reliabilityMax, value: data.reliabilityDistribution.max.toFixed(1) },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center px-3 py-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg">
+                    <div className="text-lg font-bold font-mono">{stat.value}</div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bar chart */}
+              <div className="space-y-4">
+                {data.reliabilityDistribution.buckets.map((bucket, i) => {
+                  const totalCount = data.reliabilityDistribution.count;
+                  const pct = totalCount > 0 ? Math.round((bucket.count / totalCount) * 1000) / 10 : 0;
+                  const color = bucketColors[bucket.range] || "#8b5cf6";
+                  const labelObj = bucketLabels[bucket.range];
+                  const label = labelObj
+                    ? labelObj[lang as keyof typeof labelObj] || labelObj.es
+                    : bucket.range;
+
+                  return (
+                    <motion.div
+                      key={bucket.range}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.08 }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-28 sm:w-36 flex-shrink-0">
+                        <div className="text-sm font-medium">{bucket.range}</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{label}</div>
+                      </div>
+                      <div className="flex-1 h-8 bg-gray-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
+                        <motion.div
+                          className="h-full rounded-lg flex items-center justify-end pr-3"
+                          style={{ backgroundColor: color }}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${Math.max(pct * 1.8, 4)}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, ease: "easeOut", delay: i * 0.08 }}
+                        >
+                          {pct > 5 && (
+                            <span className="text-xs font-bold text-white">{pct}%</span>
+                          )}
+                        </motion.div>
+                        {pct <= 5 && (
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[var(--rowi-muted)]">
+                            {pct}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="w-20 text-right flex-shrink-0">
+                        <span className="text-sm font-mono font-medium">{bucket.count.toLocaleString()}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Outlier Stats */}
+          {data.outlierStats && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+            >
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-purple-500" /> {t.outlierStatsTitle}
+              </h2>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+                {[
+                  { label: t.outlierStatsMean, value: data.outlierStats.mean.toFixed(2) },
+                  { label: t.outlierStatsStdDev, value: data.outlierStats.stdDev.toFixed(2) },
+                  { label: t.outlierStatsThresholdHigh, value: data.outlierStats.thresholdHigh.toFixed(2) },
+                  { label: t.outlierStatsThresholdLow, value: data.outlierStats.thresholdLow.toFixed(2) },
+                  { label: t.outlierStatsTotalOutliers, value: data.outlierStats.totalOutliers.toString() },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center px-3 py-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+                    <div className="text-xl font-bold font-mono">{stat.value}</div>
+                    <div className="text-xs text-[var(--rowi-muted)] mt-1">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Outlier Records Table */}
+          {data.outliers.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+            >
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-purple-500" /> {t.outliersTitle}
+              </h2>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.outliersDesc}</p>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
+                      <th className="px-4 py-3 text-left font-semibold">{t.colSourceId}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t.colCountry}</th>
+                      <th className="px-4 py-3 text-right font-semibold">{t.colEqTotal}</th>
+                      <th className="px-4 py-3 text-right font-semibold">{t.colZScore}</th>
+                      <th className="px-4 py-3 text-center font-semibold">{t.colType}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t.colRole}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t.colBrainStyle}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.outliers.map((rec, i) => (
+                      <motion.tr
+                        key={rec.id}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.03 }}
+                        className="border-t border-gray-100 dark:border-zinc-800 hover:bg-gray-50/50 dark:hover:bg-zinc-800/30"
+                      >
+                        <td className="px-4 py-3 font-mono text-xs font-medium">{rec.sourceId || "—"}</td>
+                        <td className="px-4 py-3 text-[var(--rowi-muted)]">{rec.country || "—"}</td>
+                        <td className={`px-4 py-3 text-right font-mono font-bold ${
+                          rec.type === "high"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-blue-600 dark:text-blue-400"
+                        }`}>
+                          {rec.eqTotal != null ? rec.eqTotal.toFixed(1) : "—"}
+                        </td>
+                        <td className={`px-4 py-3 text-right font-mono font-medium ${
+                          Math.abs(rec.zScore) >= 3
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-yellow-600 dark:text-yellow-400"
+                        }`}>
+                          {rec.zScore > 0 ? "+" : ""}{rec.zScore.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            rec.type === "high"
+                              ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                              : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                          }`}>
+                            {rec.type === "high" ? t.typeHigh : t.typeLow}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-[var(--rowi-muted)] text-xs">{rec.jobRole || "—"}</td>
+                        <td className="px-4 py-3 text-[var(--rowi-muted)] text-xs">{rec.brainStyle || "—"}</td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+        </>
+      )}
 
       {/* Info Box */}
       <motion.div

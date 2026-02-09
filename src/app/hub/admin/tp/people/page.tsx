@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,8 +21,17 @@ import {
   BarChart3,
   ChevronDown,
   GitCompareArrows,
+  Filter,
+  X,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+
+/* =========================================================
+   Constants
+========================================================= */
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
    Translations
@@ -33,28 +42,28 @@ const translations = {
     badge: "Comparador de Personas",
     pageTitle: "Comparador Persona vs Persona",
     pageSubtitle:
-      "Selecciona dos personas para comparar perfiles EQ lado a lado: competencias, resultados, estilos cerebrales y análisis complementario",
+      "Selecciona dos personas para comparar perfiles EQ lado a lado: competencias, resultados, estilos cerebrales y analisis complementario",
     selectPersonA: "Seleccionar Persona A",
     selectPersonB: "Seleccionar Persona B",
-    searchPlaceholder: "Buscar por nombre...",
+    searchPlaceholder: "Buscar por ID, pais, rol...",
     selectPrompt:
-      "Selecciona dos personas para iniciar la comparación",
+      "Selecciona dos personas para iniciar la comparacion",
     eqTotal: "EQ Total",
     brainStyle: "Estilo Cerebral",
     role: "Rol",
-    region: "Región",
-    country: "País",
+    region: "Region",
+    country: "Pais",
     competencyRadar: "Radar de Competencias",
     competencyRadarDesc:
-      "Superposición de las 8 competencias SEI de ambas personas",
-    competencyTable: "Comparación por Competencia",
-    competencyTableDesc: "Puntaje, delta y quién lidera en cada competencia",
+      "Superposicion de las 8 competencias SEI de ambas personas",
+    competencyTable: "Comparacion por Competencia",
+    competencyTableDesc: "Puntaje, delta y quien lidera en cada competencia",
     outcomesComparison: "Resultados de Vida",
-    outcomesDesc: "Comparación de outcomes entre ambas personas",
-    complementaryAnalysis: "Análisis Complementario",
+    outcomesDesc: "Comparacion de outcomes entre ambas personas",
+    complementaryAnalysis: "Analisis Complementario",
     complementaryDesc:
       "Fortalezas y debilidades complementarias entre las dos personas seleccionadas",
-    strongerIn: "Más fuerte en",
+    strongerIn: "Mas fuerte en",
     sharedStrengths: "Fortalezas Compartidas",
     sharedGaps: "Brechas Compartidas",
     noSharedStrengths: "No hay fortalezas compartidas (>105)",
@@ -69,21 +78,33 @@ const translations = {
     relationships: "Relaciones",
     wellbeing: "Bienestar",
     qualityOfLife: "Calidad de Vida",
-    compEL: "Alfabetización Emocional",
+    compEL: "Alfabetizacion Emocional",
     compRP: "Reconocer Patrones",
     compACT: "Pensamiento Consecuente",
     compNE: "Navegar Emociones",
-    compIM: "Motivación Intrínseca",
+    compIM: "Motivacion Intrinseca",
     compOP: "Ejercer Optimismo",
-    compEMP: "Aumentar Empatía",
+    compEMP: "Aumentar Empatia",
     compNG: "Metas Nobles",
-    infoTitle: "Datos de Comparación TP",
+    infoTitle: "Datos de Comparacion TP",
     infoDesc:
-      "Este comparador utiliza perfiles EQ ficticios basados en patrones reales de Teleperformance. Los datos individuales son simulados para demostración. Escala SEI: 65–135.",
+      "Este comparador utiliza datos reales anonimizados del benchmark de Teleperformance. Los IDs de personas son anonimos para proteger la privacidad. Escala SEI: 65-135.",
     navTeams: "Teams",
     navSelection: "Selection",
     vsLabel: "VS",
-    eqComparison: "Comparación EQ Total",
+    eqComparison: "Comparacion EQ Total",
+    loading: "Cargando datos...",
+    loadingError: "Error al cargar datos. Intenta de nuevo.",
+    retry: "Reintentar",
+    filters: "Filtros",
+    clearFilters: "Limpiar filtros",
+    allRegions: "Todas las regiones",
+    allCountries: "Todos los paises",
+    allRoles: "Todos los roles",
+    allBrainStyles: "Todos los estilos",
+    totalResults: "resultados",
+    noResults: "No se encontraron datos con los filtros seleccionados",
+    reliability: "Confiabilidad",
   },
   en: {
     backToHub: "TP Hub",
@@ -93,7 +114,7 @@ const translations = {
       "Select two people to compare EQ profiles side by side: competencies, outcomes, brain styles, and complementary analysis",
     selectPersonA: "Select Person A",
     selectPersonB: "Select Person B",
-    searchPlaceholder: "Search by name...",
+    searchPlaceholder: "Search by ID, country, role...",
     selectPrompt:
       "Select two people to begin the comparison",
     eqTotal: "EQ Total",
@@ -136,23 +157,59 @@ const translations = {
     compNG: "Pursue Noble Goals",
     infoTitle: "TP Comparison Data",
     infoDesc:
-      "This comparator uses fictional EQ profiles based on real Teleperformance patterns. Individual data is simulated for demonstration purposes. SEI Scale: 65–135.",
+      "This comparator uses real anonymized data from the Teleperformance benchmark. Person IDs are anonymous to protect privacy. SEI Scale: 65-135.",
     navTeams: "Teams",
     navSelection: "Selection",
     vsLabel: "VS",
     eqComparison: "EQ Total Comparison",
+    loading: "Loading data...",
+    loadingError: "Error loading data. Please try again.",
+    retry: "Retry",
+    filters: "Filters",
+    clearFilters: "Clear filters",
+    allRegions: "All regions",
+    allCountries: "All countries",
+    allRoles: "All roles",
+    allBrainStyles: "All styles",
+    totalResults: "results",
+    noResults: "No data found with the selected filters",
+    reliability: "Reliability",
   },
 };
 
 /* =========================================================
-   Mock Data — 12 People
+   Types
 ========================================================= */
 type CompetencyKeys = "EL" | "RP" | "ACT" | "NE" | "IM" | "OP" | "EMP" | "NG";
 type OutcomeKeys = "effectiveness" | "relationships" | "wellbeing" | "qualityOfLife";
 
+interface DataPoint {
+  id: string;
+  sourceId: string | null;
+  country: string | null;
+  region: string | null;
+  jobRole: string | null;
+  brainStyle: string | null;
+  eqTotal: number | null;
+  EL: number | null;
+  RP: number | null;
+  ACT: number | null;
+  NE: number | null;
+  IM: number | null;
+  OP: number | null;
+  EMP: number | null;
+  NG: number | null;
+  effectiveness: number | null;
+  relationships: number | null;
+  wellbeing: number | null;
+  qualityOfLife: number | null;
+  reliabilityIndex: number | null;
+}
+
 interface Person {
   id: string;
-  name: string;
+  sourceId: string;
+  displayName: string;
   role: string;
   region: string;
   country: string;
@@ -160,83 +217,25 @@ interface Person {
   eqTotal: number;
   competencies: Record<CompetencyKeys, number>;
   outcomes: Record<OutcomeKeys, number>;
+  reliability: number;
 }
 
-const MOCK_PEOPLE: Person[] = [
-  {
-    id: "p1", name: "María García", role: "Customer Service", region: "LATAM", country: "México",
-    brainStyle: "Diplomat", eqTotal: 108.4,
-    competencies: { EL: 112.3, RP: 105.1, ACT: 109.7, NE: 103.8, IM: 110.2, OP: 108.9, EMP: 115.1, NG: 102.1 },
-    outcomes: { effectiveness: 110.2, relationships: 113.5, wellbeing: 105.8, qualityOfLife: 107.1 },
-  },
-  {
-    id: "p2", name: "James Chen", role: "Sales", region: "APAC", country: "Singapore",
-    brainStyle: "Strategist", eqTotal: 104.7,
-    competencies: { EL: 101.2, RP: 110.8, ACT: 112.4, NE: 98.3, IM: 106.5, OP: 103.1, EMP: 99.7, NG: 105.6 },
-    outcomes: { effectiveness: 112.8, relationships: 99.4, wellbeing: 101.2, qualityOfLife: 103.5 },
-  },
-  {
-    id: "p3", name: "Sarah Williams", role: "Team Lead", region: "NA", country: "USA",
-    brainStyle: "Guardian", eqTotal: 112.1,
-    competencies: { EL: 114.5, RP: 108.2, ACT: 115.3, NE: 110.7, IM: 113.9, OP: 112.6, EMP: 109.4, NG: 111.8 },
-    outcomes: { effectiveness: 115.3, relationships: 111.2, wellbeing: 110.8, qualityOfLife: 112.4 },
-  },
-  {
-    id: "p4", name: "Ahmed Hassan", role: "Operations", region: "EMEA", country: "Egypt",
-    brainStyle: "Architect", eqTotal: 96.3,
-    competencies: { EL: 93.1, RP: 99.8, ACT: 101.2, NE: 91.5, IM: 97.3, OP: 94.7, EMP: 92.8, NG: 100.4 },
-    outcomes: { effectiveness: 99.5, relationships: 93.2, wellbeing: 95.1, qualityOfLife: 96.8 },
-  },
-  {
-    id: "p5", name: "Ana Rodríguez", role: "HR", region: "LATAM", country: "Colombia",
-    brainStyle: "Connector", eqTotal: 110.8,
-    competencies: { EL: 113.7, RP: 104.3, ACT: 106.1, NE: 112.5, IM: 108.9, OP: 114.2, EMP: 118.3, NG: 108.6 },
-    outcomes: { effectiveness: 107.1, relationships: 116.8, wellbeing: 112.3, qualityOfLife: 110.5 },
-  },
-  {
-    id: "p6", name: "Kenji Tanaka", role: "IT Support", region: "APAC", country: "Japan",
-    brainStyle: "Innovator", eqTotal: 99.2,
-    competencies: { EL: 96.4, RP: 105.7, ACT: 103.8, NE: 94.2, IM: 101.3, OP: 97.5, EMP: 95.9, NG: 98.8 },
-    outcomes: { effectiveness: 104.2, relationships: 96.1, wellbeing: 98.7, qualityOfLife: 99.3 },
-  },
-  {
-    id: "p7", name: "Emma Thompson", role: "Customer Service", region: "EMEA", country: "UK",
-    brainStyle: "Diplomat", eqTotal: 105.6,
-    competencies: { EL: 108.9, RP: 102.3, ACT: 104.7, NE: 106.1, IM: 103.8, OP: 107.5, EMP: 110.2, NG: 101.4 },
-    outcomes: { effectiveness: 106.3, relationships: 109.8, wellbeing: 103.5, qualityOfLife: 105.2 },
-  },
-  {
-    id: "p8", name: "Carlos Mendoza", role: "Sales", region: "LATAM", country: "Argentina",
-    brainStyle: "Explorer", eqTotal: 101.9,
-    competencies: { EL: 99.1, RP: 103.5, ACT: 105.2, NE: 97.8, IM: 106.7, OP: 100.3, EMP: 98.4, NG: 104.1 },
-    outcomes: { effectiveness: 107.5, relationships: 99.8, wellbeing: 98.2, qualityOfLife: 101.6 },
-  },
-  {
-    id: "p9", name: "Priya Sharma", role: "Team Lead", region: "APAC", country: "India",
-    brainStyle: "Guardian", eqTotal: 107.3,
-    competencies: { EL: 109.2, RP: 106.8, ACT: 110.5, NE: 104.1, IM: 108.7, OP: 105.9, EMP: 107.3, NG: 105.9 },
-    outcomes: { effectiveness: 110.1, relationships: 107.5, wellbeing: 104.8, qualityOfLife: 106.2 },
-  },
-  {
-    id: "p10", name: "Michael O'Brien", role: "Operations", region: "NA", country: "Canada",
-    brainStyle: "Strategist", eqTotal: 103.1,
-    competencies: { EL: 100.5, RP: 107.2, ACT: 108.9, NE: 99.3, IM: 104.1, OP: 101.8, EMP: 100.7, NG: 102.3 },
-    outcomes: { effectiveness: 108.3, relationships: 101.4, wellbeing: 100.5, qualityOfLife: 102.7 },
-  },
-  {
-    id: "p11", name: "Fatima Al-Rashidi", role: "HR", region: "EMEA", country: "UAE",
-    brainStyle: "Connector", eqTotal: 106.5,
-    competencies: { EL: 109.8, RP: 103.1, ACT: 104.6, NE: 107.9, IM: 105.2, OP: 108.3, EMP: 111.7, NG: 101.8 },
-    outcomes: { effectiveness: 105.1, relationships: 111.3, wellbeing: 106.9, qualityOfLife: 104.8 },
-  },
-  {
-    id: "p12", name: "David Park", role: "IT Support", region: "NA", country: "USA",
-    brainStyle: "Innovator", eqTotal: 98.4,
-    competencies: { EL: 95.7, RP: 104.3, ACT: 102.1, NE: 93.8, IM: 100.9, OP: 96.2, EMP: 94.5, NG: 99.7 },
-    outcomes: { effectiveness: 103.8, relationships: 95.2, wellbeing: 97.1, qualityOfLife: 98.6 },
-  },
-];
+interface FilterOption {
+  value: string;
+  label: string;
+  count: number;
+}
 
+interface FilterOptions {
+  regions: FilterOption[];
+  countries: FilterOption[];
+  jobRoles: FilterOption[];
+  brainStyles?: FilterOption[];
+}
+
+/* =========================================================
+   Helpers
+========================================================= */
 const COMP_KEYS: CompetencyKeys[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
 const OUTCOME_KEYS: OutcomeKeys[] = ["effectiveness", "relationships", "wellbeing", "qualityOfLife"];
 
@@ -248,12 +247,171 @@ const COMP_TKEYS: Record<string, string> = {
 const BRAIN_STYLE_COLORS: Record<string, string> = {
   Innovator: "#8b5cf6", Strategist: "#3b82f6", Guardian: "#10b981",
   Diplomat: "#f59e0b", Architect: "#ef4444", Explorer: "#ec4899",
-  Connector: "#06b6d4",
+  Connector: "#06b6d4", Visionary: "#7c3aed", Sentinel: "#059669",
+  Motivator: "#d97706", Integrator: "#0891b2",
 };
+
+function getCountryFlag(country: string | null): string {
+  if (!country) return "";
+  const flags: Record<string, string> = {
+    Mexico: "\uD83C\uDDF2\uD83C\uDDFD", "M\u00e9xico": "\uD83C\uDDF2\uD83C\uDDFD",
+    Colombia: "\uD83C\uDDE8\uD83C\uDDF4", Argentina: "\uD83C\uDDE6\uD83C\uDDF7",
+    Brazil: "\uD83C\uDDE7\uD83C\uDDF7", Chile: "\uD83C\uDDE8\uD83C\uDDF1",
+    Peru: "\uD83C\uDDF5\uD83C\uDDE6", USA: "\uD83C\uDDFA\uD83C\uDDF8",
+    "United States": "\uD83C\uDDFA\uD83C\uDDF8", Canada: "\uD83C\uDDE8\uD83C\uDDE6",
+    UK: "\uD83C\uDDEC\uD83C\uDDE7", "United Kingdom": "\uD83C\uDDEC\uD83C\uDDE7",
+    Germany: "\uD83C\uDDE9\uD83C\uDDE6", France: "\uD83C\uDDEB\uD83C\uDDF7",
+    Spain: "\uD83C\uDDEA\uD83C\uDDF8", Italy: "\uD83C\uDDEE\uD83C\uDDF9",
+    India: "\uD83C\uDDEE\uD83C\uDDF3", Japan: "\uD83C\uDDEF\uD83C\uDDF5",
+    Singapore: "\uD83C\uDDF8\uD83C\uDDEC", Australia: "\uD83C\uDDE6\uD83C\uDDFA",
+    Philippines: "\uD83C\uDDF5\uD83C\uDDED", Egypt: "\uD83C\uDDEA\uD83C\uDDEC",
+    UAE: "\uD83C\uDDE6\uD83C\uDDEA", "South Africa": "\uD83C\uDDFF\uD83C\uDDE6",
+    Turkey: "\uD83C\uDDF9\uD83C\uDDF7", Portugal: "\uD83C\uDDF5\uD83C\uDDF9",
+    Netherlands: "\uD83C\uDDF3\uD83C\uDDF1", Greece: "\uD83C\uDDEC\uD83C\uDDF7",
+    Poland: "\uD83C\uDDF5\uD83C\uDDF1", Romania: "\uD83C\uDDF7\uD83C\uDDF4",
+    "Costa Rica": "\uD83C\uDDE8\uD83C\uDDF7", "Dominican Republic": "\uD83C\uDDE9\uD83C\uDDF4",
+    Ecuador: "\uD83C\uDDEA\uD83C\uDDE8", Guatemala: "\uD83C\uDDEC\uD83C\uDDF9",
+    Honduras: "\uD83C\uDDED\uD83C\uDDF3", "El Salvador": "\uD83C\uDDF8\uD83C\uDDFB",
+    China: "\uD83C\uDDE8\uD83C\uDDF3", "South Korea": "\uD83C\uDDF0\uD83C\uDDF7",
+    Thailand: "\uD83C\uDDF9\uD83C\uDDED", Malaysia: "\uD83C\uDDF2\uD83C\uDDFE",
+    Indonesia: "\uD83C\uDDEE\uD83C\uDDE9", Vietnam: "\uD83C\uDDFB\uD83C\uDDF3",
+  };
+  return flags[country] || "\uD83C\uDF10";
+}
+
+/** Convert a raw API data point to a Person for the UI */
+function dataPointToPerson(dp: DataPoint): Person {
+  const sid = dp.sourceId || dp.id.slice(0, 8);
+  const displayName = `TP-${sid.slice(0, 6).toUpperCase()}`;
+  return {
+    id: dp.id,
+    sourceId: sid,
+    displayName,
+    role: dp.jobRole || "---",
+    region: dp.region || "---",
+    country: dp.country || "---",
+    brainStyle: dp.brainStyle || "---",
+    eqTotal: dp.eqTotal ?? 100,
+    competencies: {
+      EL: dp.EL ?? 100,
+      RP: dp.RP ?? 100,
+      ACT: dp.ACT ?? 100,
+      NE: dp.NE ?? 100,
+      IM: dp.IM ?? 100,
+      OP: dp.OP ?? 100,
+      EMP: dp.EMP ?? 100,
+      NG: dp.NG ?? 100,
+    },
+    outcomes: {
+      effectiveness: dp.effectiveness ?? 100,
+      relationships: dp.relationships ?? 100,
+      wellbeing: dp.wellbeing ?? 100,
+      qualityOfLife: dp.qualityOfLife ?? 100,
+    },
+    reliability: dp.reliabilityIndex ?? 0,
+  };
+}
 
 /* =========================================================
    Components
 ========================================================= */
+
+function FilterBar({
+  filters,
+  setFilters,
+  filterOptions,
+  t,
+  total,
+}: {
+  filters: { region: string; country: string; jobRole: string; brainStyle: string };
+  setFilters: (f: typeof filters) => void;
+  filterOptions: FilterOptions | null;
+  t: Record<string, string>;
+  total: number;
+}) {
+  const hasFilters = filters.region || filters.country || filters.jobRole || filters.brainStyle;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-zinc-800"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Filter className="w-4 h-4 text-purple-500" /> {t.filters}
+        </h3>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-[var(--rowi-muted)]">
+            {total.toLocaleString()} {t.totalResults}
+          </span>
+          {hasFilters && (
+            <button
+              onClick={() => setFilters({ region: "", country: "", jobRole: "", brainStyle: "" })}
+              className="text-xs text-purple-500 hover:text-purple-700 flex items-center gap-1 transition-colors"
+            >
+              <X className="w-3 h-3" /> {t.clearFilters}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Region */}
+        <select
+          value={filters.region}
+          onChange={(e) => setFilters({ ...filters, region: e.target.value, country: "" })}
+          className="text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">{t.allRegions}</option>
+          {filterOptions?.regions?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.value} ({opt.count})
+            </option>
+          ))}
+        </select>
+        {/* Country */}
+        <select
+          value={filters.country}
+          onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+          className="text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">{t.allCountries}</option>
+          {filterOptions?.countries?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {getCountryFlag(opt.value)} {opt.value} ({opt.count})
+            </option>
+          ))}
+        </select>
+        {/* Job Role */}
+        <select
+          value={filters.jobRole}
+          onChange={(e) => setFilters({ ...filters, jobRole: e.target.value })}
+          className="text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">{t.allRoles}</option>
+          {filterOptions?.jobRoles?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.value} ({opt.count})
+            </option>
+          ))}
+        </select>
+        {/* Brain Style */}
+        <select
+          value={filters.brainStyle}
+          onChange={(e) => setFilters({ ...filters, brainStyle: e.target.value })}
+          className="text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">{t.allBrainStyles}</option>
+          {filterOptions?.brainStyles?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.value} ({opt.count})
+            </option>
+          ))}
+        </select>
+      </div>
+    </motion.div>
+  );
+}
 
 function PersonSelector({
   label, selected, onSelect, excludeId, people,
@@ -267,9 +425,17 @@ function PersonSelector({
   const t = translations[lang as keyof typeof translations] || translations.es;
 
   const filtered = useMemo(() => {
+    const q = search.toLowerCase();
     return people
       .filter((p) => p.id !== excludeId)
-      .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+      .filter((p) =>
+        p.displayName.toLowerCase().includes(q) ||
+        p.country.toLowerCase().includes(q) ||
+        p.role.toLowerCase().includes(q) ||
+        p.brainStyle.toLowerCase().includes(q) ||
+        p.sourceId.toLowerCase().includes(q) ||
+        p.region.toLowerCase().includes(q)
+      );
   }, [people, excludeId, search]);
 
   return (
@@ -286,14 +452,16 @@ function PersonSelector({
           <>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-              style={{ backgroundColor: BRAIN_STYLE_COLORS[selected.brainStyle] }}
+              style={{ backgroundColor: BRAIN_STYLE_COLORS[selected.brainStyle] || "#8b5cf6" }}
             >
-              {selected.name.split(" ").map((n) => n[0]).join("")}
+              {selected.displayName.slice(3, 5)}
             </div>
             <div className="text-left flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">{selected.name}</div>
+              <div className="font-semibold text-sm truncate">
+                {getCountryFlag(selected.country)} {selected.displayName}
+              </div>
               <div className="text-xs text-[var(--rowi-muted)]">
-                {selected.role} · {selected.region}
+                {selected.country} · {selected.role} · {selected.brainStyle}
               </div>
             </div>
             <span className="text-lg font-bold text-purple-600">{selected.eqTotal.toFixed(1)}</span>
@@ -313,7 +481,7 @@ function PersonSelector({
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl max-h-72 overflow-hidden"
+            className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl max-h-80 overflow-hidden"
           >
             <div className="p-2 border-b border-gray-100 dark:border-zinc-800">
               <div className="relative">
@@ -328,7 +496,7 @@ function PersonSelector({
                 />
               </div>
             </div>
-            <div className="overflow-y-auto max-h-56">
+            <div className="overflow-y-auto max-h-64">
               {filtered.map((p) => (
                 <button
                   key={p.id}
@@ -337,14 +505,16 @@ function PersonSelector({
                 >
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                    style={{ backgroundColor: BRAIN_STYLE_COLORS[p.brainStyle] }}
+                    style={{ backgroundColor: BRAIN_STYLE_COLORS[p.brainStyle] || "#8b5cf6" }}
                   >
-                    {p.name.split(" ").map((n) => n[0]).join("")}
+                    {p.displayName.slice(3, 5)}
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="text-sm font-medium truncate">{p.name}</div>
+                    <div className="text-sm font-medium truncate">
+                      {getCountryFlag(p.country)} {p.displayName}
+                    </div>
                     <div className="text-[10px] text-[var(--rowi-muted)]">
-                      {p.role} · {p.region} · {p.brainStyle}
+                      {p.country} · {p.role} · {p.brainStyle}
                     </div>
                   </div>
                   <span className="text-sm font-mono font-bold text-purple-600">{p.eqTotal.toFixed(1)}</span>
@@ -369,12 +539,10 @@ function RadarChart({ personA, personB, t }: { personA: Person; personB: Person;
   const minScore = 85;
   const maxScore = 125;
 
-  const labels = COMP_KEYS.map((k) => t[COMP_TKEYS[k]]);
-
   function getPoint(index: number, value: number) {
     const angle = (Math.PI * 2 * index) / COMP_KEYS.length - Math.PI / 2;
     const normalized = (value - minScore) / (maxScore - minScore);
-    const r = normalized * maxR;
+    const r = Math.max(0, normalized) * maxR;
     return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
   }
 
@@ -480,8 +648,102 @@ export default function TPPeopleComparator() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
+  // API state
+  const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState({ region: "", country: "", jobRole: "", brainStyle: "" });
+
+  // Person selection state
   const [personA, setPersonA] = useState<Person | null>(null);
   const [personB, setPersonB] = useState<Person | null>(null);
+
+  // Convert data points to Person objects
+  const people: Person[] = useMemo(() => {
+    return dataPoints.map(dataPointToPerson);
+  }, [dataPoints]);
+
+  // Fetch filter options once on mount
+  useEffect(() => {
+    async function loadFilterOptions() {
+      try {
+        const res = await fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}`);
+        const json = await res.json();
+        if (json.ok && json.benchmark) {
+          const bm = json.benchmark;
+          // Extract brain style filter options from data if available
+          // The API groups by various fields; brainStyles might not be in the standard list
+          // We'll build them from the data points or use jobRoles
+          setFilterOptions({
+            regions: bm.regions || [],
+            countries: bm.countries || [],
+            jobRoles: bm.jobRoles || [],
+            brainStyles: [], // Will be populated from data points
+          });
+        }
+      } catch (err) {
+        console.error("Error loading filter options:", err);
+      }
+    }
+    loadFilterOptions();
+  }, []);
+
+  // Build brainStyle filter options from data points (since the benchmark API might not group by brainStyle)
+  useEffect(() => {
+    if (dataPoints.length > 0 && filterOptions && (!filterOptions.brainStyles || filterOptions.brainStyles.length === 0)) {
+      const brainStyleCounts: Record<string, number> = {};
+      for (const dp of dataPoints) {
+        if (dp.brainStyle) {
+          brainStyleCounts[dp.brainStyle] = (brainStyleCounts[dp.brainStyle] || 0) + 1;
+        }
+      }
+      const brainStyleOpts: FilterOption[] = Object.entries(brainStyleCounts)
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((a, b) => b.count - a.count);
+      if (brainStyleOpts.length > 0) {
+        setFilterOptions((prev) => prev ? { ...prev, brainStyles: brainStyleOpts } : prev);
+      }
+    }
+  }, [dataPoints, filterOptions]);
+
+  // Fetch data points whenever filters change
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.set("limit", "100");
+      if (filters.region) params.set("region", filters.region);
+      if (filters.country) params.set("country", filters.country);
+      if (filters.jobRole) params.set("jobRole", filters.jobRole);
+      if (filters.brainStyle) params.set("brainStyle", filters.brainStyle);
+      const res = await fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/data-points?${params}`);
+      const json = await res.json();
+      if (json.ok) {
+        setDataPoints(json.dataPoints || []);
+        setTotal(json.total || 0);
+      } else {
+        setError(json.error || "Unknown error");
+      }
+    } catch (err) {
+      console.error("Error loading data points:", err);
+      setError(t.loadingError);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, t.loadingError]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Reset person selection when filters change (since the people list changes)
+  useEffect(() => {
+    setPersonA(null);
+    setPersonB(null);
+  }, [filters]);
 
   const bothSelected = personA && personB;
 
@@ -523,6 +785,11 @@ export default function TPPeopleComparator() {
     return d > 0 ? "text-emerald-500" : "text-rose-500";
   }
 
+  /** Short display name for table headers, legends, etc. */
+  function shortName(person: Person) {
+    return person.displayName;
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -545,502 +812,559 @@ export default function TPPeopleComparator() {
         </div>
       </div>
 
-      {/* Person Selectors */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row items-stretch gap-4"
-      >
-        <PersonSelector
-          label={t.selectPersonA}
-          selected={personA}
-          onSelect={setPersonA}
-          excludeId={personB?.id ?? null}
-          people={MOCK_PEOPLE}
-        />
-        <div className="flex items-center justify-center">
-          <span className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
-            {t.vsLabel}
-          </span>
-        </div>
-        <PersonSelector
-          label={t.selectPersonB}
-          selected={personB}
-          onSelect={setPersonB}
-          excludeId={personA?.id ?? null}
-          people={MOCK_PEOPLE}
-        />
-      </motion.div>
+      {/* Filter Bar */}
+      <FilterBar
+        filters={filters}
+        setFilters={setFilters}
+        filterOptions={filterOptions}
+        t={t}
+        total={total}
+      />
 
-      {/* Prompt if not both selected */}
-      {!bothSelected && (
+      {/* Loading State */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" />
+          <p className="mt-4 text-sm text-[var(--rowi-muted)]">{t.loading}</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-16"
+        >
+          <AlertCircle className="w-12 h-12 text-rose-400 mb-4" />
+          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.loadingError}</p>
+          <button
+            onClick={loadData}
+            className="px-4 py-2 rounded-lg bg-purple-500 text-white text-sm font-medium hover:bg-purple-600 transition-colors"
+          >
+            {t.retry}
+          </button>
+        </motion.div>
+      )}
+
+      {/* No Results */}
+      {!loading && !error && people.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center py-16"
         >
-          <GitCompareArrows className="w-16 h-16 text-purple-200 dark:text-zinc-700 mx-auto mb-4" />
-          <p className="text-lg text-[var(--rowi-muted)]">{t.selectPrompt}</p>
+          <Globe className="w-16 h-16 text-purple-200 dark:text-zinc-700 mx-auto mb-4" />
+          <p className="text-lg text-[var(--rowi-muted)]">{t.noResults}</p>
         </motion.div>
       )}
 
-      {/* Comparison Content */}
-      <AnimatePresence mode="wait">
-        {bothSelected && personA && personB && comparisonData && (
+      {/* Person Selectors — only show when we have data */}
+      {!loading && !error && people.length > 0 && (
+        <>
           <motion.div
-            key={`${personA.id}-${personB.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="space-y-8"
+            className="flex flex-col md:flex-row items-stretch gap-4"
           >
-            {/* EQ Total Comparison */}
+            <PersonSelector
+              label={t.selectPersonA}
+              selected={personA}
+              onSelect={setPersonA}
+              excludeId={personB?.id ?? null}
+              people={people}
+            />
+            <div className="flex items-center justify-center">
+              <span className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                {t.vsLabel}
+              </span>
+            </div>
+            <PersonSelector
+              label={t.selectPersonB}
+              selected={personB}
+              onSelect={setPersonB}
+              excludeId={personA?.id ?? null}
+              people={people}
+            />
+          </motion.div>
+
+          {/* Prompt if not both selected */}
+          {!bothSelected && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
             >
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-500" /> {t.eqComparison}
-              </h3>
-              <div className="grid grid-cols-2 gap-8">
-                {/* Person A */}
-                <div className="text-center">
-                  <div
-                    className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
-                    style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] }}
-                  >
-                    {personA.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div className="font-semibold text-sm">{personA.name}</div>
-                  <div className="text-xs text-[var(--rowi-muted)] mb-3">
-                    {personA.role} · {personA.brainStyle}
-                  </div>
-                  <motion.div
-                    className="text-4xl font-bold text-purple-600"
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200 }}
-                  >
-                    {personA.eqTotal.toFixed(1)}
-                  </motion.div>
-                  <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
-                </div>
-                {/* Person B */}
-                <div className="text-center">
-                  <div
-                    className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
-                    style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] }}
-                  >
-                    {personB.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div className="font-semibold text-sm">{personB.name}</div>
-                  <div className="text-xs text-[var(--rowi-muted)] mb-3">
-                    {personB.role} · {personB.brainStyle}
-                  </div>
-                  <motion.div
-                    className="text-4xl font-bold text-pink-600"
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                  >
-                    {personB.eqTotal.toFixed(1)}
-                  </motion.div>
-                  <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
-                </div>
-              </div>
-              {/* Delta bar */}
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <span className="text-sm text-[var(--rowi-muted)]">{t.delta}:</span>
-                <span className={`text-lg font-bold font-mono ${getDeltaColor(personA.eqTotal - personB.eqTotal)}`}>
-                  {personA.eqTotal - personB.eqTotal > 0 ? "+" : ""}
-                  {(personA.eqTotal - personB.eqTotal).toFixed(1)}
-                </span>
-              </div>
+              <GitCompareArrows className="w-16 h-16 text-purple-200 dark:text-zinc-700 mx-auto mb-4" />
+              <p className="text-lg text-[var(--rowi-muted)]">{t.selectPrompt}</p>
             </motion.div>
+          )}
 
-            {/* Radar Chart + Competency Table */}
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Radar */}
+          {/* Comparison Content */}
+          <AnimatePresence mode="wait">
+            {bothSelected && personA && personB && comparisonData && (
               <motion.div
+                key={`${personA.id}-${personB.id}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-8"
               >
-                <h3 className="font-semibold mb-1 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-purple-500" /> {t.competencyRadar}
-                </h3>
-                <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.competencyRadarDesc}</p>
-                <RadarChart personA={personA} personB={personB} t={t} />
-                <div className="flex justify-center gap-6 mt-3 text-xs">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-purple-500" />
-                    {personA.name.split(" ")[0]}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-pink-500" />
-                    {personB.name.split(" ")[0]}
-                  </span>
+                {/* EQ Total Comparison */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+                >
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-purple-500" /> {t.eqComparison}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Person A */}
+                    <div className="text-center">
+                      <div
+                        className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
+                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                      >
+                        {personA.displayName.slice(3, 5)}
+                      </div>
+                      <div className="font-semibold text-sm">{getCountryFlag(personA.country)} {shortName(personA)}</div>
+                      <div className="text-xs text-[var(--rowi-muted)] mb-1">
+                        {personA.country} · {personA.role}
+                      </div>
+                      <div className="text-xs text-[var(--rowi-muted)] mb-3">
+                        {personA.brainStyle}
+                      </div>
+                      <motion.div
+                        className="text-4xl font-bold text-purple-600"
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                      >
+                        {personA.eqTotal.toFixed(1)}
+                      </motion.div>
+                      <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
+                    </div>
+                    {/* Person B */}
+                    <div className="text-center">
+                      <div
+                        className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
+                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                      >
+                        {personB.displayName.slice(3, 5)}
+                      </div>
+                      <div className="font-semibold text-sm">{getCountryFlag(personB.country)} {shortName(personB)}</div>
+                      <div className="text-xs text-[var(--rowi-muted)] mb-1">
+                        {personB.country} · {personB.role}
+                      </div>
+                      <div className="text-xs text-[var(--rowi-muted)] mb-3">
+                        {personB.brainStyle}
+                      </div>
+                      <motion.div
+                        className="text-4xl font-bold text-pink-600"
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                      >
+                        {personB.eqTotal.toFixed(1)}
+                      </motion.div>
+                      <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
+                    </div>
+                  </div>
+                  {/* Delta bar */}
+                  <div className="mt-6 flex items-center justify-center gap-3">
+                    <span className="text-sm text-[var(--rowi-muted)]">{t.delta}:</span>
+                    <span className={`text-lg font-bold font-mono ${getDeltaColor(personA.eqTotal - personB.eqTotal)}`}>
+                      {personA.eqTotal - personB.eqTotal > 0 ? "+" : ""}
+                      {(personA.eqTotal - personB.eqTotal).toFixed(1)}
+                    </span>
+                  </div>
+                </motion.div>
+
+                {/* Radar Chart + Competency Table */}
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Radar */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
+                  >
+                    <h3 className="font-semibold mb-1 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-purple-500" /> {t.competencyRadar}
+                    </h3>
+                    <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.competencyRadarDesc}</p>
+                    <RadarChart personA={personA} personB={personB} t={t} />
+                    <div className="flex justify-center gap-6 mt-3 text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-purple-500" />
+                        {shortName(personA)}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded-full bg-pink-500" />
+                        {shortName(personB)}
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* Table */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
+                  >
+                    <h3 className="font-semibold mb-1 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-purple-500" /> {t.competencyTable}
+                    </h3>
+                    <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.competencyTableDesc}</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-100 dark:border-zinc-800">
+                            <th className="text-left py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.competency}</th>
+                            <th className="text-right py-2 text-xs text-purple-500 font-medium">{shortName(personA)}</th>
+                            <th className="text-right py-2 text-xs text-pink-500 font-medium">{shortName(personB)}</th>
+                            <th className="text-right py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.delta}</th>
+                            <th className="text-center py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.leads}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {comparisonData.map((row, i) => (
+                            <motion.tr
+                              key={row.key}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.2 + i * 0.04 }}
+                              className="border-b border-gray-50 dark:border-zinc-800/50"
+                            >
+                              <td className="py-2 font-medium text-xs">{row.label}</td>
+                              <td className="py-2 text-right font-mono text-xs font-bold text-purple-600 dark:text-purple-400">
+                                {row.scoreA.toFixed(1)}
+                              </td>
+                              <td className="py-2 text-right font-mono text-xs font-bold text-pink-600 dark:text-pink-400">
+                                {row.scoreB.toFixed(1)}
+                              </td>
+                              <td className={`py-2 text-right font-mono text-xs font-bold ${getDeltaColor(row.delta)}`}>
+                                {row.delta > 0 ? "+" : ""}{row.delta.toFixed(1)}
+                              </td>
+                              <td className="py-2 text-center">
+                                {Math.abs(row.delta) < 1 ? (
+                                  <span className="text-[10px] text-[var(--rowi-muted)]">{t.tie}</span>
+                                ) : row.delta > 0 ? (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                                    <TrendingUp className="w-3 h-3" />
+                                    {shortName(personA)}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
+                                    <TrendingUp className="w-3 h-3" />
+                                    {shortName(personB)}
+                                  </span>
+                                )}
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </motion.div>
                 </div>
-              </motion.div>
 
-              {/* Table */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
-              >
-                <h3 className="font-semibold mb-1 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-purple-500" /> {t.competencyTable}
-                </h3>
-                <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.competencyTableDesc}</p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100 dark:border-zinc-800">
-                        <th className="text-left py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.competency}</th>
-                        <th className="text-right py-2 text-xs text-purple-500 font-medium">{personA.name.split(" ")[0]}</th>
-                        <th className="text-right py-2 text-xs text-pink-500 font-medium">{personB.name.split(" ")[0]}</th>
-                        <th className="text-right py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.delta}</th>
-                        <th className="text-center py-2 text-xs text-[var(--rowi-muted)] font-medium">{t.leads}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {comparisonData.map((row, i) => (
-                        <motion.tr
-                          key={row.key}
+                {/* Outcomes Comparison */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
+                >
+                  <h3 className="font-semibold mb-1 flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-purple-500" /> {t.outcomesComparison}
+                  </h3>
+                  <p className="text-xs text-[var(--rowi-muted)] mb-6">{t.outcomesDesc}</p>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {OUTCOME_KEYS.map((key, i) => {
+                      const valA = personA.outcomes[key];
+                      const valB = personB.outcomes[key];
+                      const maxVal = Math.max(valA, valB, 120);
+                      const minVal = 85;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + i * 0.06 }}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium">{t[key as keyof typeof t]}</span>
+                            <span className={`text-xs font-mono ${getDeltaColor(valA - valB)}`}>
+                              {valA - valB > 0 ? "+" : ""}{(valA - valB).toFixed(1)}
+                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] w-16 truncate text-[var(--rowi-muted)]">{shortName(personA)}</span>
+                              <div className="flex-1 h-3.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-600"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((valA - minVal) / (maxVal - minVal)) * 100}%` }}
+                                  transition={{ duration: 0.8, delay: i * 0.06 }}
+                                />
+                              </div>
+                              <span className="text-xs font-mono w-12 text-right font-bold">{valA.toFixed(1)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] w-16 truncate text-[var(--rowi-muted)]">{shortName(personB)}</span>
+                              <div className="flex-1 h-3.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full bg-gradient-to-r from-pink-500 to-pink-600"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((valB - minVal) / (maxVal - minVal)) * 100}%` }}
+                                  transition={{ duration: 0.8, delay: i * 0.06 + 0.1 }}
+                                />
+                              </div>
+                              <span className="text-xs font-mono w-12 text-right font-bold">{valB.toFixed(1)}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Complementary Analysis */}
+                {complementary && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
+                  >
+                    <h3 className="font-semibold mb-1 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-purple-500" /> {t.complementaryAnalysis}
+                    </h3>
+                    <p className="text-xs text-[var(--rowi-muted)] mb-6">{t.complementaryDesc}</p>
+
+                    <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                      {/* Person A strengths */}
+                      <div className="bg-purple-50 dark:bg-purple-900/15 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                          >
+                            {personA.displayName.slice(3, 5)}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">{shortName(personA)}</div>
+                            <div className="text-[10px] text-purple-600 dark:text-purple-400">{t.strongerIn}</div>
+                          </div>
+                        </div>
+                        {complementary.aStronger.length > 0 ? (
+                          <ul className="space-y-1.5">
+                            {complementary.aStronger.map((item) => (
+                              <li key={item.key} className="flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                                <span className="text-purple-800 dark:text-purple-200 font-medium">
+                                  {t[COMP_TKEYS[item.key] as keyof typeof t]}
+                                </span>
+                                <span className="font-mono text-xs text-purple-500 ml-auto">+{item.delta.toFixed(1)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-purple-400">---</p>
+                        )}
+                      </div>
+
+                      {/* Person B strengths */}
+                      <div className="bg-pink-50 dark:bg-pink-900/15 rounded-xl p-4 border border-pink-200 dark:border-pink-800">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                          >
+                            {personB.displayName.slice(3, 5)}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-sm text-pink-900 dark:text-pink-100">{shortName(personB)}</div>
+                            <div className="text-[10px] text-pink-600 dark:text-pink-400">{t.strongerIn}</div>
+                          </div>
+                        </div>
+                        {complementary.bStronger.length > 0 ? (
+                          <ul className="space-y-1.5">
+                            {complementary.bStronger.map((item) => (
+                              <li key={item.key} className="flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
+                                <span className="text-pink-800 dark:text-pink-200 font-medium">
+                                  {t[COMP_TKEYS[item.key] as keyof typeof t]}
+                                </span>
+                                <span className="font-mono text-xs text-pink-500 ml-auto">+{item.delta.toFixed(1)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-pink-400">---</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Shared Strengths & Gaps */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/15 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
+                        <h4 className="font-semibold text-sm text-emerald-800 dark:text-emerald-200 mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-emerald-500" /> {t.sharedStrengths}
+                        </h4>
+                        {complementary.sharedStrengths.length > 0 ? (
+                          <ul className="space-y-1">
+                            {complementary.sharedStrengths.map((key) => (
+                              <li key={key} className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
+                                <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                                {t[COMP_TKEYS[key] as keyof typeof t]}
+                                <span className="ml-auto font-mono text-xs">
+                                  {personA.competencies[key as CompetencyKeys].toFixed(1)} / {personB.competencies[key as CompetencyKeys].toFixed(1)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-emerald-500 opacity-60">{t.noSharedStrengths}</p>
+                        )}
+                      </div>
+
+                      <div className="bg-amber-50 dark:bg-amber-900/15 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                        <h4 className="font-semibold text-sm text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+                          <TrendingDown className="w-4 h-4 text-amber-500" /> {t.sharedGaps}
+                        </h4>
+                        {complementary.sharedGaps.length > 0 ? (
+                          <ul className="space-y-1">
+                            {complementary.sharedGaps.map((key) => (
+                              <li key={key} className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
+                                <TrendingDown className="w-3 h-3 flex-shrink-0" />
+                                {t[COMP_TKEYS[key] as keyof typeof t]}
+                                <span className="ml-auto font-mono text-xs">
+                                  {personA.competencies[key as CompetencyKeys].toFixed(1)} / {personB.competencies[key as CompetencyKeys].toFixed(1)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-amber-500 opacity-60">{t.noSharedGaps}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Brain Style Compatibility */}
+                    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                      <div className="flex items-center justify-center gap-6">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                          >
+                            {personA.brainStyle[0] || "?"}
+                          </span>
+                          <div className="text-sm">
+                            <div className="font-medium">{shortName(personA)}</div>
+                            <div className="text-xs text-[var(--rowi-muted)]">{personA.brainStyle}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[var(--rowi-muted)]">
+                          <span className="w-8 h-px bg-gray-300 dark:bg-zinc-600" />
+                          <Brain className="w-5 h-5 text-purple-500" />
+                          <span className="w-8 h-px bg-gray-300 dark:bg-zinc-600" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm text-right">
+                            <div className="font-medium">{shortName(personB)}</div>
+                            <div className="text-xs text-[var(--rowi-muted)]">{personB.brainStyle}</div>
+                          </div>
+                          <span
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                          >
+                            {personB.brainStyle[0] || "?"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Per-Competency Visual Bars */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
+                >
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-purple-500" /> {t.competencyTable}
+                  </h3>
+                  <div className="space-y-4">
+                    {COMP_KEYS.map((key, i) => {
+                      const valA = personA.competencies[key];
+                      const valB = personB.competencies[key];
+                      const maxBar = Math.max(valA, valB, 125);
+                      const minBar = 85;
+                      return (
+                        <motion.div
+                          key={key}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 + i * 0.04 }}
-                          className="border-b border-gray-50 dark:border-zinc-800/50"
+                          transition={{ delay: 0.45 + i * 0.04 }}
                         >
-                          <td className="py-2 font-medium text-xs">{row.label}</td>
-                          <td className="py-2 text-right font-mono text-xs font-bold text-purple-600 dark:text-purple-400">
-                            {row.scoreA.toFixed(1)}
-                          </td>
-                          <td className="py-2 text-right font-mono text-xs font-bold text-pink-600 dark:text-pink-400">
-                            {row.scoreB.toFixed(1)}
-                          </td>
-                          <td className={`py-2 text-right font-mono text-xs font-bold ${getDeltaColor(row.delta)}`}>
-                            {row.delta > 0 ? "+" : ""}{row.delta.toFixed(1)}
-                          </td>
-                          <td className="py-2 text-center">
-                            {Math.abs(row.delta) < 1 ? (
-                              <span className="text-[10px] text-[var(--rowi-muted)]">{t.tie}</span>
-                            ) : row.delta > 0 ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                                <TrendingUp className="w-3 h-3" />
-                                {personA.name.split(" ")[0]}
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
-                                <TrendingUp className="w-3 h-3" />
-                                {personB.name.split(" ")[0]}
-                              </span>
-                            )}
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Outcomes Comparison */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
-            >
-              <h3 className="font-semibold mb-1 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-purple-500" /> {t.outcomesComparison}
-              </h3>
-              <p className="text-xs text-[var(--rowi-muted)] mb-6">{t.outcomesDesc}</p>
-              <div className="grid sm:grid-cols-2 gap-6">
-                {OUTCOME_KEYS.map((key, i) => {
-                  const valA = personA.outcomes[key];
-                  const valB = personB.outcomes[key];
-                  const maxVal = Math.max(valA, valB, 120);
-                  const minVal = 85;
-                  return (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + i * 0.06 }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">{t[key as keyof typeof t]}</span>
-                        <span className={`text-xs font-mono ${getDeltaColor(valA - valB)}`}>
-                          {valA - valB > 0 ? "+" : ""}{(valA - valB).toFixed(1)}
-                        </span>
-                      </div>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] w-16 truncate text-[var(--rowi-muted)]">{personA.name.split(" ")[0]}</span>
-                          <div className="flex-1 h-3.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-600"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${((valA - minVal) / (maxVal - minVal)) * 100}%` }}
-                              transition={{ duration: 0.8, delay: i * 0.06 }}
-                            />
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium">{t[COMP_TKEYS[key] as keyof typeof t]}</span>
+                            <span className="text-[10px] text-[var(--rowi-muted)]">{key}</span>
                           </div>
-                          <span className="text-xs font-mono w-12 text-right font-bold">{valA.toFixed(1)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] w-16 truncate text-[var(--rowi-muted)]">{personB.name.split(" ")[0]}</span>
-                          <div className="flex-1 h-3.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full rounded-full bg-gradient-to-r from-pink-500 to-pink-600"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${((valB - minVal) / (maxVal - minVal)) * 100}%` }}
-                              transition={{ duration: 0.8, delay: i * 0.06 + 0.1 }}
-                            />
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="flex-1 h-2.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full bg-purple-500"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((valA - minBar) / (maxBar - minBar)) * 100}%` }}
+                                  transition={{ duration: 0.6, delay: 0.5 + i * 0.04 }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-mono font-bold w-10 text-right text-purple-600 dark:text-purple-400">
+                                {valA.toFixed(1)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="flex-1 h-2.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full bg-pink-500"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((valB - minBar) / (maxBar - minBar)) * 100}%` }}
+                                  transition={{ duration: 0.6, delay: 0.55 + i * 0.04 }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-mono font-bold w-10 text-right text-pink-600 dark:text-pink-400">
+                                {valB.toFixed(1)}
+                              </span>
+                            </div>
                           </div>
-                          <span className="text-xs font-mono w-12 text-right font-bold">{valB.toFixed(1)}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            {/* Complementary Analysis */}
-            {complementary && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
-              >
-                <h3 className="font-semibold mb-1 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-500" /> {t.complementaryAnalysis}
-                </h3>
-                <p className="text-xs text-[var(--rowi-muted)] mb-6">{t.complementaryDesc}</p>
-
-                <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                  {/* Person A strengths */}
-                  <div className="bg-purple-50 dark:bg-purple-900/15 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] }}
-                      >
-                        {personA.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">{personA.name}</div>
-                        <div className="text-[10px] text-purple-600 dark:text-purple-400">{t.strongerIn}</div>
-                      </div>
-                    </div>
-                    {complementary.aStronger.length > 0 ? (
-                      <ul className="space-y-1.5">
-                        {complementary.aStronger.map((item) => (
-                          <li key={item.key} className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                            <span className="text-purple-800 dark:text-purple-200 font-medium">
-                              {t[COMP_TKEYS[item.key] as keyof typeof t]}
-                            </span>
-                            <span className="font-mono text-xs text-purple-500 ml-auto">+{item.delta.toFixed(1)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-purple-400">---</p>
-                    )}
+                        </motion.div>
+                      );
+                    })}
                   </div>
-
-                  {/* Person B strengths */}
-                  <div className="bg-pink-50 dark:bg-pink-900/15 rounded-xl p-4 border border-pink-200 dark:border-pink-800">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] }}
-                      >
-                        {personB.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm text-pink-900 dark:text-pink-100">{personB.name}</div>
-                        <div className="text-[10px] text-pink-600 dark:text-pink-400">{t.strongerIn}</div>
-                      </div>
-                    </div>
-                    {complementary.bStronger.length > 0 ? (
-                      <ul className="space-y-1.5">
-                        {complementary.bStronger.map((item) => (
-                          <li key={item.key} className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
-                            <span className="text-pink-800 dark:text-pink-200 font-medium">
-                              {t[COMP_TKEYS[item.key] as keyof typeof t]}
-                            </span>
-                            <span className="font-mono text-xs text-pink-500 ml-auto">+{item.delta.toFixed(1)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-pink-400">---</p>
-                    )}
+                  <div className="flex justify-center gap-6 mt-5 text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full bg-purple-500" /> {getCountryFlag(personA.country)} {shortName(personA)}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full bg-pink-500" /> {getCountryFlag(personB.country)} {shortName(personB)}
+                    </span>
                   </div>
-                </div>
-
-                {/* Shared Strengths & Gaps */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="bg-emerald-50 dark:bg-emerald-900/15 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
-                    <h4 className="font-semibold text-sm text-emerald-800 dark:text-emerald-200 mb-2 flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-emerald-500" /> {t.sharedStrengths}
-                    </h4>
-                    {complementary.sharedStrengths.length > 0 ? (
-                      <ul className="space-y-1">
-                        {complementary.sharedStrengths.map((key) => (
-                          <li key={key} className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
-                            <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
-                            {t[COMP_TKEYS[key] as keyof typeof t]}
-                            <span className="ml-auto font-mono text-xs">
-                              {personA.competencies[key as CompetencyKeys].toFixed(1)} / {personB.competencies[key as CompetencyKeys].toFixed(1)}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-emerald-500 opacity-60">{t.noSharedStrengths}</p>
-                    )}
-                  </div>
-
-                  <div className="bg-amber-50 dark:bg-amber-900/15 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
-                    <h4 className="font-semibold text-sm text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
-                      <TrendingDown className="w-4 h-4 text-amber-500" /> {t.sharedGaps}
-                    </h4>
-                    {complementary.sharedGaps.length > 0 ? (
-                      <ul className="space-y-1">
-                        {complementary.sharedGaps.map((key) => (
-                          <li key={key} className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
-                            <TrendingDown className="w-3 h-3 flex-shrink-0" />
-                            {t[COMP_TKEYS[key] as keyof typeof t]}
-                            <span className="ml-auto font-mono text-xs">
-                              {personA.competencies[key as CompetencyKeys].toFixed(1)} / {personB.competencies[key as CompetencyKeys].toFixed(1)}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-xs text-amber-500 opacity-60">{t.noSharedGaps}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Brain Style Compatibility */}
-                <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] }}
-                      >
-                        {personA.brainStyle[0]}
-                      </span>
-                      <div className="text-sm">
-                        <div className="font-medium">{personA.name.split(" ")[0]}</div>
-                        <div className="text-xs text-[var(--rowi-muted)]">{personA.brainStyle}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 text-[var(--rowi-muted)]">
-                      <span className="w-8 h-px bg-gray-300 dark:bg-zinc-600" />
-                      <Brain className="w-5 h-5 text-purple-500" />
-                      <span className="w-8 h-px bg-gray-300 dark:bg-zinc-600" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm text-right">
-                        <div className="font-medium">{personB.name.split(" ")[0]}</div>
-                        <div className="text-xs text-[var(--rowi-muted)]">{personB.brainStyle}</div>
-                      </div>
-                      <span
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] }}
-                      >
-                        {personB.brainStyle[0]}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
-
-            {/* Per-Competency Visual Bars */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800"
-            >
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-purple-500" /> {t.competencyTable}
-              </h3>
-              <div className="space-y-4">
-                {COMP_KEYS.map((key, i) => {
-                  const valA = personA.competencies[key];
-                  const valB = personB.competencies[key];
-                  const maxBar = Math.max(valA, valB, 125);
-                  const minBar = 85;
-                  return (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.45 + i * 0.04 }}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium">{t[COMP_TKEYS[key] as keyof typeof t]}</span>
-                        <span className="text-[10px] text-[var(--rowi-muted)]">{key}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-1">
-                          <div className="flex-1 h-2.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full rounded-full bg-purple-500"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${((valA - minBar) / (maxBar - minBar)) * 100}%` }}
-                              transition={{ duration: 0.6, delay: 0.5 + i * 0.04 }}
-                            />
-                          </div>
-                          <span className="text-[10px] font-mono font-bold w-10 text-right text-purple-600 dark:text-purple-400">
-                            {valA.toFixed(1)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="flex-1 h-2.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <motion.div
-                              className="h-full rounded-full bg-pink-500"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${((valB - minBar) / (maxBar - minBar)) * 100}%` }}
-                              transition={{ duration: 0.6, delay: 0.55 + i * 0.04 }}
-                            />
-                          </div>
-                          <span className="text-[10px] font-mono font-bold w-10 text-right text-pink-600 dark:text-pink-400">
-                            {valB.toFixed(1)}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-              <div className="flex justify-center gap-6 mt-5 text-xs">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-purple-500" /> {personA.name}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-pink-500" /> {personB.name}
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </AnimatePresence>
+        </>
+      )}
 
       {/* Info Tip */}
       <motion.div

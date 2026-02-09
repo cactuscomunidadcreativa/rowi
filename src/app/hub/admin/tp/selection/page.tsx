@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,6 +20,8 @@ import {
   Globe,
   Zap,
   Bot,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -86,6 +88,11 @@ const translations = {
     radarTop: "Top Performer",
     recommendedAction: "Acción Recomendada",
     noRoleSelected: "Selecciona un rol para comenzar la evaluación de candidatos",
+    loading: "Cargando datos de benchmarks...",
+    errorLoading: "Error al cargar datos. Intenta de nuevo.",
+    nRoles: "roles encontrados",
+    participants: "participantes",
+    demoDataBanner: "Los candidatos mostrados son datos de demostración. Los benchmarks de rol están basados en datos reales de TP.",
   },
   en: {
     backToHub: "TP Hub",
@@ -146,23 +153,25 @@ const translations = {
     radarTop: "Top Performer",
     recommendedAction: "Recommended Action",
     noRoleSelected: "Select a role to start evaluating candidates",
+    loading: "Loading benchmark data...",
+    errorLoading: "Error loading data. Please try again.",
+    nRoles: "roles found",
+    participants: "participants",
+    demoDataBanner: "Candidates shown are demonstration data. Role benchmarks are based on real TP data.",
   },
 };
 
 /* =========================================================
-   Mock Data
+   Constants & Types
 ========================================================= */
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const;
 type CompKey = (typeof COMP_KEYS)[number];
 
-const ROLE_BENCHMARKS = [
-  { id: "role-cs", name: { es: "Servicio al Cliente", en: "Customer Service" }, department: { es: "Soporte", en: "Support" }, idealEQ: 102, minEQ: 92, competencies: { EL: 100, RP: 102, ACT: 104, NE: 98, IM: 103, OP: 101, EMP: 106, NG: 100 } as Record<CompKey, number>, topPerformer: { EL: 112, RP: 114, ACT: 116, NE: 110, IM: 115, OP: 113, EMP: 118, NG: 112 } as Record<CompKey, number>, weight: { EL: 0.1, RP: 0.1, ACT: 0.15, NE: 0.1, IM: 0.1, OP: 0.1, EMP: 0.25, NG: 0.1 } as Record<CompKey, number> },
-  { id: "role-sales", name: { es: "Ventas", en: "Sales" }, department: { es: "Comercial", en: "Commercial" }, idealEQ: 106, minEQ: 95, competencies: { EL: 104, RP: 106, ACT: 108, NE: 102, IM: 110, OP: 108, EMP: 104, NG: 106 } as Record<CompKey, number>, topPerformer: { EL: 114, RP: 116, ACT: 118, NE: 112, IM: 120, OP: 118, EMP: 114, NG: 116 } as Record<CompKey, number>, weight: { EL: 0.08, RP: 0.12, ACT: 0.15, NE: 0.08, IM: 0.2, OP: 0.15, EMP: 0.1, NG: 0.12 } as Record<CompKey, number> },
-  { id: "role-hr", name: { es: "Recursos Humanos", en: "Human Resources" }, department: { es: "People", en: "People" }, idealEQ: 110, minEQ: 98, competencies: { EL: 110, RP: 108, ACT: 106, NE: 112, IM: 108, OP: 110, EMP: 116, NG: 110 } as Record<CompKey, number>, topPerformer: { EL: 118, RP: 116, ACT: 114, NE: 120, IM: 116, OP: 118, EMP: 124, NG: 118 } as Record<CompKey, number>, weight: { EL: 0.12, RP: 0.1, ACT: 0.08, NE: 0.15, IM: 0.08, OP: 0.12, EMP: 0.25, NG: 0.1 } as Record<CompKey, number> },
-  { id: "role-it", name: { es: "Soporte IT", en: "IT Support" }, department: { es: "Tecnología", en: "Technology" }, idealEQ: 98, minEQ: 88, competencies: { EL: 96, RP: 102, ACT: 106, NE: 94, IM: 100, OP: 96, EMP: 94, NG: 98 } as Record<CompKey, number>, topPerformer: { EL: 108, RP: 114, ACT: 118, NE: 106, IM: 112, OP: 108, EMP: 106, NG: 110 } as Record<CompKey, number>, weight: { EL: 0.08, RP: 0.15, ACT: 0.25, NE: 0.08, IM: 0.12, OP: 0.1, EMP: 0.08, NG: 0.14 } as Record<CompKey, number> },
-  { id: "role-ops", name: { es: "Operaciones", en: "Operations" }, department: { es: "Operaciones", en: "Operations" }, idealEQ: 100, minEQ: 90, competencies: { EL: 98, RP: 104, ACT: 106, NE: 96, IM: 102, OP: 100, EMP: 98, NG: 102 } as Record<CompKey, number>, topPerformer: { EL: 110, RP: 116, ACT: 118, NE: 108, IM: 114, OP: 112, EMP: 110, NG: 114 } as Record<CompKey, number>, weight: { EL: 0.1, RP: 0.15, ACT: 0.2, NE: 0.08, IM: 0.12, OP: 0.1, EMP: 0.1, NG: 0.15 } as Record<CompKey, number> },
-];
-
+/* =========================================================
+   Demo Candidate Data
+   (Real candidate data not available in DB)
+========================================================= */
 interface Candidate {
   id: string;
   name: string;
@@ -170,19 +179,34 @@ interface Candidate {
   brainStyle: string;
   eqTotal: number;
   EL: number; RP: number; ACT: number; NE: number; IM: number; OP: number; EMP: number; NG: number;
-  appliedRole: string;
+  appliedRole: string; // will be matched against real role names
 }
 
-const CANDIDATES: Candidate[] = [
-  { id: "C-001", name: "María López", country: "México", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "role-sales" },
-  { id: "C-002", name: "John Smith", country: "USA", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "role-cs" },
-  { id: "C-003", name: "Yuki Sato", country: "Japan", brainStyle: "Scientist", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "role-hr" },
-  { id: "C-004", name: "Ahmed Hassan", country: "Egypt", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "role-ops" },
-  { id: "C-005", name: "Sophie Martin", country: "France", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "role-cs" },
-  { id: "C-006", name: "Raj Patel", country: "India", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "role-it" },
-  { id: "C-007", name: "Laura García", country: "Colombia", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "role-sales" },
-  { id: "C-008", name: "Chen Wei", country: "China", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "role-it" },
+// Candidates are mapped to roles by name (appliedRole will be matched to real role names from API)
+const DEMO_CANDIDATES: Candidate[] = [
+  { id: "C-001", name: "María López", country: "México", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "Customer Service" },
+  { id: "C-002", name: "John Smith", country: "USA", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "Customer Service" },
+  { id: "C-003", name: "Yuki Sato", country: "Japan", brainStyle: "Scientist", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "Human Resources" },
+  { id: "C-004", name: "Ahmed Hassan", country: "Egypt", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "Operations" },
+  { id: "C-005", name: "Sophie Martin", country: "France", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "Customer Service" },
+  { id: "C-006", name: "Raj Patel", country: "India", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "IT Support" },
+  { id: "C-007", name: "Laura García", country: "Colombia", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "Sales" },
+  { id: "C-008", name: "Chen Wei", country: "China", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "IT Support" },
 ];
+
+/* =========================================================
+   Role Benchmark Interface (built from real API data)
+========================================================= */
+interface RoleBenchmark {
+  id: string;
+  name: string;
+  count: number;
+  idealEQ: number;
+  minEQ: number;
+  competencies: Record<CompKey, number>;
+  topPerformer: Record<CompKey, number>;
+  weight: Record<CompKey, number>;
+}
 
 /* =========================================================
    Helpers
@@ -192,7 +216,13 @@ const COMP_TKEYS: Record<CompKey, string> = {
   IM: "compIM", OP: "compOP", EMP: "compEMP", NG: "compNG",
 };
 
-function calcFitScore(cand: Candidate, role: (typeof ROLE_BENCHMARKS)[0]): number {
+// Default even weights when we don't have role-specific weighting
+const DEFAULT_WEIGHTS: Record<CompKey, number> = {
+  EL: 0.125, RP: 0.125, ACT: 0.125, NE: 0.125,
+  IM: 0.125, OP: 0.125, EMP: 0.125, NG: 0.125,
+};
+
+function calcFitScore(cand: Candidate, role: RoleBenchmark): number {
   let weightedSum = 0;
   let totalWeight = 0;
   for (const key of COMP_KEYS) {
@@ -219,6 +249,15 @@ function fitBgLight(score: number): string {
   if (score >= 80) return "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800";
   if (score >= 60) return "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800";
   return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+}
+
+/**
+ * Try to match a demo candidate's appliedRole to a real role name.
+ * Uses case-insensitive substring matching.
+ */
+function candidateMatchesRole(candidateRole: string, realRoleName: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return norm(realRoleName).includes(norm(candidateRole)) || norm(candidateRole).includes(norm(realRoleName));
 }
 
 /* =========================================================
@@ -327,14 +366,123 @@ export default function TPSelectionPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
+  /* ---- API state ---- */
+  const [topPerformers, setTopPerformers] = useState<any[]>([]);
+  const [roleStats, setRoleStats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  /* ---- UI state ---- */
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedCandidateId, setSelectedCandidateId] = useState<string>("");
 
-  const selectedRole = ROLE_BENCHMARKS.find((r) => r.id === selectedRoleId);
+  /* ---- Fetch real data ---- */
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(false);
+      try {
+        const [topRes, roleRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/top-performers`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=jobRole`),
+        ]);
+        const topData = await topRes.json();
+        const roleData = await roleRes.json();
+        if (topData.ok) setTopPerformers(topData.topPerformers || []);
+        if (roleData.ok) setRoleStats(roleData.groups || []);
+      } catch (e) {
+        console.error("Error loading TP selection data:", e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
+  /* ---- Build role benchmarks from REAL data ---- */
+  const roleBenchmarks: RoleBenchmark[] = useMemo(() => {
+    return roleStats.map((role) => {
+      // Find top performer data for this role (if available)
+      const roleTopPerformer = topPerformers.find(
+        (tp) => tp.jobRole === role.name
+      );
+
+      // Build competencies from real role stats means
+      const competencies: Record<CompKey, number> = {
+        EL: role.metrics?.EL?.mean || 100,
+        RP: role.metrics?.RP?.mean || 100,
+        ACT: role.metrics?.ACT?.mean || 100,
+        NE: role.metrics?.NE?.mean || 100,
+        IM: role.metrics?.IM?.mean || 100,
+        OP: role.metrics?.OP?.mean || 100,
+        EMP: role.metrics?.EMP?.mean || 100,
+        NG: role.metrics?.NG?.mean || 100,
+      };
+
+      // Build top performer competencies
+      // Use the top performer's avg values if available, otherwise use competencies + 10% offset
+      const topPerformerComps: Record<CompKey, number> = { ...competencies };
+      if (roleTopPerformer) {
+        for (const key of COMP_KEYS) {
+          const avgKey = `avg${key}` as string;
+          if (roleTopPerformer[avgKey] != null) {
+            topPerformerComps[key] = roleTopPerformer[avgKey];
+          } else {
+            // Fallback: check topCompetencies array
+            const found = roleTopPerformer.topCompetencies?.find(
+              (c: any) => c.key === key
+            );
+            if (found?.avgScore != null) {
+              topPerformerComps[key] = found.avgScore;
+            } else {
+              // Default: 10% above role mean
+              topPerformerComps[key] = competencies[key] * 1.1;
+            }
+          }
+        }
+      } else {
+        // No top performer data — estimate as 10% above role mean
+        for (const key of COMP_KEYS) {
+          topPerformerComps[key] = Math.round(competencies[key] * 1.1 * 100) / 100;
+        }
+      }
+
+      // Determine weighting from stdDev — higher variance = more discriminating = higher weight
+      const weights: Record<CompKey, number> = { ...DEFAULT_WEIGHTS };
+      const stdDevs = COMP_KEYS.map((key) => role.metrics?.[key]?.stdDev || 0);
+      const totalStdDev = stdDevs.reduce((a, b) => a + b, 0);
+      if (totalStdDev > 0) {
+        COMP_KEYS.forEach((key, i) => {
+          weights[key] = stdDevs[i] / totalStdDev;
+        });
+      }
+
+      const idealEQ = role.metrics?.eqTotal?.mean || 100;
+      const stdDevEQ = role.metrics?.eqTotal?.stdDev || 10;
+      const minEQ = Math.round((idealEQ - stdDevEQ) * 100) / 100;
+
+      return {
+        id: role.name,
+        name: role.name,
+        count: role.count,
+        idealEQ: Math.round(idealEQ * 100) / 100,
+        minEQ: Math.round(minEQ * 100) / 100,
+        competencies,
+        topPerformer: topPerformerComps,
+        weight: weights,
+      };
+    });
+  }, [roleStats, topPerformers]);
+
+  /* ---- Selected role ---- */
+  const selectedRole = roleBenchmarks.find((r) => r.id === selectedRoleId);
+
+  /* ---- Map demo candidates to real roles and calculate fit scores ---- */
   const roleCandidates = useMemo(() => {
     if (!selectedRole) return [];
-    return CANDIDATES.filter((c) => c.appliedRole === selectedRole.id)
+    return DEMO_CANDIDATES
+      .filter((c) => candidateMatchesRole(c.appliedRole, selectedRole.name))
       .map((c) => ({ ...c, fitScore: calcFitScore(c, selectedRole) }))
       .sort((a, b) => b.fitScore - a.fitScore);
   }, [selectedRole]);
@@ -364,36 +512,59 @@ export default function TPSelectionPage() {
     if (fit >= 90) {
       return {
         text: lang === "es"
-          ? `Excelente ajuste para ${selectedRole.name.es}. Supera el benchmark en ${exceedsList || "todas las competencias"} que son críticas para el rol. ${devList ? `Desarrollo menor en ${devList}.` : "Sin brechas significativas."} EQ total (${cand.eqTotal}) supera el ideal del rol (${selectedRole.idealEQ}).`
-          : `Excellent fit for ${selectedRole.name.en}. Exceeds benchmark in ${exceedsList || "all competencies"} which are critical for the role. ${devList ? `Minor development in ${devList}.` : "No significant gaps."} Total EQ (${cand.eqTotal}) exceeds role ideal (${selectedRole.idealEQ}).`,
+          ? `Excelente ajuste para ${selectedRole.name}. Supera el benchmark en ${exceedsList || "todas las competencias"} que son críticas para el rol. ${devList ? `Desarrollo menor en ${devList}.` : "Sin brechas significativas."} EQ total (${cand.eqTotal}) supera el ideal del rol (${selectedRole.idealEQ}).`
+          : `Excellent fit for ${selectedRole.name}. Exceeds benchmark in ${exceedsList || "all competencies"} which are critical for the role. ${devList ? `Minor development in ${devList}.` : "No significant gaps."} Total EQ (${cand.eqTotal}) exceeds role ideal (${selectedRole.idealEQ}).`,
         action: t.hire,
       };
     }
     if (fit >= 75) {
       return {
         text: lang === "es"
-          ? `Buen ajuste para ${selectedRole.name.es}. ${exceedsList ? `Fortalezas en ${exceedsList}.` : ""} ${devList ? `Desarrollo necesario en ${devList}.` : ""} EQ total (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "cumple" : "no alcanza"} el mínimo del rol (${selectedRole.minEQ}).`
-          : `Good fit for ${selectedRole.name.en}. ${exceedsList ? `Strengths in ${exceedsList}.` : ""} ${devList ? `Development needed in ${devList}.` : ""} Total EQ (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "meets" : "falls below"} role minimum (${selectedRole.minEQ}).`,
+          ? `Buen ajuste para ${selectedRole.name}. ${exceedsList ? `Fortalezas en ${exceedsList}.` : ""} ${devList ? `Desarrollo necesario en ${devList}.` : ""} EQ total (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "cumple" : "no alcanza"} el mínimo del rol (${selectedRole.minEQ}).`
+          : `Good fit for ${selectedRole.name}. ${exceedsList ? `Strengths in ${exceedsList}.` : ""} ${devList ? `Development needed in ${devList}.` : ""} Total EQ (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "meets" : "falls below"} role minimum (${selectedRole.minEQ}).`,
         action: t.hireWithCoaching,
       };
     }
     if (fit >= 60) {
       return {
         text: lang === "es"
-          ? `Ajuste moderado para ${selectedRole.name.es}. Brechas notables en ${devList || "varias competencias"}. ${exceedsList ? `Potencial en ${exceedsList}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`
-          : `Moderate fit for ${selectedRole.name.en}. Notable gaps in ${devList || "several competencies"}. ${exceedsList ? `Potential in ${exceedsList}.` : ""} Requires additional evaluation and intensive development plan.`,
+          ? `Ajuste moderado para ${selectedRole.name}. Brechas notables en ${devList || "varias competencias"}. ${exceedsList ? `Potencial en ${exceedsList}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`
+          : `Moderate fit for ${selectedRole.name}. Notable gaps in ${devList || "several competencies"}. ${exceedsList ? `Potential in ${exceedsList}.` : ""} Requires additional evaluation and intensive development plan.`,
         action: t.consider,
       };
     }
     return {
       text: lang === "es"
-        ? `Ajuste débil para ${selectedRole.name.es}. Brechas significativas en ${devList || "múltiples competencias"}. EQ total (${cand.eqTotal}) debajo del mínimo del rol (${selectedRole.minEQ}). No se recomienda para esta posición.`
-        : `Weak fit for ${selectedRole.name.en}. Significant gaps in ${devList || "multiple competencies"}. Total EQ (${cand.eqTotal}) below role minimum (${selectedRole.minEQ}). Not recommended for this position.`,
+        ? `Ajuste débil para ${selectedRole.name}. Brechas significativas en ${devList || "múltiples competencias"}. EQ total (${cand.eqTotal}) debajo del mínimo del rol (${selectedRole.minEQ}). No se recomienda para esta posición.`
+        : `Weak fit for ${selectedRole.name}. Significant gaps in ${devList || "multiple competencies"}. Total EQ (${cand.eqTotal}) below role minimum (${selectedRole.minEQ}). Not recommended for this position.`,
       action: t.notRecommended,
     };
   }
 
   const recommendation = getRecommendation(selectedCandidate);
+
+  /* ---- Loading State ---- */
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          </Link>
+          <div className="flex flex-col gap-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 w-fit">
+              <Sparkles className="w-3 h-3" /> {t.badge}
+            </span>
+            <h1 className="text-3xl font-bold">{t.pageTitle}</h1>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-zinc-800 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+          <p className="text-[var(--rowi-muted)]">{t.loading}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -411,21 +582,44 @@ export default function TPSelectionPage() {
         </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>{t.errorLoading}</span>
+        </div>
+      )}
+
       {/* Role Selector */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><Target className="w-5 h-5 text-purple-500" /> {t.roleSelector}</h2>
+        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-purple-500" /> {t.roleSelector}
+          {roleBenchmarks.length > 0 && (
+            <span className="text-xs font-normal text-[var(--rowi-muted)] ml-2">
+              ({roleBenchmarks.length} {t.nRoles})
+            </span>
+          )}
+        </h2>
         <div className="relative">
-          <select value={selectedRoleId} onChange={(e) => { setSelectedRoleId(e.target.value); setSelectedCandidateId(""); }} className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+          <select
+            value={selectedRoleId}
+            onChange={(e) => { setSelectedRoleId(e.target.value); setSelectedCandidateId(""); }}
+            className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+          >
             <option value="">{t.roleSelectorPlaceholder}</option>
-            {ROLE_BENCHMARKS.map((role) => (<option key={role.id} value={role.id}>{role.name[lang as "es" | "en"] || role.name.es} — {role.department[lang as "es" | "en"] || role.department.es}</option>))}
+            {roleBenchmarks.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name} — {role.count} {t.participants}
+              </option>
+            ))}
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--rowi-muted)] pointer-events-none" />
         </div>
         {selectedRole && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 grid grid-cols-3 gap-4">
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
-              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.department}</div>
-              <div className="font-bold text-purple-600">{selectedRole.department[lang as "es" | "en"] || selectedRole.department.es}</div>
+              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.participants}</div>
+              <div className="font-bold text-purple-600">{selectedRole.count}</div>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
               <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.idealEQ}</div>
@@ -450,7 +644,14 @@ export default function TPSelectionPage() {
       {/* Candidates for Role */}
       {selectedRole && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t.candidatesFor} {selectedRole.name[lang as "es" | "en"] || selectedRole.name.es}</h2>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t.candidatesFor} {selectedRole.name}</h2>
+
+          {/* Demo Data Banner */}
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 mb-4">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span>{t.demoDataBanner}</span>
+          </div>
+
           {roleCandidates.length === 0 ? (
             <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 text-center border border-gray-100 dark:border-zinc-800"><p className="text-[var(--rowi-muted)]">{t.noCandidates}</p></div>
           ) : (
@@ -524,7 +725,7 @@ export default function TPSelectionPage() {
                         <motion.tr key={row.key} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="border-b border-gray-50 dark:border-zinc-800/50">
                           <td className="py-2.5 font-medium">{t[COMP_TKEYS[row.key] as keyof typeof t]}</td>
                           <td className="py-2.5 text-center font-mono">{row.candidateVal.toFixed(1)}</td>
-                          <td className="py-2.5 text-center font-mono text-blue-500">{row.benchVal}</td>
+                          <td className="py-2.5 text-center font-mono text-blue-500">{row.benchVal.toFixed(1)}</td>
                           <td className="py-2.5 text-center font-mono">
                             <span className={row.gap > 0 ? "text-emerald-500" : row.gap < -2 ? "text-red-500" : "text-amber-500"}>{row.gap > 0 ? "+" : ""}{row.gap.toFixed(1)}</span>
                           </td>
@@ -590,6 +791,13 @@ export default function TPSelectionPage() {
       {selectedRole && roleCandidates.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Star className="w-5 h-5 text-purple-500" /> {t.rankingTitle}</h2>
+
+          {/* Demo Data Banner */}
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 mb-4">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span>{t.demoDataBanner}</span>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

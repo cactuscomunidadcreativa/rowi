@@ -24,6 +24,12 @@ import {
   PieChart,
   GraduationCap,
   Shield,
+  GitCompareArrows,
+  UserCheck,
+  LineChart,
+  Target,
+  AlertTriangle,
+  Database,
 } from "lucide-react";
 
 /* =========================================================
@@ -105,6 +111,70 @@ const translations = {
     onboardingFeat3: "Matching de Equipo",
     onboardingFeat4: "Plan de Crecimiento",
 
+    // Module: People
+    peopleTitle: "Comparador de Personas",
+    peopleDesc: "Compara perfiles EQ lado a lado. Analiza fortalezas complementarias y estilos cerebrales entre dos personas.",
+    peopleFeat1: "Comparación 1 vs 1",
+    peopleFeat2: "Radar de Competencias",
+    peopleFeat3: "Análisis Complementario",
+    peopleFeat4: "12 Perfiles Mock",
+
+    // Module: Teams
+    teamsTitle: "Team Analytics",
+    teamsDesc: "Análisis profundo de equipos con indicadores de salud, heatmaps de competencias y comparación inter-equipos.",
+    teamsFeat1: "8 Equipos Mock",
+    teamsFeat2: "Indicadores de Salud",
+    teamsFeat3: "Heatmap Competencias",
+    teamsFeat4: "Comparación Inter-equipos",
+
+    // Module: Selection
+    selectionTitle: "Selección y Contratación",
+    selectionDesc: "Evalúa candidatos contra benchmarks de rol con fit scores, gap analysis y recomendaciones IA.",
+    selectionFeat1: "Fit Score 0-100%",
+    selectionFeat2: "5 Roles Benchmark",
+    selectionFeat3: "Gap Analysis",
+    selectionFeat4: "Recomendación IA",
+
+    // Module: Evolution
+    evolutionTitle: "Curva de Evolución",
+    evolutionDesc: "Rastrea el crecimiento EQ a lo largo del tiempo con assessments múltiples, predicciones y análisis de tendencias.",
+    evolutionFeat1: "Timeline Interactivo",
+    evolutionFeat2: "Before/After",
+    evolutionFeat3: "Predicción EQ",
+    evolutionFeat4: "Growth Rate",
+
+    // Module: ROI
+    roiTitle: "Calculadora de ROI",
+    roiDesc: "Simula el retorno de inversión en programas EQ con escenarios, correlaciones y benchmarks industriales.",
+    roiFeat1: "Simulador Budget",
+    roiFeat2: "3 Escenarios",
+    roiFeat3: "Correlaciones Reales",
+    roiFeat4: "Benchmark Industria",
+
+    // Module: World
+    worldTitle: "Benchmark Global",
+    worldDesc: "Compara TP vs el mundo: Six Seconds global, industria BPO, top 10% mundial y patrones de éxito.",
+    worldFeat1: "TP vs Global",
+    worldFeat2: "TP vs BPO",
+    worldFeat3: "Top 10% Mundial",
+    worldFeat4: "Success Patterns",
+
+    // Module: Alerts
+    alertsTitle: "Alertas y Monitoreo",
+    alertsDesc: "Sistema de alertas inteligentes para EQ bajo, tendencias declinantes, salud de equipos y anomalías.",
+    alertsFeat1: "Alertas por Severidad",
+    alertsFeat2: "Salud de Equipos",
+    alertsFeat3: "Tendencias",
+    alertsFeat4: "Configuración Umbrales",
+
+    // Module: Data Quality
+    dataQualityTitle: "Calidad de Datos",
+    dataQualityDesc: "Análisis de integridad de datos: duplicados, outliers, completeness y score de calidad general.",
+    dataQualityFeat1: "Score de Calidad",
+    dataQualityFeat2: "Detección Duplicados",
+    dataQualityFeat3: "Outlier Detection",
+    dataQualityFeat4: "Completeness",
+
     // Footer
     footerText:
       "Este es un entorno de demostración en vivo que utiliza datos reales agregados de 14,886 evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
@@ -182,6 +252,70 @@ const translations = {
     onboardingFeat2: "Brain Profile",
     onboardingFeat3: "Team Matching",
     onboardingFeat4: "Growth Plan",
+
+    // Module: People
+    peopleTitle: "Person Comparator",
+    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
+    peopleFeat1: "1 vs 1 Comparison",
+    peopleFeat2: "Competency Radar",
+    peopleFeat3: "Complementary Analysis",
+    peopleFeat4: "12 Mock Profiles",
+
+    // Module: Teams
+    teamsTitle: "Team Analytics",
+    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
+    teamsFeat1: "8 Mock Teams",
+    teamsFeat2: "Health Indicators",
+    teamsFeat3: "Competency Heatmap",
+    teamsFeat4: "Inter-team Comparison",
+
+    // Module: Selection
+    selectionTitle: "Hiring & Selection",
+    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
+    selectionFeat1: "Fit Score 0-100%",
+    selectionFeat2: "5 Role Benchmarks",
+    selectionFeat3: "Gap Analysis",
+    selectionFeat4: "AI Recommendation",
+
+    // Module: Evolution
+    evolutionTitle: "Evolution Curve",
+    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
+    evolutionFeat1: "Interactive Timeline",
+    evolutionFeat2: "Before/After",
+    evolutionFeat3: "EQ Prediction",
+    evolutionFeat4: "Growth Rate",
+
+    // Module: ROI
+    roiTitle: "ROI Calculator",
+    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
+    roiFeat1: "Budget Simulator",
+    roiFeat2: "3 Scenarios",
+    roiFeat3: "Real Correlations",
+    roiFeat4: "Industry Benchmark",
+
+    // Module: World
+    worldTitle: "Global Benchmark",
+    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
+    worldFeat1: "TP vs Global",
+    worldFeat2: "TP vs BPO",
+    worldFeat3: "Top 10% Worldwide",
+    worldFeat4: "Success Patterns",
+
+    // Module: Alerts
+    alertsTitle: "Alerts & Monitoring",
+    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
+    alertsFeat1: "Severity Alerts",
+    alertsFeat2: "Team Health",
+    alertsFeat3: "Trends",
+    alertsFeat4: "Threshold Config",
+
+    // Module: Data Quality
+    dataQualityTitle: "Data Quality",
+    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
+    dataQualityFeat1: "Quality Score",
+    dataQualityFeat2: "Duplicate Detection",
+    dataQualityFeat3: "Outlier Detection",
+    dataQualityFeat4: "Completeness",
 
     // Footer
     footerText:
@@ -272,6 +406,86 @@ export default function TPAdminHub() {
       title: t.onboardingTitle,
       desc: t.onboardingDesc,
       features: [t.onboardingFeat1, t.onboardingFeat2, t.onboardingFeat3, t.onboardingFeat4],
+    },
+    {
+      key: "people",
+      href: "/hub/admin/tp/people",
+      icon: GitCompareArrows,
+      gradient: "from-cyan-500 to-blue-600",
+      image: "/rowivectors/Rowi-01.png",
+      title: t.peopleTitle,
+      desc: t.peopleDesc,
+      features: [t.peopleFeat1, t.peopleFeat2, t.peopleFeat3, t.peopleFeat4],
+    },
+    {
+      key: "teams",
+      href: "/hub/admin/tp/teams",
+      icon: Users,
+      gradient: "from-teal-500 to-emerald-600",
+      image: "/rowivectors/Rowi-02.png",
+      title: t.teamsTitle,
+      desc: t.teamsDesc,
+      features: [t.teamsFeat1, t.teamsFeat2, t.teamsFeat3, t.teamsFeat4],
+    },
+    {
+      key: "selection",
+      href: "/hub/admin/tp/selection",
+      icon: UserCheck,
+      gradient: "from-lime-500 to-green-600",
+      image: "/rowivectors/Rowi-03.png",
+      title: t.selectionTitle,
+      desc: t.selectionDesc,
+      features: [t.selectionFeat1, t.selectionFeat2, t.selectionFeat3, t.selectionFeat4],
+    },
+    {
+      key: "evolution",
+      href: "/hub/admin/tp/evolution",
+      icon: LineChart,
+      gradient: "from-sky-500 to-blue-600",
+      image: "/rowivectors/Rowi-04.png",
+      title: t.evolutionTitle,
+      desc: t.evolutionDesc,
+      features: [t.evolutionFeat1, t.evolutionFeat2, t.evolutionFeat3, t.evolutionFeat4],
+    },
+    {
+      key: "roi",
+      href: "/hub/admin/tp/roi",
+      icon: Target,
+      gradient: "from-yellow-500 to-amber-600",
+      image: "/rowivectors/Rowi-05.png",
+      title: t.roiTitle,
+      desc: t.roiDesc,
+      features: [t.roiFeat1, t.roiFeat2, t.roiFeat3, t.roiFeat4],
+    },
+    {
+      key: "world",
+      href: "/hub/admin/tp/world",
+      icon: Globe,
+      gradient: "from-emerald-500 to-teal-600",
+      image: "/rowivectors/Rowi-06.png",
+      title: t.worldTitle,
+      desc: t.worldDesc,
+      features: [t.worldFeat1, t.worldFeat2, t.worldFeat3, t.worldFeat4],
+    },
+    {
+      key: "alerts",
+      href: "/hub/admin/tp/alerts",
+      icon: AlertTriangle,
+      gradient: "from-red-500 to-rose-600",
+      image: "/rowivectors/Rowi-01.png",
+      title: t.alertsTitle,
+      desc: t.alertsDesc,
+      features: [t.alertsFeat1, t.alertsFeat2, t.alertsFeat3, t.alertsFeat4],
+    },
+    {
+      key: "dataQuality",
+      href: "/hub/admin/tp/data-quality",
+      icon: Database,
+      gradient: "from-slate-500 to-gray-600",
+      image: "/rowivectors/Rowi-02.png",
+      title: t.dataQualityTitle,
+      desc: t.dataQualityDesc,
+      features: [t.dataQualityFeat1, t.dataQualityFeat2, t.dataQualityFeat3, t.dataQualityFeat4],
     },
   ];
 

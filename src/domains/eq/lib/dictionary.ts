@@ -787,6 +787,47 @@ export function getBrainStyle(key: BrainStyleKey): BrainStyle {
   return BRAIN_STYLES[key];
 }
 
+/**
+ * Normalizar nombre de Brain Style desde fuentes externas (Excel, API) al key estándar de Rowi.
+ * Mapea alias: "Superhero" → "energizer", "Deliverer" → "doer"
+ */
+const BRAIN_STYLE_ALIASES: Record<string, BrainStyleKey> = {
+  superhero: "energizer",
+  deliverer: "doer",
+  scientist: "scientist",
+  visionary: "visionary",
+  inventor: "inventor",
+  guardian: "guardian",
+  strategist: "strategist",
+  energizer: "energizer",
+  doer: "doer",
+  sage: "sage",
+};
+
+export function normalizeBrainStyle(raw: string): BrainStyleKey {
+  return BRAIN_STYLE_ALIASES[raw.toLowerCase()] || (raw.toLowerCase() as BrainStyleKey);
+}
+
+/** Obtener label traducido de un brain style (acepta nombres del Excel o de Rowi) */
+export function getBrainStyleLabel(raw: string, lang: string = "es"): string {
+  const key = normalizeBrainStyle(raw);
+  const style = BRAIN_STYLES[key];
+  if (!style) return raw;
+  return lang === "en" ? style.labelEN : style.labelES;
+}
+
+/** Obtener emoji de un brain style */
+export function getBrainStyleEmoji(raw: string): string {
+  const key = normalizeBrainStyle(raw);
+  return BRAIN_STYLES[key]?.emoji || "🧠";
+}
+
+/** Obtener color de un brain style */
+export function getBrainStyleColor(raw: string): string {
+  const key = normalizeBrainStyle(raw);
+  return BRAIN_STYLES[key]?.color || "#94a3b8";
+}
+
 /** Obtener outcomes con sus subfactores */
 export function getOutcomeWithSubfactors(key: OutcomeKey) {
   const outcome = OUTCOMES[key];
@@ -858,6 +899,7 @@ export default {
   BRAIN_TALENTS,
   BRAIN_TALENT_CATEGORIES,
   BRAIN_STYLES,
+  BRAIN_STYLE_ALIASES,
   COLOR_SEI,
   COLOR_CLUSTERS,
   I18N,

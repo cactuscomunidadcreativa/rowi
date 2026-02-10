@@ -24,6 +24,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getEqLevel } from "@/domains/eq/lib/eqLevels";
+import {
+  getBrainStyleLabel,
+  getBrainStyleEmoji,
+  getBrainStyleColor,
+} from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
    Translations
@@ -694,7 +700,7 @@ export default function TPSelectionPage() {
                     <FitGauge score={cand.fitScore} />
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"><Brain className="w-3 h-3" /> {cand.brainStyle}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${getBrainStyleColor(cand.brainStyle)}15`, color: getBrainStyleColor(cand.brainStyle) }}><Brain className="w-3 h-3" /> {getBrainStyleEmoji(cand.brainStyle)} {getBrainStyleLabel(cand.brainStyle, lang)}</span>
                     <span className={`text-xs font-semibold ${fitColor(cand.fitScore)}`}>{t.fitScore}: {cand.fitScore.toFixed(1)}%</span>
                   </div>
                 </motion.button>
@@ -715,7 +721,7 @@ export default function TPSelectionPage() {
                   <div className="text-2xl font-bold">{selectedCandidate.name}</div>
                   <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-[var(--rowi-muted)]">
                     <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" /> {selectedCandidate.country}</span>
-                    <span className="flex items-center gap-1"><Brain className="w-3.5 h-3.5" /> {selectedCandidate.brainStyle}</span>
+                    <span className="flex items-center gap-1"><Brain className="w-3.5 h-3.5" /> {getBrainStyleEmoji(selectedCandidate.brainStyle)} {getBrainStyleLabel(selectedCandidate.brainStyle, lang)}</span>
                     <span className="font-mono">EQ: {selectedCandidate.eqTotal}</span>
                   </div>
                 </div>
@@ -858,7 +864,7 @@ export default function TPSelectionPage() {
                         </div>
                       </td>
                       <td className="py-3 px-2 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">{cand.brainStyle}</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${getBrainStyleColor(cand.brainStyle)}15`, color: getBrainStyleColor(cand.brainStyle) }}>{getBrainStyleEmoji(cand.brainStyle)} {getBrainStyleLabel(cand.brainStyle, lang)}</span>
                       </td>
                       <td className="py-3 px-2">
                         <span className="text-emerald-500 text-xs font-medium">{t[COMP_TKEYS[bestGap.key as CompKey] as keyof typeof t]} (+{bestGap.gap.toFixed(1)})</span>

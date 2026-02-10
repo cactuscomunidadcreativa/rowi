@@ -27,6 +27,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getEqLevel } from "@/domains/eq/lib/eqLevels";
+import {
+  getBrainStyleLabel,
+  getBrainStyleEmoji,
+  getBrainStyleColor,
+} from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
    Constants
@@ -244,12 +250,7 @@ const COMP_TKEYS: Record<string, string> = {
   IM: "compIM", OP: "compOP", EMP: "compEMP", NG: "compNG",
 };
 
-const BRAIN_STYLE_COLORS: Record<string, string> = {
-  Innovator: "#8b5cf6", Strategist: "#3b82f6", Guardian: "#10b981",
-  Diplomat: "#f59e0b", Architect: "#ef4444", Explorer: "#ec4899",
-  Connector: "#06b6d4", Visionary: "#7c3aed", Sentinel: "#059669",
-  Motivator: "#d97706", Integrator: "#0891b2",
-};
+/* Brain style colors now come from getBrainStyleColor() in dictionary.ts */
 
 function getCountryFlag(country: string | null): string {
   if (!country) return "";
@@ -279,17 +280,26 @@ function getCountryFlag(country: string | null): string {
   return flags[country] || "\uD83C\uDF10";
 }
 
+/** Generate a human-friendly anonymous name from sourceId */
+function generateDisplayName(sourceId: string, country: string): string {
+  const countryFlag = getCountryFlag(country);
+  // Use first 6 chars of sourceId in a friendlier format
+  const code = sourceId.slice(0, 6).toUpperCase();
+  return `${countryFlag} ${country || "?"}-${code}`;
+}
+
 /** Convert a raw API data point to a Person for the UI */
 function dataPointToPerson(dp: DataPoint): Person {
   const sid = dp.sourceId || dp.id.slice(0, 8);
-  const displayName = `TP-${sid.slice(0, 6).toUpperCase()}`;
+  const country = dp.country || "---";
+  const displayName = generateDisplayName(sid, country);
   return {
     id: dp.id,
     sourceId: sid,
     displayName,
     role: dp.jobRole || "---",
     region: dp.region || "---",
-    country: dp.country || "---",
+    country,
     brainStyle: dp.brainStyle || "---",
     eqTotal: dp.eqTotal ?? 100,
     competencies: {
@@ -322,12 +332,14 @@ function FilterBar({
   filterOptions,
   t,
   total,
+  lang,
 }: {
   filters: { region: string; country: string; jobRole: string; brainStyle: string };
   setFilters: (f: typeof filters) => void;
   filterOptions: FilterOptions | null;
   t: Record<string, string>;
   total: number;
+  lang: string;
 }) {
   const hasFilters = filters.region || filters.country || filters.jobRole || filters.brainStyle;
 
@@ -404,7 +416,7 @@ function FilterBar({
           <option value="">{t.allBrainStyles}</option>
           {filterOptions?.brainStyles?.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.value} ({opt.count})
+              {getBrainStyleEmoji(opt.value)} {getBrainStyleLabel(opt.value, lang)} ({opt.count})
             </option>
           ))}
         </select>
@@ -433,10 +445,12 @@ function PersonSelector({
         p.country.toLowerCase().includes(q) ||
         p.role.toLowerCase().includes(q) ||
         p.brainStyle.toLowerCase().includes(q) ||
+        getBrainStyleLabel(p.brainStyle, lang).toLowerCase().includes(q) ||
         p.sourceId.toLowerCase().includes(q) ||
-        p.region.toLowerCase().includes(q)
+        p.region.toLowerCase().includes(q) ||
+        p.eqTotal.toFixed(1).includes(q)
       );
-  }, [people, excludeId, search]);
+  }, [people, excludeId, search, lang]);
 
   return (
     <div className="relative flex-1">
@@ -452,7 +466,7 @@ function PersonSelector({
           <>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-              style={{ backgroundColor: BRAIN_STYLE_COLORS[selected.brainStyle] || "#8b5cf6" }}
+              style={{ backgroundColor: getBrainStyleColor(selected.brainStyle) }}
             >
               {selected.displayName.slice(3, 5)}
             </div>
@@ -461,7 +475,7 @@ function PersonSelector({
                 {getCountryFlag(selected.country)} {selected.displayName}
               </div>
               <div className="text-xs text-[var(--rowi-muted)]">
-                {selected.country} · {selected.role} · {selected.brainStyle}
+                {selected.country} · {selected.role} · {getBrainStyleEmoji(selected.brainStyle)} {getBrainStyleLabel(selected.brainStyle, lang)}
               </div>
             </div>
             <span className="text-lg font-bold text-purple-600">{selected.eqTotal.toFixed(1)}</span>
@@ -505,7 +519,7 @@ function PersonSelector({
                 >
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                    style={{ backgroundColor: BRAIN_STYLE_COLORS[p.brainStyle] || "#8b5cf6" }}
+                    style={{ backgroundColor: getBrainStyleColor(p.brainStyle) }}
                   >
                     {p.displayName.slice(3, 5)}
                   </div>
@@ -514,7 +528,7 @@ function PersonSelector({
                       {getCountryFlag(p.country)} {p.displayName}
                     </div>
                     <div className="text-[10px] text-[var(--rowi-muted)]">
-                      {p.country} · {p.role} · {p.brainStyle}
+                      {p.country} · {p.role} · {getBrainStyleEmoji(p.brainStyle)} {getBrainStyleLabel(p.brainStyle, lang)}
                     </div>
                   </div>
                   <span className="text-sm font-mono font-bold text-purple-600">{p.eqTotal.toFixed(1)}</span>
@@ -819,6 +833,7 @@ export default function TPPeopleComparator() {
         filterOptions={filterOptions}
         t={t}
         total={total}
+        lang={lang}
       />
 
       {/* Loading State */}
@@ -924,16 +939,18 @@ export default function TPPeopleComparator() {
                     <div className="text-center">
                       <div
                         className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                        style={{ backgroundColor: getBrainStyleColor(personA.brainStyle) }}
                       >
-                        {personA.displayName.slice(3, 5)}
+                        {getBrainStyleEmoji(personA.brainStyle)}
                       </div>
-                      <div className="font-semibold text-sm">{getCountryFlag(personA.country)} {shortName(personA)}</div>
+                      <div className="font-semibold text-sm">{shortName(personA)}</div>
                       <div className="text-xs text-[var(--rowi-muted)] mb-1">
                         {personA.country} · {personA.role}
                       </div>
-                      <div className="text-xs text-[var(--rowi-muted)] mb-3">
-                        {personA.brainStyle}
+                      <div className="text-xs mb-2">
+                        <span style={{ color: getBrainStyleColor(personA.brainStyle) }}>
+                          {getBrainStyleEmoji(personA.brainStyle)} {getBrainStyleLabel(personA.brainStyle, lang)}
+                        </span>
                       </div>
                       <motion.div
                         className="text-4xl font-bold text-purple-600"
@@ -944,21 +961,32 @@ export default function TPPeopleComparator() {
                         {personA.eqTotal.toFixed(1)}
                       </motion.div>
                       <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
+                      {/* EQ Level badge */}
+                      {(() => {
+                        const lvl = getEqLevel(personA.eqTotal);
+                        return (
+                          <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
+                            {lvl.emoji} {lang === "en" ? lvl.labelEN : lvl.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                     {/* Person B */}
                     <div className="text-center">
                       <div
                         className="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-white text-lg font-bold mb-2"
-                        style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                        style={{ backgroundColor: getBrainStyleColor(personB.brainStyle) }}
                       >
-                        {personB.displayName.slice(3, 5)}
+                        {getBrainStyleEmoji(personB.brainStyle)}
                       </div>
-                      <div className="font-semibold text-sm">{getCountryFlag(personB.country)} {shortName(personB)}</div>
+                      <div className="font-semibold text-sm">{shortName(personB)}</div>
                       <div className="text-xs text-[var(--rowi-muted)] mb-1">
                         {personB.country} · {personB.role}
                       </div>
-                      <div className="text-xs text-[var(--rowi-muted)] mb-3">
-                        {personB.brainStyle}
+                      <div className="text-xs mb-2">
+                        <span style={{ color: getBrainStyleColor(personB.brainStyle) }}>
+                          {getBrainStyleEmoji(personB.brainStyle)} {getBrainStyleLabel(personB.brainStyle, lang)}
+                        </span>
                       </div>
                       <motion.div
                         className="text-4xl font-bold text-pink-600"
@@ -969,6 +997,15 @@ export default function TPPeopleComparator() {
                         {personB.eqTotal.toFixed(1)}
                       </motion.div>
                       <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
+                      {/* EQ Level badge */}
+                      {(() => {
+                        const lvl = getEqLevel(personB.eqTotal);
+                        return (
+                          <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
+                            {lvl.emoji} {lang === "en" ? lvl.labelEN : lvl.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                   {/* Delta bar */}
@@ -1152,7 +1189,7 @@ export default function TPPeopleComparator() {
                         <div className="flex items-center gap-2 mb-3">
                           <div
                             className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                            style={{ backgroundColor: getBrainStyleColor(personA.brainStyle) }}
                           >
                             {personA.displayName.slice(3, 5)}
                           </div>
@@ -1183,7 +1220,7 @@ export default function TPPeopleComparator() {
                         <div className="flex items-center gap-2 mb-3">
                           <div
                             className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                            style={{ backgroundColor: getBrainStyleColor(personB.brainStyle) }}
                           >
                             {personB.displayName.slice(3, 5)}
                           </div>
@@ -1260,14 +1297,16 @@ export default function TPPeopleComparator() {
                       <div className="flex items-center justify-center gap-6">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personA.brainStyle] || "#8b5cf6" }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                            style={{ backgroundColor: `${getBrainStyleColor(personA.brainStyle)}20` }}
                           >
-                            {personA.brainStyle[0] || "?"}
+                            {getBrainStyleEmoji(personA.brainStyle)}
                           </span>
                           <div className="text-sm">
                             <div className="font-medium">{shortName(personA)}</div>
-                            <div className="text-xs text-[var(--rowi-muted)]">{personA.brainStyle}</div>
+                            <div className="text-xs" style={{ color: getBrainStyleColor(personA.brainStyle) }}>
+                              {getBrainStyleLabel(personA.brainStyle, lang)}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-[var(--rowi-muted)]">
@@ -1278,13 +1317,15 @@ export default function TPPeopleComparator() {
                         <div className="flex items-center gap-2">
                           <div className="text-sm text-right">
                             <div className="font-medium">{shortName(personB)}</div>
-                            <div className="text-xs text-[var(--rowi-muted)]">{personB.brainStyle}</div>
+                            <div className="text-xs" style={{ color: getBrainStyleColor(personB.brainStyle) }}>
+                              {getBrainStyleLabel(personB.brainStyle, lang)}
+                            </div>
                           </div>
                           <span
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                            style={{ backgroundColor: BRAIN_STYLE_COLORS[personB.brainStyle] || "#ec4899" }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                            style={{ backgroundColor: `${getBrainStyleColor(personB.brainStyle)}20` }}
                           >
-                            {personB.brainStyle[0] || "?"}
+                            {getBrainStyleEmoji(personB.brainStyle)}
                           </span>
                         </div>
                       </div>

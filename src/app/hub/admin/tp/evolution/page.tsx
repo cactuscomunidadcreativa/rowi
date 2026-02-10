@@ -12,7 +12,6 @@ import {
   Shield,
   Activity,
   Target,
-  Brain,
   Zap,
   Award,
   Search,
@@ -24,6 +23,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import {
+  getBrainStyleLabel,
+  getBrainStyleEmoji,
+  getBrainStyleColor,
+} from "@/domains/eq/lib/dictionary";
+import { getEqLevel } from "@/domains/eq/lib/eqLevels";
 
 /* =========================================================
    Constants
@@ -728,7 +733,15 @@ export default function TPEvolutionPage() {
                           {p.country} &middot; {p.jobRole || p.region} &middot; {p.region} &middot; {p.assessmentCount} {t.assessmentsLabel}
                         </div>
                       </div>
-                      <span className="text-xs font-mono text-purple-500">{p.brainStyle}</span>
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: `${getBrainStyleColor(p.brainStyle)}15`,
+                          color: getBrainStyleColor(p.brainStyle),
+                        }}
+                      >
+                        {getBrainStyleEmoji(p.brainStyle)} {getBrainStyleLabel(p.brainStyle, lang)}
+                      </span>
                     </button>
                   ))}
                 </motion.div>
@@ -789,10 +802,31 @@ export default function TPEvolutionPage() {
                   ))}
                 </div>
                 <div className="mt-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
-                  <Brain className="w-4 h-4 text-purple-500" />
+                  <span className="text-lg">{getBrainStyleEmoji(evo.brainStyle)}</span>
                   <span className="text-[var(--rowi-muted)]">Brain Style:</span>
-                  <span className="font-medium">{evo.brainStyle}</span>
+                  <span
+                    className="font-medium px-2 py-0.5 rounded-full text-xs"
+                    style={{
+                      backgroundColor: `${getBrainStyleColor(evo.brainStyle)}15`,
+                      color: getBrainStyleColor(evo.brainStyle),
+                    }}
+                  >
+                    {getBrainStyleLabel(evo.brainStyle, lang)}
+                  </span>
                 </div>
+                {/* EQ Level Badge */}
+                {(() => {
+                  const lvl = getEqLevel(firstA.eqTotal);
+                  return (
+                    <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
+                      <span className="text-lg">{lvl.emoji}</span>
+                      <span className="text-[var(--rowi-muted)]">{lang === "en" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="font-medium text-xs" style={{ color: lvl.color }}>
+                        {lang === "en" ? lvl.labelEN : lvl.label}
+                      </span>
+                    </div>
+                  );
+                })()}
               </motion.div>
 
               {/* Latest Assessment Card */}
@@ -837,10 +871,31 @@ export default function TPEvolutionPage() {
                   })}
                 </div>
                 <div className="mt-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
-                  <Brain className="w-4 h-4 text-purple-500" />
+                  <span className="text-lg">{getBrainStyleEmoji(evo.brainStyle)}</span>
                   <span className="text-[var(--rowi-muted)]">Brain Style:</span>
-                  <span className="font-medium">{evo.brainStyle}</span>
+                  <span
+                    className="font-medium px-2 py-0.5 rounded-full text-xs"
+                    style={{
+                      backgroundColor: `${getBrainStyleColor(evo.brainStyle)}15`,
+                      color: getBrainStyleColor(evo.brainStyle),
+                    }}
+                  >
+                    {getBrainStyleLabel(evo.brainStyle, lang)}
+                  </span>
                 </div>
+                {/* EQ Level Badge */}
+                {(() => {
+                  const lvl = getEqLevel(lastA.eqTotal);
+                  return (
+                    <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
+                      <span className="text-lg">{lvl.emoji}</span>
+                      <span className="text-[var(--rowi-muted)]">{lang === "en" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="font-medium text-xs" style={{ color: lvl.color }}>
+                        {lang === "en" ? lvl.labelEN : lvl.label}
+                      </span>
+                    </div>
+                  );
+                })()}
               </motion.div>
             </div>
           </div>

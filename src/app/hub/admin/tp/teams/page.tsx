@@ -22,6 +22,13 @@ import {
   Heart,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getEqLevel } from "@/domains/eq/lib/eqLevels";
+import {
+  getBrainStyleLabel,
+  getBrainStyleEmoji,
+  getBrainStyleColor,
+  normalizeBrainStyle,
+} from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
    Constants
@@ -45,16 +52,6 @@ const COMP_TKEYS: Record<string, string> = {
   OP: "compOP",
   EMP: "compEMP",
   NG: "compNG",
-};
-
-const BRAIN_STYLE_COLORS: Record<string, string> = {
-  Scientist: "#3b82f6",
-  Deliverer: "#10b981",
-  Strategist: "#f59e0b",
-  Inventor: "#8b5cf6",
-  Guardian: "#ef4444",
-  Visionary: "#ec4899",
-  Superhero: "#06b6d4",
 };
 
 const GROUP_BY_OPTIONS = [
@@ -125,6 +122,7 @@ const translations = {
     compOP: "Ejercer Optimismo",
     compEMP: "Aumentar Empatia",
     compNG: "Metas Nobles",
+    eqLevel: "Nivel SEI",
     noTeamsFound: "No se encontraron grupos con los filtros seleccionados",
     loading: "Cargando datos...",
     errorTitle: "Error al cargar datos",
@@ -188,6 +186,7 @@ const translations = {
     compOP: "Exercise Optimism",
     compEMP: "Increase Empathy",
     compNG: "Noble Goals",
+    eqLevel: "SEI Level",
     noTeamsFound: "No groups found with the selected filters",
     loading: "Loading data...",
     errorTitle: "Error loading data",
@@ -219,16 +218,16 @@ interface ApiGroup {
    Helper functions
 ========================================================= */
 
-/** Compute a health score (0-100) from group metrics. Average of normalized competency means. */
-function computeHealthScore(metrics: Record<string, GroupMetric>): number {
-  const compMeans = COMP_KEYS.map((k) => metrics[k]?.mean ?? 100);
-  const outcomeMeans = OUTCOME_KEYS.map((k) => metrics[k]?.mean ?? 100);
-  const allMeans = [...compMeans, ...outcomeMeans];
-  // Normalize: treat 80 as 0 health, 120 as 100 health
-  const avg =
-    allMeans.reduce((s, v) => s + v, 0) / allMeans.length;
-  const normalized = Math.round(((avg - 80) / 40) * 100);
-  return Math.max(0, Math.min(100, normalized));
+/**
+ * Compute a health score (0-100) RELATIVE to TP benchmark average (~101.8).
+ * Uses the same formula as alerts page: 50 + (diff / 15) * 50
+ * 50 = exactly at TP average, >50 = above, <50 = below
+ */
+function computeHealthScore(metrics: Record<string, GroupMetric>, tpOverallEQ: number): number {
+  const avgEQ = metrics.eqTotal?.mean ?? 100;
+  const diff = avgEQ - tpOverallEQ;
+  const normalized = Math.round(Math.max(0, Math.min(100, 50 + (diff / 15) * 50)));
+  return normalized;
 }
 
 /** Extract competency means as a flat record */
@@ -254,22 +253,22 @@ function getOutcomeMeans(
 }
 
 function getHealthColor(score: number) {
-  if (score > 85) return "text-green-500";
-  if (score >= 75) return "text-yellow-500";
-  return "text-red-500";
+  if (score >= 55) return "text-green-500";
+  if (score >= 45) return "text-blue-500";
+  return "text-yellow-500";
 }
 
 function getHealthBg(score: number) {
-  if (score > 85) return "bg-green-500/10";
-  if (score >= 75) return "bg-yellow-500/10";
-  return "bg-red-500/10";
+  if (score >= 55) return "bg-green-500/10";
+  if (score >= 45) return "bg-blue-500/10";
+  return "bg-yellow-500/10";
 }
 
 function getHealthIcon(score: number) {
-  if (score > 85) return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-  if (score >= 75)
-    return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-  return <AlertCircle className="w-5 h-5 text-red-500" />;
+  if (score >= 55) return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+  if (score >= 45)
+    return <Activity className="w-5 h-5 text-blue-500" />;
+  return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
 }
 
 function getBestCompetency(competencies: Record<string, number>) {
@@ -389,12 +388,16 @@ function CompetencyRadar({
 function BrainStyleDonut({
   brainStyles,
   teamName,
+  lang,
 }: {
   brainStyles: Record<string, number>;
   teamName: string;
+  lang: string;
 }) {
   const total = Object.values(brainStyles).reduce((a, b) => a + b, 0);
-  const entries = Object.entries(brainStyles).filter(([, v]) => v > 0);
+  const entries = Object.entries(brainStyles)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
   let cumulative = 0;
   const cxD = 100;
   const cyD = 100;
@@ -416,7 +419,7 @@ function BrainStyleDonut({
               cy={cyD}
               r={r}
               fill="none"
-              stroke={BRAIN_STYLE_COLORS[style] || "#9ca3af"}
+              stroke={getBrainStyleColor(style)}
               strokeWidth="24"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeDashoffset={offset}
@@ -442,19 +445,23 @@ function BrainStyleDonut({
         </text>
       </svg>
       <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        {entries.map(([style, count]) => (
-          <div key={style} className="flex items-center gap-2">
-            <span
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: BRAIN_STYLE_COLORS[style] || "#9ca3af" }}
-            />
-            <span className="text-[var(--rowi-muted)]">{style}</span>
-            <span className="font-mono font-medium">{count}</span>
-            <span className="text-[var(--rowi-muted)] text-xs">
-              ({((count / total) * 100).toFixed(0)}%)
-            </span>
-          </div>
-        ))}
+        {entries.map(([style, count]) => {
+          const pct = ((count / total) * 100).toFixed(1);
+          return (
+            <div key={style} className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: getBrainStyleColor(style) }}
+              />
+              <span className="text-[var(--rowi-muted)]">
+                {getBrainStyleEmoji(style)} {getBrainStyleLabel(style, lang)}
+              </span>
+              <span className="font-mono font-bold text-purple-600 ml-auto">
+                {pct}%
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -472,11 +479,28 @@ export default function TPTeamsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState("country");
+  const [tpOverallEQ, setTpOverallEQ] = useState(101.8); // default fallback
 
   /* ---- UI State ---- */
   const [compareA, setCompareA] = useState<string>("");
   const [compareB, setCompareB] = useState<string>("");
   const [selectedBrainGroup, setSelectedBrainGroup] = useState<string>("");
+
+  /* ---- Fetch overall TP stats (once) ---- */
+  useEffect(() => {
+    async function loadOverall() {
+      try {
+        const res = await fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`);
+        const json = await res.json();
+        if (json.ok && json.stats?.eqTotal?.mean) {
+          setTpOverallEQ(json.stats.eqTotal.mean);
+        }
+      } catch (e) {
+        console.error("Failed to fetch overall stats:", e);
+      }
+    }
+    loadOverall();
+  }, []);
 
   /* ---- Fetch grouped stats ---- */
   useEffect(() => {
@@ -508,14 +532,19 @@ export default function TPTeamsPage() {
 
   /* ---- Derived data ---- */
   const enrichedGroups = useMemo(() => {
-    return groups.map((g) => ({
-      ...g,
-      avgEQ: g.metrics.eqTotal?.mean ?? 0,
-      healthScore: computeHealthScore(g.metrics),
-      competencies: getCompetencyMeans(g.metrics),
-      outcomes: getOutcomeMeans(g.metrics),
-    }));
-  }, [groups]);
+    return groups.map((g) => {
+      const avgEQ = g.metrics.eqTotal?.mean ?? 0;
+      const eqLevel = getEqLevel(avgEQ);
+      return {
+        ...g,
+        avgEQ,
+        healthScore: computeHealthScore(g.metrics, tpOverallEQ),
+        competencies: getCompetencyMeans(g.metrics),
+        outcomes: getOutcomeMeans(g.metrics),
+        eqLevel,
+      };
+    });
+  }, [groups, tpOverallEQ]);
 
   const totalAssessments = useMemo(
     () => enrichedGroups.reduce((s, g) => s + g.count, 0),
@@ -543,17 +572,18 @@ export default function TPTeamsPage() {
 
   /* ---- Retry handler ---- */
   function handleRetry() {
-    setGroupBy((prev) => prev); // trigger useEffect
-    // Force a re-fetch by toggling loading state
     setLoading(true);
     setError(null);
-    fetch(
-      `/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=${groupBy}`,
-    )
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.ok) setGroups(json.groups ?? []);
-        else setError(json.error || "Unknown error");
+    Promise.all([
+      fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=${groupBy}`).then(r => r.json()),
+      fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`).then(r => r.json()),
+    ])
+      .then(([groupedJson, statsJson]) => {
+        if (groupedJson.ok) setGroups(groupedJson.groups ?? []);
+        else setError(groupedJson.error || "Unknown error");
+        if (statsJson.ok && statsJson.stats?.eqTotal?.mean) {
+          setTpOverallEQ(statsJson.stats.eqTotal.mean);
+        }
       })
       .catch(() => setError("Network error"))
       .finally(() => setLoading(false));
@@ -737,7 +767,7 @@ export default function TPTeamsPage() {
                   className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => setSelectedBrainGroup(group.name)}
                 >
-                  {/* Group name + health badge */}
+                  {/* Group name + EQ level badge */}
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="font-semibold text-sm">{group.name}</div>
@@ -746,9 +776,10 @@ export default function TPTeamsPage() {
                       </div>
                     </div>
                     <div
-                      className={`text-xs font-bold px-2 py-1 rounded-full ${getHealthBg(group.healthScore)} ${getHealthColor(group.healthScore)}`}
+                      className="text-xs font-bold px-2 py-1 rounded-full"
+                      style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                     >
-                      {group.healthScore}
+                      {group.eqLevel.emoji} {lang === "en" ? group.eqLevel.labelEN : group.eqLevel.label}
                     </div>
                   </div>
 
@@ -788,7 +819,7 @@ export default function TPTeamsPage() {
                     </div>
                   </div>
 
-                  {/* Health traffic light */}
+                  {/* Health relative to TP */}
                   <div className="flex items-center gap-2 text-xs">
                     {getHealthIcon(group.healthScore)}
                     <span
@@ -963,60 +994,71 @@ export default function TPTeamsPage() {
                   {t.brainStyleComparison}
                 </h3>
                 <div className="space-y-3">
-                  {Object.keys(BRAIN_STYLE_COLORS).map((style) => {
-                    const vA = groupA.brainStyleDist?.[style] ?? 0;
-                    const vB = groupB.brainStyleDist?.[style] ?? 0;
-                    const maxBrain = Math.max(vA, vB, 1);
-                    return (
-                      <div key={style}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{
-                              backgroundColor: BRAIN_STYLE_COLORS[style],
-                            }}
-                          />
-                          <span className="text-xs font-medium flex-1">
-                            {style}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                              <motion.div
-                                className="h-full rounded-full"
-                                style={{ backgroundColor: "#7B2D8E" }}
-                                initial={{ width: 0 }}
-                                animate={{
-                                  width: `${(vA / maxBrain) * 100}%`,
-                                }}
-                                transition={{ duration: 0.6 }}
-                              />
-                            </div>
-                            <span className="text-[10px] font-mono w-8 text-right">
-                              {vA}
+                  {(() => {
+                    // Collect all brain styles from both groups
+                    const allStyles = new Set([
+                      ...Object.keys(groupA.brainStyleDist ?? {}),
+                      ...Object.keys(groupB.brainStyleDist ?? {}),
+                    ]);
+                    const totalA = Object.values(groupA.brainStyleDist ?? {}).reduce((s, v) => s + v, 0) || 1;
+                    const totalB = Object.values(groupB.brainStyleDist ?? {}).reduce((s, v) => s + v, 0) || 1;
+                    return Array.from(allStyles).sort().map((style) => {
+                      const vA = groupA.brainStyleDist?.[style] ?? 0;
+                      const vB = groupB.brainStyleDist?.[style] ?? 0;
+                      const pctA = (vA / totalA) * 100;
+                      const pctB = (vB / totalB) * 100;
+                      const maxPct = Math.max(pctA, pctB, 1);
+                      return (
+                        <div key={style}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className="w-3 h-3 rounded-full flex-shrink-0"
+                              style={{
+                                backgroundColor: getBrainStyleColor(style),
+                              }}
+                            />
+                            <span className="text-xs font-medium flex-1">
+                              {getBrainStyleEmoji(style)} {getBrainStyleLabel(style, lang)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                              <motion.div
-                                className="h-full rounded-full"
-                                style={{ backgroundColor: "#E31937" }}
-                                initial={{ width: 0 }}
-                                animate={{
-                                  width: `${(vB / maxBrain) * 100}%`,
-                                }}
-                                transition={{ duration: 0.6 }}
-                              />
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full"
+                                  style={{ backgroundColor: "#7B2D8E" }}
+                                  initial={{ width: 0 }}
+                                  animate={{
+                                    width: `${(pctA / maxPct) * 100}%`,
+                                  }}
+                                  transition={{ duration: 0.6 }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-mono w-12 text-right">
+                                {pctA.toFixed(1)}%
+                              </span>
                             </div>
-                            <span className="text-[10px] font-mono w-8 text-right">
-                              {vB}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <div className="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  className="h-full rounded-full"
+                                  style={{ backgroundColor: "#E31937" }}
+                                  initial={{ width: 0 }}
+                                  animate={{
+                                    width: `${(pctB / maxPct) * 100}%`,
+                                  }}
+                                  transition={{ duration: 0.6 }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-mono w-12 text-right">
+                                {pctB.toFixed(1)}%
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
                 <div className="flex justify-center gap-6 mt-4 text-xs">
                   <span className="flex items-center gap-1">
@@ -1030,7 +1072,7 @@ export default function TPTeamsPage() {
                 </div>
               </div>
 
-              {/* Health Comparison */}
+              {/* Health + EQ Level Comparison */}
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <Heart className="w-5 h-5 text-purple-500" />{" "}
@@ -1038,6 +1080,7 @@ export default function TPTeamsPage() {
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {[groupA, groupB].map((group, idx) => {
+                    const eqLvl = getEqLevel(group.avgEQ);
                     const circumference = 2 * Math.PI * 45;
                     const offset =
                       circumference -
@@ -1073,19 +1116,28 @@ export default function TPTeamsPage() {
                           />
                           <text
                             x="60"
-                            y="56"
+                            y="50"
                             textAnchor="middle"
-                            className="fill-current text-2xl font-bold"
+                            className="fill-current text-lg font-bold"
                           >
-                            {group.healthScore}
+                            {group.avgEQ.toFixed(1)}
                           </text>
                           <text
                             x="60"
-                            y="72"
+                            y="66"
                             textAnchor="middle"
                             className="fill-current text-[9px] opacity-50"
                           >
-                            {t.healthScore}
+                            {t.avgEQ}
+                          </text>
+                          <text
+                            x="60"
+                            y="80"
+                            textAnchor="middle"
+                            className="text-[9px]"
+                            fill={eqLvl.color}
+                          >
+                            {eqLvl.emoji} {lang === "en" ? eqLvl.labelEN : eqLvl.label}
                           </text>
                         </svg>
                         <div className="text-sm font-medium mt-2 text-center">
@@ -1093,6 +1145,9 @@ export default function TPTeamsPage() {
                         </div>
                         <div className="flex items-center gap-1 mt-1">
                           {getHealthIcon(group.healthScore)}
+                          <span className={`text-xs ${getHealthColor(group.healthScore)}`}>
+                            {t.healthScore}: {group.healthScore}
+                          </span>
                         </div>
                       </div>
                     );
@@ -1127,14 +1182,19 @@ export default function TPTeamsPage() {
                 transition={{ delay: i * 0.04 }}
                 className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-zinc-800"
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold text-sm">{group.name}</span>
                   {getHealthIcon(group.healthScore)}
                 </div>
-                <div
-                  className={`text-3xl font-bold mb-3 ${getHealthColor(group.healthScore)}`}
-                >
-                  {group.healthScore}
+                {/* EQ Level badge */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span
+                    className="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
+                  >
+                    {group.eqLevel.emoji} {lang === "en" ? group.eqLevel.labelEN : group.eqLevel.label}
+                  </span>
+                  <span className="text-xs font-mono text-purple-600">{group.avgEQ.toFixed(1)}</span>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2">
@@ -1211,6 +1271,7 @@ export default function TPTeamsPage() {
                 <BrainStyleDonut
                   brainStyles={brainGroup.brainStyleDist}
                   teamName={brainGroup.name}
+                  lang={lang}
                 />
                 <div className="text-center mt-4 text-sm text-[var(--rowi-muted)]">
                   {brainGroup.count.toLocaleString()} {t.membersLabel}
@@ -1270,14 +1331,15 @@ export default function TPTeamsPage() {
                     {group.count.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm items-center">
                   <span className="text-[var(--rowi-muted)]">
-                    {t.healthScore}
+                    {t.eqLevel}
                   </span>
                   <span
-                    className={`font-bold ${getHealthColor(group.healthScore)}`}
+                    className="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                   >
-                    {group.healthScore}
+                    {group.eqLevel.emoji} {lang === "en" ? group.eqLevel.labelEN : group.eqLevel.label}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-zinc-800">

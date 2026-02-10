@@ -21,6 +21,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import {
+  getBrainStyleLabel,
+  getBrainStyleEmoji,
+  getBrainStyleColor,
+} from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
    Constants
@@ -612,7 +617,21 @@ export default function TPDataQualityPage() {
                                     <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.country || "—"}</td>
                                     <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.region || "—"}</td>
                                     <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.jobRole || "—"}</td>
-                                    <td className="px-4 py-2.5 text-[var(--rowi-muted)]">{rec.brainStyle || "—"}</td>
+                                    <td className="px-4 py-2.5">
+                                      {rec.brainStyle ? (
+                                        <span
+                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                                          style={{
+                                            backgroundColor: `${getBrainStyleColor(rec.brainStyle)}15`,
+                                            color: getBrainStyleColor(rec.brainStyle),
+                                          }}
+                                        >
+                                          {getBrainStyleEmoji(rec.brainStyle)} {getBrainStyleLabel(rec.brainStyle, lang)}
+                                        </span>
+                                      ) : (
+                                        <span className="text-[var(--rowi-muted)]">—</span>
+                                      )}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -799,7 +818,21 @@ export default function TPDataQualityPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-[var(--rowi-muted)] text-xs">{rec.jobRole || "—"}</td>
-                        <td className="px-4 py-3 text-[var(--rowi-muted)] text-xs">{rec.brainStyle || "—"}</td>
+                        <td className="px-4 py-3">
+                          {rec.brainStyle ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                              style={{
+                                backgroundColor: `${getBrainStyleColor(rec.brainStyle)}15`,
+                                color: getBrainStyleColor(rec.brainStyle),
+                              }}
+                            >
+                              {getBrainStyleEmoji(rec.brainStyle)} {getBrainStyleLabel(rec.brainStyle, lang)}
+                            </span>
+                          ) : (
+                            <span className="text-[var(--rowi-muted)] text-xs">—</span>
+                          )}
+                        </td>
                       </motion.tr>
                     ))}
                   </tbody>

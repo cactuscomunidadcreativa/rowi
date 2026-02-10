@@ -66,9 +66,10 @@ const translations = {
     current: "Actual",
     entity: "Entidad",
     noAlertsMatch: "No hay alertas que coincidan con los filtros seleccionados",
-    teamHealthTitle: "Nivel EQ por País",
-    teamHealthDesc: "Vista general del nivel de inteligencia emocional por país basado en la escala SEI",
-    health: "Nivel",
+    teamHealthTitle: "Salud EQ por País",
+    teamHealthDesc: "Nivel SEI y salud relativa al benchmark TP por país",
+    health: "Salud",
+    eqLevel: "Nivel SEI",
     trend: "Tendencia",
     topStrength: "Mayor Fortaleza",
     biggestGap: "Mayor Brecha",
@@ -134,9 +135,10 @@ const translations = {
     current: "Current",
     entity: "Entity",
     noAlertsMatch: "No alerts match the selected filters",
-    teamHealthTitle: "EQ Level by Country",
-    teamHealthDesc: "Emotional intelligence level overview by country based on the SEI scale",
-    health: "Level",
+    teamHealthTitle: "EQ Health by Country",
+    teamHealthDesc: "SEI level and relative health vs TP benchmark by country",
+    health: "Health",
+    eqLevel: "SEI Level",
     trend: "Trend",
     topStrength: "Top Strength",
     biggestGap: "Biggest Gap",
@@ -246,6 +248,7 @@ interface TeamHealthItem {
   count: number;
   avgEQ: number;
   eqLevel: { key: string; label: string; labelEN: string; color: string; emoji: string };
+  healthScore: number; // 0-100 relative to TP benchmark
   strength: string;
   gap: string;
 }
@@ -307,6 +310,20 @@ function eqLevelRingClass(levelKey: string) {
   }
 }
 
+function healthColor(h: number) {
+  if (h >= 65) return "bg-emerald-500";
+  if (h >= 45) return "bg-blue-500";
+  if (h >= 30) return "bg-amber-500";
+  return "bg-red-500";
+}
+
+function healthTextColor(h: number) {
+  if (h >= 65) return "text-emerald-600 dark:text-emerald-400";
+  if (h >= 45) return "text-blue-600 dark:text-blue-400";
+  if (h >= 30) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
+}
+
 function compLabel(comp: string, lang: string): string {
   const entry = COMP_LABELS[comp];
   if (!entry) return comp;
@@ -356,26 +373,39 @@ export default function TPAlertsPage() {
     load();
   }, []);
 
-  /* ---- Thresholds ---- */
-  const thresholds = {
-    eqCritical: 82,   // Below this = Challenge level
-    eqWarning: 92,    // Below this = Emerging level
-    compCritical: 82,  // Challenge threshold for individual competencies
-    compWarning: 92,   // Emerging threshold for individual competencies
-  };
+  /* ---- Compute overall TP average for relative health ---- */
+  const tpOverallEQ = useMemo(() => {
+    const stat = overallStats.find((s) => s.metricKey === "eqTotal");
+    return stat?.mean || 101.8; // TP global average
+  }, [overallStats]);
 
   /* ---- Compute alerts from real country data ---- */
+  // Health = relative to TP benchmark. SEI Level = absolute EQ scale.
+  // Alerts trigger when a country is significantly below the TP average.
   const computedAlerts = useMemo<ComputedAlert[]>(() => {
     if (!countryGroups.length) return [];
     const alerts: ComputedAlert[] = [];
     const now = new Date().toISOString().split("T")[0];
 
+    // Compute stdDev of country EQ averages for relative thresholds
+    const countryEQs = countryGroups
+      .map((g) => g.metrics.eqTotal?.mean)
+      .filter((v): v is number => v !== undefined);
+    const countryAvg = countryEQs.reduce((a, b) => a + b, 0) / countryEQs.length;
+    const countryStdDev = Math.sqrt(countryEQs.reduce((acc, v) => acc + Math.pow(v - countryAvg, 2), 0) / countryEQs.length);
+
+    // Thresholds: 1 stdDev below = warning, 1.5 stdDev below = critical
+    const warningThreshold = Math.round((countryAvg - countryStdDev) * 100) / 100;
+    const criticalThreshold = Math.round((countryAvg - 1.5 * countryStdDev) * 100) / 100;
+
     for (const group of countryGroups) {
       const eqMean = group.metrics.eqTotal?.mean;
+      if (eqMean === undefined) continue;
 
-      // EQ Total alerts — based on SEI levels
-      if (eqMean !== undefined && eqMean < thresholds.eqCritical) {
-        const lvl = getEqLevel(eqMean);
+      const lvl = getEqLevel(eqMean);
+
+      // EQ below TP benchmark relative thresholds
+      if (eqMean < criticalThreshold) {
         alerts.push({
           id: `eq-critical-${group.name}`,
           type: "low_eq",
@@ -385,17 +415,16 @@ export default function TPAlertsPage() {
           region: group.name,
           metric: "eqTotal",
           currentValue: eqMean,
-          threshold: thresholds.eqCritical,
+          threshold: criticalThreshold,
           detectedAt: now,
           status: "new",
-          title: { es: `EQ Nivel Desafío ${lvl.emoji}`, en: `EQ Challenge Level ${lvl.emoji}` },
+          title: { es: `EQ Bajo ${lvl.emoji} ${lvl.label}`, en: `Low EQ ${lvl.emoji} ${lvl.labelEN}` },
           description: {
-            es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)} — nivel ${lvl.label} (umbral: ${thresholds.eqCritical})`,
-            en: `${group.name} has average EQ of ${eqMean.toFixed(1)} — ${lvl.labelEN} level (threshold: ${thresholds.eqCritical})`,
+            es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)}, significativamente por debajo del promedio TP (${countryAvg.toFixed(1)})`,
+            en: `${group.name} has average EQ of ${eqMean.toFixed(1)}, significantly below TP average (${countryAvg.toFixed(1)})`,
           },
         });
-      } else if (eqMean !== undefined && eqMean < thresholds.eqWarning) {
-        const lvl = getEqLevel(eqMean);
+      } else if (eqMean < warningThreshold) {
         alerts.push({
           id: `eq-warning-${group.name}`,
           type: "low_eq",
@@ -405,103 +434,45 @@ export default function TPAlertsPage() {
           region: group.name,
           metric: "eqTotal",
           currentValue: eqMean,
-          threshold: thresholds.eqWarning,
+          threshold: warningThreshold,
           detectedAt: now,
           status: "new",
-          title: { es: `EQ Nivel Emergente ${lvl.emoji}`, en: `EQ Emerging Level ${lvl.emoji}` },
+          title: { es: `EQ Debajo del Promedio ${lvl.emoji} ${lvl.label}`, en: `EQ Below Average ${lvl.emoji} ${lvl.labelEN}` },
           description: {
-            es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)} — nivel ${lvl.label} (umbral: ${thresholds.eqWarning})`,
-            en: `${group.name} has average EQ of ${eqMean.toFixed(1)} — ${lvl.labelEN} level (threshold: ${thresholds.eqWarning})`,
+            es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)}, debajo del promedio TP (${countryAvg.toFixed(1)})`,
+            en: `${group.name} has average EQ of ${eqMean.toFixed(1)}, below TP average (${countryAvg.toFixed(1)})`,
           },
         });
       }
 
-      // Check each competency — using SEI level thresholds
+      // Check competencies — flag if any competency is > 1 stdDev below TP average for that competency
       for (const comp of COMP_KEYS) {
         const val = group.metrics[comp]?.mean;
-        if (val !== undefined && val < thresholds.compCritical) {
-          const lvl = getEqLevel(val);
-          alerts.push({
-            id: `comp-critical-${comp}-${group.name}`,
-            type: "low_competency",
-            severity: "critical",
-            entity: group.name,
-            entityType: "country",
-            region: group.name,
-            metric: comp,
-            currentValue: val,
-            threshold: thresholds.compCritical,
-            detectedAt: now,
-            status: "new",
-            title: { es: `${comp} Nivel ${lvl.label} ${lvl.emoji}`, en: `${comp} ${lvl.labelEN} Level ${lvl.emoji}` },
-            description: {
-              es: `${group.name} tiene ${compLabel(comp, "es")} en ${val.toFixed(1)} — nivel ${lvl.label}`,
-              en: `${group.name} has ${compLabel(comp, "en")} at ${val.toFixed(1)} — ${lvl.labelEN} level`,
-            },
-          });
-        } else if (val !== undefined && val < thresholds.compWarning) {
-          const lvl = getEqLevel(val);
-          alerts.push({
-            id: `comp-warning-${comp}-${group.name}`,
-            type: "low_competency",
-            severity: "warning",
-            entity: group.name,
-            entityType: "country",
-            region: group.name,
-            metric: comp,
-            currentValue: val,
-            threshold: thresholds.compWarning,
-            detectedAt: now,
-            status: "new",
-            title: { es: `${comp} Nivel ${lvl.label} ${lvl.emoji}`, en: `${comp} ${lvl.labelEN} Level ${lvl.emoji}` },
-            description: {
-              es: `${group.name} tiene ${compLabel(comp, "es")} en ${val.toFixed(1)} — nivel ${lvl.label}`,
-              en: `${group.name} has ${compLabel(comp, "en")} at ${val.toFixed(1)} — ${lvl.labelEN} level`,
-            },
-          });
-        }
-      }
+        if (val === undefined) continue;
+        // Get TP average for this competency
+        const tpCompStat = overallStats.find((s) => s.metricKey === comp);
+        const tpCompAvg = tpCompStat?.mean || 100;
+        const tpCompStd = tpCompStat?.stdDev || 10;
+        const compThreshold = tpCompAvg - tpCompStd;
 
-      // EQ Level check — based on actual SEI levels
-      // Challenge (65-81) = critical, Emerging (82-91) = warning
-      if (eqMean !== undefined) {
-        const level = getEqLevel(eqMean);
-        if (level.key === "challenge") {
+        if (val < compThreshold) {
+          const compLvl = getEqLevel(val);
           alerts.push({
-            id: `level-critical-${group.name}`,
-            type: "team_health",
-            severity: "critical",
+            id: `comp-low-${comp}-${group.name}`,
+            type: "low_competency",
+            severity: val < (tpCompAvg - 1.5 * tpCompStd) ? "critical" : "warning",
             entity: group.name,
             entityType: "country",
             region: group.name,
-            metric: "eqLevel",
-            currentValue: eqMean,
-            threshold: 82,
+            metric: comp,
+            currentValue: val,
+            threshold: Math.round(compThreshold * 100) / 100,
             detectedAt: now,
             status: "new",
-            title: { es: `Nivel Desafío ${level.emoji}`, en: `Challenge Level ${level.emoji}` },
+            title: { es: `${compLabel(comp, "es")} Bajo ${compLvl.emoji}`, en: `Low ${compLabel(comp, "en")} ${compLvl.emoji}` },
             description: {
-              es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)} — nivel Desafío. Requiere atención inmediata.`,
-              en: `${group.name} has average EQ of ${eqMean.toFixed(1)} — Challenge level. Requires immediate attention.`,
-            },
-          });
-        } else if (level.key === "emerging") {
-          alerts.push({
-            id: `level-warning-${group.name}`,
-            type: "team_health",
-            severity: "warning",
-            entity: group.name,
-            entityType: "country",
-            region: group.name,
-            metric: "eqLevel",
-            currentValue: eqMean,
-            threshold: 92,
-            detectedAt: now,
-            status: "new",
-            title: { es: `Nivel Emergente ${level.emoji}`, en: `Emerging Level ${level.emoji}` },
-            description: {
-              es: `${group.name} tiene EQ promedio de ${eqMean.toFixed(1)} — nivel Emergente. Oportunidad de desarrollo.`,
-              en: `${group.name} has average EQ of ${eqMean.toFixed(1)} — Emerging level. Development opportunity.`,
+              es: `${group.name}: ${compLabel(comp, "es")} en ${val.toFixed(1)} (promedio TP: ${tpCompAvg.toFixed(1)})`,
+              en: `${group.name}: ${compLabel(comp, "en")} at ${val.toFixed(1)} (TP avg: ${tpCompAvg.toFixed(1)})`,
             },
           });
         }
@@ -526,16 +497,23 @@ export default function TPAlertsPage() {
       const minVal = Math.min(...compValues);
       const strongest = COMP_KEYS[compValues.indexOf(maxVal)];
       const weakest = COMP_KEYS[compValues.indexOf(minVal)];
+
+      // Health score: 0-100 relative to TP benchmark
+      // 50 = exactly at TP average, 100 = at Expert level, 0 = at Challenge level
+      const diff = avgEQ - tpOverallEQ;
+      const healthScore = Math.round(Math.max(0, Math.min(100, 50 + (diff / 15) * 50)));
+
       return {
         name: group.name,
         count: group.count,
         avgEQ,
         eqLevel: { key: level.key, label: level.label, labelEN: level.labelEN, color: level.color, emoji: level.emoji },
+        healthScore,
         strength: strongest,
         gap: weakest,
       };
     });
-  }, [countryGroups]);
+  }, [countryGroups, tpOverallEQ]);
 
   /* ---- Region metrics for monitoring section ---- */
   const regionMetricsData = useMemo(() => {
@@ -738,47 +716,28 @@ export default function TPAlertsPage() {
             return (
             <motion.div key={team.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`w-4 h-4 rounded-full ${eqLevelBgClass(team.eqLevel.key)} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${eqLevelRingClass(team.eqLevel.key)}`} />
+                <div className={`w-4 h-4 rounded-full ${healthColor(team.healthScore)} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${team.healthScore >= 65 ? "ring-emerald-500/30" : team.healthScore >= 45 ? "ring-blue-500/30" : team.healthScore >= 30 ? "ring-amber-500/30" : "ring-red-500/30"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm truncate">{team.name}</div>
                   <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.count} {t.assessments}</span>
                 </div>
               </div>
+              {/* Health Score (relative to TP) */}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-[var(--rowi-muted)]">{t.health}</span>
+                <span className={`text-2xl font-bold ${healthTextColor(team.healthScore)}`}>{team.healthScore}</span>
+              </div>
+              <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-3">
+                <motion.div className={`h-full rounded-full ${healthColor(team.healthScore)}`} initial={{ width: 0 }} whileInView={{ width: `${team.healthScore}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} />
+              </div>
+              {/* EQ Level + Average */}
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-[var(--rowi-muted)]">{t.avgEQ}</span>
                 <span className="text-sm font-mono font-medium">{team.avgEQ.toFixed(1)}</span>
               </div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.health}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{team.eqLevel.emoji}</span>
-                  <span className={`text-lg font-bold ${eqLevelTextClass(team.eqLevel.key)}`}>{levelLabel}</span>
-                </div>
-              </div>
-              {/* EQ level bar — shows position within SEI scale 65-135 */}
-              <div className="relative h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-3">
-                {/* Color segments for each level */}
-                <div className="absolute inset-0 flex">
-                  <div className="h-full bg-red-400/30" style={{ width: `${((81 - 65) / 70) * 100}%` }} />
-                  <div className="h-full bg-amber-400/30" style={{ width: `${((91 - 81) / 70) * 100}%` }} />
-                  <div className="h-full bg-blue-400/30" style={{ width: `${((107 - 91) / 70) * 100}%` }} />
-                  <div className="h-full bg-purple-400/30" style={{ width: `${((117 - 107) / 70) * 100}%` }} />
-                  <div className="h-full bg-emerald-400/30" style={{ width: `${((135 - 117) / 70) * 100}%` }} />
-                </div>
-                {/* Marker for current EQ */}
-                <motion.div
-                  className={`absolute top-0 h-full w-1 rounded-full ${eqLevelBgClass(team.eqLevel.key)} shadow-sm`}
-                  initial={{ left: "0%" }}
-                  whileInView={{ left: `${Math.max(0, Math.min(100, ((team.avgEQ - 65) / 70) * 100))}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                />
-              </div>
-              <div className="flex justify-between text-[9px] text-[var(--rowi-muted)] mb-3">
-                <span>65</span>
-                <span>92</span>
-                <span>108</span>
-                <span>135</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t.eqLevel}</span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${eqLevelBgClass(team.eqLevel.key)}/15 ${eqLevelTextClass(team.eqLevel.key)}`}>{team.eqLevel.emoji} {levelLabel}</span>
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">

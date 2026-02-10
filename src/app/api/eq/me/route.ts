@@ -56,10 +56,18 @@ export async function GET(req: NextRequest) {
         success: [],
       });
 
-    /* 2️⃣ Buscar CommunityMembers del usuario */
+    /* 2️⃣ Buscar CommunityMembers del usuario (por userId, email, o nombre+tenant) */
+    const memberWhere: any[] = [{ userId: user.id }];
+    if (email) memberWhere.push({ email: { equals: email, mode: "insensitive" } });
+    if (user.name && user.primaryTenantId) {
+      memberWhere.push({
+        tenantId: user.primaryTenantId,
+        name: { startsWith: user.name, mode: "insensitive" },
+      });
+    }
     const members = await prisma.communityMember.findMany({
-      where: { userId: user.id },
-      select: { id: true },
+      where: { OR: memberWhere },
+      select: { id: true, userId: true },
     });
 
     /* 2b️⃣ Buscar RowiVerseUser del usuario */
@@ -68,15 +76,48 @@ export async function GET(req: NextRequest) {
       select: { id: true },
     });
 
+    /* 2c️⃣ Recopilar todos los userIds vinculados (multi-account en mismo tenant) */
+    const linkedUserIds = new Set<string>([user.id]);
+    members.forEach((m) => { if (m.userId) linkedUserIds.add(m.userId); });
+
+    /* 2d️⃣ Buscar RowiVerseUsers de todos los userIds vinculados */
+    const rvUsers = await prisma.rowiVerseUser.findMany({
+      where: { userId: { in: Array.from(linkedUserIds) } },
+      select: { id: true },
+    });
+
+    /* 2e️⃣ Recopilar todos los emails para búsqueda ampliada */
+    const allEmails = new Set<string>();
+    if (email) allEmails.add(email);
+    if (user.email) allEmails.add(user.email.toLowerCase());
+    const userEmails = await prisma.userEmail.findMany({
+      where: { userId: { in: Array.from(linkedUserIds) } },
+      select: { email: true },
+    });
+    userEmails.forEach((ue) => { if (ue.email) allEmails.add(ue.email.toLowerCase()); });
+    // También agregar emails de los otros usuarios vinculados
+    if (linkedUserIds.size > 1) {
+      const linkedUsers = await prisma.user.findMany({
+        where: { id: { in: Array.from(linkedUserIds) } },
+        select: { email: true },
+      });
+      linkedUsers.forEach((u) => { if (u.email) allEmails.add(u.email.toLowerCase()); });
+    }
+
     /* 3️⃣ Seleccionar snapshot REAL — buscar por TODAS las vías posibles */
     const snapshotWhere: any[] = [];
     if (members.length > 0) {
       snapshotWhere.push({ memberId: { in: members.map((m) => m.id) } });
     }
-    if (rvUser) {
-      snapshotWhere.push({ rowiverseUserId: rvUser.id });
+    if (rvUsers.length > 0) {
+      snapshotWhere.push({ rowiverseUserId: { in: rvUsers.map((rv) => rv.id) } });
     }
-    snapshotWhere.push({ userId: user.id });
+    // Buscar por todos los userIds vinculados
+    snapshotWhere.push({ userId: { in: Array.from(linkedUserIds) } });
+    // Buscar también por cualquiera de los emails
+    if (allEmails.size > 0) {
+      snapshotWhere.push({ email: { in: Array.from(allEmails), mode: "insensitive" } });
+    }
 
     /* 3b️⃣ Buscar los 2 snapshots más recientes (actual + anterior = ghost) */
     const recentSnaps = await prisma.eqSnapshot.findMany({

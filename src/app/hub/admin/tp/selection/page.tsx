@@ -182,16 +182,40 @@ interface Candidate {
   appliedRole: string; // will be matched against real role names
 }
 
-// Candidates are mapped to roles by name (appliedRole will be matched to real role names from API)
+// Display names for coded job roles
+const ROLE_DISPLAY_NAMES: Record<string, string> = {
+  EMPLOYEE: "Employee",
+  MANAGEMENT: "Management",
+  SENIOREXECUTIVE: "Senior Executive",
+  EDUCATOR: "Educator",
+  SALESMARKETING: "Sales & Marketing",
+  CONSULTANT: "Consultant",
+  STUDENT: "Student",
+  FREELANCE: "Freelance",
+  ENTREPRENUER: "Entrepreneur",
+  RESEARCH: "Research",
+  OTHER: "Other",
+  NONE: "Not Specified",
+};
+
+function displayRoleName(role: string): string {
+  return ROLE_DISPLAY_NAMES[role] || role;
+}
+
+// Demo candidates mapped to actual DB job roles (EMPLOYEE, MANAGEMENT, SENIOREXECUTIVE)
 const DEMO_CANDIDATES: Candidate[] = [
-  { id: "C-001", name: "María López", country: "México", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "Customer Service" },
-  { id: "C-002", name: "John Smith", country: "USA", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "Customer Service" },
-  { id: "C-003", name: "Yuki Sato", country: "Japan", brainStyle: "Scientist", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "Human Resources" },
-  { id: "C-004", name: "Ahmed Hassan", country: "Egypt", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "Operations" },
-  { id: "C-005", name: "Sophie Martin", country: "France", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "Customer Service" },
-  { id: "C-006", name: "Raj Patel", country: "India", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "IT Support" },
-  { id: "C-007", name: "Laura García", country: "Colombia", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "Sales" },
-  { id: "C-008", name: "Chen Wei", country: "China", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "IT Support" },
+  // EMPLOYEE role - 2 candidates (high fit + moderate fit)
+  { id: "C-001", name: "María López", country: "MX", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "EMPLOYEE" },
+  { id: "C-002", name: "John Smith", country: "US", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "EMPLOYEE" },
+  // MANAGEMENT role - 2 candidates
+  { id: "C-003", name: "Yuki Sato", country: "JP", brainStyle: "Scientist", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "MANAGEMENT" },
+  { id: "C-004", name: "Ahmed Hassan", country: "EG", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "MANAGEMENT" },
+  // SENIOREXECUTIVE role - 2 candidates
+  { id: "C-005", name: "Sophie Martin", country: "FR", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "SENIOREXECUTIVE" },
+  { id: "C-006", name: "Raj Patel", country: "IN", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "SENIOREXECUTIVE" },
+  // SALESMARKETING role - 2 candidates
+  { id: "C-007", name: "Laura García", country: "CO", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "SALESMARKETING" },
+  { id: "C-008", name: "Chen Wei", country: "CN", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "SALESMARKETING" },
 ];
 
 /* =========================================================
@@ -200,6 +224,7 @@ const DEMO_CANDIDATES: Candidate[] = [
 interface RoleBenchmark {
   id: string;
   name: string;
+  displayName: string;
   count: number;
   idealEQ: number;
   minEQ: number;
@@ -465,6 +490,7 @@ export default function TPSelectionPage() {
       return {
         id: role.name,
         name: role.name,
+        displayName: displayRoleName(role.name),
         count: role.count,
         idealEQ: Math.round(idealEQ * 100) / 100,
         minEQ: Math.round(minEQ * 100) / 100,
@@ -512,31 +538,31 @@ export default function TPSelectionPage() {
     if (fit >= 90) {
       return {
         text: lang === "es"
-          ? `Excelente ajuste para ${selectedRole.name}. Supera el benchmark en ${exceedsList || "todas las competencias"} que son críticas para el rol. ${devList ? `Desarrollo menor en ${devList}.` : "Sin brechas significativas."} EQ total (${cand.eqTotal}) supera el ideal del rol (${selectedRole.idealEQ}).`
-          : `Excellent fit for ${selectedRole.name}. Exceeds benchmark in ${exceedsList || "all competencies"} which are critical for the role. ${devList ? `Minor development in ${devList}.` : "No significant gaps."} Total EQ (${cand.eqTotal}) exceeds role ideal (${selectedRole.idealEQ}).`,
+          ? `Excelente ajuste para ${selectedRole.displayName}. Supera el benchmark en ${exceedsList || "todas las competencias"} que son críticas para el rol. ${devList ? `Desarrollo menor en ${devList}.` : "Sin brechas significativas."} EQ total (${cand.eqTotal}) supera el ideal del rol (${selectedRole.idealEQ}).`
+          : `Excellent fit for ${selectedRole.displayName}. Exceeds benchmark in ${exceedsList || "all competencies"} which are critical for the role. ${devList ? `Minor development in ${devList}.` : "No significant gaps."} Total EQ (${cand.eqTotal}) exceeds role ideal (${selectedRole.idealEQ}).`,
         action: t.hire,
       };
     }
     if (fit >= 75) {
       return {
         text: lang === "es"
-          ? `Buen ajuste para ${selectedRole.name}. ${exceedsList ? `Fortalezas en ${exceedsList}.` : ""} ${devList ? `Desarrollo necesario en ${devList}.` : ""} EQ total (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "cumple" : "no alcanza"} el mínimo del rol (${selectedRole.minEQ}).`
-          : `Good fit for ${selectedRole.name}. ${exceedsList ? `Strengths in ${exceedsList}.` : ""} ${devList ? `Development needed in ${devList}.` : ""} Total EQ (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "meets" : "falls below"} role minimum (${selectedRole.minEQ}).`,
+          ? `Buen ajuste para ${selectedRole.displayName}. ${exceedsList ? `Fortalezas en ${exceedsList}.` : ""} ${devList ? `Desarrollo necesario en ${devList}.` : ""} EQ total (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "cumple" : "no alcanza"} el mínimo del rol (${selectedRole.minEQ}).`
+          : `Good fit for ${selectedRole.displayName}. ${exceedsList ? `Strengths in ${exceedsList}.` : ""} ${devList ? `Development needed in ${devList}.` : ""} Total EQ (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "meets" : "falls below"} role minimum (${selectedRole.minEQ}).`,
         action: t.hireWithCoaching,
       };
     }
     if (fit >= 60) {
       return {
         text: lang === "es"
-          ? `Ajuste moderado para ${selectedRole.name}. Brechas notables en ${devList || "varias competencias"}. ${exceedsList ? `Potencial en ${exceedsList}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`
-          : `Moderate fit for ${selectedRole.name}. Notable gaps in ${devList || "several competencies"}. ${exceedsList ? `Potential in ${exceedsList}.` : ""} Requires additional evaluation and intensive development plan.`,
+          ? `Ajuste moderado para ${selectedRole.displayName}. Brechas notables en ${devList || "varias competencias"}. ${exceedsList ? `Potencial en ${exceedsList}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`
+          : `Moderate fit for ${selectedRole.displayName}. Notable gaps in ${devList || "several competencies"}. ${exceedsList ? `Potential in ${exceedsList}.` : ""} Requires additional evaluation and intensive development plan.`,
         action: t.consider,
       };
     }
     return {
       text: lang === "es"
-        ? `Ajuste débil para ${selectedRole.name}. Brechas significativas en ${devList || "múltiples competencias"}. EQ total (${cand.eqTotal}) debajo del mínimo del rol (${selectedRole.minEQ}). No se recomienda para esta posición.`
-        : `Weak fit for ${selectedRole.name}. Significant gaps in ${devList || "multiple competencies"}. Total EQ (${cand.eqTotal}) below role minimum (${selectedRole.minEQ}). Not recommended for this position.`,
+        ? `Ajuste débil para ${selectedRole.displayName}. Brechas significativas en ${devList || "múltiples competencias"}. EQ total (${cand.eqTotal}) debajo del mínimo del rol (${selectedRole.minEQ}). No se recomienda para esta posición.`
+        : `Weak fit for ${selectedRole.displayName}. Significant gaps in ${devList || "multiple competencies"}. Total EQ (${cand.eqTotal}) below role minimum (${selectedRole.minEQ}). Not recommended for this position.`,
       action: t.notRecommended,
     };
   }
@@ -609,7 +635,7 @@ export default function TPSelectionPage() {
             <option value="">{t.roleSelectorPlaceholder}</option>
             {roleBenchmarks.map((role) => (
               <option key={role.id} value={role.id}>
-                {role.name} — {role.count} {t.participants}
+                {role.displayName} — {role.count} {t.participants}
               </option>
             ))}
           </select>
@@ -644,7 +670,7 @@ export default function TPSelectionPage() {
       {/* Candidates for Role */}
       {selectedRole && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t.candidatesFor} {selectedRole.name}</h2>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t.candidatesFor} {selectedRole.displayName}</h2>
 
           {/* Demo Data Banner */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 mb-4">

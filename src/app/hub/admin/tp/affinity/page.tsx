@@ -1625,56 +1625,109 @@ export default function TPAffinityPage() {
          ── Benchmark Tab ──
       ══════════════════════════════════════════════════════════ */}
       {activeTab === "benchmark" && (<>
-      {/* ── Brain Style Distribution (REAL DATA) ── */}
+      {/* ── TP-wide Stats Row ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-[var(--rowi-muted)]" />
+            <span className="text-xs text-[var(--rowi-muted)]">{t.overallAffinity}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            {(() => {
+              const avgSim = affinityMatrix.length > 0 ? Math.round(affinityMatrix.reduce((s, p) => s + p.similarity, 0) / affinityMatrix.length * 10) / 10 : 0;
+              const pct = Math.round(((avgSim - 98) / 2) * 100);
+              const normPct = Math.max(0, Math.min(100, pct));
+              const lvl = levelFromHeat135(Math.round((normPct * 135) / 100));
+              return (<>
+                <span className="text-2xl font-bold" style={{ color: lvl.color }}>{avgSim.toFixed(1)}%</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Avg Similarity" : "Similitud Prom."}</span>
+              </>);
+            })()}
+          </div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-4 h-4 text-[var(--rowi-muted)]" />
+            <span className="text-xs text-[var(--rowi-muted)]">{t.members}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold">{totalAssessments.toLocaleString()}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t.employees}</span>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Brain className="w-4 h-4 text-[var(--rowi-muted)]" />
+            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Brain Styles" : "Estilos Cerebrales"}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-purple-500">{brainStyleGroups.length}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "identified" : "identificados"}</span>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Globe className="w-4 h-4 text-[var(--rowi-muted)]" />
+            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Regions" : "Regiones"}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-blue-500">{regionGroups.length}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "global" : "globales"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Brain Style Distribution as Community Cards ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
           <Brain className="w-5 h-5 text-purple-500" /> {t.brainDistTitle}
         </h2>
         <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.brainDistDesc}</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {sortedBrainStyles.map((group, i) => {
             const pct = totalAssessments > 0 ? ((group.count / totalAssessments) * 100).toFixed(1) : "0";
             const avgEQ = group.metrics.eqTotal?.mean ?? 0;
             const eqLevel = getEqLevel(avgEQ);
+            const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
+            const topComps = COMP_KEYS
+              .map((k) => ({ key: k, val: group.metrics[k]?.mean ?? 0 }))
+              .sort((a, b) => b.val - a.val)
+              .slice(0, 3);
             return (
               <motion.div
                 key={group.name}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-sm text-center border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-200 dark:border-zinc-700 hover:border-pink-500/50 hover:shadow-md transition-all"
               >
-                <span className="text-3xl block mb-2">{getBrainStyleEmoji(group.name)}</span>
-                <h3 className="font-semibold text-sm" style={{ color: getBrainStyleColor(group.name) }}>
-                  {getBrainStyleLabel(group.name, lang)}
-                </h3>
-                <div className="text-2xl font-bold mt-1" style={{ color: getBrainStyleColor(group.name) }}>
-                  {pct}%
-                </div>
-                <p className="text-[10px] text-[var(--rowi-muted)] mt-1">
-                  {group.count.toLocaleString()} {t.employees}
-                </p>
-                {/* EQ avg + level badge */}
-                <div className="mt-2 flex flex-col items-center gap-1">
-                  <span className="text-sm font-mono font-bold text-purple-600">
-                    {avgEQ.toFixed(1)} EQ
-                  </span>
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: `${eqLevel.color}20`, color: eqLevel.color }}
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                    style={{ background: `${getBrainStyleColor(group.name)}15` }}
                   >
-                    {eqLevel.emoji} {lang === "en" ? eqLevel.labelEN : eqLevel.label}
-                  </span>
-                </div>
-                {/* Percentage bar */}
-                <div className="h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full mt-3 overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: getBrainStyleColor(group.name) }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${parseFloat(pct) * 4}%` }}
-                    transition={{ duration: 0.8, delay: i * 0.05 }}
-                  />
+                    {getBrainStyleEmoji(group.name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="font-semibold text-sm truncate" style={{ color: getBrainStyleColor(group.name) }}>
+                        {getBrainStyleLabel(group.name, lang)}
+                      </div>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-500 font-medium">{pct}%</span>
+                    </div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{group.count.toLocaleString()} {t.employees}</div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="h-1.5 rounded-full flex-1 bg-gray-200 dark:bg-zinc-700" style={{ maxWidth: "80px" }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${parseFloat(pct) * 4}%`, background: getBrainStyleColor(group.name) }} />
+                      </div>
+                      <span className="text-xs font-semibold" style={{ color: eqLevel.color }}>{avgEQ.toFixed(1)} EQ</span>
+                    </div>
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {topComps.map((c) => (
+                        <span key={c.key} className="text-[9px] px-1.5 py-0.5 rounded-full bg-pink-500/10 text-pink-500">{c.key}: {c.val.toFixed(0)}</span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             );
@@ -1690,7 +1743,7 @@ export default function TPAffinityPage() {
         <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.eqByStyleDesc}</p>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
           <div className="space-y-3">
-            {sortedBrainStyles
+            {[...sortedBrainStyles]
               .sort((a, b) => (b.metrics.eqTotal?.mean ?? 0) - (a.metrics.eqTotal?.mean ?? 0))
               .map((group, i) => {
                 const avgEQ = group.metrics.eqTotal?.mean ?? 0;
@@ -1739,8 +1792,65 @@ export default function TPAffinityPage() {
           </h2>
           <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.affinityMatrixDesc}</p>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
+            {/* Full NxN Heat Map Table */}
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr>
+                    <th className="p-2 text-left text-[var(--rowi-muted)]"></th>
+                    {brainStyleGroups.map((g) => (
+                      <th key={g.name} className="p-2 text-center" style={{ color: getBrainStyleColor(g.name) }}>
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-base">{getBrainStyleEmoji(g.name)}</span>
+                          <span className="text-[9px] font-medium leading-tight">{getBrainStyleLabel(g.name, lang).slice(0, 6)}</span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {brainStyleGroups.map((rowGroup) => (
+                    <tr key={rowGroup.name}>
+                      <td className="p-2 font-medium whitespace-nowrap" style={{ color: getBrainStyleColor(rowGroup.name) }}>
+                        <div className="flex items-center gap-1">
+                          <span>{getBrainStyleEmoji(rowGroup.name)}</span>
+                          <span className="text-[10px]">{getBrainStyleLabel(rowGroup.name, lang).slice(0, 8)}</span>
+                        </div>
+                      </td>
+                      {brainStyleGroups.map((colGroup) => {
+                        if (rowGroup.name === colGroup.name) {
+                          return (
+                            <td key={colGroup.name} className="p-1 text-center">
+                              <div className="w-full h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] text-[var(--rowi-muted)]">—</div>
+                            </td>
+                          );
+                        }
+                        const pair = affinityMatrix.find(
+                          (p) => (p.styleA === rowGroup.name && p.styleB === colGroup.name) ||
+                                 (p.styleA === colGroup.name && p.styleB === rowGroup.name)
+                        );
+                        const sim = pair?.similarity ?? 0;
+                        const affinityLevel = sim > 99.5 ? "high" : sim > 99 ? "medium" : "low";
+                        const bg = affinityLevel === "high" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                          : affinityLevel === "medium" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                          : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)]";
+                        return (
+                          <td key={colGroup.name} className="p-1 text-center">
+                            <div className={`w-full h-8 rounded-lg flex items-center justify-center text-[10px] font-bold ${bg}`}>
+                              {sim.toFixed(1)}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Top pairs list */}
+            <h3 className="text-sm font-semibold mb-3">{lang === "en" ? "Top Affinity Pairs" : "Pares de Mayor Afinidad"}</h3>
             <div className="grid md:grid-cols-2 gap-3">
-              {affinityMatrix.slice(0, 12).map((pair, i) => {
+              {affinityMatrix.slice(0, 8).map((pair, i) => {
                 const affinityLevel = pair.similarity > 99.5 ? "high" : pair.similarity > 99 ? "medium" : "low";
                 const bgColor = affinityLevel === "high"
                   ? "bg-green-50 dark:bg-green-900/15 border-green-200 dark:border-green-800"
@@ -1841,6 +1951,7 @@ export default function TPAffinityPage() {
                 const entries = Object.entries(region.brainStyleDist!)
                   .sort((a, b) => b[1] - a[1])
                   .slice(0, 5);
+                const avgEQ = region.metrics.eqTotal?.mean ?? 0;
                 return (
                   <motion.div
                     key={region.name}
@@ -1852,7 +1963,8 @@ export default function TPAffinityPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <Globe className="w-4 h-4 text-blue-500" />
                       <span className="font-semibold text-sm">{region.name}</span>
-                      <span className="text-xs text-[var(--rowi-muted)] ml-auto">
+                      <span className="text-xs text-purple-500 font-mono ml-auto">EQ {avgEQ.toFixed(1)}</span>
+                      <span className="text-[10px] text-[var(--rowi-muted)]">
                         {region.count.toLocaleString()} {t.employees}
                       </span>
                     </div>
@@ -1881,6 +1993,62 @@ export default function TPAffinityPage() {
                   </motion.div>
                 );
               })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Cross-Region Affinity Matrix ── */}
+      {regionGroups.length > 1 && (
+        <div>
+          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-blue-500" /> {t.crossRegionTitle}
+          </h2>
+          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.crossRegionDesc}</p>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr>
+                    <th className="p-2 text-left text-[var(--rowi-muted)]">{lang === "en" ? "Region" : "Region"}</th>
+                    {regionGroups.filter(r => r.count > 50).slice(0, 8).map((r) => (
+                      <th key={r.name} className="p-2 text-center text-blue-600 font-medium">
+                        <span className="text-[10px]">{r.name.slice(0, 12)}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {regionGroups.filter(r => r.count > 50).slice(0, 8).map((rowRegion) => {
+                    const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
+                    const rowVec = COMP_KEYS.map(k => rowRegion.metrics[k]?.mean ?? 100);
+                    return (
+                      <tr key={rowRegion.name} className="border-t border-gray-50 dark:border-zinc-800/50">
+                        <td className="p-2 font-medium text-blue-600 whitespace-nowrap">{rowRegion.name.slice(0, 12)}</td>
+                        {regionGroups.filter(r => r.count > 50).slice(0, 8).map((colRegion) => {
+                          if (rowRegion.name === colRegion.name) {
+                            return <td key={colRegion.name} className="p-1 text-center"><div className="w-full h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] text-[var(--rowi-muted)]">—</div></td>;
+                          }
+                          const colVec = COMP_KEYS.map(k => colRegion.metrics[k]?.mean ?? 100);
+                          const dot = rowVec.reduce((s, v, i) => s + v * colVec[i], 0);
+                          const magA = Math.sqrt(rowVec.reduce((s, v) => s + v * v, 0));
+                          const magB = Math.sqrt(colVec.reduce((s, v) => s + v * v, 0));
+                          const sim = magA && magB ? Math.round((dot / (magA * magB)) * 1000) / 10 : 0;
+                          const lvl = sim > 99.5 ? "high" : sim > 99 ? "medium" : "low";
+                          const bg = lvl === "high" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                            : lvl === "medium" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                            : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)]";
+                          return (
+                            <td key={colRegion.name} className="p-1 text-center">
+                              <div className={`w-full h-7 rounded-lg flex items-center justify-center text-[10px] font-bold ${bg}`}>{sim.toFixed(1)}</div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -33,7 +33,20 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(members);
+    // Enrich: use member-level name/email as fallback when user relation is missing
+    const enriched = members.map((m) => ({
+      ...m,
+      user: m.user || {
+        id: m.userId || undefined,
+        name: m.name || m.email?.split("@")[0] || "—",
+        email: m.email || "—",
+        image: null,
+        active: true,
+        allowAI: false,
+      },
+    }));
+
+    return NextResponse.json(enriched);
   } catch (err: any) {
     console.error("❌ Error GET /hub/communities/[id]/members:", err);
     return NextResponse.json(

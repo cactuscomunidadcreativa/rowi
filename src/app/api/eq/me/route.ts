@@ -62,23 +62,26 @@ export async function GET(req: NextRequest) {
       select: { id: true },
     });
 
-    /* 3️⃣ Seleccionar snapshot REAL desde communityMember */
-    let snap = null;
+    /* 2b️⃣ Buscar RowiVerseUser del usuario */
+    const rvUser = await prisma.rowiVerseUser.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    });
 
+    /* 3️⃣ Seleccionar snapshot REAL — buscar por TODAS las vías posibles */
+    const snapshotWhere: any[] = [];
     if (members.length > 0) {
-      snap = await prisma.eqSnapshot.findFirst({
-        where: { memberId: { in: members.map((m) => m.id) } },
-        orderBy: { at: "desc" },
-      });
+      snapshotWhere.push({ memberId: { in: members.map((m) => m.id) } });
     }
+    if (rvUser) {
+      snapshotWhere.push({ rowiverseUserId: rvUser.id });
+    }
+    snapshotWhere.push({ userId: user.id });
 
-    /* 4️⃣ Fallback: snapshot del USER (SEI Core) */
-    if (!snap) {
-      snap = await prisma.eqSnapshot.findFirst({
-        where: { userId: user.id },
-        orderBy: { at: "desc" },
-      });
-    }
+    const snap = await prisma.eqSnapshot.findFirst({
+      where: { OR: snapshotWhere },
+      orderBy: { at: "desc" },
+    });
 
     if (!snap) {
       return NextResponse.json({

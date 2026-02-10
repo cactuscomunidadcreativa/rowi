@@ -14,6 +14,8 @@ import {
   Mail,
   Clock,
   Search,
+  Filter,
+  ChevronDown,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -37,6 +39,12 @@ import LinkUserModal from "./components/LinkUserModal";
    Clean, compact, and 100% translatable
 ========================================================= */
 
+interface CommunityInfo {
+  id: string;
+  name: string;
+  memberCount: number;
+}
+
 interface MemberData {
   id: string;
   userId?: string;
@@ -56,6 +64,8 @@ interface MemberData {
 export default function CommunityMembersExplorer() {
   const { t, ready } = useI18n();
   const [members, setMembers] = useState<MemberData[]>([]);
+  const [communities, setCommunities] = useState<CommunityInfo[]>([]);
+  const [selectedCommunity, setSelectedCommunity] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [search, setSearch] = useState("");
@@ -66,29 +76,42 @@ export default function CommunityMembersExplorer() {
     setLoading(true);
     try {
       const res = await fetch("/api/hub/communities");
-      const communities = await res.json();
-      if (!Array.isArray(communities)) {
+      const rawCommunities = await res.json();
+      if (!Array.isArray(rawCommunities)) {
         setMembers([]);
+        setCommunities([]);
         return;
       }
 
       const results = await Promise.all(
-        communities.map(async (c: any) => {
+        rawCommunities.map(async (c: any) => {
           try {
             const resM = await fetch(`/api/hub/communities/${c.id}/members`);
             const data = await resM.json();
-            return (Array.isArray(data) ? data : []).map((m: any) => ({
+            const membersList = (Array.isArray(data) ? data : []).map((m: any) => ({
               ...m,
               communityName: c.name,
               communityId: c.id,
             }));
+            return { community: c, members: membersList };
           } catch {
-            return [];
+            return { community: c, members: [] };
           }
         })
       );
 
-      setMembers(results.flat());
+      const allMembers = results.flatMap((r) => r.members);
+      setMembers(allMembers);
+
+      // Build community list with counts
+      const communityList: CommunityInfo[] = results
+        .filter((r) => r.members.length > 0)
+        .map((r) => ({
+          id: r.community.id,
+          name: r.community.name,
+          memberCount: r.members.length,
+        }));
+      setCommunities(communityList);
     } catch {
       toast.error(t("common.error"));
     } finally {
@@ -114,7 +137,11 @@ export default function CommunityMembersExplorer() {
   }
 
   const filtered = members.filter((m) => {
+    // Community filter
+    if (selectedCommunity !== "all" && m.communityId !== selectedCommunity) return false;
+    // Text search
     const q = search.toLowerCase();
+    if (!q) return true;
     return (
       (m.user?.name || "").toLowerCase().includes(q) ||
       (m.user?.email || "").toLowerCase().includes(q) ||
@@ -147,7 +174,26 @@ export default function CommunityMembersExplorer() {
       icon={Users}
       loading={loading}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Community filter */}
+          <div className="relative">
+            <select
+              value={selectedCommunity}
+              onChange={(e) => setSelectedCommunity(e.target.value)}
+              className="appearance-none pl-8 pr-8 py-1.5 text-xs font-medium rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-card)] text-[var(--rowi-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-primary)]/30 cursor-pointer"
+            >
+              <option value="all">
+                {t("admin.members.allCommunities") || "Todas las comunidades"} ({members.length})
+              </option>
+              {communities.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.memberCount})
+                </option>
+              ))}
+            </select>
+            <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--rowi-muted)] pointer-events-none" />
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--rowi-muted)] pointer-events-none" />
+          </div>
           <AdminSearch value={search} onChange={setSearch} className="w-48" />
           <AdminViewToggle view={viewMode} onChange={setViewMode} />
           <AdminButton
@@ -175,7 +221,10 @@ export default function CommunityMembersExplorer() {
             <div>
               <p className="text-xs text-[var(--rowi-muted)]">{t("admin.members.total")}</p>
               <p className="text-xl font-bold text-[var(--rowi-foreground)]">
-                {members.length}
+                {filtered.length}
+                {selectedCommunity !== "all" && (
+                  <span className="text-xs font-normal text-[var(--rowi-muted)] ml-1">/ {members.length}</span>
+                )}
               </p>
             </div>
           </div>
@@ -189,7 +238,7 @@ export default function CommunityMembersExplorer() {
             <div>
               <p className="text-xs text-[var(--rowi-muted)]">{t("admin.members.linked")}</p>
               <p className="text-xl font-bold text-[var(--rowi-foreground)]">
-                {members.filter((m) => m.user?.id).length}
+                {filtered.filter((m) => m.user?.id).length}
               </p>
             </div>
           </div>
@@ -203,7 +252,7 @@ export default function CommunityMembersExplorer() {
             <div>
               <p className="text-xs text-[var(--rowi-muted)]">{t("admin.members.unlinked")}</p>
               <p className="text-xl font-bold text-[var(--rowi-foreground)]">
-                {members.filter((m) => !m.user?.id).length}
+                {filtered.filter((m) => !m.user?.id).length}
               </p>
             </div>
           </div>
@@ -217,7 +266,9 @@ export default function CommunityMembersExplorer() {
             <div>
               <p className="text-xs text-[var(--rowi-muted)]">{t("admin.members.communities")}</p>
               <p className="text-xl font-bold text-[var(--rowi-foreground)]">
-                {new Set(members.map((m) => m.communityId)).size}
+                {selectedCommunity === "all"
+                  ? communities.length
+                  : 1}
               </p>
             </div>
           </div>

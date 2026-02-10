@@ -8,6 +8,7 @@ import {
   ArrowLeft, ArrowRight, Heart, Users, Sparkles, Brain, Zap, Target,
   Building2, Globe, Shield, TrendingUp, Award, Loader2, AlertCircle,
   Search, RefreshCw, BarChart3, UserCheck, MessageCircle, Send, Bot, X,
+  ArrowLeftRight, Settings, Table2, Save, ChevronDown,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getEqLevel } from "@/domains/eq/lib/eqLevels";
@@ -119,6 +120,64 @@ const translations = {
     viewCommunity: "Ver Comunidad",
     tabBenchmark: "Benchmark TP",
     tabCommunity: "Mi Comunidad",
+    tabCompare: "Comparar",
+    tabMultiContext: "Multi-Contexto",
+    tabConfig: "Configuracion",
+
+    // Compare tab
+    compareTitle: "Comparador de Afinidad",
+    compareDesc: "Selecciona dos personas para comparar su afinidad en detalle",
+    compareMemberA: "Persona A",
+    compareMemberB: "Persona B",
+    compareSelect: "Seleccionar...",
+    compareRun: "Comparar",
+    compareVs: "vs",
+    compareParts: "Desglose",
+    compareBrainStyles: "Estilos Cerebrales",
+    compareTalents: "Talentos Compartidos",
+    compareCompetencies: "Competencias Fuertes",
+    compareNoData: "Selecciona dos personas y haz clic en Comparar",
+
+    // Multi-context tab
+    multiTitle: "Analisis Multi-Contexto",
+    multiDesc: "Visualiza la afinidad en los 6 contextos simultaneamente para los miembros seleccionados",
+    multiSelectMembers: "Selecciona miembros en la tab Comunidad primero",
+    multiRunAll: "Calcular Todos",
+    multiCalculating: "Calculando todos los contextos...",
+    multiAvg: "Promedio",
+    multiMember: "Miembro",
+
+    // Config tab
+    configTitle: "Configuracion de Afinidad",
+    configDesc: "Ajusta los pesos y parametros del calculo de afinidad",
+    configWeights: "Pesos por Contexto",
+    configWeightsDesc: "Cada contexto tiene 3 dimensiones (Crecimiento, Colaboracion, Entendimiento) que deben sumar 100%",
+    configBands: "Bandas Termicas",
+    configBandsDesc: "Umbrales para clasificar la temperatura de afinidad",
+    configHot: "Caliente",
+    configWarm: "Tibio",
+    configCold: "Frio",
+    configCloseness: "Multiplicadores de Cercania",
+    configClose: "Cercano",
+    configNeutral: "Neutral",
+    configFar: "Lejano",
+    configSave: "Guardar Configuracion",
+    configSaving: "Guardando...",
+    configSaved: "Guardado",
+    configRecalculate: "Recalcular Todo",
+    configRecalculating: "Recalculando...",
+    configLoadError: "Error al cargar configuracion",
+    configSaveError: "Error al guardar",
+    configSaveSuccess: "Configuracion guardada correctamente",
+
+    // Detail panel
+    brainStylesLabel: "Estilos de Pensamiento",
+    sharedTalentsLabel: "Talentos en Comun",
+    strongCompLabel: "Competencias Fuertes",
+    insightLabel: "Insight",
+    affinityNote: "La afinidad total considera ponderaciones por contexto, cercania y calibracion.",
+    askCoachTip: "Pregunta al Affinity Coach para obtener consejos personalizados.",
+    groupTip: "Pregunta al Affinity Coach para recomendaciones sobre este grupo.",
 
     loading: "Cargando datos de afinidad...",
     errorTitle: "Error al cargar datos",
@@ -215,6 +274,64 @@ const translations = {
     viewCommunity: "View Community",
     tabBenchmark: "TP Benchmark",
     tabCommunity: "My Community",
+    tabCompare: "Compare",
+    tabMultiContext: "Multi-Context",
+    tabConfig: "Configuration",
+
+    // Compare tab
+    compareTitle: "Affinity Comparator",
+    compareDesc: "Select two people to compare their affinity in detail",
+    compareMemberA: "Person A",
+    compareMemberB: "Person B",
+    compareSelect: "Select...",
+    compareRun: "Compare",
+    compareVs: "vs",
+    compareParts: "Breakdown",
+    compareBrainStyles: "Brain Styles",
+    compareTalents: "Shared Talents",
+    compareCompetencies: "Strong Competencies",
+    compareNoData: "Select two people and click Compare",
+
+    // Multi-context tab
+    multiTitle: "Multi-Context Analysis",
+    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
+    multiSelectMembers: "Select members in the Community tab first",
+    multiRunAll: "Calculate All",
+    multiCalculating: "Calculating all contexts...",
+    multiAvg: "Average",
+    multiMember: "Member",
+
+    // Config tab
+    configTitle: "Affinity Configuration",
+    configDesc: "Adjust weights and parameters for affinity calculation",
+    configWeights: "Context Weights",
+    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
+    configBands: "Thermal Bands",
+    configBandsDesc: "Thresholds for classifying affinity temperature",
+    configHot: "Hot",
+    configWarm: "Warm",
+    configCold: "Cold",
+    configCloseness: "Closeness Multipliers",
+    configClose: "Close",
+    configNeutral: "Neutral",
+    configFar: "Far",
+    configSave: "Save Configuration",
+    configSaving: "Saving...",
+    configSaved: "Saved",
+    configRecalculate: "Recalculate All",
+    configRecalculating: "Recalculating...",
+    configLoadError: "Error loading configuration",
+    configSaveError: "Error saving",
+    configSaveSuccess: "Configuration saved successfully",
+
+    // Detail panel
+    brainStylesLabel: "Brain Styles",
+    sharedTalentsLabel: "Shared Talents",
+    strongCompLabel: "Strong Competencies",
+    insightLabel: "Insight",
+    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
+    askCoachTip: "Ask the Affinity Coach for personalized advice.",
+    groupTip: "Ask the Affinity Coach for recommendations about this group.",
 
     loading: "Loading affinity data...",
     errorTitle: "Error loading data",
@@ -262,6 +379,23 @@ type CommunityMember = {
   affinityPercent?: number | null;
 };
 
+type AffPiece = {
+  heat135?: number;
+  heat?: number;
+  heat100?: number;
+  affinityLevel?: string;
+  interpretation?: string;
+  parts?: { growth?: number; collaboration?: number; understanding?: number };
+  brainStyles?: { yours?: string; theirs?: string; compatibility?: number };
+  sharedTalents?: string[];
+  complementaryTalents?: { yours: string; theirs: string }[];
+  strongCompetencies?: string[];
+  closeness?: string;
+  ai_summary?: string;
+};
+
+type TabType = "community" | "compare" | "multicontext" | "config" | "benchmark";
+
 type ProjectType = "relationship" | "leadership" | "execution" | "innovation" | "decision" | "conversation";
 
 const PROJECT_COLORS: Record<ProjectType, string> = {
@@ -300,7 +434,7 @@ export default function TPAffinityPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
-  const [activeTab, setActiveTab] = useState<"community" | "benchmark">("community");
+  const [activeTab, setActiveTab] = useState<TabType>("community");
   const [brainStyleGroups, setBrainStyleGroups] = useState<BrainStyleGroup[]>([]);
   const [regionGroups, setRegionGroups] = useState<RegionGroup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -321,6 +455,25 @@ export default function TPAffinityPage() {
   const [coachInput, setCoachInput] = useState("");
   const [rowiTyping, setRowiTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Compare tab state
+  const [compareA, setCompareA] = useState<string>("");
+  const [compareB, setCompareB] = useState<string>("");
+  const [compareResult, setCompareResult] = useState<AffPiece | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+
+  // Multi-context tab state
+  const [multiContextData, setMultiContextData] = useState<Record<string, Record<ProjectType, AffPiece | null>>>({});
+  const [multiLoading, setMultiLoading] = useState(false);
+
+  // Config tab state
+  const [affinityConfig, setAffinityConfig] = useState<any>(null);
+  const [configLoading, setConfigLoading] = useState(false);
+  const [configSaving, setConfigSaving] = useState(false);
+  const [configSaved, setConfigSaved] = useState(false);
+
+  // Group filter
+  const [groupFilter, setGroupFilter] = useState<string>("all");
 
   // Load community members
   useEffect(() => {
@@ -385,9 +538,10 @@ export default function TPAffinityPage() {
     return communityMembers.filter((m) => {
       if (seen.has(m.id)) return false;
       seen.add(m.id);
+      if (groupFilter !== "all" && m.group !== groupFilter) return false;
       return !term || [m.name, m.email, m.group, m.country, m.brainStyle].filter(Boolean).some((v) => (v || "").toLowerCase().includes(term));
     });
-  }, [q, communityMembers]);
+  }, [q, communityMembers, groupFilter]);
 
   // Overall community affinity
   const overallAffinity = useMemo(() => {
@@ -420,6 +574,101 @@ export default function TPAffinityPage() {
     } catch { setChat((c) => [...c, { role: "assistant", content: "Error de conexión." }]); }
     finally { setRowiTyping(false); }
   }
+
+  // Available groups for filtering
+  const availableGroups = useMemo(() => {
+    const groups = new Set<string>();
+    communityMembers.forEach((m) => { if (m.group) groups.add(m.group); });
+    return Array.from(groups).sort();
+  }, [communityMembers]);
+
+  // Compare two members
+  async function runCompare() {
+    if (!compareA || !compareB || compareA === compareB) return;
+    setCompareLoading(true);
+    setCompareResult(null);
+    try {
+      const r = await fetch(`/api/affinity?project=${project}&memberId=${compareB}`, { cache: "no-store" });
+      const j = await r.json();
+      const aff = j?.items?.[0] ?? (j?.ok && (j?.heat || j?.heat135) ? j : null);
+      if (aff) {
+        const heat135 = aff?.heat135 ?? (aff?.heat ? Math.round((aff.heat * 135) / 100) : 0);
+        const heat100 = aff?.heat100 ?? aff?.heat ?? Math.round((heat135 / 135) * 100);
+        const { level } = levelFromHeat135(heat135);
+        setCompareResult({ ...aff, heat135, heat100, affinityLevel: level });
+      }
+    } catch (e) { console.error("Compare error:", e); }
+    finally { setCompareLoading(false); }
+  }
+
+  // Multi-context: calculate all 6 contexts for selected members
+  const ALL_CONTEXTS: ProjectType[] = ["relationship", "leadership", "execution", "innovation", "decision", "conversation"];
+  async function runMultiContext() {
+    if (selectedMembers.length === 0) return;
+    setMultiLoading(true);
+    const result: Record<string, Record<ProjectType, AffPiece | null>> = {};
+    for (const ctx of ALL_CONTEXTS) {
+      for (const member of selectedMembers) {
+        if (!result[member.id]) result[member.id] = {} as Record<ProjectType, AffPiece | null>;
+        try {
+          const r = await fetch(`/api/affinity?project=${ctx}&memberId=${member.id}`, { cache: "no-store" });
+          const j = await r.json();
+          const aff = j?.items?.[0] ?? (j?.ok && (j?.heat || j?.heat135) ? j : null);
+          if (aff) {
+            const heat135 = aff?.heat135 ?? (aff?.heat ? Math.round((aff.heat * 135) / 100) : 0);
+            const heat100 = aff?.heat100 ?? aff?.heat ?? Math.round((heat135 / 135) * 100);
+            const { level } = levelFromHeat135(heat135);
+            result[member.id][ctx] = { ...aff, heat135, heat100, affinityLevel: level };
+          } else {
+            result[member.id][ctx] = null;
+          }
+        } catch { result[member.id][ctx] = null; }
+      }
+      await new Promise((res) => setTimeout(res, 300));
+    }
+    setMultiContextData(result);
+    setMultiLoading(false);
+  }
+
+  // Load affinity config
+  async function loadConfig() {
+    setConfigLoading(true);
+    try {
+      const r = await fetch("/api/affinity/config");
+      const j = await r.json();
+      if (j?.ok && j?.config) setAffinityConfig(j.config);
+    } catch (e) { console.error("Config load error:", e); }
+    finally { setConfigLoading(false); }
+  }
+
+  // Save affinity config
+  async function saveConfig() {
+    if (!affinityConfig) return;
+    setConfigSaving(true);
+    setConfigSaved(false);
+    try {
+      const r = await fetch("/api/affinity/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(affinityConfig),
+      });
+      const j = await r.json();
+      if (j?.ok) setConfigSaved(true);
+    } catch (e) { console.error("Config save error:", e); }
+    finally { setConfigSaving(false); setTimeout(() => setConfigSaved(false), 3000); }
+  }
+
+  // Recalculate all affinities
+  async function recalculateAll() {
+    try {
+      await fetch("/api/affinity/recalculate", { method: "POST" });
+    } catch (e) { console.error("Recalculate error:", e); }
+  }
+
+  // Load config when config tab opens
+  useEffect(() => {
+    if (activeTab === "config" && !affinityConfig) loadConfig();
+  }, [activeTab]);
 
   // Fetch brain style grouped stats + region grouped stats
   useEffect(() => {
@@ -555,28 +804,28 @@ export default function TPAffinityPage() {
       </div>
 
       {/* ── Tab Selector ── */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-zinc-800 pb-2">
-        <button
-          onClick={() => setActiveTab("community")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-            activeTab === "community" ? "bg-pink-500 text-white" : "text-[var(--rowi-muted)] hover:bg-pink-500/10"
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>{t.tabCommunity}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("benchmark")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-            activeTab === "benchmark" ? "bg-pink-500 text-white" : "text-[var(--rowi-muted)] hover:bg-pink-500/10"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4" />
-          <span>{t.tabBenchmark}</span>
-        </button>
+      <div className="flex gap-1 border-b border-gray-200 dark:border-zinc-800 pb-2 overflow-x-auto">
+        {([
+          { key: "community" as TabType, icon: Users, label: t.tabCommunity },
+          { key: "compare" as TabType, icon: ArrowLeftRight, label: t.tabCompare },
+          { key: "multicontext" as TabType, icon: Table2, label: t.tabMultiContext },
+          { key: "config" as TabType, icon: Settings, label: t.tabConfig },
+          { key: "benchmark" as TabType, icon: BarChart3, label: t.tabBenchmark },
+        ]).map(({ key, icon: Icon, label }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap text-sm ${
+              activeTab === key ? "bg-pink-500 text-white" : "text-[var(--rowi-muted)] hover:bg-pink-500/10"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            <span className="hidden sm:inline">{label}</span>
+          </button>
+        ))}
         <button
           onClick={() => setShowMonitor(!showMonitor)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--rowi-muted)] hover:bg-pink-500/10 transition-colors ml-auto"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--rowi-muted)] hover:bg-pink-500/10 transition-colors ml-auto"
         >
           <BarChart3 className="w-4 h-4" />
           <span className="hidden sm:inline">{t.monitor}</span>
@@ -663,8 +912,22 @@ export default function TPAffinityPage() {
             {/* Members List */}
             <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm">
               <div className="p-4 border-b border-gray-100 dark:border-zinc-800">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                   <h2 className="font-semibold">{t.communityTitle}</h2>
+                  <div className="flex items-center gap-2">
+                    {availableGroups.length > 0 && (
+                      <select
+                        value={groupFilter}
+                        onChange={(e) => setGroupFilter(e.target.value)}
+                        className="text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-[var(--rowi-muted)] focus:outline-none"
+                      >
+                        <option value="all">{lang === "en" ? "All Groups" : "Todos los Grupos"}</option>
+                        {availableGroups.map((g) => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                   <button
                     onClick={() => loadAffinityAll(true)}
                     disabled={loadingAll}
@@ -797,66 +1060,167 @@ export default function TPAffinityPage() {
 
             {/* Right Column: Detail + Chat */}
             <div className="flex flex-col gap-4">
-              {/* Group analysis panel */}
+              {/* Detail panel - Single member or group */}
               {selectedMembers.length > 0 && selectedMembers.some((m) => affByMember[m.id]) && (
-                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 shadow-sm max-h-[400px] overflow-y-auto">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="w-5 h-5 text-pink-500" />
-                    <h3 className="font-semibold">{t.groupAnalysis} ({selectedMembers.length})</h3>
-                  </div>
-                  {(() => {
-                    const analyzed = selectedMembers.filter((m) => affByMember[m.id]?.heat100);
-                    const avg = analyzed.length > 0 ? Math.round(analyzed.reduce((sum, m) => sum + (affByMember[m.id]?.heat100 || 0), 0) / analyzed.length) : 0;
-                    const avgLevel = levelFromHeat135((avg * 135) / 100);
-                    return (
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-center">
-                        <div className="text-3xl font-bold" style={{ color: avgLevel.color }}>{avg}%</div>
-                        <div className="text-sm text-[var(--rowi-muted)]">{t.avgAffinity}</div>
-                        <div className="text-xs mt-1" style={{ color: avgLevel.color }}>{avgLevel.level}</div>
-                        <div className="text-[10px] text-[var(--rowi-muted)] mt-2">{analyzed.length} / {selectedMembers.length} {t.analyzed}</div>
-                      </div>
-                    );
-                  })()}
-                  <div className="space-y-2">
-                    {selectedMembers.map((member) => {
-                      const aff = affByMember[member.id];
-                      if (!aff) return (
-                        <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-medium text-[var(--rowi-muted)]">{member.name.charAt(0)}</div>
-                            <span className="text-sm">{member.name}</span>
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 shadow-sm max-h-[500px] overflow-y-auto">
+                  {selectedMembers.length === 1 ? (() => {
+                    const member = selectedMembers[0];
+                    const aff = affByMember[member.id];
+                    if (!aff) return null;
+                    const heat = aff.heat100 ?? 0;
+                    const lvl = levelFromHeat135((heat * 135) / 100);
+                    return (<>
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: `linear-gradient(135deg, ${lvl.color}, ${lvl.color}99)` }}>{member.name.charAt(0)}</div>
+                          <div>
+                            <h3 className="font-semibold">{member.name}</h3>
+                            <p className="text-xs text-[var(--rowi-muted)]">{member.brainStyle || aff?.brainStyles?.theirs || "—"} · {member.group || "—"}</p>
                           </div>
-                          <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold" style={{ color: lvl.color }}>{heat}%</div>
+                          <div className="text-xs text-[var(--rowi-muted)]">{aff?.affinityLevel || "—"}</div>
+                        </div>
+                      </div>
+                      {/* Parts breakdown */}
+                      {aff?.parts && (
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                          <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                            <div className="text-lg font-semibold text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.growth}</div>
+                          </div>
+                          <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                            <div className="text-lg font-semibold text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.collaboration}</div>
+                          </div>
+                          <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                            <div className="text-lg font-semibold text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.understanding}</div>
+                          </div>
+                        </div>
+                      )}
+                      {aff?.parts && <div className="text-[10px] text-[var(--rowi-muted)] text-center mb-3 italic">{t.affinityNote}</div>}
+                      {/* Brain Styles */}
+                      {aff?.brainStyles && (
+                        <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 mb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Brain className="w-4 h-4 text-pink-500" />
+                            <span className="text-xs font-medium">{t.brainStylesLabel}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="px-2 py-1 rounded-lg bg-pink-500/10 text-pink-500 text-xs">{aff.brainStyles.yours || "—"}</span>
+                            <span className="text-[var(--rowi-muted)]">↔</span>
+                            <span className="px-2 py-1 rounded-lg bg-purple-500/10 text-purple-500 text-xs">{aff.brainStyles.theirs || member.brainStyle || "—"}</span>
+                            <span className="text-xs text-[var(--rowi-muted)]">{aff.brainStyles.compatibility}%</span>
+                          </div>
+                        </div>
+                      )}
+                      {/* Shared Talents */}
+                      {aff?.sharedTalents && aff.sharedTalents.length > 0 && (
+                        <div className="bg-green-500/10 rounded-xl p-3 mb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Sparkles className="w-4 h-4 text-green-500" />
+                            <span className="text-xs font-medium text-green-700 dark:text-green-300">{t.sharedTalentsLabel} ({aff.sharedTalents.length})</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {aff.sharedTalents.slice(0, 6).map((tal: string) => (
+                              <span key={tal} className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-700 dark:text-green-300">{tal}</span>
+                            ))}
+                            {aff.sharedTalents.length > 6 && <span className="text-xs text-green-600">+{aff.sharedTalents.length - 6}</span>}
+                          </div>
+                        </div>
+                      )}
+                      {/* Strong Competencies */}
+                      {aff?.strongCompetencies && aff.strongCompetencies.length > 0 && (
+                        <div className="bg-blue-500/10 rounded-xl p-3 mb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="w-4 h-4 text-blue-500" />
+                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t.strongCompLabel}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {aff.strongCompetencies.map((c: string) => (
+                              <span key={c} className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300">{c}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* AI Summary */}
+                      {(() => {
+                        const summary = aff?.ai_summary || aff?.interpretation;
+                        if (summary && !summary.includes("modo ahorro")) {
+                          return (
+                            <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center gap-2 mb-1"><MessageCircle className="w-3 h-3 text-[var(--rowi-muted)]" /><span className="text-[10px] text-[var(--rowi-muted)]">{t.insightLabel}</span></div>
+                              <p className="text-xs italic">{summary}</p>
+                            </div>
+                          );
+                        }
+                        return <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10"><p className="text-xs text-[var(--rowi-muted)]">{t.askCoachTip}</p></div>;
+                      })()}
+                    </>);
+                  })() : (<>
+                    {/* Group analysis */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users className="w-5 h-5 text-pink-500" />
+                      <h3 className="font-semibold">{t.groupAnalysis} ({selectedMembers.length})</h3>
+                    </div>
+                    {(() => {
+                      const analyzed = selectedMembers.filter((m) => affByMember[m.id]?.heat100);
+                      const avg = analyzed.length > 0 ? Math.round(analyzed.reduce((sum, m) => sum + (affByMember[m.id]?.heat100 || 0), 0) / analyzed.length) : 0;
+                      const avgLevel = levelFromHeat135((avg * 135) / 100);
+                      return (
+                        <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-center">
+                          <div className="text-3xl font-bold" style={{ color: avgLevel.color }}>{avg}%</div>
+                          <div className="text-sm text-[var(--rowi-muted)]">{t.avgAffinity}</div>
+                          <div className="text-xs mt-1" style={{ color: avgLevel.color }}>{avgLevel.level}</div>
+                          <div className="text-[10px] text-[var(--rowi-muted)] mt-2">{analyzed.length} / {selectedMembers.length} {t.analyzed}</div>
                         </div>
                       );
-                      const heat = aff.heat100 ?? 0;
-                      const lvl = levelFromHeat135((heat * 135) / 100);
-                      return (
-                        <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3">
-                          <div className="flex items-center justify-between">
+                    })()}
+                    <div className="space-y-2">
+                      {selectedMembers.map((member) => {
+                        const aff = affByMember[member.id];
+                        if (!aff) return (
+                          <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium" style={{ background: lvl.color }}>{member.name.charAt(0)}</div>
-                              <div>
-                                <span className="text-sm font-medium">{member.name}</span>
-                                <div className="text-[10px] text-[var(--rowi-muted)]">{member.brainStyle || "—"}</div>
+                              <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-medium text-[var(--rowi-muted)]">{member.name.charAt(0)}</div>
+                              <span className="text-sm">{member.name}</span>
+                            </div>
+                            <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                          </div>
+                        );
+                        const heat = aff.heat100 ?? 0;
+                        const lvl = levelFromHeat135((heat * 135) / 100);
+                        return (
+                          <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium" style={{ background: lvl.color }}>{member.name.charAt(0)}</div>
+                                <div>
+                                  <span className="text-sm font-medium">{member.name}</span>
+                                  <div className="text-[10px] text-[var(--rowi-muted)]">{member.brainStyle || "—"}</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-bold" style={{ color: lvl.color }}>{heat}%</div>
+                                <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-lg font-bold" style={{ color: lvl.color }}>{heat}%</div>
-                              <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
-                            </div>
+                            {aff.parts && (
+                              <div className="flex gap-2 mt-2">
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.growth}</div></div>
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.collaboration}</div></div>
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.understanding}</div></div>
+                              </div>
+                            )}
                           </div>
-                          {aff.parts && (
-                            <div className="flex gap-2 mt-2">
-                              <div className="flex-1 text-center"><div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.growth}</div></div>
-                              <div className="flex-1 text-center"><div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.collaboration}</div></div>
-                              <div className="flex-1 text-center"><div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.understanding}</div></div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                    <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10 mt-3"><p className="text-xs text-[var(--rowi-muted)]">{t.groupTip}</p></div>
+                  </>)}
                 </motion.div>
               )}
 
@@ -918,6 +1282,342 @@ export default function TPAffinityPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+         ── Compare Tab ──
+      ══════════════════════════════════════════════════════════ */}
+      {activeTab === "compare" && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <ArrowLeftRight className="w-5 h-5 text-pink-500" /> {t.compareTitle}
+            </h2>
+            <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.compareDesc}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t.compareMemberA}</label>
+              <select value={compareA} onChange={(e) => setCompareA(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/30">
+                <option value="">{t.compareSelect}</option>
+                {communityMembers.map((m) => <option key={m.id} value={m.id}>{m.name} {m.brainStyle ? `(${m.brainStyle})` : ""}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t.compareMemberB}</label>
+              <select value={compareB} onChange={(e) => setCompareB(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/30">
+                <option value="">{t.compareSelect}</option>
+                {communityMembers.filter((m) => m.id !== compareA).map((m) => <option key={m.id} value={m.id}>{m.name} {m.brainStyle ? `(${m.brainStyle})` : ""}</option>)}
+              </select>
+            </div>
+            <button onClick={runCompare} disabled={!compareA || !compareB || compareLoading} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium hover:opacity-90 disabled:opacity-50">
+              {compareLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowLeftRight className="w-4 h-4" />}
+              {t.compareRun}
+            </button>
+          </div>
+          {compareResult && (() => {
+            const memberA = communityMembers.find((m) => m.id === compareA);
+            const memberB = communityMembers.find((m) => m.id === compareB);
+            if (!memberA || !memberB) return null;
+            const heat = compareResult.heat100 ?? 0;
+            const lvl = levelFromHeat135((heat * 135) / 100);
+            return (
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6 shadow-sm space-y-6">
+                {/* Header: A vs B */}
+                <div className="flex items-center justify-between">
+                  <div className="text-center flex-1">
+                    <div className="w-14 h-14 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-500 font-bold text-lg mx-auto mb-2">{memberA.name.charAt(0)}</div>
+                    <div className="font-semibold text-sm">{memberA.name}</div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{memberA.brainStyle || "—"}</div>
+                  </div>
+                  <div className="text-center px-6">
+                    <div className="text-3xl font-bold" style={{ color: lvl.color }}>{heat}%</div>
+                    <div className="text-xs" style={{ color: lvl.color }}>{compareResult.affinityLevel}</div>
+                    <div className="text-sm text-[var(--rowi-muted)] mt-1">{t.compareVs}</div>
+                  </div>
+                  <div className="text-center flex-1">
+                    <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 font-bold text-lg mx-auto mb-2">{memberB.name.charAt(0)}</div>
+                    <div className="font-semibold text-sm">{memberB.name}</div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{memberB.brainStyle || "—"}</div>
+                  </div>
+                </div>
+                {/* Parts */}
+                {compareResult.parts && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3">{t.compareParts}</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                        <div className="text-xl font-bold text-green-500">{Math.round((compareResult.parts.growth || 0) / 135 * 100)}%</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t.growth}</div>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                        <div className="text-xl font-bold text-blue-500">{Math.round((compareResult.parts.collaboration || 0) / 135 * 100)}%</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t.collaboration}</div>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
+                        <div className="text-xl font-bold text-purple-500">{Math.round((compareResult.parts.understanding || 0) / 135 * 100)}%</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t.understanding}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* Brain styles */}
+                {compareResult.brainStyles && (
+                  <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Brain className="w-4 h-4 text-pink-500" />{t.compareBrainStyles}</h3>
+                    <div className="flex items-center justify-between">
+                      <span className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-500 text-sm">{compareResult.brainStyles.yours || "—"}</span>
+                      <span className="text-[var(--rowi-muted)]">↔</span>
+                      <span className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-500 text-sm">{compareResult.brainStyles.theirs || "—"}</span>
+                      <span className="text-sm font-semibold">{compareResult.brainStyles.compatibility}%</span>
+                    </div>
+                  </div>
+                )}
+                {/* Shared Talents */}
+                {compareResult.sharedTalents && compareResult.sharedTalents.length > 0 && (
+                  <div className="bg-green-500/10 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-green-700 dark:text-green-300"><Sparkles className="w-4 h-4 text-green-500" />{t.compareTalents} ({compareResult.sharedTalents.length})</h3>
+                    <div className="flex flex-wrap gap-2">{compareResult.sharedTalents.map((tal: string) => <span key={tal} className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-700 dark:text-green-300">{tal}</span>)}</div>
+                  </div>
+                )}
+                {/* Strong Competencies */}
+                {compareResult.strongCompetencies && compareResult.strongCompetencies.length > 0 && (
+                  <div className="bg-blue-500/10 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300"><TrendingUp className="w-4 h-4 text-blue-500" />{t.compareCompetencies}</h3>
+                    <div className="flex flex-wrap gap-2">{compareResult.strongCompetencies.map((c: string) => <span key={c} className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300">{c}</span>)}</div>
+                  </div>
+                )}
+                {/* AI Summary */}
+                {compareResult.ai_summary && !compareResult.ai_summary.includes("modo ahorro") && (
+                  <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700">
+                    <div className="flex items-center gap-2 mb-2"><MessageCircle className="w-4 h-4 text-[var(--rowi-muted)]" /><span className="text-xs text-[var(--rowi-muted)]">{t.insightLabel}</span></div>
+                    <p className="text-sm italic">{compareResult.ai_summary}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          {!compareResult && !compareLoading && (
+            <div className="text-center py-16"><ArrowLeftRight className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.compareNoData}</p></div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+         ── Multi-Context Tab ──
+      ══════════════════════════════════════════════════════════ */}
+      {activeTab === "multicontext" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Table2 className="w-5 h-5 text-pink-500" /> {t.multiTitle}</h2>
+              <p className="text-sm text-[var(--rowi-muted)]">{t.multiDesc}</p>
+            </div>
+            <button onClick={runMultiContext} disabled={selectedMembers.length === 0 || multiLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
+              {multiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              {t.multiRunAll}
+            </button>
+          </div>
+          {selectedMembers.length === 0 ? (
+            <div className="text-center py-16"><Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.multiSelectMembers}</p></div>
+          ) : multiLoading ? (
+            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t.multiCalculating}</p></div>
+          ) : Object.keys(multiContextData).length > 0 ? (
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 dark:border-zinc-800">
+                      <th className="text-left p-4 text-xs text-[var(--rowi-muted)] font-medium">{t.multiMember}</th>
+                      {ALL_CONTEXTS.map((ctx) => (
+                        <th key={ctx} className="text-center p-4 text-xs font-medium" style={{ color: PROJECT_COLORS[ctx] }}>
+                          {t[ctx === "relationship" ? "relationships" : ctx === "conversation" ? "conversation" : ctx] || ctx}
+                        </th>
+                      ))}
+                      <th className="text-center p-4 text-xs text-[var(--rowi-muted)] font-medium">{t.multiAvg}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedMembers.map((member) => {
+                      const data = multiContextData[member.id];
+                      if (!data) return null;
+                      const values = ALL_CONTEXTS.map((ctx) => data[ctx]?.heat100 ?? 0);
+                      const avg = values.length > 0 ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
+                      const avgLvl = levelFromHeat135((avg * 135) / 100);
+                      return (
+                        <tr key={member.id} className="border-b border-gray-50 dark:border-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/30">
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-500 text-xs font-medium">{member.name.charAt(0)}</div>
+                              <div>
+                                <div className="font-medium text-sm">{member.name}</div>
+                                <div className="text-[10px] text-[var(--rowi-muted)]">{member.brainStyle || "—"}</div>
+                              </div>
+                            </div>
+                          </td>
+                          {ALL_CONTEXTS.map((ctx) => {
+                            const aff = data[ctx];
+                            const val = aff?.heat100 ?? 0;
+                            const lvl = levelFromHeat135((val * 135) / 100);
+                            return (
+                              <td key={ctx} className="text-center p-4">
+                                <div className="text-lg font-bold" style={{ color: lvl.color }}>{val}%</div>
+                                <div className="text-[10px]" style={{ color: lvl.color }}>{lvl.level}</div>
+                              </td>
+                            );
+                          })}
+                          <td className="text-center p-4">
+                            <div className="text-lg font-bold" style={{ color: avgLvl.color }}>{avg}%</div>
+                            <div className="text-[10px]" style={{ color: avgLvl.color }}>{avgLvl.level}</div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {/* Averages row */}
+                    <tr className="bg-gray-50 dark:bg-zinc-800/50 font-semibold">
+                      <td className="p-4 text-xs text-[var(--rowi-muted)]">{t.multiAvg}</td>
+                      {ALL_CONTEXTS.map((ctx) => {
+                        const vals = selectedMembers.map((m) => multiContextData[m.id]?.[ctx]?.heat100 ?? 0);
+                        const avg = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+                        const lvl = levelFromHeat135((avg * 135) / 100);
+                        return <td key={ctx} className="text-center p-4"><div className="text-lg font-bold" style={{ color: lvl.color }}>{avg}%</div></td>;
+                      })}
+                      <td className="text-center p-4">
+                        {(() => {
+                          const allVals = selectedMembers.flatMap((m) => ALL_CONTEXTS.map((ctx) => multiContextData[m.id]?.[ctx]?.heat100 ?? 0));
+                          const total = allVals.length > 0 ? Math.round(allVals.reduce((a, b) => a + b, 0) / allVals.length) : 0;
+                          const lvl = levelFromHeat135((total * 135) / 100);
+                          return <div className="text-lg font-bold" style={{ color: lvl.color }}>{total}%</div>;
+                        })()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-16"><Table2 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.multiRunAll}</p></div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+         ── Config Tab ──
+      ══════════════════════════════════════════════════════════ */}
+      {activeTab === "config" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Settings className="w-5 h-5 text-pink-500" /> {t.configTitle}</h2>
+              <p className="text-sm text-[var(--rowi-muted)]">{t.configDesc}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={async () => { await recalculateAll(); }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm text-[var(--rowi-muted)] hover:text-pink-500 transition-colors">
+                <RefreshCw className="w-4 h-4" /> {t.configRecalculate}
+              </button>
+              <button onClick={saveConfig} disabled={configSaving || !affinityConfig} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
+                {configSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : configSaved ? <Award className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                {configSaving ? t.configSaving : configSaved ? t.configSaved : t.configSave}
+              </button>
+            </div>
+          </div>
+          {configLoading ? (
+            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p></div>
+          ) : !affinityConfig ? (
+            <div className="text-center py-16"><AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.configLoadError}</p></div>
+          ) : (
+            <div className="space-y-6">
+              {/* Context Weights */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{t.configWeights}</h3>
+                <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.configWeightsDesc}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {ALL_CONTEXTS.map((ctx) => {
+                    const weights = affinityConfig.contextWeights?.[ctx] || { growth: 0.33, collab: 0.34, understand: 0.33 };
+                    const total = (weights.growth || 0) + (weights.collab || 0) + (weights.understand || 0);
+                    const isValid = Math.abs(total - 1) < 0.02;
+                    return (
+                      <div key={ctx} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-3 h-3 rounded-full" style={{ background: PROJECT_COLORS[ctx] }} />
+                          <span className="text-sm font-semibold capitalize">{t[ctx === "relationship" ? "relationships" : ctx === "conversation" ? "conversation" : ctx] || ctx}</span>
+                          {!isValid && <span className="text-[10px] text-red-500 ml-auto">≠ 100%</span>}
+                        </div>
+                        {[
+                          { key: "growth", label: t.growth, color: "text-green-500" },
+                          { key: "collab", label: t.collaboration, color: "text-blue-500" },
+                          { key: "understand", label: t.understanding, color: "text-purple-500" },
+                        ].map(({ key, label, color }) => (
+                          <div key={key} className="mb-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`text-xs ${color}`}>{label}</span>
+                              <span className="text-xs font-mono">{Math.round((weights[key] || 0) * 100)}%</span>
+                            </div>
+                            <input
+                              type="range" min="0" max="100" step="5"
+                              value={Math.round((weights[key] || 0) * 100)}
+                              onChange={(e) => {
+                                const newVal = Number(e.target.value) / 100;
+                                setAffinityConfig((prev: any) => ({
+                                  ...prev,
+                                  contextWeights: { ...prev.contextWeights, [ctx]: { ...prev.contextWeights?.[ctx], [key]: newVal } },
+                                }));
+                              }}
+                              className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-pink-500"
+                              style={{ background: `linear-gradient(to right, ${PROJECT_COLORS[ctx]} ${Math.round((weights[key] || 0) * 100)}%, #e5e7eb ${Math.round((weights[key] || 0) * 100)}%)` }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Bands */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                  <h3 className="text-sm font-semibold mb-3">{t.configBands}</h3>
+                  <p className="text-xs text-[var(--rowi-muted)] mb-3">{t.configBandsDesc}</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configHot} (≥)</span>
+                      <input type="number" min="0" max="100" value={affinityConfig.bands?.hotThreshold ?? 70}
+                        onChange={(e) => setAffinityConfig((p: any) => ({ ...p, bands: { ...p.bands, hotThreshold: Number(e.target.value) } }))}
+                        className="w-20 px-2 py-1 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-center" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configWarm} (≥)</span>
+                      <input type="number" min="0" max="100" value={affinityConfig.bands?.warmThreshold ?? 45}
+                        onChange={(e) => setAffinityConfig((p: any) => ({ ...p, bands: { ...p.bands, warmThreshold: Number(e.target.value) } }))}
+                        className="w-20 px-2 py-1 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-center" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configCold} (&lt;)</span>
+                      <span className="text-sm text-[var(--rowi-muted)]">&lt; {affinityConfig.bands?.warmThreshold ?? 45}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                  <h3 className="text-sm font-semibold mb-3">{t.configCloseness}</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configClose}</span>
+                      <span className="text-sm font-mono font-bold text-green-500">{affinityConfig.closeness?.cercano ?? 1.0}x</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configNeutral}</span>
+                      <span className="text-sm font-mono font-bold text-yellow-500">{affinityConfig.closeness?.neutral ?? 0.9}x</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">{t.configFar}</span>
+                      <span className="text-sm font-mono font-bold text-red-500">{affinityConfig.closeness?.lejano ?? 0.75}x</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

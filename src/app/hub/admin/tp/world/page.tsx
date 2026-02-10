@@ -188,6 +188,7 @@ const translations = {
    Constants
 ========================================================= */
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
+const ROWIVERSE_BENCHMARK_ID = "cml290jyy0004ky04bz5qu35v"; // rowi initial data — 273K+ global assessments
 
 const COMP_KEYS = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const;
 type CompKey = (typeof COMP_KEYS)[number];
@@ -518,25 +519,18 @@ export default function TPWorldPage() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch Rowiverse benchmark ID
-      const rvInfoRes = await fetch("/api/rowiverse/stats");
-      const rvInfo = await rvInfoRes.json();
-      const rowiverseId = rvInfo.ok ? rvInfo.benchmark?.id : null;
-
-      // 2. Fetch TP + Rowiverse data in parallel
-      const fetches: Promise<Response>[] = [
+      // Fetch TP stats + Rowiverse stats in parallel (using hardcoded Rowiverse ID)
+      const [statsRes, regionRes, topRes, rvStatsRes] = await Promise.all([
         fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
         fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=region`),
         fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/top-performers`),
-      ];
-      if (rowiverseId) {
-        fetches.push(fetch(`/api/admin/benchmarks/${rowiverseId}/stats`));
-      }
+        fetch(`/api/admin/benchmarks/${ROWIVERSE_BENCHMARK_ID}/stats`),
+      ]);
 
-      const responses = await Promise.all(fetches);
-      const statsData = await responses[0].json();
-      const regionData = await responses[1].json();
-      const topData = await responses[2].json();
+      const statsData = await statsRes.json();
+      const regionData = await regionRes.json();
+      const topData = await topRes.json();
+      const rvStatsData = await rvStatsRes.json();
 
       if (statsData.ok) setTpStats(statsData.statistics);
       else throw new Error(statsData.error || "Failed to load stats");
@@ -544,14 +538,11 @@ export default function TPWorldPage() {
       if (regionData.ok) setRegionalData(regionData.groups);
       if (topData.ok) setTopPerformers(topData.topPerformers);
 
-      // 3. Rowiverse stats
-      if (rowiverseId && responses[3]) {
-        const rvStatsData = await responses[3].json();
-        if (rvStatsData.ok) {
-          setRowiverseStats(rvStatsData.statistics);
-          const rvEq = rvStatsData.statistics?.find((s: StatItem) => s.metricKey === "eqTotal");
-          setRowiverseSampleSize(rvEq?.n || rvInfo.benchmark?.totalRows || 0);
-        }
+      // Rowiverse stats (273K+ global assessments)
+      if (rvStatsData.ok) {
+        setRowiverseStats(rvStatsData.statistics);
+        const rvEq = rvStatsData.statistics?.find((s: StatItem) => s.metricKey === "eqTotal");
+        setRowiverseSampleSize(rvEq?.n || 273197);
       }
     } catch (e: any) {
       console.error("Error loading benchmark data:", e);

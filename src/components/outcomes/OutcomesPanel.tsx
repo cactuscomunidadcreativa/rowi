@@ -5,40 +5,50 @@ import OutcomeCard from "./OutcomeCard";
 
 export default function OutcomesPanel({
   present,
+  compare,
 }: {
   present: any;
   compare?: any | null;
 }) {
   const { t } = useI18n();
 
-  // Extraer los 4 outcomes principales
+  // Extraer los 4 outcomes principales con ghost/previous
   const outcomes = [
     {
       key: "effectiveness",
       title: t("outcomes.effectiveness") || "Effectiveness",
       score: present?.effectiveness?.score ?? null,
+      prevScore: compare?.effectiveness?.score ?? null,
     },
     {
       key: "relationships",
       title: t("outcomes.relationships") || "Relationships",
       score: present?.relationships?.score ?? null,
+      prevScore: compare?.relationships?.score ?? null,
     },
     {
       key: "wellbeing",
       title: t("outcomes.wellbeing") || "Wellbeing",
       score: present?.wellbeing?.score ?? null,
+      prevScore: compare?.wellbeing?.score ?? null,
     },
     {
       key: "qualityOfLife",
       title: t("outcomes.qualityOfLife") || "Quality of Life",
       score: present?.qualityOfLife?.score ?? null,
+      prevScore: compare?.qualityOfLife?.score ?? null,
     },
   ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {outcomes.map((o) => (
-        <OutcomeCard key={o.key} title={o.title} score={o.score} />
+        <OutcomeCard
+          key={o.key}
+          title={o.title}
+          score={o.score}
+          prevScore={o.prevScore}
+        />
       ))}
     </div>
   );

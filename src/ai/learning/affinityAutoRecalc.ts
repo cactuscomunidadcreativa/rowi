@@ -76,14 +76,14 @@ export async function autoRecalcAffinity({
           ? "Lejano"
           : "Neutral";
 
-      // 2️⃣ Buscar snapshots EQ de usuario y miembro
+      // 2️⃣ Buscar snapshots EQ de usuario y miembro (sin filtrar dataset)
       const snapUser = await prisma.eqSnapshot.findFirst({
-        where: { userId, dataset: "actual" },
+        where: { userId },
         orderBy: { at: "desc" },
       });
 
       const snapMember = await prisma.eqSnapshot.findFirst({
-        where: { memberId: m.id, dataset: "actual" },
+        where: { memberId: m.id },
         orderBy: { at: "desc" },
       });
 

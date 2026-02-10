@@ -78,10 +78,15 @@ export async function GET(req: NextRequest) {
     }
     snapshotWhere.push({ userId: user.id });
 
-    const snap = await prisma.eqSnapshot.findFirst({
+    /* 3b️⃣ Buscar los 2 snapshots más recientes (actual + anterior = ghost) */
+    const recentSnaps = await prisma.eqSnapshot.findMany({
       where: { OR: snapshotWhere },
       orderBy: { at: "desc" },
+      take: 2,
     });
+
+    const snap = recentSnaps[0] ?? null;
+    const prevSnap = recentSnaps[1] ?? null;
 
     if (!snap) {
       return NextResponse.json({
@@ -93,13 +98,23 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    /* 5️⃣ Cargar datasets vinculados al snapshot */
+    /* 5️⃣ Cargar datasets vinculados al snapshot actual */
     const [outs, subfactors, talents, successFactors] = await Promise.all([
       prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.eqSubfactorSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.talentSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.eqSuccessFactorSnapshot.findMany({ where: { snapshotId: snap.id } }),
     ]);
+
+    /* 5b️⃣ Si hay snapshot anterior, cargar sus outcomes para ghost */
+    let prevOuts: typeof outs = [];
+    let prevSuccessFactors: typeof successFactors = [];
+    if (prevSnap) {
+      [prevOuts, prevSuccessFactors] = await Promise.all([
+        prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: prevSnap.id } }),
+        prisma.eqSuccessFactorSnapshot.findMany({ where: { snapshotId: prevSnap.id } }),
+      ]);
+    }
 
     /* 6️⃣ Competencias SEI */
     const competencias = {
@@ -195,12 +210,54 @@ export async function GET(req: NextRequest) {
       where: { userId: user.id },
     });
 
-    /* 1️⃣3️⃣ Response Final */
+    /* 1️⃣3️⃣ Ghost / Previous snapshot data */
+    let previous: any = null;
+    if (prevSnap) {
+      const prevTotal = prevSnap.overall4 ?? avg([prevSnap.K, prevSnap.C, prevSnap.G]);
+      const getPrevOutcome = (label: string) =>
+        prevOuts.find((o) => o.label.toLowerCase() === label.toLowerCase())?.score ?? null;
+      const getPrevSF = (label: string) =>
+        prevSuccessFactors.find((s) => s.key.toLowerCase() === label.toLowerCase())?.score ?? null;
+
+      previous = {
+        date: prevSnap.at,
+        project: prevSnap.project ?? null,
+        eq: {
+          total: prevTotal,
+          competencias: {
+            EL: prevSnap.EL,
+            RP: prevSnap.RP,
+            ACT: prevSnap.ACT,
+            NE: prevSnap.NE,
+            IM: prevSnap.IM,
+            OP: prevSnap.OP,
+            EMP: prevSnap.EMP,
+            NG: prevSnap.NG,
+          },
+          pursuits: {
+            know: prevSnap.K,
+            choose: prevSnap.C,
+            give: prevSnap.G,
+          },
+        },
+        outcomes: {
+          overall4: prevSnap.overall4,
+          effectiveness: { score: getPrevOutcome("Effectiveness") },
+          relationships: { score: getPrevOutcome("Relationship") },
+          wellbeing: { score: getPrevOutcome("Wellbeing") },
+          qualityOfLife: { score: getPrevOutcome("Quality of Life") },
+        },
+      };
+    }
+
+    /* 1️⃣4️⃣ Response Final */
     return NextResponse.json({
       source: "db",
       user: { name: user.name ?? "", email: user.email ?? "" },
       mood,
       brain: { style: snap.brainStyle ?? null },
+      snapshotDate: snap.at,
+      snapshotProject: snap.project ?? null,
       eq: {
         total,
         competencias,
@@ -208,7 +265,8 @@ export async function GET(req: NextRequest) {
         talents: talentsByCluster,
       },
       outcomes,
-      success, // ✔️ success REAL aquí
+      success,
+      previous,
       signals: {
         hasSEI,
         hasProfile,

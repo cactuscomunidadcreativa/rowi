@@ -201,6 +201,11 @@ export default function ClientDashboard() {
   const eqLevel = getEqLevel(eqTotal);
   const userName = base.user?.name?.split(" ")[0] || "Usuario";
 
+  // Ghost / Previous snapshot
+  const prev = base.previous;
+  const prevEqTotal = prev?.eq?.total ?? null;
+  const eqDelta = eqTotal && prevEqTotal ? Math.round((eqTotal - prevEqTotal) * 10) / 10 : null;
+
   return (
     <div className="space-y-8 pt-20 pb-12 px-4 max-w-7xl mx-auto">
       {/* HEADER */}
@@ -311,13 +316,31 @@ export default function ClientDashboard() {
               >
                 {eqLevel.label}
               </span>
+              {eqDelta != null && eqDelta !== 0 && (
+                <span className={`text-sm font-semibold ${eqDelta > 0 ? "text-green-500" : "text-red-400"}`}>
+                  {eqDelta > 0 ? "\u2191" : "\u2193"}{Math.abs(eqDelta)}
+                </span>
+              )}
             </div>
-            <div className="mt-3 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            {/* Ghost info chip */}
+            {prev && (
+              <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                vs {prev.project || "anterior"} ({prev.date ? new Date(prev.date).toLocaleDateString() : ""})
+              </div>
+            )}
+            <div className="mt-3 relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              {/* Ghost bar (previous EQ) */}
+              {prevEqTotal != null && (
+                <div
+                  className="absolute inset-y-0 left-0 h-full rounded-full opacity-25"
+                  style={{ width: `${(prevEqTotal / EQ_MAX) * 100}%`, backgroundColor: eqLevel.color }}
+                />
+              )}
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${(eqTotal / EQ_MAX) * 100}%` }}
                 transition={{ duration: 1, delay: 0.5 }}
-                className="h-full rounded-full"
+                className="relative h-full rounded-full"
                 style={{ backgroundColor: eqLevel.color }}
               />
             </div>
@@ -333,6 +356,9 @@ export default function ClientDashboard() {
               know={base.eq?.pursuits?.know ?? null}
               choose={base.eq?.pursuits?.choose ?? null}
               give={base.eq?.pursuits?.give ?? null}
+              prevKnow={prev?.eq?.pursuits?.know ?? null}
+              prevChoose={prev?.eq?.pursuits?.choose ?? null}
+              prevGive={prev?.eq?.pursuits?.give ?? null}
               max={EQ_MAX}
             />
           </div>
@@ -364,7 +390,12 @@ export default function ClientDashboard() {
           ) ? (
             <>
               <div className="h-64">
-                <CompetenciesSpider comps={base.eq?.competencias} />
+                <CompetenciesSpider
+                  comps={base.eq?.competencias}
+                  compare={prev?.eq?.competencias ?? null}
+                  datePresent={base.snapshotProject || (base.snapshotDate ? new Date(base.snapshotDate).toLocaleDateString() : null)}
+                  dateCompare={prev?.project || (prev?.date ? new Date(prev.date).toLocaleDateString() : null)}
+                />
               </div>
               <IndicatorsLegend t={t} />
             </>
@@ -465,11 +496,30 @@ export default function ClientDashboard() {
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 {t.outcomesDesc}
               </p>
-              <OutcomesPanel present={{ ...base.outcomes, success: base.success }} />
+              <OutcomesPanel
+                present={{ ...base.outcomes, success: base.success }}
+                compare={prev?.outcomes ?? null}
+              />
             </div>
           </div>
         </div>
       </motion.div>
+
+      {/* FEEDBACK / EVOLUTION (if previous snapshot exists) */}
+      {prev && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+        >
+          <FeedbackPanel
+            present={{ competencias: base.eq?.competencias }}
+            refA={prev?.eq?.competencias ?? null}
+            datePresent={base.snapshotProject || (base.snapshotDate ? new Date(base.snapshotDate).toLocaleDateString() : null)}
+            dateCompare={prev?.project || (prev?.date ? new Date(prev.date).toLocaleDateString() : null)}
+          />
+        </motion.div>
+      )}
 
       {/* ROWI COACH */}
       <motion.div

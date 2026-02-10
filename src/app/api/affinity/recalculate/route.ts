@@ -87,12 +87,13 @@ async function autoRecalcAffinity({
           ? "Lejano"
           : "Neutral";
 
+      // Buscar snapshot del usuario por todas las vias posibles (sin filtrar dataset)
       const snapUser = await prisma.eqSnapshot.findFirst({
-        where: { userId, dataset: "actual" },
+        where: { userId },
         orderBy: { at: "desc" },
       });
       const snapMember = await prisma.eqSnapshot.findFirst({
-        where: { memberId: m.id, dataset: "actual" },
+        where: { memberId: m.id },
         orderBy: { at: "desc" },
       });
 

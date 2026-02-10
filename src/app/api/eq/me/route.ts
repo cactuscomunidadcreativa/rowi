@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
         success: [],
       });
 
-    /* 2️⃣ Buscar CommunityMembers del usuario (por userId, email, o nombre+tenant) */
+    /* 2️⃣ Buscar vínculos en paralelo: CommunityMembers, RowiVerseUser */
     const memberWhere: any[] = [{ userId: user.id }];
     if (email) memberWhere.push({ email: { equals: email, mode: "insensitive" } });
     if (user.name && user.primaryTenantId) {
@@ -65,66 +65,67 @@ export async function GET(req: NextRequest) {
         name: { startsWith: user.name, mode: "insensitive" },
       });
     }
-    const members = await prisma.communityMember.findMany({
-      where: { OR: memberWhere },
-      select: { id: true, userId: true },
-    });
 
-    /* 2b️⃣ Buscar RowiVerseUser del usuario */
-    const rvUser = await prisma.rowiVerseUser.findUnique({
-      where: { userId: user.id },
-      select: { id: true },
-    });
+    const [members, rvUser] = await Promise.all([
+      prisma.communityMember.findMany({
+        where: { OR: memberWhere },
+        select: { id: true, userId: true },
+      }),
+      prisma.rowiVerseUser.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      }),
+    ]);
 
-    /* 2c️⃣ Recopilar todos los userIds vinculados (multi-account en mismo tenant) */
+    /* 2b️⃣ Recopilar todos los userIds vinculados */
     const linkedUserIds = new Set<string>([user.id]);
     members.forEach((m) => { if (m.userId) linkedUserIds.add(m.userId); });
+    const userIdArr = Array.from(linkedUserIds);
 
-    /* 2d️⃣ Buscar RowiVerseUsers de todos los userIds vinculados */
-    const rvUsers = await prisma.rowiVerseUser.findMany({
-      where: { userId: { in: Array.from(linkedUserIds) } },
-      select: { id: true },
-    });
-
-    /* 2e️⃣ Recopilar todos los emails para búsqueda ampliada */
+    /* 2c️⃣ Si hay cuentas vinculadas, buscar sus RowiVerseUsers en paralelo */
+    let allRvIds: string[] = rvUser ? [rvUser.id] : [];
     const allEmails = new Set<string>();
     if (email) allEmails.add(email);
     if (user.email) allEmails.add(user.email.toLowerCase());
-    const userEmails = await prisma.userEmail.findMany({
-      where: { userId: { in: Array.from(linkedUserIds) } },
-      select: { email: true },
-    });
-    userEmails.forEach((ue) => { if (ue.email) allEmails.add(ue.email.toLowerCase()); });
-    // También agregar emails de los otros usuarios vinculados
+
     if (linkedUserIds.size > 1) {
-      const linkedUsers = await prisma.user.findMany({
-        where: { id: { in: Array.from(linkedUserIds) } },
-        select: { email: true },
-      });
+      const [peerRvUsers, linkedUsers] = await Promise.all([
+        prisma.rowiVerseUser.findMany({
+          where: { userId: { in: userIdArr } },
+          select: { id: true },
+        }),
+        prisma.user.findMany({
+          where: { id: { in: userIdArr } },
+          select: { email: true },
+        }),
+      ]);
+      allRvIds = peerRvUsers.map((rv) => rv.id);
       linkedUsers.forEach((u) => { if (u.email) allEmails.add(u.email.toLowerCase()); });
     }
 
-    /* 3️⃣ Seleccionar snapshot REAL — buscar por TODAS las vías posibles */
-    const snapshotWhere: any[] = [];
+    /* 3️⃣ Construir query de snapshots */
+    const snapshotWhere: any[] = [
+      { userId: { in: userIdArr } },
+    ];
     if (members.length > 0) {
       snapshotWhere.push({ memberId: { in: members.map((m) => m.id) } });
     }
-    if (rvUsers.length > 0) {
-      snapshotWhere.push({ rowiverseUserId: { in: rvUsers.map((rv) => rv.id) } });
+    if (allRvIds.length > 0) {
+      snapshotWhere.push({ rowiverseUserId: { in: allRvIds } });
     }
-    // Buscar por todos los userIds vinculados
-    snapshotWhere.push({ userId: { in: Array.from(linkedUserIds) } });
-    // Buscar también por cualquiera de los emails
     if (allEmails.size > 0) {
       snapshotWhere.push({ email: { in: Array.from(allEmails), mode: "insensitive" } });
     }
 
-    /* 3b️⃣ Buscar los 2 snapshots más recientes (actual + anterior = ghost) */
-    const recentSnaps = await prisma.eqSnapshot.findMany({
-      where: { OR: snapshotWhere },
-      orderBy: { at: "desc" },
-      take: 2,
-    });
+    /* 3b️⃣ Buscar los 2 snapshots más recientes + coach sessions en paralelo */
+    const [recentSnaps, coachSessionCount] = await Promise.all([
+      prisma.eqSnapshot.findMany({
+        where: { OR: snapshotWhere },
+        orderBy: { at: "desc" },
+        take: 2,
+      }),
+      prisma.rowiChat.count({ where: { userId: user.id } }),
+    ]);
 
     const snap = recentSnaps[0] ?? null;
     const prevSnap = recentSnaps[1] ?? null;
@@ -139,23 +140,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    /* 5️⃣ Cargar datasets vinculados al snapshot actual */
-    const [outs, subfactors, talents, successFactors] = await Promise.all([
+    /* 5️⃣ Cargar datasets vinculados — todo en paralelo */
+    const snapshotIds = prevSnap ? [snap.id, prevSnap.id] : [snap.id];
+    const [outs, subfactors, talents, successFactors, prevOuts, prevSuccessFactors] = await Promise.all([
       prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.eqSubfactorSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.talentSnapshot.findMany({ where: { snapshotId: snap.id } }),
       prisma.eqSuccessFactorSnapshot.findMany({ where: { snapshotId: snap.id } }),
+      prevSnap ? prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: prevSnap.id } }) : Promise.resolve([]),
+      prevSnap ? prisma.eqSuccessFactorSnapshot.findMany({ where: { snapshotId: prevSnap.id } }) : Promise.resolve([]),
     ]);
-
-    /* 5b️⃣ Si hay snapshot anterior, cargar sus outcomes para ghost */
-    let prevOuts: typeof outs = [];
-    let prevSuccessFactors: typeof successFactors = [];
-    if (prevSnap) {
-      [prevOuts, prevSuccessFactors] = await Promise.all([
-        prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: prevSnap.id } }),
-        prisma.eqSuccessFactorSnapshot.findMany({ where: { snapshotId: prevSnap.id } }),
-      ]);
-    }
 
     /* 6️⃣ Competencias SEI */
     const competencias = {
@@ -202,7 +196,7 @@ export async function GET(req: NextRequest) {
       talentsByCluster[cluster][t.key] = t.score ?? null;
     });
 
-    /* 🔟 SUCCESS FACTORS → AHORA SÍ REAL */
+    /* 🔟 SUCCESS FACTORS */
     const success = successFactors.map((s) => ({
       key: s.key,
       score: s.score,
@@ -246,19 +240,12 @@ export async function GET(req: NextRequest) {
     const hasSEI = snap !== null && (snap.K != null || snap.C != null || snap.G != null);
     const hasProfile = user.name != null && user.name.length > 0;
 
-    // Count coach sessions (from RowiChat)
-    const coachSessionCount = await prisma.rowiChat.count({
-      where: { userId: user.id },
-    });
-
     /* 1️⃣3️⃣ Ghost / Previous snapshot data */
     let previous: any = null;
     if (prevSnap) {
       const prevTotal = prevSnap.overall4 ?? avg([prevSnap.K, prevSnap.C, prevSnap.G]);
       const getPrevOutcome = (label: string) =>
         prevOuts.find((o) => o.label.toLowerCase() === label.toLowerCase())?.score ?? null;
-      const getPrevSF = (label: string) =>
-        prevSuccessFactors.find((s) => s.key.toLowerCase() === label.toLowerCase())?.score ?? null;
 
       previous = {
         date: prevSnap.at,

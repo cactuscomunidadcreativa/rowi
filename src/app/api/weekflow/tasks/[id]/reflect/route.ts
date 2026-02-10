@@ -13,12 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const { id: taskId } = await params;
     const body = await req.json();
@@ -98,12 +93,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const { id: taskId } = await params;
 

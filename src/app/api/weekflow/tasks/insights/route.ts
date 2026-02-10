@@ -16,20 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verificar acceso a insights (requiere plan con weekflowInsights)
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
-
-    if (!auth.plan?.weekflowInsights) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.insightsRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "MONTHLY";

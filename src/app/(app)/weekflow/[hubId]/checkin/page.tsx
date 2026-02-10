@@ -60,13 +60,30 @@ export default function WeekFlowCheckinPage() {
         }
       }
 
-      // Fetch vocabulary level (para saber qué emociones mostrar)
-      // Por ahora usamos nivel default, luego se puede obtener del API
-      setVocabulary({
-        level: "DESAFIO",
-        totalCheckins: 0,
-        uniqueEmotionsUsed: 0,
-      });
+      // Fetch real vocabulary level from API
+      if (sessionData.ok && sessionData.session) {
+        const vocabRes = await fetch(`/api/weekflow/checkin?sessionId=${sessionData.session.id}`);
+        const vocabData = await vocabRes.json();
+        if (vocabData.ok && vocabData.vocabulary) {
+          setVocabulary({
+            level: vocabData.vocabulary.level || "DESAFIO",
+            totalCheckins: vocabData.vocabulary.totalCheckins || 0,
+            uniqueEmotionsUsed: vocabData.vocabulary.uniqueEmotionsUsed || 0,
+          });
+        } else {
+          setVocabulary({
+            level: "DESAFIO",
+            totalCheckins: 0,
+            uniqueEmotionsUsed: 0,
+          });
+        }
+      } else {
+        setVocabulary({
+          level: "DESAFIO",
+          totalCheckins: 0,
+          uniqueEmotionsUsed: 0,
+        });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Error al cargar datos");

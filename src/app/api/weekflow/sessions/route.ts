@@ -43,12 +43,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
+    // if (!auth.plan?.weekflowAccess) { ... }
 
     const { searchParams } = new URL(req.url);
     const hubId = searchParams.get("hubId");
@@ -58,13 +54,45 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "hubId required" }, { status: 400 });
     }
 
-    // Obtener configuración
-    const config = await prisma.weekFlowConfig.findFirst({
+    // Obtener o auto-crear configuración
+    let config = await prisma.weekFlowConfig.findFirst({
       where: { hubId },
     });
 
     if (!config) {
-      return NextResponse.json({ ok: false, error: "Config not found" }, { status: 404 });
+      // Auto-create config — try Hub first, then RowiCommunity
+      const hub = await prisma.hub.findUnique({
+        where: { id: hubId },
+        select: { tenantId: true, name: true },
+      });
+
+      if (hub) {
+        config = await prisma.weekFlowConfig.create({
+          data: {
+            hubId,
+            tenantId: hub.tenantId,
+            name: `WeekFlow - ${hub.name}`,
+          },
+        });
+      } else {
+        // Check if hubId is actually a RowiCommunity ID
+        const community = await prisma.rowiCommunity.findUnique({
+          where: { id: hubId },
+          select: { tenantId: true, name: true, hubId: true },
+        });
+
+        if (community) {
+          config = await prisma.weekFlowConfig.create({
+            data: {
+              hubId, // using community ID as hubId
+              tenantId: community.tenantId,
+              name: `WeekFlow - ${community.name}`,
+            },
+          });
+        } else {
+          return NextResponse.json({ ok: false, error: "Hub/Community not found" }, { status: 404 });
+        }
+      }
     }
 
     if (current) {

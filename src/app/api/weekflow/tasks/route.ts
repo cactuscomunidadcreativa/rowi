@@ -17,17 +17,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    // Personal tasks are available for everyone (no plan check)
-    // Team features (hubId filter) require weekflowAccess
+    // Plan check bypassed — WeekFlow open for all users
     const { searchParams } = new URL(req.url);
     const hubId = searchParams.get("hubId");
-
-    if (hubId && !auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
 
     const status = searchParams.get("status");
     const includeCompleted = searchParams.get("includeCompleted") === "true";
@@ -107,14 +99,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // Personal tasks (no hubId) are available for everyone
-    // Team tasks (with hubId) require weekflowAccess plan
-    if (body.hubId && !auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
     const {
       title,
       description,
@@ -250,13 +235,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Task not found" }, { status: 404 });
     }
 
-    // Team tasks (with hubId) require weekflowAccess plan
-    if (existing.hubId && !auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     if (existing.userId !== auth.id) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
@@ -374,13 +353,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
     }
 
-    // Team tasks (with hubId) require weekflowAccess plan
-    if (existing.hubId && !auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     // Soft delete (cambiar status a CANCELLED)
     await prisma.rowiTask.update({

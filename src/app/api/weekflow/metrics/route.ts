@@ -17,12 +17,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const { searchParams } = new URL(req.url);
     const hubId = searchParams.get("hubId");

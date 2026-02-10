@@ -14,12 +14,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Verificar acceso por plan
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const { searchParams } = new URL(req.url);
     const hubId = searchParams.get("hubId");
@@ -34,23 +29,39 @@ export async function GET(req: NextRequest) {
     });
 
     if (!config) {
-      // Auto-crear configuración por defecto
+      // Auto-crear configuración — try Hub first, then RowiCommunity
       const hub = await prisma.hub.findUnique({
         where: { id: hubId },
         select: { tenantId: true, name: true },
       });
 
-      if (!hub) {
-        return NextResponse.json({ ok: false, error: "Hub not found" }, { status: 404 });
-      }
+      if (hub) {
+        config = await prisma.weekFlowConfig.create({
+          data: {
+            hubId,
+            tenantId: hub.tenantId,
+            name: `WeekFlow - ${hub.name}`,
+          },
+        });
+      } else {
+        // Check if hubId is actually a RowiCommunity ID
+        const community = await prisma.rowiCommunity.findUnique({
+          where: { id: hubId },
+          select: { tenantId: true, name: true },
+        });
 
-      config = await prisma.weekFlowConfig.create({
-        data: {
-          hubId,
-          tenantId: hub.tenantId,
-          name: `WeekFlow - ${hub.name}`,
-        },
-      });
+        if (community) {
+          config = await prisma.weekFlowConfig.create({
+            data: {
+              hubId,
+              tenantId: community.tenantId,
+              name: `WeekFlow - ${community.name}`,
+            },
+          });
+        } else {
+          return NextResponse.json({ ok: false, error: "Hub/Community not found" }, { status: 404 });
+        }
+      }
     }
 
     return NextResponse.json({ ok: true, config });
@@ -71,12 +82,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const body = await req.json();
     const { hubId, tenantId, name, ...settings } = body;
@@ -124,12 +130,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
 
     const body = await req.json();
     const { id, ...updates } = body;

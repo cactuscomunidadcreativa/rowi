@@ -13,12 +13,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
+    // if (!auth.plan?.weekflowAccess) { ... }
 
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("sessionId");
@@ -27,16 +23,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "sessionId required" }, { status: 400 });
     }
 
-    const checkin = await prisma.weekFlowMoodCheckin.findUnique({
-      where: {
-        sessionId_userId: {
-          sessionId,
-          userId: auth.id,
+    const [checkin, vocabulary] = await Promise.all([
+      prisma.weekFlowMoodCheckin.findUnique({
+        where: {
+          sessionId_userId: {
+            sessionId,
+            userId: auth.id,
+          },
         },
+      }),
+      prisma.emotionVocabulary.findUnique({
+        where: { userId: auth.id },
+      }),
+    ]);
+
+    return NextResponse.json({
+      ok: true,
+      checkin,
+      vocabulary: vocabulary || {
+        level: "DESAFIO",
+        totalCheckins: 0,
+        uniqueEmotionsUsed: 0,
+        progressToNextLevel: 0,
       },
     });
-
-    return NextResponse.json({ ok: true, checkin });
   } catch (error) {
     console.error("[WeekFlow Checkin GET]", error);
     return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
@@ -54,12 +64,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!auth.plan?.weekflowAccess) {
-      return NextResponse.json(
-        { ok: false, error: "weekflow.errors.planRequired" },
-        { status: 403 }
-      );
-    }
+    // Plan check bypassed — WeekFlow open for all users
+    // if (!auth.plan?.weekflowAccess) { ... }
 
     const body = await req.json();
     const { sessionId, emotion, intensity, note } = body;

@@ -68,7 +68,7 @@ const translations = {
     noAlertsMatch: "No hay alertas que coincidan con los filtros seleccionados",
     teamHealthTitle: "Salud EQ por País",
     teamHealthDesc: "Nivel SEI y salud relativa al benchmark TP por país",
-    health: "Salud",
+    health: "Nivel SEI",
     eqLevel: "Nivel SEI",
     trend: "Tendencia",
     topStrength: "Mayor Fortaleza",
@@ -137,7 +137,7 @@ const translations = {
     noAlertsMatch: "No alerts match the selected filters",
     teamHealthTitle: "EQ Health by Country",
     teamHealthDesc: "SEI level and relative health vs TP benchmark by country",
-    health: "Health",
+    health: "SEI Level",
     eqLevel: "SEI Level",
     trend: "Trend",
     topStrength: "Top Strength",
@@ -248,7 +248,6 @@ interface TeamHealthItem {
   count: number;
   avgEQ: number;
   eqLevel: { key: string; label: string; labelEN: string; color: string; emoji: string };
-  healthScore: number; // 0-100 relative to TP benchmark
   strength: string;
   gap: string;
 }
@@ -277,28 +276,6 @@ function typeIcon(type: string) {
   }
 }
 
-function eqLevelBgClass(levelKey: string) {
-  switch (levelKey) {
-    case "expert": return "bg-emerald-500";
-    case "skilled": return "bg-purple-500";
-    case "functional": return "bg-blue-500";
-    case "emerging": return "bg-amber-500";
-    case "challenge": return "bg-red-500";
-    default: return "bg-gray-500";
-  }
-}
-
-function eqLevelTextClass(levelKey: string) {
-  switch (levelKey) {
-    case "expert": return "text-emerald-600 dark:text-emerald-400";
-    case "skilled": return "text-purple-600 dark:text-purple-400";
-    case "functional": return "text-blue-600 dark:text-blue-400";
-    case "emerging": return "text-amber-600 dark:text-amber-400";
-    case "challenge": return "text-red-600 dark:text-red-400";
-    default: return "text-gray-600 dark:text-gray-400";
-  }
-}
-
 function eqLevelRingClass(levelKey: string) {
   switch (levelKey) {
     case "expert": return "ring-emerald-500/30";
@@ -308,20 +285,6 @@ function eqLevelRingClass(levelKey: string) {
     case "challenge": return "ring-red-500/30";
     default: return "ring-gray-500/30";
   }
-}
-
-function healthColor(h: number) {
-  if (h >= 65) return "bg-emerald-500";
-  if (h >= 45) return "bg-blue-500";
-  if (h >= 30) return "bg-amber-500";
-  return "bg-red-500";
-}
-
-function healthTextColor(h: number) {
-  if (h >= 65) return "text-emerald-600 dark:text-emerald-400";
-  if (h >= 45) return "text-blue-600 dark:text-blue-400";
-  if (h >= 30) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
 }
 
 function compLabel(comp: string, lang: string): string {
@@ -372,12 +335,6 @@ export default function TPAlertsPage() {
     }
     load();
   }, []);
-
-  /* ---- Compute overall TP average for relative health ---- */
-  const tpOverallEQ = useMemo(() => {
-    const stat = overallStats.find((s) => s.metricKey === "eqTotal");
-    return stat?.mean || 101.8; // TP global average
-  }, [overallStats]);
 
   /* ---- Compute alerts from real country data ---- */
   // Health = relative to TP benchmark. SEI Level = absolute EQ scale.
@@ -498,22 +455,16 @@ export default function TPAlertsPage() {
       const strongest = COMP_KEYS[compValues.indexOf(maxVal)];
       const weakest = COMP_KEYS[compValues.indexOf(minVal)];
 
-      // Health score: 0-100 relative to TP benchmark
-      // 50 = exactly at TP average, 100 = at Expert level, 0 = at Challenge level
-      const diff = avgEQ - tpOverallEQ;
-      const healthScore = Math.round(Math.max(0, Math.min(100, 50 + (diff / 15) * 50)));
-
       return {
         name: group.name,
         count: group.count,
         avgEQ,
         eqLevel: { key: level.key, label: level.label, labelEN: level.labelEN, color: level.color, emoji: level.emoji },
-        healthScore,
         strength: strongest,
         gap: weakest,
       };
     });
-  }, [countryGroups, tpOverallEQ]);
+  }, [countryGroups]);
 
   /* ---- Region metrics for monitoring section ---- */
   const regionMetricsData = useMemo(() => {
@@ -716,28 +667,33 @@ export default function TPAlertsPage() {
             return (
             <motion.div key={team.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`w-4 h-4 rounded-full ${healthColor(team.healthScore)} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 ${team.healthScore >= 65 ? "ring-emerald-500/30" : team.healthScore >= 45 ? "ring-blue-500/30" : team.healthScore >= 30 ? "ring-amber-500/30" : "ring-red-500/30"}`} />
+                <div
+                  className="w-4 h-4 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900"
+                  style={{ backgroundColor: team.eqLevel.color, boxShadow: `0 0 0 2px ${team.eqLevel.color}30` }}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm truncate">{team.name}</div>
                   <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.count} {t.assessments}</span>
                 </div>
               </div>
-              {/* Health Score (relative to TP) */}
+              {/* SEI Level */}
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.health}</span>
-                <span className={`text-2xl font-bold ${healthTextColor(team.healthScore)}`}>{team.healthScore}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t.eqLevel}</span>
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                  style={{ backgroundColor: `${team.eqLevel.color}20`, color: team.eqLevel.color }}
+                >
+                  {team.eqLevel.emoji} {levelLabel}
+                </span>
               </div>
-              <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-3">
-                <motion.div className={`h-full rounded-full ${healthColor(team.healthScore)}`} initial={{ width: 0 }} whileInView={{ width: `${team.healthScore}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} />
-              </div>
-              {/* EQ Level + Average */}
+              {/* EQ Average */}
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-[var(--rowi-muted)]">{t.avgEQ}</span>
-                <span className="text-sm font-mono font-medium">{team.avgEQ.toFixed(1)}</span>
+                <span className="text-2xl font-bold" style={{ color: team.eqLevel.color }}>{team.avgEQ.toFixed(1)}</span>
               </div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.eqLevel}</span>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${eqLevelBgClass(team.eqLevel.key)}/15 ${eqLevelTextClass(team.eqLevel.key)}`}>{team.eqLevel.emoji} {levelLabel}</span>
+              {/* EQ gauge bar based on real SEI scale */}
+              <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-3">
+                <motion.div className="h-full rounded-full" style={{ backgroundColor: team.eqLevel.color }} initial={{ width: 0 }} whileInView={{ width: `${Math.max(0, Math.min(100, ((team.avgEQ - 65) / 70) * 100))}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} />
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">

@@ -17,9 +17,7 @@ import {
   Globe,
   Brain,
   Target,
-  Activity,
   TrendingUp,
-  Heart,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getEqLevel } from "@/domains/eq/lib/eqLevels";
@@ -79,7 +77,6 @@ const translations = {
       "Tarjetas de resumen para cada grupo con metricas clave de EQ y salud",
     assessments: "evaluaciones",
     avgEQ: "EQ Prom.",
-    healthScore: "Salud",
     teamComparison: "Comparacion de Grupos",
     teamComparisonDesc:
       "Selecciona 2 grupos para comparar competencias, resultados y estilos cerebrales",
@@ -88,14 +85,14 @@ const translations = {
     competencyRadar: "Radar de Competencias",
     outcomesComparison: "Comparacion de Resultados",
     brainStyleComparison: "Distribucion de Estilos Cerebrales",
-    healthComparison: "Comparacion de Salud",
+    seiLevelComparison: "Comparación de Nivel SEI",
     effectiveness: "Efectividad",
     relationships: "Relaciones",
     wellbeing: "Bienestar",
     qualityOfLife: "Calidad de Vida",
-    teamHealthDashboard: "Dashboard de Salud de Grupos",
+    teamHealthDashboard: "Dashboard SEI de Grupos",
     teamHealthDesc:
-      "Indicadores de salud para todos los grupos con fortalezas y areas de mejora",
+      "Nivel SEI de cada grupo con fortalezas y áreas de mejora",
     strength: "Fortaleza",
     gap: "Brecha",
     brainStyleDist: "Distribucion de Estilos Cerebrales",
@@ -111,7 +108,7 @@ const translations = {
     topTeam: "Mejor Grupo",
     infoTitle: "Datos de Equipos TP",
     infoDesc:
-      "Este analisis muestra datos agregados de equipos de Teleperformance. Todos los datos individuales estan anonimizados. Los indicadores de salud se calculan combinando EQ promedio, distribucion de competencias y resultados de vida.",
+      "Este análisis muestra datos agregados de equipos de Teleperformance. Todos los datos individuales están anonimizados. Los niveles SEI se basan en la escala oficial de Six Seconds (65-135).",
     navPeople: "People",
     navSelection: "Selection",
     compEL: "Alfabetizacion Emocional",
@@ -143,7 +140,6 @@ const translations = {
       "Summary cards for each group with key EQ and health metrics",
     assessments: "assessments",
     avgEQ: "Avg EQ",
-    healthScore: "Health",
     teamComparison: "Group Comparison",
     teamComparisonDesc:
       "Select 2 groups to compare competencies, outcomes, and brain styles",
@@ -152,14 +148,14 @@ const translations = {
     competencyRadar: "Competency Radar",
     outcomesComparison: "Outcomes Comparison",
     brainStyleComparison: "Brain Style Distribution",
-    healthComparison: "Health Comparison",
+    seiLevelComparison: "SEI Level Comparison",
     effectiveness: "Effectiveness",
     relationships: "Relationships",
     wellbeing: "Wellbeing",
     qualityOfLife: "Quality of Life",
-    teamHealthDashboard: "Group Health Dashboard",
+    teamHealthDashboard: "Group SEI Dashboard",
     teamHealthDesc:
-      "Health indicators for all groups with strengths and improvement areas",
+      "SEI level for each group with strengths and improvement areas",
     strength: "Strength",
     gap: "Gap",
     brainStyleDist: "Brain Style Distribution",
@@ -175,7 +171,7 @@ const translations = {
     topTeam: "Top Group",
     infoTitle: "TP Team Data",
     infoDesc:
-      "This analysis shows aggregated Teleperformance team data. All individual data is anonymized. Health indicators are calculated combining average EQ, competency distribution, and life outcomes.",
+      "This analysis shows aggregated Teleperformance team data. All individual data is anonymized. SEI levels are based on the official Six Seconds scale (65-135).",
     navPeople: "People",
     navSelection: "Selection",
     compEL: "Emotional Literacy",
@@ -218,18 +214,6 @@ interface ApiGroup {
    Helper functions
 ========================================================= */
 
-/**
- * Compute a health score (0-100) RELATIVE to TP benchmark average (~101.8).
- * Uses the same formula as alerts page: 50 + (diff / 15) * 50
- * 50 = exactly at TP average, >50 = above, <50 = below
- */
-function computeHealthScore(metrics: Record<string, GroupMetric>, tpOverallEQ: number): number {
-  const avgEQ = metrics.eqTotal?.mean ?? 100;
-  const diff = avgEQ - tpOverallEQ;
-  const normalized = Math.round(Math.max(0, Math.min(100, 50 + (diff / 15) * 50)));
-  return normalized;
-}
-
 /** Extract competency means as a flat record */
 function getCompetencyMeans(
   metrics: Record<string, GroupMetric>,
@@ -250,25 +234,6 @@ function getOutcomeMeans(
     result[k] = metrics[k]?.mean ?? 100;
   }
   return result;
-}
-
-function getHealthColor(score: number) {
-  if (score >= 55) return "text-green-500";
-  if (score >= 45) return "text-blue-500";
-  return "text-yellow-500";
-}
-
-function getHealthBg(score: number) {
-  if (score >= 55) return "bg-green-500/10";
-  if (score >= 45) return "bg-blue-500/10";
-  return "bg-yellow-500/10";
-}
-
-function getHealthIcon(score: number) {
-  if (score >= 55) return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-  if (score >= 45)
-    return <Activity className="w-5 h-5 text-blue-500" />;
-  return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
 }
 
 function getBestCompetency(competencies: Record<string, number>) {
@@ -479,28 +444,11 @@ export default function TPTeamsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState("country");
-  const [tpOverallEQ, setTpOverallEQ] = useState(101.8); // default fallback
 
   /* ---- UI State ---- */
   const [compareA, setCompareA] = useState<string>("");
   const [compareB, setCompareB] = useState<string>("");
   const [selectedBrainGroup, setSelectedBrainGroup] = useState<string>("");
-
-  /* ---- Fetch overall TP stats (once) ---- */
-  useEffect(() => {
-    async function loadOverall() {
-      try {
-        const res = await fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`);
-        const json = await res.json();
-        if (json.ok && json.stats?.eqTotal?.mean) {
-          setTpOverallEQ(json.stats.eqTotal.mean);
-        }
-      } catch (e) {
-        console.error("Failed to fetch overall stats:", e);
-      }
-    }
-    loadOverall();
-  }, []);
 
   /* ---- Fetch grouped stats ---- */
   useEffect(() => {
@@ -538,13 +486,12 @@ export default function TPTeamsPage() {
       return {
         ...g,
         avgEQ,
-        healthScore: computeHealthScore(g.metrics, tpOverallEQ),
         competencies: getCompetencyMeans(g.metrics),
         outcomes: getOutcomeMeans(g.metrics),
         eqLevel,
       };
     });
-  }, [groups, tpOverallEQ]);
+  }, [groups]);
 
   const totalAssessments = useMemo(
     () => enrichedGroups.reduce((s, g) => s + g.count, 0),
@@ -574,16 +521,11 @@ export default function TPTeamsPage() {
   function handleRetry() {
     setLoading(true);
     setError(null);
-    Promise.all([
-      fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=${groupBy}`).then(r => r.json()),
-      fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`).then(r => r.json()),
-    ])
-      .then(([groupedJson, statsJson]) => {
-        if (groupedJson.ok) setGroups(groupedJson.groups ?? []);
-        else setError(groupedJson.error || "Unknown error");
-        if (statsJson.ok && statsJson.stats?.eqTotal?.mean) {
-          setTpOverallEQ(statsJson.stats.eqTotal.mean);
-        }
+    fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=${groupBy}`)
+      .then(r => r.json())
+      .then((json) => {
+        if (json.ok) setGroups(json.groups ?? []);
+        else setError(json.error || "Unknown error");
       })
       .catch(() => setError("Network error"))
       .finally(() => setLoading(false));
@@ -819,13 +761,11 @@ export default function TPTeamsPage() {
                     </div>
                   </div>
 
-                  {/* Health relative to TP */}
+                  {/* SEI Level */}
                   <div className="flex items-center gap-2 text-xs">
-                    {getHealthIcon(group.healthScore)}
-                    <span
-                      className={`font-medium ${getHealthColor(group.healthScore)}`}
-                    >
-                      {t.healthScore}: {group.healthScore}
+                    <span className="text-sm">{group.eqLevel.emoji}</span>
+                    <span className="font-medium" style={{ color: group.eqLevel.color }}>
+                      {lang === "en" ? group.eqLevel.labelEN : group.eqLevel.label}
                     </span>
                   </div>
                 </motion.div>
@@ -1072,19 +1012,19 @@ export default function TPTeamsPage() {
                 </div>
               </div>
 
-              {/* Health + EQ Level Comparison */}
+              {/* SEI Level Comparison */}
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-purple-500" />{" "}
-                  {t.healthComparison}
+                  <Target className="w-5 h-5 text-purple-500" />{" "}
+                  {t.seiLevelComparison}
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {[groupA, groupB].map((group, idx) => {
                     const eqLvl = getEqLevel(group.avgEQ);
                     const circumference = 2 * Math.PI * 45;
-                    const offset =
-                      circumference -
-                      (group.healthScore / 100) * circumference;
+                    // EQ gauge: map 65-135 to 0-100%
+                    const eqPct = Math.max(0, Math.min(100, ((group.avgEQ - 65) / 70) * 100));
+                    const offset = circumference - (eqPct / 100) * circumference;
                     return (
                       <div
                         key={group.name}
@@ -1104,7 +1044,7 @@ export default function TPTeamsPage() {
                             cx="60"
                             cy="60"
                             r="45"
-                            stroke={idx === 0 ? "#7B2D8E" : "#E31937"}
+                            stroke={eqLvl.color}
                             strokeWidth="8"
                             fill="none"
                             strokeLinecap="round"
@@ -1143,12 +1083,6 @@ export default function TPTeamsPage() {
                         <div className="text-sm font-medium mt-2 text-center">
                           {group.name}
                         </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          {getHealthIcon(group.healthScore)}
-                          <span className={`text-xs ${getHealthColor(group.healthScore)}`}>
-                            {t.healthScore}: {group.healthScore}
-                          </span>
-                        </div>
                       </div>
                     );
                   })}
@@ -1184,7 +1118,7 @@ export default function TPTeamsPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold text-sm">{group.name}</span>
-                  {getHealthIcon(group.healthScore)}
+                  <span className="text-lg">{group.eqLevel.emoji}</span>
                 </div>
                 {/* EQ Level badge */}
                 <div className="flex items-center gap-2 mb-3">

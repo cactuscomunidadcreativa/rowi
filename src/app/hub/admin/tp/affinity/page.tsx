@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Heart, Users, Sparkles, Brain, Zap, Target,
   Building2, Globe, Shield, TrendingUp, Award, Loader2, AlertCircle,
+  Search, RefreshCw, BarChart3, UserCheck, MessageCircle, Send, Bot, X,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getEqLevel } from "@/domains/eq/lib/eqLevels";
@@ -17,6 +18,7 @@ import {
   BRAIN_STYLES as BRAIN_STYLE_DATA,
   type BrainStyleKey,
 } from "@/domains/eq/lib/dictionary";
+import AffinityMonitor from "@/components/affinity/AffinityMonitor";
 
 /* =========================================================
    Constants
@@ -80,6 +82,44 @@ const translations = {
     navBenchmark: "Benchmark",
     navEco: "ECO",
 
+    // Community Affinity section
+    communityTitle: "Afinidad de Comunidad",
+    communityDesc: "Analisis de afinidad emocional entre miembros de tu comunidad",
+    searchPlaceholder: "Buscar por nombre, grupo o pais...",
+    recalculate: "Recalcular",
+    calculating: "Calculando afinidad...",
+    noMembers: "No se encontraron miembros",
+    overallAffinity: "Afinidad General",
+    members: "Miembros",
+    selected: "Seleccionados",
+    context: "Contexto",
+    relationships: "Relaciones",
+    leadership: "Liderazgo",
+    execution: "Ejecucion",
+    innovation: "Innovacion",
+    decision: "Decisiones",
+    conversation: "Comunicacion",
+    analyzeSelected: "Analizar Seleccionados",
+    selectedMembers: "seleccionados",
+    clearSelection: "Limpiar",
+    monitor: "Monitor",
+    monitorTitle: "Affinity Monitor",
+    forAnalysis: "para analizar",
+    inCommunity: "en tu comunidad",
+    coachSubtitle: "Tu coach de relaciones",
+    askRowi: "Pregunta sobre relaciones...",
+    avgAffinity: "Afinidad Promedio",
+    analyzed: "analizados",
+    notCalculated: "Sin calcular",
+    growth: "Crecimiento",
+    collaboration: "Colaboracion",
+    understanding: "Entendimiento",
+    groupAnalysis: "Analisis de Grupo",
+    viewBenchmark: "Ver Benchmark",
+    viewCommunity: "Ver Comunidad",
+    tabBenchmark: "Benchmark TP",
+    tabCommunity: "Mi Comunidad",
+
     loading: "Cargando datos de afinidad...",
     errorTitle: "Error al cargar datos",
     errorDesc: "No se pudieron cargar los datos del benchmark. Intenta de nuevo.",
@@ -138,6 +178,44 @@ const translations = {
     navBenchmark: "Benchmark",
     navEco: "ECO",
 
+    // Community Affinity section
+    communityTitle: "Community Affinity",
+    communityDesc: "Emotional affinity analysis between your community members",
+    searchPlaceholder: "Search by name, group or country...",
+    recalculate: "Recalculate",
+    calculating: "Calculating affinity...",
+    noMembers: "No members found",
+    overallAffinity: "Overall Affinity",
+    members: "Members",
+    selected: "Selected",
+    context: "Context",
+    relationships: "Relationships",
+    leadership: "Leadership",
+    execution: "Execution",
+    innovation: "Innovation",
+    decision: "Decisions",
+    conversation: "Communication",
+    analyzeSelected: "Analyze Selected",
+    selectedMembers: "selected",
+    clearSelection: "Clear",
+    monitor: "Monitor",
+    monitorTitle: "Affinity Monitor",
+    forAnalysis: "for analysis",
+    inCommunity: "in your community",
+    coachSubtitle: "Your relationship coach",
+    askRowi: "Ask about relationships...",
+    avgAffinity: "Average Affinity",
+    analyzed: "analyzed",
+    notCalculated: "Not calculated",
+    growth: "Growth",
+    collaboration: "Collaboration",
+    understanding: "Understanding",
+    groupAnalysis: "Group Analysis",
+    viewBenchmark: "View Benchmark",
+    viewCommunity: "View Community",
+    tabBenchmark: "TP Benchmark",
+    tabCommunity: "My Community",
+
     loading: "Loading affinity data...",
     errorTitle: "Error loading data",
     errorDesc: "Could not load benchmark data. Please try again.",
@@ -171,6 +249,39 @@ interface RegionGroup {
 }
 
 /* =========================================================
+   Community member types
+========================================================= */
+type CommunityMember = {
+  id: string;
+  name: string;
+  email?: string;
+  country?: string;
+  brainStyle?: string;
+  group?: string;
+  closeness?: string;
+  affinityPercent?: number | null;
+};
+
+type ProjectType = "relationship" | "leadership" | "execution" | "innovation" | "decision" | "conversation";
+
+const PROJECT_COLORS: Record<ProjectType, string> = {
+  relationship: "#E53935",
+  leadership: "#7B1FA2",
+  execution: "#43A047",
+  innovation: "#FF9800",
+  decision: "#1E88E5",
+  conversation: "#00ACC1",
+};
+
+function levelFromHeat135(h: number) {
+  if (h >= 118) return { level: "Experto", color: "#22c55e" };
+  if (h >= 108) return { level: "Diestro", color: "#84cc16" };
+  if (h >= 92) return { level: "Funcional", color: "#eab308" };
+  if (h >= 82) return { level: "Emergente", color: "#f97316" };
+  return { level: "Desafio", color: "#ef4444" };
+}
+
+/* =========================================================
    Complementary pairs logic
 ========================================================= */
 const COMPLEMENTARY_PAIRS: { a: string; b: string; reasonEs: string; reasonEn: string; score: number }[] = [
@@ -189,10 +300,126 @@ export default function TPAffinityPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
+  const [activeTab, setActiveTab] = useState<"community" | "benchmark">("community");
   const [brainStyleGroups, setBrainStyleGroups] = useState<BrainStyleGroup[]>([]);
   const [regionGroups, setRegionGroups] = useState<RegionGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Community affinity state
+  const [communityMembers, setCommunityMembers] = useState<CommunityMember[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<CommunityMember[]>([]);
+  const [affByMember, setAffByMember] = useState<Record<string, any>>({});
+  const [loadingByMember, setLoadingByMember] = useState<Record<string, boolean>>({});
+  const [project, setProject] = useState<ProjectType>("relationship");
+  const [q, setQ] = useState("");
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [showMonitor, setShowMonitor] = useState(false);
+  const [chat, setChat] = useState<{ role: "assistant" | "user"; content: string }[]>([
+    { role: "assistant", content: lang === "en" ? "Hi, I'm Rowi. Who would you like to connect with better today?" : "Hola, soy Rowi. ¿Con quién te gustaría conectar mejor hoy?" },
+  ]);
+  const [coachInput, setCoachInput] = useState("");
+  const [rowiTyping, setRowiTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Load community members
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const r = await fetch("/api/community/members", { cache: "no-store" });
+        const j = await r.json();
+        setCommunityMembers(Array.isArray(j?.members) ? j.members : []);
+      } catch (err) {
+        console.error("Error loading members:", err);
+      }
+    }
+    loadMembers();
+  }, []);
+
+  // Auto scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat]);
+
+  // Load affinity for all members
+  async function loadAffinityAll(force = false) {
+    if (communityMembers.length === 0) return;
+    setLoadingAll(true);
+    const nextAff: Record<string, any> = {};
+    const batchSize = 10;
+    for (let i = 0; i < communityMembers.length; i += batchSize) {
+      const batch = communityMembers.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map(async (member) => {
+          try {
+            const r = await fetch(`/api/affinity?project=${project}&memberId=${member.id}`, { cache: "no-store" });
+            const j = await r.json();
+            const aff = j?.items?.[0] ?? (j?.ok && (j?.heat || j?.heat135) ? j : null);
+            if (aff) {
+              const heat135 = aff?.heat135 ?? (aff?.heat ? Math.round((aff.heat * 135) / 100) : 0);
+              const heat100 = aff?.heat100 ?? aff?.heat ?? Math.round((heat135 / 135) * 100);
+              const { level } = levelFromHeat135(heat135);
+              nextAff[member.id] = { ...aff, heat135, heat100, affinityLevel: level };
+            }
+          } catch (e) { /* skip */ }
+        })
+      );
+      await new Promise((res) => setTimeout(res, 350));
+    }
+    setAffByMember(nextAff);
+    setLoadingAll(false);
+  }
+
+  // Load affinity when project changes
+  useEffect(() => {
+    if (communityMembers.length > 0 && activeTab === "community") {
+      setAffByMember({});
+      loadAffinityAll(false);
+    }
+  }, [project, communityMembers.length, activeTab]);
+
+  // Filter members
+  const filteredMembers = useMemo(() => {
+    const term = q.toLowerCase().trim();
+    const seen = new Set<string>();
+    return communityMembers.filter((m) => {
+      if (seen.has(m.id)) return false;
+      seen.add(m.id);
+      return !term || [m.name, m.email, m.group, m.country, m.brainStyle].filter(Boolean).some((v) => (v || "").toLowerCase().includes(term));
+    });
+  }, [q, communityMembers]);
+
+  // Overall community affinity
+  const overallAffinity = useMemo(() => {
+    const vals: number[] = [];
+    communityMembers.forEach((m) => {
+      const v = affByMember[m.id]?.heat100;
+      if (typeof v === "number" && v > 0) vals.push(v);
+      else if (typeof m.affinityPercent === "number" && m.affinityPercent > 0) vals.push(m.affinityPercent);
+    });
+    return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  }, [affByMember, communityMembers]);
+
+  const overallLevel = useMemo(() => levelFromHeat135(Math.round((overallAffinity * 135) / 100)), [overallAffinity]);
+
+  // Chat with Rowi
+  async function askRowi() {
+    const seed = coachInput.trim();
+    if (!seed) return;
+    setChat((c) => [...c, { role: "user", content: seed }]);
+    setCoachInput("");
+    setRowiTyping(true);
+    try {
+      const memberContext = selectedMembers.map((m) => {
+        const aff = affByMember[m.id];
+        return `- ${m.name}: ${m.brainStyle || "?"}, afinidad ${aff?.heat100 ?? "?"}%, cercanía: ${m.closeness || "neutral"}`;
+      }).join("\n");
+      const res = await fetch("/api/rowi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intent: "affinity", locale: lang, ask: memberContext ? `Contexto (proyecto: ${project}):\n${memberContext}\n\n${seed}` : seed }) });
+      const j = await res.json();
+      setChat((c) => [...c, { role: "assistant", content: j?.text || "No pude generar respuesta." }]);
+    } catch { setChat((c) => [...c, { role: "assistant", content: "Error de conexión." }]); }
+    finally { setRowiTyping(false); }
+  }
 
   // Fetch brain style grouped stats + region grouped stats
   useEffect(() => {
@@ -327,6 +554,377 @@ export default function TPAffinityPage() {
         <p className="text-[var(--rowi-muted)]">{t.subtitle}</p>
       </div>
 
+      {/* ── Tab Selector ── */}
+      <div className="flex gap-2 border-b border-gray-200 dark:border-zinc-800 pb-2">
+        <button
+          onClick={() => setActiveTab("community")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+            activeTab === "community" ? "bg-pink-500 text-white" : "text-[var(--rowi-muted)] hover:bg-pink-500/10"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>{t.tabCommunity}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("benchmark")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+            activeTab === "benchmark" ? "bg-pink-500 text-white" : "text-[var(--rowi-muted)] hover:bg-pink-500/10"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>{t.tabBenchmark}</span>
+        </button>
+        <button
+          onClick={() => setShowMonitor(!showMonitor)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--rowi-muted)] hover:bg-pink-500/10 transition-colors ml-auto"
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span className="hidden sm:inline">{t.monitor}</span>
+        </button>
+      </div>
+
+      {/* ── Affinity Monitor ── */}
+      <AnimatePresence>
+        {showMonitor && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">{t.monitorTitle}</h2>
+                <button onClick={() => setShowMonitor(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800">
+                  <X className="w-5 h-5 text-[var(--rowi-muted)]" />
+                </button>
+              </div>
+              <AffinityMonitor />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════
+         ── Community Tab ──
+      ══════════════════════════════════════════════════════════ */}
+      {activeTab === "community" && (
+        <div className="space-y-6">
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-[var(--rowi-muted)]" />
+                <span className="text-xs text-[var(--rowi-muted)]">{t.overallAffinity}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold" style={{ color: overallLevel.color }}>{overallAffinity}%</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{overallLevel.level}</span>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-[var(--rowi-muted)]" />
+                <span className="text-xs text-[var(--rowi-muted)]">{t.members}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold">{communityMembers.length}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t.inCommunity}</span>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <UserCheck className="w-4 h-4 text-[var(--rowi-muted)]" />
+                <span className="text-xs text-[var(--rowi-muted)]">{t.selected}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-pink-500">{selectedMembers.length}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t.forAnalysis}</span>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="w-4 h-4" style={{ color: PROJECT_COLORS[project] }} />
+                <span className="text-xs text-[var(--rowi-muted)]">{t.context}</span>
+              </div>
+              <select
+                value={project}
+                onChange={(e) => setProject(e.target.value as ProjectType)}
+                className="w-full bg-transparent text-lg font-semibold cursor-pointer focus:outline-none"
+                style={{ color: PROJECT_COLORS[project] }}
+              >
+                <option value="relationship">{t.relationships}</option>
+                <option value="leadership">{t.leadership}</option>
+                <option value="execution">{t.execution}</option>
+                <option value="innovation">{t.innovation}</option>
+                <option value="decision">{t.decision}</option>
+                <option value="conversation">{t.conversation}</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-stretch">
+            {/* Members List */}
+            <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm">
+              <div className="p-4 border-b border-gray-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="font-semibold">{t.communityTitle}</h2>
+                  <button
+                    onClick={() => loadAffinityAll(true)}
+                    disabled={loadingAll}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-[var(--rowi-muted)] hover:text-pink-500 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${loadingAll ? "animate-spin" : ""}`} />
+                    {t.recalculate}
+                  </button>
+                </div>
+                <div className="mt-3 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--rowi-muted)]" />
+                  <input
+                    type="text"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder={t.searchPlaceholder}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-sm placeholder:text-[var(--rowi-muted)] focus:outline-none focus:ring-2 focus:ring-pink-500/30"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 flex-1 overflow-y-auto min-h-[400px] max-h-[600px]">
+                {loadingAll ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-pink-500 mb-3" />
+                    <p className="text-sm text-[var(--rowi-muted)]">{t.calculating}</p>
+                  </div>
+                ) : filteredMembers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" />
+                    <p className="text-[var(--rowi-muted)]">{t.noMembers}</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {filteredMembers.map((m) => {
+                      const selected = selectedMembers.some((x) => x.id === m.id);
+                      const aff = affByMember[m.id];
+                      const affinityPct = aff?.heat100 ?? m.affinityPercent ?? null;
+                      const levelInfo = affinityPct !== null ? levelFromHeat135((affinityPct * 135) / 100) : null;
+
+                      return (
+                        <motion.div
+                          key={m.id}
+                          layout
+                          onClick={() => setSelectedMembers((prev) => selected ? prev.filter((x) => x.id !== m.id) : [...prev, m])}
+                          className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
+                            selected
+                              ? "border-pink-500 bg-pink-500/5 shadow-lg shadow-pink-500/10"
+                              : "border-gray-200 dark:border-zinc-700 hover:border-pink-500/50 bg-gray-50 dark:bg-zinc-800/50"
+                          }`}
+                        >
+                          {selected && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-pink-500 flex items-center justify-center">
+                              <UserCheck className="w-3 h-3 text-white" />
+                            </div>
+                          )}
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold text-sm shrink-0"
+                              style={{ background: levelInfo ? `linear-gradient(135deg, ${levelInfo.color}, ${levelInfo.color}99)` : "linear-gradient(135deg, #E53935, #E5393599)" }}
+                            >
+                              {m.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div className="font-semibold text-sm truncate">{m.name}</div>
+                                {m.brainStyle && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-pink-500/10 text-pink-500 font-medium">{m.brainStyle}</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-[var(--rowi-muted)] truncate">{m.group || m.country || "—"}</div>
+                              <div className="flex items-center gap-2 mt-2">
+                                {affinityPct !== null ? (
+                                  <>
+                                    <div className="h-1.5 rounded-full flex-1 bg-gray-200 dark:bg-zinc-700" style={{ maxWidth: "80px" }}>
+                                      <div className="h-full rounded-full transition-all" style={{ width: `${affinityPct}%`, background: levelInfo?.color }} />
+                                    </div>
+                                    <span className="text-xs font-semibold" style={{ color: levelInfo?.color }}>{affinityPct}%</span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected members footer */}
+              {selectedMembers.length > 0 && (
+                <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[var(--rowi-muted)]">{selectedMembers.length} {t.selectedMembers}</span>
+                      <button onClick={() => setSelectedMembers([])} className="text-xs text-pink-500 hover:underline">{t.clearSelection}</button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        selectedMembers.forEach((m) => {
+                          if (!affByMember[m.id]) {
+                            setLoadingByMember((s) => ({ ...s, [m.id]: true }));
+                            fetch(`/api/affinity?project=${project}&memberId=${m.id}`, { cache: "no-store" })
+                              .then((r) => r.json())
+                              .then((j) => {
+                                const aff = j?.items?.[0] ?? (j?.ok && (j?.heat || j?.heat135) ? j : null);
+                                if (aff) {
+                                  const heat135 = aff?.heat135 ?? (aff?.heat ? Math.round((aff.heat * 135) / 100) : 0);
+                                  const heat100 = aff?.heat100 ?? aff?.heat ?? Math.round((heat135 / 135) * 100);
+                                  const { level } = levelFromHeat135(heat135);
+                                  setAffByMember((prev) => ({ ...prev, [m.id]: { ...aff, heat135, heat100, affinityLevel: level } }));
+                                }
+                              })
+                              .finally(() => setLoadingByMember((s) => ({ ...s, [m.id]: false })));
+                          }
+                        });
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {t.analyzeSelected}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Detail + Chat */}
+            <div className="flex flex-col gap-4">
+              {/* Group analysis panel */}
+              {selectedMembers.length > 0 && selectedMembers.some((m) => affByMember[m.id]) && (
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 shadow-sm max-h-[400px] overflow-y-auto">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-5 h-5 text-pink-500" />
+                    <h3 className="font-semibold">{t.groupAnalysis} ({selectedMembers.length})</h3>
+                  </div>
+                  {(() => {
+                    const analyzed = selectedMembers.filter((m) => affByMember[m.id]?.heat100);
+                    const avg = analyzed.length > 0 ? Math.round(analyzed.reduce((sum, m) => sum + (affByMember[m.id]?.heat100 || 0), 0) / analyzed.length) : 0;
+                    const avgLevel = levelFromHeat135((avg * 135) / 100);
+                    return (
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-center">
+                        <div className="text-3xl font-bold" style={{ color: avgLevel.color }}>{avg}%</div>
+                        <div className="text-sm text-[var(--rowi-muted)]">{t.avgAffinity}</div>
+                        <div className="text-xs mt-1" style={{ color: avgLevel.color }}>{avgLevel.level}</div>
+                        <div className="text-[10px] text-[var(--rowi-muted)] mt-2">{analyzed.length} / {selectedMembers.length} {t.analyzed}</div>
+                      </div>
+                    );
+                  })()}
+                  <div className="space-y-2">
+                    {selectedMembers.map((member) => {
+                      const aff = affByMember[member.id];
+                      if (!aff) return (
+                        <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-medium text-[var(--rowi-muted)]">{member.name.charAt(0)}</div>
+                            <span className="text-sm">{member.name}</span>
+                          </div>
+                          <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                        </div>
+                      );
+                      const heat = aff.heat100 ?? 0;
+                      const lvl = levelFromHeat135((heat * 135) / 100);
+                      return (
+                        <div key={member.id} className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium" style={{ background: lvl.color }}>{member.name.charAt(0)}</div>
+                              <div>
+                                <span className="text-sm font-medium">{member.name}</span>
+                                <div className="text-[10px] text-[var(--rowi-muted)]">{member.brainStyle || "—"}</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold" style={{ color: lvl.color }}>{heat}%</div>
+                              <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
+                            </div>
+                          </div>
+                          {aff.parts && (
+                            <div className="flex gap-2 mt-2">
+                              <div className="flex-1 text-center"><div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.growth}</div></div>
+                              <div className="flex-1 text-center"><div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.collaboration}</div></div>
+                              <div className="flex-1 text-center"><div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.understanding}</div></div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Affinity Coach Chat */}
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 flex flex-col shadow-sm" style={{ minHeight: "400px" }}>
+                <div className="p-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-pink-500/10 to-rose-500/10 rounded-t-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Affinity Coach</h3>
+                      <p className="text-xs text-[var(--rowi-muted)]">{t.coachSubtitle}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[350px]">
+                  {chat.map((m, i) => (
+                    <div key={i} className={`flex ${m.role === "assistant" ? "justify-start" : "justify-end"}`}>
+                      <div className={`max-w-[85%] px-4 py-2.5 text-sm rounded-2xl ${
+                        m.role === "assistant" ? "bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700" : "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
+                      }`}>
+                        {m.content}
+                      </div>
+                    </div>
+                  ))}
+                  {rowiTyping && (
+                    <div className="flex justify-start">
+                      <div className="px-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" />
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0.1s" }} />
+                          <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+                <div className="p-4 border-t border-gray-100 dark:border-zinc-800">
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      rows={2}
+                      value={coachInput}
+                      onChange={(e) => setCoachInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askRowi(); } }}
+                      placeholder={t.askRowi}
+                      className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-4 py-2.5 text-sm placeholder:text-[var(--rowi-muted)] focus:outline-none focus:ring-2 focus:ring-pink-500/30"
+                    />
+                    <button
+                      onClick={askRowi}
+                      disabled={!coachInput.trim() || rowiTyping}
+                      className="p-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+         ── Benchmark Tab ──
+      ══════════════════════════════════════════════════════════ */}
+      {activeTab === "benchmark" && (<>
       {/* ── Brain Style Distribution (REAL DATA) ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
@@ -649,6 +1247,8 @@ export default function TPAffinityPage() {
           <p className="text-sm text-pink-700 dark:text-pink-300">{t.infoDesc}</p>
         </div>
       </motion.div>
+
+      </>)}
 
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">

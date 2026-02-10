@@ -35,7 +35,7 @@ const CLUSTER_MAP: Record<string, "focus" | "decisions" | "drive"> = {
   vision: "drive",
   designing: "drive",
   entrepreneurship: "drive",
-  brainagility: "drive",
+  // brainagility removed — not a real Brain Talent from Six Seconds
 };
 
 export async function GET(req: NextRequest) {

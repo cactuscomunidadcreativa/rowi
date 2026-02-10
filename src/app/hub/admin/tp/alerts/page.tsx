@@ -440,10 +440,13 @@ export default function TPAlertsPage() {
       }
 
       // Health score check
+      // Scale: SEI 65-135, but real group averages cluster around 95-110.
+      // We use a practical range centered on 100 (population mean):
+      //   90 → ~50 (critical zone), 100 → ~75 (acceptable), 110 → ~100 (excellent)
       const compValues = COMP_KEYS.map((k) => group.metrics[k]?.mean).filter((v): v is number => v !== undefined);
       if (compValues.length > 0) {
         const avgComp = compValues.reduce((a, b) => a + b, 0) / compValues.length;
-        const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 65) / 70) * 100)));
+        const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 90) / 20) * 50 + 50)));
         if (healthScore < thresholds.healthCritical) {
           alerts.push({
             id: `health-critical-${group.name}`,
@@ -499,7 +502,7 @@ export default function TPAlertsPage() {
       const metrics = group.metrics;
       const compValues = COMP_KEYS.map((k) => metrics[k]?.mean || 100);
       const avgComp = compValues.reduce((a, b) => a + b, 0) / compValues.length;
-      const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 65) / 70) * 100)));
+      const healthScore = Math.round(Math.max(0, Math.min(100, ((avgComp - 90) / 20) * 50 + 50)));
       const maxVal = Math.max(...compValues);
       const minVal = Math.min(...compValues);
       const strongest = COMP_KEYS[compValues.indexOf(maxVal)];

@@ -182,40 +182,42 @@ interface Candidate {
   appliedRole: string; // will be matched against real role names
 }
 
-// Display names for coded job roles
-const ROLE_DISPLAY_NAMES: Record<string, string> = {
-  EMPLOYEE: "Employee",
-  MANAGEMENT: "Management",
-  SENIOREXECUTIVE: "Senior Executive",
-  EDUCATOR: "Educator",
-  SALESMARKETING: "Sales & Marketing",
-  CONSULTANT: "Consultant",
-  STUDENT: "Student",
-  FREELANCE: "Freelance",
-  ENTREPRENUER: "Entrepreneur",
-  RESEARCH: "Research",
-  OTHER: "Other",
-  NONE: "Not Specified",
+// Bilingual display names for coded job roles
+const ROLE_DISPLAY_NAMES: Record<string, { es: string; en: string }> = {
+  EMPLOYEE: { es: "Empleado", en: "Employee" },
+  MANAGEMENT: { es: "Gerencia", en: "Management" },
+  SENIOREXECUTIVE: { es: "Alta Dirección", en: "Senior Executive" },
+  EDUCATOR: { es: "Educador", en: "Educator" },
+  SALESMARKETING: { es: "Ventas y Marketing", en: "Sales & Marketing" },
+  CONSULTANT: { es: "Consultor", en: "Consultant" },
+  STUDENT: { es: "Estudiante", en: "Student" },
+  FREELANCE: { es: "Freelance", en: "Freelance" },
+  ENTREPRENUER: { es: "Emprendedor", en: "Entrepreneur" },
+  RESEARCH: { es: "Investigación", en: "Research" },
+  OTHER: { es: "Otro", en: "Other" },
+  NONE: { es: "Sin especificar", en: "Not Specified" },
 };
 
-function displayRoleName(role: string): string {
-  return ROLE_DISPLAY_NAMES[role] || role;
+function displayRoleName(role: string, lang: string): string {
+  const entry = ROLE_DISPLAY_NAMES[role];
+  if (!entry) return role;
+  return entry[lang as keyof typeof entry] || entry.es;
 }
 
-// Demo candidates mapped to actual DB job roles (EMPLOYEE, MANAGEMENT, SENIOREXECUTIVE)
+// Demo candidates — TP-style names from countries where TP operates
 const DEMO_CANDIDATES: Candidate[] = [
-  // EMPLOYEE role - 2 candidates (high fit + moderate fit)
-  { id: "C-001", name: "María López", country: "MX", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "EMPLOYEE" },
-  { id: "C-002", name: "John Smith", country: "US", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "EMPLOYEE" },
-  // MANAGEMENT role - 2 candidates
-  { id: "C-003", name: "Yuki Sato", country: "JP", brainStyle: "Scientist", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "MANAGEMENT" },
-  { id: "C-004", name: "Ahmed Hassan", country: "EG", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "MANAGEMENT" },
-  // SENIOREXECUTIVE role - 2 candidates
-  { id: "C-005", name: "Sophie Martin", country: "FR", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "SENIOREXECUTIVE" },
-  { id: "C-006", name: "Raj Patel", country: "IN", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "SENIOREXECUTIVE" },
-  // SALESMARKETING role - 2 candidates
-  { id: "C-007", name: "Laura García", country: "CO", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "SALESMARKETING" },
-  { id: "C-008", name: "Chen Wei", country: "CN", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "SALESMARKETING" },
+  // EMPLOYEE role — 2 candidates
+  { id: "C-001", name: "Ana Reyes Morales", country: "MX", brainStyle: "Strategist", eqTotal: 108.4, EL: 106.2, RP: 109.4, ACT: 110.8, NE: 105.6, IM: 110.2, OP: 108.4, EMP: 109.8, NG: 107.2, appliedRole: "EMPLOYEE" },
+  { id: "C-002", name: "James Mitchell", country: "US", brainStyle: "Deliverer", eqTotal: 96.2, EL: 94.8, RP: 98.4, ACT: 99.2, NE: 93.4, IM: 96.8, OP: 95.4, EMP: 94.2, NG: 97.4, appliedRole: "EMPLOYEE" },
+  // MANAGEMENT role — 2 candidates
+  { id: "C-003", name: "Carlos Mendoza", country: "CO", brainStyle: "Sage", eqTotal: 112.8, EL: 114.2, RP: 113.6, ACT: 112.4, NE: 111.8, IM: 113.2, OP: 112.6, EMP: 114.8, NG: 110.8, appliedRole: "MANAGEMENT" },
+  { id: "C-004", name: "Maria Santos Cruz", country: "PH", brainStyle: "Guardian", eqTotal: 99.6, EL: 98.2, RP: 101.4, ACT: 102.8, NE: 97.4, IM: 100.2, OP: 98.8, EMP: 100.4, NG: 97.6, appliedRole: "MANAGEMENT" },
+  // SENIOREXECUTIVE role — 2 candidates
+  { id: "C-005", name: "Elena Papadopoulos", country: "GR", brainStyle: "Visionary", eqTotal: 104.2, EL: 102.8, RP: 104.6, ACT: 103.4, NE: 106.2, IM: 104.8, OP: 105.4, EMP: 103.6, NG: 103.0, appliedRole: "SENIOREXECUTIVE" },
+  { id: "C-006", name: "David Thompson", country: "GB", brainStyle: "Inventor", eqTotal: 101.4, EL: 100.2, RP: 103.8, ACT: 104.2, NE: 98.6, IM: 102.4, OP: 100.8, EMP: 99.4, NG: 102.0, appliedRole: "SENIOREXECUTIVE" },
+  // SALESMARKETING role — 2 candidates
+  { id: "C-007", name: "Valentina Torres", country: "PE", brainStyle: "Strategist", eqTotal: 110.6, EL: 108.4, RP: 111.2, ACT: 112.4, NE: 109.2, IM: 112.8, OP: 110.6, EMP: 111.4, NG: 108.8, appliedRole: "SALESMARKETING" },
+  { id: "C-008", name: "Kowalski Pawel", country: "PL", brainStyle: "Scientist", eqTotal: 95.8, EL: 97.2, RP: 98.4, ACT: 96.8, NE: 93.2, IM: 95.4, OP: 94.6, EMP: 96.2, NG: 94.6, appliedRole: "SALESMARKETING" },
 ];
 
 /* =========================================================
@@ -490,7 +492,7 @@ export default function TPSelectionPage() {
       return {
         id: role.name,
         name: role.name,
-        displayName: displayRoleName(role.name),
+        displayName: displayRoleName(role.name, lang),
         count: role.count,
         idealEQ: Math.round(idealEQ * 100) / 100,
         minEQ: Math.round(minEQ * 100) / 100,
@@ -499,7 +501,7 @@ export default function TPSelectionPage() {
         weight: weights,
       };
     });
-  }, [roleStats, topPerformers]);
+  }, [roleStats, topPerformers, lang]);
 
   /* ---- Selected role ---- */
   const selectedRole = roleBenchmarks.find((r) => r.id === selectedRoleId);

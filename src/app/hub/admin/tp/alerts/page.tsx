@@ -189,10 +189,10 @@ const COMP_LABELS: Record<string, { es: string; en: string }> = {
 
 /* Threshold configuration — based on SEI levels */
 const ALERT_CONFIGS = [
-  { metric: "eqTotal", label: { es: "EQ Total", en: "EQ Total" }, warningThreshold: "< 92 🌱 Emergente", criticalThreshold: "< 82 🧩 Desafío", enabled: true },
-  { metric: "competency", label: { es: "Competencia Individual", en: "Individual Competency" }, warningThreshold: "< 92 🌱 Emergente", criticalThreshold: "< 82 🧩 Desafío", enabled: true },
-  { metric: "reliability", label: { es: "Índice de Confiabilidad", en: "Reliability Index" }, warningThreshold: "< 0.7", criticalThreshold: "< 0.5", enabled: true },
-  { metric: "anomaly", label: { es: "Detección de Anomalías", en: "Anomaly Detection" }, warningThreshold: "> 2.0 σ", criticalThreshold: "> 3.0 σ", enabled: true },
+  { metric: "eqTotal", label: { es: "EQ Total", en: "EQ Total" }, warningThreshold: { es: "< 92 🌱 Emergente", en: "< 92 🌱 Emerging" }, criticalThreshold: { es: "< 82 🧩 Desafío", en: "< 82 🧩 Challenge" }, enabled: true },
+  { metric: "competency", label: { es: "Competencia Individual", en: "Individual Competency" }, warningThreshold: { es: "< 92 🌱 Emergente", en: "< 92 🌱 Emerging" }, criticalThreshold: { es: "< 82 🧩 Desafío", en: "< 82 🧩 Challenge" }, enabled: true },
+  { metric: "reliability", label: { es: "Índice de Confiabilidad", en: "Reliability Index" }, warningThreshold: { es: "< 0.7", en: "< 0.7" }, criticalThreshold: { es: "< 0.5", en: "< 0.5" }, enabled: true },
+  { metric: "anomaly", label: { es: "Detección de Anomalías", en: "Anomaly Detection" }, warningThreshold: { es: "> 2.0 σ", en: "> 2.0 σ" }, criticalThreshold: { es: "> 3.0 σ", en: "> 3.0 σ" }, enabled: true },
 ];
 
 /* =========================================================
@@ -811,6 +811,8 @@ export default function TPAlertsPage() {
           </div>
           {ALERT_CONFIGS.map((cfg, i) => {
             const cfgLabel = cfg.label[lang as keyof typeof cfg.label] || cfg.label.es;
+            const warnText = cfg.warningThreshold[lang as keyof typeof cfg.warningThreshold] || cfg.warningThreshold.es;
+            const critText = cfg.criticalThreshold[lang as keyof typeof cfg.criticalThreshold] || cfg.criticalThreshold.es;
             return (
               <motion.div key={cfg.metric} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className={`grid grid-cols-4 gap-4 px-6 py-4 items-center ${i < ALERT_CONFIGS.length - 1 ? "border-b border-gray-100 dark:border-zinc-800" : ""}`}>
                 <div className="flex items-center gap-2">
@@ -818,10 +820,10 @@ export default function TPAlertsPage() {
                   <span className="font-medium text-sm">{cfgLabel}</span>
                 </div>
                 <div className="text-center">
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm font-mono font-medium">{cfg.warningThreshold}</span>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm font-mono font-medium">{warnText}</span>
                 </div>
                 <div className="text-center">
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-mono font-medium">{cfg.criticalThreshold}</span>
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-mono font-medium">{critText}</span>
                 </div>
                 <div className="flex justify-center">
                   <div className={`w-10 h-6 rounded-full relative transition-colors ${cfg.enabled ? "bg-emerald-500" : "bg-gray-300 dark:bg-zinc-700"}`}>

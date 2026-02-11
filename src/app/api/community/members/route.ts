@@ -23,10 +23,16 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || undefined;
 
+    // Buscar comunidades donde el email del usuario aparece como miembro
+    const myMemberships = await prisma.communityMember.findMany({
+      where: { email: { equals: email, mode: "insensitive" } },
+      select: { tenantId: true, hubId: true, ownerId: true },
+    });
+
     // Build OR conditions for member lookup
     const ownerConditions: any[] = [
-      { ownerId: owner.id }, // 👈 miembros que tú creaste
-      { userId: owner.id },  // 👈 por compatibilidad con versiones previas
+      { ownerId: owner.id }, // miembros que tú creaste
+      { userId: owner.id },  // por compatibilidad con versiones previas
     ];
 
     // Si el usuario tiene tenant, también mostrar miembros del tenant
@@ -34,9 +40,25 @@ export async function GET(req: NextRequest) {
       ownerConditions.push({ tenantId: owner.primaryTenantId });
     }
 
+    // Incluir miembros de comunidades donde tu email fue importado
+    const seenOwnerIds = new Set<string>([owner.id]);
+    const seenTenantIds = new Set<string>(owner.primaryTenantId ? [owner.primaryTenantId] : []);
+    for (const m of myMemberships) {
+      if (m.ownerId && !seenOwnerIds.has(m.ownerId)) {
+        seenOwnerIds.add(m.ownerId);
+        ownerConditions.push({ ownerId: m.ownerId });
+      }
+      if (m.tenantId && !seenTenantIds.has(m.tenantId)) {
+        seenTenantIds.add(m.tenantId);
+        ownerConditions.push({ tenantId: m.tenantId });
+      }
+    }
+
     const where = {
       AND: [
         { OR: ownerConditions },
+        // Excluir al propio usuario de la lista
+        { NOT: { email: { equals: email, mode: "insensitive" as const } } },
         q
           ? {
               OR: [

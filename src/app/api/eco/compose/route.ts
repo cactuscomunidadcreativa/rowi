@@ -379,43 +379,28 @@ export async function POST(req: NextRequest) {
     /* =========================================================
        🔀 Decidir modo: Con IA o Sin IA
     ========================================================== */
-    const allowAI = user?.allowAI || false;
-    const ecoEnabled = allowAI && isEcoLLMEnabled() && body.refine;
-
-    if (!ecoEnabled) {
-      // Modo sin IA - devolver mensaje estructurado + prompt para copiar
-      const baseMessage = generateStructuredMessage();
-      const aiPrompt = generateAIPrompt();
-
-      return NextResponse.json({
-        ok: true,
-        mode: "smart-local",
-        base: baseMessage,
-        refined: null,
-        // Datos de análisis para mostrar en UI
-        analysis: {
-          targetBrainStyle: targetData.brainStyle,
-          targetPrefs: {
-            prefers: targetPrefs.prefers,
-            tone: targetPrefs.tone,
-            approach: targetPrefs.approach,
-            avoid: targetPrefs.avoid,
-            dataStyle: targetPrefs.dataStyle,
-          },
-          sharedTalents: sharedTalentLabels,
-          strongCompetencies,
-          compatibility: compatInfo || null,
-        },
-        // Prompt listo para copiar y usar en ChatGPT/Claude
-        aiPrompt: body.refine ? aiPrompt : null,
-        note: "💡 Mensaje generado según el perfil del destinatario. Activa 'Refinar con IA' para obtener un prompt personalizado.",
-      });
-    }
-
     /* =========================================================
-       🤖 Modo con IA — usar OpenAI (solo si refine=true)
+       🤖 Siempre generar el mensaje directamente con IA
+       Ya no devolvemos prompts — generamos el mensaje real.
     ========================================================== */
-    const systemPrompt = `Eres ECO, un experto en comunicación emocionalmente inteligente.
+    const baseMessage = generateStructuredMessage();
+    const analysisData = {
+      targetBrainStyle: targetData.brainStyle,
+      targetPrefs: {
+        prefers: targetPrefs.prefers,
+        tone: targetPrefs.tone,
+        approach: targetPrefs.approach,
+        avoid: targetPrefs.avoid,
+        dataStyle: targetPrefs.dataStyle,
+      },
+      sharedTalents: sharedTalentLabels,
+      strongCompetencies,
+      compatibility: compatInfo || null,
+    };
+
+    // Intentar generar con IA siempre
+    try {
+      const systemPrompt = `Eres ECO, un experto en comunicación emocionalmente inteligente.
 Tu trabajo es generar mensajes altamente personalizados basados en el perfil cognitivo del receptor.
 
 REGLAS:
@@ -423,48 +408,55 @@ REGLAS:
 2. Si hay talentos compartidos, úsalos para crear conexión
 3. Respeta el canal de comunicación (longitud y formalidad)
 4. Sé auténtico, no genérico
+5. El mensaje debe estar listo para enviar, NO generes un prompt
+6. Escribe en español a menos que se indique lo contrario
 
 Responde SOLO en formato JSON:
 {
   "subject": "Asunto (solo para email, null para otros)",
-  "text": "Cuerpo del mensaje"
+  "text": "Cuerpo del mensaje listo para enviar"
 }`;
 
-    const userPrompt = generateAIPrompt();
+      const userPrompt = generateAIPrompt();
 
-    const ai = await getOpenAIClient();
-    const completion = await ai.chat.completions.create({
-      model: "gpt-4o-mini", // Usar mini para ahorrar tokens
-      temperature: 0.7,
-      max_tokens: 500,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" },
-    });
+      const ai = await getOpenAIClient();
+      const completion = await ai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        max_tokens: 800,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+      });
 
-    const raw = completion.choices[0].message?.content || "{}";
-    const parsed = JSON.parse(raw);
+      const raw = completion.choices[0].message?.content || "{}";
+      const parsed = JSON.parse(raw);
 
-    return NextResponse.json({
-      ok: true,
-      mode: "ai-refined",
-      base: generateStructuredMessage(),
-      refined: parsed,
-      analysis: {
-        targetBrainStyle: targetData.brainStyle,
-        targetPrefs: {
-          prefers: targetPrefs.prefers,
-          tone: targetPrefs.tone,
-          approach: targetPrefs.approach,
-          avoid: targetPrefs.avoid,
-        },
-        sharedTalents: sharedTalentLabels,
-        compatibility: compatInfo || null,
-      },
-      tokensUsed: completion.usage?.total_tokens || 0,
-    });
+      return NextResponse.json({
+        ok: true,
+        mode: "ai-refined",
+        base: baseMessage,
+        refined: parsed,
+        analysis: analysisData,
+        aiPrompt: null,
+        tokensUsed: completion.usage?.total_tokens || 0,
+      });
+    } catch (aiError) {
+      // Fallback: si la IA falla, devolver mensaje estructurado
+      console.warn("⚠️ ECO AI fallback — usando mensaje estructurado:", aiError);
+
+      return NextResponse.json({
+        ok: true,
+        mode: "smart-local",
+        base: baseMessage,
+        refined: null,
+        analysis: analysisData,
+        aiPrompt: null,
+        note: "Mensaje generado según el perfil del destinatario.",
+      });
+    }
   } catch (e: any) {
     console.error("❌ /api/eco/compose error:", e);
     return NextResponse.json(

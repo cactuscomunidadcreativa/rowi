@@ -82,7 +82,8 @@ async function computeCommunityBenchmark(
     }>;
     communityMemberships: Array<{ tenantId: string | null }>;
   },
-  outcome: string
+  outcome: string,
+  specificCommunityId?: string | null
 ): Promise<{
   benchmarkStats: Record<string, { mean: number; p50: number; p75: number; p90: number }>;
   topPerformerProfile: {
@@ -98,8 +99,20 @@ async function computeCommunityBenchmark(
   benchmarkInfo: { id: string; name: string; type: string; totalRows: number };
   error?: string;
 }> {
-  // 1. Resolver comunidad
-  const rowiCommunity = user.rowiCommunities?.[0]?.community;
+  // 1. Resolver comunidad (usa la específica si se proporciona)
+  let rowiCommunity = user.rowiCommunities?.[0]?.community;
+
+  if (specificCommunityId) {
+    // Buscar la comunidad específica
+    const specificCommunity = await prisma.rowiCommunity.findUnique({
+      where: { id: specificCommunityId },
+      select: { id: true, name: true, tenantId: true },
+    });
+    if (specificCommunity) {
+      rowiCommunity = specificCommunity;
+    }
+  }
+
   const communityId = rowiCommunity?.id;
   const tenantId = rowiCommunity?.tenantId
     || user.communityMemberships?.[0]?.tenantId
@@ -328,6 +341,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const compareWith = searchParams.get("compareWith") || "rowiverse"; // rowiverse | community | benchmark
     const benchmarkId = searchParams.get("benchmarkId");
+    const communityId = searchParams.get("communityId"); // comunidad específica para benchmark
     const outcome = searchParams.get("outcome") || "effectiveness";
 
     // 1. Obtener usuario con su último snapshot EQ + comunidades
@@ -344,7 +358,6 @@ export async function GET(req: NextRequest) {
           },
         },
         rowiCommunities: {
-          take: 1,
           include: {
             community: {
               select: { id: true, name: true, tenantId: true },
@@ -459,7 +472,8 @@ export async function GET(req: NextRequest) {
       // Computar benchmark de comunidad on-the-fly desde EqSnapshots
       const communityResult = await computeCommunityBenchmark(
         user as Parameters<typeof computeCommunityBenchmark>[0],
-        outcome
+        outcome,
+        communityId
       );
 
       if (communityResult.error && Object.keys(communityResult.benchmarkStats).length === 0) {
@@ -552,6 +566,24 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
     });
 
+    // 9b. Obtener comunidades disponibles del usuario para benchmark
+    const userCommunities = (user.rowiCommunities || []).map((rc) => ({
+      id: rc.community.id,
+      name: rc.community.name,
+    }));
+
+    // También buscar comunidades via tenant
+    if (user.primaryTenantId) {
+      const tenantCommunities = await prisma.rowiCommunity.findMany({
+        where: {
+          tenantId: user.primaryTenantId,
+          id: { notIn: userCommunities.map((c) => c.id) },
+        },
+        select: { id: true, name: true },
+      });
+      userCommunities.push(...tenantCommunities);
+    }
+
     // 10. Obtener filtros disponibles
     const realBenchmarkId = compareWith !== "community" && benchmark ? benchmark.id : null;
     const availableFilters = realBenchmarkId
@@ -601,6 +633,7 @@ export async function GET(req: NextRequest) {
         : null,
       topPerformerComparison,
       availableBenchmarks,
+      availableCommunities: userCommunities,
       filters,
       labels: {
         competencies: COMPETENCY_LABELS,

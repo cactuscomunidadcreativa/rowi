@@ -1,18 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  Marker,
-  ZoomableGroup,
-} from "react-simple-maps";
 import { motion } from "framer-motion";
 import { Globe2, Users, MessageCircle, TrendingUp, Clock } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
-
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface CountryData {
   code: string;
@@ -70,6 +61,16 @@ const t = {
   },
 };
 
+/**
+ * Convierte coordenadas geográficas (lon, lat) a porcentaje x,y en un contenedor
+ * Proyección Equirectangular simplificada
+ */
+function geoToPercent(lon: number, lat: number): { x: number; y: number } {
+  const x = ((lon + 180) / 360) * 100;
+  const y = ((85 - lat) / 145) * 100;
+  return { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) };
+}
+
 export default function PublicWorldMap() {
   const { lang } = useI18n();
   const text = t[lang as keyof typeof t] || t.es;
@@ -80,8 +81,8 @@ export default function PublicWorldMap() {
     countryNames: Record<string, { es: string; en: string }>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [hoveredCountry, setHoveredCountry] = useState<CountryData | null>(null);
-  const [position, setPosition] = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
 
   useEffect(() => {
     async function loadData() {
@@ -90,9 +91,12 @@ export default function PublicWorldMap() {
         const json = await res.json();
         if (json.ok) {
           setData(json);
+        } else {
+          setError(true);
         }
       } catch (err) {
         console.error("Error loading public RowiVerse data:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -101,11 +105,12 @@ export default function PublicWorldMap() {
   }, []);
 
   const getMarkerSize = (total: number): number => {
-    if (total > 50000) return 12;
-    if (total > 20000) return 10;
-    if (total > 10000) return 8;
-    if (total > 1000) return 6;
-    return 4;
+    if (total > 50000) return 24;
+    if (total > 20000) return 20;
+    if (total > 10000) return 16;
+    if (total > 1000) return 12;
+    if (total > 100) return 9;
+    return 7;
   };
 
   const getDominantColor = (country: CountryData): string => {
@@ -137,7 +142,17 @@ export default function PublicWorldMap() {
     );
   }
 
-  if (!data) return null;
+  if (error || !data) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-[var(--rowi-background)] to-[var(--rowi-card)]">
+        <div className="container mx-auto px-4 text-center">
+          <Globe2 className="w-16 h-16 mx-auto text-[var(--rowi-primary)] opacity-50 mb-4" />
+          <h2 className="text-2xl font-bold text-[var(--rowi-foreground)] mb-2">{text.title}</h2>
+          <p className="text-[var(--rowi-muted)]">{text.subtitle}</p>
+        </div>
+      </section>
+    );
+  }
 
   const { summary, mapData } = data;
 
@@ -171,33 +186,13 @@ export default function PublicWorldMap() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          <StatCard
-            icon={<Users className="w-5 h-5" />}
-            value={formatNumber(summary.activeUsers)}
-            label={text.activeUsers}
-            color="blue"
-          />
-          <StatCard
-            icon={<MessageCircle className="w-5 h-5" />}
-            value={formatNumber(summary.conversations)}
-            label={text.conversations}
-            color="purple"
-          />
-          <StatCard
-            icon={<TrendingUp className="w-5 h-5" />}
-            value={`${summary.satisfaction}%`}
-            label={text.satisfaction}
-            color="green"
-          />
-          <StatCard
-            icon={<Clock className="w-5 h-5" />}
-            value={summary.availability}
-            label={text.availability}
-            color="orange"
-          />
+          <StatCard icon={<Users className="w-5 h-5" />} value={formatNumber(summary.activeUsers)} label={text.activeUsers} color="blue" />
+          <StatCard icon={<MessageCircle className="w-5 h-5" />} value={formatNumber(summary.conversations)} label={text.conversations} color="purple" />
+          <StatCard icon={<TrendingUp className="w-5 h-5" />} value={`${summary.satisfaction}%`} label={text.satisfaction} color="green" />
+          <StatCard icon={<Clock className="w-5 h-5" />} value={summary.availability} label={text.availability} color="orange" />
         </motion.div>
 
-        {/* Map */}
+        {/* Map — Simple dot-based world map (sin react-simple-maps) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -205,137 +200,137 @@ export default function PublicWorldMap() {
           transition={{ delay: 0.2 }}
           className="relative"
         >
-          <div className="relative w-full h-[400px] md:h-[500px] rounded-2xl bg-[var(--rowi-card)] border border-[var(--rowi-border)] shadow-lg overflow-hidden">
-            <ComposableMap
-              projectionConfig={{ scale: 140, center: [0, 20] }}
-              style={{ width: "100%", height: "100%" }}
-            >
-              <ZoomableGroup
-                zoom={position.zoom}
-                center={position.coordinates}
-                onMoveEnd={(p) => setPosition(p)}
-                minZoom={1}
-                maxZoom={4}
-              >
-                <Geographies geography={geoUrl}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        style={{
-                          default: {
-                            fill: "var(--rowi-background)",
-                            stroke: "var(--rowi-border)",
-                            strokeWidth: 0.3,
-                            outline: "none",
-                          },
-                          hover: {
-                            fill: "var(--rowi-primary)",
-                            fillOpacity: 0.1,
-                            outline: "none",
-                          },
-                        }}
-                      />
-                    ))
-                  }
-                </Geographies>
+          <div className="relative w-full h-[350px] md:h-[450px] rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 border border-[var(--rowi-border)] shadow-lg overflow-hidden">
+            {/* World map background — simplified continent shapes */}
+            <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]">
+              <svg viewBox="0 0 1000 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                <g fill="currentColor" className="text-gray-500">
+                  {/* North America */}
+                  <ellipse cx="220" cy="155" rx="95" ry="75" />
+                  {/* Central America */}
+                  <ellipse cx="240" cy="240" rx="30" ry="25" />
+                  {/* South America */}
+                  <ellipse cx="300" cy="330" rx="55" ry="90" />
+                  {/* Europe */}
+                  <ellipse cx="505" cy="125" rx="55" ry="45" />
+                  {/* Africa */}
+                  <ellipse cx="520" cy="280" rx="60" ry="85" />
+                  {/* Middle East */}
+                  <ellipse cx="590" cy="195" rx="30" ry="30" />
+                  {/* Asia */}
+                  <ellipse cx="690" cy="150" rx="110" ry="75" />
+                  {/* Southeast Asia */}
+                  <ellipse cx="740" cy="260" rx="40" ry="35" />
+                  {/* Oceania */}
+                  <ellipse cx="810" cy="350" rx="55" ry="35" />
+                </g>
+              </svg>
+            </div>
 
-                {mapData.map((country) => {
-                  if (!country.coordinates || country.total === 0) return null;
-                  const size = getMarkerSize(country.total);
-                  const color = getDominantColor(country);
+            {/* Data Points */}
+            {mapData.map((country, idx) => {
+              if (!country.coordinates || country.total === 0) return null;
+              const pos = geoToPercent(country.coordinates[0], country.coordinates[1]);
+              const size = getMarkerSize(country.total);
+              const color = getDominantColor(country);
+              const isHovered = hoveredCountry?.code === country.code;
 
-                  return (
-                    <Marker key={country.code} coordinates={country.coordinates}>
-                      <g
-                        onMouseEnter={() => setHoveredCountry(country)}
-                        onMouseLeave={() => setHoveredCountry(null)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <circle
-                          r={size + 3}
-                          fill={color}
-                          fillOpacity={0.15}
-                          className="animate-pulse"
-                        />
-                        <circle
-                          r={size}
-                          fill={color}
-                          fillOpacity={0.8}
-                          stroke="#fff"
-                          strokeWidth={1}
-                        />
-                      </g>
-                    </Marker>
-                  );
-                })}
-              </ZoomableGroup>
-            </ComposableMap>
+              return (
+                <motion.div
+                  key={country.code}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.3 + idx * 0.02, type: "spring" }}
+                  className="absolute cursor-pointer group"
+                  style={{
+                    left: `${pos.x}%`,
+                    top: `${pos.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    zIndex: isHovered ? 50 : 10,
+                  }}
+                  onMouseEnter={() => setHoveredCountry(country)}
+                  onMouseLeave={() => setHoveredCountry(null)}
+                >
+                  {/* Pulse ring */}
+                  <div
+                    className="absolute rounded-full animate-ping"
+                    style={{
+                      width: size + 8,
+                      height: size + 8,
+                      backgroundColor: color,
+                      opacity: 0.15,
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  />
+                  {/* Dot */}
+                  <div
+                    className="rounded-full border-2 border-white dark:border-zinc-700 shadow-md transition-transform group-hover:scale-150"
+                    style={{
+                      width: size,
+                      height: size,
+                      backgroundColor: color,
+                    }}
+                  />
+
+                  {/* Tooltip on hover */}
+                  {isHovered && (
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-3 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-xl text-sm min-w-[160px] whitespace-nowrap z-50">
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">
+                        {getCountryName(country.code)}
+                      </h4>
+                      <div className="space-y-1 text-xs">
+                        {country.benchmarks > 0 && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">{text.benchmarks}:</span>
+                            <span className="font-medium text-purple-600">{formatNumber(country.benchmarks)}</span>
+                          </div>
+                        )}
+                        {country.users > 0 && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">{text.users}:</span>
+                            <span className="font-medium text-blue-600">{formatNumber(country.users)}</span>
+                          </div>
+                        )}
+                        {country.newUsers > 0 && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">{text.newRowiers}:</span>
+                            <span className="font-medium text-green-500">+{country.newUsers}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between gap-4 pt-1 border-t border-gray-200 dark:border-zinc-700 mt-1">
+                          <span className="text-gray-500">Total:</span>
+                          <span className="font-bold">{formatNumber(country.total)}</span>
+                        </div>
+                      </div>
+                      {/* Arrow */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-zinc-800 border-b border-r border-gray-200 dark:border-zinc-700 transform rotate-45 -mt-1" />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
 
             {/* Legend */}
-            <div className="absolute bottom-4 left-4 flex flex-wrap gap-3 p-3 rounded-lg bg-[var(--rowi-card)]/90 backdrop-blur-sm border border-[var(--rowi-border)] text-xs">
+            <div className="absolute bottom-4 left-4 flex flex-wrap gap-3 p-3 rounded-lg bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm border border-gray-200 dark:border-zinc-700 text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.benchmarks }} />
-                <span className="text-[var(--rowi-muted)]">{text.benchmarks}</span>
+                <span className="text-gray-500">{text.benchmarks}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.users }} />
-                <span className="text-[var(--rowi-muted)]">{text.users}</span>
+                <span className="text-gray-500">{text.users}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.newUsers }} />
-                <span className="text-[var(--rowi-muted)]">{text.newRowiers}</span>
+                <span className="text-gray-500">{text.newRowiers}</span>
               </div>
             </div>
 
-            {/* Hover Tooltip */}
-            {hoveredCountry && (
-              <div className="absolute top-4 right-4 p-3 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] shadow-lg text-sm min-w-[160px]">
-                <h4 className="font-bold text-[var(--rowi-foreground)] mb-2">
-                  {getCountryName(hoveredCountry.code)}
-                </h4>
-                <div className="space-y-1 text-xs">
-                  {hoveredCountry.benchmarks > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-[var(--rowi-muted)]">{text.benchmarks}:</span>
-                      <span className="font-medium">{formatNumber(hoveredCountry.benchmarks)}</span>
-                    </div>
-                  )}
-                  {hoveredCountry.users > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-[var(--rowi-muted)]">{text.users}:</span>
-                      <span className="font-medium">{formatNumber(hoveredCountry.users)}</span>
-                    </div>
-                  )}
-                  {hoveredCountry.newUsers > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-[var(--rowi-muted)]">{text.newRowiers}:</span>
-                      <span className="font-medium text-green-500">+{hoveredCountry.newUsers}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between pt-1 border-t border-[var(--rowi-border)] mt-1">
-                    <span className="text-[var(--rowi-muted)]">Total:</span>
-                    <span className="font-bold text-[var(--rowi-primary)]">{formatNumber(hoveredCountry.total)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Zoom Controls */}
-            <div className="absolute bottom-4 right-4 flex flex-col gap-1">
-              <button
-                onClick={() => setPosition((p) => ({ ...p, zoom: Math.min(p.zoom * 1.5, 4) }))}
-                className="w-7 h-7 rounded-md bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] flex items-center justify-center text-sm font-bold"
-              >
-                +
-              </button>
-              <button
-                onClick={() => setPosition((p) => ({ ...p, zoom: Math.max(p.zoom / 1.5, 1) }))}
-                className="w-7 h-7 rounded-md bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] flex items-center justify-center text-sm font-bold"
-              >
-                -
-              </button>
+            {/* Countries count */}
+            <div className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm border border-gray-200 dark:border-zinc-700 text-xs font-medium text-gray-700 dark:text-gray-300">
+              {summary.countries} {text.countries}
             </div>
           </div>
 

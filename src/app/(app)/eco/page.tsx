@@ -900,38 +900,7 @@ export default function EcoPage() {
                     </div>
                   </div>
 
-                  {/* Prompt para IA (cuando refine está activo pero no se usó IA) */}
-                  {out.aiPrompt && (
-                    <div className="rounded-2xl border border-blue-200 dark:border-blue-800/50 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-zinc-900 overflow-hidden">
-                      <div className="p-4 border-b border-blue-200 dark:border-blue-800/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">
-                              {tr.aiPromptTitle}
-                            </h3>
-                            <p className="text-xs text-gray-500">
-                              {tr.aiPromptDesc}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => copyText(out.aiPrompt)}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all"
-                        >
-                          <Copy className="w-4 h-4" />
-                          {tr.copyPrompt}
-                        </button>
-                      </div>
-                      <div className="p-4 max-h-60 overflow-y-auto">
-                        <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono bg-white dark:bg-zinc-800 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
-                          {out.aiPrompt}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
+                  {/* ECO ahora genera mensajes directamente — sección de prompt eliminada */}
                 </motion.section>
               )}
             </AnimatePresence>

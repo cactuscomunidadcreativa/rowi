@@ -424,7 +424,7 @@ export default function CommunityPage() {
   const [closenessFilter, setClosenessFilter] = useState("all");
   const [connectionTypeFilter, setConnectionTypeFilter] = useState("all");
   const [onlyAffinity, setOnlyAffinity] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Modals
   const [showInviteModal, setShowInviteModal] = useState(false);

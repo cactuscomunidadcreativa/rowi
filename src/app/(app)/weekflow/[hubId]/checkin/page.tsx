@@ -160,10 +160,11 @@ export default function WeekFlowCheckinPage() {
       const sessionData = await sessionRes.json();
       if (sessionData.ok) {
         setSession(sessionData.session);
-        // Si ya hizo check-in, redirigir
+        // Si ya hizo check-in, pre-cargar la emoción seleccionada (permitir re-hacer)
         if (sessionData.userCheckin) {
-          router.push(`/weekflow/${hubId}`);
-          return;
+          setSelectedEmotion(sessionData.userCheckin.emotion || null);
+          setIntensity(sessionData.userCheckin.intensity || 5);
+          setNote(sessionData.userCheckin.note || "");
         }
       }
 
@@ -217,7 +218,7 @@ export default function WeekFlowCheckinPage() {
         body: JSON.stringify({
           sessionId: session.id,
           emotion: selectedEmotion,
-          intensity: Math.ceil(intensity / 3.33), // Convertir de 1-10 a 1-3
+          intensity, // Enviar directamente 1-10
           note: note.trim() || null,
         }),
       });

@@ -113,6 +113,7 @@ export default function BenchmarkPage() {
   const [compareWith, setCompareWith] = useState<CompareWith>("rowiverse");
   const [selectedOutcome, setSelectedOutcome] = useState<Outcome>("effectiveness");
   const [selectedBenchmarkId, setSelectedBenchmarkId] = useState<string | null>(null);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   // Traducciones
@@ -215,7 +216,7 @@ export default function BenchmarkPage() {
   // Cargar datos
   useEffect(() => {
     loadBenchmark();
-  }, [compareWith, selectedOutcome, selectedBenchmarkId]);
+  }, [compareWith, selectedOutcome, selectedBenchmarkId, selectedCommunityId]);
 
   async function loadBenchmark() {
     setLoading(true);
@@ -225,6 +226,7 @@ export default function BenchmarkPage() {
         compareWith,
         outcome: selectedOutcome,
         ...(selectedBenchmarkId && { benchmarkId: selectedBenchmarkId }),
+        ...(selectedCommunityId && { communityId: selectedCommunityId }),
       });
       const res = await fetch(`/api/user/benchmark?${params}`, { cache: "no-store" });
       const json = await res.json();
@@ -331,21 +333,39 @@ export default function BenchmarkPage() {
           transition={{ delay: 0.1 }}
           className="flex flex-wrap items-center justify-center gap-4"
         >
-          <div className="flex items-center gap-2 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
-            {(["rowiverse", "community"] as CompareWith[]).map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setCompareWith(opt)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  compareWith === opt
-                    ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white shadow-md"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                }`}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 p-1 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
+              {(["rowiverse", "community"] as CompareWith[]).map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setCompareWith(opt)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    compareWith === opt
+                      ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white shadow-md"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {opt === "rowiverse" ? <Globe className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+                  {tr[opt]}
+                </button>
+              ))}
+            </div>
+
+            {/* Selector de comunidad cuando se elige "community" */}
+            {compareWith === "community" && data?.availableCommunities?.length > 1 && (
+              <select
+                value={selectedCommunityId || ""}
+                onChange={(e) => setSelectedCommunityId(e.target.value || null)}
+                className="px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent outline-none"
               >
-                {opt === "rowiverse" ? <Globe className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-                {tr[opt]}
-              </button>
-            ))}
+                <option value="">{lang === "es" ? "Mi comunidad principal" : "My main community"}</option>
+                {data.availableCommunities.map((c: { id: string; name: string }) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </motion.div>
 

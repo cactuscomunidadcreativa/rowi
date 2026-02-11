@@ -125,7 +125,7 @@ export default function AffinityPage() {
   const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [affByMember, setAffByMember] = useState<Record<string, AffPiece>>({});
   const [loadingByMember, setLoadingByMember] = useState<Record<string, boolean>>({});
-  const [project, setProject] = useState<ProjectType>("relationship");
+  const [project, setProject] = useState<ProjectType>("execution");
   const [q, setQ] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [loadingAll, setLoadingAll] = useState(false);

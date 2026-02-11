@@ -212,6 +212,12 @@ export default function WeekFlowHubPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button asChild className="bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white hover:opacity-90">
+            <Link href={`/weekflow/${hubId}/checkin`}>
+              <Send className="w-4 h-4 mr-2" />
+              {t("weekflow.checkin.start") || "Realizar Check-in"}
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href={`/weekflow/${hubId}/history`}>
               <Clock className="w-4 h-4 mr-2" />

@@ -60,6 +60,8 @@ const ALLOWED_HOSTS = [
   "localhost:3000",
   "rowi.app",
   "www.rowi.app",
+  "rowiia.com",
+  "www.rowiia.com",
   process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "",
 ].filter(Boolean);
 

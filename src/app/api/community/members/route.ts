@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || undefined;
+    const communityFilter = searchParams.get("community") || undefined;
 
     // Buscar comunidades donde el email del usuario aparece como miembro
     const myMemberships = await prisma.communityMember.findMany({
@@ -54,27 +55,39 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const where = {
-      AND: [
-        { OR: ownerConditions },
-        // Excluir al propio usuario de la lista
-        { NOT: { email: { equals: email, mode: "insensitive" as const } } },
-        q
-          ? {
-              OR: [
-                { name: { contains: q, mode: "insensitive" as const } },
-                { email: { contains: q, mode: "insensitive" as const } },
-              ],
-            }
-          : {},
-      ],
-    };
+    const whereConditions: any[] = [
+      { OR: ownerConditions },
+      // Excluir al propio usuario de la lista
+      { NOT: { email: { equals: email, mode: "insensitive" as const } } },
+    ];
+
+    // Filtro por comunidad (hubId o tenantId)
+    if (communityFilter) {
+      whereConditions.push({
+        OR: [
+          { hubId: communityFilter },
+          { tenantId: communityFilter },
+        ],
+      });
+    }
+
+    if (q) {
+      whereConditions.push({
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { email: { contains: q, mode: "insensitive" as const } },
+        ],
+      });
+    }
+
+    const where = { AND: whereConditions };
 
     const membersDB = await prisma.communityMember.findMany({
       where,
       orderBy: { updatedAt: "desc" },
       take: 500,
       include: {
+        hub: { select: { id: true, name: true } },
         affinitySnapshots: {
           where: { userId: owner.id },
           orderBy: { updatedAt: "desc" },
@@ -137,6 +150,8 @@ export async function GET(req: NextRequest) {
         closeness: m.closeness || "Neutral",
         connectionType: m.connectionType || undefined,
         tenantId: m.tenantId,
+        hubId: m.hubId || undefined,
+        hubName: (m as any).hub?.name || undefined,
         ownerId: m.ownerId,
         affinityHeat135: heat,
         affinityPercent:
@@ -207,10 +222,51 @@ export async function GET(req: NextRequest) {
 
     const allMembers = [...members, ...teammates];
 
+    // Construir lista de comunidades disponibles para el filtro
+    const communityMap = new Map<string, { id: string; name: string; count: number }>();
+    for (const m of membersDB) {
+      const hub = (m as any).hub;
+      if (hub?.id) {
+        const existing = communityMap.get(hub.id);
+        if (existing) {
+          existing.count++;
+        } else {
+          communityMap.set(hub.id, { id: hub.id, name: hub.name, count: 1 });
+        }
+      } else if (m.tenantId) {
+        // Agrupar por tenantId si no tiene hub
+        const key = `t_${m.tenantId}`;
+        const existing = communityMap.get(key);
+        if (existing) {
+          existing.count++;
+        } else {
+          communityMap.set(key, { id: m.tenantId, name: m.tenantId, count: 1 });
+        }
+      }
+    }
+
+    // Resolver nombres de tenants que no tienen hub
+    const tenantKeys = Array.from(communityMap.entries())
+      .filter(([k]) => k.startsWith("t_"))
+      .map(([, v]) => v.id);
+    if (tenantKeys.length > 0) {
+      const tenants = await prisma.tenant.findMany({
+        where: { id: { in: tenantKeys } },
+        select: { id: true, name: true },
+      });
+      for (const t of tenants) {
+        const entry = communityMap.get(`t_${t.id}`);
+        if (entry) entry.name = t.name;
+      }
+    }
+
+    const communities = Array.from(communityMap.values()).sort((a, b) => b.count - a.count);
+
     return NextResponse.json({
       ok: true,
       total: allMembers.length,
       members: allMembers,
+      communities,
     });
   } catch (e: any) {
     console.error("❌ GET /community/members error:", e);

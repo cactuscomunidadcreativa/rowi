@@ -52,6 +52,15 @@ type Member = {
   avatar?: string;
   affinityHeat135?: number | null;
   affinityPercent?: number | null;
+  hubId?: string;
+  hubName?: string;
+  tenantId?: string;
+};
+
+type CommunityOption = {
+  id: string;
+  name: string;
+  count: number;
 };
 
 type AffPiece = {
@@ -111,6 +120,8 @@ export default function AffinityPage() {
   const { t, lang } = useI18n();
 
   const [members, setMembers] = useState<Member[]>([]);
+  const [communities, setCommunities] = useState<CommunityOption[]>([]);
+  const [selectedCommunity, setSelectedCommunity] = useState<string>("");
   const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [affByMember, setAffByMember] = useState<Record<string, AffPiece>>({});
   const [loadingByMember, setLoadingByMember] = useState<Record<string, boolean>>({});
@@ -140,11 +151,17 @@ export default function AffinityPage() {
   /* =========================================================
      📦 Cargar miembros
   ========================================================= */
-  async function loadMembers() {
+  async function loadMembers(communityId?: string) {
     try {
-      const r = await fetch("/api/community/members", { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (communityId) params.set("community", communityId);
+      const r = await fetch(`/api/community/members?${params}`, { cache: "no-store" });
       const j = await r.json();
       setMembers(Array.isArray(j?.members) ? j.members : []);
+      // Only update communities list from unfiltered response
+      if (!communityId && Array.isArray(j?.communities)) {
+        setCommunities(j.communities);
+      }
     } catch (err) {
       console.error("Error cargando miembros:", err);
       setMembers([]);
@@ -152,8 +169,10 @@ export default function AffinityPage() {
   }
 
   useEffect(() => {
-    loadMembers();
-  }, [lang]);
+    setSelectedMembers([]);
+    setAffByMember({});
+    loadMembers(selectedCommunity || undefined);
+  }, [lang, selectedCommunity]);
 
   /* =========================================================
      ⚖️ Nivel textual por heat135
@@ -482,6 +501,44 @@ export default function AffinityPage() {
             </button>
           </div>
         </motion.div>
+
+        {/* Community Filter */}
+        {communities.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="flex items-center gap-2 flex-wrap"
+          >
+            <span className="text-xs text-[var(--rowi-muted)] mr-1">
+              <Filter className="w-3.5 h-3.5 inline-block mr-1" />
+              {lang === "es" ? "Comunidad" : "Community"}:
+            </span>
+            <button
+              onClick={() => setSelectedCommunity("")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                selectedCommunity === ""
+                  ? "bg-[var(--rowi-primary)] text-white border-[var(--rowi-primary)]"
+                  : "bg-[var(--rowi-surface)] text-[var(--rowi-muted)] border-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
+              }`}
+            >
+              {lang === "es" ? "Todas" : "All"}
+            </button>
+            {communities.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedCommunity(c.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                  selectedCommunity === c.id
+                    ? "bg-[var(--rowi-primary)] text-white border-[var(--rowi-primary)]"
+                    : "bg-[var(--rowi-surface)] text-[var(--rowi-muted)] border-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
+                }`}
+              >
+                {c.name} ({c.count})
+              </button>
+            ))}
+          </motion.div>
+        )}
 
         {/* Stats Row */}
         <motion.div

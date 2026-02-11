@@ -247,9 +247,10 @@ export async function POST(req: NextRequest) {
 
       /* =========================================================
          2.3 CREAR MIEMBRO LEGACY (para compatibilidad)
+         email tiene @unique global, buscar primero por email solo
       ========================================================== */
-      let legacyMember = await prisma.communityMember.findFirst({
-        where: { email, tenantId: tenantId ?? community.tenantId },
+      let legacyMember = await prisma.communityMember.findUnique({
+        where: { email },
       });
 
       if (!legacyMember) {
@@ -258,7 +259,7 @@ export async function POST(req: NextRequest) {
             email,
             name: user.name,
             userId: user.id,
-            tenantId: tenantId ?? community.tenantId,
+            tenantId: tenantId ?? community.tenantId ?? "",
             hubId: hubId ?? community.hubId ?? null,
             rowiverseUserId: rowiVerseUser.id,
             role: "member",
@@ -266,11 +267,15 @@ export async function POST(req: NextRequest) {
             joinedAt: new Date(),
           },
         });
-      } else if (!legacyMember.rowiverseUserId) {
-        // Update existing to link with RowiVerse
+      } else {
+        // Update existing to link with RowiVerse and refresh data
         await prisma.communityMember.update({
           where: { id: legacyMember.id },
-          data: { rowiverseUserId: rowiVerseUser.id },
+          data: {
+            rowiverseUserId: legacyMember.rowiverseUserId || rowiVerseUser.id,
+            userId: legacyMember.userId || user.id,
+            name: user.name || legacyMember.name,
+          },
         });
       }
 

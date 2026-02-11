@@ -6,8 +6,8 @@ import { prisma } from "@/core/prisma";
 /**
  * 📊 User Benchmark API
  * Permite al usuario compararse con diferentes benchmarks:
- * - Su comunidad
- * - El Rowiverse global
+ * - Su comunidad (computa on-the-fly desde EqSnapshots de miembros)
+ * - El Rowiverse global (usa BenchmarkStatistic precalculado)
  * - Benchmarks específicos
  */
 
@@ -48,6 +48,276 @@ const TALENT_LABELS: Record<string, { es: string; en: string }> = {
   entrepreneurship: { es: "Emprendimiento", en: "Entrepreneurship" },
 };
 
+// Competency keys del modelo SEI
+const COMPETENCY_KEYS = ["K", "C", "G", "EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"] as const;
+
+/**
+ * Calcula estadísticas (mean, p50, p75, p90) de un array de valores numéricos
+ */
+function computeStatsFromValues(values: number[]): { mean: number; p50: number; p75: number; p90: number } {
+  if (values.length === 0) return { mean: 0, p50: 0, p75: 0, p90: 0 };
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const sum = sorted.reduce((a, b) => a + b, 0);
+  const mean = sum / n;
+  const pct = (p: number) => sorted[Math.min(Math.floor((p / 100) * n), n - 1)];
+  return {
+    mean: Math.round(mean * 10) / 10,
+    p50: pct(50),
+    p75: pct(75),
+    p90: pct(90),
+  };
+}
+
+/**
+ * Computa benchmark de comunidad on-the-fly a partir de EqSnapshots de los miembros.
+ * Retorna stats por competencia/talento + perfil de top performers.
+ */
+async function computeCommunityBenchmark(
+  user: {
+    id: string;
+    primaryTenantId: string | null;
+    rowiCommunities: Array<{
+      community: { id: string; name: string; tenantId: string | null };
+    }>;
+    communityMemberships: Array<{ tenantId: string | null }>;
+  },
+  outcome: string
+): Promise<{
+  benchmarkStats: Record<string, { mean: number; p50: number; p75: number; p90: number }>;
+  topPerformerProfile: {
+    outcomeKey: string;
+    sampleSize: number;
+    avgK: number; avgC: number; avgG: number;
+    avgEL: number; avgRP: number; avgACT: number;
+    avgNE: number; avgIM: number; avgOP: number;
+    avgEMP: number; avgNG: number;
+    topCompetencies: unknown;
+    topTalentsSummary: unknown;
+  } | null;
+  benchmarkInfo: { id: string; name: string; type: string; totalRows: number };
+  error?: string;
+}> {
+  // 1. Resolver comunidad
+  const rowiCommunity = user.rowiCommunities?.[0]?.community;
+  const communityId = rowiCommunity?.id;
+  const tenantId = rowiCommunity?.tenantId
+    || user.communityMemberships?.[0]?.tenantId
+    || user.primaryTenantId;
+
+  if (!communityId && !tenantId) {
+    return {
+      benchmarkStats: {},
+      topPerformerProfile: null,
+      benchmarkInfo: { id: "no-community", name: "Sin Comunidad", type: "COMMUNITY", totalRows: 0 },
+      error: "No perteneces a ninguna comunidad.",
+    };
+  }
+
+  // 2. Obtener userIds de miembros de la comunidad
+  let memberUserIds: string[] = [];
+
+  if (communityId) {
+    const members = await prisma.rowiCommunityUser.findMany({
+      where: {
+        communityId,
+        userId: { not: null },
+        status: "active",
+      },
+      select: { userId: true },
+    });
+    memberUserIds = members.map((m) => m.userId).filter((id): id is string => !!id);
+  }
+
+  // Fallback: si no hay miembros via RowiCommunity, buscar en CommunityMember
+  if (memberUserIds.length === 0 && tenantId) {
+    const tenantMembers = await prisma.communityMember.findMany({
+      where: {
+        tenantId,
+        userId: { not: null },
+        status: "ACTIVE",
+      },
+      select: { userId: true },
+    });
+    memberUserIds = tenantMembers
+      .map((m) => m.userId)
+      .filter((id): id is string => !!id);
+  }
+
+  if (memberUserIds.length === 0) {
+    return {
+      benchmarkStats: {},
+      topPerformerProfile: null,
+      benchmarkInfo: {
+        id: `community-${communityId || tenantId}`,
+        name: rowiCommunity?.name || "Mi Comunidad",
+        type: "COMMUNITY",
+        totalRows: 0,
+      },
+      error: "Tu comunidad aún no tiene miembros con datos SEI.",
+    };
+  }
+
+  // 3. Obtener el snapshot más reciente de cada miembro
+  const memberSnapshots = await prisma.eqSnapshot.findMany({
+    where: {
+      userId: { in: memberUserIds },
+    },
+    orderBy: { at: "desc" },
+    distinct: ["userId"],
+    include: {
+      talents: true,
+      outcomes: true,
+    },
+  });
+
+  if (memberSnapshots.length === 0) {
+    return {
+      benchmarkStats: {},
+      topPerformerProfile: null,
+      benchmarkInfo: {
+        id: `community-${communityId || tenantId}`,
+        name: rowiCommunity?.name || "Mi Comunidad",
+        type: "COMMUNITY",
+        totalRows: 0,
+      },
+      error: "Tu comunidad aún no tiene datos SEI para generar un benchmark.",
+    };
+  }
+
+  // 4. Computar stats por competencia
+  const benchmarkStats: Record<string, { mean: number; p50: number; p75: number; p90: number }> = {};
+
+  for (const key of COMPETENCY_KEYS) {
+    const values = memberSnapshots
+      .map((s) => s[key])
+      .filter((v): v is number => v != null);
+    if (values.length > 0) {
+      benchmarkStats[key] = computeStatsFromValues(values);
+    }
+  }
+
+  // 5. Computar stats por talento
+  const talentKeys = new Set<string>();
+  for (const s of memberSnapshots) {
+    for (const t of s.talents || []) {
+      talentKeys.add(t.key);
+    }
+  }
+
+  for (const key of talentKeys) {
+    const values: number[] = [];
+    for (const s of memberSnapshots) {
+      const talent = (s.talents || []).find((t) => t.key === key);
+      if (talent?.score != null) {
+        values.push(talent.score);
+      }
+    }
+    if (values.length > 0) {
+      benchmarkStats[key] = computeStatsFromValues(values);
+    }
+  }
+
+  // 6. Computar top performers para el outcome seleccionado
+  let topPerformerProfile = null;
+
+  // Recoger scores de outcome para cada miembro
+  const memberOutcomes: Array<{
+    snapshot: typeof memberSnapshots[number];
+    outcomeScore: number;
+  }> = [];
+
+  for (const s of memberSnapshots) {
+    const outcomeEntry = (s.outcomes || []).find((o) => o.key === outcome);
+    if (outcomeEntry?.score != null) {
+      memberOutcomes.push({ snapshot: s, outcomeScore: outcomeEntry.score });
+    }
+  }
+
+  if (memberOutcomes.length >= 3) {
+    // Ordenar por outcome score descendente
+    memberOutcomes.sort((a, b) => b.outcomeScore - a.outcomeScore);
+
+    // Top 10% (mínimo 1)
+    const topCount = Math.max(1, Math.floor(memberOutcomes.length * 0.1));
+    const topPerformers = memberOutcomes.slice(0, topCount);
+
+    // Promediar competencias de top performers
+    const avgCompetency = (key: typeof COMPETENCY_KEYS[number]) => {
+      const vals = topPerformers
+        .map((tp) => tp.snapshot[key])
+        .filter((v): v is number => v != null);
+      return vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : 0;
+    };
+
+    // Top competencias (ordenadas por score)
+    const avgScores = COMPETENCY_KEYS.map((key) => ({
+      key,
+      avg: avgCompetency(key),
+    })).sort((a, b) => b.avg - a.avg);
+
+    // Top talentos de top performers
+    const talentAvgs: Record<string, number[]> = {};
+    for (const tp of topPerformers) {
+      for (const t of tp.snapshot.talents || []) {
+        if (t.score != null) {
+          if (!talentAvgs[t.key]) talentAvgs[t.key] = [];
+          talentAvgs[t.key].push(t.score);
+        }
+      }
+    }
+    const topTalents = Object.entries(talentAvgs)
+      .map(([key, vals]) => ({
+        key,
+        avg: Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10,
+      }))
+      .sort((a, b) => b.avg - a.avg)
+      .slice(0, 5);
+
+    topPerformerProfile = {
+      outcomeKey: outcome,
+      sampleSize: topPerformers.length,
+      avgK: avgCompetency("K"),
+      avgC: avgCompetency("C"),
+      avgG: avgCompetency("G"),
+      avgEL: avgCompetency("EL"),
+      avgRP: avgCompetency("RP"),
+      avgACT: avgCompetency("ACT"),
+      avgNE: avgCompetency("NE"),
+      avgIM: avgCompetency("IM"),
+      avgOP: avgCompetency("OP"),
+      avgEMP: avgCompetency("EMP"),
+      avgNG: avgCompetency("NG"),
+      topCompetencies: avgScores.slice(0, 3).map((s) => ({
+        key: s.key,
+        label: COMPETENCY_LABELS[s.key]?.es || s.key,
+        avg: s.avg,
+      })),
+      topTalentsSummary: topTalents.map((t) => ({
+        key: t.key,
+        label: TALENT_LABELS[t.key]?.es || t.key,
+        avg: t.avg,
+      })),
+    };
+  }
+
+  const communityName = rowiCommunity?.name || "Mi Comunidad";
+  const sampleLabel = memberSnapshots.length < 5
+    ? `${communityName} (${memberSnapshots.length} miembros)`
+    : communityName;
+
+  return {
+    benchmarkStats,
+    topPerformerProfile,
+    benchmarkInfo: {
+      id: `community-${communityId || tenantId}`,
+      name: sampleLabel,
+      type: "COMMUNITY",
+      totalRows: memberSnapshots.length,
+    },
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -60,7 +330,7 @@ export async function GET(req: NextRequest) {
     const benchmarkId = searchParams.get("benchmarkId");
     const outcome = searchParams.get("outcome") || "effectiveness";
 
-    // 1. Obtener usuario con su último snapshot EQ
+    // 1. Obtener usuario con su último snapshot EQ + comunidades
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
@@ -73,9 +343,16 @@ export async function GET(req: NextRequest) {
             outcomes: true,
           },
         },
+        rowiCommunities: {
+          take: 1,
+          include: {
+            community: {
+              select: { id: true, name: true, tenantId: true },
+            },
+          },
+        },
         communityMemberships: {
           take: 1,
-          // CommunityMember doesn't have a 'community' relation - it uses tenantId directly
         },
       },
     });
@@ -118,8 +395,26 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Buscar benchmark según el tipo de comparación
-    let benchmark = null;
-    let benchmarkData = null;
+    let benchmark: {
+      id: string;
+      name: string;
+      type: string;
+      totalRows: number | null;
+      statistics?: Array<{ metricKey: string; mean: number | null; p50: number | null; p75: number | null; p90: number | null }>;
+      topPerformers?: Array<{
+        outcomeKey: string;
+        sampleSize: number | null;
+        avgK: number | null; avgC: number | null; avgG: number | null;
+        avgEL: number | null; avgRP: number | null; avgACT: number | null;
+        avgNE: number | null; avgIM: number | null; avgOP: number | null;
+        avgEMP: number | null; avgNG: number | null;
+        topCompetencies: unknown; topTalents: unknown; topTalentsSummary: unknown;
+      }>;
+    } | null = null;
+
+    let benchmarkStats: Record<string, { mean: number; p50: number; p75: number; p90: number }> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let communityTopPerformerProfile: any = null;
 
     if (compareWith === "rowiverse" || compareWith === "benchmark") {
       // Buscar benchmark activo del Rowiverse o específico
@@ -148,38 +443,43 @@ export async function GET(req: NextRequest) {
           },
         },
       });
+
+      // Extraer stats del benchmark
+      if (benchmark?.statistics) {
+        for (const stat of benchmark.statistics) {
+          benchmarkStats[stat.metricKey] = {
+            mean: stat.mean || 0,
+            p50: stat.p50 || 0,
+            p75: stat.p75 || 0,
+            p90: stat.p90 || 0,
+          };
+        }
+      }
     } else if (compareWith === "community") {
-      // Comparar con la comunidad del usuario (usando tenantId)
-      const tenantId = user.communityMemberships?.[0]?.tenantId || user.primaryTenantId;
-      if (tenantId) {
-        benchmark = await prisma.benchmark.findFirst({
-          where: {
-            tenantId,
-            isActive: true,
-          },
-          include: {
-            statistics: true,
-            topPerformers: {
-              where: { outcomeKey: outcome },
-              take: 1,
-            },
-          },
+      // Computar benchmark de comunidad on-the-fly desde EqSnapshots
+      const communityResult = await computeCommunityBenchmark(
+        user as Parameters<typeof computeCommunityBenchmark>[0],
+        outcome
+      );
+
+      if (communityResult.error && Object.keys(communityResult.benchmarkStats).length === 0) {
+        return NextResponse.json({
+          ok: false,
+          error: communityResult.error,
+          noData: true,
         });
       }
-    }
 
-    // 4. Calcular estadísticas del benchmark
-    let benchmarkStats: Record<string, { mean: number; p50: number; p75: number; p90: number }> = {};
+      benchmarkStats = communityResult.benchmarkStats;
+      communityTopPerformerProfile = communityResult.topPerformerProfile;
 
-    if (benchmark?.statistics) {
-      for (const stat of benchmark.statistics) {
-        benchmarkStats[stat.metricKey] = {
-          mean: stat.mean || 0,
-          p50: stat.p50 || 0,
-          p75: stat.p75 || 0,
-          p90: stat.p90 || 0,
-        };
-      }
+      // Crear virtual benchmark info
+      benchmark = {
+        id: communityResult.benchmarkInfo.id,
+        name: communityResult.benchmarkInfo.name,
+        type: communityResult.benchmarkInfo.type,
+        totalRows: communityResult.benchmarkInfo.totalRows,
+      };
     }
 
     // 5. Calcular top 3 competencias del usuario
@@ -207,8 +507,10 @@ export async function GET(req: NextRequest) {
 
     const top5Talents = talentScores.slice(0, 5);
 
-    // 7. Obtener perfil de top performers
-    const topPerformerProfile = benchmark?.topPerformers?.[0];
+    // 7. Obtener perfil de top performers (benchmark DB o community computed)
+    const topPerformerProfile = compareWith === "community"
+      ? communityTopPerformerProfile as any
+      : benchmark?.topPerformers?.[0] || null;
 
     // 8. Calcular comparación con top performers
     let topPerformerComparison = null;
@@ -250,11 +552,12 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
     });
 
-    // 10. Obtener filtros disponibles (para filtrar por rol, sector, etc.)
-    const availableFilters = benchmark
+    // 10. Obtener filtros disponibles
+    const realBenchmarkId = compareWith !== "community" && benchmark ? benchmark.id : null;
+    const availableFilters = realBenchmarkId
       ? await prisma.benchmarkDataPoint.groupBy({
           by: ["jobRole", "sector", "country"],
-          where: { benchmarkId: benchmark.id },
+          where: { benchmarkId: realBenchmarkId },
           _count: true,
         })
       : [];

@@ -30,10 +30,53 @@ function getWeekBounds(date: Date) {
 }
 
 /**
+ * Resuelve un hubId que puede ser un Hub ID o un RowiCommunity ID
+ * y devuelve el Hub ID real, tenantId y nombre para WeekFlowConfig.
+ * WeekFlowConfig.hubId tiene FK a Hub, así que nunca debe recibir un communityId.
+ */
+async function resolveHubId(rawId: string): Promise<{
+  hubId: string;
+  tenantId: string | null;
+  name: string;
+} | null> {
+  // 1. Intentar como Hub directamente
+  const hub = await prisma.hub.findUnique({
+    where: { id: rawId },
+    select: { id: true, tenantId: true, name: true },
+  });
+  if (hub) {
+    return { hubId: hub.id, tenantId: hub.tenantId, name: hub.name };
+  }
+
+  // 2. Intentar como RowiCommunity — usar su hubId real
+  const community = await prisma.rowiCommunity.findUnique({
+    where: { id: rawId },
+    select: { tenantId: true, name: true, hubId: true },
+  });
+  if (community) {
+    if (community.hubId) {
+      return { hubId: community.hubId, tenantId: community.tenantId, name: community.name };
+    }
+    // Comunidad sin hub asociado — buscar hub del tenant
+    if (community.tenantId) {
+      const tenantHub = await prisma.hub.findFirst({
+        where: { tenantId: community.tenantId },
+        select: { id: true },
+      });
+      if (tenantHub) {
+        return { hubId: tenantHub.id, tenantId: community.tenantId, name: community.name };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * GET /api/weekflow/sessions?hubId=xxx
- * Lista sesiones de un hub
+ * Lista sesiones de un hub (hubId puede ser Hub ID o RowiCommunity ID)
  *
- * GET /api/weekflow/sessions/current?hubId=xxx
+ * GET /api/weekflow/sessions?hubId=xxx&current=true
  * Obtiene o crea la sesión de la semana actual
  */
 export async function GET(req: NextRequest) {
@@ -44,15 +87,22 @@ export async function GET(req: NextRequest) {
     }
 
     // Plan check bypassed — WeekFlow open for all users
-    // if (!auth.plan?.weekflowAccess) { ... }
 
     const { searchParams } = new URL(req.url);
-    const hubId = searchParams.get("hubId");
+    const rawHubId = searchParams.get("hubId");
     const current = searchParams.get("current") === "true";
 
-    if (!hubId) {
+    if (!rawHubId) {
       return NextResponse.json({ ok: false, error: "hubId required" }, { status: 400 });
     }
+
+    // Resolver el Hub ID real (puede venir como Hub ID o RowiCommunity ID)
+    const resolved = await resolveHubId(rawHubId);
+    if (!resolved) {
+      return NextResponse.json({ ok: false, error: "Hub/Community not found" }, { status: 404 });
+    }
+
+    const { hubId, tenantId, name } = resolved;
 
     // Obtener o auto-crear configuración
     let config = await prisma.weekFlowConfig.findFirst({
@@ -60,39 +110,13 @@ export async function GET(req: NextRequest) {
     });
 
     if (!config) {
-      // Auto-create config — try Hub first, then RowiCommunity
-      const hub = await prisma.hub.findUnique({
-        where: { id: hubId },
-        select: { tenantId: true, name: true },
+      config = await prisma.weekFlowConfig.create({
+        data: {
+          hubId,
+          tenantId,
+          name: `WeekFlow - ${name}`,
+        },
       });
-
-      if (hub) {
-        config = await prisma.weekFlowConfig.create({
-          data: {
-            hubId,
-            tenantId: hub.tenantId,
-            name: `WeekFlow - ${hub.name}`,
-          },
-        });
-      } else {
-        // Check if hubId is actually a RowiCommunity ID
-        const community = await prisma.rowiCommunity.findUnique({
-          where: { id: hubId },
-          select: { tenantId: true, name: true, hubId: true },
-        });
-
-        if (community) {
-          config = await prisma.weekFlowConfig.create({
-            data: {
-              hubId, // using community ID as hubId
-              tenantId: community.tenantId,
-              name: `WeekFlow - ${community.name}`,
-            },
-          });
-        } else {
-          return NextResponse.json({ ok: false, error: "Hub/Community not found" }, { status: 404 });
-        }
-      }
     }
 
     if (current) {

@@ -77,24 +77,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validar emoción (Plutchik base)
-    const validEmotions = [
-      "JOY",
-      "TRUST",
-      "FEAR",
-      "SURPRISE",
-      "SADNESS",
-      "DISGUST",
-      "ANGER",
-      "ANTICIPATION",
-    ];
-
-    if (!validEmotions.includes(emotion)) {
-      return NextResponse.json({ ok: false, error: "Invalid emotion" }, { status: 400 });
+    // Validar emoción (acepta Plutchik base + Rueda de Sentimientos + secundarias)
+    if (typeof emotion !== "string" || emotion.trim().length === 0) {
+      return NextResponse.json({ ok: false, error: "Invalid emotion format" }, { status: 400 });
     }
 
-    // Validar intensidad (1-3)
-    const validIntensity = Math.min(3, Math.max(1, intensity || 2));
+    // Validar intensidad (1-10)
+    const validIntensity = Math.min(10, Math.max(1, intensity || 5));
 
     // Verificar que la sesión existe
     const session = await prisma.weekFlowSession.findUnique({

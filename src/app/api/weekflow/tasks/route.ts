@@ -3,11 +3,42 @@ import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 
 /**
+ * Resuelve un hubId que puede ser un Hub ID o un RowiCommunity ID
+ * Devuelve el Hub ID real (FK a Hub table).
+ */
+async function resolveHubId(rawId: string): Promise<string | null> {
+  // 1. Intentar como Hub directamente
+  const hub = await prisma.hub.findUnique({
+    where: { id: rawId },
+    select: { id: true },
+  });
+  if (hub) return hub.id;
+
+  // 2. Intentar como RowiCommunity — usar su hubId real
+  const community = await prisma.rowiCommunity.findUnique({
+    where: { id: rawId },
+    select: { hubId: true, tenantId: true },
+  });
+  if (community?.hubId) return community.hubId;
+
+  // 3. Buscar hub del tenant de la comunidad
+  if (community?.tenantId) {
+    const tenantHub = await prisma.hub.findFirst({
+      where: { tenantId: community.tenantId },
+      select: { id: true },
+    });
+    if (tenantHub) return tenantHub.id;
+  }
+
+  return null;
+}
+
+/**
  * GET /api/weekflow/tasks
  * Lista las tareas del usuario
  * Query params:
  *   - status: TODO, IN_PROGRESS, DONE, CANCELLED, POSTPONED, BLOCKED
- *   - hubId: filtrar por hub
+ *   - hubId: filtrar por hub (puede ser Hub ID o RowiCommunity ID)
  *   - includeCompleted: true/false
  */
 export async function GET(req: NextRequest) {
@@ -19,7 +50,7 @@ export async function GET(req: NextRequest) {
 
     // Plan check bypassed — WeekFlow open for all users
     const { searchParams } = new URL(req.url);
-    const hubId = searchParams.get("hubId");
+    const rawHubId = searchParams.get("hubId");
 
     const status = searchParams.get("status");
     const includeCompleted = searchParams.get("includeCompleted") === "true";
@@ -34,8 +65,11 @@ export async function GET(req: NextRequest) {
       where.status = { notIn: ["DONE", "CANCELLED"] };
     }
 
-    if (hubId) {
-      where.hubId = hubId;
+    if (rawHubId) {
+      const hubId = await resolveHubId(rawHubId);
+      if (hubId) {
+        where.hubId = hubId;
+      }
     }
 
     const tasks = await prisma.rowiTask.findMany({
@@ -103,7 +137,7 @@ export async function POST(req: NextRequest) {
     const {
       title,
       description,
-      hubId,
+      hubId: rawHubId,
       tenantId,
       dueDate,
       priority,
@@ -122,28 +156,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "title is required" }, { status: 400 });
     }
 
-    // Validar emoción si se proporciona
-    if (emotionAtCreation) {
-      const validEmotions = [
-        "JOY",
-        "TRUST",
-        "FEAR",
-        "SURPRISE",
-        "SADNESS",
-        "DISGUST",
-        "ANGER",
-        "ANTICIPATION",
-      ];
-      if (!validEmotions.includes(emotionAtCreation)) {
-        return NextResponse.json({ ok: false, error: "Invalid emotion" }, { status: 400 });
-      }
+    // Validar emoción si se proporciona (acepta Plutchik + Rueda de Sentimientos)
+    if (emotionAtCreation && (typeof emotionAtCreation !== "string" || emotionAtCreation.trim().length === 0)) {
+      return NextResponse.json({ ok: false, error: "Invalid emotion format" }, { status: 400 });
+    }
+
+    // Resolver Hub ID real si se proporciona (puede venir como community ID)
+    let resolvedHubId: string | null = null;
+    if (rawHubId) {
+      resolvedHubId = await resolveHubId(rawHubId);
     }
 
     const task = await prisma.rowiTask.create({
       data: {
         userId: auth.id,
         tenantId: tenantId || null,
-        hubId: hubId || null,
+        hubId: resolvedHubId,
         title,
         description: description || null,
         dueDate: dueDate ? new Date(dueDate) : null,

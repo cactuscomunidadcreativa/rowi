@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "MONTHLY";
-    const hubId = searchParams.get("hubId");
+    const rawHubId = searchParams.get("hubId");
 
     // Calcular fechas según periodo
     const now = new Date();
@@ -43,8 +43,17 @@ export async function GET(req: NextRequest) {
       createdAt: { gte: startDate },
     };
 
-    if (hubId) {
-      where.hubId = hubId;
+    if (rawHubId) {
+      // Resolver Hub ID real (puede venir como Hub ID o RowiCommunity ID)
+      const hub = await prisma.hub.findUnique({ where: { id: rawHubId }, select: { id: true } });
+      if (hub) {
+        where.hubId = hub.id;
+      } else {
+        const community = await prisma.rowiCommunity.findUnique({ where: { id: rawHubId }, select: { hubId: true } });
+        if (community?.hubId) {
+          where.hubId = community.hubId;
+        }
+      }
     }
 
     // Obtener todas las tareas del periodo

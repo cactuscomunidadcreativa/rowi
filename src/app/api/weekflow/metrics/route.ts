@@ -3,10 +3,38 @@ import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 
 /**
+ * Resuelve un hubId que puede ser un Hub ID o un RowiCommunity ID
+ * Devuelve el Hub ID real (FK a Hub table).
+ */
+async function resolveHubId(rawId: string): Promise<string | null> {
+  const hub = await prisma.hub.findUnique({
+    where: { id: rawId },
+    select: { id: true },
+  });
+  if (hub) return hub.id;
+
+  const community = await prisma.rowiCommunity.findUnique({
+    where: { id: rawId },
+    select: { hubId: true, tenantId: true },
+  });
+  if (community?.hubId) return community.hubId;
+
+  if (community?.tenantId) {
+    const tenantHub = await prisma.hub.findFirst({
+      where: { tenantId: community.tenantId },
+      select: { id: true },
+    });
+    if (tenantHub) return tenantHub.id;
+  }
+
+  return null;
+}
+
+/**
  * GET /api/weekflow/metrics
  * Obtiene métricas de WeekFlow para un hub/tenant
  * Query params:
- *   - hubId: ID del hub (requerido)
+ *   - hubId: ID del hub o comunidad (requerido, se resuelve automáticamente)
  *   - period: WEEKLY, MONTHLY, QUARTERLY, YEARLY (default: WEEKLY)
  *   - userId: filtrar por usuario específico (opcional, solo admin)
  */
@@ -20,12 +48,18 @@ export async function GET(req: NextRequest) {
     // Plan check bypassed — WeekFlow open for all users
 
     const { searchParams } = new URL(req.url);
-    const hubId = searchParams.get("hubId");
+    const rawHubId = searchParams.get("hubId");
     const period = searchParams.get("period") || "WEEKLY";
     const userId = searchParams.get("userId");
 
-    if (!hubId) {
+    if (!rawHubId) {
       return NextResponse.json({ ok: false, error: "hubId required" }, { status: 400 });
+    }
+
+    // Resolver Hub ID real (puede venir como Hub ID o RowiCommunity ID)
+    const hubId = await resolveHubId(rawHubId);
+    if (!hubId) {
+      return NextResponse.json({ ok: false, error: "Hub/Community not found" }, { status: 404 });
     }
 
     // Calcular fechas según periodo
@@ -141,11 +175,17 @@ export async function GET(req: NextRequest) {
     let hubMembers = await prisma.communityMember.count({
       where: { hubId },
     });
-    // Si no hay miembros via CommunityMember, buscar en RowiCommunity
+    // Si no hay miembros via CommunityMember, buscar en RowiCommunity asociada al hub
     if (hubMembers === 0) {
-      hubMembers = await prisma.rowiCommunityUser.count({
-        where: { communityId: hubId },
+      const communityForHub = await prisma.rowiCommunity.findFirst({
+        where: { hubId },
+        select: { id: true },
       });
+      if (communityForHub) {
+        hubMembers = await prisma.rowiCommunityUser.count({
+          where: { communityId: communityForHub.id },
+        });
+      }
     }
 
     const participationRate =

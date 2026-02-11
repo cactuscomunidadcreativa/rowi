@@ -126,11 +126,14 @@ export async function GET(req: NextRequest) {
 
     /* =========================================================
        👤 Snapshots base (usuario y miembro)
-       Para tenant users, buscar por userId en lugar de memberId
+       Busca por userId O email para cubrir multi-account
     ========================================================== */
+    const mySnapWhere: any[] = [{ userId: me.id }];
+    if (me.email) mySnapWhere.push({ email: { equals: me.email, mode: "insensitive" } });
+
     const [mySnap, thSnap] = await Promise.all([
       prisma.eqSnapshot.findFirst({
-        where: { userId: me.id },
+        where: { OR: mySnapWhere },
         orderBy: { at: "desc" },
       }),
       targetUserId

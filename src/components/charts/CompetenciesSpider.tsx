@@ -207,62 +207,87 @@ export default function CompetenciesSpider({
     );
   }
 
+  const presentLabel = lang === "es"
+    ? `Actual${datePresent ? ` · ${datePresent}` : ""}`
+    : `Current${datePresent ? ` · ${datePresent}` : ""}`;
+  const compareLabel = lang === "es"
+    ? `Anterior${dateCompare ? ` · ${dateCompare}` : ""}`
+    : `Previous${dateCompare ? ` · ${dateCompare}` : ""}`;
+
   return (
-    <div style={{ width: "100%", height: 340 }}>
-      <ResponsiveContainer>
-        <RadarChart data={data}>
-          <PolarGrid stroke="#9AA0A6" strokeOpacity={0.25} />
-          <PolarAngleAxis
-            dataKey="k"
-            tick={(props: any) => {
-              const { x, y, payload } = props;
-              const k = payload?.value as string;
-              return (
-                <text
-                  x={x}
-                  y={y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={COLOR_SEI[k] ?? "#ccc"}
-                  fontWeight={600}
-                  fontSize={13}
-                >
-                  {k}
-                </text>
-              );
-            }}
-          />
-          {/* Sin números en el eje radial */}
-          <PolarRadiusAxis domain={[65, max]} tick={false} axisLine={false} />
+    <div>
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 mb-2">
+        {hasPresent && (
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#E53935" }} />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{presentLabel}</span>
+          </div>
+        )}
+        {hasCompare && (
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#31A2E3" }} />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{compareLabel}</span>
+          </div>
+        )}
+      </div>
 
-          {/* Tooltip con nombre y definición */}
-          <Tooltip content={<CustomTooltip lang={lang} />} />
-
-          {/* 🎯 Presente */}
-          {hasPresent && (
-            <Radar
-              name={`Actual${datePresent ? ` · ${datePresent}` : ""}`}
-              dataKey="present"
-              stroke="#E53935"
-              strokeWidth={2}
-              fill="#E53935"
-              fillOpacity={0.25}
+      <div style={{ width: "100%", height: 310 }}>
+        <ResponsiveContainer>
+          <RadarChart data={data}>
+            <PolarGrid stroke="#9AA0A6" strokeOpacity={0.25} />
+            <PolarAngleAxis
+              dataKey="k"
+              tick={(props: any) => {
+                const { x, y, payload } = props;
+                const k = payload?.value as string;
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill={COLOR_SEI[k] ?? "#ccc"}
+                    fontWeight={600}
+                    fontSize={13}
+                  >
+                    {k}
+                  </text>
+                );
+              }}
             />
-          )}
+            {/* Sin números en el eje radial */}
+            <PolarRadiusAxis domain={[65, max]} tick={false} axisLine={false} />
 
-          {/* 🔁 Comparación */}
-          {hasCompare && (
-            <Radar
-              name={`Comparación${dateCompare ? ` · ${dateCompare}` : ""}`}
-              dataKey="other"
-              stroke="#31A2E3"
-              strokeWidth={2}
-              fill="#31A2E3"
-              fillOpacity={0.15}
-            />
-          )}
-        </RadarChart>
-      </ResponsiveContainer>
+            {/* Tooltip con nombre y definición */}
+            <Tooltip content={<CustomTooltip lang={lang} />} />
+
+            {/* Presente */}
+            {hasPresent && (
+              <Radar
+                name={presentLabel}
+                dataKey="present"
+                stroke="#E53935"
+                strokeWidth={2}
+                fill="#E53935"
+                fillOpacity={0.25}
+              />
+            )}
+
+            {/* Comparación */}
+            {hasCompare && (
+              <Radar
+                name={compareLabel}
+                dataKey="other"
+                stroke="#31A2E3"
+                strokeWidth={2}
+                fill="#31A2E3"
+                fillOpacity={0.15}
+              />
+            )}
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

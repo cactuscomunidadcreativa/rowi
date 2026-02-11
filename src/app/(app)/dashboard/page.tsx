@@ -322,13 +322,24 @@ export default function ClientDashboard() {
                 </span>
               )}
             </div>
-            {/* Ghost info chip */}
+            {/* Legend: current vs previous */}
             {prev && (
-              <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-                vs {prev.project || "anterior"} ({prev.date ? new Date(prev.date).toLocaleDateString() : ""})
+              <div className="mt-3 flex items-center justify-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: eqLevel.color }} />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                    {lang === "es" ? "Actual" : "Current"}{base.snapshotProject ? ` · ${base.snapshotProject}` : ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full opacity-30" style={{ backgroundColor: eqLevel.color }} />
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {lang === "es" ? "Anterior" : "Previous"} · {prev.project || (prev.date ? new Date(prev.date).toLocaleDateString() : "")}
+                  </span>
+                </div>
               </div>
             )}
-            <div className="mt-3 relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div className="mt-2 relative h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               {/* Ghost bar (previous EQ) */}
               {prevEqTotal != null && (
                 <div
@@ -418,7 +429,10 @@ export default function ClientDashboard() {
         </motion.div>
       </div>
 
-      {/* TALENTS */}
+      {/* TALENTS — solo mostrar si hay datos de Brain Talents */}
+      {(Object.keys(base.eq?.talents?.focus || {}).length > 0 ||
+        Object.keys(base.eq?.talents?.decisions || {}).length > 0 ||
+        Object.keys(base.eq?.talents?.drive || {}).length > 0) && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -467,6 +481,7 @@ export default function ClientDashboard() {
           />
         </div>
       </motion.div>
+      )}
 
       {/* OUTCOMES */}
       <motion.div

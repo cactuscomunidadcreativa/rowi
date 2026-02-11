@@ -57,8 +57,11 @@ export async function GET(req: NextRequest) {
       realMemberId = memberId;
     }
 
+    const mySnapWhere: any[] = [{ userId: me.id }];
+    if (me.email) mySnapWhere.push({ email: { equals: me.email, mode: "insensitive" } });
+
     const [mySnap, thSnap] = await Promise.all([
-      prisma.eqSnapshot.findFirst({ where: { userId: me.id }, orderBy: { at: "desc" } }),
+      prisma.eqSnapshot.findFirst({ where: { OR: mySnapWhere }, orderBy: { at: "desc" } }),
       targetUserId
         ? prisma.eqSnapshot.findFirst({
             where: { userId: targetUserId },

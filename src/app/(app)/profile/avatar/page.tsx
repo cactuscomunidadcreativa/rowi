@@ -477,17 +477,16 @@ export default function AvatarPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index }}
-                      className={`flex items-center gap-4 p-4 rounded-xl transition-all ${
+                      className={`flex items-center gap-4 p-4 rounded-xl transition-all border-2 ${
                         isCurrent
-                          ? "ring-2 shadow-md"
+                          ? "shadow-md"
                           : isActive
-                          ? "bg-gray-50 dark:bg-zinc-700/50"
-                          : "opacity-50"
+                          ? "bg-gray-50 dark:bg-zinc-700/50 border-transparent"
+                          : "opacity-50 border-transparent"
                       }`}
                       style={{
                         backgroundColor: isCurrent ? `${level.color}10` : undefined,
-                        ringColor: isCurrent ? level.color : undefined,
-                        borderColor: isCurrent ? level.color : undefined,
+                        borderColor: isCurrent ? level.color : "transparent",
                       }}
                     >
                       {/* Rowi Image */}

@@ -817,7 +817,7 @@ export default function AffinityPage() {
                 key={`panel-${selectedMembers.length}-${selectedMembers.map(m => m.id).join('-')}`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-4 max-h-[450px] overflow-y-auto"
+                className="bg-[var(--rowi-surface)] rounded-2xl border border-[var(--rowi-border)] p-4 max-h-[600px] overflow-y-auto"
               >
               {(() => {
                 // Debug log
@@ -1014,8 +1014,8 @@ export default function AffinityPage() {
                     );
                   })()}
 
-                  {/* Individual member cards */}
-                  <div className="space-y-2">
+                  {/* Individual member cards with full detail */}
+                  <div className="space-y-4">
                     {selectedMembers.map((member) => {
                       const aff = affByMember[member.id];
                       if (!aff) return (
@@ -1034,55 +1034,141 @@ export default function AffinityPage() {
                       const levelInfo = levelFromHeat135((heat * 135) / 100);
 
                       return (
-                        <div key={member.id} className="bg-[var(--rowi-background)] rounded-xl p-3">
-                          <div className="flex items-center justify-between mb-2">
+                        <div key={member.id} className="bg-[var(--rowi-background)] rounded-xl p-4 space-y-3">
+                          {/* Header */}
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium"
+                                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
                                 style={{ background: levelInfo.color }}
                               >
                                 {member.name.charAt(0)}
                               </div>
                               <div>
-                                <span className="text-sm font-medium text-[var(--rowi-foreground)]">{member.name}</span>
+                                <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{member.name}</span>
                                 <div className="text-[10px] text-[var(--rowi-muted)]">
-                                  {aff.brainStyles?.theirs || member.brainStyle || "—"}
+                                  {aff.brainStyles?.theirs || member.brainStyle || "—"} · {member.group || ""}
                                 </div>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold" style={{ color: levelInfo.color }}>{heat}%</div>
+                              <div className="text-xl font-bold" style={{ color: levelInfo.color }}>{heat}%</div>
                               <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
                             </div>
                           </div>
 
-                          {/* Mini parts breakdown */}
+                          {/* Parts breakdown */}
                           {aff.parts && (
-                            <div className="flex gap-2 mt-2">
-                              <div className="flex-1 text-center">
-                                <div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div>
-                                <div className="text-[8px] text-[var(--rowi-muted)]">{t("affinity.detail.growth") || "Crec."}</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="bg-[var(--rowi-surface)] rounded-lg p-2 text-center">
+                                <div className="text-sm font-semibold text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div>
+                                <div className="text-[9px] text-[var(--rowi-muted)]">{t("affinity.detail.growth") || "Crecimiento"}</div>
                               </div>
-                              <div className="flex-1 text-center">
-                                <div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div>
-                                <div className="text-[8px] text-[var(--rowi-muted)]">{t("affinity.detail.collaboration") || "Colab."}</div>
+                              <div className="bg-[var(--rowi-surface)] rounded-lg p-2 text-center">
+                                <div className="text-sm font-semibold text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div>
+                                <div className="text-[9px] text-[var(--rowi-muted)]">{t("affinity.detail.collaboration") || "Colaboración"}</div>
                               </div>
-                              <div className="flex-1 text-center">
-                                <div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div>
-                                <div className="text-[8px] text-[var(--rowi-muted)]">{t("affinity.detail.understanding") || "Entend."}</div>
+                              <div className="bg-[var(--rowi-surface)] rounded-lg p-2 text-center">
+                                <div className="text-sm font-semibold text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div>
+                                <div className="text-[9px] text-[var(--rowi-muted)]">{t("affinity.detail.understanding") || "Entendimiento"}</div>
                               </div>
                             </div>
                           )}
 
-                          {/* Shared talents count */}
-                          {aff.sharedTalents && aff.sharedTalents.length > 0 && (
-                            <div className="flex items-center gap-1 mt-2">
-                              <Sparkles className="w-3 h-3 text-green-500" />
-                              <span className="text-[10px] text-green-600">
-                                {aff.sharedTalents.length} {t("affinity.detail.sharedTalents") || "talentos en común"}
-                              </span>
+                          {/* Brain Styles */}
+                          {aff.brainStyles && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <Brain className="w-3.5 h-3.5 text-[var(--rowi-primary)]" />
+                              <span className="px-2 py-0.5 rounded bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]">{aff.brainStyles.yours}</span>
+                              <span className="text-[var(--rowi-muted)]">↔</span>
+                              <span className="px-2 py-0.5 rounded bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]">{aff.brainStyles.theirs || member.brainStyle}</span>
+                              <span className="text-[var(--rowi-muted)] ml-auto">{aff.brainStyles.compatibility}% {t("affinity.detail.compatible") || "compatible"}</span>
                             </div>
                           )}
+
+                          {/* Shared Talents - full list */}
+                          {aff.sharedTalents && aff.sharedTalents.length > 0 && (
+                            <div className="bg-green-500/10 rounded-lg p-2.5">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-green-500" />
+                                <span className="text-[10px] font-medium text-green-700 dark:text-green-300">
+                                  {t("affinity.detail.sharedTalents") || "Talentos en Común"} ({aff.sharedTalents.length})
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {aff.sharedTalents.map((talent) => (
+                                  <span
+                                    key={talent}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-700 dark:text-green-300"
+                                    title={talent}
+                                  >
+                                    {t(`talents.${talent}`) || talent}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Complementary Talents */}
+                          {aff.complementaryTalents && aff.complementaryTalents.filter(ct => ct.yours || ct.theirs).length > 0 && (
+                            <div className="bg-orange-500/10 rounded-lg p-2.5">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Lightbulb className="w-3.5 h-3.5 text-orange-500" />
+                                <span className="text-[10px] font-medium text-orange-700 dark:text-orange-300">
+                                  {t("affinity.detail.complementaryTalents") || "Talentos Complementarios"} ({aff.complementaryTalents.filter(ct => ct.yours || ct.theirs).length})
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {aff.complementaryTalents.filter(ct => ct.yours || ct.theirs).map((ct, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-700 dark:text-orange-300"
+                                  >
+                                    {ct.yours ? `${t(`talents.${ct.yours}`) || ct.yours} →` : ""} {ct.theirs ? t(`talents.${ct.theirs}`) || ct.theirs : ""}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Strong Competencies - full list */}
+                          {aff.strongCompetencies && aff.strongCompetencies.length > 0 && (
+                            <div className="bg-blue-500/10 rounded-lg p-2.5">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+                                <span className="text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                                  {t("affinity.detail.strongCompetencies") || "Competencias Fuertes Compartidas"} ({aff.strongCompetencies.length})
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {aff.strongCompetencies.map((c) => (
+                                  <span
+                                    key={c}
+                                    className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                                    title={t(`competencies.${c}.desc`) || c}
+                                  >
+                                    {t(`competencies.${c}`) || c}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AI Summary */}
+                          {(() => {
+                            const summary = aff?.ai_summary || aff?.interpretation;
+                            const isRealInsight = summary && !summary.includes("modo ahorro") && !summary.includes("ℹ️");
+                            if (!isRealInsight) return null;
+                            return (
+                              <div className="bg-[var(--rowi-surface)] rounded-lg p-2.5 border border-[var(--rowi-border)]">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <MessageCircle className="w-3.5 h-3.5 text-[var(--rowi-muted)]" />
+                                  <span className="text-[10px] font-medium text-[var(--rowi-muted)]">Insight</span>
+                                </div>
+                                <p className="text-xs text-[var(--rowi-foreground)] italic">{summary}</p>
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}

@@ -80,7 +80,7 @@ interface ProcessBlobBody {
 }
 
 const BATCH_SIZE = 500;
-const PROGRESS_UPDATE_INTERVAL = 5000;
+const PROGRESS_UPDATE_INTERVAL = 100; // Update more frequently for small files
 
 export async function POST(req: NextRequest) {
   let benchmarkId: string | undefined;
@@ -254,6 +254,10 @@ export async function POST(req: NextRequest) {
       console.log(`📊 Sample headers: ${rawHeaders.slice(0, 15).join(", ")}`);
     } else {
       console.log(`📊 Parsing CSV...`);
+      // Strip BOM character if present
+      if (text.charCodeAt(0) === 0xFEFF) {
+        text = text.slice(1);
+      }
       const lines = text.split(/\r?\n/).filter(line => line.trim());
 
       if (lines.length < 2) {
@@ -385,6 +389,13 @@ export async function POST(req: NextRequest) {
           vision: row.vision ?? null,
           designing: row.designing ?? null,
           entrepreneurship: row.entrepreneurship ?? null,
+          // Brain Agility
+          brainAgility: row.brainAgility ?? null,
+          // Profile / Brain Style
+          brainStyle: row.profile || row.brainStyle || null,
+          profile: row.profile || null,
+          // Quality indicators
+          reliabilityIndex: row.reliabilityIndex ?? null,
         });
         validRows++;
 

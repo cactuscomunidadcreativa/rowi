@@ -61,14 +61,35 @@ export async function GET(req: NextRequest) {
       { NOT: { email: { equals: email, mode: "insensitive" as const } } },
     ];
 
-    // Filtro por comunidad (hubId o tenantId)
+    // Filtro por comunidad (hubId, tenantId, o RowiCommunity ID)
     if (communityFilter) {
-      whereConditions.push({
-        OR: [
-          { hubId: communityFilter },
-          { tenantId: communityFilter },
-        ],
-      });
+      // Intentar buscar emails de una RowiCommunity con este ID
+      let rcEmails: string[] = [];
+      try {
+        const rcMembers = await prisma.rowiCommunityUser.findMany({
+          where: { communityId: communityFilter },
+          select: { email: true },
+        });
+        rcEmails = rcMembers
+          .map((m) => m.email?.toLowerCase())
+          .filter((e): e is string => !!e);
+      } catch {
+        // No es un RowiCommunity ID, continuar
+      }
+
+      if (rcEmails.length > 0) {
+        // Filtrar por emails de la RowiCommunity
+        whereConditions.push({
+          email: { in: rcEmails, mode: "insensitive" as const },
+        });
+      } else {
+        whereConditions.push({
+          OR: [
+            { hubId: communityFilter },
+            { tenantId: communityFilter },
+          ],
+        });
+      }
     }
 
     if (q) {
@@ -258,6 +279,47 @@ export async function GET(req: NextRequest) {
         const entry = communityMap.get(`t_${t.id}`);
         if (entry) entry.name = t.name;
       }
+    }
+
+    // 🆕 Incluir RowiCommunity records donde el usuario es creador o miembro
+    try {
+      const rowiCommunities = await prisma.rowiCommunity.findMany({
+        where: {
+          OR: [
+            { createdById: owner.id },
+            { members: { some: { userId: owner.id } } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          _count: { select: { members: true } },
+        },
+      });
+
+      for (const rc of rowiCommunities) {
+        const key = `rc_${rc.id}`;
+        if (!communityMap.has(key)) {
+          // Contar cuántos CommunityMember corresponden a esta RowiCommunity
+          // usando los miembros del RowiCommunity que también existen en membersDB
+          const rcMembers = await prisma.rowiCommunityUser.findMany({
+            where: { communityId: rc.id },
+            select: { email: true },
+          });
+          const rcEmails = new Set(rcMembers.map((m) => m.email?.toLowerCase()).filter(Boolean));
+          const matchCount = membersDB.filter((m) => m.email && rcEmails.has(m.email.toLowerCase())).length;
+
+          if (matchCount > 0) {
+            communityMap.set(key, {
+              id: rc.id,
+              name: rc.name,
+              count: matchCount,
+            });
+          }
+        }
+      }
+    } catch (rcErr) {
+      console.warn("⚠️ Error loading RowiCommunity for filter:", rcErr);
     }
 
     const communities = Array.from(communityMap.values()).sort((a, b) => b.count - a.count);

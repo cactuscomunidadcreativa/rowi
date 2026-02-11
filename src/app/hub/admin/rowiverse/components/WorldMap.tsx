@@ -1,13 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  Marker,
-  ZoomableGroup,
-} from "react-simple-maps";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { Globe2 } from "lucide-react";
+
+// Dynamic import to avoid SSR issues with react-simple-maps
+const ComposableMap = dynamic(
+  () => import("react-simple-maps").then((m) => m.ComposableMap),
+  { ssr: false }
+);
+const Geographies = dynamic(
+  () => import("react-simple-maps").then((m) => m.Geographies),
+  { ssr: false }
+);
+const Geography = dynamic(
+  () => import("react-simple-maps").then((m) => m.Geography),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-simple-maps").then((m) => m.Marker),
+  { ssr: false }
+);
+const ZoomableGroup = dynamic(
+  () => import("react-simple-maps").then((m) => m.ZoomableGroup),
+  { ssr: false }
+);
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -46,6 +63,12 @@ export default function WorldMap({ data, mapData }: Props) {
   }>({ show: false, x: 0, y: 0, content: null });
 
   const [position, setPosition] = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
+  const [mounted, setMounted] = useState(false);
+  const [mapError, setMapError] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   function handleMoveEnd(position: { coordinates: [number, number]; zoom: number }) {
     setPosition(position);
@@ -86,8 +109,31 @@ export default function WorldMap({ data, mapData }: Props) {
     setTooltip({ show: false, x: 0, y: 0, content: null });
   };
 
+  if (!mounted) {
+    return (
+      <div className="relative w-full h-[60vh] border border-[var(--rowi-border)] rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-[var(--rowi-muted)]">
+          <Globe2 className="w-12 h-12 mx-auto mb-2 animate-pulse" />
+          <p>Cargando mapa...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (mapError) {
+    return (
+      <div className="relative w-full h-[40vh] border border-[var(--rowi-border)] rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-[var(--rowi-muted)]">
+          <Globe2 className="w-12 h-12 mx-auto mb-2" />
+          <p>No se pudo cargar el mapa</p>
+          <p className="text-xs mt-1">{mapData.length} paises con datos</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative w-full h-[60vh] border border-[var(--rowi-border)] rounded-xl bg-[var(--rowi-card)] shadow-inner overflow-hidden">
+    <div className="relative w-full h-[60vh] border border-[var(--rowi-border)] rounded-xl bg-gray-50 dark:bg-gray-900 shadow-inner overflow-hidden">
       <ComposableMap
         projectionConfig={{ scale: 150, center: [0, 20] }}
         style={{ width: "100%", height: "100%" }}
@@ -100,28 +146,26 @@ export default function WorldMap({ data, mapData }: Props) {
           maxZoom={8}
         >
           <Geographies geography={geoUrl}>
-            {({ geographies }) =>
-              geographies.map((geo) => (
+            {({ geographies }: any) =>
+              geographies.map((geo: any) => (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
                   style={{
                     default: {
-                      fill: "var(--rowi-background)",
-                      stroke: "var(--rowi-border)",
+                      fill: "#e2e8f0",
+                      stroke: "#cbd5e1",
                       strokeWidth: 0.5,
                       outline: "none",
                     },
                     hover: {
-                      fill: "var(--rowi-primary)",
-                      fillOpacity: 0.1,
-                      stroke: "var(--rowi-primary)",
+                      fill: "#cbd5e1",
+                      stroke: "#94a3b8",
                       strokeWidth: 0.5,
                       outline: "none",
                     },
                     pressed: {
-                      fill: "var(--rowi-primary)",
-                      fillOpacity: 0.2,
+                      fill: "#94a3b8",
                       outline: "none",
                     },
                   }}
@@ -150,7 +194,7 @@ export default function WorldMap({ data, mapData }: Props) {
             return (
               <Marker key={country.code} coordinates={country.coordinates}>
                 <g
-                  onMouseEnter={(e) => handleMouseEnter(e, country)}
+                  onMouseEnter={(e: any) => handleMouseEnter(e, country)}
                   onMouseLeave={handleMouseLeave}
                   style={{ cursor: "pointer" }}
                 >
@@ -159,7 +203,6 @@ export default function WorldMap({ data, mapData }: Props) {
                     r={size + 2}
                     fill={color}
                     fillOpacity={0.2}
-                    className="animate-pulse"
                   />
 
                   {/* Main marker - pie chart if multiple types, solid if single */}
@@ -226,8 +269,8 @@ export default function WorldMap({ data, mapData }: Props) {
             transform: "translate(-50%, -100%)",
           }}
         >
-          <div className="bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-lg shadow-lg p-3 text-sm min-w-[180px]">
-            <h4 className="font-bold text-[var(--rowi-foreground)] mb-2">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-sm min-w-[180px]">
+            <h4 className="font-bold text-gray-900 dark:text-white mb-2">
               {tooltip.content.name}
             </h4>
             <div className="space-y-1 text-xs">
@@ -237,7 +280,7 @@ export default function WorldMap({ data, mapData }: Props) {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: COLORS.benchmarks }}
                   />
-                  <span className="text-[var(--rowi-muted)]">Benchmarks:</span>
+                  <span className="text-gray-500">Benchmarks:</span>
                   <span className="font-medium ml-auto">
                     {formatNumber(tooltip.content.benchmarks)}
                   </span>
@@ -249,7 +292,7 @@ export default function WorldMap({ data, mapData }: Props) {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: COLORS.users }}
                   />
-                  <span className="text-[var(--rowi-muted)]">Users:</span>
+                  <span className="text-gray-500">Users:</span>
                   <span className="font-medium ml-auto">
                     {formatNumber(tooltip.content.users)}
                   </span>
@@ -261,7 +304,7 @@ export default function WorldMap({ data, mapData }: Props) {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: COLORS.newUsers }}
                   />
-                  <span className="text-[var(--rowi-muted)]">New (3mo):</span>
+                  <span className="text-gray-500">New (3mo):</span>
                   <span className="font-medium ml-auto text-green-500">
                     +{formatNumber(tooltip.content.newUsers)}
                   </span>
@@ -273,23 +316,23 @@ export default function WorldMap({ data, mapData }: Props) {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: COLORS.communities }}
                   />
-                  <span className="text-[var(--rowi-muted)]">Communities:</span>
+                  <span className="text-gray-500">Communities:</span>
                   <span className="font-medium ml-auto">
                     {formatNumber(tooltip.content.communities)}
                   </span>
                 </div>
               )}
               {tooltip.content.avgEQ !== null && (
-                <div className="flex items-center gap-2 pt-1 border-t border-[var(--rowi-border)] mt-1">
-                  <span className="text-[var(--rowi-muted)]">Avg EQ:</span>
+                <div className="flex items-center gap-2 pt-1 border-t border-gray-200 dark:border-gray-600 mt-1">
+                  <span className="text-gray-500">Avg EQ:</span>
                   <span className="font-medium ml-auto">
                     {tooltip.content.avgEQ.toFixed(1)}
                   </span>
                 </div>
               )}
             </div>
-            <div className="mt-2 pt-2 border-t border-[var(--rowi-border)]">
-              <div className="text-xs font-bold text-[var(--rowi-primary)]">
+            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+              <div className="text-xs font-bold text-purple-600">
                 Total Rowiers: {formatNumber(tooltip.content.total)}
               </div>
             </div>
@@ -301,19 +344,19 @@ export default function WorldMap({ data, mapData }: Props) {
       <div className="absolute bottom-4 right-4 flex flex-col gap-1">
         <button
           onClick={() => setPosition((p) => ({ ...p, zoom: Math.min(p.zoom * 1.5, 8) }))}
-          className="w-8 h-8 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] flex items-center justify-center text-lg font-bold"
+          className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-lg font-bold"
         >
           +
         </button>
         <button
           onClick={() => setPosition((p) => ({ ...p, zoom: Math.max(p.zoom / 1.5, 1) }))}
-          className="w-8 h-8 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] flex items-center justify-center text-lg font-bold"
+          className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-lg font-bold"
         >
           -
         </button>
         <button
           onClick={() => setPosition({ coordinates: [0, 20], zoom: 1 })}
-          className="w-8 h-8 rounded-lg bg-[var(--rowi-card)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-border)] flex items-center justify-center text-xs"
+          className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-xs"
         >
           R
         </button>

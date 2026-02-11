@@ -109,7 +109,10 @@ export async function POST(req: NextRequest) {
     const executionTime = toInt(rows[0]["Execution Time"]);
     const language = rows[0]["Items Language"] || null;
 
-    const creator = await prisma.user.findUnique({ where: { email: token.email } });
+    const creator = await prisma.user.findUnique({
+      where: { email: token.email },
+      select: { id: true, primaryTenantId: true },
+    });
 
     let community = await prisma.rowiCommunity.findUnique({ where: { slug } });
 
@@ -249,13 +252,15 @@ export async function POST(req: NextRequest) {
          2.3 CREAR MIEMBRO LEGACY (para compatibilidad)
          email tiene @unique global — usar upsert para evitar race conditions
       ========================================================== */
+      const effectiveTenantId = tenantId ?? community.tenantId ?? creator?.primaryTenantId ?? "";
       let legacyMember = await prisma.communityMember.upsert({
         where: { email },
         create: {
           email,
           name: user.name,
           userId: user.id,
-          tenantId: tenantId ?? community.tenantId ?? "",
+          ownerId: creator?.id ?? null,
+          tenantId: effectiveTenantId,
           hubId: hubId ?? community.hubId ?? null,
           rowiverseUserId: rowiVerseUser.id,
           role: "member",
@@ -265,6 +270,8 @@ export async function POST(req: NextRequest) {
         update: {
           rowiverseUserId: rowiVerseUser.id,
           userId: user.id,
+          ownerId: creator?.id ?? undefined,
+          tenantId: effectiveTenantId || undefined,
           name: user.name || undefined,
         },
       });

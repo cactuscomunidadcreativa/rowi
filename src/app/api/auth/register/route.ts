@@ -60,15 +60,109 @@ export async function POST(req: NextRequest) {
       where: { email: normalizedEmail },
     });
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "email_already_exists" },
-        { status: 409 }
-      );
-    }
-
     // Hash del password
     const hashedPassword = await bcrypt.hash(password, 12);
+
+    /* =========================================================
+       🔓 CLAIM: Si el usuario fue importado via CSV (sin credentials),
+       permitir que "reclame" su cuenta seteando password.
+       Preserva todos los datos importados (EQ, membresías, etc.)
+    ========================================================= */
+    if (existingUser) {
+      // Verificar si ya tiene cuenta de credentials (ya se registró)
+      const existingCredentials = await prisma.account.findFirst({
+        where: { userId: existingUser.id, provider: "credentials" },
+      });
+
+      if (existingCredentials) {
+        // Ya tiene password → rechazar registro duplicado
+        return NextResponse.json(
+          { error: "email_already_exists" },
+          { status: 409 }
+        );
+      }
+
+      // No tiene credentials → fue importado via CSV, permitir claim
+      const claimedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          name: name || existingUser.name,
+          language: language || existingUser.language || "es",
+          country: country || existingUser.country || "Unknown",
+          onboardingStatus: existingUser.onboardingStatus || "REGISTERED",
+        },
+      });
+
+      // Crear cuenta de credentials para login
+      await prisma.account.create({
+        data: {
+          userId: existingUser.id,
+          type: "credentials",
+          provider: "credentials",
+          providerAccountId: normalizedEmail,
+          access_token: hashedPassword,
+        },
+      });
+
+      // Vincular a RowiVerse/Tenant si no está vinculado
+      try {
+        if (!existingUser.rowiverseId) {
+          const rowiverse = await prisma.rowiVerse.findFirst({ where: { slug: "rowiverse" } });
+          if (rowiverse) {
+            let rvUser = await prisma.rowiVerseUser.findUnique({ where: { userId: existingUser.id } });
+            if (!rvUser) rvUser = await prisma.rowiVerseUser.findUnique({ where: { email: normalizedEmail } });
+            if (!rvUser) {
+              rvUser = await prisma.rowiVerseUser.create({
+                data: {
+                  userId: existingUser.id, email: normalizedEmail, name: claimedUser.name,
+                  language: claimedUser.language || "es", rowiVerseId: rowiverse.id,
+                  verified: false, active: true, status: "pending",
+                },
+              });
+            }
+            await prisma.user.update({ where: { id: existingUser.id }, data: { rowiverseId: rvUser.id } });
+          }
+        }
+
+        if (!existingUser.primaryTenantId) {
+          const rowiTenant = await prisma.tenant.findFirst({
+            where: { OR: [{ slug: "rowi-global" }, { slug: "rowi-community" }] },
+          });
+          if (rowiTenant) {
+            const existingMembership = await prisma.membership.findFirst({
+              where: { userId: existingUser.id, tenantId: rowiTenant.id },
+            });
+            if (!existingMembership) {
+              await prisma.membership.create({
+                data: { userId: existingUser.id, tenantId: rowiTenant.id, role: "VIEWER" },
+              });
+            }
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { primaryTenantId: rowiTenant.id },
+            });
+          }
+        }
+      } catch (rvError) {
+        console.warn("⚠️ Error vinculando claim a RowiVerse (no crítico):", rvError);
+      }
+
+      console.log(`✅ Cuenta reclamada: ${normalizedEmail} (importada → registrada)`);
+
+      return NextResponse.json({
+        ok: true,
+        claimed: true,
+        user: {
+          id: claimedUser.id,
+          email: claimedUser.email,
+          name: claimedUser.name,
+          onboardingStatus: claimedUser.onboardingStatus,
+          planId: claimedUser.planId,
+          trialEndsAt: claimedUser.trialEndsAt,
+        },
+        nextStep: "onboarding",
+      });
+    }
 
     // Determinar plan inicial
     let selectedPlanId = planId;
@@ -129,7 +223,6 @@ export async function POST(req: NextRequest) {
       data: {
         email: normalizedEmail,
         name: name || null,
-        password: hashedPassword, // Guardar password en User para CredentialsProvider
         language,
         country: country || "Unknown",
         planId: selectedPlanId,

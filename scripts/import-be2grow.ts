@@ -48,7 +48,7 @@ const TALENTS = [
 ];
 
 async function main() {
-  const csvPath = path.join(process.cwd(), "public/test/be2growplaning.csv");
+  const csvPath = path.join(process.cwd(), "public/TEST/be2growplaning.csv");
   const csvText = fs.readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
   const rows = parse(csvText, { columns: true, skip_empty_lines: true, trim: true });
 
@@ -194,28 +194,30 @@ async function main() {
       console.log("  ℹ️ Community member exists");
     }
 
-    // 3.4 Legacy member
+    // 3.4 Legacy member (email is @unique, use upsert)
     const effectiveTenantId = community.tenantId || DEFAULT_TENANT_ID;
-    let legacyMember = await prisma.communityMember.findFirst({
-      where: { email, tenantId: effectiveTenantId },
+    const legacyMember = await prisma.communityMember.upsert({
+      where: { email },
+      create: {
+        email,
+        name: user.name,
+        userId: user.id,
+        ownerId: creator?.id ?? null,
+        tenantId: effectiveTenantId,
+        rowiverseUserId: rowiVerseUser.id,
+        role: "member",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+      update: {
+        name: user.name || undefined,
+        userId: user.id,
+        ownerId: creator?.id ?? undefined,
+        tenantId: effectiveTenantId || undefined,
+        rowiverseUserId: rowiVerseUser.id,
+      },
     });
-    if (!legacyMember) {
-      legacyMember = await prisma.communityMember.create({
-        data: {
-          email,
-          name: user.name,
-          userId: user.id,
-          tenantId: effectiveTenantId,
-          rowiverseUserId: rowiVerseUser.id,
-          role: "member",
-          status: "ACTIVE",
-          joinedAt: new Date(),
-        },
-      });
-      console.log("  ✅ Legacy member CREATED");
-    } else {
-      console.log("  ℹ️ Legacy member exists");
-    }
+    console.log("  ✅ Legacy member upserted:", legacyMember.id);
 
     // 3.5 EQ Snapshot
     const snapshot = await prisma.eqSnapshot.create({

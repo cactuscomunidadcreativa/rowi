@@ -19,131 +19,140 @@ import {
   Download,
   CheckCircle,
   Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
   Brain,
   Target,
   Zap,
   BarChart3,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-} from "recharts";
 
 const ROWI_BLUE = "#31A2E3";
 const ROWI_PURPLE = "#7A59C9";
-const ROWI_PINK = "#D797CF";
 const ROWI_TEAL = "#26A69A";
 
-interface WeekFlowStats {
-  totalSessions: number;
-  activeUsers: number;
-  totalContributions: number;
-  moodCheckins: number;
-  avgParticipation: number;
-  completedFocus: number;
-  consecutiveWeeks: number;
+interface MetricsData {
+  summary: {
+    totalCheckins: number;
+    totalContributions: number;
+    totalTasks: number;
+    completedTasks: number;
+    participationRate: number;
+    taskCompletionRate: number;
+    consecutiveWeeks: number;
+  };
+  teamPulse: {
+    dominantEmotion: string | null;
+    avgIntensity: number;
+    emotionDistribution: { emotion: string; count: number; percentage: number }[];
+    totalResponses: number;
+  };
+  contributions: {
+    byType: Record<string, number>;
+    total: number;
+  };
+  sessions: {
+    count: number;
+    withFullParticipation: number;
+  };
 }
 
-// Demo data
-const DEMO_STATS: WeekFlowStats = {
-  totalSessions: 156,
-  activeUsers: 234,
-  totalContributions: 1892,
-  moodCheckins: 876,
-  avgParticipation: 78.5,
-  completedFocus: 432,
-  consecutiveWeeks: 12,
-};
-
-const WEEKLY_PARTICIPATION = [
-  { week: "S48", users: 180, contributions: 245, moods: 156 },
-  { week: "S49", users: 195, contributions: 278, moods: 172 },
-  { week: "S50", users: 210, contributions: 312, moods: 185 },
-  { week: "S51", users: 198, contributions: 289, moods: 178 },
-  { week: "S52", users: 225, contributions: 345, moods: 198 },
-  { week: "S1", users: 234, contributions: 378, moods: 212 },
-];
-
-const CONTRIBUTION_TYPES = [
-  { type: "Show & Tell", count: 456, color: ROWI_BLUE },
-  { type: "To Discuss", count: 389, color: ROWI_PURPLE },
-  { type: "Focus", count: 534, color: ROWI_TEAL },
-  { type: "Tasks", count: 513, color: ROWI_PINK },
-];
-
-const MOOD_DISTRIBUTION = [
-  { mood: "Motivado", count: 234, percentage: 27, color: "#66BB6A" },
-  { mood: "Enfocado", count: 198, percentage: 23, color: ROWI_BLUE },
-  { mood: "Tranquilo", count: 156, percentage: 18, color: ROWI_TEAL },
-  { mood: "Energético", count: 134, percentage: 15, color: "#FFA726" },
-  { mood: "Abrumado", count: 89, percentage: 10, color: "#E53935" },
-  { mood: "Otros", count: 65, percentage: 7, color: "#9E9E9E" },
-];
-
-const TOP_PARTICIPANTS = [
-  { name: "María López", contributions: 45, streak: 12, points: 890 },
-  { name: "Juan García", contributions: 42, streak: 10, points: 820 },
-  { name: "Ana Martínez", contributions: 38, streak: 12, points: 785 },
-  { name: "Carlos Ruiz", contributions: 35, streak: 8, points: 720 },
-  { name: "Sofia Herrera", contributions: 32, streak: 11, points: 695 },
-];
+interface HubOption {
+  id: string;
+  name: string;
+}
 
 export default function WeekFlowAdminPage() {
   const { locale } = useI18n();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<WeekFlowStats>(DEMO_STATS);
-  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [metrics, setMetrics] = useState<MetricsData | null>(null);
+  const [hubs, setHubs] = useState<HubOption[]>([]);
+  const [selectedHub, setSelectedHub] = useState<string>("");
+  const [selectedPeriod, setSelectedPeriod] = useState("MONTHLY");
 
   const txt = {
     title: "WeekFlow",
     subtitle: locale === "en" ? "Weekly collaboration metrics and insights" : "Métricas e insights de colaboración semanal",
     loading: locale === "en" ? "Loading WeekFlow data..." : "Cargando datos de WeekFlow...",
-    totalSessions: locale === "en" ? "Total Sessions" : "Sesiones Totales",
-    activeUsers: locale === "en" ? "Active Users" : "Usuarios Activos",
+    noHubs: locale === "en" ? "No WeekFlow spaces configured" : "No hay espacios WeekFlow configurados",
+    noHubsDesc: locale === "en" ? "Create a WeekFlow space from your community" : "Crea un espacio WeekFlow desde tu comunidad",
+    totalSessions: locale === "en" ? "Sessions" : "Sesiones",
+    totalCheckins: locale === "en" ? "Mood Check-ins" : "Check-ins de Ánimo",
     contributions: locale === "en" ? "Contributions" : "Contribuciones",
-    moodCheckins: locale === "en" ? "Mood Check-ins" : "Check-ins de Ánimo",
-    avgParticipation: locale === "en" ? "Avg. Participation" : "Participación Promedio",
-    completedFocus: locale === "en" ? "Focus Completed" : "Focus Completados",
+    tasks: locale === "en" ? "Tasks" : "Tareas",
+    participation: locale === "en" ? "Participation" : "Participación",
+    taskCompletion: locale === "en" ? "Task Completion" : "Tareas Completadas",
     consecutiveWeeks: locale === "en" ? "Consecutive Weeks" : "Semanas Consecutivas",
-    weeklyTrend: locale === "en" ? "Weekly Participation" : "Participación Semanal",
     contributionTypes: locale === "en" ? "Contribution Types" : "Tipos de Contribución",
-    moodDistribution: locale === "en" ? "Mood Distribution" : "Distribución de Ánimos",
-    topParticipants: locale === "en" ? "Top Participants" : "Top Participantes",
+    moodDistribution: locale === "en" ? "Team Pulse" : "Pulso del Equipo",
+    dominantEmotion: locale === "en" ? "Dominant Emotion" : "Emoción Dominante",
     configuration: locale === "en" ? "Configuration" : "Configuración",
     export: locale === "en" ? "Export" : "Exportar",
-    week: locale === "en" ? "Week" : "Semana",
-    month: locale === "en" ? "Month" : "Mes",
-    quarter: locale === "en" ? "Quarter" : "Trimestre",
-    streak: locale === "en" ? "streak" : "racha",
-    points: locale === "en" ? "points" : "puntos",
+    weekly: locale === "en" ? "Week" : "Semana",
+    monthly: locale === "en" ? "Month" : "Mes",
+    quarterly: locale === "en" ? "Quarter" : "Trimestre",
+    showTell: "Show & Tell",
+    toDiscuss: locale === "en" ? "To Discuss" : "Para Discutir",
+    focus: locale === "en" ? "Focus" : "Mi Foco",
+    noData: locale === "en" ? "No data for this period" : "Sin datos para este periodo",
+    selectHub: locale === "en" ? "Select community" : "Seleccionar comunidad",
   };
 
+  // Cargar hubs disponibles
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
+    async function loadHubs() {
+      try {
+        const res = await fetch("/api/hubs/my");
+        const data = await res.json();
+        if (data.ok && data.hubs?.length > 0) {
+          const hubList = data.hubs.map((h: any) => ({ id: h.id, name: h.name }));
+          setHubs(hubList);
+          setSelectedHub(hubList[0].id);
+        }
+      } catch (err) {
+        console.error("Error loading hubs:", err);
+      }
+    }
+    loadHubs();
   }, []);
 
+  // Cargar métricas cuando cambia hub o periodo
+  useEffect(() => {
+    if (!selectedHub) {
+      setLoading(false);
+      return;
+    }
+    loadMetrics();
+  }, [selectedHub, selectedPeriod]);
+
+  async function loadMetrics() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/weekflow/metrics?hubId=${selectedHub}&period=${selectedPeriod}`);
+      const data = await res.json();
+      if (data.ok) {
+        setMetrics(data.metrics);
+      } else {
+        setMetrics(null);
+      }
+    } catch (err) {
+      console.error("Error loading metrics:", err);
+      setMetrics(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleExport() {
+    if (!metrics) return;
     const csvData = [
       ["Métrica", "Valor"],
-      ["Sesiones Totales", stats.totalSessions],
-      ["Usuarios Activos", stats.activeUsers],
-      ["Contribuciones", stats.totalContributions],
-      ["Mood Check-ins", stats.moodCheckins],
-      ["Participación Promedio", `${stats.avgParticipation}%`],
-      ["Focus Completados", stats.completedFocus],
-      ["Semanas Consecutivas", stats.consecutiveWeeks],
+      ["Sesiones", metrics.sessions.count],
+      ["Check-ins", metrics.summary.totalCheckins],
+      ["Contribuciones", metrics.summary.totalContributions],
+      ["Tareas", metrics.summary.totalTasks],
+      ["Tareas Completadas", metrics.summary.completedTasks],
+      ["Participación", `${metrics.summary.participationRate}%`],
+      ["Semanas Consecutivas", metrics.summary.consecutiveWeeks],
+      ["Emoción Dominante", metrics.teamPulse.dominantEmotion || "N/A"],
     ];
     const csvContent = csvData.map(row => row.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -164,6 +173,35 @@ export default function WeekFlowAdminPage() {
     );
   }
 
+  if (hubs.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Workflow className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-white mb-2">{txt.noHubs}</h2>
+          <p className="text-gray-400">{txt.noHubsDesc}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const s = metrics?.summary;
+  const tp = metrics?.teamPulse;
+
+  // Datos de contribuciones por tipo
+  const contribTypes = [
+    { type: txt.showTell, count: metrics?.contributions.byType.SHOW_TELL || 0, color: ROWI_BLUE },
+    { type: txt.toDiscuss, count: metrics?.contributions.byType.TO_DISCUSS || 0, color: ROWI_PURPLE },
+    { type: txt.focus, count: metrics?.contributions.byType.FOCUS || 0, color: ROWI_TEAL },
+  ];
+  const maxContrib = Math.max(...contribTypes.map(c => c.count), 1);
+
+  // Colores para emociones
+  const EMOTION_COLORS: Record<string, string> = {
+    JOY: "#F7DC6F", TRUST: "#9B59B6", FEAR: "#1ABC9C", SURPRISE: "#F39C12",
+    SADNESS: "#5DADE2", DISGUST: "#27AE60", ANGER: "#E74C3C", ANTICIPATION: "#E67E22",
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -177,15 +215,26 @@ export default function WeekFlowAdminPage() {
             <p className="text-gray-400 text-sm">{txt.subtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {hubs.length > 1 && (
+            <select
+              value={selectedHub}
+              onChange={(e) => setSelectedHub(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-violet-500 focus:outline-none"
+            >
+              {hubs.map((h) => (
+                <option key={h.id} value={h.id}>{h.name}</option>
+              ))}
+            </select>
+          )}
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
             className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-violet-500 focus:outline-none"
           >
-            <option value="week">{txt.week}</option>
-            <option value="month">{txt.month}</option>
-            <option value="quarter">{txt.quarter}</option>
+            <option value="WEEKLY">{txt.weekly}</option>
+            <option value="MONTHLY">{txt.monthly}</option>
+            <option value="QUARTERLY">{txt.quarterly}</option>
           </select>
           <button
             onClick={handleExport}
@@ -204,212 +253,190 @@ export default function WeekFlowAdminPage() {
         </div>
       </div>
 
-      {/* Main Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500/10 to-purple-600/10 rounded-2xl border border-violet-500/30 p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-violet-500/20">
-              <Calendar className="w-5 h-5 text-violet-400" />
-            </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
-              <ArrowUpRight className="w-3 h-3" />
-              +8%
-            </span>
-          </div>
-          <p className="text-3xl font-bold text-white">{stats.totalSessions}</p>
-          <p className="text-sm text-gray-400">{txt.totalSessions}</p>
+      {!metrics ? (
+        <div className="text-center py-16 text-gray-400">
+          <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>{txt.noData}</p>
         </div>
-
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 rounded-2xl border border-blue-500/30 p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-blue-500/20">
-              <Users className="w-5 h-5 text-blue-400" />
-            </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
-              <ArrowUpRight className="w-3 h-3" />
-              +15%
-            </span>
-          </div>
-          <p className="text-3xl font-bold text-white">{stats.activeUsers}</p>
-          <p className="text-sm text-gray-400">{txt.activeUsers}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-emerald-500/10 to-green-600/10 rounded-2xl border border-emerald-500/30 p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-emerald-500/20">
-              <MessageSquare className="w-5 h-5 text-emerald-400" />
-            </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
-              <ArrowUpRight className="w-3 h-3" />
-              +22%
-            </span>
-          </div>
-          <p className="text-3xl font-bold text-white">{stats.totalContributions.toLocaleString()}</p>
-          <p className="text-sm text-gray-400">{txt.contributions}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-pink-500/10 to-rose-600/10 rounded-2xl border border-pink-500/30 p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 rounded-xl bg-pink-500/20">
-              <Heart className="w-5 h-5 text-pink-400" />
-            </div>
-            <span className="flex items-center gap-1 text-xs text-green-400">
-              <ArrowUpRight className="w-3 h-3" />
-              +18%
-            </span>
-          </div>
-          <p className="text-3xl font-bold text-white">{stats.moodCheckins}</p>
-          <p className="text-sm text-gray-400">{txt.moodCheckins}</p>
-        </div>
-      </div>
-
-      {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <Target className="w-5 h-5 text-violet-400" />
-            <span className="text-gray-400">{txt.avgParticipation}</span>
-          </div>
-          <p className="text-4xl font-bold text-white">{stats.avgParticipation}%</p>
-          <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-violet-500 to-purple-500"
-              style={{ width: `${stats.avgParticipation}%` }}
+      ) : (
+        <>
+          {/* Main Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              icon={<Calendar className="w-5 h-5 text-violet-400" />}
+              value={metrics.sessions.count}
+              label={txt.totalSessions}
+              gradient="from-violet-500/10 to-purple-600/10"
+              border="border-violet-500/30"
+            />
+            <StatCard
+              icon={<Heart className="w-5 h-5 text-pink-400" />}
+              value={s?.totalCheckins || 0}
+              label={txt.totalCheckins}
+              gradient="from-pink-500/10 to-rose-600/10"
+              border="border-pink-500/30"
+            />
+            <StatCard
+              icon={<MessageSquare className="w-5 h-5 text-emerald-400" />}
+              value={s?.totalContributions || 0}
+              label={txt.contributions}
+              gradient="from-emerald-500/10 to-green-600/10"
+              border="border-emerald-500/30"
+            />
+            <StatCard
+              icon={<CheckCircle className="w-5 h-5 text-blue-400" />}
+              value={`${s?.completedTasks || 0}/${s?.totalTasks || 0}`}
+              label={txt.tasks}
+              gradient="from-blue-500/10 to-cyan-600/10"
+              border="border-blue-500/30"
             />
           </div>
-        </div>
 
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <CheckCircle className="w-5 h-5 text-emerald-400" />
-            <span className="text-gray-400">{txt.completedFocus}</span>
-          </div>
-          <p className="text-4xl font-bold text-white">{stats.completedFocus}</p>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <div className="flex items-center gap-3 mb-3">
-            <Zap className="w-5 h-5 text-amber-400" />
-            <span className="text-gray-400">{txt.consecutiveWeeks}</span>
-          </div>
-          <p className="text-4xl font-bold text-white">{stats.consecutiveWeeks} <span className="text-lg text-gray-400">{txt.week}s</span></p>
-        </div>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Participation */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-400" />
-            {txt.weeklyTrend}
-          </h3>
-          <div style={{ height: 280 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={WEEKLY_PARTICIPATION}>
-                <defs>
-                  <linearGradient id="usersGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={ROWI_BLUE} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={ROWI_BLUE} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="week" tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#9CA3AF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    background: "rgba(17,24,39,0.95)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 8,
-                    color: "#fff",
-                  }}
+          {/* Secondary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <Target className="w-5 h-5 text-violet-400" />
+                <span className="text-gray-400">{txt.participation}</span>
+              </div>
+              <p className="text-4xl font-bold text-white">{s?.participationRate || 0}%</p>
+              <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-700"
+                  style={{ width: `${s?.participationRate || 0}%` }}
                 />
-                <Area type="monotone" dataKey="users" stroke={ROWI_BLUE} fill="url(#usersGrad)" strokeWidth={2} />
-                <Line type="monotone" dataKey="contributions" stroke={ROWI_PURPLE} strokeWidth={2} dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+              </div>
+            </div>
 
-        {/* Contribution Types */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-violet-400" />
-            {txt.contributionTypes}
-          </h3>
-          <div className="space-y-4">
-            {CONTRIBUTION_TYPES.map((type) => (
-              <div key={type.type}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: type.color }} />
-                    <span className="text-sm text-gray-300">{type.type}</span>
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <span className="text-gray-400">{txt.taskCompletion}</span>
+              </div>
+              <p className="text-4xl font-bold text-white">{s?.taskCompletionRate || 0}%</p>
+              <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-700"
+                  style={{ width: `${s?.taskCompletionRate || 0}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <Zap className="w-5 h-5 text-amber-400" />
+                <span className="text-gray-400">{txt.consecutiveWeeks}</span>
+              </div>
+              <p className="text-4xl font-bold text-white">
+                {s?.consecutiveWeeks || 0} <span className="text-lg text-gray-400">{txt.weekly}s</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Contribution Types */}
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-violet-400" />
+                {txt.contributionTypes}
+              </h3>
+              <div className="space-y-4">
+                {contribTypes.map((type) => (
+                  <div key={type.type}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: type.color }} />
+                        <span className="text-sm text-gray-300">{type.type}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-white">{type.count}</span>
+                    </div>
+                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(type.count / maxContrib) * 100}%`, backgroundColor: type.color }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold text-white">{type.count}</span>
-                </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(type.count / 600) * 100}%`, backgroundColor: type.color }}
-                  />
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+            </div>
 
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mood Distribution */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-pink-400" />
-            {txt.moodDistribution}
-          </h3>
-          <div className="space-y-3">
-            {MOOD_DISTRIBUTION.map((mood) => (
-              <div key={mood.mood}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: mood.color }} />
-                    <span className="text-sm text-gray-300">{mood.mood}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-white">{mood.percentage}%</span>
+            {/* Mood Distribution / Team Pulse */}
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <Brain className="w-5 h-5 text-pink-400" />
+                {txt.moodDistribution}
+              </h3>
+              {tp && tp.emotionDistribution.length > 0 ? (
+                <div className="space-y-3">
+                  {tp.dominantEmotion && (
+                    <div className="mb-4 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                      <p className="text-xs text-gray-400 mb-1">{txt.dominantEmotion}</p>
+                      <p className="text-lg font-bold text-white capitalize">{tp.dominantEmotion.toLowerCase()}</p>
+                      <p className="text-xs text-gray-400">
+                        {tp.totalResponses} check-ins • {locale === "en" ? "Avg intensity" : "Intensidad promedio"}: {tp.avgIntensity}/3
+                      </p>
+                    </div>
+                  )}
+                  {tp.emotionDistribution.slice(0, 6).map((mood) => (
+                    <div key={mood.emotion}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: EMOTION_COLORS[mood.emotion.toUpperCase()] || "#9E9E9E" }}
+                          />
+                          <span className="text-sm text-gray-300 capitalize">{mood.emotion.toLowerCase()}</span>
+                        </div>
+                        <span className="text-sm font-semibold text-white">{mood.percentage}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${mood.percentage}%`,
+                            backgroundColor: EMOTION_COLORS[mood.emotion.toUpperCase()] || "#9E9E9E",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${mood.percentage}%`, backgroundColor: mood.color }}
-                  />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Heart className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">{txt.noData}</p>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        </>
+      )}
+    </div>
+  );
+}
 
-        {/* Top Participants */}
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-          <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            {txt.topParticipants}
-          </h3>
-          <div className="space-y-3">
-            {TOP_PARTICIPANTS.map((user, idx) => (
-              <div key={user.name} className="flex items-center gap-4 p-3 rounded-xl bg-gray-700/30 hover:bg-gray-700/50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                  {idx + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-gray-400">{user.contributions} {txt.contributions} • {user.streak} {txt.week}s {txt.streak}</p>
-                </div>
-                <span className="text-amber-400 font-semibold">{user.points} {txt.points}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+function StatCard({
+  icon,
+  value,
+  label,
+  gradient,
+  border,
+}: {
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+  gradient: string;
+  border: string;
+}) {
+  return (
+    <div className={`bg-gradient-to-br ${gradient} rounded-2xl border ${border} p-5`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="p-2 rounded-xl bg-white/5">{icon}</div>
       </div>
+      <p className="text-3xl font-bold text-white">{typeof value === "number" ? value.toLocaleString() : value}</p>
+      <p className="text-sm text-gray-400">{label}</p>
     </div>
   );
 }

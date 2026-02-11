@@ -45,21 +45,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
     }
 
-    // Validar emoción si se proporciona
-    if (emotion) {
-      const validEmotions = [
-        "JOY",
-        "TRUST",
-        "FEAR",
-        "SURPRISE",
-        "SADNESS",
-        "DISGUST",
-        "ANGER",
-        "ANTICIPATION",
-      ];
-      if (!validEmotions.includes(emotion)) {
-        return NextResponse.json({ ok: false, error: "Invalid emotion" }, { status: 400 });
-      }
+    // Validar emoción si se proporciona (acepta todas las emociones del sistema Plutchik expandido)
+    if (emotion && typeof emotion !== "string") {
+      return NextResponse.json({ ok: false, error: "Invalid emotion format" }, { status: 400 });
     }
 
     const reflection = await prisma.taskReflection.create({

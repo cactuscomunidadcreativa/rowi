@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Settings,
@@ -15,6 +15,7 @@ import {
   Calendar,
   Heart,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -23,12 +24,53 @@ import {
 } from "@/components/admin/AdminPage";
 
 /* =========================================================
-   ⚙️ WeekFlow Settings Page
+   ⚙️ WeekFlow Settings Page — Persistencia real con API
 ========================================================= */
+
+interface WeekFlowConfig {
+  id: string;
+  hubId: string;
+  name: string;
+  isActive: boolean;
+  enableShowTell: boolean;
+  enableToDiscuss: boolean;
+  enableFocus: boolean;
+  enableTasks: boolean;
+  enableMoodCheckin: boolean;
+  requireMoodCheckin: boolean;
+  moodReminderDay: number;
+  moodReminderTime: string;
+  maxItemsPerSection: number;
+  maxTasksPerMember: number;
+  pointsPerCheckin: number;
+  pointsPerContribution: number;
+  pointsPerTaskComplete: number;
+  emailReminders: boolean;
+}
+
+const DAY_MAP: Record<number, string> = {
+  1: "monday",
+  2: "tuesday",
+  3: "wednesday",
+  4: "thursday",
+  5: "friday",
+};
+
+const DAY_REVERSE: Record<string, number> = {
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+};
 
 export default function WeekFlowSettingsPage() {
   const { t, lang } = useI18n();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [configId, setConfigId] = useState<string | null>(null);
+  const [hubId, setHubId] = useState<string | null>(null);
+  const [hubs, setHubs] = useState<{ id: string; name: string }[]>([]);
 
   const [settings, setSettings] = useState({
     enableNotifications: true,
@@ -72,7 +114,11 @@ export default function WeekFlowSettingsPage() {
     showLeaderboard: lang === "en" ? "Show leaderboard" : "Mostrar tabla de posiciones",
     enableStreaks: lang === "en" ? "Enable participation streaks" : "Habilitar rachas de participación",
     save: lang === "en" ? "Save Settings" : "Guardar Configuración",
-    saved: lang === "en" ? "Settings saved" : "Configuración guardada",
+    saved: lang === "en" ? "Settings saved successfully" : "Configuración guardada correctamente",
+    saveError: lang === "en" ? "Error saving settings" : "Error al guardar la configuración",
+    loadError: lang === "en" ? "Error loading settings" : "Error al cargar la configuración",
+    selectHub: lang === "en" ? "Select a hub" : "Selecciona un hub",
+    hub: lang === "en" ? "Hub / Community" : "Hub / Comunidad",
     monday: lang === "en" ? "Monday" : "Lunes",
     tuesday: lang === "en" ? "Tuesday" : "Martes",
     wednesday: lang === "en" ? "Wednesday" : "Miércoles",
@@ -80,23 +126,129 @@ export default function WeekFlowSettingsPage() {
     friday: lang === "en" ? "Friday" : "Viernes",
   };
 
+  // Cargar hubs del usuario
+  useEffect(() => {
+    async function loadHubs() {
+      try {
+        const res = await fetch("/api/hubs/my");
+        const data = await res.json();
+        if (data.ok && data.hubs?.length > 0) {
+          setHubs(data.hubs.map((h: { id: string; name: string }) => ({ id: h.id, name: h.name })));
+          setHubId(data.hubs[0].id);
+        }
+      } catch (err) {
+        console.error("Error loading hubs:", err);
+      }
+    }
+    loadHubs();
+  }, []);
+
+  // Cargar config cuando cambia el hub
+  useEffect(() => {
+    if (!hubId) {
+      setLoading(false);
+      return;
+    }
+    loadConfig(hubId);
+  }, [hubId]);
+
+  async function loadConfig(hId: string) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/weekflow/config?hubId=${hId}`);
+      const data = await res.json();
+      if (data.ok && data.config) {
+        const c = data.config as WeekFlowConfig;
+        setConfigId(c.id);
+        setSettings({
+          enableNotifications: c.emailReminders,
+          weeklyReminder: c.emailReminders,
+          reminderDay: DAY_MAP[c.moodReminderDay] || "monday",
+          reminderTime: c.moodReminderTime || "09:00",
+          enableMoodCheckin: c.enableMoodCheckin,
+          requireMoodCheckin: c.requireMoodCheckin,
+          enableShowAndTell: c.enableShowTell,
+          enableToDiscuss: c.enableToDiscuss,
+          enableFocus: c.enableFocus,
+          enableTasks: c.enableTasks,
+          maxContributionsPerUser: c.maxItemsPerSection || 5,
+          sessionDuration: 60,
+          enableGamification: c.pointsPerCheckin > 0,
+          showLeaderboard: c.pointsPerCheckin > 0,
+          enableStreaks: c.pointsPerCheckin > 0,
+        });
+      }
+    } catch (err) {
+      console.error("Error loading config:", err);
+      toast.error(txt.loadError);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSave() {
+    if (!configId) return;
+
     setSaving(true);
-    // Simular guardado
-    await new Promise(r => setTimeout(r, 500));
-    toast.success(txt.saved);
-    setSaving(false);
+    try {
+      const res = await fetch("/api/weekflow/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: configId,
+          enableShowTell: settings.enableShowAndTell,
+          enableToDiscuss: settings.enableToDiscuss,
+          enableFocus: settings.enableFocus,
+          enableTasks: settings.enableTasks,
+          enableMoodCheckin: settings.enableMoodCheckin,
+          requireMoodCheckin: settings.requireMoodCheckin,
+          moodReminderDay: DAY_REVERSE[settings.reminderDay] || 1,
+          moodReminderTime: settings.reminderTime,
+          maxItemsPerSection: settings.maxContributionsPerUser,
+          emailReminders: settings.enableNotifications && settings.weeklyReminder,
+          pointsPerCheckin: settings.enableGamification ? 15 : 0,
+          pointsPerContribution: settings.enableGamification ? 10 : 0,
+          pointsPerTaskComplete: settings.enableGamification ? 5 : 0,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(txt.saved);
+      } else {
+        toast.error(data.error || txt.saveError);
+      }
+    } catch (err) {
+      console.error("Error saving config:", err);
+      toast.error(txt.saveError);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
     return (
       <button onClick={onToggle} className="text-2xl">
         {enabled ? (
-          <ToggleRight className="w-10 h-10 text-[var(--rowi-success)]" />
+          <ToggleRight className="w-10 h-10 text-green-500" />
         ) : (
-          <ToggleLeft className="w-10 h-10 text-[var(--rowi-muted)]" />
+          <ToggleLeft className="w-10 h-10 text-gray-400 dark:text-gray-600" />
         )}
       </button>
+    );
+  }
+
+  if (loading) {
+    return (
+      <AdminPage
+        titleKey="admin.weekflow.settings.title"
+        descriptionKey="admin.weekflow.settings.description"
+        icon={Settings}
+      >
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        </div>
+      </AdminPage>
     );
   }
 
@@ -106,16 +258,35 @@ export default function WeekFlowSettingsPage() {
       descriptionKey="admin.weekflow.settings.description"
       icon={Settings}
       actions={
-        <AdminButton icon={Save} onClick={handleSave} loading={saving}>
+        <AdminButton icon={Save} onClick={handleSave} loading={saving} disabled={!configId}>
           {txt.save}
         </AdminButton>
       }
     >
       <div className="space-y-6">
+        {/* Hub Selector */}
+        {hubs.length > 1 && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-purple-500" />
+              {txt.hub}
+            </h3>
+            <select
+              value={hubId || ""}
+              onChange={(e) => setHubId(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:border-purple-500 focus:outline-none"
+            >
+              {hubs.map((h) => (
+                <option key={h.id} value={h.id}>{h.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Notifications */}
-        <div className="bg-[var(--rowi-surface)] rounded-xl p-6 border border-[var(--rowi-border)] shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-[var(--rowi-primary)]" />
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-purple-500" />
             {txt.notifications}
           </h3>
           <div className="space-y-4">
@@ -138,11 +309,11 @@ export default function WeekFlowSettingsPage() {
               }
             />
             <div className="flex items-center justify-between py-2">
-              <span className="text-[var(--rowi-foreground)]">{txt.reminderDay}</span>
+              <span className="text-gray-900 dark:text-white">{txt.reminderDay}</span>
               <select
                 value={settings.reminderDay}
                 onChange={(e) => setSettings(s => ({ ...s, reminderDay: e.target.value }))}
-                className="px-3 py-2 text-sm bg-[var(--rowi-background)] border border-[var(--rowi-border)] rounded-lg text-[var(--rowi-foreground)] focus:border-[var(--rowi-primary)] focus:outline-none"
+                className="px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:border-purple-500 focus:outline-none"
               >
                 <option value="monday">{txt.monday}</option>
                 <option value="tuesday">{txt.tuesday}</option>
@@ -152,42 +323,31 @@ export default function WeekFlowSettingsPage() {
               </select>
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-[var(--rowi-foreground)]">{txt.reminderTime}</span>
+              <span className="text-gray-900 dark:text-white">{txt.reminderTime}</span>
               <input
                 type="time"
                 value={settings.reminderTime}
                 onChange={(e) => setSettings(s => ({ ...s, reminderTime: e.target.value }))}
-                className="px-3 py-2 text-sm bg-[var(--rowi-background)] border border-[var(--rowi-border)] rounded-lg text-[var(--rowi-foreground)] focus:border-[var(--rowi-primary)] focus:outline-none"
+                className="px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:border-purple-500 focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Session Configuration */}
-        <div className="bg-[var(--rowi-surface)] rounded-xl p-6 border border-[var(--rowi-border)] shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[var(--rowi-secondary)]" />
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-500" />
             {txt.sessionConfig}
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between py-2">
-              <span className="text-[var(--rowi-foreground)]">{txt.sessionDuration}</span>
-              <input
-                type="number"
-                value={settings.sessionDuration}
-                onChange={(e) => setSettings(s => ({ ...s, sessionDuration: parseInt(e.target.value) || 60 }))}
-                className="w-24 px-3 py-2 text-sm bg-[var(--rowi-background)] border border-[var(--rowi-border)] rounded-lg text-[var(--rowi-foreground)] focus:border-[var(--rowi-primary)] focus:outline-none"
-                min={15}
-                max={180}
-              />
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-[var(--rowi-foreground)]">{txt.maxContributions}</span>
+              <span className="text-gray-900 dark:text-white">{txt.maxContributions}</span>
               <input
                 type="number"
                 value={settings.maxContributionsPerUser}
                 onChange={(e) => setSettings(s => ({ ...s, maxContributionsPerUser: parseInt(e.target.value) || 5 }))}
-                className="w-20 px-3 py-2 text-sm bg-[var(--rowi-background)] border border-[var(--rowi-border)] rounded-lg text-[var(--rowi-foreground)] focus:border-[var(--rowi-primary)] focus:outline-none"
+                className="w-20 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:border-purple-500 focus:outline-none"
                 min={1}
                 max={20}
               />
@@ -196,9 +356,9 @@ export default function WeekFlowSettingsPage() {
         </div>
 
         {/* Contribution Types */}
-        <div className="bg-[var(--rowi-surface)] rounded-xl p-6 border border-[var(--rowi-border)] shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-[var(--rowi-success)]" />
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-green-500" />
             {txt.contributions}
           </h3>
           <div className="space-y-4">
@@ -242,8 +402,8 @@ export default function WeekFlowSettingsPage() {
         </div>
 
         {/* Mood Check-in */}
-        <div className="bg-[var(--rowi-surface)] rounded-xl p-6 border border-[var(--rowi-border)] shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-pink-500" />
             {txt.moodConfig}
           </h3>
@@ -270,9 +430,9 @@ export default function WeekFlowSettingsPage() {
         </div>
 
         {/* Gamification */}
-        <div className="bg-[var(--rowi-surface)] rounded-xl p-6 border border-[var(--rowi-border)] shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-[var(--rowi-warning)]" />
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-500" />
             {txt.gamification}
           </h3>
           <div className="space-y-4">
@@ -312,8 +472,8 @@ export default function WeekFlowSettingsPage() {
 
 function SettingRow({ label, toggle }: { label: string; toggle: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-[var(--rowi-border)] last:border-0">
-      <span className="text-[var(--rowi-foreground)]">{label}</span>
+    <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0">
+      <span className="text-gray-900 dark:text-white">{label}</span>
       {toggle}
     </div>
   );

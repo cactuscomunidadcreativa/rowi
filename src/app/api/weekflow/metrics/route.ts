@@ -44,12 +44,15 @@ export async function GET(req: NextRequest) {
         startDate = new Date(now.getFullYear(), 0, 1);
         break;
       case "WEEKLY":
-      default:
-        // Inicio de la semana (lunes)
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        startDate = new Date(now.setDate(diff));
+      default: {
+        // Inicio de la semana (lunes) - no mutar `now`
+        const weekDate = new Date(now);
+        const day = weekDate.getDay();
+        const diff = weekDate.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(weekDate.setDate(diff));
         startDate.setHours(0, 0, 0, 0);
+        break;
+      }
     }
 
     // Obtener configuración del hub
@@ -115,7 +118,7 @@ export async function GET(req: NextRequest) {
     const emotionDistribution = Object.entries(moodCounts).map(([emotion, count]) => ({
       emotion,
       count,
-      percentage: Math.round((count / allMoodCheckins.length) * 100),
+      percentage: allMoodCheckins.length > 0 ? Math.round((count / allMoodCheckins.length) * 100) : 0,
     }));
 
     // Contribuciones por tipo
@@ -134,10 +137,16 @@ export async function GET(req: NextRequest) {
     // Participación (usuarios únicos con check-in / total miembros)
     const uniqueCheckinUsers = new Set(allMoodCheckins.map((c) => c.userId)).size;
 
-    // Obtener total de miembros del hub
-    const hubMembers = await prisma.communityMember.count({
+    // Obtener total de miembros del hub (o RowiCommunity)
+    let hubMembers = await prisma.communityMember.count({
       where: { hubId },
     });
+    // Si no hay miembros via CommunityMember, buscar en RowiCommunity
+    if (hubMembers === 0) {
+      hubMembers = await prisma.rowiCommunityUser.count({
+        where: { communityId: hubId },
+      });
+    }
 
     const participationRate =
       hubMembers > 0 ? Math.round((uniqueCheckinUsers / hubMembers) * 100) : 0;

@@ -1,5 +1,6 @@
 // EQ (Emotional Intelligence) Components
 export { EmotionWheel } from "./EmotionWheel";
+export { FeelingsWheel } from "./FeelingsWheel";
 export { EmotionLevelUp } from "./EmotionLevelUp";
 
 // Data and types

@@ -15,10 +15,14 @@ import {
   Megaphone,
   MessageSquare,
   Target,
-  Users,
   BarChart3,
   Maximize2,
   Minimize2,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Sparkles,
+  Thermometer,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -37,6 +41,8 @@ interface Contribution {
   id: string;
   type: "SHOW_TELL" | "TO_DISCUSS" | "FOCUS";
   content: string;
+  isTask?: boolean;
+  isCompleted?: boolean;
   user: {
     id: string;
     name: string;
@@ -55,9 +61,9 @@ interface MoodCheckin {
   };
 }
 
-type ViewMode = "pulse" | "SHOW_TELL" | "TO_DISCUSS" | "FOCUS";
+type ViewMode = "pulse" | "SHOW_TELL" | "TO_DISCUSS" | "FOCUS" | "summary";
 
-const SECTIONS: ViewMode[] = ["pulse", "SHOW_TELL", "TO_DISCUSS", "FOCUS"];
+const SECTIONS: ViewMode[] = ["pulse", "SHOW_TELL", "TO_DISCUSS", "FOCUS", "summary"];
 
 const SECTION_CONFIG = {
   pulse: {
@@ -80,10 +86,75 @@ const SECTION_CONFIG = {
     color: "text-green-500",
     bgColor: "bg-green-50 dark:bg-green-950/30",
   },
+  summary: {
+    icon: Sparkles,
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-50 dark:bg-indigo-950/30",
+  },
 };
 
+// Generar sugerencia de productividad basada en datos de sesión
+function getProductivitySuggestion(session: Session, isEs: boolean): string {
+  const totalContributions = session.contributions.length;
+  const focusItems = session.contributions.filter((c) => c.type === "FOCUS").length;
+  const discussItems = session.contributions.filter((c) => c.type === "TO_DISCUSS").length;
+  const completedTasks = session.contributions.filter((c) => c.isTask && c.isCompleted).length;
+  const totalTasks = session.contributions.filter((c) => c.isTask).length;
+  const checkins = session.moodCheckins.length;
+
+  // Analizar emociones predominantes
+  const emotions = session.moodCheckins.map((c) => c.emotion.toUpperCase());
+  const hasNegative = emotions.some((e) =>
+    ["FEAR", "TEMOR", "SADNESS", "TRISTEZA", "ANGER", "FURIA", "ANXIOUS", "ANSIEDAD", "STRESSED", "OVERWHELMED", "FRUSTRATED", "NERVIOS"].includes(e)
+  );
+  const hasPositive = emotions.some((e) =>
+    ["JOY", "ALEGRIA", "TRUST", "CONFIANZA", "OPTIMISTIC", "CONTENT", "PROUD", "EXCITED", "HOPEFUL", "PEACEFUL"].includes(e)
+  );
+
+  if (isEs) {
+    if (totalContributions === 0) {
+      return "💡 Esta semana no hubo contribuciones. Considera empezar con una meta pequeña y alcanzable para generar impulso.";
+    }
+    if (hasNegative && !hasPositive) {
+      return "💡 El equipo parece estar bajo presión. Considera priorizar el bienestar: pausas activas, revisar la carga de trabajo y abrir un espacio de escucha.";
+    }
+    if (focusItems > discussItems * 2) {
+      return "💡 Hay mucho foco individual. Considera dedicar más tiempo a discusión en equipo para alinear prioridades y evitar silos.";
+    }
+    if (discussItems > focusItems * 2) {
+      return "💡 Mucha discusión pero poco foco individual. Asegúrense de que cada discusión termine con acciones concretas y responsables asignados.";
+    }
+    if (totalTasks > 0 && completedTasks === 0) {
+      return "💡 Hay tareas pendientes sin completar. Revisa si las tareas son realistas o si necesitan ser redefinidas en subtareas más manejables.";
+    }
+    if (hasPositive && totalContributions > 5) {
+      return "🌟 ¡Excelente sesión! El equipo está energizado y productivo. Aprovecha este momentum para abordar temas complejos que se han postergado.";
+    }
+    return "💡 Mantén el ritmo: revisa las tareas de la semana anterior, celebra lo completado y define 1-3 prioridades claras para la próxima semana.";
+  }
+
+  // English
+  if (totalContributions === 0) {
+    return "💡 No contributions this week. Consider starting with a small, achievable goal to build momentum.";
+  }
+  if (hasNegative && !hasPositive) {
+    return "💡 The team seems under pressure. Consider prioritizing well-being: active breaks, workload review, and opening a listening space.";
+  }
+  if (focusItems > discussItems * 2) {
+    return "💡 Lots of individual focus. Consider more team discussion time to align priorities and avoid silos.";
+  }
+  if (totalTasks > 0 && completedTasks === 0) {
+    return "💡 There are uncompleted tasks. Review if tasks are realistic or need to be broken into smaller subtasks.";
+  }
+  if (hasPositive && totalContributions > 5) {
+    return "🌟 Great session! The team is energized and productive. Leverage this momentum to tackle complex deferred topics.";
+  }
+  return "💡 Keep the pace: review last week's tasks, celebrate completions, and define 1-3 clear priorities for next week.";
+}
+
 export default function WeekFlowPresentPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const isEs = lang !== "en";
   const router = useRouter();
   const params = useParams();
   const hubId = params.hubId as string;
@@ -184,6 +255,14 @@ export default function WeekFlowPresentPage() {
   const config = SECTION_CONFIG[currentView];
   const Icon = config.icon;
 
+  // Stats for summary
+  const totalContributions = session?.contributions.length || 0;
+  const completedTasks = session?.contributions.filter((c) => c.isTask && c.isCompleted).length || 0;
+  const pendingTasks = session?.contributions.filter((c) => c.isTask && !c.isCompleted).length || 0;
+  const totalTasks = session?.contributions.filter((c) => c.isTask).length || 0;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const participationRate = session ? Math.min(100, session.moodCheckins.length * 20) : 0; // rough estimate
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       {/* Header */}
@@ -192,14 +271,14 @@ export default function WeekFlowPresentPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href={`/weekflow/${hubId}`}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("common.exit") || "Salir"}
+              {t("common.exit") || (isEs ? "Salir" : "Exit")}
             </Link>
           </Button>
 
           <div className="text-center">
-            <h1 className="font-semibold">{t("weekflow.title")}</h1>
+            <h1 className="font-semibold">{t("weekflow.title") || "WeekFlow"}</h1>
             <p className="text-xs text-muted-foreground">
-              {t("weekflow.week")} {session?.weekNumber}, {session?.year}
+              {t("weekflow.week") || (isEs ? "Semana" : "Week")} {session?.weekNumber}, {session?.year}
             </p>
           </div>
 
@@ -238,14 +317,14 @@ export default function WeekFlowPresentPage() {
               <div>
                 <Badge className={cn("mb-4", config.bgColor, config.color)}>
                   <Icon className="w-4 h-4 mr-2" />
-                  {t("weekflow.metrics.teamPulse") || "Pulso del Equipo"}
+                  {t("weekflow.metrics.teamPulse") || (isEs ? "Pulso del Equipo" : "Team Pulse")}
                 </Badge>
                 <h2 className="text-4xl font-bold mb-2">
-                  {t("weekflow.present.howWeFeeling") || "¿Cómo nos sentimos?"}
+                  {t("weekflow.present.howWeFeeling") || (isEs ? "¿Cómo nos sentimos?" : "How are we feeling?")}
                 </h2>
                 <p className="text-muted-foreground">
                   {session.moodCheckins.length}{" "}
-                  {t("weekflow.present.checkins") || "check-ins esta semana"}
+                  {t("weekflow.present.checkins") || (isEs ? "check-ins esta semana" : "check-ins this week")}
                 </p>
               </div>
 
@@ -264,22 +343,27 @@ export default function WeekFlowPresentPage() {
 
               {/* Emotion distribution */}
               <div className="pt-8">
-                <EmotionDistribution checkins={session.moodCheckins} />
+                <EmotionDistribution checkins={session.moodCheckins} isEs={isEs} />
               </div>
             </div>
           )}
 
           {/* Section Views */}
-          {currentView !== "pulse" && (
+          {(currentView === "SHOW_TELL" || currentView === "TO_DISCUSS" || currentView === "FOCUS") && (
             <div className="space-y-6">
               <div className="text-center mb-8">
                 <Badge className={cn("mb-4", config.bgColor, config.color)}>
                   <Icon className="w-4 h-4 mr-2" />
-                  {t(`weekflow.sections.${currentView.toLowerCase()}.title`) || currentView}
+                  {currentView === "SHOW_TELL"
+                    ? (t("weekflow.sections.showTell.title") || "Show & Tell")
+                    : currentView === "TO_DISCUSS"
+                      ? (t("weekflow.sections.toDiscuss.title") || (isEs ? "Para Discutir" : "To Discuss"))
+                      : (t("weekflow.sections.focus.title") || (isEs ? "Mi Foco" : "My Focus"))
+                  }
                 </Badge>
                 <h2 className="text-3xl font-bold">
                   {t(`weekflow.sections.${currentView.toLowerCase()}.description`) ||
-                    "Compartido por el equipo"}
+                    (isEs ? "Compartido por el equipo" : "Shared by the team")}
                 </h2>
               </div>
 
@@ -293,7 +377,17 @@ export default function WeekFlowPresentPage() {
                           <p className="font-medium text-sm mb-1">
                             {contribution.user.name}
                           </p>
-                          <p className="text-lg">{contribution.content}</p>
+                          <p className={cn("text-lg", contribution.isCompleted && "line-through text-muted-foreground")}>
+                            {contribution.content}
+                          </p>
+                          {contribution.isTask && (
+                            <Badge variant={contribution.isCompleted ? "default" : "secondary"} className="mt-2">
+                              {contribution.isCompleted
+                                ? (isEs ? "✓ Completada" : "✓ Completed")
+                                : (isEs ? "◻ Pendiente" : "◻ Pending")
+                              }
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -303,10 +397,230 @@ export default function WeekFlowPresentPage() {
                 {getContributionsByType(currentView).length === 0 && (
                   <div className="col-span-2 text-center py-12 text-muted-foreground">
                     <Icon className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                    <p>{t("weekflow.noItems") || "No hay aportes en esta sección"}</p>
+                    <p>{t("weekflow.noItems") || (isEs ? "No hay aportes en esta sección" : "No contributions in this section")}</p>
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════ */}
+          {/* SUMMARY VIEW — Resumen final con termómetro */}
+          {/* ═══════════════════════════════════════════════════ */}
+          {currentView === "summary" && session && (
+            <div className="space-y-8">
+              <div className="text-center mb-8">
+                <Badge className={cn("mb-4", config.bgColor, config.color)}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isEs ? "Resumen de Sesión" : "Session Summary"}
+                </Badge>
+                <h2 className="text-3xl font-bold mb-2">
+                  {isEs ? "¡Sesión completada!" : "Session Complete!"}
+                </h2>
+                <p className="text-muted-foreground">
+                  {isEs ? `Semana ${session.weekNumber}, ${session.year}` : `Week ${session.weekNumber}, ${session.year}`}
+                </p>
+              </div>
+
+              {/* Thermometer / Progress bar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Thermometer className="w-5 h-5 text-orange-500" />
+                    {isEs ? "Termómetro del Equipo" : "Team Thermometer"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Participation */}
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">
+                          {isEs ? "Participación (check-ins)" : "Participation (check-ins)"}
+                        </span>
+                        <span className="font-medium">{session.moodCheckins.length} {isEs ? "miembros" : "members"}</span>
+                      </div>
+                      <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-blue-400 to-blue-600"
+                          style={{ width: `${Math.min(100, participationRate)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contributions */}
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">
+                          {isEs ? "Contribuciones totales" : "Total contributions"}
+                        </span>
+                        <span className="font-medium">{totalContributions}</span>
+                      </div>
+                      <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-green-400 to-green-600"
+                          style={{ width: `${Math.min(100, totalContributions * 10)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Task completion */}
+                    {totalTasks > 0 && (
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-muted-foreground">
+                            {isEs ? "Tareas completadas" : "Tasks completed"}
+                          </span>
+                          <span className="font-medium">{completedTasks}/{totalTasks} ({completionRate}%)</span>
+                        </div>
+                        <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all duration-1000",
+                              completionRate >= 80
+                                ? "bg-gradient-to-r from-green-400 to-green-600"
+                                : completionRate >= 50
+                                  ? "bg-gradient-to-r from-amber-400 to-amber-600"
+                                  : "bg-gradient-to-r from-red-400 to-red-600"
+                            )}
+                            style={{ width: `${completionRate}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Stats cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                    <p className="text-2xl font-bold">{completedTasks}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs ? "Completadas" : "Completed"}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <Clock className="w-8 h-8 mx-auto mb-2 text-amber-500" />
+                    <p className="text-2xl font-bold">{pendingTasks}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs ? "Pendientes" : "Pending"}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <MessageSquare className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                    <p className="text-2xl font-bold">{totalContributions}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs ? "Contribuciones" : "Contributions"}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <BarChart3 className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                    <p className="text-2xl font-bold">{session.moodCheckins.length}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs ? "Check-ins" : "Check-ins"}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Contributions breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    {isEs ? "Desglose por sección" : "Section breakdown"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(["SHOW_TELL", "TO_DISCUSS", "FOCUS"] as const).map((type) => {
+                      const items = getContributionsByType(type);
+                      const sectionCfg = SECTION_CONFIG[type];
+                      const SectionIcon = sectionCfg.icon;
+                      return (
+                        <div key={type} className="flex items-center gap-3">
+                          <div className={cn("p-2 rounded-lg", sectionCfg.bgColor)}>
+                            <SectionIcon className={cn("w-4 h-4", sectionCfg.color)} />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-sm font-medium">
+                              {type === "SHOW_TELL"
+                                ? "Show & Tell"
+                                : type === "TO_DISCUSS"
+                                  ? (isEs ? "Para Discutir" : "To Discuss")
+                                  : (isEs ? "Mi Foco" : "My Focus")
+                              }
+                            </span>
+                          </div>
+                          <Badge variant="secondary">{items.length}</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Productivity suggestion */}
+              <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50">
+                      <Sparkles className="w-6 h-6 text-indigo-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">
+                        {isEs ? "Sugerencia de Productividad" : "Productivity Suggestion"}
+                      </h4>
+                      <p className="text-sm text-indigo-800 dark:text-indigo-300">
+                        {getProductivitySuggestion(session, isEs)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pending items warning */}
+              {pendingTasks > 0 && (
+                <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-2">
+                          {isEs
+                            ? `${pendingTasks} tarea${pendingTasks > 1 ? "s" : ""} pendiente${pendingTasks > 1 ? "s" : ""}`
+                            : `${pendingTasks} pending task${pendingTasks > 1 ? "s" : ""}`
+                          }
+                        </h4>
+                        <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-1">
+                          {session.contributions
+                            .filter((c) => c.isTask && !c.isCompleted)
+                            .slice(0, 5)
+                            .map((c) => (
+                              <li key={c.id} className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                {c.content}
+                                <span className="text-xs opacity-70">— {c.user.name}</span>
+                              </li>
+                            ))
+                          }
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>
@@ -321,36 +635,39 @@ export default function WeekFlowPresentPage() {
             disabled={currentIndex === 0}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("common.previous") || "Anterior"}
+            {t("common.previous") || (isEs ? "Anterior" : "Previous")}
           </Button>
 
           <div className="text-sm text-muted-foreground">
             {currentIndex + 1} / {SECTIONS.length}
           </div>
 
-          <Button
-            onClick={goToNext}
-            disabled={currentIndex === SECTIONS.length - 1}
-          >
-            {t("common.next") || "Siguiente"}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          {currentIndex < SECTIONS.length - 1 ? (
+            <Button onClick={goToNext}>
+              {t("common.next") || (isEs ? "Siguiente" : "Next")}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          ) : (
+            <Button asChild variant="default">
+              <Link href={`/weekflow/${hubId}`}>
+                {isEs ? "Finalizar" : "Finish"}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Keyboard hint */}
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
         {t("weekflow.present.keyboardHint") ||
-          "Usa ← → para navegar, F para pantalla completa"}
+          (isEs ? "Usa ← → para navegar, F para pantalla completa" : "Use ← → to navigate, F for fullscreen")}
       </div>
     </div>
   );
 }
 
 // Emotion Distribution Component
-function EmotionDistribution({ checkins }: { checkins: MoodCheckin[] }) {
-  const { t } = useI18n();
-
+function EmotionDistribution({ checkins, isEs }: { checkins: MoodCheckin[]; isEs: boolean }) {
   const distribution = checkins.reduce((acc, checkin) => {
     acc[checkin.emotion] = (acc[checkin.emotion] || 0) + 1;
     return acc;
@@ -369,7 +686,10 @@ function EmotionDistribution({ checkins }: { checkins: MoodCheckin[] }) {
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow"
           >
             <span className="text-2xl">{getEmotionEmoji(emotion)}</span>
-            <span className="font-medium">{percentage}%</span>
+            <div className="text-left">
+              <span className="text-sm font-medium block">{emotion}</span>
+              <span className="text-xs text-muted-foreground">{percentage}%</span>
+            </div>
           </div>
         );
       })}
@@ -379,15 +699,31 @@ function EmotionDistribution({ checkins }: { checkins: MoodCheckin[] }) {
 
 // Helper
 function getEmotionEmoji(emotion: string): string {
+  const slug = emotion.toUpperCase();
   const emojis: Record<string, string> = {
-    JOY: "😊",
-    TRUST: "🤝",
-    FEAR: "😨",
-    SURPRISE: "😮",
-    SADNESS: "😢",
-    DISGUST: "🤢",
-    ANGER: "😠",
-    ANTICIPATION: "😬",
+    JOY: "😊", ALEGRIA: "😊",
+    TRUST: "🤝", CONFIANZA: "🤝",
+    FEAR: "😨", TEMOR: "😨",
+    SURPRISE: "😮", SORPRESA: "😮",
+    SADNESS: "😢", TRISTEZA: "😢",
+    DISGUST: "🤢", DESAGRADO: "🤢",
+    ANGER: "😠", FURIA: "😠",
+    ANTICIPATION: "😬", ANTICIPACION: "😬",
+    // Extended
+    CONTENT: "😌", CONTENTO: "😌",
+    PLAYFUL: "🤪", PROUD: "🏆",
+    OPTIMISTIC: "🌞",
+    LONELY: "😔", VULNERABLE: "🥺",
+    GUILTY: "😣", HURT: "💔",
+    FRUSTRATED: "😤", BITTER: "😒", CRITICAL: "🧐",
+    ANXIOUS: "😰", ANSIEDAD: "😰",
+    INSECURE: "😟", OVERWHELMED: "🤯",
+    WORRIED: "😥", CONFUSED: "🤔",
+    AMAZED: "🤩", EXCITED: "🎉",
+    TIRED: "😴", STRESSED: "😫",
+    BORED: "😐", BUSY: "🏃",
+    DISAPPOINTED: "😞", DISAPPROVING: "👎",
+    PEACEFUL: "🕊️", HOPEFUL: "🌈", INTIMATE: "💛",
   };
-  return emojis[emotion] || "🎯";
+  return emojis[slug] || "🎯";
 }

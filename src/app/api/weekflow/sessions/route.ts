@@ -136,8 +136,18 @@ export async function GET(req: NextRequest) {
             weekEnd,
           },
           include: {
-            contributions: true,
-            moodCheckins: true,
+            contributions: {
+              where: { status: "ACTIVE" },
+              orderBy: { createdAt: "desc" },
+              include: {
+                user: { select: { id: true, name: true, image: true } },
+              },
+            },
+            moodCheckins: {
+              include: {
+                user: { select: { id: true, name: true, image: true } },
+              },
+            },
           },
         });
       }

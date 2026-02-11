@@ -247,37 +247,27 @@ export async function POST(req: NextRequest) {
 
       /* =========================================================
          2.3 CREAR MIEMBRO LEGACY (para compatibilidad)
-         email tiene @unique global, buscar primero por email solo
+         email tiene @unique global — usar upsert para evitar race conditions
       ========================================================== */
-      let legacyMember = await prisma.communityMember.findUnique({
+      let legacyMember = await prisma.communityMember.upsert({
         where: { email },
+        create: {
+          email,
+          name: user.name,
+          userId: user.id,
+          tenantId: tenantId ?? community.tenantId ?? "",
+          hubId: hubId ?? community.hubId ?? null,
+          rowiverseUserId: rowiVerseUser.id,
+          role: "member",
+          status: "ACTIVE",
+          joinedAt: new Date(),
+        },
+        update: {
+          rowiverseUserId: rowiVerseUser.id,
+          userId: user.id,
+          name: user.name || undefined,
+        },
       });
-
-      if (!legacyMember) {
-        legacyMember = await prisma.communityMember.create({
-          data: {
-            email,
-            name: user.name,
-            userId: user.id,
-            tenantId: tenantId ?? community.tenantId ?? "",
-            hubId: hubId ?? community.hubId ?? null,
-            rowiverseUserId: rowiVerseUser.id,
-            role: "member",
-            status: "ACTIVE",
-            joinedAt: new Date(),
-          },
-        });
-      } else {
-        // Update existing to link with RowiVerse and refresh data
-        await prisma.communityMember.update({
-          where: { id: legacyMember.id },
-          data: {
-            rowiverseUserId: legacyMember.rowiverseUserId || rowiVerseUser.id,
-            userId: legacyMember.userId || user.id,
-            name: user.name || legacyMember.name,
-          },
-        });
-      }
 
       /* =========================================================
          2.3.2 CREAR SNAPSHOT COMPLETO

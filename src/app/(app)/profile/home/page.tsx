@@ -6,7 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Brain, Target, Heart, Sparkles, ArrowRight, TrendingUp, Calendar, Award,
-  User, Clock, CheckCircle2, MessageCircle, Users, Edit, Loader2
+  User, Clock, CheckCircle2, MessageCircle, Users, Edit, Loader2,
+  Handshake, Rss
 } from "lucide-react";
 
 // Nombres descriptivos para las competencias EQ
@@ -87,6 +88,29 @@ export default async function ProfileHomePage() {
   const profileComplete = isProfileComplete(user);
   const seiRequested = user?.seiRequested || false;
   const seiRequestedAt = user?.seiRequestedAt;
+
+  // Social stats
+  let socialStats = { connections: 0, activeGoals: 0, unreadMessages: 0 };
+  if (user?.id) {
+    const [connectionsCount, goalsCount] = await Promise.all([
+      prisma.rowiRelation.count({
+        where: {
+          status: "active",
+          OR: [{ initiatorId: user.id }, { receiverId: user.id }],
+        },
+      }).catch(() => 0),
+      prisma.nobleGoal.count({
+        where: {
+          OR: [
+            { authorId: user.id },
+            { participants: { some: { userId: user.id } } },
+          ],
+          status: "active",
+        },
+      }).catch(() => 0),
+    ]);
+    socialStats = { connections: connectionsCount, activeGoals: goalsCount, unreadMessages: 0 };
+  }
 
   // ============================================
   // ESTADO 1: Perfil incompleto - Invitar a completar
@@ -410,6 +434,58 @@ export default async function ProfileHomePage() {
           </div>
           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[var(--rowi-g2)] transition-colors" />
         </Link>
+      </div>
+
+      {/* Mi Red Social */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold">
+            {lang === "es" ? "Mi Red Social" : "My Social Network"}
+          </h2>
+          <Link href="/social/feed" className="text-sm text-[var(--rowi-g2)] hover:underline">
+            {lang === "es" ? "Ver Actividad" : "View Activity"} →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Link
+            href="/social/feed"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors text-center"
+          >
+            <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
+              <Rss className="w-5 h-5 text-violet-500" />
+            </div>
+            <span className="text-sm font-medium">{lang === "es" ? "Actividad" : "Activity"}</span>
+          </Link>
+          <Link
+            href="/social/connections"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors text-center"
+          >
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <Handshake className="w-5 h-5 text-blue-500" />
+            </div>
+            <span className="text-2xl font-bold">{socialStats.connections}</span>
+            <span className="text-xs text-gray-500">{lang === "es" ? "Conexiones" : "Connections"}</span>
+          </Link>
+          <Link
+            href="/social/messages"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors text-center"
+          >
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 text-green-500" />
+            </div>
+            <span className="text-sm font-medium">{lang === "es" ? "Mensajes" : "Messages"}</span>
+          </Link>
+          <Link
+            href="/social/goals"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors text-center"
+          >
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Target className="w-5 h-5 text-amber-500" />
+            </div>
+            <span className="text-2xl font-bold">{socialStats.activeGoals}</span>
+            <span className="text-xs text-gray-500">{lang === "es" ? "Causas Activas" : "Active Goals"}</span>
+          </Link>
+        </div>
       </div>
 
       {/* Comunidades */}

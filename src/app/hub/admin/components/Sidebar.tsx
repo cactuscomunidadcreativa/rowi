@@ -21,6 +21,7 @@ import {
   Link2, Earth, Upload, Settings, Trophy, Medal, Star, Flame,
   Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
   Shield, GitBranch, ToggleRight, KeyRound,
+  Handshake, Rss, MessageCircle,
 } from "lucide-react";
 
 /* =========================================================
@@ -113,6 +114,24 @@ export default function Sidebar() {
         { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
         { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
         { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
+    // 🌐 SOCIAL
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.social",
+      icon: Users2,
+      priority: 91,
+      items: [
+        { href: "/hub/admin/social", labelKey: "admin.nav.socialDashboard", icon: LayoutDashboard, badge: "NEW" },
+        { href: "/hub/admin/social/connections", labelKey: "admin.nav.socialConnections", icon: Handshake },
+        { href: "/hub/admin/social/feed", labelKey: "admin.nav.socialFeed", icon: Rss },
+        { href: "/hub/admin/social/goals", labelKey: "admin.nav.socialGoals", icon: Target },
+        { href: "/hub/admin/social/messages", labelKey: "admin.nav.socialMessages", icon: MessageCircle },
+        { href: "/hub/admin/social/forums", labelKey: "admin.nav.socialForums", icon: MessageSquareCode },
+        { href: "/hub/admin/social/moderation", labelKey: "admin.nav.socialModeration", icon: ShieldCheck },
       ],
     },
 

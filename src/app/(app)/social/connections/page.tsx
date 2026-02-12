@@ -15,12 +15,13 @@ import {
   Brain,
   Loader2,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/useI18n";
 
 /* =========================================================
-   👥 Página de Conexiones Sociales
+   Connections Page
 
-   Tabs: Conexiones | Solicitudes Pendientes | Sugerencias
-   Cards de usuario con avatar, nombre, headline, acciones
+   Tabs: Connections | Pending Requests | Suggestions
+   User cards with avatar, name, headline, actions
 ========================================================= */
 
 interface ConnectionUser {
@@ -53,6 +54,7 @@ interface Suggestion {
 type TabType = "active" | "pending" | "suggestions";
 
 export default function ConnectionsPage() {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabType>("active");
   const [connections, setConnections] = useState<Connection[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -101,7 +103,7 @@ export default function ConnectionsPage() {
     fetchSuggestions();
   }, [fetchConnections, fetchSuggestions]);
 
-  // Enviar solicitud de conexión
+  // Send connection request
   const sendRequest = async (receiverId: string) => {
     setActionLoading(receiverId);
     try {
@@ -112,7 +114,7 @@ export default function ConnectionsPage() {
       });
       const data = await res.json();
       if (data.ok) {
-        // Remover de sugerencias
+        // Remove from suggestions
         setSuggestions((prev) => prev.filter((s) => s.user.id !== receiverId));
         fetchConnections();
       }
@@ -123,7 +125,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Aceptar/rechazar/bloquear
+  // Accept/reject/block
   const handleAction = async (
     connectionId: string,
     action: "accept" | "reject" | "block"
@@ -146,7 +148,7 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Eliminar conexión
+  // Remove connection
   const removeConnection = async (connectionId: string) => {
     setActionLoading(connectionId);
     try {
@@ -164,14 +166,14 @@ export default function ConnectionsPage() {
     }
   };
 
-  // Filtrar conexiones según tab
+  // Filter connections by tab
   const filteredConnections = connections.filter((c) => {
     if (activeTab === "active") return c.status === "active";
     if (activeTab === "pending") return c.status === "pending";
     return false;
   });
 
-  // Filtrar por búsqueda
+  // Filter by search
   const displayConnections = search
     ? filteredConnections.filter(
         (c) =>
@@ -181,16 +183,16 @@ export default function ConnectionsPage() {
     : filteredConnections;
 
   const tabs: { key: TabType; label: string; icon: any; count?: number }[] = [
-    { key: "active", label: "Conexiones", icon: Users, count: counts.active },
+    { key: "active", label: t("social.connections.tabs.active"), icon: Users, count: counts.active },
     {
       key: "pending",
-      label: "Pendientes",
+      label: t("social.connections.tabs.pending"),
       icon: Clock,
       count: counts.pending_received + counts.pending_sent,
     },
     {
       key: "suggestions",
-      label: "Sugerencias",
+      label: t("social.connections.tabs.suggestions"),
       icon: Sparkles,
       count: suggestions.length,
     },
@@ -202,10 +204,10 @@ export default function ConnectionsPage() {
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <Users className="w-8 h-8 text-[var(--rowi-g2)]" />
-          Conexiones
+          {t("social.connections.title")}
         </h1>
         <p className="mt-2 text-gray-500 dark:text-gray-400">
-          Gestiona tu red de conexiones y descubre personas afines
+          {t("social.connections.subtitle")}
         </p>
       </div>
 
@@ -244,7 +246,7 @@ export default function ConnectionsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar por nombre o email..."
+            placeholder={t("social.connections.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/30"
@@ -275,7 +277,7 @@ export default function ConnectionsPage() {
             {suggestions.length === 0 ? (
               <div className="col-span-full text-center py-16 text-gray-400">
                 <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No hay sugerencias disponibles por ahora</p>
+                <p>{t("social.connections.empty.suggestions")}</p>
               </div>
             ) : (
               suggestions.map((suggestion) => (
@@ -301,8 +303,8 @@ export default function ConnectionsPage() {
                 <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>
                   {activeTab === "active"
-                    ? "Aún no tienes conexiones"
-                    : "No hay solicitudes pendientes"}
+                    ? t("social.connections.empty.active")
+                    : t("social.connections.empty.pending")}
                 </p>
               </div>
             ) : (
@@ -326,7 +328,7 @@ export default function ConnectionsPage() {
 }
 
 /* =========================================================
-   🃏 Card de Conexión
+   Connection Card
 ========================================================= */
 function ConnectionCard({
   connection,
@@ -343,6 +345,7 @@ function ConnectionCard({
   onRemove: () => void;
   isLoading: boolean;
 }) {
+  const { t } = useI18n();
   const { user, status, direction, createdAt } = connection;
 
   return (
@@ -368,7 +371,7 @@ function ConnectionCard({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-          {user.name || "Usuario"}
+          {user.name || t("social.connections.unknownUser")}
         </h3>
         {user.headline && (
           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -387,7 +390,7 @@ function ConnectionCard({
         )}
         {status === "pending" && (
           <p className="text-xs text-gray-400 mt-1">
-            {direction === "sent" ? "Enviada" : "Recibida"} ·{" "}
+            {direction === "sent" ? t("social.connections.sent") : t("social.connections.received")} ·{" "}
             {new Date(createdAt).toLocaleDateString()}
           </p>
         )}
@@ -402,27 +405,27 @@ function ConnectionCard({
             <button
               onClick={onAccept}
               className="p-2 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors"
-              title="Aceptar"
+              title={t("social.connections.actions.accept")}
             >
               <Check className="w-4 h-4" />
             </button>
             <button
               onClick={onReject}
               className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
-              title="Rechazar"
+              title={t("social.connections.actions.reject")}
             >
               <X className="w-4 h-4" />
             </button>
           </>
         ) : status === "pending" && direction === "sent" ? (
           <span className="text-xs text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">
-            Pendiente
+            {t("social.connections.pendingBadge")}
           </span>
         ) : status === "active" ? (
           <button
             onClick={onRemove}
             className="p-2 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-500 transition-colors"
-            title="Eliminar conexión"
+            title={t("social.connections.actions.remove")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -433,7 +436,7 @@ function ConnectionCard({
 }
 
 /* =========================================================
-   💡 Card de Sugerencia
+   Suggestion Card
 ========================================================= */
 function SuggestionCard({
   suggestion,
@@ -444,6 +447,7 @@ function SuggestionCard({
   onConnect: () => void;
   isLoading: boolean;
 }) {
+  const { t } = useI18n();
   const { user, reason, affinity, sharedCommunities } = suggestion;
 
   return (
@@ -466,7 +470,7 @@ function SuggestionCard({
         )}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-            {user.name || "Usuario"}
+            {user.name || t("social.connections.unknownUser")}
           </h3>
           {user.headline && (
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -480,18 +484,17 @@ function SuggestionCard({
       <div className="flex flex-wrap gap-1.5 mb-3">
         {reason === "community" && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-            {sharedCommunities} comunidad{sharedCommunities > 1 ? "es" : ""} en
-            común
+            {sharedCommunities} {t("social.connections.mutual")}
           </span>
         )}
         {reason === "tenant" && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-            Misma organización
+            {t("social.connections.sameOrg")}
           </span>
         )}
         {affinity > 0 && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400">
-            Afinidad: {affinity}%
+            {t("social.connections.affinity")}: {affinity}%
           </span>
         )}
         {user.brainProfile && (
@@ -515,7 +518,7 @@ function SuggestionCard({
         ) : (
           <>
             <UserPlus className="w-4 h-4" />
-            Conectar
+            {t("social.connections.actions.connect")}
           </>
         )}
       </button>

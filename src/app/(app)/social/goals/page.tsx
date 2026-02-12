@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n/useI18n";
 import {
   Target,
   Plus,
@@ -30,15 +31,15 @@ import {
    Crear goal con formulario modal
 ========================================================= */
 
-const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  bienestar: { icon: Heart, color: "text-pink-500 bg-pink-50 dark:bg-pink-900/20", label: "Bienestar" },
-  educacion: { icon: BookOpen, color: "text-blue-500 bg-blue-50 dark:bg-blue-900/20", label: "Educación" },
-  comunidad: { icon: Users, color: "text-green-500 bg-green-50 dark:bg-green-900/20", label: "Comunidad" },
-  medio_ambiente: { icon: Leaf, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20", label: "Medio Ambiente" },
-  liderazgo: { icon: TrendingUp, color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20", label: "Liderazgo" },
-  relaciones: { icon: Globe, color: "text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20", label: "Relaciones" },
-  salud: { icon: Activity, color: "text-red-500 bg-red-50 dark:bg-red-900/20", label: "Salud" },
-  creatividad: { icon: Palette, color: "text-purple-500 bg-purple-50 dark:bg-purple-900/20", label: "Creatividad" },
+const CATEGORY_CONFIG: Record<string, { icon: any; color: string; labelKey: string }> = {
+  bienestar: { icon: Heart, color: "text-pink-500 bg-pink-50 dark:bg-pink-900/20", labelKey: "social.goals.categories.wellness" },
+  educacion: { icon: BookOpen, color: "text-blue-500 bg-blue-50 dark:bg-blue-900/20", labelKey: "social.goals.categories.education" },
+  comunidad: { icon: Users, color: "text-green-500 bg-green-50 dark:bg-green-900/20", labelKey: "social.goals.categories.community" },
+  medio_ambiente: { icon: Leaf, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20", labelKey: "social.goals.categories.environment" },
+  liderazgo: { icon: TrendingUp, color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20", labelKey: "social.goals.categories.leadership" },
+  relaciones: { icon: Globe, color: "text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20", labelKey: "social.goals.categories.relationships" },
+  salud: { icon: Activity, color: "text-red-500 bg-red-50 dark:bg-red-900/20", labelKey: "social.goals.categories.health" },
+  creatividad: { icon: Palette, color: "text-purple-500 bg-purple-50 dark:bg-purple-900/20", labelKey: "social.goals.categories.creativity" },
 };
 
 type TabType = "mine" | "explore" | "community";
@@ -63,6 +64,7 @@ interface NobleGoal {
 
 export default function GoalsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabType>("explore");
   const [goals, setGoals] = useState<NobleGoal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,9 +105,9 @@ export default function GoalsPage() {
   };
 
   const tabs: { key: TabType; label: string; icon: any }[] = [
-    { key: "mine", label: "Mis Goals", icon: Target },
-    { key: "explore", label: "Explorar", icon: Compass },
-    { key: "community", label: "Comunidad", icon: Users },
+    { key: "mine", label: t("social.goals.tabs.mine"), icon: Target },
+    { key: "explore", label: t("social.goals.tabs.explore"), icon: Compass },
+    { key: "community", label: t("social.goals.tabs.community"), icon: Users },
   ];
 
   return (
@@ -115,10 +117,10 @@ export default function GoalsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <Target className="w-8 h-8 text-[var(--rowi-g2)]" />
-            Causas Nobles
+            {t("social.goals.title")}
           </h1>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Pursue Noble Goals — La 8ª competencia de Inteligencia Emocional
+            {t("social.goals.subtitle")}
           </p>
         </div>
         <button
@@ -126,7 +128,7 @@ export default function GoalsPage() {
           className="px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Crear
+          {t("social.goals.create")}
         </button>
       </div>
 
@@ -158,7 +160,7 @@ export default function GoalsPage() {
               : "bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200"
           }`}
         >
-          Todas
+          {t("social.goals.categories.all")}
         </button>
         {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
           <button
@@ -171,7 +173,7 @@ export default function GoalsPage() {
             }`}
           >
             <cfg.icon className="w-3 h-3" />
-            {cfg.label}
+            {t(cfg.labelKey)}
           </button>
         ))}
       </div>
@@ -185,12 +187,12 @@ export default function GoalsPage() {
         <div className="text-center py-16 text-gray-400">
           <Target className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-lg font-medium">
-            {activeTab === "mine" ? "Aún no tienes causas nobles" : "No hay causas disponibles"}
+            {activeTab === "mine" ? t("social.goals.empty.mine") : t("social.goals.empty.explore")}
           </p>
           <p className="text-sm mt-1">
             {activeTab === "mine"
-              ? "Crea tu primera causa noble para compartir tu propósito"
-              : "Sé el primero en crear una"}
+              ? t("social.goals.empty.mine.desc")
+              : t("social.goals.empty.community")}
           </p>
         </div>
       ) : (
@@ -235,6 +237,7 @@ function GoalCard({
   onJoin: () => void;
   onClick: () => void;
 }) {
+  const { t } = useI18n();
   const catConfig = CATEGORY_CONFIG[goal.category] || CATEGORY_CONFIG.bienestar;
   const CatIcon = catConfig.icon;
 
@@ -250,11 +253,11 @@ function GoalCard({
         <div className="flex items-center justify-between mb-3">
           <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${catConfig.color}`}>
             <CatIcon className="w-3 h-3" />
-            {catConfig.label}
+            {t(catConfig.labelKey)}
           </span>
           {goal.status === "completed" && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600">
-              ✓ Completado
+              ✓ {t("social.goals.status.completed")}
             </span>
           )}
         </div>
@@ -272,7 +275,7 @@ function GoalCard({
         {/* Progress */}
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span>Progreso</span>
+            <span>{t("social.goals.progress")}</span>
             <span>{goal.progress}%</span>
           </div>
           <div className="h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -318,7 +321,7 @@ function GoalCard({
               ))}
             </div>
             <span className="text-xs text-gray-400 ml-1">
-              {goal.participantCount} participante{goal.participantCount > 1 ? "s" : ""}
+              {goal.participantCount} {t("social.goals.participants")}
             </span>
           </div>
           {goal.targetDate && (
@@ -343,6 +346,7 @@ function CreateGoalModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { t } = useI18n();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("bienestar");
@@ -392,7 +396,7 @@ function CreateGoalModal({
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Target className="w-5 h-5 text-[var(--rowi-g2)]" />
-            Nueva Causa Noble
+            {t("social.goals.form.title")}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800">
             <X className="w-5 h-5 text-gray-400" />
@@ -403,13 +407,13 @@ function CreateGoalModal({
           {/* Title */}
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-              Título *
+              {t("social.goals.form.title")} *
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="¿Cuál es tu causa noble?"
+              placeholder={t("social.goals.form.title")}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/30"
               maxLength={200}
             />
@@ -418,12 +422,12 @@ function CreateGoalModal({
           {/* Description */}
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-              Descripción
+              {t("social.goals.form.description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe tu causa y por qué es importante..."
+              placeholder={t("social.goals.form.description")}
               rows={3}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/30"
             />
@@ -432,7 +436,7 @@ function CreateGoalModal({
           {/* Category */}
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
-              Categoría
+              {t("social.goals.form.category")}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
@@ -446,7 +450,7 @@ function CreateGoalModal({
                   }`}
                 >
                   <cfg.icon className="w-4 h-4" />
-                  {cfg.label}
+                  {t(cfg.labelKey)}
                 </button>
               ))}
             </div>
@@ -455,23 +459,23 @@ function CreateGoalModal({
           {/* Visibility */}
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-              Visibilidad
+              {t("social.goals.form.visibility")}
             </label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm"
             >
-              <option value="public">Pública</option>
-              <option value="community">Solo comunidad</option>
-              <option value="private">Privada</option>
+              <option value="public">{t("social.goals.form.visibility.public")}</option>
+              <option value="community">{t("social.goals.form.visibility.community")}</option>
+              <option value="private">{t("social.goals.form.visibility.private")}</option>
             </select>
           </div>
 
           {/* Target date */}
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-              Fecha objetivo (opcional)
+              {t("social.goals.form.targetDate")}
             </label>
             <input
               type="date"
@@ -488,7 +492,7 @@ function CreateGoalModal({
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           >
-            Cancelar
+            {t("social.goals.form.cancel")}
           </button>
           <button
             onClick={handleCreate}
@@ -496,7 +500,7 @@ function CreateGoalModal({
             className="px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Crear Causa
+            {t("social.goals.form.create")}
           </button>
         </div>
       </motion.div>

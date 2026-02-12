@@ -25,41 +25,48 @@ import {
   HandHeart,
   Lightbulb,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/useI18n";
 
 /* =========================================================
-   📰 Página del Social Feed
+   Feed Page - Social Feed
 
    - Composer para crear posts
    - Feed infinito con cursor pagination
    - Reacciones y comentarios inline
 ========================================================= */
 
-const REACTION_TYPES = [
-  { type: "like", icon: ThumbsUp, label: "Me gusta", color: "text-blue-500" },
-  { type: "love", icon: Heart, label: "Me encanta", color: "text-red-500" },
-  { type: "celebrate", icon: Sparkles, label: "Celebro", color: "text-yellow-500" },
-  { type: "support", icon: HandHeart, label: "Apoyo", color: "text-green-500" },
-  { type: "insightful", icon: Lightbulb, label: "Interesante", color: "text-purple-500" },
-];
+function getReactionTypes(t: (key: string) => string) {
+  return [
+    { type: "like", icon: ThumbsUp, label: t("social.feed.reactions.like"), color: "text-blue-500" },
+    { type: "love", icon: Heart, label: t("social.feed.reactions.love"), color: "text-red-500" },
+    { type: "celebrate", icon: Sparkles, label: t("social.feed.reactions.celebrate"), color: "text-yellow-500" },
+    { type: "support", icon: HandHeart, label: t("social.feed.reactions.support"), color: "text-green-500" },
+    { type: "insightful", icon: Lightbulb, label: t("social.feed.reactions.insightful"), color: "text-purple-500" },
+  ];
+}
 
-const MOOD_OPTIONS = [
-  { value: "happy", label: "😊 Feliz" },
-  { value: "grateful", label: "🙏 Agradecido" },
-  { value: "motivated", label: "🔥 Motivado" },
-  { value: "reflective", label: "🤔 Reflexivo" },
-  { value: "proud", label: "🏆 Orgulloso" },
-  { value: "excited", label: "🎉 Emocionado" },
-  { value: "calm", label: "🧘 Tranquilo" },
-  { value: "curious", label: "💡 Curioso" },
-];
+function getMoodOptions(t: (key: string) => string) {
+  return [
+    { value: "happy", label: "😊 " + t("social.feed.moods.happy") },
+    { value: "grateful", label: "🙏 " + t("social.feed.moods.grateful") },
+    { value: "motivated", label: "🔥 " + t("social.feed.moods.motivated") },
+    { value: "reflective", label: "🤔 " + t("social.feed.moods.reflective") },
+    { value: "proud", label: "🏆 " + t("social.feed.moods.proud") },
+    { value: "excited", label: "🎉 " + t("social.feed.moods.excited") },
+    { value: "calm", label: "🧘 " + t("social.feed.moods.calm") },
+    { value: "curious", label: "💡 " + t("social.feed.moods.curious") },
+  ];
+}
 
-const POST_TYPE_CONFIG: Record<string, { icon: any; badge: string; bgClass: string }> = {
-  achievement: { icon: Award, badge: "Logro", bgClass: "from-amber-400 to-orange-500" },
-  level_up: { icon: TrendingUp, badge: "Nuevo Nivel", bgClass: "from-blue-400 to-purple-500" },
-  streak: { icon: Flame, badge: "Racha", bgClass: "from-red-400 to-orange-500" },
-  noble_goal: { icon: Target, badge: "Causa Noble", bgClass: "from-green-400 to-teal-500" },
-  connection: { icon: Users, badge: "Nueva Conexión", bgClass: "from-cyan-400 to-blue-500" },
-};
+function getPostTypeConfig(t: (key: string) => string): Record<string, { icon: any; badge: string; bgClass: string }> {
+  return {
+    achievement: { icon: Award, badge: t("social.feed.types.achievement"), bgClass: "from-amber-400 to-orange-500" },
+    level_up: { icon: TrendingUp, badge: t("social.feed.types.level_up"), bgClass: "from-blue-400 to-purple-500" },
+    streak: { icon: Flame, badge: t("social.feed.types.streak"), bgClass: "from-red-400 to-orange-500" },
+    noble_goal: { icon: Target, badge: t("social.feed.types.noble_goal"), bgClass: "from-green-400 to-teal-500" },
+    connection: { icon: Users, badge: t("social.feed.types.connection"), bgClass: "from-cyan-400 to-blue-500" },
+  };
+}
 
 interface FeedItem {
   id: string;
@@ -81,6 +88,7 @@ interface FeedItem {
 }
 
 export default function FeedPage() {
+  const { t } = useI18n();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
@@ -90,6 +98,9 @@ export default function FeedPage() {
   const [showMoods, setShowMoods] = useState(false);
   const [posting, setPosting] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
+
+  const REACTION_TYPES = getReactionTypes(t);
+  const MOOD_OPTIONS = getMoodOptions(t);
 
   // Fetch feed
   const fetchFeed = useCallback(async (cursor?: string) => {
@@ -141,7 +152,7 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [nextCursor, loadingMore, fetchFeed]);
 
-  // Crear post
+  // Create post
   const createPost = async () => {
     if (!postContent.trim()) return;
     setPosting(true);
@@ -172,7 +183,7 @@ export default function FeedPage() {
     }
   };
 
-  // Toggle reacción
+  // Toggle reaction
   const toggleReaction = async (postId: string, type: string) => {
     try {
       const res = await fetch(`/api/social/feed/${postId}/reactions`, {
@@ -206,11 +217,8 @@ export default function FeedPage() {
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <Zap className="w-8 h-8 text-[var(--rowi-g2)]" />
-          Actividad
+          {t("social.feed.title")}
         </h1>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
-          Comparte con tu red y descubre lo que está pasando
-        </p>
       </div>
 
       {/* Composer */}
@@ -218,7 +226,7 @@ export default function FeedPage() {
         <textarea
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
-          placeholder="¿Qué quieres compartir?"
+          placeholder={t("social.feed.composer.placeholder")}
           rows={3}
           className="w-full resize-none bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none text-sm"
           maxLength={5000}
@@ -262,7 +270,7 @@ export default function FeedPage() {
                   ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
                   : "text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800"
               }`}
-              title="Estado de ánimo"
+              title={t("social.feed.composer.mood")}
             >
               <Smile className="w-5 h-5" />
             </button>
@@ -283,7 +291,7 @@ export default function FeedPage() {
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              Publicar
+              {t("social.feed.composer.post")}
             </button>
           </div>
         </div>
@@ -297,8 +305,8 @@ export default function FeedPage() {
       ) : items.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <Zap className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-lg font-medium">Tu feed está vacío</p>
-          <p className="text-sm mt-1">Conecta con personas y comparte tus logros</p>
+          <p className="text-lg font-medium">{t("social.feed.empty")}</p>
+          <p className="text-sm mt-1">{t("social.feed.empty.description")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -325,7 +333,7 @@ export default function FeedPage() {
 }
 
 /* =========================================================
-   🃏 Feed Card Component
+   Feed Card Component
 ========================================================= */
 function FeedCard({
   item,
@@ -334,11 +342,16 @@ function FeedCard({
   item: FeedItem;
   onReact: (type: string) => void;
 }) {
+  const { t } = useI18n();
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<any[]>(item.feedComments || []);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
+
+  const REACTION_TYPES = getReactionTypes(t);
+  const MOOD_OPTIONS = getMoodOptions(t);
+  const POST_TYPE_CONFIG = getPostTypeConfig(t);
 
   const typeConfig = POST_TYPE_CONFIG[item.type];
   const isAutoPost = item.type !== "post";
@@ -416,7 +429,7 @@ function FeedCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-                {item.author.name || "Usuario"}
+                {item.author.name || "?"}
               </span>
               {moodEmoji && (
                 <span className="text-xs text-gray-500">{moodEmoji.label}</span>
@@ -461,9 +474,6 @@ function FeedCard({
                 </span>
               );
             })}
-            <span className="ml-1">
-              {item.reactionCount} reacción{item.reactionCount > 1 ? "es" : ""}
-            </span>
           </div>
         )}
 
@@ -489,8 +499,8 @@ function FeedCard({
                 return <Icon className="w-4 h-4" />;
               })()}
               {item.userReaction
-                ? REACTION_TYPES.find((r) => r.type === item.userReaction)?.label || "Me gusta"
-                : "Me gusta"}
+                ? REACTION_TYPES.find((r) => r.type === item.userReaction)?.label || t("social.feed.reactions.like")
+                : t("social.feed.reactions.like")}
             </button>
 
             {/* Reaction picker */}
@@ -525,7 +535,7 @@ function FeedCard({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <MessageSquare className="w-4 h-4" />
-            Comentar
+            {t("social.feed.comments.comment")}
             {item.commentCount > 0 && (
               <span className="text-xs">({item.commentCount})</span>
             )}
@@ -558,7 +568,7 @@ function FeedCard({
                     )}
                     <div className="flex-1 bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-2">
                       <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                        {comment.author?.name || "Usuario"}
+                        {comment.author?.name || "?"}
                       </span>
                       <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">
                         {comment.content}
@@ -579,7 +589,7 @@ function FeedCard({
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && submitComment()}
-                      placeholder="Escribe un comentario..."
+                      placeholder={t("social.feed.comments.placeholder")}
                       className="flex-1 text-xs px-3 py-1.5 rounded-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-[var(--rowi-g2)]/30"
                     />
                     <button
@@ -605,7 +615,7 @@ function FeedCard({
 }
 
 /* =========================================================
-   ⏰ Helper — Formato relativo de tiempo
+   Helper -- Relative time format
 ========================================================= */
 function formatTimeAgo(dateStr: string): string {
   const now = new Date();

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n/useI18n";
 import {
   Target,
   ArrowLeft,
@@ -25,6 +26,7 @@ import {
 export default function GoalDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useI18n();
   const [goal, setGoal] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updateContent, setUpdateContent] = useState("");
@@ -105,12 +107,12 @@ export default function GoalDetailPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 text-center">
         <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-500">Goal no encontrado</p>
+        <p className="text-gray-500">{t("social.goals.detail.back")}</p>
         <button
           onClick={() => router.push("/social/goals")}
           className="mt-4 text-sm text-[var(--rowi-g2)] hover:underline"
         >
-          Volver a Causas Nobles
+          {t("social.goals.detail.back")}
         </button>
       </div>
     );
@@ -126,7 +128,7 @@ export default function GoalDetailPage() {
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Causas Nobles
+        {t("social.goals.detail.back")}
       </button>
 
       {/* Goal header */}
@@ -150,7 +152,7 @@ export default function GoalDetailPage() {
               {goal.targetDate && (
                 <span className="text-xs text-gray-400 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  Meta: {new Date(goal.targetDate).toLocaleDateString("es")}
+                  {t("social.goals.targetDate")}: {new Date(goal.targetDate).toLocaleDateString("es")}
                 </span>
               )}
             </div>
@@ -164,7 +166,7 @@ export default function GoalDetailPage() {
                 : "bg-gray-100 dark:bg-zinc-800 text-gray-500"
             }`}
           >
-            {goal.status === "active" ? "Activo" : goal.status === "completed" ? "Completado" : "Pausado"}
+            {goal.status === "active" ? t("social.goals.status.active") : goal.status === "completed" ? t("social.goals.status.completed") : t("social.goals.status.paused")}
           </span>
         </div>
 
@@ -177,7 +179,7 @@ export default function GoalDetailPage() {
         {/* Progress bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm mb-1">
-            <span className="text-gray-500">Progreso</span>
+            <span className="text-gray-500">{t("social.goals.progress")}</span>
             <span className="font-semibold text-[var(--rowi-g2)]">{goal.progress}%</span>
           </div>
           <div className="h-2.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -201,7 +203,7 @@ export default function GoalDetailPage() {
           ) : (
             <UserPlus className="w-4 h-4" />
           )}
-          Unirme a esta causa
+          {t("social.goals.join")}
         </button>
       </div>
 
@@ -209,7 +211,7 @@ export default function GoalDetailPage() {
       <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 mb-6">
         <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
           <Users className="w-5 h-5 text-[var(--rowi-g2)]" />
-          Participantes ({goal._count.participants})
+          {t("social.goals.detail.participants")} ({goal._count.participants})
         </h2>
         <div className="space-y-3">
           {goal.participants.map((p: any) => (
@@ -234,7 +236,7 @@ export default function GoalDetailPage() {
       <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
         <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-[var(--rowi-g2)]" />
-          Actualizaciones ({goal._count.updates})
+          {t("social.goals.detail.updates")} ({goal._count.updates})
         </h2>
 
         {/* New update form */}
@@ -242,13 +244,13 @@ export default function GoalDetailPage() {
           <textarea
             value={updateContent}
             onChange={(e) => setUpdateContent(e.target.value)}
-            placeholder="Comparte un progreso..."
+            placeholder={t("social.goals.detail.updatePlaceholder")}
             rows={2}
             className="w-full bg-transparent text-sm resize-none focus:outline-none"
           />
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-400">Progreso:</label>
+              <label className="text-xs text-gray-400">{t("social.goals.detail.progressLabel")}:</label>
               <input
                 type="number"
                 min="0"
@@ -266,7 +268,7 @@ export default function GoalDetailPage() {
               className="px-3 py-1.5 rounded-lg bg-[var(--rowi-g2)] text-white text-xs font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
             >
               {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-              Publicar
+              {t("social.goals.detail.publishUpdate")}
             </button>
           </div>
         </div>
@@ -315,7 +317,7 @@ export default function GoalDetailPage() {
 
           {goal.updates.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-4">
-              Aún no hay actualizaciones
+              {t("social.goals.detail.noUpdates")}
             </p>
           )}
         </div>

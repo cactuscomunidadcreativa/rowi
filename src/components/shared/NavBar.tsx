@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -40,6 +40,12 @@ const translations = {
       myRowi: "Mi Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Nivel Rowi",
+      // Social
+      social: "Social",
+      feed: "Actividad",
+      connections: "Conexiones",
+      messages: "Mensajes",
+      goals: "Causas Nobles",
       // Nuevos links por rol
       team: "Mi Equipo",
       reports: "Reportes",
@@ -70,6 +76,12 @@ const translations = {
       myRowi: "My Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Rowi Level",
+      // Social
+      social: "Social",
+      feed: "Activity",
+      connections: "Connections",
+      messages: "Messages",
+      goals: "Noble Goals",
       // New role-based links
       team: "My Team",
       reports: "Reports",
@@ -113,6 +125,14 @@ const BASE_LINKS = [
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"] },
   { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
   { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
+];
+
+// Social sub-links for the dropdown
+const SOCIAL_LINKS = [
+  { href: "/social/feed", key: "feed", icon: Rss },
+  { href: "/social/connections", key: "connections", icon: Handshake },
+  { href: "/social/messages", key: "messages", icon: MessageCircle },
+  { href: "/social/goals", key: "goals", icon: Target },
 ];
 
 /* =========================================================
@@ -195,6 +215,8 @@ export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("avatar"); // Seccion expandida por defecto
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [socialDropdownOpen, setSocialDropdownOpen] = useState(false);
+  const isSocialActive = pathname?.startsWith("/social");
 
   // Fetch notificaciones
   const { data: notificationsData, mutate: refreshNotifications } = useSWR(
@@ -243,6 +265,7 @@ export default function NavBar() {
       const target = e.target as HTMLElement;
       if (!target.closest?.("#rowi-user-menu")) setMenuOpen(false);
       if (!target.closest?.("#rowi-notifications-menu")) setNotificationsOpen(false);
+      if (!target.closest?.("#rowi-social-dropdown")) setSocialDropdownOpen(false);
     };
     document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
@@ -321,6 +344,56 @@ export default function NavBar() {
               </Link>
             );
           })}
+
+          {/* Social Dropdown */}
+          {isLogged && (
+            <div id="rowi-social-dropdown" className="relative">
+              <button
+                onClick={() => setSocialDropdownOpen((v) => !v)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isSocialActive
+                    ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
+                    : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                <Users2 className="w-4 h-4" />
+                <span className="hidden lg:inline">{t.social}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${socialDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {socialDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 mt-2 w-48 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-1 overflow-hidden z-50"
+                  >
+                    {SOCIAL_LINKS.map((sl) => {
+                      const slActive = pathname?.startsWith(sl.href);
+                      const SlIcon = sl.icon;
+                      const slLabel = t[sl.key as keyof typeof t] || sl.key;
+                      return (
+                        <Link
+                          key={sl.href}
+                          href={sl.href}
+                          onClick={() => setSocialDropdownOpen(false)}
+                          className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                            slActive
+                              ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10 font-medium"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                          }`}
+                        >
+                          <SlIcon className="w-4 h-4" />
+                          {slLabel}
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </nav>
 
         {/* Right Actions */}
@@ -585,6 +658,18 @@ export default function NavBar() {
                         <MenuLink href="/profile/home" icon={User} onClick={() => setMenuOpen(false)}>
                           {t.viewProfile}
                         </MenuLink>
+                        <MenuLink href="/social/feed" icon={Rss} onClick={() => setMenuOpen(false)}>
+                          {t.feed}
+                        </MenuLink>
+                        <MenuLink href="/social/connections" icon={Handshake} onClick={() => setMenuOpen(false)}>
+                          {t.connections}
+                        </MenuLink>
+                        <MenuLink href="/social/messages" icon={MessageCircle} onClick={() => setMenuOpen(false)}>
+                          {t.messages}
+                        </MenuLink>
+                        <MenuLink href="/social/goals" icon={Target} onClick={() => setMenuOpen(false)}>
+                          {t.goals}
+                        </MenuLink>
                         <MenuLink href="/settings/invites" icon={UserPlus} onClick={() => setMenuOpen(false)}>
                           {t.invites}
                         </MenuLink>
@@ -674,6 +759,35 @@ export default function NavBar() {
                   </Link>
                 );
               })}
+
+              {/* Social section in mobile */}
+              {isLogged && (
+                <>
+                  <div className="pt-2 pb-1 px-4">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t.social}</p>
+                  </div>
+                  {SOCIAL_LINKS.map((sl) => {
+                    const slActive = pathname?.startsWith(sl.href);
+                    const SlIcon = sl.icon;
+                    const slLabel = t[sl.key as keyof typeof t] || sl.key;
+                    return (
+                      <Link
+                        key={sl.href}
+                        href={sl.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                          slActive
+                            ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        <SlIcon className="w-5 h-5" />
+                        {slLabel}
+                      </Link>
+                    );
+                  })}
+                </>
+              )}
             </nav>
           </motion.div>
         )}

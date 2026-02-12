@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { useI18n } from "@/lib/i18n/useI18n";
 import {
   MessageCircle,
   Send,
@@ -48,6 +49,7 @@ interface Message {
 
 export default function MessagesPage() {
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(
     searchParams.get("thread")
@@ -154,13 +156,13 @@ export default function MessagesPage() {
         <div className="p-4 border-b border-gray-200 dark:border-zinc-800">
           <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-[var(--rowi-g2)]" />
-            Mensajes
+            {t("social.messages.title")}
           </h1>
           <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar conversación..."
+              placeholder={t("social.messages.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm focus:outline-none"
@@ -176,8 +178,8 @@ export default function MessagesPage() {
           ) : filteredThreads.length === 0 ? (
             <div className="text-center py-10 text-gray-400 text-sm">
               <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p>No hay conversaciones aún</p>
-              <p className="text-xs mt-1">Conecta con alguien para empezar</p>
+              <p>{t("social.messages.empty")}</p>
+              <p className="text-xs mt-1">{t("social.messages.empty.desc")}</p>
             </div>
           ) : (
             filteredThreads.map((thread) => (
@@ -211,7 +213,7 @@ export default function MessagesPage() {
                     </span>
                     {thread.lastMessage && (
                       <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">
-                        {formatTimeShort(thread.lastMessage.createdAt)}
+                        {formatTimeShort(thread.lastMessage.createdAt, t)}
                       </span>
                     )}
                   </div>
@@ -242,7 +244,7 @@ export default function MessagesPage() {
           <div className="flex-1 flex items-center justify-center text-gray-400">
             <div className="text-center">
               <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>Selecciona una conversación</p>
+              <p>{t("social.messages.selectThread")}</p>
             </div>
           </div>
         ) : (
@@ -289,7 +291,7 @@ export default function MessagesPage() {
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 text-sm">
-                  <p>Inicia la conversación</p>
+                  <p>{t("social.messages.empty")}</p>
                 </div>
               ) : (
                 messages.map((msg) => {
@@ -312,7 +314,7 @@ export default function MessagesPage() {
                             isMine ? "text-white/60 justify-end" : "text-gray-400"
                           }`}
                         >
-                          {formatTimeShort(msg.createdAt)}
+                          {formatTimeShort(msg.createdAt, t)}
                           {isMine && (
                             msg.readBy.length > 1 ? (
                               <CheckCheck className="w-3 h-3" />
@@ -337,7 +339,7 @@ export default function MessagesPage() {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-                  placeholder="Escribe un mensaje..."
+                  placeholder={t("social.messages.input")}
                   className="flex-1 px-4 py-2 rounded-full border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--rowi-g2)]/30"
                 />
                 <button
@@ -360,7 +362,7 @@ export default function MessagesPage() {
   );
 }
 
-function formatTimeShort(dateStr: string): string {
+function formatTimeShort(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
@@ -371,7 +373,7 @@ function formatTimeShort(dateStr: string): string {
 
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return "Ayer";
+  if (date.toDateString() === yesterday.toDateString()) return t("social.messages.yesterday");
 
   return date.toLocaleDateString("es", { day: "numeric", month: "short" });
 }

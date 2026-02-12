@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 type NavItem = { label: string; href: string; visible: boolean };
 type UIButton = { id: string; text: string; href: string; style: string };
@@ -63,6 +64,9 @@ async function writeUI(next: UIConfig) {
 
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const ui = await readUI();
     return NextResponse.json({ ok: true, ui });
   } catch (e: any) {
@@ -75,6 +79,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = (await req.json().catch(() => ({}))) as Partial<UIConfig>;
     const navSrc = Array.isArray(body.navigation) ? body.navigation : [];
     const btnSrc = Array.isArray(body.buttons) ? body.buttons : [];

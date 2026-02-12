@@ -1,6 +1,7 @@
 // src/app/api/admin/permissions/features/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🎛️ API de Permisos de Features por Perfil
@@ -43,6 +44,9 @@ interface FeaturePermission {
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const role = searchParams.get("role");
     const roleType = searchParams.get("roleType") || "org";
@@ -126,6 +130,9 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const {
       role,
       roleType = "org",
@@ -202,6 +209,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { permissions } = await req.json();
 
     if (!Array.isArray(permissions) || permissions.length === 0) {
@@ -284,6 +294,9 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, role, roleType, featureKey, scopeType, scopeId } = await req.json();
 
     // Por ID directo

@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 interface StartProcessingBody {
   blobUrl: string;
@@ -21,6 +22,9 @@ interface StartProcessingBody {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     // Obtener email del header si está disponible
     const userEmail = req.headers.get("x-user-email") || "admin@rowiia.com";
 

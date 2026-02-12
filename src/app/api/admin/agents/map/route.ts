@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * GET /api/admin/agents/map?slug=eco
@@ -9,6 +10,9 @@ import { prisma } from "@/core/prisma";
  */
 export async function GET(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
     if (!slug)

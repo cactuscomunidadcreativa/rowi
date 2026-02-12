@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * POST /api/admin/agents/clone
@@ -9,6 +10,9 @@ import { prisma } from "@/core/prisma";
  */
 export async function POST(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const { id, targetType, targetId } = body || {};
 

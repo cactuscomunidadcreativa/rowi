@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export async function PATCH(req: Request, { params }: any) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { hubId } = params;
     const body = await req.json();
 

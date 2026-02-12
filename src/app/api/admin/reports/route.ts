@@ -1,8 +1,12 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     // 🔹 Obtener Tenants con sus agentes y plan
     const tenants = await prisma.tenant.findMany({
       include: {

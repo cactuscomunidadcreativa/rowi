@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * 📋 Lista todos los agentes IA con sus estados actuales.
@@ -7,6 +8,9 @@ import { prisma } from "@/core/prisma";
  */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const agents = await prisma.agentConfig.findMany({
       select: {
         id: true,

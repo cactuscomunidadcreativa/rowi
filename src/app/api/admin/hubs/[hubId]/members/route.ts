@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    👥 GET — Lista todos los miembros de un Hub
@@ -9,6 +10,9 @@ export async function GET(
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { hubId } = await context.params;
 
     const hub = await prisma.hub.findUnique({ where: { id: hubId } });
@@ -60,6 +64,9 @@ export async function POST(
   req: NextRequest,
   context: { params: Promise<{ hubId: string }> }
 ) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   const { hubId } = await context.params;
   const body = await req.json();
   const { userId } = body;

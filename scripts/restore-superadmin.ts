@@ -1,6 +1,11 @@
 /**
- * Script para restaurar acceso de superadmin
- * Ejecutar con: npx ts-node scripts/restore-superadmin.ts
+ * Script para restaurar acceso de superadmin.
+ *
+ * Uso:
+ *   npx ts-node scripts/restore-superadmin.ts usuario@email.com
+ *
+ * O con variable de entorno:
+ *   SUPERADMIN_EMAIL=usuario@email.com npx ts-node scripts/restore-superadmin.ts
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -8,16 +13,23 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = "eduardo@cactuscomunidadcreativa.com";
+  const email =
+    process.argv[2] || process.env.SUPERADMIN_EMAIL;
 
-  console.log("🔍 Buscando usuario con email:", email);
+  if (!email) {
+    console.error("Uso: npx ts-node scripts/restore-superadmin.ts <email>");
+    console.error("  O: SUPERADMIN_EMAIL=<email> npx ts-node scripts/restore-superadmin.ts");
+    process.exit(1);
+  }
+
+  console.log("Buscando usuario con email:", email);
 
   // Buscar el usuario
   const user = await prisma.user.findFirst({
     where: {
       OR: [
         { email },
-        { email: { contains: "eduardo", mode: "insensitive" } },
+        { email: { contains: email.split("@")[0], mode: "insensitive" } },
       ],
     },
     select: {
@@ -28,7 +40,7 @@ async function main() {
   });
 
   if (!user) {
-    console.log("❌ Usuario no encontrado. Usuarios disponibles:");
+    console.log("Usuario no encontrado. Usuarios disponibles:");
     const users = await prisma.user.findMany({
       take: 10,
       select: { id: true, email: true, name: true },
@@ -37,19 +49,19 @@ async function main() {
     return;
   }
 
-  console.log("✅ Usuario encontrado:", user.email, user.name);
+  console.log("Usuario encontrado:", user.email, user.name);
 
   // Verificar permisos existentes
   const existingPermission = await prisma.userPermission.findFirst({
     where: {
       userId: user.id,
       role: "SUPERADMIN",
-      scopeType: "rowiverse", // lowercase enum
+      scopeType: "rowiverse",
     },
   });
 
   if (existingPermission) {
-    console.log("⚠️ Ya tiene permiso SUPERADMIN en ROWIVERSE");
+    console.log("Ya tiene permiso SUPERADMIN en ROWIVERSE");
     return;
   }
 
@@ -57,41 +69,44 @@ async function main() {
   const permission = await prisma.userPermission.create({
     data: {
       userId: user.id,
-      scopeType: "rowiverse", // lowercase enum
+      scopeType: "rowiverse",
       scopeId: null,
       role: "SUPERADMIN",
       scope: "global",
     },
   });
 
-  console.log("🎉 Permiso SUPERADMIN creado:", permission.id);
+  console.log("Permiso SUPERADMIN creado:", permission.id);
 
-  // También asegurar que tenga membresía en el tenant principal si existe
-  const tenant = await prisma.tenant.findFirst({
-    where: { slug: "cactuscomunidadcreativa" },
-  });
+  // Buscar tenant del usuario por dominio del email
+  const domain = email.split("@")[1]?.replace(/\./g, "");
+  if (domain) {
+    const tenant = await prisma.tenant.findFirst({
+      where: { slug: { contains: domain, mode: "insensitive" } },
+    });
 
-  if (tenant) {
-    const membership = await prisma.membership.upsert({
-      where: {
-        userId_tenantId: {
+    if (tenant) {
+      const membership = await prisma.membership.upsert({
+        where: {
+          userId_tenantId: {
+            userId: user.id,
+            tenantId: tenant.id,
+          },
+        },
+        update: {
+          role: "SUPERADMIN",
+        },
+        create: {
           userId: user.id,
           tenantId: tenant.id,
+          role: "SUPERADMIN",
         },
-      },
-      update: {
-        role: "SUPERADMIN", // TenantRole enum
-      },
-      create: {
-        userId: user.id,
-        tenantId: tenant.id,
-        role: "SUPERADMIN", // TenantRole enum
-      },
-    });
-    console.log("✅ Membresía actualizada a SUPERADMIN en tenant:", tenant.name);
+      });
+      console.log("Membresia actualizada a SUPERADMIN en tenant:", tenant.name);
+    }
   }
 
-  console.log("\n🚀 ¡Listo! Ahora puedes acceder como superadmin.");
+  console.log("\nListo! Ahora puedes acceder como superadmin.");
 }
 
 main()

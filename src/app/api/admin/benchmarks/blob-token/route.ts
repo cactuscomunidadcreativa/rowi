@@ -8,9 +8,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     // Obtener email del header si está disponible (para logging)
     const userEmail = req.headers.get("x-user-email") || "anonymous";
 

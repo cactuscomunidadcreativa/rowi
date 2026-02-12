@@ -1,6 +1,7 @@
 // src/app/api/admin/permissions/features/seed/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🌱 Seed de Features del Sistema
@@ -422,6 +423,9 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
 
 export async function POST() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     let created = 0;
     let updated = 0;
     let permissionsCreated = 0;

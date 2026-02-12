@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🔍 GET — Listar componentes globales y jerárquicos
 ========================================================= */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const components = await prisma.component.findMany({
       include: {
         tenant: { select: { id: true, name: true, slug: true } },
@@ -29,6 +33,9 @@ export async function GET() {
 ========================================================= */
 export async function PATCH(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
     const { id, ...updates } = data;
 
@@ -52,6 +59,9 @@ export async function PATCH(req: Request) {
 ========================================================= */
 export async function POST(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
     const component = await prisma.component.create({ data });
     return NextResponse.json({ ok: true, component });
@@ -66,6 +76,9 @@ export async function POST(req: Request) {
 ========================================================= */
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id } = await req.json();
     await prisma.component.delete({ where: { id } });
     return NextResponse.json({ ok: true, message: "Componente eliminado" });

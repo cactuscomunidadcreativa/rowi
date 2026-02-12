@@ -256,6 +256,12 @@ export async function checkAndAwardAchievements(
     chatCount,
     microlearningCount,
     completedAchievements,
+    connectionsCount,
+    communityPostsCount,
+    nobleGoalsCount,
+    goalParticipationsCount,
+    feedPostsCount,
+    feedCommentsCount,
   ] = await Promise.all([
     prisma.userLevel.findUnique({ where: { userId } }),
     prisma.userStreak.findUnique({ where: { userId } }),
@@ -265,6 +271,18 @@ export async function checkAndAwardAchievements(
       where: { userId, completed: true },
       select: { achievementId: true },
     }),
+    // Social counts
+    prisma.rowiRelation.count({
+      where: {
+        OR: [{ initiatorId: userId }, { receiverId: userId }],
+        status: "active",
+      },
+    }),
+    prisma.rowiCommunityPost.count({ where: { authorId: userId } }),
+    prisma.nobleGoal.count({ where: { authorId: userId } }),
+    prisma.nobleGoalParticipant.count({ where: { userId } }),
+    prisma.rowiFeed.count({ where: { authorId: userId, type: "post" } }),
+    prisma.feedComment.count({ where: { authorId: userId } }),
   ]);
 
   const completedIds = new Set(completedAchievements.map((a) => a.achievementId));
@@ -313,6 +331,30 @@ export async function checkAndAwardAchievements(
           shouldAward = true;
         }
         if (conditions.minPoints && userLevel && userLevel.totalPoints >= conditions.minPoints) {
+          shouldAward = true;
+        }
+        break;
+
+      case "SOCIAL":
+        if (conditions.minConnections && connectionsCount >= conditions.minConnections) {
+          shouldAward = true;
+        }
+        if (conditions.minFeedPosts && feedPostsCount >= conditions.minFeedPosts) {
+          shouldAward = true;
+        }
+        if (conditions.minComments && feedCommentsCount >= conditions.minComments) {
+          shouldAward = true;
+        }
+        break;
+
+      case "COMMUNITY":
+        if (conditions.minCommunityPosts && communityPostsCount >= conditions.minCommunityPosts) {
+          shouldAward = true;
+        }
+        if (conditions.minNobleGoals && nobleGoalsCount >= conditions.minNobleGoals) {
+          shouldAward = true;
+        }
+        if (conditions.minGoalParticipations && goalParticipationsCount >= conditions.minGoalParticipations) {
           shouldAward = true;
         }
         break;
@@ -368,7 +410,7 @@ export async function checkAndAwardAchievements(
  */
 export async function recordActivity(
   userId: string,
-  activityType: "CHAT" | "MICROLEARNING" | "EQ_CHECKIN" | "DAILY_LOGIN",
+  activityType: "CHAT" | "MICROLEARNING" | "EQ_CHECKIN" | "DAILY_LOGIN" | "SOCIAL_POST" | "SOCIAL_COMMENT" | "SOCIAL_REACTION" | "SOCIAL_CONNECTION" | "NOBLE_GOAL" | "FORUM_POST",
   options?: {
     points?: number;
     reasonId?: string;
@@ -389,6 +431,12 @@ export async function recordActivity(
     MICROLEARNING: 25,
     EQ_CHECKIN: 15,
     DAILY_LOGIN: 5,
+    SOCIAL_POST: 5,
+    SOCIAL_COMMENT: 3,
+    SOCIAL_REACTION: 1,
+    SOCIAL_CONNECTION: 15,
+    NOBLE_GOAL: 25,
+    FORUM_POST: 5,
   };
 
   const points = options?.points ?? basePoints[activityType] ?? 10;
@@ -399,6 +447,12 @@ export async function recordActivity(
     MICROLEARNING: "MICROLEARNING",
     EQ_CHECKIN: "COMMUNITY_CONTRIBUTION",
     DAILY_LOGIN: "DAILY_CHECKIN",
+    SOCIAL_POST: "POST" as PointReason,
+    SOCIAL_COMMENT: "COMMENT" as PointReason,
+    SOCIAL_REACTION: "REACTION",
+    SOCIAL_CONNECTION: "CONNECTION",
+    NOBLE_GOAL: "NOBLE_GOAL",
+    FORUM_POST: "FORUM_REPLY",
   };
 
   // Otorgar puntos
@@ -416,6 +470,12 @@ export async function recordActivity(
     MICROLEARNING: "LEARNING",
     EQ_CHECKIN: "EQ",
     DAILY_LOGIN: "STREAK",
+    SOCIAL_POST: "SOCIAL" as AchievementCategory,
+    SOCIAL_COMMENT: "SOCIAL" as AchievementCategory,
+    SOCIAL_REACTION: "SOCIAL" as AchievementCategory,
+    SOCIAL_CONNECTION: "SOCIAL" as AchievementCategory,
+    NOBLE_GOAL: "COMMUNITY" as AchievementCategory,
+    FORUM_POST: "COMMUNITY" as AchievementCategory,
   };
 
   const newAchievements = await checkAndAwardAchievements({

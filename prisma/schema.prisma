@@ -140,6 +140,17 @@ model User {
   taskReflections       TaskReflection[]
   emotionVocabulary     EmotionVocabulary?
 
+  // 🌐 Social
+  profileVisibility     String               @default("public") // public | connections | private
+  socialLinks           Json?                // { linkedin, twitter, instagram, website }
+  feedComments          FeedComment[]
+  feedReactions         FeedReaction[]
+  nobleGoals            NobleGoal[]          @relation("NobleGoalAuthor")
+  goalParticipations    NobleGoalParticipant[]
+  goalUpdates           NobleGoalUpdate[]
+  messageParticipants   MessageParticipant[]
+  sentMessages          Message[]
+
   @@map("user")
 }
 
@@ -933,19 +944,37 @@ model RowiRelation {
 }
 
 model RowiFeed {
-  id         String   @id @default(cuid())
-  authorId   String
-  content    String
-  mood       String?
-  visibility String   @default("public")
-  likes      Int      @default(0)
-  comments   Int      @default(0)
-  tags       String[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  authorId    String
+  content     String
+  mood        String?
+  visibility  String   @default("public") // public | connections | community | private
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 🌐 Social Feed Extensions
+  type        String   @default("post")  // post | achievement | level_up | streak | noble_goal | connection
+  sourceType  String?                     // achievement | level | streak | goal | relation
+  sourceId    String?                     // ID del recurso origen
+  communityId String?                     // Si es post de comunidad
+  mediaUrls   String[]                    // URLs de imágenes/media
+  sharedGoalId String?                    // Si comparte un Noble Goal
+  metadata    Json?                       // Datos extra según type (ej: achievement name, level number)
+
+  // Relations
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community   RowiCommunity? @relation("FeedCommunity", fields: [communityId], references: [id], onDelete: SetNull)
+  sharedGoal  NobleGoal?     @relation("FeedSharedGoal", fields: [sharedGoalId], references: [id], onDelete: SetNull)
+  feedComments  FeedComment[]
+  feedReactions FeedReaction[]
 
   @@index([authorId])
+  @@index([communityId])
+  @@index([type])
+  @@index([createdAt])
   @@map("rowi_feed")
 }
 
@@ -2850,6 +2879,7 @@ model RowiCommunity {
   members        RowiCommunityUser[]
   posts          RowiCommunityPost[]
   CommunityBatch CommunityBatch[]
+  feedPosts      RowiFeed[]           @relation("FeedCommunity")
 
   // 🧭 Índices
   @@index([rowiVerseId])
@@ -2910,9 +2940,21 @@ model RowiCommunityPost {
   reactions   Json?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  community   RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  author      User          @relation(fields: [authorId], references: [id])
 
+  // 💬 Threading / Foros
+  parentId    String?                    // Para respuestas (null = post raíz)
+  depth       Int            @default(0) // Nivel de anidamiento (0=raíz, max 5)
+  isPinned    Boolean        @default(false) // Solo admin/owner puede pinear
+  replyCount  Int            @default(0) // Cache de cantidad de respuestas
+
+  // Relations
+  community   RowiCommunity     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author      User              @relation(fields: [authorId], references: [id])
+  parent      RowiCommunityPost?  @relation("PostThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     RowiCommunityPost[] @relation("PostThread")
+
+  @@index([communityId, parentId])
+  @@index([communityId, isPinned])
   @@map("rowi_community_post")
 }
 
@@ -5001,6 +5043,10 @@ enum PointsReason {
   ADMIN_GRANT       // Otorgado por admin
   ADMIN_DEDUCT      // Deducido por admin
   MICRO_LEARNING    // Completar micro-learning
+  CONNECTION        // Conexión social aceptada
+  REACTION          // Reacción en feed
+  NOBLE_GOAL        // Crear/unirse a noble goal
+  FORUM_REPLY       // Responder en foro
 }
 
 /// =========================================================
@@ -5739,6 +5785,176 @@ model SystemConfig {
   @@index([category])
   @@index([isActive])
   @@map("system_config")
+}
+
+// =========================================================
+// 🌐 SOCIAL SYSTEM — Noble Goals, Messaging, Feed Interactions
+// =========================================================
+
+/// 🎯 Noble Goal — Causa / propósito noble compartido (8va competencia EQ - Six Seconds)
+model NobleGoal {
+  id               String   @id @default(cuid())
+  authorId         String
+  title            String
+  description      String?  @db.Text
+  category         String   @default("bienestar") // bienestar | educacion | comunidad | medio_ambiente | liderazgo | relaciones | salud | creatividad
+  icon             String?
+  color            String?
+  visibility       String   @default("public")    // public | community | private
+  status           String   @default("active")    // active | completed | paused
+  targetDate       DateTime?
+  progress         Int      @default(0)           // 0–100
+  participantCount Int      @default(0)
+  tenantId         String?
+  communityId      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  author           User                   @relation("NobleGoalAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  participants     NobleGoalParticipant[]
+  updates          NobleGoalUpdate[]
+  sharedInFeed     RowiFeed[]             @relation("FeedSharedGoal")
+
+  @@index([authorId])
+  @@index([tenantId])
+  @@index([communityId])
+  @@index([status])
+  @@index([category])
+  @@index([visibility])
+  @@map("noble_goals")
+}
+
+/// 🤝 Participante de Noble Goal
+model NobleGoalParticipant {
+  id       String   @id @default(cuid())
+  goalId   String
+  userId   String
+  role     String   @default("supporter") // creator | supporter | contributor
+  joinedAt DateTime @default(now())
+  message  String?  @db.Text              // Mensaje al unirse
+
+  // Relations
+  goal     NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, userId])
+  @@index([userId])
+  @@map("noble_goal_participants")
+}
+
+/// 📝 Update de progreso de Noble Goal
+model NobleGoalUpdate {
+  id        String   @id @default(cuid())
+  goalId    String
+  authorId  String
+  content   String   @db.Text
+  progress  Int?                           // Nuevo progreso (0–100) al momento del update
+  createdAt DateTime @default(now())
+
+  // Relations
+  goal      NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([authorId])
+  @@map("noble_goal_updates")
+}
+
+/// 💬 Thread de mensajería directa
+model MessageThread {
+  id            String   @id @default(cuid())
+  type          String   @default("direct") // direct | group
+  name          String?                     // Nombre del grupo (solo para group)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastMessageAt DateTime @default(now())
+
+  // Relations
+  participants  MessageParticipant[]
+  messages      Message[]
+
+  @@index([lastMessageAt])
+  @@map("message_threads")
+}
+
+/// 📩 Mensaje individual
+model Message {
+  id        String    @id @default(cuid())
+  threadId  String
+  senderId  String
+  content   String    @db.Text
+  type      String    @default("text") // text | system | achievement_share
+  metadata  Json?                      // Datos extra (achievement info, etc.)
+  readBy    String[]                   // IDs de usuarios que leyeron el mensaje
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+
+  // Relations
+  thread    MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+/// 👤 Participante de thread de mensajería
+model MessageParticipant {
+  id         String    @id @default(cuid())
+  threadId   String
+  userId     String
+  role       String    @default("member") // member | admin
+  joinedAt   DateTime  @default(now())
+  lastReadAt DateTime?
+  mutedUntil DateTime?
+
+  // Relations
+  thread     MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([userId])
+  @@map("message_participants")
+}
+
+/// 💬 Comentario en feed
+model FeedComment {
+  id        String    @id @default(cuid())
+  feedId    String
+  authorId  String
+  content   String    @db.Text
+  parentId  String?                        // Para threading de comentarios
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  feed      RowiFeed       @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    FeedComment?   @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   FeedComment[]  @relation("CommentThread")
+
+  @@index([feedId, createdAt])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("feed_comments")
+}
+
+/// ❤️ Reacción en feed
+model FeedReaction {
+  id        String   @id @default(cuid())
+  feedId    String
+  userId    String
+  type      String   @default("like") // like | love | celebrate | support | insightful
+  createdAt DateTime @default(now())
+
+  // Relations
+  feed      RowiFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([feedId, userId])
+  @@index([feedId, type])
+  @@map("feed_reactions")
 }
 
 

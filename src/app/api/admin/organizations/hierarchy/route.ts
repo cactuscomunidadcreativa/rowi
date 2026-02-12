@@ -1,6 +1,7 @@
 // src/app/api/admin/organizations/hierarchy/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🌲 API de Jerarquías Organizacionales
@@ -129,6 +130,9 @@ function buildTree(orgs: OrgNode[], parentId: string | null = null): OrgNode[] {
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const flat = searchParams.get("flat") === "true";
     const rootId = searchParams.get("rootId");
@@ -208,6 +212,9 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const {
       name,
       slug,
@@ -290,6 +297,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const {
       id,
       name,
@@ -403,6 +413,9 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, cascade = false, reparent = false } = await req.json();
 
     if (!id) {

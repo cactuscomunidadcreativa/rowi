@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    📄 GET — Listar todos los layouts
 ========================================================= */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const layouts = await prisma.layout.findMany({
       include: {
         tenant: { select: { id: true, name: true, slug: true } },
@@ -42,6 +46,9 @@ export async function GET() {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
 
     // 🧩 Estructura base por defecto
@@ -82,6 +89,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
 
     if (!body.id) {
@@ -131,6 +141,9 @@ export async function PATCH(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id } = await req.json();
 
     if (!id) {

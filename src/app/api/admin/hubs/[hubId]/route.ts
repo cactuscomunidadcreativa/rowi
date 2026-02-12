@@ -1,5 +1,6 @@
 // src/app/api/admin/hubs/[hubId]/route.ts
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -16,6 +17,9 @@ export async function GET(
   _req: Request,
   ctx: { params: Promise<{ hubId: string }> }
 ) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   const { hubId } = await ctx.params;
 
   return NextResponse.json(

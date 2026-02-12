@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -18,6 +19,9 @@ export async function PATCH(
   context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { roleId } = await context.params;
     const body = await req.json();
 
@@ -56,6 +60,9 @@ export async function DELETE(
   context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { roleId } = await context.params;
 
     await prisma.hubRoleDynamic.delete({ where: { id: roleId } });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ export const dynamic = "force-dynamic";
 export async function GET(_: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const batch = await prisma.importBatch.findUnique({
       where: { id },
       include: { rows: true },
@@ -30,6 +34,9 @@ export async function GET(_: NextRequest, context: { params: Promise<{ id: strin
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { tenantId, hubId, organizationId, selectedIds } = await req.json();
 
     if (!selectedIds?.length)
@@ -59,6 +66,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { selectedIds } = await req.json();
 
     const rows = await prisma.importRow.findMany({

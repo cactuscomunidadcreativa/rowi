@@ -1,5 +1,6 @@
 // src/app/api/admin/hubs/route.ts
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -10,6 +11,9 @@ import { NextResponse } from "next/server";
  * =========================================================
  */
 export async function GET() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   return NextResponse.json(
     {
       ok: true,

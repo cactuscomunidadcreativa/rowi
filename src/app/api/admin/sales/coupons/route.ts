@@ -1,6 +1,7 @@
 // src/app/api/admin/sales/coupons/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🎟️ API de Gestión de Cupones/Códigos Promocionales
@@ -17,6 +18,9 @@ import { prisma } from "@/core/prisma";
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const active = searchParams.get("active");
@@ -114,6 +118,9 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const {
       code,
@@ -202,6 +209,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const { id, code, ...data } = body;
 
@@ -246,6 +256,9 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, code } = await req.json();
 
     if (!id && !code) {

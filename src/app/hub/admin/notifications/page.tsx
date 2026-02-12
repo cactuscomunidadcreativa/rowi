@@ -134,11 +134,10 @@ export default function NotificationsAdminPage() {
 
   const processQueue = async () => {
     try {
-      const res = await fetch("/api/cron/notifications", {
+      const res = await fetch("/api/admin/notifications/process-queue", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-cron-secret": process.env.NEXT_PUBLIC_CRON_SECRET || "",
         },
         body: JSON.stringify({ limit: 50 }),
       });

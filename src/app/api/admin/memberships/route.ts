@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { TenantRole } from "@prisma/client";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,9 @@ export const runtime = "nodejs";
 ========================================================= */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const memberships = await prisma.membership.findMany({
       include: {
         user: { select: { id: true, name: true, email: true } },
@@ -33,6 +37,9 @@ export async function GET() {
 ========================================================= */
 export async function POST(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
 
     if (!data.userId || !data.tenantId) {
@@ -77,6 +84,9 @@ export async function POST(req: Request) {
 ========================================================= */
 export async function PUT(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, ...data } = await req.json();
 
     if (!id) {
@@ -120,6 +130,9 @@ export async function PUT(req: Request) {
 ========================================================= */
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id } = await req.json();
 
     if (!id)

@@ -1,6 +1,7 @@
 // src/app/api/admin/sales/coupons/send/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    📧 Enviar Códigos Promocionales por Email
@@ -10,6 +11,9 @@ import { prisma } from "@/core/prisma";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const { couponId, code, email, customMessage } = body;
 

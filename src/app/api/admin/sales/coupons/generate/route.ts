@@ -1,6 +1,7 @@
 // src/app/api/admin/sales/coupons/generate/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🎲 Generador de Códigos Promocionales
@@ -21,6 +22,9 @@ function generateCode(prefix: string = "", length: number = 8): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const {
       // Configuración de generación

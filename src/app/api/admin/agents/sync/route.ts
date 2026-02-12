@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { assignAgentsToEntity } from "@/core/startup/assignAgentsToEntity";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * POST /api/admin/agents/sync
@@ -13,6 +14,9 @@ import { assignAgentsToEntity } from "@/core/startup/assignAgentsToEntity";
  */
 export async function POST() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     console.log("🔄 Iniciando sincronización completa de agentes IA...");
 
     /* =========================================================

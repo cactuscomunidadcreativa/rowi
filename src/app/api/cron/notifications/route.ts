@@ -19,8 +19,14 @@ export const maxDuration = 60; // 1 minute max
  */
 export async function GET(req: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify cron secret (OBLIGATORIO en produccion)
     const cronSecret = process.env.CRON_SECRET;
+
+    if (!cronSecret && process.env.NODE_ENV === "production") {
+      console.error("[Cron Notifications] CRON_SECRET is not set in production!");
+      return NextResponse.json({ ok: false, error: "Server misconfiguration" }, { status: 500 });
+    }
+
     const providedSecret = req.headers.get("x-cron-secret");
 
     if (cronSecret && providedSecret !== cronSecret) {
@@ -51,8 +57,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify cron secret (OBLIGATORIO en produccion)
     const cronSecret = process.env.CRON_SECRET;
+
+    if (!cronSecret && process.env.NODE_ENV === "production") {
+      console.error("[Cron Notifications] CRON_SECRET is not set in production!");
+      return NextResponse.json({ ok: false, error: "Server misconfiguration" }, { status: 500 });
+    }
+
     const providedSecret = req.headers.get("x-cron-secret");
 
     if (cronSecret && providedSecret !== cronSecret) {

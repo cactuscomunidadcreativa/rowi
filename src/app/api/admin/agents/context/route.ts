@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🧠 AgentContext API
@@ -14,6 +15,9 @@ import { prisma } from "@/core/prisma";
  */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
 
@@ -44,6 +48,9 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
     const { agentId, contextType, contextId = null, customPrompt = null, autoLearn = false } =
       data;
@@ -94,6 +101,9 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
     const { id, agentId, contextType, contextId, isActive, customPrompt, autoLearn } = data;
 
@@ -128,6 +138,9 @@ export async function PATCH(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const data = await req.json();
     const { id, agentId, contextType, contextId = null } = data;
 

@@ -74,9 +74,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      // Habilitado porque manejamos el linking de forma segura en el callback signIn
-      // El callback verifica el email y vincula la cuenta al usuario existente
-      allowDangerousEmailAccountLinking: true,
+      // SEGURIDAD: Deshabilitado para prevenir account takeover.
+      // El linking seguro se maneja en el callback signIn.
+      allowDangerousEmailAccountLinking: false,
     }),
 
     CredentialsProvider({

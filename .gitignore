@@ -30,9 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (keep .env.example committed as a template)
 .env
 .env.local
+.env.production
 .env.*.local
 
 # vercel
@@ -41,7 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env.local
 
 # Backups
 .backups/
@@ -68,4 +68,3 @@ src/data/seeds/*.json
 *.bak
 *.old
 *.backup
-.env.production

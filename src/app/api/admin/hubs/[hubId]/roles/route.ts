@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -18,6 +19,9 @@ export async function GET(
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { hubId } = await context.params; // ✅ await es clave en Next 15
 
     const roles = await prisma.hubRoleDynamic.findMany({
@@ -47,6 +51,9 @@ export async function POST(
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { hubId } = await context.params;
     const body = await req.json();
 

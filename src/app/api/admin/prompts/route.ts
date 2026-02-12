@@ -1,6 +1,7 @@
 // src/app/api/admin/prompts/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * 🧠 GET — Listar todos los prompts IA registrados
@@ -8,6 +9,9 @@ import { prisma } from "@/core/prisma";
  */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const agents = await prisma.agentConfig.findMany({
       select: {
         id: true,
@@ -50,5 +54,8 @@ export async function GET() {
  * (útil cuando Next.js mantiene un cache roto)
  */
 export async function HEAD() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   return new Response("ok", { status: 200 });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireAdmin, requireSuperAdmin, canDeleteUser } from "@/lib/auth";
+import { requireSuperAdmin as requireSuperAdminGuard } from "@/core/auth/requireAdmin";
 import {
   userCreateSchema,
   userUpdateSchema,
@@ -22,10 +23,13 @@ export const preferredRegion = "auto";
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdminGuard();
+    if (auth.error) return auth.error;
+
     // 🔐 Verificar permisos de admin
     const authResult = await requireAdmin();
     if (!authResult.success) return authResult.error;
-    const auth = authResult.user;
+    const adminUser = authResult.user;
 
     // 🛡️ Validación de parámetros con Zod
     const url = new URL(req.url);
@@ -33,11 +37,11 @@ export async function GET(req: NextRequest) {
 
     // 🔐 Filtrar según nivel de acceso
     // SuperAdmin ve todo, Admin normal solo su tenant
-    const baseWhere = auth.isSuperAdmin
+    const baseWhere = adminUser.isSuperAdmin
       ? {}
-      : auth.primaryTenantId
-        ? { primaryTenantId: auth.primaryTenantId }
-        : { id: auth.id }; // Si no tiene tenant, solo puede verse a sí mismo
+      : adminUser.primaryTenantId
+        ? { primaryTenantId: adminUser.primaryTenantId }
+        : { id: adminUser.id }; // Si no tiene tenant, solo puede verse a sí mismo
 
     const where = q
       ? {
@@ -131,6 +135,9 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdminGuard();
+    if (auth.error) return auth.error;
+
     // 🔐 Solo SuperAdmin puede crear usuarios
     const authResult = await requireSuperAdmin();
     if (!authResult.success) return authResult.error;
@@ -194,10 +201,13 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireSuperAdminGuard();
+    if (auth.error) return auth.error;
+
     // 🔐 Verificar permisos de admin
     const authResult = await requireAdmin();
     if (!authResult.success) return authResult.error;
-    const auth = authResult.user;
+    const adminUser = authResult.user;
 
     const body = await req.json();
 
@@ -241,7 +251,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // 🔐 Verificar permisos para modificar este usuario
-    if (!auth.isSuperAdmin) {
+    if (!adminUser.isSuperAdmin) {
       // No puede modificar SuperAdmins
       const targetIsSuperAdmin = targetUser.organizationRole?.toUpperCase() === "SUPERADMIN";
       if (targetIsSuperAdmin) {
@@ -252,7 +262,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       // Solo puede modificar usuarios de su tenant
-      if (targetUser.primaryTenantId !== auth.primaryTenantId) {
+      if (targetUser.primaryTenantId !== adminUser.primaryTenantId) {
         return NextResponse.json(
           { ok: false, error: "No tienes permisos para modificar usuarios de otro tenant" },
           { status: 403 }
@@ -366,10 +376,13 @@ export async function PATCH(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdminGuard();
+    if (auth.error) return auth.error;
+
     // 🔐 Solo SuperAdmin puede eliminar usuarios
     const authResult = await requireSuperAdmin();
     if (!authResult.success) return authResult.error;
-    const auth = authResult.user;
+    const adminUser = authResult.user;
 
     const body = await req.json();
 
@@ -384,7 +397,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = validation.data;
 
     // 🔐 No puede eliminarse a sí mismo
-    if (!canDeleteUser(auth, id)) {
+    if (!canDeleteUser(adminUser, id)) {
       return NextResponse.json(
         { ok: false, error: "No puedes eliminarte a ti mismo" },
         { status: 403 }

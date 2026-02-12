@@ -1,11 +1,15 @@
 // src/app/api/admin/agents/prompt/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
 export async function PATCH(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     const { slug, prompt, model, tone, tenantId, superHubId, organizationId } = body;
 

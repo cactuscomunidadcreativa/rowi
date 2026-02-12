@@ -1,6 +1,7 @@
 // src/app/api/admin/permissions/features/definitions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    📋 API de Definiciones de Features
@@ -14,6 +15,9 @@ import { prisma } from "@/core/prisma";
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const isAdmin = searchParams.get("isAdmin");
@@ -57,6 +61,9 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const {
       key,
       name,
@@ -117,6 +124,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, key, ...data } = await req.json();
 
     if (!id && !key) {
@@ -147,6 +157,9 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id, key } = await req.json();
 
     if (!id && !key) {

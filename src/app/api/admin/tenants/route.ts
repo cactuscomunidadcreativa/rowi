@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
-import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🔍 GET — Listar Tenants (con relaciones)
@@ -13,15 +13,13 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
 ========================================================= */
 export async function GET() {
   try {
-    // 🔐 Verificar permisos de admin
-    const authResult = await requireAdmin();
-    if (!authResult.success) return authResult.error;
-    const auth = authResult.user;
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     // Filtrar según nivel de acceso
-    const where = auth.isSuperAdmin
+    const where = auth.user.isSuperAdmin
       ? {}
-      : { id: auth.primaryTenantId || "none" };
+      : { id: auth.user.primaryTenantId || "none" };
 
     const tenants = await prisma.tenant.findMany({
       where,
@@ -49,9 +47,8 @@ export async function GET() {
 ========================================================= */
 export async function POST(req: Request) {
   try {
-    // 🔐 Solo SuperAdmin puede crear tenants
-    const authResult = await requireSuperAdmin();
-    if (!authResult.success) return authResult.error;
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const data = await req.json();
 
@@ -104,9 +101,8 @@ export async function POST(req: Request) {
 ========================================================= */
 export async function PUT(req: Request) {
   try {
-    // 🔐 Solo SuperAdmin puede actualizar tenants
-    const authResult = await requireSuperAdmin();
-    if (!authResult.success) return authResult.error;
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id, planId, ...data } = await req.json();
 
@@ -149,9 +145,8 @@ export async function PUT(req: Request) {
 ========================================================= */
 export async function DELETE(req: Request) {
   try {
-    // 🔐 Solo SuperAdmin puede eliminar tenants
-    const authResult = await requireSuperAdmin();
-    if (!authResult.success) return authResult.error;
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await req.json();
 

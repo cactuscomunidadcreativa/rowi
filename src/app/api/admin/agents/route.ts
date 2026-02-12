@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireAdmin } from "@/lib/auth";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🧠 GET — Listar solo agentes base (globales del sistema)
@@ -10,9 +10,8 @@ import { requireAdmin } from "@/lib/auth";
 ========================================================= */
 export async function GET() {
   try {
-    // 🔐 Verificar permisos de admin
-    const authResult = await requireAdmin();
-    if (!authResult.success) return authResult.error;
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
     const agents = await prisma.agentConfig.findMany({
       where: {
         OR: [

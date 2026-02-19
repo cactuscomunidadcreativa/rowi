@@ -1,20 +1,27 @@
 import { prisma } from "@/core/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 export const runtime = "nodejs";
 
 /* =========================================================
    🔸 PATCH/PUT — Editar comunidad
    ---------------------------------------------------------
-   Usa await params, evita sobrescribir valores vacíos
+   Requiere autenticación. Usa await params.
 ========================================================= */
 export async function PATCH(
-  req: Request,
+  req: NextRequest,
   context: { params: Promise<{ communityId: string }> }
 ) {
   const { communityId } = await context.params;
 
   try {
+    // Autenticación requerida
+    const token = await getToken({ req });
+    if (!token?.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       name,
@@ -65,15 +72,21 @@ export { PATCH as PUT };
 /* =========================================================
    🔻 DELETE — Eliminar comunidad
    ---------------------------------------------------------
-   Usa await params para evitar warning en Next 15
+   Requiere autenticación. Usa await params.
 ========================================================= */
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   context: { params: Promise<{ communityId: string }> }
 ) {
   const { communityId } = await context.params;
 
   try {
+    // Autenticación requerida
+    const token = await getToken({ req });
+    if (!token?.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     await prisma.rowiCommunity.delete({
       where: { id: communityId },
     });

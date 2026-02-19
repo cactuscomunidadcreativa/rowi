@@ -2,12 +2,15 @@ import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * Devuelve conteo general y uso de almacenamiento
  */
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
     const [
       users,
       tenants,

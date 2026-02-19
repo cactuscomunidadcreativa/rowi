@@ -174,13 +174,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Registrar auditoría
-    await prisma.auditLog.create({
+    // Registrar auditoría (migrado de auditLog → activityLog)
+    await prisma.activityLog.create({
       data: {
         action: "CREATE_RESOURCE",
         entity: "KnowledgeResource",
         targetId: resource.id,
-        meta: {
+        details: {
           createdBy,
           source: "KnowledgeHub API",
           tenant: tenantId,
@@ -231,12 +231,12 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    await prisma.auditLog.create({
+    await prisma.activityLog.create({
       data: {
         action: "UPDATE_RESOURCE",
         entity: "KnowledgeResource",
         targetId: id,
-        meta: { title, kind, agents },
+        details: { title, kind, agents },
       },
     });
 
@@ -261,12 +261,12 @@ export async function DELETE(req: NextRequest) {
       include: { hub: true, tenant: true },
     });
 
-    await prisma.auditLog.create({
+    await prisma.activityLog.create({
       data: {
         action: "DELETE_RESOURCE",
         entity: "KnowledgeResource",
         targetId: id,
-        meta: {
+        details: {
           hub: deleted.hub?.name,
           tenant: deleted.tenant?.name,
           deletedAt: new Date().toISOString(),

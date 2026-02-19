@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
+import { requireAuth, requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🔧 Helper — Normalizar slug
@@ -20,6 +21,9 @@ function normSlug(s: string) {
 ========================================================= */
 export async function GET() {
   try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
     const orgs = await prisma.organization.findMany({
       include: {
         superHub: { select: { id: true, name: true, slug: true } },
@@ -68,6 +72,9 @@ export async function GET() {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { name, slug, description, superHubId, tenantIds = [], hubIds = [] } =
       await req.json();
 
@@ -145,6 +152,9 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const body = await req.json();
     console.log("📩 Datos recibidos en PUT /organizations:", body);
 
@@ -209,6 +219,9 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { id } = await req.json();
 
     if (!id)

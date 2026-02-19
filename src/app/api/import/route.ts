@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { parse } from "csv-parse/sync";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * POST /api/admin/users/import
@@ -294,6 +295,9 @@ async function ensureHierarchy(
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const form = await req.formData();
     const file = form.get("file") as File | null;
 

@@ -1,8 +1,12 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const verse = await prisma.rowiVerse.findFirst();
     if (!verse) return NextResponse.json({ error: "❌ No existe RowiVerse Global" });
 

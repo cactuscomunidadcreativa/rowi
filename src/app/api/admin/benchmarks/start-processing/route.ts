@@ -15,8 +15,8 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 interface StartProcessingBody {
   blobUrl: string;
   name: string;
-  type: "GLOBAL" | "TENANT" | "HUB" | "SUPERHUB";
-  scope: string;
+  type: "ROWIVERSE" | "EXTERNAL" | "INTERNAL";
+  scope: "GLOBAL" | "REGION" | "COUNTRY" | "SECTOR" | "TENANT" | "HUB" | "TEAM" | "COMMUNITY" | "COHORT";
   isLearning: boolean;
 }
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
     // Iniciar procesamiento usando waitUntil para mantener el fetch vivo
     // después de que esta función responda al cliente
-    const baseUrl = "https://www.rowiia.com";
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://www.rowiia.com";
     const processUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
 
     // waitUntil permite que el fetch continúe ejecutándose después de responder
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-internal-call": "true",
+          "x-service-token": process.env.BENCHMARK_SERVICE_TOKEN || "",
         },
         body: JSON.stringify({
           benchmarkId: benchmark.id,

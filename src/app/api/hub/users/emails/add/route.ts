@@ -1,9 +1,13 @@
 // src/app/api/hub/users/emails/add/route.ts
 import { prisma } from "@/core/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const { userId, email, label } = await req.json();
 
     if (!userId || !email)

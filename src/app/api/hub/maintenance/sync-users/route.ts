@@ -1,6 +1,7 @@
 // src/app/api/hub/maintenance/sync-users/route.ts
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,9 @@ export async function syncUsers() {
 
 export async function POST() {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const created = await syncUsers();
     return NextResponse.json({
       ok: true,
@@ -61,5 +65,8 @@ export async function POST() {
 
 // para pruebas rápidas desde navegador
 export async function GET() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   return POST();
 }

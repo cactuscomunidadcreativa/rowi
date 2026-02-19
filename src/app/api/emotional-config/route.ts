@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { getToken } from "next-auth/jwt";
 
 /**
  * =========================================================
@@ -10,8 +11,13 @@ import { prisma } from "@/core/prisma";
  */
 
 // 🔹 GET - obtiene configuración actual (por tenant)
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    // Autenticación requerida
+    const token = await getToken({ req });
+    if (!token?.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get("tenantId");
     const key = searchParams.get("key") || "emotional-settings";
@@ -50,8 +56,14 @@ export async function GET(req: Request) {
 }
 
 // 🔹 POST - crea o actualiza configuración
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    // Autenticación requerida
+    const token = await getToken({ req });
+    if (!token?.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { tenantId, key = "emotional-settings", value, description } = body;
 

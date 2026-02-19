@@ -1,6 +1,7 @@
 // src/app/api/hub/system-health/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireAuth } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,6 +14,9 @@ export const dynamic = "force-dynamic";
  */
 
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const timestamp = new Date().toISOString();
   const modules: Record<string, "ok" | "warn" | "fail"> = {};
   const details: Record<string, string> = {};
@@ -43,7 +47,7 @@ export async function GET() {
       details.i18n = "⚠️ Tabla de traducciones no disponible (usando archivos)";
     }
 
-    // 3. 🔐 Verificar configuración de Auth
+    // 3. 🔐 Verificar configuración de Auth (sin exponer nombres de variables)
     const hasGoogleId = !!process.env.GOOGLE_CLIENT_ID;
     const hasGoogleSecret = !!process.env.GOOGLE_CLIENT_SECRET;
     const hasNextAuthSecret = !!process.env.NEXTAUTH_SECRET;
@@ -53,13 +57,13 @@ export async function GET() {
       details.auth = "✅ OAuth configurado correctamente";
     } else {
       modules.auth = "fail";
-      details.auth = `❌ Faltan variables: ${!hasGoogleId ? "GOOGLE_CLIENT_ID " : ""}${!hasGoogleSecret ? "GOOGLE_CLIENT_SECRET " : ""}${!hasNextAuthSecret ? "NEXTAUTH_SECRET" : ""}`;
+      details.auth = "❌ Faltan variables de autenticación";
     }
 
     // 4. 🤖 Verificar OpenAI API Key
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     modules.ai = hasOpenAI ? "ok" : "warn";
-    details.ai = hasOpenAI ? "✅ OpenAI API configurada" : "⚠️ OPENAI_API_KEY no configurada";
+    details.ai = hasOpenAI ? "✅ IA configurada" : "⚠️ API de IA no configurada";
 
     // 5. 📊 Verificar datos básicos
     try {

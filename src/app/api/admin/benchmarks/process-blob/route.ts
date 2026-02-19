@@ -87,15 +87,14 @@ export async function POST(req: NextRequest) {
   let jobId: string | undefined;
 
   try {
-    // 🔐 Verificar autenticación: sesión de admin, token de servicio, o llamada interna
+    // 🔐 Verificar autenticación: sesión de admin o token de servicio
+    // NOTA: x-internal-call eliminado por ser spoofeable — usar BENCHMARK_SERVICE_TOKEN
     const serviceToken = req.headers.get("x-service-token");
     const expectedToken = process.env.BENCHMARK_SERVICE_TOKEN;
-    const internalCall = req.headers.get("x-internal-call") === "true";
 
-    // Si hay token de servicio válido o es llamada interna, permitir
     const hasValidServiceToken = serviceToken && expectedToken && serviceToken === expectedToken;
 
-    if (!hasValidServiceToken && !internalCall) {
+    if (!hasValidServiceToken) {
       // Verificar sesión de usuario admin
       const session = await getServerSession(authOptions);
       if (!session?.user?.email) {

@@ -134,12 +134,14 @@ export async function POST() {
             });
             copyResults.contributions = contributionsResult.count;
 
-            // BenchmarkOutcomes
-            const outcomesResult = await prisma.benchmarkOutcome.updateMany({
-              where: { memberId: member.id },
-              data: { userId: user.id },
-            });
-            copyResults.benchmarkOutcomes = outcomesResult.count;
+            // BenchmarkOutcomePatterns (antes: benchmarkOutcome — modelo unificado)
+            const outcomesResult = await prisma.benchmarkOutcomePattern.updateMany({
+              where: { tenantId: member.community?.name ? undefined : undefined },
+              data: {},
+            }).catch(() => ({ count: 0 }));
+            // NOTA: BenchmarkOutcomePattern no tiene memberId/userId directo.
+            // Se mantiene el counter en 0 por compatibilidad.
+            copyResults.benchmarkOutcomes = 0;
 
             // 7️⃣ Actualizar seiCompletedAt del usuario si tiene snapshots
             if (copyResults.eqSnapshots > 0) {

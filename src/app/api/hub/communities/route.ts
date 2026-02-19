@@ -1,6 +1,6 @@
 // src/app/api/hub/communities/route.ts
 import { prisma } from "@/core/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { getServerAuthUser } from "@/core/auth";
 
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       + crear RowiCommunityUser
       + crear RowiVerseUser si falta
 ========================================================= */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req });
     if (!token?.email)
@@ -119,10 +119,24 @@ export async function POST(req: Request) {
     /* ---------------------------------------------------------
        🔹 Crear comunidad con toda la jerarquía
     --------------------------------------------------------- */
-    const slug = customSlug || name
+    // Generar slug con deduplicación automática
+    let baseSlug = customSlug || name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (await prisma.rowiCommunity.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+      if (counter > 100) {
+        return NextResponse.json(
+          { error: "No se pudo generar un slug único" },
+          { status: 409 }
+        );
+      }
+    }
 
     const community = await prisma.rowiCommunity.create({
       data: {

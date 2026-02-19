@@ -107,12 +107,10 @@ export async function POST(
     });
     copyResults.contributions = contributionsResult.count;
 
-    // 6️⃣ BenchmarkOutcomes (resultados de benchmarks)
-    const outcomesResult = await prisma.benchmarkOutcome.updateMany({
-      where: { memberId: id },
-      data: { userId: targetUserId },
-    });
-    copyResults.benchmarkOutcomes = outcomesResult.count;
+    // 6️⃣ BenchmarkOutcomes — modelo BenchmarkOutcome ya no existe
+    // BenchmarkOutcomePattern no tiene memberId/userId directo.
+    // Se deja en 0 por compatibilidad hasta migrar el modelo.
+    copyResults.benchmarkOutcomes = 0;
 
     // ═══════════════════════════════════════════════════════════════════
     // 🔄 Actualizar el perfil del usuario con datos del último snapshot

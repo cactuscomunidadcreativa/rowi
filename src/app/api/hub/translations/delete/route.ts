@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,9 @@ export const runtime = "nodejs";
  */
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
+
     const url = new URL(req.url);
     const langsParam = url.searchParams.get("langs") || "";
     const langs = langsParam

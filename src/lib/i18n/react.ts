@@ -58,7 +58,7 @@ export function useI18n(defaultNs = "common") {
   ========================================================== */
   useEffect(() => {
     const tenant =
-      document.documentElement.getAttribute("data-tenant") || "rowi-master";
+      document.documentElement.getAttribute("data-tenant") || "six-seconds-global";
     const cacheKey = `${tenant}:${locale}`;
 
     // Si ya están cacheadas, no recarga

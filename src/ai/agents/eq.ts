@@ -14,7 +14,7 @@ export const EqAgent = {
     ask = "",
     locale = "es",
     language = "Español",
-    tenantId = "rowi-master",
+    tenantId = "six-seconds-global",
   }: {
     ask?: string;
     locale?: string;

@@ -66,7 +66,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   async function loadFromAPI(targetLang: Lang) {
     try {
       const tenant =
-        document.documentElement.getAttribute("data-tenant") || "rowi-master";
+        document.documentElement.getAttribute("data-tenant") || "six-seconds-global";
       const res = await fetch(
         `/api/hub/translations?format=list&lang=${targetLang}&tenantId=${tenant}`
       );

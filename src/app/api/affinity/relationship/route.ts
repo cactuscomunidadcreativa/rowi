@@ -226,7 +226,7 @@ export async function GET(req: NextRequest) {
       const result = await runAffinityRouter({
         subIntent: "relationship",
         locale: "es",
-        tenantId: me.primaryTenantId || "rowi-master",
+        tenantId: me.primaryTenantId || "six-seconds-global",
         plan: me.plan?.name,
         payload: {
           aName: me.name || "Tú",

@@ -7,8 +7,9 @@ const prisma = new PrismaClient();
    ---------------------------------------------------------
    Asegura permisos base y jerárquicos:
    - SuperAdmin Global (RowiVerse root)
-   - Admin SuperHub (Cactus Hub)
-   - Manager Tenant (Rowi Master)
+   - Admin SuperHub (Six Seconds)
+   - Admin Tenant (Six Seconds Global)
+   - Admin Hub (Six Seconds Hub)
 ========================================================= */
 export async function ensurePermissions() {
   console.log("⚙️ Paso 6️⃣ — Permisos base");
@@ -23,48 +24,64 @@ export async function ensurePermissions() {
     return;
   }
 
-  // Evitar duplicados
-  const existing = await prisma.userPermission.findMany({
-    where: { userId: user.id },
-  });
-  if (existing.length > 0) {
-    console.log("✅ Permisos ya existen, no se duplican.");
-    return;
-  }
-
-  // Contextos jerárquicos
+  // Contextos jerárquicos (slugs alineados con seed-minimal.ts)
   const rowiverse = await prisma.rowiVerse.findFirst({ where: { slug: "rowiverse" } });
-  const cactusHub = await prisma.superHub.findFirst({ where: { slug: "cactus-hub" } });
-  const rowiMaster = await prisma.tenant.findFirst({ where: { slug: "rowi-master" } });
+  const superHub = await prisma.superHub.findFirst({ where: { slug: "six-seconds" } });
+  const tenant = await prisma.tenant.findFirst({ where: { slug: "six-seconds-global" } });
+  const hub = await prisma.hub.findFirst({ where: { slug: "six-seconds-hub" } });
 
-  // Permisos base
-  const permissions = [
+  // Permisos base - verificar uno por uno para no duplicar
+  const permDefs = [
     // 🌍 SUPERADMIN GLOBAL (RowiVerse raíz)
     {
       userId: user.id,
       role: "superadmin",
       scopeType: "rowiverse",
       scopeId: rowiverse?.id || "rowiverse_root",
+      scope: rowiverse?.id || "rowiverse_root",
     },
-
-    // 🏛 ADMIN SUPERHUB
-    {
+    // 🏛 SUPERADMIN SUPERHUB (Six Seconds)
+    ...(superHub ? [{
       userId: user.id,
-      role: "admin",
+      role: "SUPERADMIN",
       scopeType: "superhub",
-      scopeId: cactusHub?.id || "",
-    },
-
-    // 🧱 MANAGER TENANT
-    {
+      scopeId: superHub.id,
+      scope: superHub.id,
+    }] : []),
+    // 🏢 ADMIN TENANT (Six Seconds Global)
+    ...(tenant ? [{
       userId: user.id,
-      role: "manager",
+      role: "ADMIN",
       scopeType: "tenant",
-      scopeId: rowiMaster?.id || "",
-    },
+      scopeId: tenant.id,
+      scope: tenant.id,
+    }] : []),
+    // 🧱 ADMIN HUB (Six Seconds Hub)
+    ...(hub ? [{
+      userId: user.id,
+      role: "ADMIN",
+      scopeType: "hub",
+      scopeId: hub.id,
+      scope: hub.id,
+    }] : []),
   ];
 
-  await prisma.userPermission.createMany({ data: permissions });
+  for (const perm of permDefs) {
+    const existing = await prisma.userPermission.findFirst({
+      where: {
+        userId: perm.userId,
+        role: perm.role,
+        scopeType: perm.scopeType,
+        scopeId: perm.scopeId,
+      },
+    });
+    if (!existing) {
+      await prisma.userPermission.create({ data: perm });
+      console.log(`  ✅ Permiso creado: ${perm.scopeType} → ${perm.role}`);
+    } else {
+      console.log(`  ⏭️ Permiso ya existe: ${perm.scopeType} → ${perm.role}`);
+    }
+  }
 
-  console.log("✅ Permisos base creados correctamente.");
+  console.log("✅ Permisos base verificados correctamente.");
 }

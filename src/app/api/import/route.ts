@@ -9,8 +9,8 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
  * Content-Type: multipart/form-data
  * Fields:
  * - file: CSV/TSV (field name "file")
- * - superHub (slug opcional)   default: "cactus-hub"
- * - tenant (slug opcional)     default: "rowi-master"
+ * - superHub (slug opcional)   default: "six-seconds"
+ * - tenant (slug opcional)     default: "six-seconds-global"
  * - hub (slug opcional)        default: "rowi"
  * - org (slug opcional)        default: "rowi-organization"
  *
@@ -309,10 +309,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Overrides opcionales de jerarquía
-    const superHubSlug = slugify(norm(form.get("superHub") || "cactus-hub"));
-    const tenantSlug = slugify(norm(form.get("tenant") || "rowi-master"));
-    const hubSlug = slugify(norm(form.get("hub") || "rowi"));
-    const orgSlug = slugify(norm(form.get("org") || "rowi-organization"));
+    const superHubSlug = slugify(norm(form.get("superHub") || "six-seconds"));
+    const tenantSlug = slugify(norm(form.get("tenant") || "six-seconds-global"));
+    const hubSlug = slugify(norm(form.get("hub") || "six-seconds-hub"));
+    const orgSlug = slugify(norm(form.get("org") || "six-seconds-org"));
 
     const buf = Buffer.from(await file.arrayBuffer());
     // Auto detect delimiter (csv-parse lo hace si no pasas delimiter fijo)

@@ -88,6 +88,10 @@ export async function POST(req: NextRequest) {
     if (exists)
       return NextResponse.json({ error: "El slug ya existe" }, { status: 409 });
 
+    // Buscar System y RowiVerse dinámicamente
+    const system = await prisma.system.findFirst({ where: { slug: "rowi" } });
+    const rowiverse = await prisma.rowiVerse.findFirst({ where: { slug: "rowiverse" } });
+
     const newSH = await prisma.superHub.create({
       data: {
         name: data.name,
@@ -97,8 +101,8 @@ export async function POST(req: NextRequest) {
         mission: data.mission || "",
         colorTheme: data.colorTheme || "#FF6B35",
         logo: data.logo || "/rowi-logo.png",
-        rowiVerseId: "rowiverse_root",
-        systemId: "cactus", // si el System usa slug como PK o ID, ajustar
+        rowiVerseId: rowiverse?.id || "rowiverse_root",
+        systemId: system?.id || undefined,
       },
       include: superHubInclude,
     });

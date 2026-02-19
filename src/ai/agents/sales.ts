@@ -13,7 +13,7 @@ export const SalesAgent = {
   async run({
     ask = "",
     locale = "es",
-    tenantId = "rowi-master",
+    tenantId = "six-seconds-global",
     language = "Español",
   }: {
     ask?: string;

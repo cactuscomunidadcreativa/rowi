@@ -6,7 +6,7 @@ import { requireAuth, requireSuperAdmin } from "@/core/auth/requireAdmin";
 export const runtime = "nodejs";
 
 /* =========================================================
-   📄 GET — listar páginas por tenant (default: rowi-master)
+   📄 GET — listar páginas por tenant (default: six-seconds-global)
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get("tenantId") || "rowi-master";
+    const tenantId = searchParams.get("tenantId") || "six-seconds-global";
 
     const pages = await prisma.page.findMany({
       where: { tenantId },
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const {
-      tenantId = "rowi-master",
+      tenantId = "six-seconds-global",
       slug,
       title,
       layout = "default",

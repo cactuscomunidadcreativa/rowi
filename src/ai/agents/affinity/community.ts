@@ -13,7 +13,7 @@ export const AffinityCommunityAgent = {
    * - Usa datos del summary global (promedio, contextos)
    * - Devuelve texto interpretativo con tono coach organizacional
    */
-  async run({ locale = "es", tenantId = "rowi-master", payload = {} }) {
+  async run({ locale = "es", tenantId = "six-seconds-global", payload = {} }) {
     try {
       const prompt = buildCommunityPrompt({ locale, payload });
       const completion = await ai.chat.completions.create({

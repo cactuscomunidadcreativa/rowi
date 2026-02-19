@@ -37,7 +37,7 @@ export const AGENTS = {
 export async function runAgent({
   intent = "eq",
   locale = "es",
-  tenantId = "rowi-master",
+  tenantId = "six-seconds-global",
   plan = "free", // 👈 nuevo: permite control de acceso IA
   payload = {},
 }: {

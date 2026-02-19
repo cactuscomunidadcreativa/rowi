@@ -21,7 +21,7 @@ export const SuperAgent = {
   async run({
     ask,
     locale = "es",
-    tenantId = "rowi-master",
+    tenantId = "six-seconds-global",
     a,
     attachments = [],
     audio,
@@ -284,7 +284,7 @@ Combina las perspectivas de cada agente en una respuesta fluida y accionable.`;
       const costUsd = ((tokensInput + tokensOutput) / 1000) * 0.002;
 
       await registerUsage({
-        tenantId: "rowi-master",
+        tenantId: "six-seconds-global",
         feature: "SUPER_ANALYSIS",
         model: "gpt-4o-mini",
         tokensInput,

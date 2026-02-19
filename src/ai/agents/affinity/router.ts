@@ -20,7 +20,7 @@ export const SUB_AGENTS = {
 export async function runAffinityRouter({
   subIntent = "relationship",
   locale = "es",
-  tenantId = "rowi-master",
+  tenantId = "six-seconds-global",
   plan = "free",
   payload = {},
 }: {

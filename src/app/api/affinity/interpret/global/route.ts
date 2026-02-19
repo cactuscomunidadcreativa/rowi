@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const result = await runAffinityRouter({
       subIntent: "community",
       locale: lang,
-      tenantId: user.primaryTenantId || "rowi-master",
+      tenantId: user.primaryTenantId || "six-seconds-global",
       plan: user.plan?.name || "free",
       payload: { summary, project: "global" },
     });

@@ -23,29 +23,34 @@ export async function ensureSystemHierarchy() {
   // 2️⃣ SYSTEM ROOT
   // =========================================================
   const system = await prisma.system.upsert({
-    where: { slug: "cactus" },
+    where: { slug: "rowi" },
     update: {},
     create: {
-      slug: "cactus",
-      name: "Cactus Global System",
-      description: "Sistema administrativo base del ecosistema Rowi/Cactus.",
-      logo: "/assets/system/cactus-logo.png",
+      slug: "rowi",
+      name: "Rowi Global System",
+      description: "Sistema raíz de la plataforma ROWI",
+      logo: "/rowi-logo.png",
+      primaryColor: "#6366F1",
+      secondaryColor: "#F97316",
+      defaultLang: "es",
+      timezone: "America/Lima",
+      active: true,
     },
   });
   console.log(`🧩 System garantizado: ${system.name}`);
 
   // =========================================================
-  // 3️⃣ SUPERHUB BASE
+  // 3️⃣ SUPERHUB - Six Seconds
   // =========================================================
   const superHub = await prisma.superHub.upsert({
-    where: { slug: "cactus-hub" },
+    where: { slug: "six-seconds" },
     update: {},
     create: {
-      name: "Cactus Hub",
-      slug: "cactus-hub",
-      description: "SuperHub principal del ecosistema Rowi/Cactus",
-      colorTheme: "#FF6B35",
-      region: "LATAM",
+      name: "Six Seconds",
+      slug: "six-seconds",
+      description: "The Emotional Intelligence Network",
+      logo: "/six-seconds-logo.png",
+      colorTheme: "#E85D04",
       rowiVerseId: rowiverse.id,
       systemId: system.id,
     },
@@ -53,64 +58,80 @@ export async function ensureSystemHierarchy() {
   console.log(`🏛️ SuperHub garantizado: ${superHub.name}`);
 
   // =========================================================
-  // 4️⃣ PLANES BASE
+  // 4️⃣ PLAN ENTERPRISE (mínimo necesario para Tenant)
   // =========================================================
-  const basePlans = [
-    { name: "Free", priceUsd: 0, aiEnabled: false },
-    { name: "Pro", priceUsd: 29, aiEnabled: true },
-    { name: "Enterprise", priceUsd: 99, aiEnabled: true },
-    { name: "Global AI", priceUsd: 0, aiEnabled: true },
-  ];
-
-  for (const p of basePlans) {
-    await prisma.plan.upsert({
-      where: { name: p.name },
-      update: {},
-      create: p,
-    });
-  }
-  console.log("💼 Planes base garantizados.");
-
-  const enterprisePlan = await prisma.plan.findUnique({
-    where: { name: "Enterprise" },
+  let enterprisePlan = await prisma.plan.findFirst({
+    where: { slug: "enterprise" },
   });
 
+  if (!enterprisePlan) {
+    enterprisePlan = await prisma.plan.upsert({
+      where: { slug: "enterprise" },
+      update: {},
+      create: {
+        name: "ROWI Enterprise",
+        slug: "enterprise",
+        priceUsd: 30000,
+        aiEnabled: true,
+        isActive: true,
+      },
+    });
+  }
+  console.log("💼 Plan Enterprise garantizado.");
+
   // =========================================================
-  // 5️⃣ TENANT PRINCIPAL (Rowi Master) con plan Enterprise
+  // 5️⃣ TENANT - Six Seconds Global
   // =========================================================
   const tenant = await prisma.tenant.upsert({
-    where: { slug: "rowi-master" },
+    where: { slug: "six-seconds-global" },
     update: {
       planId: enterprisePlan?.id,
     },
     create: {
-      name: "Rowi Master",
-      slug: "rowi-master",
-      billingEmail: "admin@rowi.ai",
-      visibilityScope: "global",
+      name: "Six Seconds Global",
+      slug: "six-seconds-global",
+      billingEmail: "admin@6seconds.org",
       superHubId: superHub.id,
+      systemId: system.id,
       planId: enterprisePlan?.id,
     },
   });
   console.log(`🏢 Tenant garantizado: ${tenant.name}`);
 
   // =========================================================
-  // 6️⃣ ORGANIZATION BASE
+  // 6️⃣ HUB - Six Seconds Hub
   // =========================================================
-  const org = await prisma.organization.upsert({
-    where: { slug: "rowi-organization" },
+  const hub = await prisma.hub.upsert({
+    where: { slug: "six-seconds-hub" },
     update: {},
     create: {
-      name: "Rowi Organization",
-      slug: "rowi-organization",
-      description: "Organización base de Rowi",
+      name: "Six Seconds Hub",
+      slug: "six-seconds-hub",
+      description: "Hub principal de Six Seconds",
       superHubId: superHub.id,
+      tenantId: tenant.id,
+    },
+  });
+  console.log(`🧱 Hub garantizado: ${hub.name}`);
+
+  // =========================================================
+  // 7️⃣ ORGANIZATION - Six Seconds Org
+  // =========================================================
+  const org = await prisma.organization.upsert({
+    where: { slug: "six-seconds-org" },
+    update: {},
+    create: {
+      name: "Six Seconds Organization",
+      slug: "six-seconds-org",
+      description: "Organización principal de Six Seconds",
+      hubId: hub.id,
+      unitType: "CLIENT",
     },
   });
   console.log(`🏢 Organización garantizada: ${org.name}`);
 
   // =========================================================
-  // 7️⃣ ORG ↔ TENANT (N:M)
+  // 8️⃣ ORG ↔ TENANT (N:M)
   // =========================================================
   await prisma.organizationToTenant.upsert({
     where: {
@@ -126,24 +147,6 @@ export async function ensureSystemHierarchy() {
     },
   });
   console.log("🔗 Org ↔ Tenant vinculado");
-
-  // =========================================================
-  // 8️⃣ HUB BASE
-  // =========================================================
-  const hub = await prisma.hub.upsert({
-    where: { slug: "rowi" },
-    update: {},
-    create: {
-      name: "Rowi",
-      slug: "rowi",
-      description: "Hub principal del ecosistema Rowi",
-      superHubId: superHub.id,
-      tenantId: tenant.id,
-      themeColor: "#007AFF",
-      visibility: "public",
-    },
-  });
-  console.log(`🧱 Hub garantizado: ${hub.name}`);
 
   // =========================================================
   // 9️⃣ ORG ↔ HUB (N:M)
@@ -162,15 +165,22 @@ export async function ensureSystemHierarchy() {
     },
   });
   console.log("🔗 Org ↔ Hub vinculado");
+
   // =========================================================
   // 🔟 USUARIO PRINCIPAL (Eduardo)
   // =========================================================
   const user = await prisma.user.upsert({
     where: { email: "eduardo@cactuscomunidadcreativa.com" },
-    update: {},
+    update: {
+      organizationRole: "SUPERADMIN",
+      primaryTenantId: tenant.id,
+      active: true,
+      allowAI: true,
+    },
     create: {
       email: "eduardo@cactuscomunidadcreativa.com",
       name: "Eduardo González",
+      organizationRole: "SUPERADMIN",
       active: true,
       allowAI: true,
       primaryTenantId: tenant.id,
@@ -188,14 +198,14 @@ export async function ensureSystemHierarchy() {
     update: {
       role: "SUPERADMIN",
       planId: enterprisePlan?.id,
-      tokenQuota: 200000,
+      tokenQuota: 999999,
     },
     create: {
       userId: user.id,
       tenantId: tenant.id,
       role: "SUPERADMIN",
       planId: enterprisePlan?.id,
-      tokenQuota: 200000,
+      tokenQuota: 999999,
     },
   });
   console.log("🔗 Membresía Tenant garantizada (Enterprise).");
@@ -207,7 +217,7 @@ export async function ensureSystemHierarchy() {
     where: {
       organizationId_userId: { organizationId: org.id, userId: user.id },
     },
-    update: {},
+    update: { role: "OWNER" },
     create: {
       organizationId: org.id,
       userId: user.id,
@@ -223,17 +233,43 @@ export async function ensureSystemHierarchy() {
     where: {
       hubId_userId: { hubId: hub.id, userId: user.id },
     },
-    update: {},
+    update: { access: "admin" },
     create: {
       hubId: hub.id,
       userId: user.id,
-      access: "ADMIN",
+      access: "admin",
     },
   });
   console.log("🔗 Membresía Hub garantizada.");
 
   // =========================================================
-  // 1️⃣4️⃣ ROLES DINÁMICOS (RoleDynamic)
+  // 1️⃣4️⃣ SUPERADMIN PERMISSION (RowiVerse scope)
+  // =========================================================
+  const existingPerm = await prisma.userPermission.findFirst({
+    where: {
+      userId: user.id,
+      role: "superadmin",
+      scopeType: "rowiverse",
+    },
+  });
+
+  if (!existingPerm) {
+    await prisma.userPermission.create({
+      data: {
+        userId: user.id,
+        role: "superadmin",
+        scopeType: "rowiverse",
+        scopeId: rowiverse.id,
+        scope: rowiverse.id,
+      },
+    });
+    console.log("🔐 Permiso SuperAdmin RowiVerse creado.");
+  } else {
+    console.log("🔐 Permiso SuperAdmin RowiVerse ya existe.");
+  }
+
+  // =========================================================
+  // 1️⃣5️⃣ ROLES DINÁMICOS (RoleDynamic)
   // =========================================================
   const roleDefs = [
     { name: "superadmin", level: "SYSTEM" },

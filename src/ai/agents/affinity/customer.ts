@@ -18,7 +18,7 @@ export const AffinityCustomerAgent = {
 
   async run({
     locale = "es",
-    tenantId = "rowi-master",
+    tenantId = "six-seconds-global",
     payload = {},
   }: {
     locale?: "es" | "en" | "pt" | "it";

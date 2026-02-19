@@ -12,7 +12,7 @@ export const AffinityTeamworkAgent = {
    * 🤝 Analiza el nivel de afinidad, colaboración y confianza en equipos
    * - Usa resumen global o métricas de grupo
    */
-  async run({ locale = "es", tenantId = "rowi-master", payload = {} }) {
+  async run({ locale = "es", tenantId = "six-seconds-global", payload = {} }) {
     try {
       const prompt = buildTeamworkPrompt({ locale, data: payload });
 

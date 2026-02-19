@@ -43,8 +43,8 @@ export function useI18n(initialLang?: string) {
   const loadFromAPI = useCallback(async (targetLang: string) => {
     try {
       const tenant = typeof document !== "undefined"
-        ? document.documentElement.getAttribute("data-tenant") || "rowi-master"
-        : "rowi-master";
+        ? document.documentElement.getAttribute("data-tenant") || "six-seconds-global"
+        : "six-seconds-global";
 
       const res = await fetch(
         `/api/hub/translations?format=list&lang=${targetLang}&tenantId=${tenant}`,

@@ -12,7 +12,7 @@ import { registerUsage } from "./registerUsage";
  * =========================================================
  */
 export async function RowiAI({
-  tenantId = "rowi-master",
+  tenantId = "six-seconds-global",
   intent = "super",
   locale = "es",
   ask = "",

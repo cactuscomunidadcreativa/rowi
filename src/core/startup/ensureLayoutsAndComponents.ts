@@ -6,7 +6,7 @@ import { prisma } from "../prisma";
  * 🎨 ensureLayoutsAndComponents.ts
  * --------------------------------------------
  * Escanea layouts y componentes del proyecto y los vincula
- * al System raíz ("cactus") dentro de la base de datos.
+ * al System raíz ("rowi") dentro de la base de datos.
  * - Detecta layouts y componentes (.tsx)
  * - Sincroniza en DB (Layout / Component)
  * - Evita duplicados y actualiza descripciones
@@ -15,11 +15,11 @@ export async function ensureLayoutsAndComponents() {
   console.log("🚀 Escaneando layouts y componentes del sistema...");
 
   // =====================================================
-  // 🧩 Buscar System raíz (Cactus)
+  // 🧩 Buscar System raíz (Rowi)
   // =====================================================
-  const system = await prisma.system.findUnique({ where: { slug: "cactus" } });
+  const system = await prisma.system.findUnique({ where: { slug: "rowi" } });
   if (!system) {
-    throw new Error("❌ No se encontró el System raíz 'cactus'. Ejecuta primero el seed maestro.");
+    throw new Error("❌ No se encontró el System raíz 'rowi'. Ejecuta primero el seed.");
   }
 
   // Directorios raíz a escanear

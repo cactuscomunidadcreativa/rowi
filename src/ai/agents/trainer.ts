@@ -15,7 +15,7 @@ export const TrainerAgent = {
   async run({
     ask = "",
     locale = "es",
-    tenantId = "rowi-master",
+    tenantId = "six-seconds-global",
     focus = "hábitos y emociones diarias",
     memory = [],
   }: {

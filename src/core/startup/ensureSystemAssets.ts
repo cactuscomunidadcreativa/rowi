@@ -5,20 +5,20 @@ import path from "path";
 /**
  * 🌍 ensureSystemAssets()
  * --------------------------------------------------------
- * Sincroniza el System raíz ("cactus") con sus activos globales:
+ * Sincroniza el System raíz ("rowi") con sus activos globales:
  * - Logos, colores y branding visual
  * - Archivos base (layouts, componentes y páginas por defecto)
  * - Archivos de configuración o temas globales (src/theme, src/config)
  */
 export async function ensureSystemAssets() {
-  console.log("🚀 Iniciando sincronización de activos del System Global (Cactus)...");
+  console.log("🚀 Iniciando sincronización de activos del System Global (Rowi)...");
 
   // =====================================================
   // 1️⃣ Buscar System raíz
   // =====================================================
-  const system = await prisma.system.findUnique({ where: { slug: "cactus" } });
+  const system = await prisma.system.findUnique({ where: { slug: "rowi" } });
   if (!system) {
-    throw new Error("❌ No se encontró el System raíz 'cactus'. Ejecuta primero el seed maestro.");
+    throw new Error("❌ No se encontró el System raíz 'rowi'. Ejecuta primero el seed maestro.");
   }
 
   // =====================================================
@@ -58,7 +58,7 @@ export async function ensureSystemAssets() {
     console.log("🎨 Tema global encontrado en src/theme/theme.json");
   } else {
     themeJson = {
-      name: "Cactus Default Theme",
+      name: "Rowi Default Theme",
       colors: {
         primary: "#0F172A",
         secondary: "#F97316",
@@ -105,7 +105,7 @@ export async function ensureSystemAssets() {
       logo: primaryLogo,
       primaryColor: themeJson.colors?.primary || "#0F172A",
       secondaryColor: themeJson.colors?.secondary || "#F97316",
-      description: themeJson.name || "Cactus Global System Theme",
+      description: themeJson.name || "Rowi Global System Theme",
     },
   });
 
@@ -124,7 +124,7 @@ export async function ensureSystemAssets() {
     });
   }
 
-  console.log("✅ System 'cactus' sincronizado con branding y configuraciones globales.");
+  console.log("✅ System 'rowi' sincronizado con branding y configuraciones globales.");
 
   // =====================================================
   // 7️⃣ (Opcional) Sincronizar páginas públicas

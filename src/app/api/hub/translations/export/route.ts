@@ -75,7 +75,7 @@ export async function GET() {
     }
 
     const dbTranslations = await prisma.translation.findMany({
-      where: { tenantId: "rowi-master" },
+      where: { tenantId: "six-seconds-global" },
       orderBy: { updatedAt: "desc" },
     });
 

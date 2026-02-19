@@ -174,7 +174,7 @@ export async function GET(req: NextRequest) {
         const aiRes = await runAffinityRouter({
           subIntent: "community",
           locale: "es",
-          tenantId: "rowi-master",
+          tenantId: "six-seconds-global",
           plan: planName,
           payload: {
             summary: {

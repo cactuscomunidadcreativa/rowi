@@ -5,11 +5,11 @@ export async function ensureRowiverseCommunity() {
 
   // Crear tenant principal
   const rowi = await prisma.tenant.upsert({
-    where: { slug: "rowi-master" },
+    where: { slug: "six-seconds-global" },
     update: {},
     create: {
       name: "Rowiverse",
-      slug: "rowi-master",
+      slug: "six-seconds-global",
     }
   });
 

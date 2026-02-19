@@ -18,7 +18,7 @@ export async function GET() {
     // ✅ Etiquetar alcance
     const formatted = rows.map((a) => ({
       ...a,
-      scope: a.tenantId === "rowi-master" ? "Global" : "Tenant",
+      scope: a.tenantId === "six-seconds-global" ? "Global" : "Tenant",
     }));
 
     return NextResponse.json(formatted);

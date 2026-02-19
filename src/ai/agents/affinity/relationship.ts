@@ -12,7 +12,7 @@ export const AffinityRelationshipAgent = {
    * ❤️ Analiza afinidad emocional entre dos personas
    * - Basado en el summary o afinidad directa
    */
-  async run({ locale = "es", tenantId = "rowi-master", payload = {} }) {
+  async run({ locale = "es", tenantId = "six-seconds-global", payload = {} }) {
     try {
       const prompt = buildRelationshipPrompt({ locale, payload });
       const completion = await ai.chat.completions.create({

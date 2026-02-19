@@ -91,7 +91,7 @@ export default function RowiCoach() {
 
   const isLoggedIn = !!session?.user?.email;
   const userName = session?.user?.name || "Usuario";
-  const tenantId = session?.user?.primaryTenantId || "rowi-master";
+  const tenantId = session?.user?.primaryTenantId || "six-seconds-global";
   const ENABLED = process.env.NEXT_PUBLIC_ROWICOACH_ENABLED === "true";
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 

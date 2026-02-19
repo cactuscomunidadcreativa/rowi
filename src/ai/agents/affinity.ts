@@ -18,7 +18,7 @@ async run({
   ask = "",
   profiles = {},
   memoryContext = [],
-  tenantId = "rowi-master",
+  tenantId = "six-seconds-global",
 }: {
   locale?: "es" | "en" | "pt" | "it";
   a?: string;

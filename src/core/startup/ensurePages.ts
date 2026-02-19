@@ -8,7 +8,7 @@ import { prisma } from "../prisma";
  * Escanea todas las rutas `page.tsx` en el proyecto y sincroniza
  * sus metadatos (slug, título, resumen) con la base de datos.
  * 
- * 🔹 Vincula todas las páginas al `System` raíz ("cactus")
+ * 🔹 Vincula todas las páginas al `System` raíz ("rowi")
  * 🔹 Distingue entre visibilidad: admin / hub / tenant / public
  * 🔹 Actualiza título o resumen si detecta cambios
  * 🔹 No duplica páginas ya registradas
@@ -17,11 +17,11 @@ export async function ensurePages() {
   console.log("🚀 Escaneando todas las páginas del sistema...");
 
   // =====================================================
-  // 🔹 Buscar System raíz (Cactus)
+  // 🔹 Buscar System raíz (Rowi)
   // =====================================================
-  const system = await prisma.system.findUnique({ where: { slug: "cactus" } });
+  const system = await prisma.system.findUnique({ where: { slug: "rowi" } });
   if (!system) {
-    throw new Error("❌ No se encontró el System raíz 'cactus'. Ejecuta primero el seed maestro.");
+    throw new Error("❌ No se encontró el System raíz 'rowi'. Ejecuta primero el seed.");
   }
 
   // =====================================================

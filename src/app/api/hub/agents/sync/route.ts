@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 /**
  * =========================================================
- * 🔁 Sincroniza agentes con el Tenant Global (rowi-master)
+ * 🔁 Sincroniza agentes con el Tenant Global (six-seconds-global)
  * =========================================================
  * - Verifica el tenant global
  * - Ejecuta ensureBaseAgents() para crear/sincronizar agentes desde código
@@ -19,12 +19,12 @@ export async function POST() {
     console.log("🚀 Ejecutando /api/hub/agents/sync ...");
 
     const tenant = await prisma.tenant.findUnique({
-      where: { slug: "rowi-master" },
+      where: { slug: "six-seconds-global" },
     });
 
     if (!tenant) {
       return NextResponse.json(
-        { ok: false, error: "Tenant 'rowi-master' no existe." },
+        { ok: false, error: "Tenant 'six-seconds-global' no existe." },
         { status: 404 }
       );
     }

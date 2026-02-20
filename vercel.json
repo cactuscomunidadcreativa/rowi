@@ -1,4 +1,5 @@
 {
+  "regions": ["iad1"],
   "functions": {
     "src/app/api/admin/benchmarks/process-blob/route.ts": {
       "maxDuration": 300

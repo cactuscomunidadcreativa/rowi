@@ -11,6 +11,7 @@
    🌤️ MODO DÍA
    ========================================================= */
 :root {
+  --banner-height: 0px;               /* altura del BetaBanner (dinámica via JS) */
   --rowi-bg: #f7f9fb;                 /* fondo neutro cálido */
   --rowi-fg: #1a1c1e;                 /* texto principal */
   --rowi-card: #ffffff;               /* fondo sólido */

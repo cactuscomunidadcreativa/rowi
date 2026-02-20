@@ -41,7 +41,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  mode: "system",
+  mode: "light",
   resolvedMode: "light",
   tokens: defaultTokens,
   setMode: () => {},
@@ -65,7 +65,7 @@ export function ThemeProvider({
   children,
   tenantId,
   hubId,
-  defaultMode = "system",
+  defaultMode = "light",
 }: ThemeProviderProps) {
   const [mode, setModeState] = useState<ThemeMode>(defaultMode);
   const [resolvedMode, setResolvedMode] = useState<"light" | "dark">("light");

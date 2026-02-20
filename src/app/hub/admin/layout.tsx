@@ -75,20 +75,20 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
   }, [handleScroll]);
 
   return (
-    <div className="flex w-full pt-16 bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-      {/* Sidebar lateral fijo - posición fixed, debajo del NavBar global (top-16 = 64px) */}
-      <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-gray-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm z-40 overflow-y-auto">
+    <div className="flex w-full bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
+      {/* Sidebar lateral fijo - posición fixed, debajo del NavBar global + BetaBanner */}
+      <aside className="fixed left-0 w-64 border-r border-gray-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm z-40 overflow-y-auto" style={{ top: "calc(4rem + var(--banner-height, 0px))", height: "calc(100vh - 4rem - var(--banner-height, 0px))" }}>
         <Sidebar />
       </aside>
 
       {/* Contenido principal - con margin-left para compensar sidebar fijo */}
-      <section className="flex-1 flex flex-col min-h-[calc(100vh-4rem)] ml-64">
+      <section className="flex-1 flex flex-col ml-64" style={{ minHeight: "calc(100vh - 4rem - var(--banner-height, 0px))" }}>
         {/* Barra superior admin con búsqueda, acciones y notificaciones */}
         <header
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={`
-            sticky top-16 z-30
+            sticky z-30
             bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md
             border-b border-gray-200 dark:border-zinc-700
             transition-transform duration-300 ease-in-out

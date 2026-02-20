@@ -102,7 +102,7 @@ export default function AppearancePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
   const [accentColor, setAccentColor] = useState(COLORS.purple);
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [animations, setAnimations] = useState(true);

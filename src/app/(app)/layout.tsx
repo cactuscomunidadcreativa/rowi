@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <UserContextProvider>
       <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors">
         <NavBar />
-        <main className="flex-1 pt-16">{children}</main>
+        <main className="flex-1" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>{children}</main>
       </div>
     </UserContextProvider>
   );

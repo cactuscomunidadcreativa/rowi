@@ -70,8 +70,8 @@ export default async function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-zinc-950 dark:to-zinc-900 text-gray-900 dark:text-gray-100">
         <I18nProvider>
+          <BetaBanner />
           <ClientWrapper>
-            <BetaBanner />
             <main className="min-h-[90vh]">{children}</main>
           </ClientWrapper>
         </I18nProvider>

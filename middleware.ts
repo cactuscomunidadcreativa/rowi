@@ -310,17 +310,16 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
   const adminEmails = hubAdmins.split(",").map((e: string) => e.trim().toLowerCase()).filter(Boolean);
   const isInHubAdmins = email && adminEmails.includes(email);
 
-  // Verificar si es SuperAdmin por cualquier método
+  // Verificar si es SuperAdmin por cualquier método (case-insensitive)
+  const normalizedOrgRole = organizationRole.toString().toUpperCase().replace(/[^A-Z]/g, "");
   const isSuperAdmin =
     isSuperAdminFlag ||
-    organizationRole === "SUPER_ADMIN" ||
-    organizationRole === "SUPERADMIN" ||
+    normalizedOrgRole === "SUPERADMIN" ||
     isInHubAdmins ||
     permissions.some(
       (p: any) =>
-        p.role === "superadmin" &&
-        p.scopeType === "rowiverse" &&
-        p.scopeId === "rowiverse_root"
+        p.role?.toLowerCase() === "superadmin" &&
+        p.scopeType === "rowiverse"
     );
 
   if (isSuperAdmin) {

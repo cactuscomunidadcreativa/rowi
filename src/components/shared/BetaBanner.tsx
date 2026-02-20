@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Bug, Sparkles, ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 
@@ -10,24 +10,41 @@ import { useI18n } from "@/lib/i18n/useI18n";
  * Muestra un banner elegante indicando que la app está en fase Beta.
  * Incluye link para reportar bugs y se puede cerrar (persiste en localStorage).
  * Totalmente traducible con i18n.
+ *
+ * Setea --banner-height en :root para que el NavBar se posicione debajo.
  */
 export default function BetaBanner() {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    // Check if user has dismissed the banner
     const dismissed = localStorage.getItem("rowi-beta-banner-dismissed");
     if (!dismissed) {
       setVisible(true);
     }
   }, []);
 
+  // Comunicar altura del banner al NavBar vía CSS variable
+  useEffect(() => {
+    if (visible && bannerRef.current) {
+      const h = bannerRef.current.offsetHeight;
+      document.documentElement.style.setProperty("--banner-height", `${h}px`);
+    } else {
+      document.documentElement.style.setProperty("--banner-height", "0px");
+    }
+
+    return () => {
+      document.documentElement.style.setProperty("--banner-height", "0px");
+    };
+  }, [visible, mounted]);
+
   const handleDismiss = () => {
     setVisible(false);
     localStorage.setItem("rowi-beta-banner-dismissed", "true");
+    document.documentElement.style.setProperty("--banner-height", "0px");
   };
 
   // Build mailto link with translated content
@@ -43,7 +60,10 @@ export default function BetaBanner() {
   if (!mounted || !visible) return null;
 
   return (
-    <div className="relative z-50 isolate flex items-center gap-x-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-6 py-2.5 sm:px-3.5">
+    <div
+      ref={bannerRef}
+      className="sticky top-0 z-[60] isolate flex items-center gap-x-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-6 py-2.5 sm:px-3.5"
+    >
       {/* Animated background elements */}
       <div className="absolute left-[max(-7rem,calc(50%-52rem))] top-1/2 -z-10 -translate-y-1/2 transform-gpu blur-2xl" aria-hidden="true">
         <div

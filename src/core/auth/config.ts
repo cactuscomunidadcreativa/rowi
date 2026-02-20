@@ -79,13 +79,12 @@ export const authOptions: NextAuthOptions = {
 
         (session.user as any).allowAI = token.allowAI ?? true;
 
-        // 🔥 SUPERADMIN (RowiVerse Root)
+        // 🔥 SUPERADMIN (RowiVerse Root) — case-insensitive, acepta cualquier scopeId de rowiverse
         const permissions = (token.permissions || []) as any[];
         (session.user as any).isSuperAdmin = permissions.some(
           (p: any) =>
-            p.role === "superadmin" &&
-            p.scopeType === "rowiverse" &&
-            p.scopeId === "rowiverse_root"
+            p.role?.toLowerCase() === "superadmin" &&
+            p.scopeType === "rowiverse"
         );
       }
 

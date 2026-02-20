@@ -62,7 +62,7 @@ export default function HomePage() {
     return (
       <>
         <PublicNavbar />
-        <main className="pt-16">
+        <main style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
           <CMSPageRenderer sections={sections} pageType="home" />
         </main>
         <PublicFooter />
@@ -80,7 +80,7 @@ function FallbackHomePage() {
   return (
     <>
       <PublicNavbar />
-      <main className="pt-16 min-h-screen bg-[var(--rowi-background)]">
+      <main className="min-h-screen bg-[var(--rowi-background)]" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
         {/* Hero */}
         <HeroSection
           content={{

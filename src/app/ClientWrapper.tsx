@@ -13,7 +13,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       <NavBar />
 
       {/* 🌙 Botón de cambio de tema (visible solo en mobile) */}
-      <div className="fixed top-3 right-3 z-40 md:hidden">
+      <div className="fixed right-3 z-40 md:hidden" style={{ top: "calc(0.75rem + var(--banner-height, 0px))" }}>
         <ThemeToggle />
       </div>
 

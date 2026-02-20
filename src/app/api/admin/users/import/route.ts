@@ -162,4 +162,4 @@ export async function POST(req: NextRequest) {
    ⚙️ Configuración dinámica
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

@@ -12,7 +12,7 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";
 
 /* =========================================================
    🧠 GET — Listar usuarios (paginación + búsqueda)

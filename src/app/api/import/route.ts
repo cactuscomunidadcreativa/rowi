@@ -39,7 +39,7 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";
 
 type Row = Record<string, any>;
 

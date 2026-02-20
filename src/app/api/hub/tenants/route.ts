@@ -141,4 +141,4 @@ export async function DELETE(req: NextRequest) {
 }
 
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

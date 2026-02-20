@@ -113,4 +113,4 @@ Usa un tono empático, reflexivo y motivador. Termina con una pregunta abierta b
    ✅ Configuración runtime
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

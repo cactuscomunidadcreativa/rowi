@@ -207,4 +207,4 @@ export async function GET(req: NextRequest) {
    ⚙️ Configuración runtime
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

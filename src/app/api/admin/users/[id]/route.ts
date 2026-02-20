@@ -159,4 +159,4 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
    ⚙️ Configuración runtime
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

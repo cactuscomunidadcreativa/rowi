@@ -207,4 +207,4 @@ export async function DELETE(req: NextRequest) {
    ⚙️ Configuración del endpoint
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

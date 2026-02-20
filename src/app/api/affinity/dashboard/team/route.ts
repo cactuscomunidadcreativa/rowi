@@ -203,4 +203,4 @@ export async function GET(req: NextRequest) {
    ✅ Export final del runtime
 ========================================================= */
 export const dynamic = "force-dynamic";
-export const preferredRegion = "auto";
+export const preferredRegion = "iad1";

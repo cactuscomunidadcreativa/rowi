@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Activity,
   RefreshCcw,
+  Shield,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -27,9 +28,7 @@ import {
 import { useRowiSEIToast } from "@/components/shared/RowiSEIToast";
 
 /* =========================================================
-   🌟 Rowi Admin — Dashboard Principal
-   ---------------------------------------------------------
-   Clean, compact, and 100% translatable
+   Rowi Admin — Dashboard Principal (scope-aware)
 ========================================================= */
 
 interface DashboardStats {
@@ -40,6 +39,12 @@ interface DashboardStats {
   communities: number;
   agents: number;
   tokenUsage: number;
+}
+
+interface ScopeInfo {
+  type: string;
+  id: string | null;
+  label: string;
 }
 
 export default function AdminDashboard() {
@@ -54,30 +59,19 @@ export default function AdminDashboard() {
     tokenUsage: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [scopeInfo, setScopeInfo] = useState<ScopeInfo | null>(null);
 
   async function loadStats() {
     setLoading(true);
     try {
-      const [users, tenants, hubs, superhubs, communities, agents, usage] = await Promise.all([
-        fetch("/api/admin/users").then((r) => r.json()),
-        fetch("/api/admin/tenants").then((r) => r.json()),
-        fetch("/api/hub/hubs").then((r) => r.json()),
-        fetch("/api/hub/superhubs").then((r) => r.json()),
-        fetch("/api/hub/communities").then((r) => r.json()),
-        fetch("/api/admin/agents").then((r) => r.json()),
-        fetch("/api/hub/usage/list").then((r) => r.json()),
-      ]);
+      const res = await fetch("/api/admin/dashboard/stats");
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Error");
 
-      setStats({
-        users: Array.isArray(users) ? users.length : users?.users?.length || 0,
-        tenants: Array.isArray(tenants) ? tenants.length : tenants?.tenants?.length || 0,
-        hubs: Array.isArray(hubs) ? hubs.length : hubs?.hubs?.length || 0,
-        superhubs: Array.isArray(superhubs) ? superhubs.length : superhubs?.superHubs?.length || 0,
-        communities: Array.isArray(communities) ? communities.length : 0,
-        agents: Array.isArray(agents) ? agents.length : agents?.agents?.length || 0,
-        tokenUsage: Array.isArray(usage) ? usage.reduce((sum: number, u: any) => sum + (u.tokensInput || 0) + (u.tokensOutput || 0), 0) : 0,
-      });
+      setStats(data.stats);
+      setIsSuperAdmin(data.isSuperAdmin);
+      setScopeInfo(data.scope);
     } catch {
       toast.error(t("common.error"));
     } finally {
@@ -89,14 +83,17 @@ export default function AdminDashboard() {
     if (ready) loadStats();
   }, [ready]);
 
-  const quickLinks = [
-    { href: "/hub/admin/users", icon: Users, labelKey: "admin.nav.users", count: stats.users, color: "from-blue-500 to-blue-600" },
-    { href: "/hub/admin/tenants", icon: Building2, labelKey: "admin.nav.tenants", count: stats.tenants, color: "from-green-500 to-green-600" },
-    { href: "/hub/admin/hubs", icon: Network, labelKey: "admin.nav.hubs", count: stats.hubs, color: "from-purple-500 to-purple-600" },
-    { href: "/hub/admin/superhubs", icon: Layers3, labelKey: "admin.nav.superhubs", count: stats.superhubs, color: "from-orange-500 to-orange-600" },
-    { href: "/hub/admin/communities", icon: HeartHandshake, labelKey: "admin.nav.communities", count: stats.communities, color: "from-pink-500 to-pink-600" },
-    { href: "/hub/admin/agents", icon: Bot, labelKey: "admin.nav.agents", count: stats.agents, color: "from-cyan-500 to-cyan-600" },
+  // Build quick links based on scope
+  const allLinks = [
+    { href: "/hub/admin/users", icon: Users, labelKey: "admin.nav.users", count: stats.users, color: "from-blue-500 to-blue-600", superOnly: false },
+    { href: "/hub/admin/tenants", icon: Building2, labelKey: "admin.nav.tenants", count: stats.tenants, color: "from-green-500 to-green-600", superOnly: true },
+    { href: "/hub/admin/hubs", icon: Network, labelKey: "admin.nav.hubs", count: stats.hubs, color: "from-purple-500 to-purple-600", superOnly: false },
+    { href: "/hub/admin/superhubs", icon: Layers3, labelKey: "admin.nav.superhubs", count: stats.superhubs, color: "from-orange-500 to-orange-600", superOnly: true },
+    { href: "/hub/admin/communities", icon: HeartHandshake, labelKey: "admin.nav.communities", count: stats.communities, color: "from-pink-500 to-pink-600", superOnly: false },
+    { href: "/hub/admin/agents", icon: Bot, labelKey: "admin.nav.agents", count: stats.agents, color: "from-cyan-500 to-cyan-600", superOnly: false },
   ];
+
+  const quickLinks = isSuperAdmin ? allLinks : allLinks.filter((l) => !l.superOnly);
 
   function handleTestSEI() {
     if (typeof RowiSEIToast !== "undefined") {
@@ -117,9 +114,17 @@ export default function AdminDashboard() {
       icon={LayoutDashboard}
       loading={loading}
       actions={
-        <AdminButton variant="secondary" icon={RefreshCcw} onClick={loadStats} size="sm">
-          {t("admin.common.refresh")}
-        </AdminButton>
+        <div className="flex items-center gap-2">
+          {scopeInfo && scopeInfo.type !== "rowiverse" && (
+            <AdminBadge variant="info">
+              <Shield className="w-3 h-3 mr-1 inline" />
+              {scopeInfo.label}
+            </AdminBadge>
+          )}
+          <AdminButton variant="secondary" icon={RefreshCcw} onClick={loadStats} size="sm">
+            {t("admin.common.refresh")}
+          </AdminButton>
+        </div>
       }
     >
       <div className="space-y-6">
@@ -150,7 +155,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Token Usage & Activity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 ${isSuperAdmin ? "md:grid-cols-2" : ""} gap-4`}>
           {/* Token Usage Summary */}
           <AdminCard>
             <div className="flex items-center gap-3 mb-4">
@@ -162,7 +167,7 @@ export default function AdminDashboard() {
                   {t("admin.dashboard.tokenUsage")}
                 </h3>
                 <p className="text-xs text-[var(--rowi-muted)]">
-                  {t("admin.dashboard.totalTokens")}
+                  {isSuperAdmin ? t("admin.dashboard.totalTokens") : t("admin.dashboard.totalTokens")}
                 </p>
               </div>
             </div>
@@ -183,47 +188,49 @@ export default function AdminDashboard() {
             </Link>
           </AdminCard>
 
-          {/* System Health */}
-          <AdminCard>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
-                <Activity className="w-5 h-5 text-white" />
+          {/* System Health — SuperAdmin only */}
+          {isSuperAdmin && (
+            <AdminCard>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                    {t("admin.dashboard.systemStatus")}
+                  </h3>
+                  <p className="text-xs text-[var(--rowi-muted)]">
+                    {t("admin.dashboard.allSystems")}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-                  {t("admin.dashboard.systemStatus")}
-                </h3>
-                <p className="text-xs text-[var(--rowi-muted)]">
-                  {t("admin.dashboard.allSystems")}
-                </p>
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--rowi-muted)]">API</span>
-                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--rowi-muted)]">API</span>
+                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--rowi-muted)]">Database</span>
+                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--rowi-muted)]">AI Services</span>
+                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[var(--rowi-muted)]">Auth</span>
+                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--rowi-muted)]">Database</span>
-                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--rowi-muted)]">AI Services</span>
-                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--rowi-muted)]">Auth</span>
-                <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-              </div>
-            </div>
 
-            <Link href="/hub/admin/system-health" className="block mt-4">
-              <AdminButton variant="secondary" size="sm" className="w-full">
-                {t("admin.dashboard.viewDetails")}
-              </AdminButton>
-            </Link>
-          </AdminCard>
+              <Link href="/hub/admin/system-health" className="block mt-4">
+                <AdminButton variant="secondary" size="sm" className="w-full">
+                  {t("admin.dashboard.viewDetails")}
+                </AdminButton>
+              </Link>
+            </AdminCard>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -242,17 +249,19 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className={`grid grid-cols-2 ${isSuperAdmin ? "md:grid-cols-4" : "md:grid-cols-3"} gap-3`}>
             <Link href="/hub/admin/users" className="block">
               <AdminButton variant="secondary" size="sm" icon={Users} className="w-full">
                 {t("admin.dashboard.addUser")}
               </AdminButton>
             </Link>
-            <Link href="/hub/admin/tenants" className="block">
-              <AdminButton variant="secondary" size="sm" icon={Building2} className="w-full">
-                {t("admin.dashboard.newTenant")}
-              </AdminButton>
-            </Link>
+            {isSuperAdmin && (
+              <Link href="/hub/admin/tenants" className="block">
+                <AdminButton variant="secondary" size="sm" icon={Building2} className="w-full">
+                  {t("admin.dashboard.newTenant")}
+                </AdminButton>
+              </Link>
+            )}
             <Link href="/hub/admin/communities" className="block">
               <AdminButton variant="secondary" size="sm" icon={HeartHandshake} className="w-full">
                 {t("admin.dashboard.newCommunity")}

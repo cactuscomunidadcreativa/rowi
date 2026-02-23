@@ -10,6 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
+export const preferredRegion = "iad1";
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireSuperAdmin();

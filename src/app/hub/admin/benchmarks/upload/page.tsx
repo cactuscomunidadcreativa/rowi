@@ -68,31 +68,8 @@ const BENCHMARK_SCOPES = [
   { value: "HUB", labelKey: "admin.benchmarks.scopes.hub" },
 ];
 
-const PHASE_MESSAGES = {
-  es: {
-    uploading: "Subiendo archivo a la nube...",
-    processing: "Procesando datos...",
-    downloading: "Descargando archivo...",
-    parsing: "Analizando archivo...",
-    importing: "Importando filas...",
-    statistics: "Calculando estadísticas...",
-    completed: "¡Completado!",
-    error: "Error en el proceso",
-  },
-  en: {
-    uploading: "Uploading file to cloud...",
-    processing: "Processing data...",
-    downloading: "Downloading file...",
-    parsing: "Analyzing file...",
-    importing: "Importing rows...",
-    statistics: "Calculating statistics...",
-    completed: "Completed!",
-    error: "Process error",
-  },
-};
-
 export default function UploadBenchmarkPage() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const router = useRouter();
   const { data: session } = useSession();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -109,8 +86,6 @@ export default function UploadBenchmarkPage() {
     progress: 0,
     message: "",
   });
-
-  const messages = PHASE_MESSAGES[lang as keyof typeof PHASE_MESSAGES] || PHASE_MESSAGES.es;
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -140,12 +115,12 @@ export default function UploadBenchmarkPage() {
     const fileExtension = selectedFile.name.toLowerCase().slice(selectedFile.name.lastIndexOf("."));
 
     if (!validExtensions.includes(fileExtension)) {
-      toast.error(t("admin.benchmarks.errors.invalidFormat") || "Formato no válido");
+      toast.error(t("admin.benchmarks.errors.invalidFormat"));
       return;
     }
 
     if (selectedFile.size > 500 * 1024 * 1024) {
-      toast.error(t("admin.benchmarks.errors.fileTooLarge") || "Archivo muy grande (máx 500MB)");
+      toast.error(t("admin.benchmarks.errors.fileTooLarge"));
       return;
     }
 
@@ -161,7 +136,7 @@ export default function UploadBenchmarkPage() {
   // =========================================================
   const handleUpload = async () => {
     if (!file || !name.trim()) {
-      toast.error(t("admin.benchmarks.errors.noData") || "Selecciona archivo y nombre");
+      toast.error(t("admin.benchmarks.errors.noData"));
       return;
     }
 
@@ -171,7 +146,7 @@ export default function UploadBenchmarkPage() {
       setUploadState({
         phase: "uploading",
         progress: 0,
-        message: messages.uploading,
+        message: t("admin.benchmarks.upload.uploading"),
       });
 
       // 1. Subir archivo directamente a Vercel Blob (client-side)
@@ -187,7 +162,7 @@ export default function UploadBenchmarkPage() {
           setUploadState({
             phase: "uploading",
             progress: percent,
-            message: `${messages.uploading} ${Math.round(progressEvent.loaded / 1024 / 1024)}MB / ${Math.round(progressEvent.total / 1024 / 1024)}MB`,
+            message: `${t("admin.benchmarks.upload.uploading")} ${Math.round(progressEvent.loaded / 1024 / 1024)}MB / ${Math.round(progressEvent.total / 1024 / 1024)}MB`,
           });
         },
       });
@@ -195,7 +170,7 @@ export default function UploadBenchmarkPage() {
       setUploadState({
         phase: "uploading",
         progress: 45,
-        message: "Iniciando procesamiento...",
+        message: t("admin.benchmarks.upload.startingProcessing"),
       });
 
       // 2. Notificar al backend para procesar el archivo
@@ -218,13 +193,13 @@ export default function UploadBenchmarkPage() {
       const data = await response.json();
 
       if (!data.ok) {
-        throw new Error(data.error || "Error iniciando procesamiento");
+        throw new Error(data.error || t("admin.benchmarks.upload.failed"));
       }
 
       setUploadState({
         phase: "processing",
         progress: 50,
-        message: messages.processing,
+        message: t("admin.benchmarks.upload.processing"),
       });
 
       // 3. Polling del estado del job
@@ -237,15 +212,15 @@ export default function UploadBenchmarkPage() {
           progress: 0,
           message: "",
         });
-        toast.info("Upload cancelado");
+        toast.info(t("admin.benchmarks.upload.cancelled"));
       } else {
         setUploadState({
           phase: "error",
           progress: 0,
-          message: messages.error,
-          error: error.message || "Error desconocido",
+          message: t("admin.benchmarks.upload.errorMessage"),
+          error: error.message || t("admin.benchmarks.upload.failed"),
         });
-        toast.error(error.message || "Error en upload");
+        toast.error(error.message || t("admin.benchmarks.upload.failed"));
       }
     }
   };
@@ -266,21 +241,21 @@ export default function UploadBenchmarkPage() {
           const processingProgress = 50 + Math.round(job.progress * 0.5);
 
           // Determinar mensaje según fase
-          let phaseMessage = messages.processing;
-          if (job.currentPhase === "downloading") phaseMessage = messages.downloading;
-          else if (job.currentPhase === "parsing") phaseMessage = messages.parsing;
-          else if (job.currentPhase === "importing") phaseMessage = messages.importing;
-          else if (job.currentPhase === "statistics") phaseMessage = messages.statistics;
+          let phaseMessage = t("admin.benchmarks.upload.processing");
+          if (job.currentPhase === "downloading") phaseMessage = t("admin.benchmarks.upload.downloading");
+          else if (job.currentPhase === "parsing") phaseMessage = t("admin.benchmarks.upload.parsing");
+          else if (job.currentPhase === "importing") phaseMessage = t("admin.benchmarks.upload.importing");
+          else if (job.currentPhase === "statistics") phaseMessage = t("admin.benchmarks.upload.statistics");
 
           if (job.status === "completed") {
             setUploadState({
               phase: "completed",
               progress: 100,
-              message: messages.completed,
+              message: t("admin.benchmarks.upload.completedTitle"),
               processedRows: job.processedRows,
               totalRows: job.totalRows,
             });
-            toast.success(t("admin.benchmarks.upload.completed") || "¡Benchmark procesado!");
+            toast.success(t("admin.benchmarks.upload.completed"));
             setTimeout(() => {
               router.push(`/hub/admin/benchmarks/${benchmarkId}`);
             }, 2000);
@@ -288,10 +263,10 @@ export default function UploadBenchmarkPage() {
             setUploadState({
               phase: "error",
               progress: processingProgress,
-              message: messages.error,
-              error: job.errorMessage || "Error en procesamiento",
+              message: t("admin.benchmarks.upload.errorMessage"),
+              error: job.errorMessage || t("admin.benchmarks.upload.failed"),
             });
-            toast.error(job.errorMessage || "Error procesando benchmark");
+            toast.error(job.errorMessage || t("admin.benchmarks.upload.failed"));
           } else {
             setUploadState({
               phase: "processing",
@@ -320,7 +295,7 @@ export default function UploadBenchmarkPage() {
       progress: 0,
       message: "",
     });
-    toast.info("Upload cancelado");
+    toast.info(t("admin.benchmarks.upload.cancelled"));
   };
 
   const isUploading = uploadState.phase === "uploading" || uploadState.phase === "processing";
@@ -379,10 +354,10 @@ export default function UploadBenchmarkPage() {
               <>
                 <Cloud className="w-12 h-12 mx-auto text-[var(--rowi-muted)] mb-4" />
                 <p className="text-[var(--rowi-foreground)] font-medium mb-1">
-                  {t("admin.benchmarks.upload.dropzone") || "Arrastra tu archivo o haz clic"}
+                  {t("admin.benchmarks.upload.dropzone")}
                 </p>
                 <p className="text-sm text-[var(--rowi-muted)]">
-                  CSV, Excel (.xlsx, .xls) • Hasta 500MB
+                  {t("admin.benchmarks.upload.fileFormats")}
                 </p>
               </>
             )}
@@ -394,7 +369,7 @@ export default function UploadBenchmarkPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[var(--rowi-foreground)] mb-1">
-                {t("admin.benchmarks.upload.benchmarkName") || "Nombre"} *
+                {t("admin.benchmarks.upload.benchmarkName")} *
               </label>
               <input
                 type="text"
@@ -409,7 +384,7 @@ export default function UploadBenchmarkPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--rowi-foreground)] mb-1">
-                  {t("admin.benchmarks.upload.benchmarkType") || "Tipo"}
+                  {t("admin.benchmarks.upload.benchmarkType")}
                 </label>
                 <select
                   value={type}
@@ -419,7 +394,7 @@ export default function UploadBenchmarkPage() {
                 >
                   {BENCHMARK_TYPES.map((t_) => (
                     <option key={t_.value} value={t_.value}>
-                      {t(t_.labelKey) || t_.value}
+                      {t(t_.labelKey)}
                     </option>
                   ))}
                 </select>
@@ -427,7 +402,7 @@ export default function UploadBenchmarkPage() {
 
               <div>
                 <label className="block text-sm font-medium text-[var(--rowi-foreground)] mb-1">
-                  {t("admin.benchmarks.upload.benchmarkScope") || "Alcance"}
+                  {t("admin.benchmarks.upload.benchmarkScope")}
                 </label>
                 <select
                   value={scope}
@@ -437,7 +412,7 @@ export default function UploadBenchmarkPage() {
                 >
                   {BENCHMARK_SCOPES.map((s) => (
                     <option key={s.value} value={s.value}>
-                      {t(s.labelKey) || s.value}
+                      {t(s.labelKey)}
                     </option>
                   ))}
                 </select>
@@ -454,7 +429,7 @@ export default function UploadBenchmarkPage() {
                 disabled={isUploading}
               />
               <label htmlFor="isLearning" className="text-sm text-[var(--rowi-foreground)]">
-                {t("admin.benchmarks.upload.enableLearning") || "Usar para entrenamiento de IA"}
+                {t("admin.benchmarks.upload.enableLearning")}
               </label>
             </div>
           </div>
@@ -477,10 +452,10 @@ export default function UploadBenchmarkPage() {
                 )}
                 <div className="flex-1">
                   <p className="font-medium text-[var(--rowi-foreground)]">
-                    {uploadState.phase === "uploading" && "Subiendo archivo"}
-                    {uploadState.phase === "processing" && "Procesando datos"}
-                    {uploadState.phase === "completed" && "¡Completado!"}
-                    {uploadState.phase === "error" && "Error"}
+                    {uploadState.phase === "uploading" && t("admin.benchmarks.upload.uploading")}
+                    {uploadState.phase === "processing" && t("admin.benchmarks.upload.processingData")}
+                    {uploadState.phase === "completed" && t("admin.benchmarks.upload.completedTitle")}
+                    {uploadState.phase === "error" && t("admin.benchmarks.upload.errorTitle")}
                   </p>
                   <p className="text-sm text-[var(--rowi-muted)]">{uploadState.message}</p>
                 </div>
@@ -507,12 +482,12 @@ export default function UploadBenchmarkPage() {
               {uploadState.processedRows !== undefined && uploadState.processedRows > 0 && (
                 <div className="flex justify-center gap-6 text-sm">
                   <div className="text-center">
-                    <p className="text-[var(--rowi-muted)]">Filas procesadas</p>
+                    <p className="text-[var(--rowi-muted)]">{t("admin.benchmarks.upload.rowsProcessedLabel")}</p>
                     <p className="font-bold text-lg">{uploadState.processedRows.toLocaleString()}</p>
                   </div>
                   {uploadState.totalRows && uploadState.totalRows > 0 && (
                     <div className="text-center">
-                      <p className="text-[var(--rowi-muted)]">Total</p>
+                      <p className="text-[var(--rowi-muted)]">{t("admin.benchmarks.upload.totalLabel")}</p>
                       <p className="font-bold text-lg">{uploadState.totalRows.toLocaleString()}</p>
                     </div>
                   )}
@@ -533,7 +508,7 @@ export default function UploadBenchmarkPage() {
                 <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
                   <Zap className="w-5 h-5 text-green-600" />
                   <p className="text-green-700 dark:text-green-300 text-sm">
-                    Benchmark listo. Redirigiendo al detalle...
+                    {t("admin.benchmarks.upload.redirecting")}
                   </p>
                 </div>
               )}
@@ -545,7 +520,7 @@ export default function UploadBenchmarkPage() {
         <div className="flex justify-end gap-3">
           {isUploading ? (
             <AdminButton variant="secondary" onClick={handleCancel}>
-              Cancelar
+              {t("common.cancel")}
             </AdminButton>
           ) : (
             <>
@@ -553,7 +528,7 @@ export default function UploadBenchmarkPage() {
                 variant="secondary"
                 onClick={() => router.push("/hub/admin/benchmarks")}
               >
-                {t("common.cancel") || "Cancelar"}
+                {t("common.cancel")}
               </AdminButton>
               <AdminButton
                 variant="primary"
@@ -561,7 +536,7 @@ export default function UploadBenchmarkPage() {
                 onClick={handleUpload}
                 disabled={!file || !name.trim() || uploadState.phase === "completed"}
               >
-                {t("admin.benchmarks.upload.startUpload") || "Subir a la Nube"}
+                {t("admin.benchmarks.upload.startUpload")}
               </AdminButton>
             </>
           )}

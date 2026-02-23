@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/core/auth/config";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 type Post = {
   id: string;

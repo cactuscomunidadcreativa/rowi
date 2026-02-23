@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/core/auth/config";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 type Profile = { email: string; username: string; bio?: string };
 

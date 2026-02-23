@@ -8,10 +8,10 @@ export const metadata = {
   description: "App de Inteligencia Emocional",
   icons: {
     icon: [
-      { url: "/rowi-logo.png?v=3", type: "image/png", sizes: "any" },
+      { url: "/owl.png?v=4", type: "image/png", sizes: "any" },
     ],
-    shortcut: "/rowi-logo.png?v=3",
-    apple: "/rowi-logo.png?v=3",
+    shortcut: "/owl.png?v=4",
+    apple: "/owl.png?v=4",
   },
   openGraph: {
     title: "Rowi SIA",

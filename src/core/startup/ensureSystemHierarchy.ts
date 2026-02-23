@@ -80,6 +80,38 @@ export async function ensureSystemHierarchy() {
   console.log("💼 Plan Enterprise garantizado.");
 
   // =========================================================
+  // 4.5️⃣ PLAN FREE + TENANT rowi-global (para usuarios free)
+  // =========================================================
+  let freePlan = await prisma.plan.findFirst({ where: { slug: "free" } });
+  if (!freePlan) {
+    freePlan = await prisma.plan.upsert({
+      where: { slug: "free" },
+      update: {},
+      create: {
+        name: "Free ROWI",
+        slug: "free",
+        priceUsd: 0,
+        aiEnabled: true,
+        isActive: true,
+      },
+    });
+  }
+
+  await prisma.tenant.upsert({
+    where: { slug: "rowi-global" },
+    update: {},
+    create: {
+      name: "Rowi Global Community",
+      slug: "rowi-global",
+      billingEmail: "admin@rowiia.com",
+      rowiVerseId: rowiverse.id,
+      systemId: system.id,
+      planId: freePlan?.id,
+    },
+  });
+  console.log("🌐 Tenant rowi-global garantizado (Free).");
+
+  // =========================================================
   // 5️⃣ TENANT - Six Seconds Global
   // =========================================================
   const tenant = await prisma.tenant.upsert({

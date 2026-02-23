@@ -34,11 +34,14 @@ async function loadAuthProfile(userId: string) {
   const hubIds = hubMemberships.map((m) => m.hubId);
   const superHubIds = [...new Set(hubMemberships.map((m) => m.hub?.superHubId).filter(Boolean))];
 
-  // Detectar si es SuperAdmin
+  // Detectar si es SuperAdmin (case-insensitive)
+  const normalizedOrgRole = (user.organizationRole || "").toUpperCase().replace(/[^A-Z]/g, "");
   const isSuperAdmin =
-    user.organizationRole === "SUPERADMIN" ||
+    normalizedOrgRole === "SUPERADMIN" ||
     user.permissions?.some(
-      (p) => p.role === "superadmin" && (p.scopeType === "rowiverse" || p.scope === "global")
+      (p) =>
+        p.role?.toLowerCase() === "superadmin" &&
+        (p.scopeType === "rowiverse" || p.scope === "global")
     );
 
   return {

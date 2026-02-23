@@ -153,6 +153,7 @@ export default function UploadBenchmarkPage() {
       // Esto evita el límite de 4.5MB de las funciones serverless
       const blob = await upload(file.name, file, {
         access: "public",
+        multipart: true, // Requerido para archivos grandes (chunks de 8MB, 6 concurrentes)
         handleUploadUrl: "/api/admin/benchmarks/blob-token",
         headers: {
           "x-user-email": session?.user?.email || "",

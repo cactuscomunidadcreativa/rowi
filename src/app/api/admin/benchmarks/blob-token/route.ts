@@ -25,7 +25,9 @@ export async function POST(req: NextRequest) {
     const jsonResponse = await handleUpload({
       body,
       request: req,
-      onBeforeGenerateToken: async (pathname) => {
+      onBeforeGenerateToken: async (pathname, clientPayload, multipart) => {
+        console.log("📋 Blob token request:", { pathname, multipart, userEmail });
+
         // Validar que sea un archivo permitido
         const ext = pathname.toLowerCase();
         if (!ext.endsWith('.csv') && !ext.endsWith('.xlsx') && !ext.endsWith('.xls')) {
@@ -41,6 +43,7 @@ export async function POST(req: NextRequest) {
           ],
           maximumSizeInBytes: 500 * 1024 * 1024, // 500MB
           addRandomSuffix: true,
+          multipart, // Pasar el flag multipart al token
           tokenPayload: JSON.stringify({
             uploadedBy: userEmail,
           }),

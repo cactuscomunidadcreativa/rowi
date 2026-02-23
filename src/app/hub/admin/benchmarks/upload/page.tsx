@@ -151,6 +151,7 @@ export default function UploadBenchmarkPage() {
 
       // 1. Subir archivo directamente a Vercel Blob (client-side)
       // Esto evita el límite de 4.5MB de las funciones serverless
+      console.log("📤 Starting blob upload:", { name: file.name, size: file.size, multipart: true });
       const blob = await upload(file.name, file, {
         access: "public",
         multipart: true, // Requerido para archivos grandes (chunks de 8MB, 6 concurrentes)
@@ -160,6 +161,7 @@ export default function UploadBenchmarkPage() {
         },
         onUploadProgress: (progressEvent) => {
           const percent = Math.round((progressEvent.loaded / progressEvent.total) * 40);
+          console.log(`📤 Upload progress: ${percent}% (${Math.round(progressEvent.loaded / 1024 / 1024)}MB / ${Math.round(progressEvent.total / 1024 / 1024)}MB)`);
           setUploadState({
             phase: "uploading",
             progress: percent,
@@ -167,6 +169,7 @@ export default function UploadBenchmarkPage() {
           });
         },
       });
+      console.log("✅ Blob upload completed:", blob.url);
 
       setUploadState({
         phase: "uploading",

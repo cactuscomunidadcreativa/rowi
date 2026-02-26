@@ -76,12 +76,14 @@ interface CommunityData {
   tenantId?: string;
   superHubId?: string;
   organizationId?: string;
+  superId?: string;
   teamType?: string;
   hub?: { id: string; name: string };
   tenant?: { id: string; name: string };
   superHub?: { id: string; name: string };
   organization?: { id: string; name: string; unitType: string };
-  _count?: { members: number };
+  superCommunity?: { id: string; name: string; slug: string };
+  _count?: { members: number; subCommunities?: number };
 }
 
 interface OrgNode {
@@ -150,6 +152,7 @@ export default function AdminCommunitiesPage() {
     tenantId: string;
     superHubId: string;
     organizationId: string;
+    superId: string;
   } | null>(null);
 
   // Helper para traducciones inline
@@ -204,6 +207,7 @@ export default function AdminCommunitiesPage() {
       tenantId: "",
       superHubId: "",
       organizationId: "",
+      superId: "",
     });
   }
 
@@ -222,6 +226,7 @@ export default function AdminCommunitiesPage() {
       tenantId: c.tenantId || "",
       superHubId: c.superHubId || "",
       organizationId: c.organizationId || "",
+      superId: c.superId || "",
     });
   }
 
@@ -247,6 +252,7 @@ export default function AdminCommunitiesPage() {
           category: editor.category,
           teamType: editor.teamType || null,
           bannerUrl: editor.bannerUrl,
+          superId: editor.superId || null,
           hubId: editor.hubId || null,
           tenantId: editor.tenantId || null,
           superHubId: editor.superHubId || null,
@@ -254,13 +260,16 @@ export default function AdminCommunitiesPage() {
         }),
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || "Error desconocido");
+      }
 
       toast.success(editor.mode === "create" ? t("admin.communities.created") : t("admin.communities.updated"));
       setEditor(null);
       loadData();
-    } catch {
-      toast.error(t("common.error"));
+    } catch (err: any) {
+      toast.error(err?.message || t("common.error"));
     } finally {
       setSaving(false);
     }
@@ -345,7 +354,7 @@ export default function AdminCommunitiesPage() {
       case "public": return "success";
       case "invite": return "info";
       case "private": return "warning";
-      default: return "default";
+      default: return "neutral";
     }
   }
 
@@ -749,8 +758,40 @@ export default function AdminCommunitiesPage() {
               </div>
             </div>
 
+            {/* Comunidad Padre (jerarquía de sub-comunidades) */}
+            <div className="mt-3">
+              <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2 font-medium">
+                {lang === "es" ? "Jerarquía de Comunidades" : "Community Hierarchy"}
+              </p>
+              <div>
+                <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">
+                  {lang === "es" ? "Comunidad Padre" : "Parent Community"}
+                </label>
+                <AdminSelect
+                  value={editor.superId}
+                  onChange={(v) => setEditor({ ...editor, superId: v })}
+                  options={[
+                    { value: "", label: lang === "es" ? "— Ninguna (es raíz)" : "— None (root)" },
+                    ...communities
+                      .filter((c) => c.id !== editor.id)
+                      .map((c) => ({
+                        value: c.id,
+                        label: `${c.name}${c.superCommunity ? ` (↑ ${c.superCommunity.name})` : ""}`,
+                      })),
+                  ]}
+                />
+                {editor.superId && (
+                  <p className="text-[10px] text-[var(--rowi-muted)] mt-1">
+                    {lang === "es"
+                      ? `Esta comunidad será sub-comunidad de "${communities.find(c => c.id === editor.superId)?.name}"`
+                      : `This community will be a sub-community of "${communities.find(c => c.id === editor.superId)?.name}"`}
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Preview del path completo */}
-            {(editor.superHubId || editor.hubId || editor.tenantId || editor.organizationId) && (
+            {(editor.superHubId || editor.hubId || editor.tenantId || editor.organizationId || editor.superId) && (
               <div className="mt-4 p-3 rounded-lg bg-[var(--rowi-background)] border border-[var(--rowi-border)]">
                 <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2">
                   {t("admin.communities.fullPath")}
@@ -802,6 +843,15 @@ export default function AdminCommunitiesPage() {
                     }`}>
                       {TEAM_TYPE_OPTIONS.find(t => t.value === editor.teamType)?.label}
                     </span>
+                  )}
+                  {editor.superId && (
+                    <>
+                      <ChevronRight className="w-3 h-3 text-[var(--rowi-muted)]" />
+                      <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 font-medium flex items-center gap-1">
+                        <Layers className="w-3 h-3" />
+                        ↑ {communities.find(c => c.id === editor.superId)?.name}
+                      </span>
+                    </>
                   )}
                 </div>
               </div>
@@ -855,6 +905,18 @@ export default function AdminCommunitiesPage() {
                       <Users className="w-3 h-3" />
                       {c._count?.members || 0} <span className="hidden sm:inline">{tt("members")}</span>
                     </span>
+                    {c.superCommunity && (
+                      <span className="flex items-center gap-1 text-purple-500">
+                        <Layers className="w-3 h-3" />
+                        ↑ {c.superCommunity.name}
+                      </span>
+                    )}
+                    {(c._count?.subCommunities || 0) > 0 && (
+                      <span className="flex items-center gap-1 text-blue-500">
+                        <Network className="w-3 h-3" />
+                        {c._count?.subCommunities} sub
+                      </span>
+                    )}
                     {c.hub && (
                       <span className="hidden md:flex items-center gap-1">
                         <Network className="w-3 h-3" />
@@ -917,6 +979,20 @@ export default function AdminCommunitiesPage() {
                 <p className="text-[10px] text-[var(--rowi-muted)] font-mono truncate">{c.slug}</p>
                 {c.description && (
                   <p className="text-xs text-[var(--rowi-muted)] mt-1 line-clamp-2">{c.description}</p>
+                )}
+
+                {/* Hierarchy: parent community */}
+                {c.superCommunity && (
+                  <div className="flex items-center gap-1 mt-1.5 text-[10px] text-purple-500/80">
+                    <Layers className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">↑ {c.superCommunity.name}</span>
+                  </div>
+                )}
+                {(c._count?.subCommunities || 0) > 0 && (
+                  <div className="flex items-center gap-1 mt-1 text-[10px] text-blue-500/80">
+                    <Network className="w-3 h-3 flex-shrink-0" />
+                    <span>{c._count?.subCommunities} sub-{lang === "es" ? "comunidades" : "communities"}</span>
+                  </div>
                 )}
 
                 {/* Organization Path + Team Type */}

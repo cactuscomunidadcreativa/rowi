@@ -25,6 +25,13 @@ export async function POST(req: NextRequest) {
     const name = payload?.name || `Comunidad ${context}`;
     const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+    // Buscar RowiVerse dinámicamente
+    const rowiverse = await prisma.rowiVerse.findFirst({
+      where: { slug: "rowiverse" },
+      select: { id: true },
+    });
+    const rowiVerseId = payload?.rowiVerseId || rowiverse?.id || "rowiverse_root";
+
     // Buscar o crear con slug deduplicado
     let community = await prisma.rowiCommunity.findUnique({ where: { slug: baseSlug } });
     if (!community) {
@@ -44,7 +51,7 @@ export async function POST(req: NextRequest) {
           type,
           visibility: payload?.visibility || "private",
           description: payload?.description || null,
-          rowiVerseId: payload?.rowiVerseId || "rowiverse_root",
+          rowiVerseId,
           createdById: userId,
         },
       });
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
         rv = await prisma.rowiVerseUser.create({
           data: {
             userId,
-            rowiVerseId: "rowiverse_root",
+            rowiVerseId,
             email: user.email,
             name: user.name,
             active: true,

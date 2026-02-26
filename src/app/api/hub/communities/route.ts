@@ -8,6 +8,7 @@ export const runtime = "nodejs";
 
 /* =========================================================
    🔹 GET — Listar comunidades (RowiCommunity)
+   Incluye jerarquía padre/hijos
 ========================================================= */
 export async function GET(req: Request) {
   try {
@@ -15,13 +16,14 @@ export async function GET(req: Request) {
     const rowiVerseId = searchParams.get("rowiVerseId") || undefined;
 
     const communities = await prisma.rowiCommunity.findMany({
-      where: { rowiVerseId },
+      where: rowiVerseId ? { rowiVerseId } : {},
       include: {
-        _count: { select: { members: true, posts: true } },
+        _count: { select: { members: true, posts: true, subCommunities: true } },
         hub: { select: { id: true, name: true } },
         tenant: { select: { id: true, name: true } },
         superHub: { select: { id: true, name: true } },
         organization: { select: { id: true, name: true, unitType: true } },
+        superCommunity: { select: { id: true, name: true, slug: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -63,6 +65,8 @@ export async function POST(req: NextRequest) {
       category,
       teamType,
       bannerUrl,
+      // Jerarquía padre/hijo
+      superId: explicitSuperId,
       // Jerarquía explícita (override)
       hubId: explicitHubId,
       tenantId: explicitTenantId,
@@ -113,8 +117,12 @@ export async function POST(req: NextRequest) {
     // 4️⃣ Organización (explícita o del usuario)
     const organizationId = explicitOrganizationId || user.orgMemberships?.[0]?.organizationId || null;
 
-    // 5️⃣ RowiVerse raíz
-    const rowiVerseId = "rowiverse_root";
+    // 5️⃣ RowiVerse raíz — buscar dinámicamente en vez de hardcodear
+    const rowiverse = await prisma.rowiVerse.findFirst({
+      where: { slug: "rowiverse" },
+      select: { id: true },
+    });
+    const rowiVerseId = rowiverse?.id || "rowiverse_root";
 
     /* ---------------------------------------------------------
        🔹 Crear comunidad con toda la jerarquía
@@ -148,6 +156,9 @@ export async function POST(req: NextRequest) {
         teamType: teamType || null,
         bannerUrl: bannerUrl || null,
         createdById: user.id,
+
+        // 🔥 Jerarquía padre/hijo
+        superId: explicitSuperId || null,
 
         // 🔥 Enlaces jerárquicos
         rowiVerseId,
@@ -197,9 +208,10 @@ export async function POST(req: NextRequest) {
       community,
     });
   } catch (err: any) {
-    console.error("❌ Error POST /hub/communities:", err);
+    const message = err?.message || "Error al crear comunidad";
+    console.error("❌ Error POST /hub/communities:", message, err);
     return NextResponse.json(
-      { error: "Error al crear comunidad" },
+      { error: message },
       { status: 500 }
     );
   }

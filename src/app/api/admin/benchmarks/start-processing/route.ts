@@ -2,21 +2,20 @@
  * 📊 API: Start Benchmark Processing
  * POST /api/admin/benchmarks/start-processing
  *
- * Después de que el cliente sube el archivo a Vercel Blob,
- * este endpoint crea el benchmark y job, luego inicia el procesamiento.
- * Usa waitUntil para mantener el fetch vivo después de responder al cliente.
+ * After the client uploads to Vercel Blob, this endpoint creates the
+ * benchmark + job and kicks off processing DIRECTLY via waitUntil.
+ *
+ * NO HTTP fetch to process-blob — we call the shared function directly.
+ * This eliminates auth, CSRF, URL, cold-start, and timeout issues.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { processBenchmark } from "@/lib/benchmarks/process-benchmark";
 
-/** Derive a service token from NEXTAUTH_SECRET (always available) */
-function getServiceToken(): string {
-  return process.env.BENCHMARK_SERVICE_TOKEN
-    || `rowi-service-${(process.env.NEXTAUTH_SECRET || "").slice(0, 16)}`;
-}
+export const maxDuration = 300; // 5 minutes — processing runs in waitUntil
 
 interface StartProcessingBody {
   blobUrl: string;
@@ -31,7 +30,6 @@ export async function POST(req: NextRequest) {
     const auth = await requireSuperAdmin();
     if (auth.error) return auth.error;
 
-    // Obtener email del header si está disponible
     const userEmail = req.headers.get("x-user-email") || "admin@rowiia.com";
 
     const body: StartProcessingBody = await req.json();
@@ -44,7 +42,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Crear el benchmark
+    // Create benchmark
     const benchmark = await prisma.benchmark.create({
       data: {
         name: name.trim(),
@@ -57,7 +55,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Crear el job de upload con blobUrl para que el cron lo procese
+    // Create upload job
     const job = await prisma.benchmarkUploadJob.create({
       data: {
         benchmarkId: benchmark.id,
@@ -67,44 +65,26 @@ export async function POST(req: NextRequest) {
         processedRows: 0,
         currentRow: 0,
         currentPhase: "queued",
-        blobUrl, // El cron usará esta URL para descargar y procesar
+        blobUrl,
       },
     });
 
     console.log(`📊 Job ${job.id} created for benchmark ${benchmark.id}`);
 
-    // Iniciar procesamiento usando waitUntil para mantener el fetch vivo
-    // después de que esta función responda al cliente
-    // Prioridad: VERCEL_URL (siempre correcto en producción) > NEXTAUTH_URL > fallback
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || "https://www.rowiia.com";
-    const processUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
-    console.log(`🔗 Process URL: ${processUrl}`);
-
-    // waitUntil permite que el fetch continúe ejecutándose después de responder
+    // 🚀 Process directly via waitUntil — no HTTP, no auth issues
     waitUntil(
-      fetch(processUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-service-token": getServiceToken(),
-        },
-        body: JSON.stringify({
-          benchmarkId: benchmark.id,
-          jobId: job.id,
-          blobUrl,
-        }),
+      processBenchmark({
+        benchmarkId: benchmark.id,
+        jobId: job.id,
+        blobUrl,
+      }).catch((err) => {
+        // Error handling is done inside processBenchmark (updates DB status)
+        // This catch prevents unhandled rejection warnings
+        console.error(`❌ processBenchmark failed:`, err?.message || err);
       })
-        .then((res) => {
-          console.log(`✅ Process-blob responded with status: ${res.status}`);
-        })
-        .catch((err) => {
-          console.error("❌ Error initiating processing:", err);
-        })
     );
 
-    console.log(`🚀 Processing initiated for benchmark ${benchmark.id}`);
+    console.log(`🚀 Processing kicked off for benchmark ${benchmark.id}`);
 
     return NextResponse.json({
       ok: true,

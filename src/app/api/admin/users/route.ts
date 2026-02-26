@@ -324,7 +324,7 @@ export async function PATCH(req: NextRequest) {
           data: {
             userId: id,
             hubId,
-            role: "member",
+            access: "member",
           },
         });
       }

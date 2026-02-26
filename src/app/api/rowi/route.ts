@@ -21,6 +21,7 @@ const MODEL_BY_LEVEL: Record<AccessLevel, string | null> = {
 };
 
 // Mapeo de intent → slug esperado de agente
+// Nota: "super" mapea a "super" O "super-rowi" (legacy de seed-production)
 const INTENT_TO_SLUG: Record<string, string> = {
   super: "super",
   affinity: "affinity",
@@ -31,6 +32,11 @@ const INTENT_TO_SLUG: Record<string, string> = {
   sales: "sales",
   trainer: "trainer",
   router: "router",
+};
+
+// Alias legacy: si el slug principal no existe, probar estos
+const SLUG_ALIASES: Record<string, string[]> = {
+  super: ["super-rowi"],
 };
 
 function normalizeIntent(intent?: string): string {
@@ -49,74 +55,81 @@ function estimateTokens(text: string): number {
    ---------------------------------------------------------
    Prioridad: hubId → tenantId → superHubId → global
    SIEMPRE hace fallback a global si no encuentra en niveles específicos
+   Si no encuentra con el slug principal, intenta aliases (ej: super → super-rowi)
 ========================================================= */
 async function resolveAgent(slug: string, auth: any) {
   // Extraer IDs del contexto del usuario
   const tenantId: string | null = auth?.primaryTenantId ?? null;
 
-  // Obtener hubId y superHubId del contexto del usuario si tiene memberships
+  // Obtener hubId y superHubId del contexto del usuario
   let hubId: string | null = null;
   let superHubId: string | null = null;
 
-  // Si el usuario tiene hubIds en su sesión
-  if (auth?.hubIds?.length > 0) {
-    hubId = auth.hubIds[0];
-    // Cargar el hub para obtener su superHubId
-    const hub = await prisma.hub.findUnique({
-      where: { id: hubId },
-      select: { superHubId: true }
+  // auth.hubs es un array de objetos con .id (de getServerAuthUser)
+  const hubs = auth?.hubs || [];
+  if (hubs.length > 0) {
+    hubId = hubs[0]?.id || null;
+    superHubId = hubs[0]?.superHub?.id || null;
+  }
+
+  // Alternativa: superHubs directos
+  if (!superHubId) {
+    const superHubs = auth?.superHubs || [];
+    if (superHubs.length > 0) {
+      superHubId = superHubs[0]?.id || null;
+    }
+  }
+
+  // Intentar resolver con el slug principal y luego con aliases
+  const slugsToTry = [slug, ...(SLUG_ALIASES[slug] || [])];
+
+  for (const trySlug of slugsToTry) {
+    // 1️⃣ Intentar agente por Hub (más específico)
+    if (hubId) {
+      const hubAgent = await prisma.agentConfig.findFirst({
+        where: { slug: trySlug, hubId, isActive: true },
+      });
+      if (hubAgent) return hubAgent;
+    }
+
+    // 2️⃣ Intentar agente por Tenant
+    if (tenantId) {
+      const tenantAgent = await prisma.agentConfig.findFirst({
+        where: { slug: trySlug, tenantId, isActive: true },
+      });
+      if (tenantAgent) return tenantAgent;
+    }
+
+    // 3️⃣ Intentar agente por SuperHub
+    if (superHubId) {
+      const shAgent = await prisma.agentConfig.findFirst({
+        where: { slug: trySlug, superHubId, isActive: true },
+      });
+      if (shAgent) return shAgent;
+    }
+
+    // 4️⃣ Fallback global (accessLevel = 'global', 'system' o sin scope asignado)
+    const globalAgent = await prisma.agentConfig.findFirst({
+      where: {
+        slug: trySlug,
+        isActive: true,
+        OR: [
+          { accessLevel: "global" },
+          { accessLevel: "system" },
+          {
+            tenantId: null,
+            superHubId: null,
+            organizationId: null,
+            hubId: null,
+          }
+        ]
+      },
     });
-    superHubId = hub?.superHubId ?? null;
+
+    if (globalAgent) return globalAgent;
   }
 
-  // Alternativa: si tiene superHubIds directamente
-  if (!superHubId && auth?.superHubIds?.length > 0) {
-    superHubId = auth.superHubIds[0];
-  }
-
-  // 1️⃣ Intentar agente por Hub (más específico)
-  if (hubId) {
-    const hubAgent = await prisma.agentConfig.findFirst({
-      where: { slug, hubId, isActive: true },
-    });
-    if (hubAgent) return hubAgent;
-  }
-
-  // 2️⃣ Intentar agente por Tenant
-  if (tenantId) {
-    const tenantAgent = await prisma.agentConfig.findFirst({
-      where: { slug, tenantId, isActive: true },
-    });
-    if (tenantAgent) return tenantAgent;
-  }
-
-  // 3️⃣ Intentar agente por SuperHub
-  if (superHubId) {
-    const shAgent = await prisma.agentConfig.findFirst({
-      where: { slug, superHubId, isActive: true },
-    });
-    if (shAgent) return shAgent;
-  }
-
-  // 4️⃣ Fallback global (accessLevel = 'global', 'system' o sin scope asignado)
-  const globalAgent = await prisma.agentConfig.findFirst({
-    where: {
-      slug,
-      isActive: true,
-      OR: [
-        { accessLevel: "global" },
-        { accessLevel: "system" },
-        {
-          tenantId: null,
-          superHubId: null,
-          organizationId: null,
-          hubId: null,
-        }
-      ]
-    },
-  });
-
-  return globalAgent;
+  return null;
 }
 
 /* =========================================================

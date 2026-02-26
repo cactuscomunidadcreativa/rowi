@@ -4,6 +4,7 @@ import { parse } from "csv-parse/sync";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { contributeBatchToRowiverse, ContributionInput } from "@/lib/rowiverse/contribution-service";
+import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 export const runtime = "nodejs";
 
@@ -240,6 +241,16 @@ export async function POST(req: NextRequest) {
           },
         });
         stats.membersCreated++;
+
+        // 🔗 Propagar a comunidades padre
+        await propagateMemberToParents({
+          communityId: community.id,
+          userId: user.id,
+          rowiverseUserId: rowiVerseUser.id,
+          email: user.email,
+          name: user.name,
+          language: user.language || community.language || "es",
+        });
       } else if (!communityUser.rowiverseUserId) {
         // Update existing to link with RowiVerse
         await prisma.rowiCommunityUser.update({

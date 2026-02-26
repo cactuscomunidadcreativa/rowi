@@ -3,6 +3,7 @@ import { prisma } from "@/core/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { getServerAuthUser } from "@/core/auth";
+import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 export const runtime = "nodejs";
 
@@ -200,6 +201,18 @@ export async function POST(req: NextRequest) {
         role: "owner",
         status: "active",
       },
+    });
+
+    /* ---------------------------------------------------------
+       🔹 Propagar a comunidades padre (herencia automática)
+    --------------------------------------------------------- */
+    await propagateMemberToParents({
+      communityId: community.id,
+      userId: user.id,
+      rowiverseUserId: rv.id,
+      email: user.email,
+      name: user.name,
+      language: user.language || "es",
     });
 
     return NextResponse.json({

@@ -2,6 +2,7 @@
 import { prisma } from "@/core/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 export async function POST(req: NextRequest) {
   try {
@@ -89,6 +90,13 @@ export async function POST(req: NextRequest) {
         role: context === "registration" ? "owner" : "member",
         status: "active",
       },
+    });
+
+    // 🔗 Propagar a comunidades padre
+    await propagateMemberToParents({
+      communityId: community.id,
+      userId,
+      rowiverseUserId: rv?.id,
     });
 
     return NextResponse.json({ ok: true, community });

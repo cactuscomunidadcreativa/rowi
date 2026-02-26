@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 export const runtime = "nodejs";
 
@@ -107,6 +108,14 @@ export async function POST(
         status: "active",
       },
       include: { user: true },
+    });
+
+    // 🔗 Propagar a comunidades padre
+    await propagateMemberToParents({
+      communityId,
+      userId: user.id,
+      email: user.email,
+      name: user.name,
     });
 
     return NextResponse.json(member);

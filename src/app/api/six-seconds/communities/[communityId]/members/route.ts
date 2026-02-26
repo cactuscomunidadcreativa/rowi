@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { verifySSOToken, extractUserFromSSOToken } from "@/lib/six-seconds/sso";
+import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 // =========================================================
 // Helper: Get SSO Token from request
@@ -284,6 +285,18 @@ export async function POST(
             },
           });
           results.created++;
+
+          // 🔗 Propagar a comunidades padre
+          if (existingUser?.id) {
+            await propagateMemberToParents({
+              communityId: community.id,
+              userId: existingUser.id,
+              rowiverseUserId: rowiverseUser.id,
+              email: normalizedEmail,
+              name: name || normalizedEmail.split("@")[0],
+              language: community.language || "es",
+            });
+          }
         }
       } catch (memberError) {
         console.error("Error adding member:", memberError);

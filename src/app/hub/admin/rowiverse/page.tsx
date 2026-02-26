@@ -303,12 +303,12 @@ function StatCard({
   };
 
   return (
-    <div className="flex items-center gap-3 bg-[var(--rowi-surface)] border border-[var(--rowi-border)] rounded-xl p-4 hover:border-[var(--rowi-borderHover)] transition-colors">
+    <div className="flex flex-col items-center text-center gap-2 bg-[var(--rowi-surface)] border border-[var(--rowi-border)] rounded-xl p-4 hover:border-[var(--rowi-borderHover)] transition-colors">
       <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
       <div>
-        <p className="text-xs uppercase text-[var(--rowi-muted)]">{label}</p>
-        <p className="text-xl font-bold text-[var(--rowi-foreground)]">{value}</p>
-        {subtext && <p className="text-xs text-[var(--rowi-muted)]">{subtext}</p>}
+        <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] leading-tight">{label}</p>
+        <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{value}</p>
+        {subtext && <p className="text-[10px] text-[var(--rowi-muted)]">{subtext}</p>}
       </div>
     </div>
   );

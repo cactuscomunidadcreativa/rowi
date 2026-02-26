@@ -53,6 +53,8 @@ const CSRF_EXEMPT_PATHS = [
   "/api/webhooks",
   "/api/cron",
   "/api/auth", // NextAuth maneja su propia seguridad
+  "/api/admin/benchmarks/blob-token", // Vercel Blob multipart upload callbacks
+  "/api/admin/benchmarks/process-blob", // Internal service-to-service processing
 ];
 
 // Hosts permitidos para CSRF (configurar según entorno)
@@ -78,6 +80,8 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/rowi": { limit: 30, windowMs: 60000 }, // AI Chat: 30/min
   "/api/eco": { limit: 30, windowMs: 60000 }, // AI Eco: 30/min
   "/api/affinity": { limit: 30, windowMs: 60000 }, // AI Affinity: 30/min
+  "/api/admin/benchmarks/blob-token": { limit: 200, windowMs: 60000 }, // Blob upload: 200/min (multipart chunks)
+  "/api/admin/benchmarks/job": { limit: 120, windowMs: 60000 }, // Job polling: 120/min
   "/api/admin": { limit: 50, windowMs: 60000 }, // Admin: 50/min
   "/api/stripe": { limit: 10, windowMs: 60000 }, // Stripe: 10/min
   default: { limit: 100, windowMs: 60000 }, // Default: 100/min

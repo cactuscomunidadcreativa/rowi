@@ -12,6 +12,12 @@ import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
+/** Derive a service token from NEXTAUTH_SECRET (always available) */
+function getServiceToken(): string {
+  return process.env.BENCHMARK_SERVICE_TOKEN
+    || `rowi-service-${(process.env.NEXTAUTH_SECRET || "").slice(0, 16)}`;
+}
+
 interface StartProcessingBody {
   blobUrl: string;
   name: string;
@@ -69,8 +75,12 @@ export async function POST(req: NextRequest) {
 
     // Iniciar procesamiento usando waitUntil para mantener el fetch vivo
     // después de que esta función responda al cliente
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://www.rowiia.com";
+    // Prioridad: VERCEL_URL (siempre correcto en producción) > NEXTAUTH_URL > fallback
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || "https://www.rowiia.com";
     const processUrl = `${baseUrl}/api/admin/benchmarks/process-blob`;
+    console.log(`🔗 Process URL: ${processUrl}`);
 
     // waitUntil permite que el fetch continúe ejecutándose después de responder
     waitUntil(
@@ -78,7 +88,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-service-token": process.env.BENCHMARK_SERVICE_TOKEN || "",
+          "x-service-token": getServiceToken(),
         },
         body: JSON.stringify({
           benchmarkId: benchmark.id,

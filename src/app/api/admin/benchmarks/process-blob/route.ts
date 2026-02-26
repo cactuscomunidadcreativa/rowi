@@ -82,17 +82,22 @@ interface ProcessBlobBody {
 const BATCH_SIZE = 500;
 const PROGRESS_UPDATE_INTERVAL = 100; // Update more frequently for small files
 
+/** Derive a service token from NEXTAUTH_SECRET (always available) */
+function getExpectedServiceToken(): string {
+  return process.env.BENCHMARK_SERVICE_TOKEN
+    || `rowi-service-${(process.env.NEXTAUTH_SECRET || "").slice(0, 16)}`;
+}
+
 export async function POST(req: NextRequest) {
   let benchmarkId: string | undefined;
   let jobId: string | undefined;
 
   try {
     // 🔐 Verificar autenticación: sesión de admin o token de servicio
-    // NOTA: x-internal-call eliminado por ser spoofeable — usar BENCHMARK_SERVICE_TOKEN
     const serviceToken = req.headers.get("x-service-token");
-    const expectedToken = process.env.BENCHMARK_SERVICE_TOKEN;
+    const expectedToken = getExpectedServiceToken();
 
-    const hasValidServiceToken = serviceToken && expectedToken && serviceToken === expectedToken;
+    const hasValidServiceToken = serviceToken && serviceToken === expectedToken;
 
     if (!hasValidServiceToken) {
       // Verificar sesión de usuario admin

@@ -57,12 +57,12 @@ const typeIcons: Record<string, any> = {
 };
 
 const typeColors: Record<string, string> = {
-  BADGE: "bg-purple-500/20 text-purple-400",
-  FEATURE: "bg-blue-500/20 text-blue-400",
-  DISCOUNT: "bg-green-500/20 text-green-400",
-  PHYSICAL: "bg-orange-500/20 text-orange-400",
-  CERTIFICATE: "bg-pink-500/20 text-pink-400",
-  TOKENS: "bg-amber-500/20 text-amber-400",
+  BADGE: "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  FEATURE: "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400",
+  DISCOUNT: "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400",
+  PHYSICAL: "bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400",
+  CERTIFICATE: "bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400",
+  TOKENS: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400",
 };
 
 const t = {
@@ -173,7 +173,7 @@ export default function RewardsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -190,22 +190,22 @@ export default function RewardsPage() {
             onClick={() => router.push("/hub/admin/gamification")}
             className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
+            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20">
               <Gift className="w-6 h-6 text-green-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-              <p className="text-gray-400 text-sm">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
                 {labels.subtitle}
               </p>
             </div>
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" />
           {labels.newReward}
         </button>
@@ -213,33 +213,33 @@ export default function RewardsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Gift className="w-4 h-4 text-green-500" />
             {labels.stats.total}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{stats.total}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Check className="w-4 h-4 text-blue-500" />
             {labels.stats.active}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{stats.active}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.active}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Coins className="w-4 h-4 text-amber-500" />
             {labels.stats.totalClaims}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{stats.totalClaims}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.totalClaims}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Crown className="w-4 h-4 text-purple-500" />
             {labels.stats.featured}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{stats.featured}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.featured}</p>
         </div>
       </div>
 
@@ -253,7 +253,7 @@ export default function RewardsPage() {
             placeholder={labels.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
           />
         </div>
 
@@ -268,7 +268,7 @@ export default function RewardsPage() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   typeFilter === type
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                    : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+                    : "bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -292,28 +292,28 @@ export default function RewardsPage() {
             return (
               <div
                 key={reward.id}
-                className={`group relative bg-gray-800/50 rounded-2xl p-5 border transition-all hover:scale-[1.02] ${
+                className={`group relative bg-white dark:bg-gray-800/50 rounded-2xl p-5 border transition-all hover:scale-[1.02] ${
                   reward.isActive
-                    ? "border-gray-700/50 hover:border-gray-600"
+                    ? "border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600"
                     : "border-gray-800 opacity-60"
                 }`}
               >
                 {/* Featured Badge */}
                 {reward.isFeatured && (
-                  <div className="absolute -top-2 -right-2 px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
+                  <div className="absolute -top-2 -right-2 px-2 py-1 bg-amber-500 text-gray-900 dark:text-white text-xs font-medium rounded-full">
                     {labels.card.featured}
                   </div>
                 )}
 
                 {/* Actions */}
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700">
-                    <Eye className="w-4 h-4 text-gray-400" />
+                  <button className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-700">
+                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </button>
-                  <button className="p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700">
-                    <Edit className="w-4 h-4 text-gray-400" />
+                  <button className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-700">
+                    <Edit className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   </button>
-                  <button className="p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700">
+                  <button className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-700">
                     <Trash2 className="w-4 h-4 text-red-400" />
                   </button>
                 </div>
@@ -330,7 +330,7 @@ export default function RewardsPage() {
                 </div>
 
                 {/* Info */}
-                <h3 className="font-semibold text-white mb-1">{reward.name}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{reward.name}</h3>
                 <p className="text-sm text-gray-500 mb-3 line-clamp-2">
                   {reward.description || reward.nameEN}
                 </p>
@@ -346,10 +346,10 @@ export default function RewardsPage() {
                 </div>
 
                 {/* Cost & Stock */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700/50">
                   <div className="flex items-center gap-1.5">
                     <Coins className="w-4 h-4 text-amber-400" />
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-gray-900 dark:text-white">
                       {reward.cost.toLocaleString()}
                     </span>
                     <span className="text-xs text-gray-500">{labels.card.pts}</span>
@@ -364,7 +364,7 @@ export default function RewardsPage() {
                 </div>
 
                 {/* Status */}
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700/50">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/50">
                   <span
                     className={`flex items-center gap-1 text-xs ${
                       reward.isActive ? "text-green-400" : "text-gray-500"

@@ -128,7 +128,7 @@ export default function LeaderboardsPage() {
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-amber-400" />;
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
+    if (rank === 2) return <Medal className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
     return <span className="text-gray-500 font-medium">{rank}</span>;
   };
@@ -137,7 +137,7 @@ export default function LeaderboardsPage() {
     if (rank === 1) return "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-amber-500/30";
     if (rank === 2) return "bg-gradient-to-r from-gray-500/20 to-slate-500/20 border-gray-500/30";
     if (rank === 3) return "bg-gradient-to-r from-amber-700/20 to-orange-600/20 border-amber-700/30";
-    return "bg-gray-800/50 border-gray-700/30";
+    return "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700/30";
   };
 
   return (
@@ -148,15 +148,15 @@ export default function LeaderboardsPage() {
           onClick={() => router.push("/hub/admin/gamification")}
           className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-400" />
+          <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </button>
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
             <BarChart3 className="w-6 h-6 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-            <p className="text-gray-400 text-sm">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               {labels.subtitle}
             </p>
           </div>
@@ -165,46 +165,46 @@ export default function LeaderboardsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
             {labels.stats.totalUsers}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalUsers || 0}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-yellow-500" />
             {labels.stats.globalPoints}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {(stats?.totalPointsGlobal || 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Award className="w-4 h-4 text-purple-500" />
             {labels.stats.achievementsUnlocked}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalAchievementsUnlocked || 0}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Flame className="w-4 h-4 text-orange-500" />
             {labels.stats.avgStreak}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.averageStreak || 0} {labels.stats.days}
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-700/50 pb-4">
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700/50 pb-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -212,7 +212,7 @@ export default function LeaderboardsPage() {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === tab.id
                 ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+                : "bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -222,10 +222,10 @@ export default function LeaderboardsPage() {
       </div>
 
       {/* Leaderboard */}
-      <div className="bg-gray-800/30 rounded-2xl border border-gray-700/50 overflow-hidden">
+      <div className="bg-gray-800/30 rounded-2xl border border-gray-200 dark:border-gray-700/50 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-gray-500 dark:text-gray-400" />
           </div>
         ) : leaderboard.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
@@ -247,7 +247,7 @@ export default function LeaderboardsPage() {
                       {getRankIcon(entry.rank)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white truncate">
+                      <p className="font-semibold text-gray-900 dark:text-white truncate">
                         {entry.name}
                       </p>
                       {entry.title && (
@@ -256,12 +256,12 @@ export default function LeaderboardsPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {activeTab === "points" && labels.table.points}
                       {activeTab === "streak" && labels.table.days}
                       {activeTab === "achievements" && labels.table.achievements}
                     </span>
-                    <span className="text-xl font-bold text-white">
+                    <span className="text-xl font-bold text-gray-900 dark:text-white">
                       {entry.score.toLocaleString()}
                     </span>
                   </div>
@@ -287,7 +287,7 @@ export default function LeaderboardsPage() {
                   {leaderboard.slice(3).map((entry) => (
                     <tr
                       key={entry.userId}
-                      className="border-t border-gray-700/30 hover:bg-gray-700/20 transition-colors"
+                      className="border-t border-gray-200 dark:border-gray-700/30 hover:bg-gray-700/20 transition-colors"
                     >
                       <td className="py-3 pl-4">
                         <span className="text-gray-500 font-medium">
@@ -296,11 +296,11 @@ export default function LeaderboardsPage() {
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-sm font-medium text-white">
+                          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-900 dark:text-white">
                             {entry.name?.charAt(0) || "?"}
                           </div>
                           <div>
-                            <p className="font-medium text-white">{entry.name}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{entry.name}</p>
                             {entry.level && (
                               <p className="text-xs text-gray-500">
                                 {labels.table.level} {entry.level}
@@ -310,7 +310,7 @@ export default function LeaderboardsPage() {
                         </div>
                       </td>
                       <td className="py-3 text-right pr-4">
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-gray-900 dark:text-white">
                           {entry.score.toLocaleString()}
                         </span>
                       </td>

@@ -42,9 +42,9 @@ interface MicroLearning {
 
 
 const difficultyColors: Record<string, string> = {
-  BEGINNER: "bg-green-500/20 text-green-400",
-  INTERMEDIATE: "bg-amber-500/20 text-amber-400",
-  ADVANCED: "bg-red-500/20 text-red-400",
+  BEGINNER: "bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400",
+  INTERMEDIATE: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400",
+  ADVANCED: "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400",
 };
 
 const t = {
@@ -188,7 +188,7 @@ function MicroLearningContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -203,17 +203,17 @@ function MicroLearningContent() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/hub/admin/elearning")}
-            className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
+            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20">
               <Lightbulb className="w-6 h-6 text-amber-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-              <p className="text-gray-400 text-sm">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
                 {labels.subtitle}
               </p>
             </div>
@@ -223,39 +223,39 @@ function MicroLearningContent() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Lightbulb className="w-4 h-4 text-amber-500" />
             {labels.stats.totalActions}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {microLearnings.length}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <BarChart3 className="w-4 h-4 text-blue-500" />
             {labels.stats.categories}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.categories?.length || 4}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Star className="w-4 h-4 text-amber-500" />
             {labels.stats.featured}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {microLearnings.filter((ml) => ml.isFeatured).length}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Clock className="w-4 h-4 text-green-500" />
             {labels.stats.avgDuration}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {Math.round(microLearnings.reduce((sum, ml) => sum + ml.duration, 0) / microLearnings.length || 2)} {labels.stats.min}
           </p>
         </div>
@@ -271,7 +271,7 @@ function MicroLearningContent() {
             placeholder={labels.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
           />
         </div>
 
@@ -288,7 +288,7 @@ function MicroLearningContent() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   categoryFilter === cat.key
                     ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                    : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+                    : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -314,15 +314,15 @@ function MicroLearningContent() {
             return (
               <div
                 key={`${group.category}_${group.parentKey}`}
-                className="bg-gray-800/50 rounded-2xl border border-gray-700/50 overflow-hidden"
+                className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 overflow-hidden"
               >
                 {/* Group Header */}
-                <div className="flex items-center gap-3 p-4 border-b border-gray-700/50 bg-gray-800/30">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${config?.color || 'bg-gray-700'}`}>
+                <div className="flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700/50 bg-gray-100 dark:bg-gray-800/30">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${config?.color || 'bg-gray-200 dark:bg-gray-700'}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">{group.parentKey}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{group.parentKey}</h3>
                     <p className="text-xs text-gray-500">
                       {config?.label} · {group.items.length} {labels.category.actions}
                     </p>
@@ -330,15 +330,15 @@ function MicroLearningContent() {
                 </div>
 
                 {/* Items */}
-                <div className="divide-y divide-gray-700/30">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700/30">
                   {group.items.map((ml) => (
                     <div
                       key={ml.id}
-                      className="flex items-center gap-4 p-4 hover:bg-gray-700/20 transition-colors"
+                      className="flex items-center gap-4 p-4 hover:bg-gray-100 dark:hover:bg-gray-700/20 transition-colors"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-white truncate">
+                          <p className="font-medium text-gray-900 dark:text-white truncate">
                             {ml.title}
                           </p>
                           {ml.isFeatured && (
@@ -355,7 +355,7 @@ function MicroLearningContent() {
                       <div className="flex items-center gap-3">
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
-                            difficultyColors[ml.difficulty] || "bg-gray-700 text-gray-300"
+                            difficultyColors[ml.difficulty] || "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                           }`}
                         >
                           {ml.difficulty}
@@ -372,11 +372,11 @@ function MicroLearningContent() {
                         </div>
 
                         <div className="flex gap-1">
-                          <button className="p-2 rounded-lg hover:bg-gray-700">
-                            <Eye className="w-4 h-4 text-gray-400" />
+                          <button className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           </button>
-                          <button className="p-2 rounded-lg hover:bg-gray-700">
-                            <Edit className="w-4 h-4 text-gray-400" />
+                          <button className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <Edit className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           </button>
                         </div>
                       </div>
@@ -396,7 +396,7 @@ export default function MicroLearningPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Cargando micro-learnings...</span>
         </div>

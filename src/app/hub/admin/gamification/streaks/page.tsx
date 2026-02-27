@@ -170,7 +170,7 @@ export default function StreaksPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -186,15 +186,15 @@ export default function StreaksPage() {
           onClick={() => router.push("/hub/admin/gamification")}
           className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-400" />
+          <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </button>
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20">
             <Flame className="w-6 h-6 text-orange-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-            <p className="text-gray-400 text-sm">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               {labels.subtitle}
             </p>
           </div>
@@ -203,47 +203,47 @@ export default function StreaksPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
             {labels.stats.usersWithStreak}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {topStreaks.filter((s) => s.currentStreak > 0).length}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <TrendingUp className="w-4 h-4 text-green-500" />
             {labels.stats.avgStreak}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.averageStreak || 0} {labels.stats.days}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-amber-500" />
             {labels.stats.highestStreak}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {topStreaks[0]?.currentStreak || 0} {labels.stats.days}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Calendar className="w-4 h-4 text-purple-500" />
             {labels.stats.streaks7Days}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {topStreaks.filter((s) => s.currentStreak >= 7).length}
           </p>
         </div>
       </div>
 
       {/* Streak Tiers */}
-      <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-amber-500" />
           {labels.tiers.title}
         </h3>
@@ -252,7 +252,7 @@ export default function StreaksPage() {
           {streakTiers.map((tier, idx) => (
             <div
               key={tier.days}
-              className="relative bg-gray-700/30 rounded-xl p-4 border border-gray-600/30"
+              className="relative bg-gray-100 dark:bg-gray-700/30 rounded-xl p-4 border border-gray-600/30"
             >
               {/* Fire intensity increases with tier */}
               <div
@@ -267,11 +267,11 @@ export default function StreaksPage() {
                   })`,
                 }}
               >
-                <Flame className="w-4 h-4 text-white" />
+                <Flame className="w-4 h-4 text-gray-900 dark:text-white" />
               </div>
 
-              <p className="text-sm text-gray-400 mb-1">{tier.days}+ {labels.tiers.days}</p>
-              <p className="font-semibold text-white text-lg mb-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{tier.days}+ {labels.tiers.days}</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-lg mb-2">
                 x{tier.multiplier}
               </p>
               <p className="text-xs text-gray-500">{tier.name}</p>
@@ -284,8 +284,8 @@ export default function StreaksPage() {
       {/* Top Streaks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Current Streaks */}
-        <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-500" />
             {labels.topStreaks.title}
           </h3>
@@ -294,23 +294,23 @@ export default function StreaksPage() {
             {topStreaks.slice(0, 10).map((streak, idx) => (
               <div
                 key={streak.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-gray-700/30"
+                className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700/30"
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     idx === 0
-                      ? "bg-amber-500 text-white"
+                      ? "bg-amber-500 text-gray-900 dark:text-white"
                       : idx === 1
-                      ? "bg-gray-400 text-white"
+                      ? "bg-gray-400 text-gray-900 dark:text-white"
                       : idx === 2
-                      ? "bg-amber-700 text-white"
-                      : "bg-gray-700 text-gray-400"
+                      ? "bg-amber-700 text-gray-900 dark:text-white"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{streak.name}</p>
+                  <p className="font-medium text-gray-900 dark:text-white truncate">{streak.name}</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Flame
@@ -322,7 +322,7 @@ export default function StreaksPage() {
                         : "text-amber-500"
                     }`}
                   />
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-gray-900 dark:text-white">
                     {streak.currentStreak}
                   </span>
                   <span className="text-xs text-gray-500">{labels.topStreaks.days}</span>
@@ -339,8 +339,8 @@ export default function StreaksPage() {
         </div>
 
         {/* Streak Distribution */}
-        <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-5 h-5 text-blue-500" />
             {labels.distribution.title}
           </h3>
@@ -362,8 +362,8 @@ export default function StreaksPage() {
               return (
                 <div key={range.label}>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-gray-400">{range.label}</span>
-                    <span className="text-white font-medium">{count} {labels.distribution.users}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{range.label}</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{count} {labels.distribution.users}</span>
                   </div>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div

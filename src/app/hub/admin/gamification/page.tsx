@@ -210,7 +210,7 @@ export default function GamificationDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -226,8 +226,8 @@ export default function GamificationDashboardPage() {
           <Trophy className="w-8 h-8 text-yellow-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-          <p className="text-gray-400">{labels.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+          <p className="text-gray-500 dark:text-gray-400">{labels.subtitle}</p>
         </div>
       </div>
 
@@ -236,13 +236,13 @@ export default function GamificationDashboardPage() {
         {quickStats.map((stat, idx) => (
           <div
             key={idx}
-            className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
+            className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700/50"
           >
             <div className="flex items-center gap-3">
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
-              <span className="text-sm text-gray-400">{stat.label}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</span>
             </div>
-            <p className="text-2xl font-bold text-white mt-2">{stat.value}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -253,22 +253,22 @@ export default function GamificationDashboardPage() {
           <button
             key={module.id}
             onClick={() => router.push(module.href)}
-            className="group text-left bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600 transition-all duration-300 hover:scale-[1.02]"
+            className="group text-left bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 hover:scale-[1.02]"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-xl ${module.bgColor}`}>
                 <module.icon className={`w-6 h-6 ${module.iconColor}`} />
               </div>
-              <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-gray-900 dark:text-white group-hover:translate-x-1 transition-all" />
             </div>
 
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               {module.title}
             </h3>
-            <p className="text-sm text-gray-400 mb-4">{module.description}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{module.description}</p>
 
-            <div className="flex items-center gap-2 pt-4 border-t border-gray-700/50">
-              <span className="text-2xl font-bold text-white">{module.stat}</span>
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700/50">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{module.stat}</span>
               <span className="text-xs text-gray-500">{module.statLabel}</span>
             </div>
           </button>
@@ -276,8 +276,8 @@ export default function GamificationDashboardPage() {
       </div>
 
       {/* Recent Activity Placeholder */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-yellow-500" />
           Actividad Reciente
         </h3>
@@ -290,13 +290,13 @@ export default function GamificationDashboardPage() {
           ].map((activity, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 p-3 rounded-lg bg-gray-700/30 hover:bg-gray-700/50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700/30 hover:bg-gray-100 dark:bg-gray-700/50 transition-colors"
             >
               <activity.icon className={`w-5 h-5 ${activity.color}`} />
-              <span className="text-gray-300">
-                <span className="font-medium text-white">{activity.user}</span>{" "}
+              <span className="text-gray-600 dark:text-gray-300">
+                <span className="font-medium text-gray-900 dark:text-white">{activity.user}</span>{" "}
                 {activity.action}{" "}
-                <span className="text-gray-400">{activity.achievement}</span>
+                <span className="text-gray-500 dark:text-gray-400">{activity.achievement}</span>
               </span>
             </div>
           ))}

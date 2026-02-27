@@ -158,7 +158,7 @@ export default function LevelsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -175,15 +175,15 @@ export default function LevelsPage() {
             onClick={() => router.push("/hub/admin/gamification")}
             className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
+            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
               <Crown className="w-6 h-6 text-purple-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-              <p className="text-gray-400 text-sm">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
                 {labels.subtitle}
               </p>
             </div>
@@ -203,7 +203,7 @@ export default function LevelsPage() {
             color: "#8B5CF6",
             multiplier: 1,
           })}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
           {labels.newLevel}
@@ -212,35 +212,35 @@ export default function LevelsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Crown className="w-4 h-4 text-purple-500" />
             {labels.stats.totalLevels}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{levels.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{levels.length}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
             {labels.stats.totalUsers}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">{totalUsers}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalUsers}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <TrendingUp className="w-4 h-4 text-green-500" />
             {labels.stats.avgLevel}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.avgLevel || 1}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Star className="w-4 h-4 text-amber-500" />
             {labels.stats.maxReached}
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {labels.stats.level} {stats?.maxLevelReached || 1}
           </p>
         </div>
@@ -256,14 +256,14 @@ export default function LevelsPage() {
           return (
             <div
               key={level.id}
-              className="group relative bg-gray-800/50 rounded-2xl p-5 border border-gray-700/50 hover:border-gray-600 transition-all"
+              className="group relative bg-white dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
             >
               {/* Edit Button */}
               <button
                 onClick={() => setEditingLevel(level)}
-                className="absolute top-3 right-3 p-2 rounded-lg bg-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-3 right-3 p-2 rounded-lg bg-gray-100 dark:bg-gray-700/50 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Edit className="w-4 h-4 text-gray-400" />
+                <Edit className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
 
               {/* Level Number */}
@@ -280,18 +280,18 @@ export default function LevelsPage() {
               </div>
 
               {/* Title */}
-              <h3 className="font-semibold text-white mb-1">{level.title}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{level.title}</h3>
               <p className="text-xs text-gray-500 mb-3">{level.titleEN}</p>
 
               {/* Points Range */}
-              <div className="text-sm text-gray-400 mb-3">
-                <span className="font-medium text-white">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                <span className="font-medium text-gray-900 dark:text-white">
                   {level.minPoints.toLocaleString()}
                 </span>
                 {level.maxPoints ? (
                   <>
                     {" - "}
-                    <span className="font-medium text-white">
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {level.maxPoints.toLocaleString()}
                     </span>
                   </>
@@ -310,10 +310,10 @@ export default function LevelsPage() {
               )}
 
               {/* User Count */}
-              <div className="pt-3 border-t border-gray-700/50">
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700/50">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">{labels.card.users}</span>
-                  <span className="text-white font-medium">
+                  <span className="text-gray-900 dark:text-white font-medium">
                     {level.userCount || 0}
                   </span>
                 </div>
@@ -334,8 +334,8 @@ export default function LevelsPage() {
       </div>
 
       {/* Level Progression Chart */}
-      <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-green-500" />
           {labels.chart.title}
         </h3>
@@ -370,13 +370,13 @@ export default function LevelsPage() {
       {editingLevel && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {labels.modal.editTitle} {editingLevel.level}
             </h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
                   {labels.modal.titleES}
                 </label>
                 <input
@@ -385,12 +385,12 @@ export default function LevelsPage() {
                   onChange={(e) =>
                     setEditingLevel({ ...editingLevel, title: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
                   {labels.modal.titleEN}
                 </label>
                 <input
@@ -399,13 +399,13 @@ export default function LevelsPage() {
                   onChange={(e) =>
                     setEditingLevel({ ...editingLevel, titleEN: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-900 dark:text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
                     {labels.modal.minPoints}
                   </label>
                   <input
@@ -417,11 +417,11 @@ export default function LevelsPage() {
                         minPoints: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
                     {labels.modal.multiplier}
                   </label>
                   <input
@@ -434,13 +434,13 @@ export default function LevelsPage() {
                         multiplier: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">{labels.modal.color}</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{labels.modal.color}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -456,7 +456,7 @@ export default function LevelsPage() {
                     onChange={(e) =>
                       setEditingLevel({ ...editingLevel, color: e.target.value })
                     }
-                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -465,13 +465,13 @@ export default function LevelsPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setEditingLevel(null)}
-                className="flex-1 px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 {labels.modal.cancel}
               </button>
               <button
                 onClick={() => updateLevel(editingLevel)}
-                className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                className="flex-1 px-4 py-2 bg-purple-500 text-gray-900 dark:text-white rounded-lg hover:bg-purple-600 transition-colors"
               >
                 {labels.modal.save}
               </button>

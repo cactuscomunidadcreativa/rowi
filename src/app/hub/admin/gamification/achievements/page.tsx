@@ -231,7 +231,7 @@ export default function AchievementsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -248,20 +248,20 @@ export default function AchievementsPage() {
             onClick={() => router.push("/hub/admin/gamification")}
             className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
+            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
               <Trophy className="w-6 h-6 text-yellow-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-              <p className="text-gray-400 text-sm">{labels.subtitle}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{labels.subtitle}</p>
             </div>
           </div>
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" />
           {labels.addNew}
         </button>
@@ -269,39 +269,39 @@ export default function AchievementsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-yellow-500" />
             Total Logros
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalAchievements || 0}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
             Usuarios con Logros
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.usersWithAchievements || 0}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Zap className="w-4 h-4 text-purple-500" />
             Categorías
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.categories?.length || 0}
           </p>
         </div>
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Award className="w-4 h-4 text-green-500" />
             Logros Activos
           </div>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {achievements.filter((a) => a.isActive).length}
           </p>
         </div>
@@ -317,7 +317,7 @@ export default function AchievementsPage() {
             placeholder={labels.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500/50"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500/50"
           />
         </div>
 
@@ -330,7 +330,7 @@ export default function AchievementsPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 categoryFilter === cat.key
                   ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                  : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600"
+                  : "bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
               }`}
             >
               {cat.label}
@@ -340,30 +340,30 @@ export default function AchievementsPage() {
       </div>
 
       {/* Achievements Table */}
-      <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-700/50">
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+              <tr className="border-b border-gray-200 dark:border-gray-700/50">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.achievement}
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.category}
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.points}
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.rarity}
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.users}
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-400">
+                <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.status}
                 </th>
-                <th className="text-right p-4 text-sm font-medium text-gray-400">
+                <th className="text-right p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
                   {labels.columns.actions}
                 </th>
               </tr>
@@ -383,7 +383,7 @@ export default function AchievementsPage() {
                   return (
                     <tr
                       key={achievement.id}
-                      className="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors"
+                      className="border-b border-gray-200 dark:border-gray-700/30 hover:bg-gray-700/20 transition-colors"
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -397,7 +397,7 @@ export default function AchievementsPage() {
                             />
                           </div>
                           <div>
-                            <p className="font-medium text-white">
+                            <p className="font-medium text-gray-900 dark:text-white">
                               {achievement.name}
                             </p>
                             <p className="text-sm text-gray-500 truncate max-w-xs">
@@ -408,14 +408,14 @@ export default function AchievementsPage() {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <CategoryIcon className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-300">
+                          <CategoryIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <span className="text-sm text-gray-600 dark:text-gray-300">
                             {achievement.category}
                           </span>
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="text-white font-medium">
+                        <span className="text-gray-900 dark:text-white font-medium">
                           {achievement.points}
                         </span>
                       </td>
@@ -429,7 +429,7 @@ export default function AchievementsPage() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-gray-300">
+                        <span className="text-gray-600 dark:text-gray-300">
                           {achievement.completedCount || 0}
                         </span>
                       </td>
@@ -439,7 +439,7 @@ export default function AchievementsPage() {
                           className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${
                             achievement.isActive
                               ? "bg-green-500/20 text-green-400"
-                              : "bg-gray-700 text-gray-400"
+                              : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                           }`}
                         >
                           {achievement.isActive ? (
@@ -458,10 +458,10 @@ export default function AchievementsPage() {
                       <td className="p-4">
                         <div className="flex items-center justify-end gap-2">
                           <button className="p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                            <Eye className="w-4 h-4 text-gray-400" />
+                            <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           </button>
                           <button className="p-2 rounded-lg hover:bg-gray-700 transition-colors">
-                            <Edit className="w-4 h-4 text-gray-400" />
+                            <Edit className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           </button>
                           <button className="p-2 rounded-lg hover:bg-gray-700 transition-colors">
                             <Trash2 className="w-4 h-4 text-red-400" />

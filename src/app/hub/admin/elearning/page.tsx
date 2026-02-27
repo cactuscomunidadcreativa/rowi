@@ -237,7 +237,7 @@ export default function ElearningDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>{labels.loading}</span>
         </div>
@@ -253,8 +253,8 @@ export default function ElearningDashboardPage() {
           <BookOpen className="w-8 h-8 text-blue-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">{labels.title}</h1>
-          <p className="text-gray-400">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+          <p className="text-gray-500 dark:text-gray-400">
             {labels.subtitle}
           </p>
         </div>
@@ -265,13 +265,13 @@ export default function ElearningDashboardPage() {
         {quickStats.map((stat, idx) => (
           <div
             key={idx}
-            className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50"
+            className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-gray-700/50"
           >
             <div className="flex items-center gap-3">
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
-              <span className="text-sm text-gray-400">{stat.label}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</span>
             </div>
-            <p className="text-2xl font-bold text-white mt-2">{stat.value}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -282,22 +282,22 @@ export default function ElearningDashboardPage() {
           <button
             key={module.id}
             onClick={() => router.push(module.href)}
-            className="group text-left bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600 transition-all duration-300 hover:scale-[1.02]"
+            className="group text-left bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 hover:scale-[1.02]"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-xl ${module.bgColor}`}>
                 <module.icon className={`w-6 h-6 ${module.iconColor}`} />
               </div>
-              <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
 
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               {module.title}
             </h3>
-            <p className="text-sm text-gray-400 mb-4">{module.description}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{module.description}</p>
 
-            <div className="flex items-center gap-2 pt-4 border-t border-gray-700/50">
-              <span className="text-2xl font-bold text-white">{module.stat}</span>
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700/50">
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{module.stat}</span>
               <span className="text-xs text-gray-500">{module.statLabel}</span>
             </div>
           </button>
@@ -305,9 +305,9 @@ export default function ElearningDashboardPage() {
       </div>
 
       {/* MicroLearning Breakdown */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+      <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-amber-500" />
             {labels.categoryBreakdown.title}
           </h3>
@@ -323,7 +323,7 @@ export default function ElearningDashboardPage() {
           {categoryBreakdown.map((cat) => (
             <div
               key={cat.key}
-              className="bg-gray-700/30 rounded-xl p-4 hover:bg-gray-700/50 transition-colors cursor-pointer"
+              className="bg-gray-100 dark:bg-gray-700/30 rounded-xl p-4 hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
               onClick={() =>
                 router.push(`/hub/admin/elearning/microlearning?category=${cat.key}`)
               }
@@ -333,11 +333,11 @@ export default function ElearningDashboardPage() {
                   <cat.icon className={`w-5 h-5 ${cat.color.replace("bg-", "text-")}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">{cat.label}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{cat.label}</p>
                   <p className="text-xs text-gray-500">{cat.count} {labels.categoryBreakdown.actions}</p>
                 </div>
               </div>
-              <div className="h-1.5 bg-gray-600 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full ${cat.color}`}
                   style={{ width: `${(cat.count / 150) * 100}%` }}
@@ -349,8 +349,8 @@ export default function ElearningDashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-blue-500" />
           {labels.activity.title}
         </h3>
@@ -363,17 +363,17 @@ export default function ElearningDashboardPage() {
           ].map((activity, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between p-3 rounded-lg bg-gray-700/30 hover:bg-gray-700/50 transition-colors"
+              className="flex items-center justify-between p-3 rounded-lg bg-gray-100 dark:bg-gray-700/30 hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm font-medium text-white">
+                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-900 dark:text-white">
                   {activity.user.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-300">
-                    <span className="font-medium text-white">{activity.user}</span>{" "}
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-medium text-gray-900 dark:text-white">{activity.user}</span>{" "}
                     {activity.action}{" "}
-                    <span className="text-gray-400">{activity.item}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{activity.item}</span>
                   </p>
                   <span className="text-xs text-gray-500">{activity.type}</span>
                 </div>

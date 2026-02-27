@@ -282,13 +282,13 @@ export default function CouponsPage() {
             <Ticket className="w-7 h-7 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-            <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{txt.title}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{txt.subtitle}</p>
           </div>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 transition-colors text-white text-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 transition-colors text-gray-900 dark:text-white text-sm"
         >
           <Plus className="w-4 h-4" />
           {txt.createCoupon}
@@ -297,52 +297,52 @@ export default function CouponsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
           <div className="flex items-center gap-2 text-amber-400 mb-2">
             <Ticket className="w-5 h-5" />
             <span className="text-sm">{txt.totalCoupons}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.total}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
           <div className="flex items-center gap-2 text-emerald-400 mb-2">
             <CheckCircle className="w-5 h-5" />
             <span className="text-sm">{txt.activeCoupons}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.active}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.active}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
           <div className="flex items-center gap-2 text-blue-400 mb-2">
             <Users className="w-5 h-5" />
             <span className="text-sm">{txt.totalRedemptions}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.totalRedemptions.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalRedemptions.toLocaleString()}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+        <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
           <div className="flex items-center gap-2 text-violet-400 mb-2">
             <Trophy className="w-5 h-5" />
             <span className="text-sm">{txt.gamificationCoupons}</span>
           </div>
-          <p className="text-3xl font-bold text-white">{stats.gamificationLinked}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.gamificationLinked}</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             placeholder={txt.search}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
           />
         </div>
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+          className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
         >
           <option value="all">{txt.all}</option>
           <option value="percentage">{txt.percentage}</option>
@@ -357,12 +357,12 @@ export default function CouponsPage() {
         {filteredCoupons.map((coupon) => (
           <div
             key={coupon.id}
-            className={`bg-gray-800/50 rounded-2xl border p-5 ${
+            className={`bg-white dark:bg-gray-800/50 rounded-2xl border p-5 ${
               !coupon.isActive || isExpired(coupon.validUntil)
-                ? "border-gray-700/30 opacity-60"
+                ? "border-gray-200 dark:border-gray-700/30 opacity-60"
                 : coupon.gamificationTrigger
                 ? "border-violet-500/30"
-                : "border-gray-700/50"
+                : "border-gray-200 dark:border-gray-700/50"
             }`}
           >
             <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -381,17 +381,17 @@ export default function CouponsPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <code className="text-lg font-mono font-bold text-white bg-gray-700/50 px-3 py-1 rounded">
+                    <code className="text-lg font-mono font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700/50 px-3 py-1 rounded">
                       {coupon.code}
                     </code>
                     <button
                       onClick={() => copyCode(coupon.code)}
                       className="p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
                     >
-                      <Copy className="w-4 h-4 text-gray-400" />
+                      <Copy className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-400 mt-1">{coupon.description}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{coupon.description}</p>
                 </div>
               </div>
 
@@ -399,7 +399,7 @@ export default function CouponsPage() {
               <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 md:ml-4">
                 <div>
                   <span className="text-xs text-gray-500">{txt.type}</span>
-                  <p className="text-sm text-white">{getTypeLabel(coupon.type)}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{getTypeLabel(coupon.type)}</p>
                 </div>
                 <div>
                   <span className="text-xs text-gray-500">{txt.value}</span>
@@ -407,11 +407,11 @@ export default function CouponsPage() {
                 </div>
                 <div>
                   <span className="text-xs text-gray-500">{txt.uses}</span>
-                  <p className="text-sm text-white">{coupon.usedCount} / {coupon.maxUses}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{coupon.usedCount} / {coupon.maxUses}</p>
                 </div>
                 <div>
                   <span className="text-xs text-gray-500">{txt.validUntil}</span>
-                  <p className="text-sm text-white">{new Date(coupon.validUntil).toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{new Date(coupon.validUntil).toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -428,7 +428,7 @@ export default function CouponsPage() {
                     ? "bg-red-500/20 text-red-300"
                     : coupon.isActive
                     ? "bg-emerald-500/20 text-emerald-300"
-                    : "bg-gray-500/20 text-gray-300"
+                    : "bg-gray-500/20 text-gray-600 dark:text-gray-300"
                 }`}>
                   {isExpired(coupon.validUntil) ? txt.expired : coupon.isActive ? txt.active : txt.inactive}
                 </span>
@@ -438,9 +438,9 @@ export default function CouponsPage() {
                   title={coupon.isActive ? "Desactivar" : "Activar"}
                 >
                   {coupon.isActive ? (
-                    <XCircle className="w-4 h-4 text-gray-400" />
+                    <XCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
+                    <CheckCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
                 <button
@@ -459,7 +459,7 @@ export default function CouponsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <Ticket className="w-5 h-5 text-amber-400" />
               {txt.createCoupon}
             </h2>
@@ -467,18 +467,18 @@ export default function CouponsPage() {
             <div className="space-y-4">
               {/* Code */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">{txt.code}</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.code}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newCoupon.code}
                     onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
-                    className="flex-1 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm font-mono focus:border-amber-500 focus:outline-none"
+                    className="flex-1 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm font-mono focus:border-amber-500 focus:outline-none"
                     placeholder="CODIGO123"
                   />
                   <button
                     onClick={generateCode}
-                    className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                    className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-900 dark:text-white text-sm"
                   >
                     {txt.generate}
                   </button>
@@ -488,11 +488,11 @@ export default function CouponsPage() {
               {/* Type & Value */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">{txt.type}</label>
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.type}</label>
                   <select
                     value={newCoupon.type}
                     onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value as Coupon["type"] })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   >
                     <option value="percentage">{txt.percentage}</option>
                     <option value="fixed">{txt.fixed}</option>
@@ -501,71 +501,71 @@ export default function CouponsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">{txt.value}</label>
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.value}</label>
                   <input
                     type="number"
                     value={newCoupon.value}
                     onChange={(e) => setNewCoupon({ ...newCoupon, value: parseInt(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">{txt.description}</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.description}</label>
                 <input
                   type="text"
                   value={newCoupon.description}
                   onChange={(e) => setNewCoupon({ ...newCoupon, description: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   placeholder={locale === "en" ? "Coupon description..." : "Descripción del cupón..."}
                 />
               </div>
 
               {/* Max Uses */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">{txt.maxUses}</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.maxUses}</label>
                 <input
                   type="number"
                   value={newCoupon.maxUses}
                   onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                 />
               </div>
 
               {/* Validity */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">{txt.validFrom}</label>
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.validFrom}</label>
                   <input
                     type="date"
                     value={newCoupon.validFrom}
                     onChange={(e) => setNewCoupon({ ...newCoupon, validFrom: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">{txt.validUntil}</label>
+                  <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{txt.validUntil}</label>
                   <input
                     type="date"
                     value={newCoupon.validUntil}
                     onChange={(e) => setNewCoupon({ ...newCoupon, validUntil: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Gamification Trigger */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
                   {txt.gamificationTrigger}
                   <Sparkles className="w-3 h-3 inline ml-1 text-violet-400" />
                 </label>
                 <select
                   value={newCoupon.gamificationTrigger}
                   onChange={(e) => setNewCoupon({ ...newCoupon, gamificationTrigger: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-amber-500 focus:outline-none"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                 >
                   <option value="">{txt.none}</option>
                   {GAMIFICATION_TRIGGERS.map((trigger) => (
@@ -586,14 +586,14 @@ export default function CouponsPage() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-white text-sm"
+                className="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 text-gray-900 dark:text-white text-sm"
               >
                 {txt.cancel}
               </button>
               <button
                 onClick={handleCreateCoupon}
                 disabled={!newCoupon.code || !newCoupon.description}
-                className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm"
+                className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white text-sm"
               >
                 {txt.save}
               </button>

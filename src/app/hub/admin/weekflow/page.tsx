@@ -165,7 +165,7 @@ export default function WeekFlowAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4 text-gray-400">
+        <div className="flex flex-col items-center gap-4 text-gray-500 dark:text-gray-400">
           <Workflow className="w-16 h-16 text-violet-500 animate-pulse" />
           <span>{txt.loading}</span>
         </div>
@@ -178,8 +178,8 @@ export default function WeekFlowAdminPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Workflow className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">{txt.noHubs}</h2>
-          <p className="text-gray-400">{txt.noHubsDesc}</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{txt.noHubs}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{txt.noHubsDesc}</p>
         </div>
       </div>
     );
@@ -211,8 +211,8 @@ export default function WeekFlowAdminPage() {
             <Workflow className="w-7 h-7 text-violet-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{txt.title}</h1>
-            <p className="text-gray-400 text-sm">{txt.subtitle}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{txt.title}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{txt.subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -220,7 +220,7 @@ export default function WeekFlowAdminPage() {
             <select
               value={selectedHub}
               onChange={(e) => setSelectedHub(e.target.value)}
-              className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-violet-500 focus:outline-none"
+              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-violet-500 focus:outline-none"
             >
               {hubs.map((h) => (
                 <option key={h.id} value={h.id}>{h.name}</option>
@@ -230,7 +230,7 @@ export default function WeekFlowAdminPage() {
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm focus:border-violet-500 focus:outline-none"
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-violet-500 focus:outline-none"
           >
             <option value="WEEKLY">{txt.weekly}</option>
             <option value="MONTHLY">{txt.monthly}</option>
@@ -238,14 +238,14 @@ export default function WeekFlowAdminPage() {
           </select>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition-colors text-white text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition-colors text-gray-900 dark:text-white text-sm"
           >
             <Download className="w-4 h-4" />
             {txt.export}
           </button>
           <a
             href="/hub/admin/weekflow/settings"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 transition-colors text-white text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-white text-sm"
           >
             <Settings className="w-4 h-4" />
             {txt.configuration}
@@ -254,7 +254,7 @@ export default function WeekFlowAdminPage() {
       </div>
 
       {!metrics ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-gray-500 dark:text-gray-400">
           <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>{txt.noData}</p>
         </div>
@@ -294,13 +294,13 @@ export default function WeekFlowAdminPage() {
 
           {/* Secondary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <Target className="w-5 h-5 text-violet-400" />
-                <span className="text-gray-400">{txt.participation}</span>
+                <span className="text-gray-500 dark:text-gray-400">{txt.participation}</span>
               </div>
-              <p className="text-4xl font-bold text-white">{s?.participationRate || 0}%</p>
-              <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
+              <p className="text-4xl font-bold text-gray-900 dark:text-white">{s?.participationRate || 0}%</p>
+              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-700"
                   style={{ width: `${s?.participationRate || 0}%` }}
@@ -308,13 +308,13 @@ export default function WeekFlowAdminPage() {
               </div>
             </div>
 
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <CheckCircle className="w-5 h-5 text-emerald-400" />
-                <span className="text-gray-400">{txt.taskCompletion}</span>
+                <span className="text-gray-500 dark:text-gray-400">{txt.taskCompletion}</span>
               </div>
-              <p className="text-4xl font-bold text-white">{s?.taskCompletionRate || 0}%</p>
-              <div className="h-2 bg-gray-700 rounded-full mt-3 overflow-hidden">
+              <p className="text-4xl font-bold text-gray-900 dark:text-white">{s?.taskCompletionRate || 0}%</p>
+              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-700"
                   style={{ width: `${s?.taskCompletionRate || 0}%` }}
@@ -322,13 +322,13 @@ export default function WeekFlowAdminPage() {
               </div>
             </div>
 
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <Zap className="w-5 h-5 text-amber-400" />
-                <span className="text-gray-400">{txt.consecutiveWeeks}</span>
+                <span className="text-gray-500 dark:text-gray-400">{txt.consecutiveWeeks}</span>
               </div>
-              <p className="text-4xl font-bold text-white">
-                {s?.consecutiveWeeks || 0} <span className="text-lg text-gray-400">{txt.weekly}s</span>
+              <p className="text-4xl font-bold text-gray-900 dark:text-white">
+                {s?.consecutiveWeeks || 0} <span className="text-lg text-gray-500 dark:text-gray-400">{txt.weekly}s</span>
               </p>
             </div>
           </div>
@@ -336,8 +336,8 @@ export default function WeekFlowAdminPage() {
           {/* Bottom Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Contribution Types */}
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-violet-400" />
                 {txt.contributionTypes}
               </h3>
@@ -347,11 +347,11 @@ export default function WeekFlowAdminPage() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: type.color }} />
-                        <span className="text-sm text-gray-300">{type.type}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{type.type}</span>
                       </div>
-                      <span className="text-sm font-semibold text-white">{type.count}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{type.count}</span>
                     </div>
-                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{ width: `${(type.count / maxContrib) * 100}%`, backgroundColor: type.color }}
@@ -363,8 +363,8 @@ export default function WeekFlowAdminPage() {
             </div>
 
             {/* Mood Distribution / Team Pulse */}
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-5">
-              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-5">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Brain className="w-5 h-5 text-pink-400" />
                 {txt.moodDistribution}
               </h3>
@@ -372,9 +372,9 @@ export default function WeekFlowAdminPage() {
                 <div className="space-y-3">
                   {tp.dominantEmotion && (
                     <div className="mb-4 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
-                      <p className="text-xs text-gray-400 mb-1">{txt.dominantEmotion}</p>
-                      <p className="text-lg font-bold text-white capitalize">{tp.dominantEmotion.toLowerCase()}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{txt.dominantEmotion}</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white capitalize">{tp.dominantEmotion.toLowerCase()}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {tp.totalResponses} check-ins • {locale === "en" ? "Avg intensity" : "Intensidad promedio"}: {tp.avgIntensity}/3
                       </p>
                     </div>
@@ -387,11 +387,11 @@ export default function WeekFlowAdminPage() {
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: EMOTION_COLORS[mood.emotion.toUpperCase()] || "#9E9E9E" }}
                           />
-                          <span className="text-sm text-gray-300 capitalize">{mood.emotion.toLowerCase()}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">{mood.emotion.toLowerCase()}</span>
                         </div>
-                        <span className="text-sm font-semibold text-white">{mood.percentage}%</span>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{mood.percentage}%</span>
                       </div>
-                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -433,10 +433,10 @@ function StatCard({
   return (
     <div className={`bg-gradient-to-br ${gradient} rounded-2xl border ${border} p-5`}>
       <div className="flex items-center justify-between mb-2">
-        <div className="p-2 rounded-xl bg-white/5">{icon}</div>
+        <div className="p-2 rounded-xl bg-gray-100 dark:bg-white/5">{icon}</div>
       </div>
-      <p className="text-3xl font-bold text-white">{typeof value === "number" ? value.toLocaleString() : value}</p>
-      <p className="text-sm text-gray-400">{label}</p>
+      <p className="text-3xl font-bold text-gray-900 dark:text-white">{typeof value === "number" ? value.toLocaleString() : value}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
     </div>
   );
 }

@@ -27,7 +27,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Server misconfiguration" }, { status: 500 });
     }
 
-    const providedSecret = req.headers.get("x-cron-secret");
+    // Accept both Vercel cron header (Authorization: Bearer <secret>) and custom x-cron-secret
+    const authHeader = req.headers.get("authorization");
+    const providedSecret =
+      req.headers.get("x-cron-secret") ||
+      (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null);
 
     if (cronSecret && providedSecret !== cronSecret) {
       console.warn("[Cron Notifications] Unauthorized attempt");
@@ -65,7 +69,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Server misconfiguration" }, { status: 500 });
     }
 
-    const providedSecret = req.headers.get("x-cron-secret");
+    const postAuthHeader = req.headers.get("authorization");
+    const providedSecret =
+      req.headers.get("x-cron-secret") ||
+      (postAuthHeader?.startsWith("Bearer ") ? postAuthHeader.slice(7) : null);
 
     if (cronSecret && providedSecret !== cronSecret) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });

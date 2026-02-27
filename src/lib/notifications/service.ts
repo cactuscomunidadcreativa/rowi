@@ -70,8 +70,10 @@ export const NotificationService = {
 
     // Create notification records for each channel
     const notifications = await Promise.all(
-      enabledChannels.map((channel) =>
-        prisma.notificationQueue.create({
+      enabledChannels.map((channel) => {
+        // IN_APP notifications are immediately "sent" — no external provider needed
+        const isInApp = channel === "IN_APP";
+        return prisma.notificationQueue.create({
           data: {
             userId,
             tenantId,
@@ -82,13 +84,14 @@ export const NotificationService = {
             message,
             metadata: metadata as object | undefined,
             priority,
-            scheduledFor,
-            status: scheduledFor ? "SCHEDULED" : "PENDING",
+            scheduledFor: isInApp ? undefined : scheduledFor,
+            status: isInApp ? "SENT" : scheduledFor ? "SCHEDULED" : "PENDING",
+            sentAt: isInApp ? new Date() : undefined,
             actionUrl,
             scope,
           },
-        })
-      )
+        });
+      })
     );
 
     return notifications.map((n) => n.id);

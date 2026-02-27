@@ -65,7 +65,7 @@ const translations = {
     // Communities tab
     comm: {
       title: "Mis Comunidades",
-      desc: "Comunidades a las que perteneces",
+      desc: "Comunidades a las que perteneces y sus sub-comunidades",
       empty: "No perteneces a ninguna comunidad aún",
       members: "miembros",
       subCommunities: "sub-comunidades",
@@ -76,6 +76,8 @@ const translations = {
       owner: "Propietario",
       admin: "Admin",
       member: "Miembro",
+      viewer: "Visor",
+      inherited: "Heredada",
       loadingMembers: "Cargando miembros...",
       noMembers: "Esta comunidad no tiene miembros aún",
     },
@@ -237,7 +239,7 @@ const translations = {
     // Communities tab
     comm: {
       title: "My Communities",
-      desc: "Communities you belong to",
+      desc: "Communities you belong to and their sub-communities",
       empty: "You don't belong to any community yet",
       members: "members",
       subCommunities: "sub-communities",
@@ -248,6 +250,8 @@ const translations = {
       owner: "Owner",
       admin: "Admin",
       member: "Member",
+      viewer: "Viewer",
+      inherited: "Inherited",
       loadingMembers: "Loading members...",
       noMembers: "This community has no members yet",
     },
@@ -1246,17 +1250,24 @@ export default function CommunityPage() {
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center flex-shrink-0">
                             <HeartHandshake className="w-5 h-5 text-white" />
                           </div>
-                          {c.role && (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                              c.role === "owner"
-                                ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                                : c.role === "admin"
-                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                                : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
-                            }`}>
-                              {c.role === "owner" ? t.comm.owner : c.role === "admin" ? t.comm.admin : t.comm.member}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1">
+                            {c._membership === "inherited" && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                {lang === "es" ? "Heredada" : "Inherited"}
+                              </span>
+                            )}
+                            {c.role && c.role !== "viewer" && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                c.role === "owner"
+                                  ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                  : c.role === "admin"
+                                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                  : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
+                              }`}>
+                                {c.role === "owner" ? t.comm.owner : c.role === "admin" ? t.comm.admin : t.comm.member}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-[var(--rowi-g2)] transition-colors">

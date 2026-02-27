@@ -62,26 +62,34 @@ export async function GET(req: NextRequest) {
     ];
 
     // Filtro por comunidad (hubId, tenantId, o RowiCommunity ID)
+    let rcUserIds: string[] = [];
     if (communityFilter) {
-      // Intentar buscar emails de una RowiCommunity con este ID
       let rcEmails: string[] = [];
       try {
         const rcMembers = await prisma.rowiCommunityUser.findMany({
           where: { communityId: communityFilter },
-          select: { email: true },
+          select: { email: true, userId: true },
         });
         rcEmails = rcMembers
           .map((m) => m.email?.toLowerCase())
           .filter((e): e is string => !!e);
+        rcUserIds = rcMembers
+          .map((m) => m.userId)
+          .filter((id): id is string => !!id);
       } catch {
         // No es un RowiCommunity ID, continuar
       }
 
-      if (rcEmails.length > 0) {
-        // Filtrar por emails de la RowiCommunity
-        whereConditions.push({
-          email: { in: rcEmails, mode: "insensitive" as const },
-        });
+      if (rcEmails.length > 0 || rcUserIds.length > 0) {
+        // Filtrar CommunityMembers por email O userId de la RowiCommunity
+        const rcOrConditions: any[] = [];
+        if (rcEmails.length > 0) {
+          rcOrConditions.push({ email: { in: rcEmails, mode: "insensitive" as const } });
+        }
+        if (rcUserIds.length > 0) {
+          rcOrConditions.push({ userId: { in: rcUserIds } });
+        }
+        whereConditions.push({ OR: rcOrConditions });
       } else {
         whereConditions.push({
           OR: [
@@ -215,7 +223,13 @@ export async function GET(req: NextRequest) {
       const existingUserIds = new Set(membersDB.filter((m) => m.userId).map((m) => m.userId));
 
       teammates = tenantUsers
-        .filter((u) => !existingEmails.has(u.email?.toLowerCase()) && !existingUserIds.has(u.id))
+        .filter((u) => {
+          // When filtering by RowiCommunity, only include teammates that are members
+          if (communityFilter && rcUserIds.length > 0 && !rcUserIds.includes(u.id)) return false;
+          // When filtering by hub/tenant (no rcUserIds), skip teammates entirely
+          if (communityFilter && rcUserIds.length === 0) return false;
+          return !existingEmails.has(u.email?.toLowerCase()) && !existingUserIds.has(u.id);
+        })
         .map((u) => {
           const snap = u.eqSnapshots?.[0];
           const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
@@ -304,16 +318,21 @@ export async function GET(req: NextRequest) {
           // usando los miembros del RowiCommunity que también existen en membersDB
           const rcMembers = await prisma.rowiCommunityUser.findMany({
             where: { communityId: rc.id },
-            select: { email: true },
+            select: { email: true, userId: true },
           });
           const rcEmails = new Set(rcMembers.map((m) => m.email?.toLowerCase()).filter(Boolean));
-          const matchCount = membersDB.filter((m) => m.email && rcEmails.has(m.email.toLowerCase())).length;
+          const rcUids = new Set(rcMembers.map((m) => m.userId).filter(Boolean));
+          const matchCount = membersDB.filter((m) =>
+            (m.email && rcEmails.has(m.email.toLowerCase())) || (m.userId && rcUids.has(m.userId))
+          ).length;
 
-          if (matchCount > 0) {
+          // Use matchCount if available, otherwise use total community member count
+          const displayCount = matchCount > 0 ? matchCount : rc._count.members;
+          if (displayCount > 0) {
             communityMap.set(key, {
               id: rc.id,
               name: rc.name,
-              count: matchCount,
+              count: displayCount,
             });
           }
         }

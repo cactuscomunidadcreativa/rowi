@@ -4,43 +4,64 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, Users, ArrowRight, CheckSquare, Sparkles, Lock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Loader2,
+  Calendar,
+  Users,
+  ArrowRight,
+  CheckSquare,
+  Sparkles,
+  Lock,
+  Crown,
+  Shield,
+  Eye,
+  Share2,
+  Copy,
+  Check,
+  Plus,
+  Megaphone,
+  Target,
+  MessageSquare,
+} from "lucide-react";
 import Link from "next/link";
+
+/* =========================================================
+   📅 WeekFlow Landing Page — Rowi SIA
+   ---------------------------------------------------------
+   Check-ins semanales para comunidades.
+   - Dueños/admins pueden crear check-ins y compartir URL
+   - Miembros ven check-ins de sus comunidades
+========================================================= */
 
 interface Hub {
   id: string;
   name: string;
   description?: string;
   image?: string;
-  _count?: {
-    members: number;
-  };
+  role?: string;
+  memberCount?: number;
+  _count?: { members?: number; memberships?: number };
 }
 
 export default function WeekFlowPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const router = useRouter();
   const { data: session, status } = useSession();
   const authLoading = status === "loading";
-  const user = session?.user as { plan?: { weekflowAccess?: boolean } } | undefined;
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && session) {
-      fetchUserHubs();
-    }
+    if (!authLoading && session) fetchUserHubs();
   }, [authLoading, session]);
 
   const fetchUserHubs = async () => {
     try {
       const res = await fetch("/api/hubs/my");
       const data = await res.json();
-      if (data.ok) {
-        setHubs(data.hubs || []);
-      }
+      if (data.ok) setHubs(data.hubs || []);
     } catch (error) {
       console.error("Error fetching hubs:", error);
     } finally {
@@ -48,153 +69,320 @@ export default function WeekFlowPage() {
     }
   };
 
-  // Check plan access for team features (hubs)
-  // Individual tasks are available for everyone
-  // TEMPORALMENTE: Abierto para todos durante desarrollo
-  const hasTeamAccess = true; // user?.plan?.weekflowAccess;
+  // Plan access — currently open for all
+  const hasTeamAccess = true;
+
+  const isOwnerOrAdmin = (role?: string) => {
+    const r = (role || "").toLowerCase();
+    return ["owner", "admin", "coach", "superadmin"].includes(r);
+  };
+
+  const myCheckins = hubs.filter((h) => isOwnerOrAdmin(h.role));
+  const memberCheckins = hubs.filter((h) => !isOwnerOrAdmin(h.role));
+
+  const copyShareUrl = (hubId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/weekflow/${hubId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(hubId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getRoleInfo = (role?: string) => {
+    const r = (role || "").toLowerCase();
+    if (r === "owner") return { icon: Crown, label: lang === "es" ? "Dueño" : "Owner", color: "text-amber-500", bg: "bg-amber-500/10" };
+    if (r === "admin" || r === "superadmin") return { icon: Shield, label: "Admin", color: "text-blue-500", bg: "bg-blue-500/10" };
+    if (r === "coach") return { icon: Target, label: "Coach", color: "text-purple-500", bg: "bg-purple-500/10" };
+    return { icon: Eye, label: lang === "es" ? "Miembro" : "Member", color: "text-gray-500", bg: "bg-gray-500/10" };
+  };
+
+  const tr = {
+    title: lang === "es" ? "WeekFlow" : "WeekFlow",
+    subtitle: lang === "es" ? "Check-ins semanales para tus comunidades" : "Weekly check-ins for your communities",
+    tasks: lang === "es" ? "Rowi Tasks" : "Rowi Tasks",
+    tasksDesc: lang === "es" ? "Tus tareas con insights emocionales" : "Your tasks with emotional insights",
+    insights: lang === "es" ? "Insights Emocionales" : "Emotional Insights",
+    insightsDesc: lang === "es" ? "Descubre patrones en tus tareas" : "Discover patterns in your tasks",
+    myCheckins: lang === "es" ? "Mis Check-ins" : "My Check-ins",
+    myCheckinsDesc: lang === "es" ? "Comunidades donde eres dueño o administrador" : "Communities where you are owner or admin",
+    communityCheckins: lang === "es" ? "Check-ins de Comunidad" : "Community Check-ins",
+    communityCheckinsDesc: lang === "es" ? "Check-ins de las comunidades a las que perteneces" : "Check-ins from communities you belong to",
+    createCheckin: lang === "es" ? "Crear Check-in" : "Create Check-in",
+    viewCheckin: lang === "es" ? "Ver Check-in" : "View Check-in",
+    shareUrl: lang === "es" ? "Compartir enlace" : "Share link",
+    copied: lang === "es" ? "Copiado" : "Copied",
+    members: lang === "es" ? "miembros" : "members",
+    noHubs: lang === "es" ? "No tienes comunidades con WeekFlow" : "No communities with WeekFlow",
+    noHubsDesc: lang === "es" ? "Crea o únete a una comunidad para empezar" : "Create or join a community to get started",
+    explore: lang === "es" ? "Explorar Comunidades" : "Explore Communities",
+    planRequired: lang === "es" ? "Mejora tu plan para acceder a check-ins de equipo" : "Upgrade your plan to access team check-ins",
+    upgrade: lang === "es" ? "Mejorar Plan" : "Upgrade Plan",
+  };
 
   if (authLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--rowi-primary)]" />
       </div>
     );
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t("weekflow.title") || "WeekFlow"}</h1>
-        <p className="text-muted-foreground">
-          {t("weekflow.description") || "Gestiona tus tareas y check-ins semanales"}
-        </p>
-      </div>
+    <main className="min-h-screen bg-[var(--rowi-background)] pt-20 pb-8 px-4 md:px-6">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl font-bold text-[var(--rowi-foreground)] flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            {tr.title}
+          </h1>
+          <p className="text-[var(--rowi-muted)] mt-2">{tr.subtitle}</p>
+        </motion.div>
 
-      {/* Personal Tasks - Always available */}
-      <Card className="mb-6 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => router.push("/weekflow/tasks")}>
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+        {/* Quick access cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          {/* Personal Tasks */}
+          <div
+            onClick={() => router.push("/weekflow/tasks")}
+            className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
               <CheckSquare className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold">{t("weekflow.tasks.title") || "Rowi Tasks"}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t("weekflow.tasks.subtitle") || "Tus tareas con insights emocionales"}
-              </p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-[var(--rowi-foreground)]">{tr.tasks}</h3>
+              <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.tasksDesc}</p>
             </div>
+            <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground" />
-        </CardContent>
-      </Card>
 
-      {/* Insights - Always available */}
-      <Card className="mb-8 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => router.push("/weekflow/tasks/insights")}>
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          {/* Insights */}
+          <div
+            onClick={() => router.push("/weekflow/tasks/insights")}
+            className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h3 className="font-semibold">{t("weekflow.insights.title") || "Insights Emocionales"}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t("weekflow.insights.subtitle") || "Descubre patrones en tus tareas"}
-              </p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-[var(--rowi-foreground)]">{tr.insights}</h3>
+              <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.insightsDesc}</p>
             </div>
+            <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground" />
-        </CardContent>
-      </Card>
+        </motion.div>
 
-      {/* Team Section */}
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">
-          {t("weekflow.teamCheckins") || "Check-ins de Equipo"}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {t("weekflow.teamCheckinsDesc") || "Colabora con tu equipo en check-ins semanales"}
-        </p>
-      </div>
-
-      {/* Team Hubs - Requires plan */}
-      {!hasTeamAccess ? (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <Lock className="w-6 h-6 text-amber-600" />
-            </div>
-            <h3 className="font-medium mb-2">
-              {t("weekflow.teamLocked") || "Check-ins de equipo"}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t("weekflow.errors.planRequired") || "Mejora tu plan para acceder a check-ins de equipo"}
-            </p>
-            <Button asChild variant="outline">
-              <Link href="/settings/subscription">
-                {t("common.upgradePlan") || "Mejorar Plan"}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : hubs.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">
-              {t("weekflow.noHubs") || "No tienes comunidades con WeekFlow activo"}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {t("weekflow.noHubsDesc") || "Únete a una comunidad o crea la tuya para empezar"}
-            </p>
-            <Button asChild>
-              <Link href="/community">
-                {t("common.exploreCommunities") || "Explorar Comunidades"}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {hubs.map((hub) => (
-            <Card
-              key={hub.id}
-              className="hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => router.push(`/weekflow/${hub.id}`)}
+        {/* Plan gate */}
+        {!hasTeamAccess ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12 rounded-2xl border-2 border-dashed border-[var(--rowi-border)] bg-[var(--rowi-surface)]"
+          >
+            <Lock className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <h3 className="font-semibold text-[var(--rowi-foreground)] mb-2">{tr.myCheckins}</h3>
+            <p className="text-sm text-[var(--rowi-muted)] mb-4">{tr.planRequired}</p>
+            <Link
+              href="/settings/subscription"
+              className="inline-flex px-6 py-2.5 rounded-xl border border-[var(--rowi-border)] text-sm font-medium text-[var(--rowi-foreground)] hover:bg-[var(--rowi-border)] transition-colors"
             >
-              <CardContent className="flex items-center justify-between p-6">
-                <div className="flex items-center gap-4">
-                  {hub.image ? (
-                    <img
-                      src={hub.image}
-                      alt={hub.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Users className="w-6 h-6 text-primary" />
-                    </div>
-                  )}
+              {tr.upgrade}
+            </Link>
+          </motion.div>
+        ) : hubs.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)]"
+          >
+            <Calendar className="w-16 h-16 text-[var(--rowi-muted)] mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-2">{tr.noHubs}</h3>
+            <p className="text-[var(--rowi-muted)] mb-6">{tr.noHubsDesc}</p>
+            <Link
+              href="/comunidades"
+              className="inline-flex px-6 py-2.5 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              {tr.explore}
+            </Link>
+          </motion.div>
+        ) : (
+          <>
+            {/* ═══════════════════════════════════════════════════
+               🏅 My Check-ins — Owner / Admin communities
+            ═══════════════════════════════════════════════════ */}
+            {myCheckins.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <Crown className="w-4 h-4 text-amber-500" />
+                  </div>
                   <div>
-                    <h3 className="font-semibold">{hub.name}</h3>
-                    {hub.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-1">
-                        {hub.description}
-                      </p>
-                    )}
-                    {hub._count && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {hub._count.members} {t("common.members") || "miembros"}
-                      </p>
-                    )}
+                    <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">{tr.myCheckins}</h2>
+                    <p className="text-xs text-[var(--rowi-muted)]">{tr.myCheckinsDesc}</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+
+                <div className="grid gap-3">
+                  {myCheckins.map((hub, i) => {
+                    const roleInfo = getRoleInfo(hub.role);
+                    const RoleIcon = roleInfo.icon;
+                    const count = hub.memberCount || hub._count?.memberships || hub._count?.members || 0;
+
+                    return (
+                      <motion.div
+                        key={hub.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
+                        onClick={() => router.push(`/weekflow/${hub.id}`)}
+                        className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 transition-all cursor-pointer group"
+                      >
+                        {hub.image ? (
+                          <img src={hub.image} alt={hub.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
+                            <Megaphone className="w-7 h-7 text-amber-600" />
+                          </div>
+                        )}
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-[var(--rowi-foreground)] truncate">{hub.name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${roleInfo.color} ${roleInfo.bg}`}>
+                              <RoleIcon className="w-3 h-3" />
+                              {roleInfo.label}
+                            </span>
+                          </div>
+                          {hub.description && (
+                            <p className="text-sm text-[var(--rowi-muted)] truncate">{hub.description}</p>
+                          )}
+                          <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                            <Users className="w-3 h-3 inline-block mr-1" />
+                            {count} {tr.members}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Share URL button */}
+                          <button
+                            onClick={(e) => copyShareUrl(hub.id, e)}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--rowi-background)] border border-[var(--rowi-border)] text-xs font-medium text-[var(--rowi-muted)] hover:text-[var(--rowi-foreground)] hover:border-[var(--rowi-primary)]/50 transition-all"
+                            title={tr.shareUrl}
+                          >
+                            {copiedId === hub.id ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-green-500" />
+                                <span className="text-green-500">{tr.copied}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Share2 className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{tr.shareUrl}</span>
+                              </>
+                            )}
+                          </button>
+
+                          <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-xs font-medium">
+                            {tr.createCheckin}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            )}
+
+            {/* ═══════════════════════════════════════════════════
+               👥 Community Check-ins — Member communities
+            ═══════════════════════════════════════════════════ */}
+            {memberCheckins.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">{tr.communityCheckins}</h2>
+                    <p className="text-xs text-[var(--rowi-muted)]">{tr.communityCheckinsDesc}</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  {memberCheckins.map((hub, i) => {
+                    const roleInfo = getRoleInfo(hub.role);
+                    const RoleIcon = roleInfo.icon;
+                    const count = hub.memberCount || hub._count?.memberships || hub._count?.members || 0;
+
+                    return (
+                      <motion.div
+                        key={hub.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + i * 0.05 }}
+                        onClick={() => router.push(`/weekflow/${hub.id}`)}
+                        className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer group"
+                      >
+                        {hub.image ? (
+                          <img src={hub.image} alt={hub.name} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center shrink-0">
+                            <MessageSquare className="w-6 h-6 text-blue-600" />
+                          </div>
+                        )}
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-[var(--rowi-foreground)] truncate">{hub.name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${roleInfo.color} ${roleInfo.bg}`}>
+                              <RoleIcon className="w-3 h-3" />
+                              {roleInfo.label}
+                            </span>
+                          </div>
+                          {hub.description && (
+                            <p className="text-sm text-[var(--rowi-muted)] truncate">{hub.description}</p>
+                          )}
+                          <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                            <Users className="w-3 h-3 inline-block mr-1" />
+                            {count} {tr.members}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="px-4 py-2 rounded-xl border border-[var(--rowi-border)] text-xs font-medium text-[var(--rowi-foreground)] group-hover:border-blue-500/50 transition-colors">
+                            {tr.viewCheckin}
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:text-blue-500 transition-colors" />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            )}
+          </>
+        )}
+      </div>
+    </main>
   );
 }

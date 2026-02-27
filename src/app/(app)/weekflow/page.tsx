@@ -297,9 +297,15 @@ export default function WeekFlowPage() {
                             )}
                           </button>
 
-                          <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-xs font-medium">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/weekflow/${hub.id}/checkin`);
+                            }}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                          >
                             {tr.createCheckin}
-                          </div>
+                          </button>
                         </div>
                       </motion.div>
                     );
@@ -369,9 +375,15 @@ export default function WeekFlowPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <div className="px-4 py-2 rounded-xl border border-[var(--rowi-border)] text-xs font-medium text-[var(--rowi-foreground)] group-hover:border-blue-500/50 transition-colors">
-                            {tr.viewCheckin}
-                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/weekflow/${hub.id}/checkin`);
+                            }}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                          >
+                            {tr.createCheckin}
+                          </button>
                           <ArrowRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:text-blue-500 transition-colors" />
                         </div>
                       </motion.div>

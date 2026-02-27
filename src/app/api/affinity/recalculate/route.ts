@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const context = body.context || "execution";
     const days = body.days || 30;
+    const force = body.force === true;
 
-    const result = await autoRecalcAffinity({ userId, context, days });
+    const result = await autoRecalcAffinity({ userId, context, days, force });
 
     if (!result.ok) {
       return NextResponse.json(
@@ -62,15 +63,35 @@ async function autoRecalcAffinity({
   userId,
   context = "execution",
   days = 30,
+  force = false,
 }: AutoRecalcOptions) {
   const start = Date.now();
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, plan: true, primaryTenantId: true },
+    });
     if (!user) throw new Error("Usuario no encontrado");
 
+    const isAdmin = user.plan === "admin" || user.plan === "super";
+
+    // For admin users: process ALL members in their tenant, not just their own
+    let memberWhere: any = { ownerId: userId };
+
+    if (isAdmin && user.primaryTenantId) {
+      // Get all owners (users) in this tenant
+      const tenantUsers = await prisma.user.findMany({
+        where: { primaryTenantId: user.primaryTenantId },
+        select: { id: true },
+      });
+      const tenantUserIds = tenantUsers.map((u) => u.id);
+
+      memberWhere = { ownerId: { in: tenantUserIds } };
+    }
+
     const members = await prisma.communityMember.findMany({
-      where: { ownerId: userId },
-      select: { id: true, name: true, closeness: true },
+      where: memberWhere,
+      select: { id: true, name: true, closeness: true, ownerId: true },
       orderBy: { joinedAt: "desc" },
       take: 500,
     });
@@ -78,7 +99,8 @@ async function autoRecalcAffinity({
     const results: any[] = [];
 
     for (const m of members) {
-      const signals = await summarizeSignals(userId, m.id, days);
+      const ownerUserId = isAdmin ? (m as any).ownerId || userId : userId;
+      const signals = await summarizeSignals(ownerUserId, m.id, days);
       const biasAdj = signals.effAvg >= 0.8 ? 1.08 : signals.effAvg <= 0.4 ? 0.92 : 1.0;
       const closenessDynamic =
         signals.tone === "positiva"
@@ -87,9 +109,9 @@ async function autoRecalcAffinity({
           ? "Lejano"
           : "Neutral";
 
-      // Buscar snapshot del usuario por todas las vias posibles (sin filtrar dataset)
+      // Buscar snapshot del owner y del miembro
       const snapUser = await prisma.eqSnapshot.findFirst({
-        where: { userId },
+        where: { userId: ownerUserId },
         orderBy: { at: "desc" },
       });
       const snapMember = await prisma.eqSnapshot.findFirst({
@@ -114,7 +136,7 @@ async function autoRecalcAffinity({
       const heat135 = Math.min(135, Math.round(baseHeat));
 
       await upsertAdaptiveSnapshot({
-        userId,
+        userId: ownerUserId,
         memberId: m.id,
         context,
         biasFactor: biasAdj,

@@ -559,7 +559,30 @@ export default function AffinityAdminPage() {
       const res = await fetch("/api/affinity/dashboard/team");
       if (res.ok) {
         const data = await res.json();
-        setStats(data);
+        if (data.ok) {
+          // Map API response to the format expected by the Stats tab
+          const contextAverages: Record<string, number> = {};
+          if (data.byContext) {
+            for (const ctx of data.byContext) {
+              contextAverages[ctx.context] = ctx.avg;
+            }
+          }
+
+          setStats({
+            globalAverage: data.team?.avgHeat || 0,
+            totalRelations: data.ranking?.reduce((sum: number, r: any) => sum + r.connections, 0) || 0,
+            recentInteractions: data.team?.topEmotions?.reduce((sum: number, e: any) => sum + e.count, 0) || 0,
+            lastRecalc: data.updatedAt,
+            contextAverages,
+            topConnections: data.ranking?.map((r: any) => ({
+              userName: r.name,
+              memberName: `${r.connections} conexiones`,
+              context: r.band,
+              score: r.avgHeat,
+              band: r.band,
+            })) || [],
+          });
+        }
       }
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -617,7 +640,7 @@ export default function AffinityAdminPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        toast.success(t("admin.affinity.recalcSuccess", `Recalculated ${data.processed || 0} relations`));
+        toast.success(t("admin.affinity.recalcSuccess", `Recalculated ${data.count || 0} relations in ${data.duration || '?'}`));
         loadStats();
       } else {
         toast.error(t("admin.affinity.recalcError"));

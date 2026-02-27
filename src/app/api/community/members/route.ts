@@ -63,8 +63,9 @@ export async function GET(req: NextRequest) {
 
     // Filtro por comunidad (hubId, tenantId, o RowiCommunity ID)
     let rcUserIds: string[] = [];
+    let rcEmails: string[] = [];
+    let isRowiCommunityFilter = false;
     if (communityFilter) {
-      let rcEmails: string[] = [];
       try {
         const rcMembers = await prisma.rowiCommunityUser.findMany({
           where: { communityId: communityFilter },
@@ -76,12 +77,17 @@ export async function GET(req: NextRequest) {
         rcUserIds = rcMembers
           .map((m) => m.userId)
           .filter((id): id is string => !!id);
+        if (rcEmails.length > 0 || rcUserIds.length > 0) {
+          isRowiCommunityFilter = true;
+        }
       } catch {
         // No es un RowiCommunity ID, continuar
       }
 
-      if (rcEmails.length > 0 || rcUserIds.length > 0) {
-        // Filtrar CommunityMembers por email O userId de la RowiCommunity
+      if (isRowiCommunityFilter) {
+        // For RowiCommunity filter: REPLACE ownerConditions with direct match
+        // so we find ALL CommunityMembers that belong to this community,
+        // regardless of who owns them
         const rcOrConditions: any[] = [];
         if (rcEmails.length > 0) {
           rcOrConditions.push({ email: { in: rcEmails, mode: "insensitive" as const } });
@@ -89,7 +95,8 @@ export async function GET(req: NextRequest) {
         if (rcUserIds.length > 0) {
           rcOrConditions.push({ userId: { in: rcUserIds } });
         }
-        whereConditions.push({ OR: rcOrConditions });
+        // Replace the ownerConditions (index 0) with RowiCommunity member match
+        whereConditions[0] = { OR: rcOrConditions };
       } else {
         whereConditions.push({
           OR: [
@@ -195,52 +202,81 @@ export async function GET(req: NextRequest) {
     });
 
     // 🆕 También incluir Users del mismo tenant como "compañeros de equipo"
+    // Y Users de la RowiCommunity que no tienen CommunityMember records
     let teammates: any[] = [];
-    if (owner.primaryTenantId) {
+    const existingEmails = new Set(members.map((m) => m.email?.toLowerCase()).filter(Boolean));
+    const existingUserIds = new Set(membersDB.filter((m) => m.userId).map((m) => m.userId));
+
+    if (isRowiCommunityFilter && rcUserIds.length > 0) {
+      // When filtering by RowiCommunity, fetch ALL Users who are members
+      // (they may be from different tenants)
+      const missingUserIds = rcUserIds.filter((id) => !existingUserIds.has(id) && id !== owner.id);
+      if (missingUserIds.length > 0) {
+        const rcUsers = await prisma.user.findMany({
+          where: { id: { in: missingUserIds }, active: true },
+          include: {
+            eqSnapshots: {
+              orderBy: { at: "desc" },
+              take: 1,
+              select: { brainStyle: true, K: true, C: true, G: true },
+            },
+          },
+        });
+        teammates = rcUsers
+          .filter((u) => !existingEmails.has(u.email?.toLowerCase()))
+          .map((u) => {
+            const snap = u.eqSnapshots?.[0];
+            const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
+            return {
+              id: `user_${u.id}`,
+              name: u.name || u.email?.split("@")[0] || "Unknown",
+              email: u.email || undefined,
+              country: u.country || undefined,
+              brainStyle: snap?.brainStyle || undefined,
+              group: "Trabajo",
+              closeness: "Neutral",
+              connectionType: "community_member",
+              tenantId: u.primaryTenantId,
+              ownerId: null,
+              affinityHeat135: avgScore,
+              affinityPercent: avgScore ? Math.round((avgScore / 135) * 100) : null,
+              affinityLevel: null,
+              aiSummary: null,
+              updatedAt: u.updatedAt,
+              source: "rowi_community_user",
+            };
+          });
+      }
+    } else if (owner.primaryTenantId && !communityFilter) {
+      // No community filter: show tenant teammates as before
       const tenantUsers = await prisma.user.findMany({
         where: {
           primaryTenantId: owner.primaryTenantId,
-          id: { not: owner.id }, // Excluir al usuario actual
+          id: { not: owner.id },
           active: true,
         },
         include: {
           eqSnapshots: {
             orderBy: { at: "desc" },
             take: 1,
-            select: {
-              brainStyle: true,
-              K: true,
-              C: true,
-              G: true,
-            },
+            select: { brainStyle: true, K: true, C: true, G: true },
           },
         },
         take: 200,
       });
 
-      // Filtrar usuarios que ya están en members (por email o userId)
-      const existingEmails = new Set(members.map((m) => m.email?.toLowerCase()).filter(Boolean));
-      const existingUserIds = new Set(membersDB.filter((m) => m.userId).map((m) => m.userId));
-
       teammates = tenantUsers
-        .filter((u) => {
-          // When filtering by RowiCommunity, only include teammates that are members
-          if (communityFilter && rcUserIds.length > 0 && !rcUserIds.includes(u.id)) return false;
-          // When filtering by hub/tenant (no rcUserIds), skip teammates entirely
-          if (communityFilter && rcUserIds.length === 0) return false;
-          return !existingEmails.has(u.email?.toLowerCase()) && !existingUserIds.has(u.id);
-        })
+        .filter((u) => !existingEmails.has(u.email?.toLowerCase()) && !existingUserIds.has(u.id))
         .map((u) => {
           const snap = u.eqSnapshots?.[0];
           const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
-
           return {
             id: `user_${u.id}`,
             name: u.name || u.email?.split("@")[0] || "Unknown",
             email: u.email || undefined,
             country: u.country || undefined,
             brainStyle: snap?.brainStyle || undefined,
-            group: "Trabajo", // Compañeros de trabajo
+            group: "Trabajo",
             closeness: "Neutral",
             connectionType: "teammate",
             tenantId: owner.primaryTenantId,
@@ -314,20 +350,8 @@ export async function GET(req: NextRequest) {
       for (const rc of rowiCommunities) {
         const key = `rc_${rc.id}`;
         if (!communityMap.has(key)) {
-          // Contar cuántos CommunityMember corresponden a esta RowiCommunity
-          // usando los miembros del RowiCommunity que también existen en membersDB
-          const rcMembers = await prisma.rowiCommunityUser.findMany({
-            where: { communityId: rc.id },
-            select: { email: true, userId: true },
-          });
-          const rcEmails = new Set(rcMembers.map((m) => m.email?.toLowerCase()).filter(Boolean));
-          const rcUids = new Set(rcMembers.map((m) => m.userId).filter(Boolean));
-          const matchCount = membersDB.filter((m) =>
-            (m.email && rcEmails.has(m.email.toLowerCase())) || (m.userId && rcUids.has(m.userId))
-          ).length;
-
-          // Use matchCount if available, otherwise use total community member count
-          const displayCount = matchCount > 0 ? matchCount : rc._count.members;
+          // Show the actual RowiCommunity member count (excluding the current user)
+          const displayCount = Math.max(0, rc._count.members - 1);
           if (displayCount > 0) {
             communityMap.set(key, {
               id: rc.id,

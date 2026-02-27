@@ -30,13 +30,13 @@ export default function OutcomeCard({
   const delta = mainScore != null && prevVal != null ? Math.round((mainScore - prevVal) * 10) / 10 : null;
 
   return (
-    <div className="rounded-xl border border-white/10 p-4 shadow-sm bg-white/5">
+    <div className="rounded-xl border border-gray-200 dark:border-white/10 p-4 shadow-sm bg-gray-50 dark:bg-white/5">
       {/* TITLE + LEVEL + DELTA */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-white">{title}</h3>
+        <h3 className="font-medium text-gray-900 dark:text-white">{title}</h3>
         <div className="flex items-center gap-2">
           {delta != null && delta !== 0 && (
-            <span className={`text-[10px] font-semibold ${delta > 0 ? "text-green-400" : "text-red-400"}`}>
+            <span className={`text-[10px] font-semibold ${delta > 0 ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
               {delta > 0 ? "\u2191" : "\u2193"} {Math.abs(delta)}
             </span>
           )}
@@ -52,7 +52,7 @@ export default function OutcomeCard({
       </div>
 
       {/* MAIN BAR with ghost */}
-      <div className="relative h-2.5 w-full rounded-full bg-gray-800/30 overflow-hidden">
+      <div className="relative h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-800/30 overflow-hidden">
         {/* Ghost bar (previous) */}
         {prevVal != null && ghostWidth > 0 && (
           <div

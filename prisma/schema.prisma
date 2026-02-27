@@ -4794,6 +4794,8 @@ enum LandingSectionType {
   LOGOS
   FOOTER
   CUSTOM
+  EVOLUTION
+  WORLD_MAP
 }
 
 /// 🖼️ Media Library para el Landing Builder

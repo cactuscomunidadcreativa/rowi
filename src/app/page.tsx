@@ -34,7 +34,14 @@ export default function HomePage() {
         const data = await res.json();
 
         if (data.ok && data.sections?.length > 0) {
-          setSections(data.sections);
+          let secs = data.sections as Section[];
+          // Auto-inject WORLD_MAP if not present (renders PublicWorldMap)
+          if (!secs.find((s) => s.type === "WORLD_MAP")) {
+            const statsSection = secs.find((s) => s.type === "STATS");
+            const mapOrder = statsSection ? statsSection.order + 0.5 : 1.5;
+            secs = [...secs, { id: "world-map-auto", type: "WORLD_MAP", order: mapOrder, content: {} }];
+          }
+          setSections(secs);
         } else {
           setUseFallback(true);
         }

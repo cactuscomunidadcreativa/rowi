@@ -13,6 +13,7 @@ import {
   FAQSection,
 } from "./sections";
 import RowiEvolution from "./RowiEvolution";
+import PublicWorldMap from "./PublicWorldMap";
 
 /**
  * 🎨 CMS Page Renderer
@@ -84,6 +85,9 @@ function renderSection(type: string, content: any, config: any) {
 
     case "EVOLUTION":
       return <RowiEvolution />;
+
+    case "WORLD_MAP":
+      return <PublicWorldMap />;
 
     case "CUSTOM":
       // Para secciones personalizadas, renderizar HTML sanitizado con DOMPurify

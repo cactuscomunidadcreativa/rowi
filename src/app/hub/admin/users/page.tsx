@@ -26,6 +26,9 @@ import {
   ChevronsRight,
   X,
   Edit3,
+  Network,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -73,6 +76,13 @@ interface UserData {
   organizationId?: string;
   superHubId?: string;
   hubId?: string;
+  // Community memberships
+  rowiCommunities?: {
+    id: string;
+    communityId: string;
+    role?: string;
+    community?: { id: string; name: string; slug: string; type?: string };
+  }[];
   // SEI data
   eqSnapshots?: any[];
   // Metadata
@@ -88,6 +98,7 @@ export default function UsersPage() {
   const [orgs, setOrgs] = useState<any[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);
   const [superHubs, setSuperHubs] = useState<any[]>([]);
+  const [communities, setCommunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
@@ -115,13 +126,14 @@ export default function UsersPage() {
   async function loadAll() {
     setLoading(true);
     try {
-      const [usr, ten, pln, org, hub, shub] = await Promise.all([
+      const [usr, ten, pln, org, hub, shub, comm] = await Promise.all([
         fetch("/api/admin/users").then((r) => r.json()),
         fetch("/api/hub/tenants").then((r) => r.json()),
         fetch("/api/admin/plans").then((r) => r.json()),
         fetch("/api/admin/organizations/hierarchy?flat=true").then((r) => r.json()),
         fetch("/api/hub/hubs").then((r) => r.json()),
         fetch("/api/hub/superhubs").then((r) => r.json()),
+        fetch("/api/hub/communities").then((r) => r.json()),
       ]);
 
       // Process users to map hubMemberships to hubs for easier access
@@ -138,6 +150,7 @@ export default function UsersPage() {
       setOrgs(org.ok ? (org.organizations || []) : []);
       setHubs(hub.hubs || []);
       setSuperHubs(shub.superHubs || []);
+      setCommunities(Array.isArray(comm) ? comm : comm.communities || comm.data || []);
     } catch {
       toast.error(t("common.error"));
     } finally {
@@ -153,10 +166,20 @@ export default function UsersPage() {
     if (!editing) return;
     setSaving(true);
     try {
+      // Transform rowiCommunities into communityMemberships for the API
+      const payload: any = { ...editing };
+      if (editing.rowiCommunities) {
+        payload.communityMemberships = editing.rowiCommunities.map((m: any) => ({
+          communityId: m.communityId,
+          role: m.role || "member",
+        }));
+      }
+      delete payload.rowiCommunities;
+
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing),
+        body: JSON.stringify(payload),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error);
@@ -733,6 +756,7 @@ export default function UsersPage() {
           superHubs={superHubs}
           orgs={orgs}
           plans={plans}
+          communities={communities}
           saving={saving}
         />
       )}
@@ -812,6 +836,7 @@ function UserForm({
   superHubs,
   orgs,
   plans,
+  communities,
   saving,
 }: {
   mode: "create" | "edit";
@@ -824,9 +849,12 @@ function UserForm({
   superHubs: any[];
   orgs: any[];
   plans: any[];
+  communities: any[];
   saving: boolean;
 }) {
   const { t } = useI18n();
+  const [addCommunityId, setAddCommunityId] = useState("");
+  const [addCommunityRole, setAddCommunityRole] = useState("member");
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-end p-4">
@@ -1133,7 +1161,141 @@ function UserForm({
           )}
 
           {/* ═══════════════════════════════════════════════════════════
-             SECTION 7: Metadata (only in edit mode)
+             SECTION 7: Communities (edit mode)
+          ═══════════════════════════════════════════════════════════ */}
+          {mode === "edit" && (
+            <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">
+              <h3 className="text-xs font-semibold text-[var(--rowi-foreground)] uppercase tracking-wide flex items-center gap-2">
+                <Network className="w-3.5 h-3.5" />
+                {t("admin.users.communities", "Comunidades")}
+              </h3>
+
+              {/* Current communities */}
+              {(user.rowiCommunities?.length > 0) ? (
+                <div className="space-y-2">
+                  {user.rowiCommunities.map((m: any, i: number) => (
+                    <div key={m.communityId || i} className="flex items-center justify-between p-2.5 bg-[var(--rowi-background)] rounded-lg border border-[var(--rowi-border)]">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-7 h-7 rounded-md bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center flex-shrink-0">
+                          <Network className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-[var(--rowi-foreground)] truncate">
+                            {m.community?.name || m.communityId}
+                          </p>
+                          {m.community?.type && (
+                            <p className="text-[10px] text-[var(--rowi-muted)]">{m.community.type}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <AdminSelect
+                          value={m.role || "member"}
+                          onChange={(v) => {
+                            const updated = [...(user.rowiCommunities || [])];
+                            updated[i] = { ...updated[i], role: v };
+                            setUser({ ...user, rowiCommunities: updated });
+                          }}
+                          options={[
+                            { value: "owner", label: "Owner" },
+                            { value: "admin", label: "Admin" },
+                            { value: "coach", label: "Coach" },
+                            { value: "mentor", label: "Mentor" },
+                            { value: "member", label: "Member" },
+                            { value: "friend", label: "Friend" },
+                            { value: "client", label: "Client" },
+                          ]}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = (user.rowiCommunities || []).filter((_: any, idx: number) => idx !== i);
+                            setUser({ ...user, rowiCommunities: updated });
+                          }}
+                          className="p-1.5 rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          title={t("admin.common.remove", "Quitar")}
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-[var(--rowi-muted)] py-2">
+                  {t("admin.users.noCommunities", "Este usuario no pertenece a ninguna comunidad")}
+                </p>
+              )}
+
+              {/* Add community */}
+              <div className="flex items-end gap-2 p-3 bg-[var(--rowi-background)] rounded-lg border border-dashed border-[var(--rowi-border)]">
+                <div className="flex-1">
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block uppercase tracking-wide">
+                    {t("admin.users.addCommunity", "Agregar comunidad")}
+                  </label>
+                  <AdminSelect
+                    value={addCommunityId}
+                    onChange={setAddCommunityId}
+                    options={[
+                      { value: "", label: t("admin.users.selectCommunity", "Seleccionar…") },
+                      ...communities
+                        .filter((c: any) =>
+                          !(user.rowiCommunities || []).some((m: any) => m.communityId === c.id)
+                        )
+                        .map((c: any) => ({
+                          value: c.id,
+                          label: `${c.name}${c.type ? ` (${c.type})` : ""}`,
+                        })),
+                    ]}
+                  />
+                </div>
+                <div className="w-28">
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block uppercase tracking-wide">
+                    {t("admin.users.role", "Rol")}
+                  </label>
+                  <AdminSelect
+                    value={addCommunityRole}
+                    onChange={setAddCommunityRole}
+                    options={[
+                      { value: "member", label: "Member" },
+                      { value: "admin", label: "Admin" },
+                      { value: "owner", label: "Owner" },
+                      { value: "coach", label: "Coach" },
+                      { value: "mentor", label: "Mentor" },
+                      { value: "friend", label: "Friend" },
+                      { value: "client", label: "Client" },
+                    ]}
+                  />
+                </div>
+                <AdminButton
+                  variant="secondary"
+                  size="sm"
+                  icon={Plus}
+                  disabled={!addCommunityId}
+                  onClick={() => {
+                    if (!addCommunityId) return;
+                    const comm = communities.find((c: any) => c.id === addCommunityId);
+                    const newMember = {
+                      communityId: addCommunityId,
+                      role: addCommunityRole,
+                      community: comm ? { id: comm.id, name: comm.name, slug: comm.slug, type: comm.type } : undefined,
+                    };
+                    setUser({
+                      ...user,
+                      rowiCommunities: [...(user.rowiCommunities || []), newMember],
+                    });
+                    setAddCommunityId("");
+                    setAddCommunityRole("member");
+                  }}
+                >
+                  {t("admin.common.add", "Agregar")}
+                </AdminButton>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════
+             SECTION 8: Metadata (only in edit mode)
           ═══════════════════════════════════════════════════════════ */}
           {mode === "edit" && (
             <div className="space-y-3 border-t border-[var(--rowi-border)] pt-4">

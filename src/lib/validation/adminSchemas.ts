@@ -78,6 +78,11 @@ export const userUpdateSchema = z.object({
   organizationId: idSchema.optional().nullable(),
   hubId: idSchema.optional().nullable(),
   orgRole: z.enum(["MEMBER", "ADMIN", "OWNER"]).optional(),
+  // Community memberships: full sync — replaces all existing memberships
+  communityMemberships: z.array(z.object({
+    communityId: idSchema,
+    role: z.enum(["owner", "admin", "coach", "mentor", "member", "friend", "client"]).default("member"),
+  })).optional(),
 });
 
 export const userDeleteSchema = z.object({

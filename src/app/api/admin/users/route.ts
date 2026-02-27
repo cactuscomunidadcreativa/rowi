@@ -93,6 +93,15 @@ export async function GET(req: NextRequest) {
               },
             },
           },
+
+          // Community memberships
+          rowiCommunities: {
+            include: {
+              community: {
+                select: { id: true, name: true, slug: true, type: true },
+              },
+            },
+          },
         },
         orderBy: { updatedAt: "desc" },
         skip,
@@ -231,6 +240,7 @@ export async function PATCH(req: NextRequest) {
       organizationId,
       hubId,
       orgRole,
+      communityMemberships,
     } = validation.data;
 
     // 🔐 Verificar que el usuario objetivo existe y que tenemos permiso
@@ -330,7 +340,28 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    // 4️⃣ Obtener usuario actualizado con todas las relaciones
+    // 4️⃣ Manejar membresías de comunidades (sync completo)
+    if (communityMemberships !== undefined) {
+      // Delete all existing community memberships for this user
+      await prisma.rowiCommunityUser.deleteMany({
+        where: { userId: id },
+      });
+
+      // Create new memberships
+      if (communityMemberships.length > 0) {
+        await prisma.rowiCommunityUser.createMany({
+          data: communityMemberships.map((cm) => ({
+            userId: id,
+            communityId: cm.communityId,
+            role: cm.role,
+            status: "active",
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    // 5️⃣ Obtener usuario actualizado con todas las relaciones
     const finalUser = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -347,6 +378,13 @@ export async function PATCH(req: NextRequest) {
               include: {
                 superHub: { select: { id: true, name: true } },
               },
+            },
+          },
+        },
+        rowiCommunities: {
+          include: {
+            community: {
+              select: { id: true, name: true, slug: true, type: true },
             },
           },
         },

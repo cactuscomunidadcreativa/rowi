@@ -463,10 +463,13 @@ export default function CommunityPage() {
 
   // Communities tab state
   const [userCommunities, setUserCommunities] = useState<any[]>([]);
+  const [allCommunities, setAllCommunities] = useState<any[]>([]);
+  const [showAllCommunities, setShowAllCommunities] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<any | null>(null);
   const [communityMembers, setCommunityMembers] = useState<any[]>([]);
   const [loadingCommunityMembers, setLoadingCommunityMembers] = useState(false);
   const [communitySearch, setCommunitySearch] = useState("");
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -516,11 +519,18 @@ export default function CommunityPage() {
         }
       }
 
-      // Fetch user's RowiCommunities
-      const commRes = await fetch("/api/user/communities", { cache: "no-store" });
+      // Fetch user's RowiCommunities + all hub communities
+      const [commRes, allCommRes] = await Promise.all([
+        fetch("/api/user/communities", { cache: "no-store" }),
+        fetch("/api/hub/communities", { cache: "no-store" }),
+      ]);
       const commData = await commRes.json();
       if (commData?.ok) {
         setUserCommunities(commData.communities || []);
+      }
+      const allCommData = await allCommRes.json();
+      if (Array.isArray(allCommData)) {
+        setAllCommunities(allCommData);
       }
     } catch (err) {
       console.error("Error loading community:", err);
@@ -728,9 +738,24 @@ export default function CommunityPage() {
     setCommunityMembers([]);
     setCommunitySearch("");
     try {
-      const res = await fetch(`/api/user/communities?communityId=${community.id}`, { cache: "no-store" });
+      // Intentar con el endpoint del hub (admin) primero, luego con user
+      const res = await fetch(`/api/hub/communities/${community.id}/members`, { cache: "no-store" });
       const data = await res.json();
-      if (data?.ok) {
+      if (Array.isArray(data)) {
+        // Endpoint hub retorna array directo
+        const enriched = data.map((m: any) => ({
+          id: m.id,
+          userId: m.userId || m.user?.id,
+          name: m.user?.name || m.name || m.email?.split("@")[0] || "—",
+          email: m.user?.email || m.email || "—",
+          image: m.user?.image || null,
+          country: m.user?.country || null,
+          role: m.role || "member",
+          status: m.status || "active",
+          joinedAt: m.joinedAt,
+        }));
+        setCommunityMembers(enriched);
+      } else if (data?.ok) {
         setCommunityMembers(data.members || []);
       }
     } catch (err) {
@@ -739,6 +764,31 @@ export default function CommunityPage() {
       setLoadingCommunityMembers(false);
     }
   }
+
+  async function updateMemberRole(memberId: string, communityId: string, newRole: string) {
+    setUpdatingRole(memberId);
+    try {
+      const res = await fetch(`/api/hub/communities/${communityId}/members`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId, role: newRole }),
+      });
+      const data = await res.json();
+      if (data?.ok) {
+        // Actualizar en la lista local
+        setCommunityMembers((prev) =>
+          prev.map((m: any) => (m.id === memberId ? { ...m, role: newRole } : m))
+        );
+      }
+    } catch (err) {
+      console.error("Error updating role:", err);
+    } finally {
+      setUpdatingRole(null);
+    }
+  }
+
+  // Las comunidades a mostrar (las mías o todas)
+  const displayCommunities = showAllCommunities ? allCommunities : userCommunities;
 
   const filteredCommunityMembers = useMemo(() => {
     if (!communitySearch) return communityMembers;
@@ -1130,23 +1180,55 @@ export default function CommunityPage() {
             {!selectedCommunity ? (
               /* ─── LISTA DE COMUNIDADES ─── */
               <>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {t.comm.title}
+                      {showAllCommunities
+                        ? (lang === "es" ? "Todas las Comunidades" : "All Communities")
+                        : t.comm.title}
                     </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{t.comm.desc}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {showAllCommunities
+                        ? (lang === "es"
+                          ? `${allCommunities.length} comunidades en tu hub`
+                          : `${allCommunities.length} communities in your hub`)
+                        : t.comm.desc}
+                    </p>
+                  </div>
+
+                  {/* Toggle: Mis comunidades / Todas */}
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
+                    <button
+                      onClick={() => setShowAllCommunities(false)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        !showAllCommunities
+                          ? "bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                      }`}
+                    >
+                      {lang === "es" ? "Mis comunidades" : "My communities"}
+                    </button>
+                    <button
+                      onClick={() => setShowAllCommunities(true)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        showAllCommunities
+                          ? "bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                      }`}
+                    >
+                      {lang === "es" ? "Todas" : "All"} ({allCommunities.length})
+                    </button>
                   </div>
                 </div>
 
-                {userCommunities.length === 0 ? (
+                {displayCommunities.length === 0 ? (
                   <div className="text-center py-16">
                     <HeartHandshake className="w-12 h-12 mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
                     <p className="text-gray-500 dark:text-gray-400">{t.comm.empty}</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {userCommunities.map((c: any) => (
+                    {displayCommunities.map((c: any) => (
                       <div
                         key={c.id}
                         className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-4 hover:border-[var(--rowi-g2)]/50 hover:shadow-lg transition-all cursor-pointer group"
@@ -1316,16 +1398,30 @@ export default function CommunityPage() {
                           </span>
                         </div>
 
-                        {/* Role badge */}
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
-                          m.role === "owner"
-                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                            : m.role === "admin"
-                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                            : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
-                        }`}>
-                          {m.role === "owner" ? t.comm.owner : m.role === "admin" ? t.comm.admin : t.comm.member}
-                        </span>
+                        {/* Role selector */}
+                        <select
+                          value={m.role || "member"}
+                          onChange={(e) => updateMemberRole(m.id, selectedCommunity.id, e.target.value)}
+                          disabled={updatingRole === m.id}
+                          className={`text-[11px] px-2 py-1 rounded-lg font-medium flex-shrink-0 border-0 outline-none cursor-pointer transition-colors ${
+                            updatingRole === m.id ? "opacity-50" : ""
+                          } ${
+                            m.role === "owner"
+                              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                              : m.role === "admin"
+                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                              : m.role === "coach"
+                              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                              : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
+                          }`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="owner">{t.comm.owner}</option>
+                          <option value="admin">{t.comm.admin}</option>
+                          <option value="coach">Coach</option>
+                          <option value="mentor">Mentor</option>
+                          <option value="member">{t.comm.member}</option>
+                        </select>
 
                         {/* Country */}
                         {m.country && m.country !== "Unknown" && (

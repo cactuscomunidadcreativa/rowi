@@ -129,6 +129,62 @@ export async function POST(
 }
 
 /* =========================================================
+   🔹 PATCH — Editar rol/estado de un miembro
+========================================================= */
+export async function PATCH(
+  req: Request,
+  context: { params: Promise<{ communityId: string }> }
+) {
+  const { communityId } = await context.params;
+
+  try {
+    const body = await req.json();
+    const { memberId, userId, role, status } = body;
+
+    if (!memberId && !userId) {
+      return NextResponse.json(
+        { error: "Debe especificar memberId o userId" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar el registro del miembro
+    let whereClause: any;
+    if (memberId) {
+      whereClause = { id: memberId };
+    } else {
+      const existing = await prisma.rowiCommunityUser.findFirst({
+        where: { communityId, userId },
+      });
+      if (!existing) {
+        return NextResponse.json(
+          { error: "Miembro no encontrado" },
+          { status: 404 }
+        );
+      }
+      whereClause = { id: existing.id };
+    }
+
+    const updated = await prisma.rowiCommunityUser.update({
+      where: whereClause,
+      data: {
+        ...(role !== undefined ? { role } : {}),
+        ...(status !== undefined ? { status } : {}),
+      },
+      include: { user: true },
+    });
+
+    return NextResponse.json({ ok: true, member: updated });
+  } catch (err: any) {
+    console.error("❌ Error PATCH /hub/communities/[id]/members:", err);
+    return NextResponse.json(
+      { error: "Error al actualizar miembro" },
+      { status: 500 }
+    );
+  }
+}
+
+/* =========================================================
    🔹 DELETE — Eliminar miembro
 ========================================================= */
 export async function DELETE(

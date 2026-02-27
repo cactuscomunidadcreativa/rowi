@@ -21,11 +21,23 @@ export async function GET() {
     // Detect admin/super role for tenant-wide access
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { plan: true, primaryTenantId: true },
+      select: {
+        planId: true,
+        primaryTenantId: true,
+        organizationRole: true,
+        plan: { select: { name: true } },
+      },
     });
-    const planName = (fullUser?.plan as any)?.name || "";
-    const isAdmin = ["admin", "super"].includes(planName.toLowerCase()) || user.isSuperAdmin;
+    const planName = fullUser?.plan?.name || "";
+    const orgRole = (fullUser?.organizationRole || "").toUpperCase();
+    const isAdmin =
+      ["admin", "super"].includes(planName.toLowerCase()) ||
+      user.isSuperAdmin ||
+      orgRole === "SUPERADMIN" ||
+      orgRole === "ADMIN";
     const tenantId = user.primaryTenantId || fullUser?.primaryTenantId;
+
+    console.log("[API hubs/my] userId:", user.id, "plan:", planName, "orgRole:", orgRole, "isAdmin:", isAdmin, "tenantId:", tenantId, "isSuperAdmin:", user.isSuperAdmin);
 
     // Get user's hub memberships with hub details
     const memberships = await prisma.hubMembership.findMany({

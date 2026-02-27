@@ -38,6 +38,11 @@ import {
   ExternalLink,
   CheckCircle,
   XCircle,
+  HeartHandshake,
+  Layers,
+  Network,
+  ArrowLeft,
+  Shield,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -54,6 +59,25 @@ const translations = {
       myPeople: "Mi Gente",
       invited: "Invitados",
       rowiverse: "Rowiverse",
+      communities: "Comunidades",
+    },
+
+    // Communities tab
+    comm: {
+      title: "Mis Comunidades",
+      desc: "Comunidades a las que perteneces",
+      empty: "No perteneces a ninguna comunidad aún",
+      members: "miembros",
+      subCommunities: "sub-comunidades",
+      parent: "Comunidad padre",
+      viewMembers: "Ver miembros",
+      backToList: "Volver a comunidades",
+      role: "Rol",
+      owner: "Propietario",
+      admin: "Admin",
+      member: "Miembro",
+      loadingMembers: "Cargando miembros...",
+      noMembers: "Esta comunidad no tiene miembros aún",
     },
 
     // Stats
@@ -207,6 +231,25 @@ const translations = {
       myPeople: "My People",
       invited: "Invited",
       rowiverse: "Rowiverse",
+      communities: "Communities",
+    },
+
+    // Communities tab
+    comm: {
+      title: "My Communities",
+      desc: "Communities you belong to",
+      empty: "You don't belong to any community yet",
+      members: "members",
+      subCommunities: "sub-communities",
+      parent: "Parent community",
+      viewMembers: "View members",
+      backToList: "Back to communities",
+      role: "Role",
+      owner: "Owner",
+      admin: "Admin",
+      member: "Member",
+      loadingMembers: "Loading members...",
+      noMembers: "This community has no members yet",
     },
 
     // Stats
@@ -412,11 +455,18 @@ export default function CommunityPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.es;
 
-  const [activeTab, setActiveTab] = useState<"myPeople" | "invited" | "rowiverse">("myPeople");
+  const [activeTab, setActiveTab] = useState<"myPeople" | "invited" | "rowiverse" | "communities">("myPeople");
   const [members, setMembers] = useState<Member[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Communities tab state
+  const [userCommunities, setUserCommunities] = useState<any[]>([]);
+  const [selectedCommunity, setSelectedCommunity] = useState<any | null>(null);
+  const [communityMembers, setCommunityMembers] = useState<any[]>([]);
+  const [loadingCommunityMembers, setLoadingCommunityMembers] = useState(false);
+  const [communitySearch, setCommunitySearch] = useState("");
 
   // Filters
   const [search, setSearch] = useState("");
@@ -464,6 +514,13 @@ export default function CommunityPage() {
           setPlanLimit(50); // TODO: Get from plan
           setRemainingInvites(50 - (invitesData.stats.total || 0));
         }
+      }
+
+      // Fetch user's RowiCommunities
+      const commRes = await fetch("/api/user/communities", { cache: "no-store" });
+      const commData = await commRes.json();
+      if (commData?.ok) {
+        setUserCommunities(commData.communities || []);
       }
     } catch (err) {
       console.error("Error loading community:", err);
@@ -663,6 +720,37 @@ export default function CommunityPage() {
   }
 
   /* =========================================================
+     🏘️ VER MIEMBROS DE UNA COMUNIDAD
+  ========================================================= */
+  async function viewCommunityMembers(community: any) {
+    setSelectedCommunity(community);
+    setLoadingCommunityMembers(true);
+    setCommunityMembers([]);
+    setCommunitySearch("");
+    try {
+      const res = await fetch(`/api/user/communities?communityId=${community.id}`, { cache: "no-store" });
+      const data = await res.json();
+      if (data?.ok) {
+        setCommunityMembers(data.members || []);
+      }
+    } catch (err) {
+      console.error("Error loading community members:", err);
+    } finally {
+      setLoadingCommunityMembers(false);
+    }
+  }
+
+  const filteredCommunityMembers = useMemo(() => {
+    if (!communitySearch) return communityMembers;
+    const q = communitySearch.toLowerCase();
+    return communityMembers.filter(
+      (m: any) =>
+        m.name?.toLowerCase().includes(q) ||
+        m.email?.toLowerCase().includes(q)
+    );
+  }, [communityMembers, communitySearch]);
+
+  /* =========================================================
      🎨 RENDER
   ========================================================= */
   if (loading) {
@@ -823,10 +911,10 @@ export default function CommunityPage() {
         transition={{ delay: 0.2 }}
         className="flex items-center gap-1 sm:gap-2 border-b border-gray-200 dark:border-zinc-800 overflow-x-auto"
       >
-        {(["myPeople", "invited", "rowiverse"] as const).map((tab) => (
+        {(["myPeople", "invited", "communities", "rowiverse"] as const).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); if (tab !== "communities") { setSelectedCommunity(null); } }}
             className={`flex-shrink-0 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab
                 ? "border-[var(--rowi-g2)] text-[var(--rowi-g2)]"
@@ -835,11 +923,17 @@ export default function CommunityPage() {
           >
             {tab === "myPeople" && <Users className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {tab === "invited" && <Mail className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
+            {tab === "communities" && <HeartHandshake className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {tab === "rowiverse" && <Globe className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {t.tabs[tab]}
             {tab === "invited" && stats.pending > 0 && (
               <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full">
                 {stats.pending}
+              </span>
+            )}
+            {tab === "communities" && userCommunities.length > 0 && (
+              <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
+                {userCommunities.length}
               </span>
             )}
           </button>
@@ -1017,6 +1111,234 @@ export default function CommunityPage() {
                   <InviteCard key={invite.id} invite={invite} t={t} onCancel={() => cancelInvite(invite.id)} />
                 ))}
               </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            🏘️ TAB: COMUNIDADES
+            Lista de RowiCommunities del usuario + ver miembros
+        ═══════════════════════════════════════════════════════ */}
+        {activeTab === "communities" && (
+          <motion.div
+            key="communities"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+          >
+            {!selectedCommunity ? (
+              /* ─── LISTA DE COMUNIDADES ─── */
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {t.comm.title}
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t.comm.desc}</p>
+                  </div>
+                </div>
+
+                {userCommunities.length === 0 ? (
+                  <div className="text-center py-16">
+                    <HeartHandshake className="w-12 h-12 mx-auto text-gray-300 dark:text-zinc-600 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">{t.comm.empty}</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {userCommunities.map((c: any) => (
+                      <div
+                        key={c.id}
+                        className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-4 hover:border-[var(--rowi-g2)]/50 hover:shadow-lg transition-all cursor-pointer group"
+                        onClick={() => viewCommunityMembers(c)}
+                      >
+                        {/* Banner */}
+                        {c.bannerUrl && (
+                          <div
+                            className="h-16 -mx-4 -mt-4 mb-3 rounded-t-xl bg-cover bg-center"
+                            style={{ backgroundImage: `url(${c.bannerUrl})` }}
+                          />
+                        )}
+
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center flex-shrink-0">
+                            <HeartHandshake className="w-5 h-5 text-white" />
+                          </div>
+                          {c.role && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              c.role === "owner"
+                                ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                : c.role === "admin"
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                                : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
+                            }`}>
+                              {c.role === "owner" ? t.comm.owner : c.role === "admin" ? t.comm.admin : t.comm.member}
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-[var(--rowi-g2)] transition-colors">
+                          {c.name}
+                        </h3>
+                        {c.description && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{c.description}</p>
+                        )}
+
+                        {/* Hierarchy */}
+                        {c.superCommunity && (
+                          <div className="flex items-center gap-1 mt-2 text-[10px] text-purple-600 dark:text-purple-400">
+                            <Layers className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">↑ {c.superCommunity.name}</span>
+                          </div>
+                        )}
+
+                        {/* Stats */}
+                        <div className="flex flex-wrap items-center gap-3 mt-3 pt-2 border-t border-gray-100 dark:border-zinc-800">
+                          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <Users className="w-3.5 h-3.5" />
+                            <span>{c._count?.members || 0} {t.comm.members}</span>
+                          </div>
+                          {(c._count?.subCommunities || 0) > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-blue-500">
+                              <Network className="w-3.5 h-3.5" />
+                              <span>{c._count.subCommunities} {t.comm.subCommunities}</span>
+                            </div>
+                          )}
+                          {c.hub && (
+                            <div className="flex items-center gap-1 text-xs text-gray-400">
+                              <Building2 className="w-3 h-3" />
+                              <span className="truncate max-w-[80px]">{c.hub.name}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              /* ─── VISTA DE MIEMBROS DE UNA COMUNIDAD ─── */
+              <>
+                {/* Header con botón volver */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => { setSelectedCommunity(null); setCommunityMembers([]); }}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-gray-500" />
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                        {selectedCommunity.name}
+                      </h2>
+                      {selectedCommunity.role && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                          selectedCommunity.role === "owner"
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
+                        }`}>
+                          {selectedCommunity.role === "owner" ? t.comm.owner : selectedCommunity.role}
+                        </span>
+                      )}
+                    </div>
+                    {selectedCommunity.description && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{selectedCommunity.description}</p>
+                    )}
+                    {selectedCommunity.superCommunity && (
+                      <div className="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 mt-1">
+                        <Layers className="w-3 h-3" />
+                        <span>↑ {selectedCommunity.superCommunity.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t.search}
+                    value={communitySearch}
+                    onChange={(e) => setCommunitySearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent outline-none text-sm"
+                  />
+                </div>
+
+                {/* Members list */}
+                {loadingCommunityMembers ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 text-[var(--rowi-g2)] animate-spin" />
+                    <span className="ml-2 text-gray-500">{t.comm.loadingMembers}</span>
+                  </div>
+                ) : filteredCommunityMembers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
+                    <p className="text-gray-500 dark:text-gray-400">{t.comm.noMembers}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {filteredCommunityMembers.length} {t.comm.members}
+                    </p>
+                    {filteredCommunityMembers.map((m: any) => (
+                      <div
+                        key={m.id}
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)]/30 transition-colors"
+                      >
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {m.image ? (
+                            <Image src={m.image} alt={m.name} width={40} height={40} className="rounded-full object-cover" />
+                          ) : (
+                            <span className="text-sm font-bold text-[var(--rowi-g2)]">
+                              {(m.name || "?")[0]?.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {m.name}
+                            </span>
+                            {m.role === "owner" && (
+                              <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                            )}
+                            {m.role === "admin" && (
+                              <Shield className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate block">
+                            {m.email}
+                          </span>
+                        </div>
+
+                        {/* Role badge */}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                          m.role === "owner"
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            : m.role === "admin"
+                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                            : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400"
+                        }`}>
+                          {m.role === "owner" ? t.comm.owner : m.role === "admin" ? t.comm.admin : t.comm.member}
+                        </span>
+
+                        {/* Country */}
+                        {m.country && m.country !== "Unknown" && (
+                          <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
+                            <MapPin className="w-3 h-3" />
+                            {m.country}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         )}

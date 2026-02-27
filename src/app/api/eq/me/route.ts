@@ -188,11 +188,16 @@ export async function GET(req: NextRequest) {
     }
 
     /* 9️⃣ Talentos */
-    const talentsByCluster = { focus: {}, decisions: {}, drive: {} };
+    const talentsByCluster: Record<string, Record<string, number | null>> = {
+      focus: {},
+      decisions: {},
+      drive: {},
+    };
 
     talents.forEach((t) => {
       const key = t.key.replace(/\s+/g, "").toLowerCase();
-      const cluster = CLUSTER_MAP[key] ?? "focus";
+      const cluster = CLUSTER_MAP[key];
+      if (!cluster) return; // skip talents not in CLUSTER_MAP (e.g. brainAgility)
       talentsByCluster[cluster][t.key] = t.score ?? null;
     });
 

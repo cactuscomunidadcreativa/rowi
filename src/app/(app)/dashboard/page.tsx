@@ -448,7 +448,7 @@ export default function ClientDashboard() {
             icon={Target}
             color="#1E88E5"
             talents={Object.entries(base.eq?.talents?.focus || {})
-              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
                 value: toPercentOf135(typeof v === "number" ? v : 0),
@@ -460,7 +460,7 @@ export default function ClientDashboard() {
             icon={Flame}
             color="#E53935"
             talents={Object.entries(base.eq?.talents?.decisions || {})
-              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
                 value: toPercentOf135(typeof v === "number" ? v : 0),
@@ -472,7 +472,7 @@ export default function ClientDashboard() {
             icon={TrendingUp}
             color="#43A047"
             talents={Object.entries(base.eq?.talents?.drive || {})
-              .filter(([k]) => k.toLowerCase() !== "brainagility")
+              .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
                 label: k,
                 value: toPercentOf135(typeof v === "number" ? v : 0),

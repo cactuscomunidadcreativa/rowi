@@ -1,5 +1,6 @@
 /**
  * GET /api/hubs/my - Get hubs for the current user
+ * Includes explicit memberships + tenant-level access for admins
  */
 
 import { NextResponse } from "next/server";
@@ -16,6 +17,15 @@ export async function GET() {
         { status: 401 }
       );
     }
+
+    // Detect admin/super role for tenant-wide access
+    const fullUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { plan: true, primaryTenantId: true },
+    });
+    const planName = (fullUser?.plan as any)?.name || "";
+    const isAdmin = ["admin", "super"].includes(planName.toLowerCase()) || user.isSuperAdmin;
+    const tenantId = user.primaryTenantId || fullUser?.primaryTenantId;
 
     // Get user's hub memberships with hub details
     const memberships = await prisma.hubMembership.findMany({
@@ -57,6 +67,38 @@ export async function GET() {
       memberCount: m.hub._count.memberships,
     }));
 
+    const hubIds = new Set(hubs.map((h: { id: string }) => h.id));
+
+    // Admin/super: also include ALL hubs from their tenant
+    if (isAdmin && tenantId) {
+      const tenantHubs = await prisma.hub.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          visibility: true,
+          superHubId: true,
+          superHub: {
+            select: { id: true, name: true, slug: true },
+          },
+          _count: { select: { memberships: true } },
+        },
+      });
+      for (const hub of tenantHubs) {
+        if (!hubIds.has(hub.id)) {
+          hubs.push({
+            ...hub,
+            role: "admin",
+            joinedAt: new Date(),
+            memberCount: hub._count.memberships,
+          } as any);
+          hubIds.add(hub.id);
+        }
+      }
+    }
+
     // Also include RowiCommunity memberships as virtual hubs
     // This allows communities (like Be2Grow) to appear in WeekFlow
     const communityMemberships = await prisma.rowiCommunityUser.findMany({
@@ -80,7 +122,6 @@ export async function GET() {
     });
 
     // Add communities that don't already have a hub in the list
-    const hubIds = new Set(hubs.map((h: { id: string }) => h.id));
     for (const cm of communityMemberships) {
       const c = cm.community;
       // Skip if this community's hub is already in the list
@@ -102,6 +143,43 @@ export async function GET() {
           image: c.bannerUrl,
         } as any);
         hubIds.add(c.id);
+      }
+    }
+
+    // Admin/super: also include ALL RowiCommunities from their tenant
+    if (isAdmin && tenantId) {
+      const tenantCommunities = await prisma.rowiCommunity.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          visibility: true,
+          hubId: true,
+          bannerUrl: true,
+          _count: { select: { members: true } },
+        },
+      });
+      for (const c of tenantCommunities) {
+        if (c.hubId && hubIds.has(c.hubId)) continue;
+        if (!hubIds.has(c.id)) {
+          hubs.push({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description,
+            visibility: c.visibility,
+            superHubId: null,
+            superHub: null,
+            _count: { memberships: c._count.members },
+            role: "admin",
+            joinedAt: new Date(),
+            memberCount: c._count.members,
+            image: c.bannerUrl,
+          } as any);
+          hubIds.add(c.id);
+        }
       }
     }
 

@@ -90,33 +90,33 @@ export default function WeekFlowPage() {
 
   const getRoleInfo = (role?: string) => {
     const r = (role || "").toLowerCase();
-    if (r === "owner") return { icon: Crown, label: lang === "es" ? "Dueño" : "Owner", color: "text-amber-500", bg: "bg-amber-500/10" };
-    if (r === "admin" || r === "superadmin") return { icon: Shield, label: "Admin", color: "text-blue-500", bg: "bg-blue-500/10" };
-    if (r === "coach") return { icon: Target, label: "Coach", color: "text-purple-500", bg: "bg-purple-500/10" };
-    return { icon: Eye, label: lang === "es" ? "Miembro" : "Member", color: "text-gray-500", bg: "bg-gray-500/10" };
+    if (r === "owner") return { icon: Crown, label: t("weekflow.role.owner"), color: "text-amber-500", bg: "bg-amber-500/10" };
+    if (r === "admin" || r === "superadmin") return { icon: Shield, label: t("weekflow.role.admin"), color: "text-blue-500", bg: "bg-blue-500/10" };
+    if (r === "coach") return { icon: Target, label: t("weekflow.role.coach"), color: "text-purple-500", bg: "bg-purple-500/10" };
+    return { icon: Eye, label: t("weekflow.role.member"), color: "text-gray-500", bg: "bg-gray-500/10" };
   };
 
   const tr = {
-    title: lang === "es" ? "WeekFlow" : "WeekFlow",
-    subtitle: lang === "es" ? "Check-ins semanales para tus comunidades" : "Weekly check-ins for your communities",
-    tasks: lang === "es" ? "Rowi Tasks" : "Rowi Tasks",
-    tasksDesc: lang === "es" ? "Tus tareas con insights emocionales" : "Your tasks with emotional insights",
-    insights: lang === "es" ? "Insights Emocionales" : "Emotional Insights",
-    insightsDesc: lang === "es" ? "Descubre patrones en tus tareas" : "Discover patterns in your tasks",
-    myCheckins: lang === "es" ? "Mis Check-ins" : "My Check-ins",
-    myCheckinsDesc: lang === "es" ? "Comunidades donde eres dueño o administrador" : "Communities where you are owner or admin",
-    communityCheckins: lang === "es" ? "Check-ins de Comunidad" : "Community Check-ins",
-    communityCheckinsDesc: lang === "es" ? "Check-ins de las comunidades a las que perteneces" : "Check-ins from communities you belong to",
-    createCheckin: lang === "es" ? "Crear Check-in" : "Create Check-in",
-    viewCheckin: lang === "es" ? "Ver Check-in" : "View Check-in",
-    shareUrl: lang === "es" ? "Compartir enlace" : "Share link",
-    copied: lang === "es" ? "Copiado" : "Copied",
-    members: lang === "es" ? "miembros" : "members",
-    noHubs: lang === "es" ? "No tienes comunidades con WeekFlow" : "No communities with WeekFlow",
-    noHubsDesc: lang === "es" ? "Crea o únete a una comunidad para empezar" : "Create or join a community to get started",
-    explore: lang === "es" ? "Explorar Comunidades" : "Explore Communities",
-    planRequired: lang === "es" ? "Mejora tu plan para acceder a check-ins de equipo" : "Upgrade your plan to access team check-ins",
-    upgrade: lang === "es" ? "Mejorar Plan" : "Upgrade Plan",
+    title: t("weekflow.title"),
+    subtitle: t("weekflow.landing.subtitle"),
+    tasks: t("weekflow.tasks.title"),
+    tasksDesc: t("weekflow.tasks.subtitle"),
+    insights: t("weekflow.insights.title"),
+    insightsDesc: t("weekflow.insights.subtitle"),
+    myCheckins: t("weekflow.landing.myCheckins"),
+    myCheckinsDesc: t("weekflow.landing.myCheckinsDesc"),
+    communityCheckins: t("weekflow.landing.communityCheckins"),
+    communityCheckinsDesc: t("weekflow.landing.communityCheckinsDesc"),
+    createCheckin: t("weekflow.landing.createCheckin"),
+    viewCheckin: t("weekflow.landing.viewCheckin"),
+    shareUrl: t("weekflow.landing.shareUrl"),
+    copied: t("weekflow.landing.copied"),
+    members: t("common.members"),
+    noHubs: t("weekflow.noHubs"),
+    noHubsDesc: t("weekflow.noHubsDesc"),
+    explore: t("weekflow.landing.explore"),
+    planRequired: t("weekflow.landing.planRequired"),
+    upgrade: t("weekflow.landing.upgrade"),
   };
 
   if (authLoading || isLoading) {

@@ -132,10 +132,10 @@ export default function PublicWorldMap() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-gradient-to-b from-[var(--rowi-background)] to-[var(--rowi-card)]">
+      <section className="py-20 bg-gradient-to-b from-[var(--rowi-bg,#f7f9fb)] to-[var(--rowi-card,#ffffff)]">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center h-[400px]">
-            <div className="w-12 h-12 border-4 border-[var(--rowi-primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-[var(--rowi-g2,#31a2e3)] border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       </section>
@@ -144,11 +144,11 @@ export default function PublicWorldMap() {
 
   if (error || !data) {
     return (
-      <section className="py-20 bg-gradient-to-b from-[var(--rowi-background)] to-[var(--rowi-card)]">
+      <section className="py-20 bg-gradient-to-b from-[var(--rowi-bg,#f7f9fb)] to-[var(--rowi-card,#ffffff)]">
         <div className="container mx-auto px-4 text-center">
-          <Globe2 className="w-16 h-16 mx-auto text-[var(--rowi-primary)] opacity-50 mb-4" />
-          <h2 className="text-2xl font-bold text-[var(--rowi-foreground)] mb-2">{text.title}</h2>
-          <p className="text-[var(--rowi-muted)]">{text.subtitle}</p>
+          <Globe2 className="w-16 h-16 mx-auto text-[var(--rowi-g2,#31a2e3)] opacity-50 mb-4" />
+          <h2 className="text-2xl font-bold text-[var(--rowi-fg,#1a1c1e)] mb-2">{text.title}</h2>
+          <p className="text-[var(--rowi-muted,#5f6368)]">{text.subtitle}</p>
         </div>
       </section>
     );
@@ -157,7 +157,7 @@ export default function PublicWorldMap() {
   const { summary, mapData } = data;
 
   return (
-    <section className="py-20 bg-gradient-to-b from-[var(--rowi-background)] to-[var(--rowi-card)] overflow-hidden">
+    <section className="py-20 bg-gradient-to-b from-[var(--rowi-bg,#f7f9fb)] to-[var(--rowi-card,#ffffff)] overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -166,14 +166,14 @@ export default function PublicWorldMap() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2,#31a2e3)]/10 text-[var(--rowi-g2,#31a2e3)] text-sm font-medium mb-4">
             <Globe2 className="w-4 h-4" />
             {formatNumber(summary.totalRowiers)} {text.rowiers}
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[var(--rowi-foreground)] mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--rowi-fg,#1a1c1e)] mb-3">
             {text.title}
           </h2>
-          <p className="text-[var(--rowi-muted)] text-lg max-w-2xl mx-auto">
+          <p className="text-[var(--rowi-muted,#5f6368)] text-lg max-w-2xl mx-auto">
             {text.subtitle}
           </p>
         </motion.div>
@@ -192,7 +192,7 @@ export default function PublicWorldMap() {
           <StatCard icon={<Clock className="w-5 h-5" />} value={summary.availability} label={text.availability} color="orange" />
         </motion.div>
 
-        {/* Map — Simple dot-based world map (sin react-simple-maps) */}
+        {/* Map — Simple dot-based world map */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -200,7 +200,7 @@ export default function PublicWorldMap() {
           transition={{ delay: 0.2 }}
           className="relative"
         >
-          <div className="relative w-full h-[350px] md:h-[450px] rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 border border-[var(--rowi-border)] shadow-lg overflow-hidden">
+          <div className="relative w-full h-[350px] md:h-[450px] rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 border border-gray-200 dark:border-zinc-700 shadow-lg overflow-hidden">
             {/* World map background — simplified continent shapes */}
             <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]">
               <svg viewBox="0 0 1000 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
@@ -369,11 +369,11 @@ function StatCard({
   };
 
   return (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--rowi-card)] border border-[var(--rowi-border)]">
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-sm">
       <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
       <div>
-        <p className="text-xl font-bold text-[var(--rowi-foreground)]">{value}</p>
-        <p className="text-xs text-[var(--rowi-muted)]">{label}</p>
+        <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
       </div>
     </div>
   );

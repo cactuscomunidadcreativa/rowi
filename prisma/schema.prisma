@@ -94,6 +94,7 @@ model User {
   quizAttempts          QuizAttempt[]
   peerChats             RowiChat[]            @relation("ChatPeerRelation")
   userChats             RowiChat[]            @relation("UserChats")
+  rowiChatFeedback      RowiChatFeedback[]
   authoredPosts         RowiFeed[]
   initiatedRelations    RowiRelation[]        @relation("InitiatorRelation")
   receivedRelations     RowiRelation[]        @relation("ReceiverRelation")
@@ -5959,4 +5960,20 @@ model FeedReaction {
   @@map("feed_reactions")
 }
 
+/// 💬 Feedback on Rowi Coach chat messages
+model RowiChatFeedback {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // "like" | "dislike" | "bug"
+  messageId   String?  // client-side message id
+  messageText String?  // truncated assistant message text
+  comment     String?  // user comment (required for bugs)
+  locale      String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
 
+  @@index([userId])
+  @@index([type])
+  @@map("rowi_chat_feedback")
+}

@@ -4,10 +4,11 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Mic, Paperclip, MessageCircle, Sparkles, Heart, ArrowRight } from "lucide-react";
+import { X, Send, Mic, Paperclip, MessageCircle, Sparkles, Heart, ArrowRight, ThumbsUp, ThumbsDown, Bug } from "lucide-react";
 import { registerUsage } from "@/ai/client/registerUsage";
 import { useSession, signIn } from "next-auth/react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { toast } from "sonner";
 
 /* =========================================================
    📦 Tipos
@@ -69,7 +70,7 @@ const ACCOUNT_INTENT_KEYWORDS = [
 ========================================================= */
 export default function RowiCoach() {
   const { data: session } = useSession();
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const content = DEMO_CONTENT[lang as keyof typeof DEMO_CONTENT] || DEMO_CONTENT.es;
 
   /* =========================================================
@@ -88,6 +89,9 @@ export default function RowiCoach() {
   const [showDemoTyping, setShowDemoTyping] = React.useState(false);
   const [showCTA, setShowCTA] = React.useState(false);
   const [demoInput, setDemoInput] = React.useState("");
+  const [feedbackSent, setFeedbackSent] = React.useState<Set<string>>(new Set());
+  const [showBugForm, setShowBugForm] = React.useState(false);
+  const [bugText, setBugText] = React.useState("");
 
   const isLoggedIn = !!session?.user?.email;
   const userName = session?.user?.name || "Usuario";
@@ -333,6 +337,39 @@ export default function RowiCoach() {
   }
 
   /* =========================================================
+     👍 FEEDBACK
+  ========================================================== */
+  async function submitFeedback(type: "like" | "dislike", messageId: string, messageText?: string) {
+    try {
+      await fetch("/api/rowi/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, messageId, messageText: messageText?.slice(0, 500), locale: lang }),
+      });
+      setFeedbackSent((prev) => new Set(prev).add(messageId));
+      toast.success(t("rowi.feedback.thanks"));
+    } catch {
+      console.error("[RowiCoach] Feedback error");
+    }
+  }
+
+  async function submitBugReport() {
+    if (!bugText.trim()) return;
+    try {
+      await fetch("/api/rowi/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "bug", comment: bugText.trim(), locale: lang }),
+      });
+      setBugText("");
+      setShowBugForm(false);
+      toast.success(t("rowi.feedback.bugReported"));
+    } catch {
+      console.error("[RowiCoach] Bug report error");
+    }
+  }
+
+  /* =========================================================
      💬 UI
   ========================================================== */
 
@@ -396,13 +433,27 @@ export default function RowiCoach() {
               />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-white">Rowi Coach</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white">Rowi Coach</h3>
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white/25 text-white rounded-full leading-none">
+                  {t("rowi.feedback.beta")}
+                </span>
+              </div>
               <p className="text-xs text-white/80">
                 {isLoggedIn
                   ? (lang === "en" ? "Your EI companion" : "Tu compañero de IE")
                   : (lang === "en" ? "Emotional Intelligence" : "Inteligencia Emocional")}
               </p>
             </div>
+            {isLoggedIn && (
+              <button
+                onClick={() => setShowBugForm(!showBugForm)}
+                className="p-2 rounded-full hover:bg-white/20 transition-colors"
+                title={t("rowi.feedback.bugTitle")}
+              >
+                <Bug className="w-4 h-4 text-white" />
+              </button>
+            )}
             <button
               onClick={() => setOpen(false)}
               className="p-2 rounded-full hover:bg-white/20 transition-colors"
@@ -410,6 +461,46 @@ export default function RowiCoach() {
               <X className="w-5 h-5 text-white" />
             </button>
           </div>
+
+          {/* BUG REPORT FORM */}
+          <AnimatePresence>
+            {showBugForm && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden border-b border-amber-200 dark:border-amber-800"
+              >
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 space-y-2">
+                  <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
+                    {t("rowi.feedback.bugTitle")}
+                  </p>
+                  <textarea
+                    value={bugText}
+                    onChange={(e) => setBugText(e.target.value)}
+                    placeholder={t("rowi.feedback.bugPlaceholder")}
+                    className="w-full text-sm rounded-lg border border-amber-200 dark:border-amber-700 bg-white dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                    rows={2}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => { setShowBugForm(false); setBugText(""); }}
+                      className="text-xs px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
+                    >
+                      {t("rowi.feedback.bugCancel")}
+                    </button>
+                    <button
+                      onClick={submitBugReport}
+                      disabled={!bugText.trim()}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                    >
+                      {t("rowi.feedback.bugSubmit")}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* MENSAJES */}
           <div className="flex-1 max-h-[350px] overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-zinc-950">
@@ -450,21 +541,44 @@ export default function RowiCoach() {
                     />
                   </div>
                 )}
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
-                    m.role === "user"
-                      ? "bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white"
-                      : "bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm"
-                  }`}
-                >
-                  {m.text}
-                  {m.audioUrl && (
-                    <button
-                      onClick={() => playAudio(m.audioUrl!, m.id)}
-                      className={`mt-2 text-xs flex items-center gap-1 ${playing === m.id ? "text-[var(--rowi-g2)]" : "opacity-70 hover:opacity-100"}`}
-                    >
-                      {playing === m.id ? "Pause" : "Play"}
-                    </button>
+                <div className="flex flex-col">
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                      m.role === "user"
+                        ? "bg-gradient-to-r from-[var(--rowi-g2)] to-[var(--rowi-g1)] text-white"
+                        : "bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm"
+                    }`}
+                  >
+                    {m.text}
+                    {m.audioUrl && (
+                      <button
+                        onClick={() => playAudio(m.audioUrl!, m.id)}
+                        className={`mt-2 text-xs flex items-center gap-1 ${playing === m.id ? "text-[var(--rowi-g2)]" : "opacity-70 hover:opacity-100"}`}
+                      >
+                        {playing === m.id ? "Pause" : "Play"}
+                      </button>
+                    )}
+                  </div>
+                  {m.role === "assistant" && isLoggedIn && !feedbackSent.has(m.id) && (
+                    <div className="flex gap-1 mt-1 ml-1">
+                      <button
+                        onClick={() => submitFeedback("like", m.id, m.text)}
+                        className="p-1 rounded-md text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
+                      >
+                        <ThumbsUp className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => submitFeedback("dislike", m.id, m.text)}
+                        className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      >
+                        <ThumbsDown className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  {m.role === "assistant" && feedbackSent.has(m.id) && (
+                    <p className="text-[10px] text-gray-400 mt-1 ml-1">
+                      {t("rowi.feedback.thanks")}
+                    </p>
                   )}
                 </div>
               </motion.div>

@@ -360,6 +360,41 @@ export async function POST(req: NextRequest) {
     }
 
     /* =========================================================
+     💾 6.6 Persistir conversación en rowi_chat
+    ========================================================== */
+    try {
+      if (auth?.id && auth.id !== "hub-control-user") {
+        // Guardar mensaje del usuario
+        await prisma.rowiChat.create({
+          data: {
+            userId: auth.id,
+            agentId: agent.id,
+            role: "user",
+            content: userContent.slice(0, 2000),
+            intent: slug,
+            locale: lang,
+            contextType: "coach",
+          },
+        });
+
+        // Guardar respuesta del asistente
+        await prisma.rowiChat.create({
+          data: {
+            userId: auth.id,
+            agentId: agent.id,
+            role: "assistant",
+            content: replyText.slice(0, 5000),
+            intent: slug,
+            locale: lang,
+            contextType: "coach",
+          },
+        });
+      }
+    } catch (chatErr) {
+      console.warn("⚠️ Error guardando en rowi_chat:", chatErr);
+    }
+
+    /* =========================================================
      📤 7. Respuesta final para RowiCoach
     ========================================================== */
     return NextResponse.json({

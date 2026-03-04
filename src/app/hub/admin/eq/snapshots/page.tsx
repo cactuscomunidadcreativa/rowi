@@ -198,20 +198,82 @@ export default function EQSnapshotsAdminPage() {
       const data = await res.json();
       if (data.ok && data.stats) {
         setStats(data.stats);
+
+        // Competencias reales del API
+        if (data.stats.competencies) {
+          const comp = data.stats.competencies;
+          const COMP_LABELS_EN: Record<string, string> = {
+            EL: "Emotional Literacy", RP: "Recognize Patterns", ACT: "Consequential Thinking",
+            NE: "Navigate Emotions", IM: "Intrinsic Motivation", OP: "Exercise Optimism",
+            EMP: "Increase Empathy", NG: "Noble Goals",
+          };
+          setCompetencies(
+            Object.entries(comp).map(([key, value]) => ({
+              key,
+              label: COMP_LABELS_EN[key] || key,
+              score: Math.round(Number(value) || 0),
+            }))
+          );
+        } else {
+          setCompetencies([]);
+        }
+
+        // Tendencia mensual real del API
+        if (data.stats.monthlyTrend && data.stats.monthlyTrend.length > 0) {
+          setTrends(
+            data.stats.monthlyTrend.map((m: any) => ({
+              month: m.month,
+              count: 0, // API no devuelve count por mes, se podría extender
+              avgScore: Number(m.avg) || 0,
+            }))
+          );
+        } else {
+          setTrends([]);
+        }
+
+        // Brain styles reales del API
+        if (data.stats.brainStyles && data.stats.brainStyles.length > 0) {
+          setBrainStyles(
+            data.stats.brainStyles.map((b: any) => ({
+              style: b.name,
+              count: b.count || 0,
+              percentage: b.value || 0,
+            }))
+          );
+        } else {
+          setBrainStyles([]);
+        }
+
+        // Snapshots recientes reales del API
+        if (data.stats.recentSnapshotsList && data.stats.recentSnapshotsList.length > 0) {
+          setRecentSnapshots(
+            data.stats.recentSnapshotsList.map((s: any) => ({
+              id: s.id,
+              userName: s.user?.name || s.user?.email || "—",
+              at: s.at,
+              K: s.K || 0,
+              C: s.C || 0,
+              G: s.G || 0,
+              brainStyle: s.brainStyle || undefined,
+            }))
+          );
+        } else {
+          setRecentSnapshots([]);
+        }
       } else {
-        setStats(DEMO_STATS);
+        setStats(null);
+        setTrends([]);
+        setCompetencies([]);
+        setBrainStyles([]);
+        setRecentSnapshots([]);
       }
-      setTrends(DEMO_TRENDS);
-      setCompetencies(DEMO_COMPETENCIES);
-      setBrainStyles(DEMO_BRAIN_STYLES);
-      setRecentSnapshots(DEMO_RECENT);
     } catch (error) {
       console.error("Error loading rowiverse data:", error);
-      setStats(DEMO_STATS);
-      setTrends(DEMO_TRENDS);
-      setCompetencies(DEMO_COMPETENCIES);
-      setBrainStyles(DEMO_BRAIN_STYLES);
-      setRecentSnapshots(DEMO_RECENT);
+      setStats(null);
+      setTrends([]);
+      setCompetencies([]);
+      setBrainStyles([]);
+      setRecentSnapshots([]);
     } finally {
       setLoading(false);
     }

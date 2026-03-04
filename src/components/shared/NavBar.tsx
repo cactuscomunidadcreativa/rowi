@@ -527,12 +527,12 @@ export default function NavBar() {
           )}
 
           {!isLogged ? (
-            <button
-              onClick={() => signIn()}
+            <Link
+              href="/signin"
               className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] rounded-lg hover:opacity-90 transition-opacity"
             >
               {t.signin}
-            </button>
+            </Link>
           ) : (
             <div id="rowi-user-menu" className="relative">
               <button

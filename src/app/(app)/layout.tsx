@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Si no está autenticado, redirigir al login
   if (status === "unauthenticated") {
-    redirect("/auth/login");
+    redirect("/signin");
   }
 
   return (

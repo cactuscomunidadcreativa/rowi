@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { getProviders, signIn } from "next-auth/react";
+import { getProviders, signIn, useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -29,6 +29,16 @@ function HubLoginContent() {
   const router = useRouter();
   const error = searchParams.get("error");
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
+  // ─────────────────────────────────────────────────────────
+  // If already authenticated, redirect to dashboard
+  // ─────────────────────────────────────────────────────────
+  const { data: session, status: sessionStatus } = useSession();
+  useEffect(() => {
+    if (sessionStatus === "authenticated" && session?.user) {
+      router.replace(callbackUrl || "/dashboard");
+    }
+  }, [sessionStatus, session, callbackUrl, router]);
 
   // ─────────────────────────────────────────────────────────
   // Load providers

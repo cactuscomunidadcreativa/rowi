@@ -58,8 +58,8 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--rowi-background)]">
-        <div className="w-16 h-16 border-4 border-[var(--rowi-primary)] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--rowi-bg,#f7f9fb)]">
+        <div className="w-16 h-16 border-4 border-[var(--rowi-g2,#31a2e3)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -87,7 +87,7 @@ function FallbackHomePage() {
   return (
     <>
       <PublicNavbar />
-      <main className="min-h-screen bg-[var(--rowi-background)]" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
+      <main className="min-h-screen bg-[var(--rowi-bg,#f7f9fb)]" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
         {/* Hero */}
         <HeroSection
           content={{

@@ -266,9 +266,22 @@ export async function POST(req: NextRequest) {
       userContent += `\n\n(Nota: el usuario también envió un audio, aún no se ha transcrito aquí).`;
     }
 
-    const systemPrompt =
+    // Construir prompt del sistema con instrucción de idioma obligatoria
+    const LANG_NAMES: Record<string, string> = {
+      es: "español",
+      en: "English",
+      pt: "português",
+      it: "italiano",
+    };
+    const langName = LANG_NAMES[lang] || lang;
+    const langInstruction =
+      lang !== "es"
+        ? `\n\nIMPORTANT: You MUST respond entirely in ${langName}. The user has selected "${lang}" as their language. All your responses, including greetings, explanations, and suggestions, must be in ${langName}. Do NOT respond in Spanish unless the user explicitly writes to you in Spanish.`
+        : "";
+    const basePrompt =
       agent.prompt ||
-      `Eres Rowi, un coach emocional y cognitivo. Hablas principalmente en ${lang}. Responde de forma clara, empática y aplicada al contexto de la persona.`;
+      `Eres Rowi, un coach emocional y cognitivo. Hablas principalmente en ${langName}. Responde de forma clara, empática y aplicada al contexto de la persona.`;
+    const systemPrompt = basePrompt + langInstruction;
 
     const messages: OpenAI.ChatCompletionMessageParam[] = [
       {

@@ -4,11 +4,15 @@ import Providers from "../components/shared/Providers";
 import ThemeToggle from "../components/shared/ThemeToggle";
 import NavBar from "../components/shared/NavBar";
 import RowiCoach from "../components/rowi/RowiCoach";
+import CopyProtection from "../components/shared/CopyProtection";
 import { Toaster } from "sonner";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   return (
     <Providers>
+      {/* 🛡️ Protección anti-copia global */}
+      <CopyProtection />
+
       {/* 🔹 Barra de navegación global */}
       <NavBar />
 

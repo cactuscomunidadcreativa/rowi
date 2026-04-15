@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // 482 errors to fix - mostly related to params being Promise in route handlers
   typescript: { ignoreBuildErrors: true },
 
+  // 🛡️ Disable source maps in production to protect code
+  productionBrowserSourceMaps: false,
+
   images: {
     remotePatterns: [
       {
@@ -92,6 +95,30 @@ const nextConfig: NextConfig = {
             ]
               .filter(Boolean)
               .join("; "),
+          },
+        ],
+      },
+      {
+        // 🛡️ Block source map files in production
+        source: "/:path*.map",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+          {
+            key: "Cache-Control",
+            value: "no-store",
+          },
+        ],
+      },
+      {
+        // 🛡️ Block _next/static source access with no-cache
+        source: "/_next/:path*",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },

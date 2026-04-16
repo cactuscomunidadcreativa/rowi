@@ -372,7 +372,7 @@ interface ReferenceBenchmark {
 
 /** Fallback when Rowiverse data is loading/unavailable */
 const EMPTY_BENCHMARK: ReferenceBenchmark = {
-  name: { es: "Cargando...", en: "Loading..." },
+  name: { es: "Cargando...", en: "Loading...", pt: "Carregando...", it: "Caricamento..." },
   sampleSize: 0,
   avgEQ: 100,
   competencies: { EL: 100, RP: 100, ACT: 100, NE: 100, IM: 100, OP: 100, EMP: 100, NG: 100 },

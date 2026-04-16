@@ -1,6 +1,54 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const FAMILY_T = {
+  es: {
+    loadError: "Error cargando datos",
+    connError: "Error de conexión",
+    enterEmail: "Ingresa un email",
+    invitationSent: "Invitación enviada ✅",
+    inviteError: "Error enviando invitación",
+    networkError: "Error de red",
+    confirmRemove: "¿Estás seguro de remover a este miembro?",
+    removeError: "Error removiendo miembro",
+    loading: "Cargando...",
+  },
+  en: {
+    loadError: "Error loading data",
+    connError: "Connection error",
+    enterEmail: "Enter an email",
+    invitationSent: "Invitation sent ✅",
+    inviteError: "Error sending invitation",
+    networkError: "Network error",
+    confirmRemove: "Are you sure you want to remove this member?",
+    removeError: "Error removing member",
+    loading: "Loading...",
+  },
+  pt: {
+    loadError: "Erro ao carregar dados",
+    connError: "Erro de conexão",
+    enterEmail: "Digite um e-mail",
+    invitationSent: "Convite enviado ✅",
+    inviteError: "Erro ao enviar convite",
+    networkError: "Erro de rede",
+    confirmRemove: "Tem certeza de que deseja remover este membro?",
+    removeError: "Erro ao remover membro",
+    loading: "Carregando...",
+  },
+  it: {
+    loadError: "Errore nel caricamento dei dati",
+    connError: "Errore di connessione",
+    enterEmail: "Inserisci un'email",
+    invitationSent: "Invito inviato ✅",
+    inviteError: "Errore nell'invio dell'invito",
+    networkError: "Errore di rete",
+    confirmRemove: "Sei sicuro di voler rimuovere questo membro?",
+    removeError: "Errore nella rimozione del membro",
+    loading: "Caricamento...",
+  },
+};
 
 type FamilyMember = {
   id: string;
@@ -24,6 +72,8 @@ type FamilyPlanInfo = {
 };
 
 export default function FamilySettingsPage() {
+  const { lang } = useI18n();
+  const t = FAMILY_T[lang as keyof typeof FAMILY_T] || FAMILY_T.en;
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [planInfo, setPlanInfo] = useState<FamilyPlanInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,10 +95,10 @@ export default function FamilySettingsPage() {
         setMembers(data.members || []);
         setPlanInfo(data.planInfo || null);
       } else {
-        setError(data.error || "Error cargando datos");
+        setError(data.error || t.loadError);
       }
     } catch {
-      setError("Error de conexión");
+      setError(t.connError);
     } finally {
       setLoading(false);
     }
@@ -60,7 +110,7 @@ export default function FamilySettingsPage() {
 
   async function inviteMember() {
     if (!email.trim()) {
-      setInviteMsg("Ingresa un email");
+      setInviteMsg(t.enterEmail);
       return;
     }
 
@@ -80,22 +130,22 @@ export default function FamilySettingsPage() {
       const data = await res.json();
 
       if (data.ok) {
-        setInviteMsg("Invitación enviada ✅");
+        setInviteMsg(t.invitationSent);
         setEmail("");
         setName("");
         loadFamilyData(); // Recargar lista
       } else {
-        setInviteMsg(data.error || "Error enviando invitación");
+        setInviteMsg(data.error || t.inviteError);
       }
     } catch {
-      setInviteMsg("Error de red");
+      setInviteMsg(t.networkError);
     } finally {
       setInviting(false);
     }
   }
 
   async function removeMember(memberId: string) {
-    if (!confirm("¿Estás seguro de remover a este miembro?")) return;
+    if (!confirm(t.confirmRemove)) return;
 
     try {
       const res = await fetch("/api/family/members", {
@@ -109,7 +159,7 @@ export default function FamilySettingsPage() {
         loadFamilyData();
       }
     } catch {
-      alert("Error removiendo miembro");
+      alert(t.removeError);
     }
   }
 
@@ -117,7 +167,7 @@ export default function FamilySettingsPage() {
     return (
       <main className="space-y-4">
         <div className="rowi-card">
-          <div className="text-center py-8 text-gray-500">Cargando...</div>
+          <div className="text-center py-8 text-gray-500">{t.loading}</div>
         </div>
       </main>
     );

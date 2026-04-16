@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserCircle2, Calendar, Brain, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /**
  * =========================================================
@@ -15,6 +16,7 @@ import { UserCircle2, Calendar, Brain, Sparkles } from "lucide-react";
  */
 
 export default function UserTimelineProfile() {
+  const { lang } = useI18n();
   const { id } = useParams();
   const [user, setUser] = useState<any>(null);
   const [snapshots, setSnapshots] = useState<any[]>([]);
@@ -53,7 +55,7 @@ export default function UserTimelineProfile() {
   }, [id]);
 
   if (loading)
-    return <p className="p-6 text-sm text-muted-foreground">Cargando perfil...</p>;
+    return <p className="p-6 text-sm text-muted-foreground">{lang === "es" ? "Cargando perfil..." : lang === "pt" ? "Carregando perfil..." : lang === "it" ? "Caricamento profilo..." : "Loading profile..."}</p>;
   if (!user)
     return <p className="p-6 text-sm text-muted-foreground">Usuario no encontrado.</p>;
 

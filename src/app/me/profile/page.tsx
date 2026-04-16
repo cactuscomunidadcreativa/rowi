@@ -6,11 +6,37 @@ import {
   Sparkles, Eye, Link2, FileSpreadsheet, CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const ME_T = {
+  es: {
+    saved: "Perfil actualizado 💾",
+    saveError: "Error guardando perfil",
+    csvError: "Error al importar CSV",
+  },
+  en: {
+    saved: "Profile updated 💾",
+    saveError: "Error saving profile",
+    csvError: "Error importing CSV",
+  },
+  pt: {
+    saved: "Perfil atualizado 💾",
+    saveError: "Erro ao salvar perfil",
+    csvError: "Erro ao importar CSV",
+  },
+  it: {
+    saved: "Profilo aggiornato 💾",
+    saveError: "Errore nel salvataggio del profilo",
+    csvError: "Errore nell'importazione del CSV",
+  },
+};
 
 /* =========================================================
    🧠 Rowi Profile Hub 4.0
 ========================================================= */
 export default function MeProfilePage() {
+  const { lang } = useI18n();
+  const mt = ME_T[lang as keyof typeof ME_T] || ME_T.en;
   const [user, setUser] = useState<any>(null);
   const [prefs, setPrefs] = useState<any>({
     values: [],
@@ -53,9 +79,9 @@ export default function MeProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(prefs),
       });
-      toast.success("Perfil actualizado 💾");
+      toast.success(mt.saved);
     } catch {
-      toast.error("Error guardando perfil");
+      toast.error(mt.saveError);
     } finally {
       setSaving(false);
     }
@@ -76,7 +102,7 @@ export default function MeProfilePage() {
     setCsvPreview(json.preview || []);
     setUploading(false);
     if (json.ok) toast.success(json.message);
-    else toast.error("Error al importar CSV");
+    else toast.error(mt.csvError);
   }
 
   /* ==============================================

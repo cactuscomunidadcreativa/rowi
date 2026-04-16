@@ -47,7 +47,7 @@ const T: Record<string, Record<string, string>> = {
   cancelSub: { es: "Cancelar suscripción", en: "Cancel subscription" },
   cancelWarning: { es: "Perderás acceso a las funciones premium al finalizar el período", en: "You'll lose access to premium features at the end of the period" },
 
-  loading: { es: "Cargando...", en: "Loading..." },
+  loading: { es: "Cargando...", en: "Loading...", pt: "Carregando...", it: "Caricamento..." },
   error: { es: "Error al cargar", en: "Error loading" },
 };
 
@@ -111,7 +111,7 @@ type SubscriptionData = {
 
 export default function SubscriptionPage() {
   const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const lang = locale; // all 4 languages
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
   const [loading, setLoading] = useState(true);

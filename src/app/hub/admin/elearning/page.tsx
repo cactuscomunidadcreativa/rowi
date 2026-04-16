@@ -125,6 +125,7 @@ const t = {
 };
 
 export default function ElearningDashboardPage() {
+  const { lang } = useI18n();
   const router = useRouter();
   const { locale } = useI18n();
   const lang = locale === "en" ? "en" : "es";

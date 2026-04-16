@@ -41,7 +41,7 @@ const T: Record<string, Record<string, string>> = {
   manage: { es: "Gestionar", en: "Manage" },
   leave: { es: "Salir", en: "Leave" },
 
-  loading: { es: "Cargando...", en: "Loading..." },
+  loading: { es: "Cargando...", en: "Loading...", pt: "Carregando...", it: "Caricamento..." },
   search: { es: "Buscar comunidad...", en: "Search community..." },
 };
 
@@ -66,7 +66,7 @@ type Community = {
 
 export default function CommunitiesPage() {
   const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const lang = locale; // all 4 languages
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
   const [loading, setLoading] = useState(true);

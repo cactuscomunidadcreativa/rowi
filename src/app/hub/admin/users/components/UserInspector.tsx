@@ -23,6 +23,7 @@ import {
   Clock4,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    🧠 UserInspector — Panel completo con Insights y Actividad
@@ -134,7 +135,7 @@ export default function UserInspector({
       <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
         <Card className="p-6 bg-white dark:bg-zinc-900 flex items-center gap-2">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <p>Cargando usuario...</p>
+          <p>{lang === "es" ? "Cargando usuario..." : lang === "pt" ? "Carregando usuário..." : lang === "it" ? "Caricamento utente..." : "Loading user..."}</p>
         </Card>
       </div>
     );

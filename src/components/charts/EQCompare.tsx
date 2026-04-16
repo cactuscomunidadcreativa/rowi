@@ -12,16 +12,24 @@ import {
   CartesianGrid,
 } from "recharts";
 import { EQ_MAX, getSeiLevel } from "@/domains/eq/lib/eqLevels";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type Item = { key: string; actual: number; feedback: number };
 
 export default function EQCompare({
   data,
-  title = "Actual vs Feedback",
+  title,
 }: {
   data: Item[];
   title?: string;
 }) {
+  const { lang } = useI18n();
+  const TITLE = { es: "Actual vs Feedback", en: "Current vs Feedback", pt: "Atual vs Feedback", it: "Attuale vs Feedback" };
+  const ACTUAL = { es: "Actual", en: "Current", pt: "Atual", it: "Attuale" };
+  const FEEDBACK = { es: "Feedback", en: "Feedback", pt: "Feedback", it: "Feedback" };
+  const resolvedTitle = title ?? (TITLE[lang as keyof typeof TITLE] ?? TITLE.en);
+  const actualLbl = ACTUAL[lang as keyof typeof ACTUAL] ?? ACTUAL.en;
+  const feedbackLbl = FEEDBACK[lang as keyof typeof FEEDBACK] ?? FEEDBACK.en;
   return (
     <div
       style={{
@@ -39,7 +47,7 @@ export default function EQCompare({
           color: "#ECEFF1",
         }}
       >
-        {title}
+        {resolvedTitle}
       </h3>
 
       <div style={{ height: 300 }}>
@@ -69,8 +77,7 @@ export default function EQCompare({
               }}
               formatter={(value: number, name: string) => {
                 const lvl = getSeiLevel(value);
-                const label =
-                  name === "actual" ? "Actual" : "Feedback";
+                const label = name === "actual" ? actualLbl : feedbackLbl;
                 return [`${value} / ${EQ_MAX}`, `${label}: ${lvl.name}`];
               }}
             />
@@ -96,13 +103,13 @@ export default function EQCompare({
 
             <Bar
               dataKey="actual"
-              name="Actual"
+              name={actualLbl}
               fill="url(#gradActual)"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="feedback"
-              name="Feedback"
+              name={feedbackLbl}
               fill="url(#gradFeedback)"
               radius={[4, 4, 0, 0]}
             />

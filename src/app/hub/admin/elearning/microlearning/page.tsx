@@ -393,12 +393,13 @@ function MicroLearningContent() {
 }
 
 export default function MicroLearningPage() {
+  const { lang } = useI18n();
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>Cargando micro-learnings...</span>
+          <span>{lang === "es" ? "Cargando micro-learnings..." : lang === "pt" ? "Carregando micro-learnings..." : lang === "it" ? "Caricamento micro-learning..." : "Loading micro-learnings..."}</span>
         </div>
       </div>
     }>

@@ -18,6 +18,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const CA_T = {
+  es: {
+    confirmDelete: (n: string) => `¿Seguro que quieres eliminar la comunidad "${n}"? Esta acción no se puede deshacer.`,
+    deleteError: "❌ Error al eliminar comunidad",
+    connError: "Error de conexión con el servidor",
+  },
+  en: {
+    confirmDelete: (n: string) => `Are you sure you want to delete the community "${n}"? This action cannot be undone.`,
+    deleteError: "❌ Error deleting community",
+    connError: "Server connection error",
+  },
+  pt: {
+    confirmDelete: (n: string) => `Tem certeza de que deseja excluir a comunidade "${n}"? Esta ação não pode ser desfeita.`,
+    deleteError: "❌ Erro ao excluir comunidade",
+    connError: "Erro de conexão com o servidor",
+  },
+  it: {
+    confirmDelete: (n: string) => `Sei sicuro di voler eliminare la comunità "${n}"? Questa azione non può essere annullata.`,
+    deleteError: "❌ Errore nell'eliminare la comunità",
+    connError: "Errore di connessione al server",
+  },
+};
 
 /**
  * =========================================================
@@ -41,16 +65,13 @@ export default function CommunityActions({
   onDelete?: (id: string) => void;
 }) {
   const router = useRouter();
+  const { lang } = useI18n();
+  const ct = CA_T[lang as keyof typeof CA_T] || CA_T.en;
   const [deleting, setDeleting] = useState(false);
 
   // 🗑️ Eliminar comunidad
   async function handleDelete() {
-    if (
-      !confirm(
-        `¿Seguro que quieres eliminar la comunidad "${communityName}"? Esta acción no se puede deshacer.`
-      )
-    )
-      return;
+    if (!confirm(ct.confirmDelete(communityName))) return;
 
     try {
       setDeleting(true);
@@ -61,11 +82,11 @@ export default function CommunityActions({
       if (res.ok) {
         onDelete?.(communityId);
       } else {
-        alert("❌ Error al eliminar comunidad");
+        alert(ct.deleteError);
       }
     } catch (err) {
       console.error("❌ Error al eliminar comunidad:", err);
-      alert("Error de conexión con el servidor");
+      alert(ct.connError);
     } finally {
       setDeleting(false);
     }

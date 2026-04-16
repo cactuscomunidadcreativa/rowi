@@ -15,12 +15,12 @@ import { useI18n } from "@/lib/i18n/useI18n";
 /* =========================================================
    📊 Niveles traducidos
 ========================================================= */
-const LEVEL_LABELS: Record<string, { es: string; en: string }> = {
-  desafio: { es: "Desafío", en: "Challenge" },
-  emergente: { es: "Emergente", en: "Emerging" },
-  funcional: { es: "Funcional", en: "Functional" },
-  diestro: { es: "Diestro", en: "Skilled" },
-  experto: { es: "Experto", en: "Expert" },
+const LEVEL_LABELS: Record<string, { es: string; en: string; pt: string; it: string }> = {
+  desafio: { es: "Desafío", en: "Challenge", pt: "Desafio", it: "Sfida" },
+  emergente: { es: "Emergente", en: "Emerging", pt: "Emergente", it: "Emergente" },
+  funcional: { es: "Funcional", en: "Functional", pt: "Funcional", it: "Funzionale" },
+  diestro: { es: "Diestro", en: "Skilled", pt: "Habilidoso", it: "Abile" },
+  experto: { es: "Experto", en: "Expert", pt: "Especialista", it: "Esperto" },
 };
 
 /* =========================================================
@@ -43,61 +43,77 @@ const COLOR_SEI: Record<string, string> = {
 /* =========================================================
    📖 Definiciones de las competencias SEI
 ========================================================= */
-const COMPETENCY_INFO: Record<string, { name: { es: string; en: string }; definition: { es: string; en: string } }> = {
+const COMPETENCY_INFO: Record<string, { name: { es: string; en: string; pt: string; it: string }; definition: { es: string; en: string; pt: string; it: string } }> = {
   EL: {
-    name: { es: "Alfabetización Emocional", en: "Emotional Literacy" },
+    name: { es: "Alfabetización Emocional", en: "Emotional Literacy", pt: "Alfabetização Emocional", it: "Alfabetizzazione Emotiva" },
     definition: {
       es: "Identificar y nombrar las emociones propias y ajenas con precisión",
-      en: "Accurately identifying and naming your own and others' emotions"
+      en: "Accurately identifying and naming your own and others' emotions",
+      pt: "Identificar e nomear as emoções próprias e alheias com precisão",
+      it: "Identificare e nominare con precisione le proprie emozioni e quelle degli altri"
     },
   },
   RP: {
-    name: { es: "Reconocer Patrones", en: "Recognize Patterns" },
+    name: { es: "Reconocer Patrones", en: "Recognize Patterns", pt: "Reconhecer Padrões", it: "Riconoscere Pattern" },
     definition: {
       es: "Identificar patrones recurrentes en tus reacciones emocionales",
-      en: "Identifying recurring patterns in your emotional reactions"
+      en: "Identifying recurring patterns in your emotional reactions",
+      pt: "Identificar padrões recorrentes em suas reações emocionais",
+      it: "Identificare pattern ricorrenti nelle tue reazioni emotive"
     },
   },
   ACT: {
-    name: { es: "Aplicar Pensamiento Consecuente", en: "Apply Consequential Thinking" },
+    name: { es: "Aplicar Pensamiento Consecuente", en: "Apply Consequential Thinking", pt: "Aplicar Pensamento Consequente", it: "Applicare il Pensiero Consequenziale" },
     definition: {
       es: "Evaluar los costos y beneficios de tus decisiones",
-      en: "Evaluating the costs and benefits of your choices"
+      en: "Evaluating the costs and benefits of your choices",
+      pt: "Avaliar os custos e benefícios das suas decisões",
+      it: "Valutare i costi e i benefici delle tue decisioni"
     },
   },
   NE: {
-    name: { es: "Navegar Emociones", en: "Navigate Emotions" },
+    name: { es: "Navegar Emociones", en: "Navigate Emotions", pt: "Navegar Emoções", it: "Navigare le Emozioni" },
     definition: {
       es: "Regular y transformar las emociones como recurso estratégico",
-      en: "Regulating and transforming emotions as a strategic resource"
+      en: "Regulating and transforming emotions as a strategic resource",
+      pt: "Regular e transformar as emoções como recurso estratégico",
+      it: "Regolare e trasformare le emozioni come risorsa strategica"
     },
   },
   IM: {
-    name: { es: "Motivación Intrínseca", en: "Intrinsic Motivation" },
+    name: { es: "Motivación Intrínseca", en: "Intrinsic Motivation", pt: "Motivação Intrínseca", it: "Motivazione Intrinseca" },
     definition: {
       es: "Conectar con tus motivaciones internas para la acción sostenida",
-      en: "Connecting with internal drivers for sustained action"
+      en: "Connecting with internal drivers for sustained action",
+      pt: "Conectar-se com suas motivações internas para a ação sustentada",
+      it: "Connettersi con le tue motivazioni interne per un'azione sostenuta"
     },
   },
   OP: {
-    name: { es: "Ejercitar el Optimismo", en: "Exercise Optimism" },
+    name: { es: "Ejercitar el Optimismo", en: "Exercise Optimism", pt: "Exercer o Otimismo", it: "Esercitare l'Ottimismo" },
     definition: {
       es: "Mantener una perspectiva esperanzadora y proactiva ante los desafíos",
-      en: "Maintaining a hopeful, proactive outlook when facing challenges"
+      en: "Maintaining a hopeful, proactive outlook when facing challenges",
+      pt: "Manter uma perspectiva esperançosa e proativa diante dos desafios",
+      it: "Mantenere una prospettiva speranzosa e proattiva di fronte alle sfide"
     },
   },
   EMP: {
-    name: { es: "Empatía", en: "Empathy" },
+    name: { es: "Empatía", en: "Empathy", pt: "Empatia", it: "Empatia" },
     definition: {
       es: "Comprender y conectar con las emociones de los demás",
-      en: "Understanding and connecting with others' emotions"
+      en: "Understanding and connecting with others' emotions",
+      pt: "Compreender e conectar-se com as emoções dos outros",
+      it: "Comprendere e connettersi con le emozioni degli altri"
     },
   },
   NG: {
-    name: { es: "Perseguir Metas Nobles", en: "Pursue Noble Goals" },
+    name: { es: "Perseguir Metas Nobles", en: "Pursue Noble Goals", pt: "Perseguir Metas Nobres", it: "Perseguire Obiettivi Nobili" },
     definition: {
       es: "Alinear tus acciones con un propósito más allá de ti mismo",
-      en: "Aligning your actions with a purpose beyond yourself"
+      en: "Aligning your actions with a purpose beyond yourself",
+      pt: "Alinhar suas ações com um propósito além de si mesmo",
+      it: "Allineare le tue azioni con uno scopo al di là di te stesso"
     },
   },
 };
@@ -121,7 +137,7 @@ function CustomTooltip({ active, payload, lang }: any) {
 
   // Obtener nivel
   const level = getEqLevel(score ?? 0);
-  const levelLabel = LEVEL_LABELS[level.key]?.[lang as "es" | "en"] ?? level.label;
+  const levelLabel = LEVEL_LABELS[level.key]?.[lang as "es" | "en" | "pt" | "it"] ?? level.label;
 
   return (
     <div className="bg-black/90 backdrop-blur-sm rounded-xl p-3 max-w-xs shadow-xl border border-white/10">
@@ -202,17 +218,17 @@ export default function CompetenciesSpider({
   if (!hasPresent && !hasCompare) {
     return (
       <div className="flex h-72 items-center justify-center text-sm text-gray-400 border rounded-xl">
-        <p>{lang === "es" ? "No hay datos para mostrar." : "No data to display."}</p>
+        <p>{lang === "es" ? "No hay datos para mostrar." : lang === "pt" ? "Não há dados para exibir." : lang === "it" ? "Nessun dato da mostrare." : "No data to display."}</p>
       </div>
     );
   }
 
-  const presentLabel = lang === "es"
-    ? `Actual${datePresent ? ` · ${datePresent}` : ""}`
-    : `Current${datePresent ? ` · ${datePresent}` : ""}`;
-  const compareLabel = lang === "es"
-    ? `Anterior${dateCompare ? ` · ${dateCompare}` : ""}`
-    : `Previous${dateCompare ? ` · ${dateCompare}` : ""}`;
+  const CURRENT_WORD = { es: "Actual", en: "Current", pt: "Atual", it: "Attuale" };
+  const PREVIOUS_WORD = { es: "Anterior", en: "Previous", pt: "Anterior", it: "Precedente" };
+  const cur = CURRENT_WORD[lang as keyof typeof CURRENT_WORD] ?? CURRENT_WORD.en;
+  const prv = PREVIOUS_WORD[lang as keyof typeof PREVIOUS_WORD] ?? PREVIOUS_WORD.en;
+  const presentLabel = `${cur}${datePresent ? ` · ${datePresent}` : ""}`;
+  const compareLabel = `${prv}${dateCompare ? ` · ${dateCompare}` : ""}`;
 
   return (
     <div>

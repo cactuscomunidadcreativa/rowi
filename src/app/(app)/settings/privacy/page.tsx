@@ -55,7 +55,7 @@ const T: Record<string, Record<string, string>> = {
   save: { es: "Guardar cambios", en: "Save changes" },
   saving: { es: "Guardando...", en: "Saving..." },
   saved: { es: "Guardado", en: "Saved" },
-  loading: { es: "Cargando...", en: "Loading..." },
+  loading: { es: "Cargando...", en: "Loading...", pt: "Carregando...", it: "Caricamento..." },
 };
 
 const COLORS = {
@@ -91,7 +91,7 @@ function Toggle({ checked, onChange }: ToggleProps) {
 
 export default function PrivacyPage() {
   const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const lang = locale; // all 4 languages
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
   const [loading, setLoading] = useState(true);

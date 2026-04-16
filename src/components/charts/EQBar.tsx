@@ -11,6 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { EQ_MAX, EQ_LEVELS, getEqLevel } from "@/domains/eq/lib/eqLevels";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /** Tipo de item */
 type Item = { key: string; score: number };
@@ -25,11 +26,16 @@ function getBarColor(score: number | null | undefined) {
 /** Componente principal */
 export default function EQBar({
   data,
-  title = "Perfil de EQ (Barras)",
+  title,
 }: {
   data: Item[];
   title?: string;
 }) {
+  const { lang } = useI18n();
+  const TITLE_DEFAULT = { es: "Perfil de EQ (Barras)", en: "EQ Profile (Bars)", pt: "Perfil de EQ (Barras)", it: "Profilo EQ (Barre)" };
+  const LEVEL_LABEL = { es: "Nivel emocional", en: "Emotional level", pt: "Nível emocional", it: "Livello emotivo" };
+  const resolvedTitle = title ?? (TITLE_DEFAULT[lang as keyof typeof TITLE_DEFAULT] ?? TITLE_DEFAULT.en);
+  const levelLbl = LEVEL_LABEL[lang as keyof typeof LEVEL_LABEL] ?? LEVEL_LABEL.en;
   // Color promedio del dataset (para borde o acento)
   const avgColor =
     data.length > 0
@@ -53,7 +59,7 @@ export default function EQBar({
           color: "#ECEFF1",
         }}
       >
-        {title}
+        {resolvedTitle}
       </h3>
 
       <div style={{ height: 260 }}>
@@ -92,7 +98,7 @@ export default function EQBar({
                 const lvl = getEqLevel(value);
                 return [
                   `${lvl.emoji} ${lvl.label}`,
-                  "Nivel emocional",
+                  levelLbl,
                 ];
               }}
             />

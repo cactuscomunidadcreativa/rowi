@@ -7,11 +7,45 @@ import {
   Brain, LineChart, BarChart2, Sparkles, Loader2, ShieldCheck, Filter
 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const INSIGHTS_T = {
+  es: {
+    enterKey: "Ingresa tu clave antes de ejecutar un insight.",
+    genError: "Error generando insight.",
+    noResults: "Sin resultados por ahora.",
+    success: "Insight generado con éxito.",
+    cogError: "Error generando insight cognitivo.",
+  },
+  en: {
+    enterKey: "Enter your key before running an insight.",
+    genError: "Error generating insight.",
+    noResults: "No results yet.",
+    success: "Insight generated successfully.",
+    cogError: "Error generating cognitive insight.",
+  },
+  pt: {
+    enterKey: "Insira sua chave antes de executar um insight.",
+    genError: "Erro ao gerar insight.",
+    noResults: "Sem resultados por enquanto.",
+    success: "Insight gerado com sucesso.",
+    cogError: "Erro ao gerar insight cognitivo.",
+  },
+  it: {
+    enterKey: "Inserisci la tua chiave prima di eseguire un insight.",
+    genError: "Errore nella generazione dell'insight.",
+    noResults: "Nessun risultato al momento.",
+    success: "Insight generato con successo.",
+    cogError: "Errore nella generazione dell'insight cognitivo.",
+  },
+};
 
 /* =========================================================
    🧠 INSIGHTS HUB — IA Cognitiva Manual
    ========================================================= */
 export default function InsightsPage() {
+  const { lang } = useI18n();
+  const t = INSIGHTS_T[lang as keyof typeof INSIGHTS_T] || INSIGHTS_T.en;
   const [insightType, setInsightType] = useState<string | null>(null);
   const [authKey, setAuthKey] = useState("");
   const [result, setResult] = useState<string | null>(null);
@@ -22,7 +56,7 @@ export default function InsightsPage() {
   // =====================================================
   async function runInsight(type: string) {
     if (!authKey) {
-      toast.warning("Ingresa tu clave antes de ejecutar un insight.");
+      toast.warning(t.enterKey);
       return;
     }
 
@@ -35,12 +69,12 @@ export default function InsightsPage() {
           body: JSON.stringify({ type, authKey }),
         });
 
-        if (!res.ok) throw new Error("Error generando insight.");
+        if (!res.ok) throw new Error(t.genError);
         const data = await res.json();
-        setResult(data.result || "Sin resultados por ahora.");
-        toast.success("Insight generado con éxito.");
+        setResult(data.result || t.noResults);
+        toast.success(t.success);
       } catch (e: any) {
-        toast.error(e.message || "Error generando insight cognitivo.");
+        toast.error(e.message || t.cogError);
       }
     });
   }

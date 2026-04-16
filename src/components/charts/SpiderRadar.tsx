@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import { EQ_MAX } from "@/domains/eq/lib/eqLevels"; // Escala SEI 135
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type Item = { key: string; score: number };
 
@@ -38,16 +39,22 @@ const COLOR_SEI: Record<string, string> = {
 
 export default function SpiderRadar({
   data,
-  title = "Perfil de EQ (Radar SEI)",
+  title,
 }: {
   data: Item[];
   title?: string;
 }) {
+  const { lang } = useI18n();
+  const TITLE_DEFAULT = { es: "Perfil de EQ (Radar SEI)", en: "EQ Profile (SEI Radar)", pt: "Perfil de EQ (Radar SEI)", it: "Profilo EQ (Radar SEI)" };
+  const NO_DATA = { es: "No hay datos de competencias disponibles.", en: "No competency data available.", pt: "Não há dados de competências disponíveis.", it: "Nessun dato di competenza disponibile." };
+  const resolvedTitle = title ?? (TITLE_DEFAULT[lang as keyof typeof TITLE_DEFAULT] ?? TITLE_DEFAULT.en);
+  const noDataMsg = NO_DATA[lang as keyof typeof NO_DATA] ?? NO_DATA.en;
+
   const hasValues = data.some((d) => d.score > 0);
   if (!hasValues) {
     return (
       <div className="flex h-72 items-center justify-center text-sm text-gray-400 border rounded-xl">
-        <p>No hay datos de competencias disponibles.</p>
+        <p>{noDataMsg}</p>
       </div>
     );
   }
@@ -57,7 +64,7 @@ export default function SpiderRadar({
       className="p-4 rounded-2xl border border-white/10 bg-white/5"
       style={{ height: 360 }}
     >
-      <h3 className="mb-3 font-semibold text-gray-100">{title}</h3>
+      <h3 className="mb-3 font-semibold text-gray-100">{resolvedTitle}</h3>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data}>
           {/* Fondo + grid */}

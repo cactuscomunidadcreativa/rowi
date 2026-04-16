@@ -165,7 +165,7 @@ const settingsCategories: { titleKey: string; items: SettingItem[] }[] = [
 
 export default function SettingsIndex() {
   const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const lang = locale; // all 4 languages
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type NavItem = { label: string; href: string; visible: boolean };
 type UIButton = { id: string; text: string; href: string; style: string };
@@ -18,6 +19,7 @@ async function parseJsonSafe(res: Response) {
 }
 
 export default function AdminUIPage() {
+  const { lang } = useI18n();
   const [ui, setUi] = useState<UIConfig>({ navigation: [], buttons: [], updatedAt: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,7 +59,7 @@ export default function AdminUIPage() {
     }
   }
 
-  if (loading) return <main className="p-6">Cargando…</main>;
+  if (loading) return <main className="p-6">{lang === "es" ? "Cargando…" : lang === "pt" ? "Carregando…" : lang === "it" ? "Caricamento…" : "Loading…"}</main>;
 
   return (
     <main className="p-6 space-y-6">

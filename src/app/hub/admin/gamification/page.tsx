@@ -84,6 +84,7 @@ const t = {
 };
 
 export default function GamificationDashboardPage() {
+  const { lang } = useI18n();
   const router = useRouter();
   const { locale } = useI18n();
   const [loading, setLoading] = useState(true);

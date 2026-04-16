@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 import { getEqLevel } from "@/domains/eq/lib/eqLevels";
 import { useI18n } from "@/lib/i18n/useI18n";
 
-const LEVEL_LABELS: Record<string, { es: string; en: string }> = {
-  desafio: { es: "Desafío", en: "Challenge" },
-  emergente: { es: "Emergente", en: "Emerging" },
-  funcional: { es: "Funcional", en: "Functional" },
-  diestro: { es: "Diestro", en: "Skilled" },
-  experto: { es: "Experto", en: "Expert" },
+const LEVEL_LABELS: Record<string, { es: string; en: string; pt: string; it: string }> = {
+  desafio: { es: "Desafío", en: "Challenge", pt: "Desafio", it: "Sfida" },
+  emergente: { es: "Emergente", en: "Emerging", pt: "Emergente", it: "Emergente" },
+  funcional: { es: "Funcional", en: "Functional", pt: "Funcional", it: "Funzionale" },
+  diestro: { es: "Diestro", en: "Skilled", pt: "Habilidoso", it: "Abile" },
+  experto: { es: "Experto", en: "Expert", pt: "Especialista", it: "Esperto" },
 };
 
 export function TalentBar({
@@ -34,7 +34,7 @@ export function TalentBar({
 
   // Get level from raw 135-scale value
   const level = getEqLevel(raw ?? 0);
-  const levelLabel = LEVEL_LABELS[level.key]?.[lang as "es" | "en"] ?? level.label;
+  const levelLabel = LEVEL_LABELS[level.key]?.[lang as "es" | "en" | "pt" | "it"] ?? level.label;
 
   return (
     <div

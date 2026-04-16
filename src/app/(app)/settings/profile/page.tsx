@@ -338,7 +338,8 @@ type AffinityData = {
 /* ====== Componente Principal ====== */
 export default function ProfileSettingsPage() {
   const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const lang = locale; // all 4 languages
+  const langEsEn: "es" | "en" = (locale === "es" ? "es" : "en"); // for suggestion objects that only have es/en
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
   const [loading, setLoading] = useState(true);
@@ -1033,9 +1034,9 @@ export default function ProfileSettingsPage() {
               <button
                 key={i}
                 className="rowi-chip"
-                onClick={() => addSuggestion("interests", s[lang], "affinity")}
+                onClick={() => addSuggestion("interests", s[langEsEn], "affinity")}
               >
-                {s[lang]}
+                {s[langEsEn]}
               </button>
             ))}
           </div>
@@ -1057,9 +1058,9 @@ export default function ProfileSettingsPage() {
               <button
                 key={i}
                 className="rowi-chip"
-                onClick={() => addSuggestion("goals", s[lang], "affinity")}
+                onClick={() => addSuggestion("goals", s[langEsEn], "affinity")}
               >
-                {s[lang]}
+                {s[langEsEn]}
               </button>
             ))}
           </div>
@@ -1234,9 +1235,9 @@ export default function ProfileSettingsPage() {
                 <button
                   key={i}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("commStyleSelf", s[lang], "prefs")}
+                  onClick={() => addSuggestion("commStyleSelf", s[langEsEn], "prefs")}
                 >
-                  {s[lang]}
+                  {s[langEsEn]}
                 </button>
               ))}
             </div>
@@ -1255,9 +1256,9 @@ export default function ProfileSettingsPage() {
                 <button
                   key={i}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("commExpectations", s[lang], "prefs")}
+                  onClick={() => addSuggestion("commExpectations", s[langEsEn], "prefs")}
                 >
-                  {s[lang]}
+                  {s[langEsEn]}
                 </button>
               ))}
             </div>
@@ -1306,9 +1307,9 @@ export default function ProfileSettingsPage() {
                 <button
                   key={i}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("values", s[lang], "prefs")}
+                  onClick={() => addSuggestion("values", s[langEsEn], "prefs")}
                 >
-                  {s[lang]}
+                  {s[langEsEn]}
                 </button>
               ))}
             </div>
@@ -1327,9 +1328,9 @@ export default function ProfileSettingsPage() {
                 <button
                   key={i}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("hobbies", s[lang], "prefs")}
+                  onClick={() => addSuggestion("hobbies", s[langEsEn], "prefs")}
                 >
-                  {s[lang]}
+                  {s[langEsEn]}
                 </button>
               ))}
             </div>

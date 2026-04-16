@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from "react";
 import { RefreshCcw, Users, Brain, Globe } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface Community {
   id: string;
@@ -20,6 +21,7 @@ interface Community {
 }
 
 export default function CommunitiesSummaryPage() {
+  const { lang } = useI18n();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [totalCommunities, setTotalCommunities] = useState(0);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -126,7 +128,7 @@ export default function CommunitiesSummaryPage() {
 
       {/* ESTADÍSTICAS PRINCIPALES */}
       {loading ? (
-        <p className="text-sm text-muted-foreground">Cargando información...</p>
+        <p className="text-sm text-muted-foreground">{lang === "es" ? "Cargando información..." : lang === "pt" ? "Carregando informações..." : lang === "it" ? "Caricamento informazioni..." : "Loading information..."}</p>
       ) : (
         <>
           <div className="grid md:grid-cols-3 gap-5">

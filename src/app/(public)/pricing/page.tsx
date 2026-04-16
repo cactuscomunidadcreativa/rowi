@@ -281,8 +281,8 @@ export default function PricingPage() {
                       <>
                         <ChevronDown className="w-4 h-4" />
                         {lang === "es"
-                          ? `Ver ${(lang === "es" ? plan.features : plan.featuresEN).length - 4} más`
-                          : `See ${(lang === "es" ? plan.features : plan.featuresEN).length - 4} more`}
+                          ? `Ver ${plan.features.length - 4} más`
+                          : `See ${plan.featuresEN.length - 4} more`}
                       </>
                     )}
                   </button>

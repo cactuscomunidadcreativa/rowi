@@ -30,23 +30,21 @@ const translations = {
       eco: "ECO",
       rowicoach: "Rowi Coach",
       weekflow: "WeekFlow",
-      signin: "Iniciar sesion",
-      signout: "Cerrar sesion",
+      signin: "Iniciar sesión",
+      signout: "Cerrar sesión",
       profile: "Mi perfil",
       viewProfile: "Ver perfil",
       editProfile: "Editar perfil",
       invites: "Invitaciones",
-      settings: "Configuracion",
+      settings: "Configuración",
       myRowi: "Mi Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Nivel Rowi",
-      // Social
       social: "Social",
       feed: "Actividad",
       connections: "Conexiones",
       messages: "Mensajes",
       goals: "Causas Nobles",
-      // Nuevos links por rol
       team: "Mi Equipo",
       reports: "Reportes",
       hr: "Recursos Humanos",
@@ -55,6 +53,15 @@ const translations = {
       finance: "Finanzas",
       admin: "Admin",
       research: "Investigación",
+      general: "General",
+      viewDetails: "Ver detalles",
+      notifications: "Notificaciones",
+      markAllRead: "Marcar todo leído",
+      noNotifications: "Sin notificaciones",
+      markRead: "Marcar leído",
+      viewAllNotifications: "Ver todas las notificaciones",
+      currentContext: "Contexto actual",
+      loading: "Cargando...",
     },
   },
   en: {
@@ -76,13 +83,11 @@ const translations = {
       myRowi: "My Rowi",
       sixSeconds: "Six Seconds",
       rowiLevel: "Rowi Level",
-      // Social
       social: "Social",
       feed: "Activity",
       connections: "Connections",
       messages: "Messages",
       goals: "Noble Goals",
-      // New role-based links
       team: "My Team",
       reports: "Reports",
       hr: "Human Resources",
@@ -91,6 +96,101 @@ const translations = {
       finance: "Finance",
       admin: "Admin",
       research: "Research",
+      general: "General",
+      viewDetails: "View details",
+      notifications: "Notifications",
+      markAllRead: "Mark all read",
+      noNotifications: "No notifications",
+      markRead: "Mark read",
+      viewAllNotifications: "View all notifications",
+      currentContext: "Current context",
+      loading: "Loading...",
+    },
+  },
+  pt: {
+    nav: {
+      dashboard: "Dashboard",
+      community: "Comunidade",
+      affinity: "Afinidade",
+      benchmark: "Benchmark",
+      eco: "ECO",
+      rowicoach: "Rowi Coach",
+      weekflow: "WeekFlow",
+      signin: "Entrar",
+      signout: "Sair",
+      profile: "Meu perfil",
+      viewProfile: "Ver perfil",
+      editProfile: "Editar perfil",
+      invites: "Convites",
+      settings: "Configurações",
+      myRowi: "Meu Rowi",
+      sixSeconds: "Six Seconds",
+      rowiLevel: "Nível Rowi",
+      social: "Social",
+      feed: "Atividade",
+      connections: "Conexões",
+      messages: "Mensagens",
+      goals: "Causas Nobres",
+      team: "Minha Equipe",
+      reports: "Relatórios",
+      hr: "Recursos Humanos",
+      coaching: "Coaching",
+      clients: "Clientes",
+      finance: "Finanças",
+      admin: "Admin",
+      research: "Pesquisa",
+      general: "Geral",
+      viewDetails: "Ver detalhes",
+      notifications: "Notificações",
+      markAllRead: "Marcar tudo como lido",
+      noNotifications: "Sem notificações",
+      markRead: "Marcar como lido",
+      viewAllNotifications: "Ver todas as notificações",
+      currentContext: "Contexto atual",
+      loading: "Carregando...",
+    },
+  },
+  it: {
+    nav: {
+      dashboard: "Dashboard",
+      community: "Comunità",
+      affinity: "Affinità",
+      benchmark: "Benchmark",
+      eco: "ECO",
+      rowicoach: "Rowi Coach",
+      weekflow: "WeekFlow",
+      signin: "Accedi",
+      signout: "Esci",
+      profile: "Il mio profilo",
+      viewProfile: "Vedi profilo",
+      editProfile: "Modifica profilo",
+      invites: "Inviti",
+      settings: "Impostazioni",
+      myRowi: "Il mio Rowi",
+      sixSeconds: "Six Seconds",
+      rowiLevel: "Livello Rowi",
+      social: "Social",
+      feed: "Attività",
+      connections: "Connessioni",
+      messages: "Messaggi",
+      goals: "Cause Nobili",
+      team: "La mia Squadra",
+      reports: "Rapporti",
+      hr: "Risorse Umane",
+      coaching: "Coaching",
+      clients: "Clienti",
+      finance: "Finanza",
+      admin: "Admin",
+      research: "Ricerca",
+      general: "Generale",
+      viewDetails: "Vedi dettagli",
+      notifications: "Notifiche",
+      markAllRead: "Segna tutte come lette",
+      noNotifications: "Nessuna notifica",
+      markRead: "Segna come letta",
+      viewAllNotifications: "Vedi tutte le notifiche",
+      currentContext: "Contesto attuale",
+      loading: "Caricamento...",
     },
   },
 };
@@ -408,7 +508,7 @@ export default function NavBar() {
               <button
                 onClick={() => setNotificationsOpen((v) => !v)}
                 className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                title={lang === "es" ? "Notificaciones" : "Notifications"}
+                title={t.notifications}
               >
                 <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 {unreadCount > 0 && (
@@ -430,14 +530,14 @@ export default function NavBar() {
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
                       <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {lang === "es" ? "Notificaciones" : "Notifications"}
+                        {t.notifications}
                       </h3>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
                           className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
                         >
-                          {lang === "es" ? "Marcar todo leído" : "Mark all read"}
+                          {t.markAllRead}
                         </button>
                       )}
                     </div>
@@ -448,7 +548,7 @@ export default function NavBar() {
                         <div className="py-8 text-center">
                           <Bell className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-2" />
                           <p className="text-sm text-gray-500">
-                            {lang === "es" ? "Sin notificaciones" : "No notifications"}
+                            {t.noNotifications}
                           </p>
                         </div>
                       ) : (
@@ -500,7 +600,7 @@ export default function NavBar() {
                                   <button
                                     onClick={() => markAsRead(notif.id)}
                                     className="p-1 text-gray-400 hover:text-green-600 rounded"
-                                    title={lang === "es" ? "Marcar leído" : "Mark read"}
+                                    title={t.markRead}
                                   >
                                     <Check className="w-3.5 h-3.5" />
                                   </button>
@@ -518,7 +618,7 @@ export default function NavBar() {
                       onClick={() => setNotificationsOpen(false)}
                       className="block px-4 py-2.5 text-center text-sm text-violet-600 hover:bg-gray-50 dark:hover:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800"
                     >
-                      {lang === "es" ? "Ver todas las notificaciones" : "View all notifications"}
+                      {t.viewAllNotifications}
                     </Link>
                   </motion.div>
                 )}
@@ -599,7 +699,7 @@ export default function NavBar() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {avatar?.stageInfo?.name?.[lang as "es" | "en"] || "Loading..."}
+                              {avatar?.stageInfo?.name?.[lang as "es" | "en"] || t.loading}
                             </p>
                             <p className="text-xs text-gray-500">
                               Score: {avatar?.evolutionScore?.toFixed(1) || "0"}
@@ -642,7 +742,7 @@ export default function NavBar() {
                           onClick={() => setMenuOpen(false)}
                           className="mt-2 block text-center text-xs text-blue-600 dark:text-blue-400 hover:underline"
                         >
-                          {lang === "es" ? "Ver detalles" : "View details"} →
+                          {t.viewDetails} →
                         </Link>
                       </div>
                     </CollapsibleSection>
@@ -687,7 +787,7 @@ export default function NavBar() {
                     >
                       <div className="py-1">
                         <MenuLink href="/settings" icon={Settings} onClick={() => setMenuOpen(false)}>
-                          {lang === "es" ? "General" : "General"}
+                          {t.general}
                         </MenuLink>
                       </div>
                     </CollapsibleSection>
@@ -733,7 +833,7 @@ export default function NavBar() {
             {isLogged && hasMultipleContexts && (
               <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
                 <p className="text-xs text-gray-500 mb-2">
-                  {lang === "es" ? "Contexto actual" : "Current context"}
+                  {t.currentContext}
                 </p>
                 <ContextSwitcher />
               </div>

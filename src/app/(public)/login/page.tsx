@@ -9,7 +9,7 @@ import { Mail, Lock, ArrowRight, Chrome } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function LoginPage() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const [providers, setProviders] = useState<any>({});
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,12 +48,10 @@ export default function LoginPage() {
               <span className="font-bold text-2xl rowi-gradient-text">Rowi</span>
             </Link>
             <h1 className="text-2xl font-bold mb-2">
-              {lang === "en" ? "Welcome back" : "Bienvenido de nuevo"}
+              {t("login.welcome", "Welcome back")}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {lang === "en"
-                ? "Sign in to continue your emotional intelligence journey"
-                : "Inicia sesión para continuar tu viaje de inteligencia emocional"}
+              {t("login.subtitle", "Sign in to continue your emotional intelligence journey")}
             </p>
           </div>
 
@@ -73,7 +71,7 @@ export default function LoginPage() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                 )}
-                {lang === "en" ? `Continue with ${provider.name}` : `Continuar con ${provider.name}`}
+                {t("login.continueWith", "Continue with")} {provider.name}
               </button>
             ))}
           </div>
@@ -85,7 +83,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-white dark:bg-zinc-900 text-gray-500">
-                {lang === "en" ? "or continue with email" : "o continúa con email"}
+                {t("login.orContinueWithEmail", "or continue with email")}
               </span>
             </div>
           </div>
@@ -94,7 +92,7 @@ export default function LoginPage() {
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                {lang === "en" ? "Email" : "Correo electrónico"}
+                {t("login.email", "Email")}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -102,7 +100,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={lang === "en" ? "your@email.com" : "tu@correo.com"}
+                  placeholder={t("login.emailPlaceholder", "your@email.com")}
                   className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent transition-all"
                   required
                 />
@@ -111,7 +109,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                {lang === "en" ? "Password" : "Contraseña"}
+                {t("login.password", "Password")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -130,11 +128,11 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[var(--rowi-g2)] focus:ring-[var(--rowi-g2)]" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  {lang === "en" ? "Remember me" : "Recordarme"}
+                  {t("login.rememberMe", "Remember me")}
                 </span>
               </label>
               <Link href="/forgot-password" className="text-[var(--rowi-g2)] hover:underline">
-                {lang === "en" ? "Forgot password?" : "¿Olvidaste tu contraseña?"}
+                {t("login.forgotPassword", "Forgot password?")}
               </Link>
             </div>
 
@@ -147,7 +145,7 @@ export default function LoginPage() {
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  {lang === "en" ? "Sign in" : "Iniciar sesión"}
+                  {t("login.signin", "Sign in")}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -156,9 +154,9 @@ export default function LoginPage() {
 
           {/* Register Link */}
           <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-            {lang === "en" ? "Don't have an account?" : "¿No tienes cuenta?"}{" "}
+            {t("login.noAccount", "Don't have an account?")}{" "}
             <Link href="/register" className="text-[var(--rowi-g2)] font-semibold hover:underline">
-              {lang === "en" ? "Sign up free" : "Regístrate gratis"}
+              {t("login.signUpFree", "Sign up free")}
             </Link>
           </p>
         </div>
@@ -167,9 +165,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           <p className="flex items-center justify-center gap-2">
             <span>🔒</span>
-            {lang === "en"
-              ? "Your data is protected and never shared"
-              : "Tus datos están protegidos y nunca se comparten"}
+            {t("login.dataProtected", "Your data is protected and never shared")}
           </p>
         </div>
       </motion.div>

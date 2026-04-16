@@ -93,6 +93,10 @@ const translations = {
 
     // Level
     yourLevel: "Tu nivel",
+
+    // Comparison
+    current: "Actual",
+    previous: "Anterior",
   },
   en: {
     welcome: "Welcome back",
@@ -149,6 +153,86 @@ const translations = {
 
     // Level
     yourLevel: "Your level",
+
+    // Comparison
+    current: "Current",
+    previous: "Previous",
+  },
+  pt: {
+    welcome: "Bem-vindo de volta",
+    subtitle: "Seu espaço de crescimento emocional",
+    loading: "Carregando seu perfil emocional...",
+    dataSource: "Fonte de dados",
+    eqScore: "Sua Pontuação EQ",
+    eqScoreDesc: "Baseado na metodologia Six Seconds",
+    competencies: "Competências Emocionais",
+    competenciesDesc: "Suas 8 competências do modelo SEI",
+    noCompetencies: "Complete sua avaliação SEI para ver suas competências",
+    pursuits: "Os 3 Propósitos",
+    know: "Conhecer-se",
+    choose: "Escolher-se",
+    give: "Entregar-se",
+    talents: "Seus Talentos",
+    focus: "Foco",
+    decisions: "Decisões",
+    drive: "Impulso",
+    outcomes: "Resultados de Vida",
+    outcomesDesc: "Como sua IE impacta seu bem-estar",
+    overall: "Pontuação Geral",
+    coachTitle: "Rowi Coach",
+    coachDesc: "Seu companheiro de inteligência emocional está pronto para ajudá-lo",
+    startChat: "Iniciar conversa",
+    quickActions: "Ações Rápidas",
+    takeSei: "Fazer avaliação SEI",
+    exploreAffinity: "Explorar Afinidade",
+    joinCommunity: "Entrar na Comunidade",
+    viewProgress: "Ver meu progresso",
+    currentMood: "Estado de ânimo",
+    additionalInfo: "Informações Adicionais",
+    user: "Usuário",
+    brainStyle: "Estilo cerebral",
+    indicators: "Indicadores de nível",
+    yourLevel: "Seu nível",
+    current: "Atual",
+    previous: "Anterior",
+  },
+  it: {
+    welcome: "Bentornato",
+    subtitle: "Il tuo spazio di crescita emotiva",
+    loading: "Caricamento del tuo profilo emotivo...",
+    dataSource: "Fonte dati",
+    eqScore: "Il tuo punteggio EQ",
+    eqScoreDesc: "Basato sulla metodologia Six Seconds",
+    competencies: "Competenze Emotive",
+    competenciesDesc: "Le tue 8 competenze del modello SEI",
+    noCompetencies: "Completa la tua valutazione SEI per vedere le tue competenze",
+    pursuits: "I 3 Propositi",
+    know: "Conoscerti",
+    choose: "Sceglierti",
+    give: "Donarti",
+    talents: "I tuoi Talenti",
+    focus: "Focus",
+    decisions: "Decisioni",
+    drive: "Spinta",
+    outcomes: "Risultati di Vita",
+    outcomesDesc: "Come la tua IE impatta il tuo benessere",
+    overall: "Punteggio Generale",
+    coachTitle: "Rowi Coach",
+    coachDesc: "Il tuo compagno di intelligenza emotiva è pronto ad aiutarti",
+    startChat: "Inizia conversazione",
+    quickActions: "Azioni Rapide",
+    takeSei: "Fai la valutazione SEI",
+    exploreAffinity: "Esplora Affinità",
+    joinCommunity: "Unisciti alla Comunità",
+    viewProgress: "Vedi il mio progresso",
+    currentMood: "Stato d'animo",
+    additionalInfo: "Informazioni Aggiuntive",
+    user: "Utente",
+    brainStyle: "Stile cerebrale",
+    indicators: "Indicatori di livello",
+    yourLevel: "Il tuo livello",
+    current: "Attuale",
+    previous: "Precedente",
   },
 };
 
@@ -328,13 +412,13 @@ export default function ClientDashboard() {
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: eqLevel.color }} />
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                    {lang === "es" ? "Actual" : "Current"}{base.snapshotProject ? ` · ${base.snapshotProject}` : ""}
+                    {t.current}{base.snapshotProject ? ` · ${base.snapshotProject}` : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full opacity-30" style={{ backgroundColor: eqLevel.color }} />
                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                    {lang === "es" ? "Anterior" : "Previous"} · {prev.project || (prev.date ? new Date(prev.date).toLocaleDateString() : "")}
+                    {t.previous} · {prev.project || (prev.date ? new Date(prev.date).toLocaleDateString() : "")}
                   </span>
                 </div>
               </div>

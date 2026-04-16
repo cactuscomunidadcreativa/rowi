@@ -103,7 +103,7 @@ export default function PublicNavbar() {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-            aria-label={resolvedMode === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            aria-label={resolvedMode === "dark" ? t("nav.switchToLight", "Switch to light mode") : t("nav.switchToDark", "Switch to dark mode")}
           >
             {resolvedMode === "dark" ? (
               <Sun className="w-4 h-4 text-yellow-500" />

@@ -124,6 +124,12 @@ const translations = {
       requiredFields: "Por favor completa todos los campos requeridos",
       general: "Ocurrió un error. Inténtalo de nuevo.",
       checkout: "Error al procesar el pago",
+      passwordTooShort: "La contraseña debe tener al menos 8 caracteres",
+      emailExists: "Este email ya está registrado",
+      passwordPlaceholder: "Contraseña (mínimo 8 caracteres)",
+      accountCreated: "Cuenta creada. Por favor inicia sesión.",
+      welcomeToRowi: "¡Bienvenido a Rowi! Completa tu perfil.",
+      discountAvailable: "de descuento disponible",
     },
     success: {
       emailSent: "¡Revisa tu email para confirmar tu cuenta!",
@@ -216,6 +222,12 @@ const translations = {
       requiredFields: "Please complete all required fields",
       general: "An error occurred. Please try again.",
       checkout: "Error processing payment",
+      passwordTooShort: "Password must be at least 8 characters",
+      emailExists: "This email is already registered",
+      passwordPlaceholder: "Password (minimum 8 characters)",
+      accountCreated: "Account created. Please sign in.",
+      welcomeToRowi: "Welcome to Rowi! Complete your profile.",
+      discountAvailable: "discount available",
     },
     success: {
       emailSent: "Check your email to confirm your account!",
@@ -226,6 +238,176 @@ const translations = {
       year: "/year",
       month: "/month",
     },
+  },
+  pt: {
+    steps: { plan: "Plano", account: "Conta", profile: "Perfil", sei: "SEI", confirm: "Confirmar" },
+    planSelection: {
+      title: "Escolha seu plano perfeito",
+      description: "Todos os planos incluem seu Rowi pessoal com inteligência artificial",
+      personalFamily: "👤 Pessoal e Família",
+      business: "🏢 Empresas",
+      monthly: "Mensal",
+      yearly: "Anual",
+      perUser: "por usuário",
+      min: "mín.",
+      seeLess: "Ver menos",
+      more: "mais",
+      continue: "Continuar",
+    },
+    account: {
+      title: "Crie sua conta",
+      description: "Escolha como deseja se cadastrar",
+      continueWith: "Continuar com",
+      or: "ou cadastre-se com e-mail",
+      namePlaceholder: "Seu nome completo",
+      emailPlaceholder: "voce@email.com",
+      createAccount: "Criar conta",
+      back: "Voltar",
+    },
+    profile: {
+      title: "Complete seu perfil",
+      description: "Conte-nos um pouco mais sobre você",
+      selectCountry: "Selecione seu país",
+      otherCountry: "Outro",
+      referralCode: "Código de indicação",
+      referralCodePlaceholder: "Digite o código de indicação",
+      couponCode: "Código de cupom",
+      couponCodePlaceholder: "Digite o código de cupom",
+      optional: "opcional",
+      continue: "Continuar",
+      back: "Voltar",
+    },
+    sei: {
+      title: "Avaliação SEI",
+      description: "O SEI mede sua inteligência emocional",
+      included: "SEI incluído no seu plano!",
+      includedDescription: "Seu plano inclui uma avaliação SEI da Six Seconds",
+      takeSeiNow: "Quero fazer o SEI agora",
+      takeSeiNowDescription: "Vamos guiá-lo passo a passo após o cadastro",
+      skipForNow: "Farei mais tarde",
+      skipForNowDescription: "Você pode fazer o SEI quando quiser pelo seu painel",
+      notIncluded: "SEI não incluído",
+      upgradeToInclude: "Faça upgrade do plano para incluí-lo",
+      continue: "Continuar",
+      back: "Voltar",
+    },
+    confirm: {
+      title: "Confirme seu cadastro",
+      description: "Revise os detalhes antes de continuar",
+      orderSummary: "Resumo do pedido",
+      plan: "Plano",
+      billing: "Cobrança",
+      aiTokens: "Tokens IA",
+      name: "Nome",
+      email: "E-mail",
+      seiYes: "Sim, após o cadastro",
+      seiLater: "Mais tarde",
+      total: "Total",
+      terms: "Ao continuar, você aceita nossos Termos de Serviço e Política de Privacidade",
+      startFree: "Começar grátis",
+      proceedToPayment: "Ir ao pagamento",
+      contactSales: "Contatar vendas",
+      back: "Voltar",
+    },
+    errors: {
+      oauth: "Erro ao conectar com o provedor",
+      requiredFields: "Por favor, preencha todos os campos obrigatórios",
+      general: "Ocorreu um erro. Tente novamente.",
+      checkout: "Erro ao processar o pagamento",
+      passwordTooShort: "A senha deve ter pelo menos 8 caracteres",
+      emailExists: "Este e-mail já está cadastrado",
+      passwordPlaceholder: "Senha (mínimo 8 caracteres)",
+      accountCreated: "Conta criada. Por favor, faça login.",
+      welcomeToRowi: "Bem-vindo ao Rowi! Complete seu perfil.",
+      discountAvailable: "de desconto disponível",
+    },
+    success: { emailSent: "Verifique seu e-mail para confirmar sua conta!" },
+    price: { custom: "Personalizado", forever: "/para sempre", year: "/ano", month: "/mês" },
+  },
+  it: {
+    steps: { plan: "Piano", account: "Account", profile: "Profilo", sei: "SEI", confirm: "Conferma" },
+    planSelection: {
+      title: "Scegli il tuo piano perfetto",
+      description: "Tutti i piani includono il tuo Rowi personale con intelligenza artificiale",
+      personalFamily: "👤 Personale e Famiglia",
+      business: "🏢 Aziende",
+      monthly: "Mensile",
+      yearly: "Annuale",
+      perUser: "per utente",
+      min: "min.",
+      seeLess: "Vedi meno",
+      more: "altro",
+      continue: "Continua",
+    },
+    account: {
+      title: "Crea il tuo account",
+      description: "Scegli come vuoi registrarti",
+      continueWith: "Continua con",
+      or: "o registrati con email",
+      namePlaceholder: "Il tuo nome completo",
+      emailPlaceholder: "tu@email.com",
+      createAccount: "Crea account",
+      back: "Indietro",
+    },
+    profile: {
+      title: "Completa il tuo profilo",
+      description: "Raccontaci un po' di più su di te",
+      selectCountry: "Seleziona il tuo paese",
+      otherCountry: "Altro",
+      referralCode: "Codice di riferimento",
+      referralCodePlaceholder: "Inserisci codice di riferimento",
+      couponCode: "Codice coupon",
+      couponCodePlaceholder: "Inserisci codice coupon",
+      optional: "opzionale",
+      continue: "Continua",
+      back: "Indietro",
+    },
+    sei: {
+      title: "Valutazione SEI",
+      description: "Il SEI misura la tua intelligenza emotiva",
+      included: "SEI incluso nel tuo piano!",
+      includedDescription: "Il tuo piano include una valutazione SEI di Six Seconds",
+      takeSeiNow: "Voglio fare il SEI ora",
+      takeSeiNowDescription: "Ti guideremo passo dopo passo dopo la registrazione",
+      skipForNow: "Lo farò più tardi",
+      skipForNowDescription: "Puoi fare il SEI quando vuoi dalla tua dashboard",
+      notIncluded: "SEI non incluso",
+      upgradeToInclude: "Aggiorna il tuo piano per includerlo",
+      continue: "Continua",
+      back: "Indietro",
+    },
+    confirm: {
+      title: "Conferma la tua registrazione",
+      description: "Rivedi i dettagli prima di continuare",
+      orderSummary: "Riepilogo ordine",
+      plan: "Piano",
+      billing: "Fatturazione",
+      aiTokens: "Token IA",
+      name: "Nome",
+      email: "Email",
+      seiYes: "Sì, dopo la registrazione",
+      seiLater: "Più tardi",
+      total: "Totale",
+      terms: "Continuando, accetti i nostri Termini di Servizio e l'Informativa sulla Privacy",
+      startFree: "Inizia gratis",
+      proceedToPayment: "Procedi al pagamento",
+      contactSales: "Contatta vendite",
+      back: "Indietro",
+    },
+    errors: {
+      oauth: "Errore di connessione al provider",
+      requiredFields: "Per favore compila tutti i campi obbligatori",
+      general: "Si è verificato un errore. Riprova.",
+      checkout: "Errore nell'elaborazione del pagamento",
+      passwordTooShort: "La password deve contenere almeno 8 caratteri",
+      emailExists: "Questa email è già registrata",
+      passwordPlaceholder: "Password (minimo 8 caratteri)",
+      accountCreated: "Account creato. Accedi per favore.",
+      welcomeToRowi: "Benvenuto su Rowi! Completa il tuo profilo.",
+      discountAvailable: "di sconto disponibile",
+    },
+    success: { emailSent: "Controlla la tua email per confermare il tuo account!" },
+    price: { custom: "Personalizzato", forever: "/per sempre", year: "/anno", month: "/mese" },
   },
 };
 
@@ -376,7 +558,7 @@ function RegisterPageContent() {
     }
 
     if (formData.password.length < 8) {
-      toast.error(lang === "es" ? "La contraseña debe tener al menos 8 caracteres" : "Password must be at least 8 characters");
+      toast.error(t.errors.passwordTooShort);
       return;
     }
 
@@ -417,16 +599,16 @@ function RegisterPageContent() {
 
       if (signInResult?.error) {
         // Si falla el auto-login, mostrar mensaje y redirigir a login
-        toast.success(lang === "es" ? "Cuenta creada. Por favor inicia sesión." : "Account created. Please sign in.");
+        toast.success(t.errors.accountCreated);
         router.push("/login");
       } else {
         // Auto-login exitoso, ir a settings/profile para completar perfil y ver SEI
-        toast.success(lang === "es" ? "¡Bienvenido a Rowi! Completa tu perfil." : "Welcome to Rowi! Complete your profile.");
+        toast.success(t.errors.welcomeToRowi);
         router.push("/settings/profile");
       }
     } catch (error: any) {
       const errorMsg = error.message === "email_already_exists"
-        ? (lang === "es" ? "Este email ya está registrado" : "This email is already registered")
+        ? t.errors.emailExists
         : error.message || t.errors.general;
       toast.error(errorMsg);
     } finally {
@@ -805,7 +987,7 @@ function RegisterPageContent() {
                   />
                   <input
                     type="password"
-                    placeholder={lang === "es" ? "Contraseña (mínimo 8 caracteres)" : "Password (minimum 8 characters)"}
+                    placeholder={t.errors.passwordPlaceholder}
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
@@ -999,7 +1181,7 @@ function RegisterPageContent() {
                         </p>
                         <p className="text-sm text-gray-400">
                           {selectedPlan?.seiDiscountPercent && selectedPlan.seiDiscountPercent > 0
-                            ? `${selectedPlan.seiDiscountPercent}% ${lang === "es" ? "de descuento disponible" : "discount available"}`
+                            ? `${selectedPlan.seiDiscountPercent}% ${t.errors.discountAvailable}`
                             : t.sei.upgradeToInclude}
                         </p>
                       </div>

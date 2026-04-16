@@ -145,7 +145,7 @@ export default function HierarchyPage() {
           }
         }
       } catch (error) {
-        toast.error("Error al cargar jerarquía");
+        toast.error(t("admin.organizations.loadError"));
       } finally {
         setLoading(false);
       }
@@ -168,7 +168,7 @@ export default function HierarchyPage() {
         }
       }
     } catch (error) {
-      toast.error("Error al cargar jerarquía");
+      toast.error(t("admin.organizations.loadError"));
     } finally {
       setLoading(false);
     }
@@ -242,10 +242,10 @@ export default function HierarchyPage() {
         toast.success(t("admin.organizations.created"));
         loadHierarchy();
       } else {
-        toast.error(data.error || "Error");
+        toast.error(data.error || t("admin.organizations.genericError"));
       }
     } catch (error) {
-      toast.error("Error al crear");
+      toast.error(t("admin.organizations.createError"));
     } finally {
       setSaving(false);
     }

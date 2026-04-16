@@ -121,7 +121,7 @@ export default function PermissionsPage() {
           setByCategory(data.byCategory || {});
         }
       } catch (error) {
-        toast.error("Error al cargar permisos");
+        toast.error(t("admin.permissions.loadError"));
       } finally {
         setLoading(false);
       }
@@ -143,7 +143,7 @@ export default function PermissionsPage() {
         setByCategory(data.byCategory || {});
       }
     } catch (error) {
-      toast.error("Error al cargar permisos");
+      toast.error(t("admin.permissions.loadError"));
     } finally {
       setLoading(false);
     }

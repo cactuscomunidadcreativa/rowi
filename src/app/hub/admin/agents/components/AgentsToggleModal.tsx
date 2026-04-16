@@ -5,6 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const AGT_T = {
+  es: {
+    updateError: "Error actualizando estado",
+    activated: "Agente activado correctamente",
+    deactivated: "Agente desactivado correctamente",
+    saveError: "Error al guardar cambios",
+  },
+  en: {
+    updateError: "Error updating status",
+    activated: "Agent activated successfully",
+    deactivated: "Agent deactivated successfully",
+    saveError: "Error saving changes",
+  },
+  pt: {
+    updateError: "Erro ao atualizar status",
+    activated: "Agente ativado com sucesso",
+    deactivated: "Agente desativado com sucesso",
+    saveError: "Erro ao salvar alterações",
+  },
+  it: {
+    updateError: "Errore nell'aggiornamento dello stato",
+    activated: "Agente attivato correttamente",
+    deactivated: "Agente disattivato correttamente",
+    saveError: "Errore nel salvataggio delle modifiche",
+  },
+};
 
 /* =========================================================
    🔌 Activar / Desactivar agente IA por contexto
@@ -20,6 +48,8 @@ export default function AgentsToggleModal({
   orgs,
   onClose,
 }: any) {
+  const { lang } = useI18n();
+  const at = AGT_T[lang as keyof typeof AGT_T] || AGT_T.en;
   const [scope, setScope] = useState<"global" | "superhub" | "tenant" | "hub" | "org">(
     agent.scope || "global"
   );
@@ -61,11 +91,11 @@ export default function AgentsToggleModal({
       });
 
       const j = await res.json();
-      if (!res.ok) throw new Error(j.error || "Error actualizando estado");
-      toast.success(`Agente ${active ? "activado" : "desactivado"} correctamente`);
+      if (!res.ok) throw new Error(j.error || at.updateError);
+      toast.success(active ? at.activated : at.deactivated);
       onClose();
     } catch (e: any) {
-      toast.error(e.message || "Error al guardar cambios");
+      toast.error(e.message || at.saveError);
     } finally {
       setSaving(false);
     }

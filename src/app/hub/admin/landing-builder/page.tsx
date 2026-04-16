@@ -151,7 +151,7 @@ export default function LandingBuilderPage() {
 
   // Eliminar sección
   const deleteSection = async (id: string) => {
-    if (!confirm("¿Eliminar esta sección?")) return;
+    if (!confirm(t("admin.confirm.deleteSection"))) return;
     try {
       const res = await fetch("/api/admin/landing-builder", {
         method: "DELETE",

@@ -18,8 +18,17 @@ import {
   FolderOpenDot,
   Globe2,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+const KNOW_T = {
+  es: "¿Eliminar este recurso permanentemente?",
+  en: "Delete this resource permanently?",
+  pt: "Excluir este recurso permanentemente?",
+  it: "Eliminare questa risorsa in modo permanente?",
+};
 
 export default function KnowledgeAdminPage() {
+  const { lang } = useI18n();
   const [resources, setResources] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,7 +98,7 @@ export default function KnowledgeAdminPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("¿Eliminar este recurso permanentemente?")) return;
+    if (!confirm(KNOW_T[lang as keyof typeof KNOW_T] || KNOW_T.en)) return;
     await fetch(`/api/hub/knowledge?id=${id}`, { method: "DELETE" });
     await fetchResources();
   }

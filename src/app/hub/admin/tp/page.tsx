@@ -322,6 +322,291 @@ const translations = {
       "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
   },
+  pt: {
+    // Header
+    pageTitle: "Teleperformance",
+    enterpriseBadge: "Enterprise",
+    subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
+    protectedAccess: "Protected — @6seconds.org access only",
+
+    // Quick Stats
+    statAvgEQ: "Avg EQ",
+    statAssessments: "Assessments",
+    statCountries: "Countries",
+    statBrainProfiles: "Brain Profiles",
+
+    // Modules section
+    modulesTitle: "TP Modules",
+    openButton: "Open",
+
+    // Module: Dashboard
+    dashboardTitle: "EQ Dashboard",
+    dashboardDesc: "Complete SEI metrics view with individual and team-level EQ scores, pursuits, and competencies.",
+    dashboardFeat1: "Total EQ Score",
+    dashboardFeat2: "8 SEI Competencies",
+    dashboardFeat3: "3 Pursuits",
+    dashboardFeat4: "Life Outcomes",
+
+    // Module: Benchmark
+    benchmarkTitle: "TP Benchmark",
+    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "14,886 Assessments",
+    benchmarkFeat2: "42 Countries",
+    benchmarkFeat3: "Regional Insights",
+    benchmarkFeat4: "Brain Profiles",
+
+    // Module: Affinity
+    affinityTitle: "Team Affinity",
+    affinityDesc: "Discover emotional compatibility across TP teams. Optimize collaboration with brain style matching.",
+    affinityFeat1: "Team Compatibility",
+    affinityFeat2: "Brain Style Match",
+    affinityFeat3: "Cross-region Teams",
+    affinityFeat4: "Collaboration Insights",
+
+    // Module: ECO
+    ecoTitle: "ECO Communication",
+    ecoDesc: "Optimize emotional communication across TP's global workforce with AI-adapted messaging.",
+    ecoFeat1: "Adapted Messaging",
+    ecoFeat2: "Multi-channel",
+    ecoFeat3: "Brain Style Aware",
+    ecoFeat4: "Cultural Context",
+
+    // Module: Coach
+    coachTitle: "Rowi Coach",
+    coachDesc: "24/7 AI-powered emotional intelligence coaching for TP employees, contextualized with SEI data.",
+    coachFeat1: "AI Chat Coach",
+    coachFeat2: "SEI-Aware",
+    coachFeat3: "Progress Tracking",
+    coachFeat4: "Personalized Exercises",
+
+    // Module: Community
+    communityTitle: "TP EQ Community",
+    communityDesc: "The Teleperformance emotional intelligence community. Events, leaderboards, and peer learning.",
+    communityFeat1: "EQ Leaderboard",
+    communityFeat2: "Events & Challenges",
+    communityFeat3: "Peer Learning",
+    communityFeat4: "Recognition",
+
+    // Module: Onboarding
+    onboardingTitle: "TP Onboarding",
+    onboardingDesc: "Employee onboarding flow with SEI assessment, brain profiling, and team matching.",
+    onboardingFeat1: "SEI Assessment",
+    onboardingFeat2: "Brain Profile",
+    onboardingFeat3: "Team Matching",
+    onboardingFeat4: "Growth Plan",
+
+    // Module: People
+    peopleTitle: "Person Comparator",
+    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
+    peopleFeat1: "1 vs 1 Comparison",
+    peopleFeat2: "Competency Radar",
+    peopleFeat3: "Complementary Analysis",
+    peopleFeat4: "12 Mock Profiles",
+
+    // Module: Teams
+    teamsTitle: "Team Analytics",
+    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
+    teamsFeat1: "8 Mock Teams",
+    teamsFeat2: "Health Indicators",
+    teamsFeat3: "Competency Heatmap",
+    teamsFeat4: "Inter-team Comparison",
+
+    // Module: Selection
+    selectionTitle: "Hiring & Selection",
+    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
+    selectionFeat1: "Fit Score 0-100%",
+    selectionFeat2: "5 Role Benchmarks",
+    selectionFeat3: "Gap Analysis",
+    selectionFeat4: "AI Recommendation",
+
+    // Module: Evolution
+    evolutionTitle: "Evolution Curve",
+    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
+    evolutionFeat1: "Interactive Timeline",
+    evolutionFeat2: "Before/After",
+    evolutionFeat3: "EQ Prediction",
+    evolutionFeat4: "Growth Rate",
+
+    // Module: ROI
+    roiTitle: "ROI Calculator",
+    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
+    roiFeat1: "Budget Simulator",
+    roiFeat2: "3 Scenarios",
+    roiFeat3: "Real Correlations",
+    roiFeat4: "Industry Benchmark",
+
+    // Module: World
+    worldTitle: "Global Benchmark",
+    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
+    worldFeat1: "TP vs Global",
+    worldFeat2: "TP vs BPO",
+    worldFeat3: "Top 10% Worldwide",
+    worldFeat4: "Success Patterns",
+
+    // Module: Alerts
+    alertsTitle: "Alerts & Monitoring",
+    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
+    alertsFeat1: "Severity Alerts",
+    alertsFeat2: "Team Health",
+    alertsFeat3: "Trends",
+    alertsFeat4: "Threshold Config",
+
+    // Module: Data Quality
+    dataQualityTitle: "Data Quality",
+    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
+    dataQualityFeat1: "Quality Score",
+    dataQualityFeat2: "Duplicate Detection",
+    dataQualityFeat3: "Outlier Detection",
+    dataQualityFeat4: "Completeness",
+
+    // Footer
+    footerText:
+      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+    footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+  },
+  it: {
+    // Header
+    pageTitle: "Teleperformance",
+    enterpriseBadge: "Enterprise",
+    subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
+    protectedAccess: "Protected — @6seconds.org access only",
+
+    // Quick Stats
+    statAvgEQ: "Avg EQ",
+    statAssessments: "Assessments",
+    statCountries: "Countries",
+    statBrainProfiles: "Brain Profiles",
+
+    // Modules section
+    modulesTitle: "TP Modules",
+    openButton: "Open",
+
+    // Module: Dashboard
+    dashboardTitle: "EQ Dashboard",
+    dashboardDesc: "Complete SEI metrics view with individual and team-level EQ scores, pursuits, and competencies.",
+    dashboardFeat1: "Total EQ Score",
+    dashboardFeat2: "8 SEI Competencies",
+    dashboardFeat3: "3 Pursuits",
+    dashboardFeat4: "Life Outcomes",
+
+    // Module: Benchmark
+    benchmarkTitle: "TP Benchmark",
+    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "14,886 Assessments",
+    benchmarkFeat2: "42 Countries",
+    benchmarkFeat3: "Regional Insights",
+    benchmarkFeat4: "Brain Profiles",
+
+    // Module: Affinity
+    affinityTitle: "Team Affinity",
+    affinityDesc: "Discover emotional compatibility across TP teams. Optimize collaboration with brain style matching.",
+    affinityFeat1: "Team Compatibility",
+    affinityFeat2: "Brain Style Match",
+    affinityFeat3: "Cross-region Teams",
+    affinityFeat4: "Collaboration Insights",
+
+    // Module: ECO
+    ecoTitle: "ECO Communication",
+    ecoDesc: "Optimize emotional communication across TP's global workforce with AI-adapted messaging.",
+    ecoFeat1: "Adapted Messaging",
+    ecoFeat2: "Multi-channel",
+    ecoFeat3: "Brain Style Aware",
+    ecoFeat4: "Cultural Context",
+
+    // Module: Coach
+    coachTitle: "Rowi Coach",
+    coachDesc: "24/7 AI-powered emotional intelligence coaching for TP employees, contextualized with SEI data.",
+    coachFeat1: "AI Chat Coach",
+    coachFeat2: "SEI-Aware",
+    coachFeat3: "Progress Tracking",
+    coachFeat4: "Personalized Exercises",
+
+    // Module: Community
+    communityTitle: "TP EQ Community",
+    communityDesc: "The Teleperformance emotional intelligence community. Events, leaderboards, and peer learning.",
+    communityFeat1: "EQ Leaderboard",
+    communityFeat2: "Events & Challenges",
+    communityFeat3: "Peer Learning",
+    communityFeat4: "Recognition",
+
+    // Module: Onboarding
+    onboardingTitle: "TP Onboarding",
+    onboardingDesc: "Employee onboarding flow with SEI assessment, brain profiling, and team matching.",
+    onboardingFeat1: "SEI Assessment",
+    onboardingFeat2: "Brain Profile",
+    onboardingFeat3: "Team Matching",
+    onboardingFeat4: "Growth Plan",
+
+    // Module: People
+    peopleTitle: "Person Comparator",
+    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
+    peopleFeat1: "1 vs 1 Comparison",
+    peopleFeat2: "Competency Radar",
+    peopleFeat3: "Complementary Analysis",
+    peopleFeat4: "12 Mock Profiles",
+
+    // Module: Teams
+    teamsTitle: "Team Analytics",
+    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
+    teamsFeat1: "8 Mock Teams",
+    teamsFeat2: "Health Indicators",
+    teamsFeat3: "Competency Heatmap",
+    teamsFeat4: "Inter-team Comparison",
+
+    // Module: Selection
+    selectionTitle: "Hiring & Selection",
+    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
+    selectionFeat1: "Fit Score 0-100%",
+    selectionFeat2: "5 Role Benchmarks",
+    selectionFeat3: "Gap Analysis",
+    selectionFeat4: "AI Recommendation",
+
+    // Module: Evolution
+    evolutionTitle: "Evolution Curve",
+    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
+    evolutionFeat1: "Interactive Timeline",
+    evolutionFeat2: "Before/After",
+    evolutionFeat3: "EQ Prediction",
+    evolutionFeat4: "Growth Rate",
+
+    // Module: ROI
+    roiTitle: "ROI Calculator",
+    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
+    roiFeat1: "Budget Simulator",
+    roiFeat2: "3 Scenarios",
+    roiFeat3: "Real Correlations",
+    roiFeat4: "Industry Benchmark",
+
+    // Module: World
+    worldTitle: "Global Benchmark",
+    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
+    worldFeat1: "TP vs Global",
+    worldFeat2: "TP vs BPO",
+    worldFeat3: "Top 10% Worldwide",
+    worldFeat4: "Success Patterns",
+
+    // Module: Alerts
+    alertsTitle: "Alerts & Monitoring",
+    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
+    alertsFeat1: "Severity Alerts",
+    alertsFeat2: "Team Health",
+    alertsFeat3: "Trends",
+    alertsFeat4: "Threshold Config",
+
+    // Module: Data Quality
+    dataQualityTitle: "Data Quality",
+    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
+    dataQualityFeat1: "Quality Score",
+    dataQualityFeat2: "Duplicate Detection",
+    dataQualityFeat3: "Outlier Detection",
+    dataQualityFeat4: "Completeness",
+
+    // Footer
+    footerText:
+      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+    footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+  },
+
 };
 
 export default function TPAdminHub() {

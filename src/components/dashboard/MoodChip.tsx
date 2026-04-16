@@ -3,12 +3,10 @@
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const translations = {
-  es: {
-    recentMood: "Estado de ánimo reciente",
-  },
-  en: {
-    recentMood: "Recent mood",
-  },
+  es: { recentMood: "Estado de ánimo reciente" },
+  en: { recentMood: "Recent mood" },
+  pt: { recentMood: "Estado de ânimo recente" },
+  it: { recentMood: "Umore recente" },
 };
 
 export function MoodChip({ text, emoji }: { text: string; emoji: string }) {

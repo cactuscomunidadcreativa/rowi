@@ -268,6 +268,259 @@ Want to brainstorm a roadmap together? I think this could be industry-leading �
     msgEmmaSMS: `Hi Emma! EQ data shows 10% improvement = performance + wellbeing gains. Want to brainstorm a transformative EMEA talent program?`,
     msgEmmaChat: `Hey Emma! 🔮 I've been thinking big — what if we used our EQ insights to build a best-in-class talent development program for EMEA? The data shows incredible potential. Ready to dream big together? ✨`,
   },
+  pt: {
+    backToHub: "TP Hub",
+    badgeEco: "ECO",
+    title: "ECO — TP Communication",
+    subtitle: "Emotional Communication Optimizer",
+    description: "AI-adapted messaging for TP's global workforce — brain style aware, culturally sensitive",
+    recipientTitle: "Recipient",
+    channelTitle: "Channel",
+    optimizationsFor: "Optimizations for",
+    optimizedMessage: "Optimized Message",
+    adaptedFor: "Adapted for",
+    profileOf: "'s",
+    sendVia: "Send via",
+    infoCommunicationTitle: "TP ECO Communication",
+    infoCommunicationDesc: "Messages are adapted based on the recipient's SEI brain profile, cultural context, and communication preferences. Powered by Rowi AI × Six Seconds.",
+    navAffinity: "Affinity",
+    navCoach: "Coach",
+    // Channel labels
+    channelEmail: "Email",
+    channelWhatsApp: "WhatsApp",
+    channelSMS: "SMS",
+    channelTeams: "Teams",
+    // Roles
+    roleSarah: "Team Lead — Sales NA",
+    roleMarcus: "Customer Success — LATAM",
+    roleAiko: "Operations — APAC",
+    roleEmma: "HR Director — EMEA",
+    // Brain styles
+    brainStrategist: "Strategist",
+    brainDeliverer: "Deliverer",
+    brainScientist: "Scientist",
+    brainVisionary: "Visionary",
+    // Regions
+    regionNA: "North America",
+    regionLATAM: "Latin America",
+    regionAPAC: "Asia Pacific",
+    regionEMEA: "EMEA",
+    // Optimization tips — Sarah (Strategist)
+    tipSarah1: "Strategy-focused language for Strategist profile",
+    tipSarah2: "Data-driven approach with clear outcomes",
+    tipSarah3: "Invitation to co-create solutions",
+    tipSarah4: "Respects her leadership perspective",
+    // Optimization tips — Marcus (Deliverer)
+    tipMarcus1: "Action-oriented for Deliverer profile",
+    tipMarcus2: "Acknowledges hands-on expertise",
+    tipMarcus3: "Focus on practical implementation",
+    tipMarcus4: "Collaborative and warm tone",
+    // Optimization tips — Aiko (Scientist)
+    tipAiko1: "Analytical framing for Scientist profile",
+    tipAiko2: "Methodology and data-first approach",
+    tipAiko3: "Respect for systematic thinking",
+    tipAiko4: "Formal yet collegial tone",
+    // Optimization tips — Emma (Visionary)
+    tipEmma1: "Visionary language for big-picture thinker",
+    tipEmma2: "Aspirational and inspiring framing",
+    tipEmma3: "Focus on impact and transformation",
+    tipEmma4: "Values-driven communication",
+    // Messages — Sarah
+    msgSarahEmail: `Hi Sarah,
+
+I hope you're having a productive week. I've been analyzing the Q4 sales performance data alongside our EQ benchmarks, and I found some fascinating patterns I'd love to share with you.
+
+Your team's top performers consistently score high in Consequential Thinking — which aligns perfectly with your Strategist profile. I think we could build a targeted coaching program around this.
+
+Would you like to schedule a 30-minute call this week to explore the strategy? I believe your perspective on scaling this across NA would be invaluable.
+
+Best regards`,
+    msgSarahWhatsApp: `Hi Sarah! 👋
+
+I found some great patterns in the Q4 data + EQ benchmarks that could help scale your team's performance 📊
+
+Your team's top performers align with the Strategist profile. Want to do a quick call to discuss a coaching strategy? ♟️`,
+    msgSarahSMS: `Hi Sarah! Found interesting Q4+EQ patterns for your team. Top performers match Strategist profile. Quick call this week?`,
+    msgSarahChat: `Hey Sarah! I've got some exciting data insights linking your team's sales performance with their EQ profiles. Your Strategists are outperforming! Do you have 15 min to discuss a coaching strategy? ♟️📈`,
+    // Messages — Marcus
+    msgMarcusEmail: `Hola Marcus,
+
+I wanted to reach out about the customer success metrics we've been tracking in LATAM. The results are impressive — your team's consistent delivery aligns perfectly with the Deliverer brain profile that's dominant in your region.
+
+I'd love to collaborate on creating a best practices guide that we could share across regions. Your hands-on experience with implementation would be key.
+
+When would be a good time to connect?
+
+Regards`,
+    msgMarcusWhatsApp: `Hey Marcus! 👋
+
+Your LATAM team's CS metrics are looking great! 📦 The Deliverer profile really shows in the results.
+
+Want to collaborate on a best practices guide? Your implementation experience would be perfect for this 🚀`,
+    msgMarcusSMS: `Hi Marcus! LATAM CS metrics are great - Deliverer profile shows. Let's collaborate on a best practices guide?`,
+    msgMarcusChat: `Hey Marcus! Your LATAM numbers are solid 💪 I see the Deliverer profile really showing through in execution. Want to partner on a cross-region best practices doc? Your implementation insights would be gold 📦`,
+    // Messages — Aiko
+    msgAikoEmail: `Dear Aiko,
+
+I've been reviewing the operational efficiency data across APAC, and I'd appreciate your analytical perspective on some findings.
+
+The data shows a strong correlation between Scientist brain profiles and QA excellence in your region. I've prepared a detailed analysis with methodology notes that I believe would interest you.
+
+Could we schedule a meeting to review the data together? I'd value your scientific approach to validating these patterns.
+
+Best regards`,
+    msgAikoWhatsApp: `Hi Aiko! 🔬
+
+I have some detailed APAC operational data showing interesting QA + brain profile correlations. I've prepared analysis with methodology notes.
+
+Would you like to review the data together? Your analytical perspective would be very helpful 📊`,
+    msgAikoSMS: `Hi Aiko! Have APAC QA + brain profile correlation data to review. Would value your analytical input. Meeting this week?`,
+    msgAikoChat: `Hi Aiko! I've prepared a data analysis on APAC QA performance correlated with Scientist brain profiles. The methodology is documented. Would you like to review together? 🔬📋`,
+    // Messages — Emma
+    msgEmmaEmail: `Hi Emma,
+
+I've been thinking about how we could leverage our EQ data to transform TP's talent development strategy across EMEA. Given your vision for people-first leadership, I think you'll be excited about what the data reveals.
+
+The assessment data shows that employees who improve their EQ scores by just 10% see measurable improvements in both performance and wellbeing metrics. Imagine what a targeted program could achieve across EMEA.
+
+I'd love to brainstorm together on a roadmap that could set a new standard for talent development in the industry.
+
+Warm regards`,
+    msgEmmaWhatsApp: `Hi Emma! 🔮
+
+I have an exciting vision to share — our EQ data could transform EMEA talent development. A 10% EQ improvement = measurable performance + wellbeing gains!
+
+Want to brainstorm a roadmap together? I think this could be industry-leading ✨`,
+    msgEmmaSMS: `Hi Emma! EQ data shows 10% improvement = performance + wellbeing gains. Want to brainstorm a transformative EMEA talent program?`,
+    msgEmmaChat: `Hey Emma! 🔮 I've been thinking big — what if we used our EQ insights to build a best-in-class talent development program for EMEA? The data shows incredible potential. Ready to dream big together? ✨`,
+  },
+  it: {
+    backToHub: "TP Hub",
+    badgeEco: "ECO",
+    title: "ECO — TP Communication",
+    subtitle: "Emotional Communication Optimizer",
+    description: "AI-adapted messaging for TP's global workforce — brain style aware, culturally sensitive",
+    recipientTitle: "Recipient",
+    channelTitle: "Channel",
+    optimizationsFor: "Optimizations for",
+    optimizedMessage: "Optimized Message",
+    adaptedFor: "Adapted for",
+    profileOf: "'s",
+    sendVia: "Send via",
+    infoCommunicationTitle: "TP ECO Communication",
+    infoCommunicationDesc: "Messages are adapted based on the recipient's SEI brain profile, cultural context, and communication preferences. Powered by Rowi AI × Six Seconds.",
+    navAffinity: "Affinity",
+    navCoach: "Coach",
+    // Channel labels
+    channelEmail: "Email",
+    channelWhatsApp: "WhatsApp",
+    channelSMS: "SMS",
+    channelTeams: "Teams",
+    // Roles
+    roleSarah: "Team Lead — Sales NA",
+    roleMarcus: "Customer Success — LATAM",
+    roleAiko: "Operations — APAC",
+    roleEmma: "HR Director — EMEA",
+    // Brain styles
+    brainStrategist: "Strategist",
+    brainDeliverer: "Deliverer",
+    brainScientist: "Scientist",
+    brainVisionary: "Visionary",
+    // Regions
+    regionNA: "North America",
+    regionLATAM: "Latin America",
+    regionAPAC: "Asia Pacific",
+    regionEMEA: "EMEA",
+    // Optimization tips — Sarah (Strategist)
+    tipSarah1: "Strategy-focused language for Strategist profile",
+    tipSarah2: "Data-driven approach with clear outcomes",
+    tipSarah3: "Invitation to co-create solutions",
+    tipSarah4: "Respects her leadership perspective",
+    // Optimization tips — Marcus (Deliverer)
+    tipMarcus1: "Action-oriented for Deliverer profile",
+    tipMarcus2: "Acknowledges hands-on expertise",
+    tipMarcus3: "Focus on practical implementation",
+    tipMarcus4: "Collaborative and warm tone",
+    // Optimization tips — Aiko (Scientist)
+    tipAiko1: "Analytical framing for Scientist profile",
+    tipAiko2: "Methodology and data-first approach",
+    tipAiko3: "Respect for systematic thinking",
+    tipAiko4: "Formal yet collegial tone",
+    // Optimization tips — Emma (Visionary)
+    tipEmma1: "Visionary language for big-picture thinker",
+    tipEmma2: "Aspirational and inspiring framing",
+    tipEmma3: "Focus on impact and transformation",
+    tipEmma4: "Values-driven communication",
+    // Messages — Sarah
+    msgSarahEmail: `Hi Sarah,
+
+I hope you're having a productive week. I've been analyzing the Q4 sales performance data alongside our EQ benchmarks, and I found some fascinating patterns I'd love to share with you.
+
+Your team's top performers consistently score high in Consequential Thinking — which aligns perfectly with your Strategist profile. I think we could build a targeted coaching program around this.
+
+Would you like to schedule a 30-minute call this week to explore the strategy? I believe your perspective on scaling this across NA would be invaluable.
+
+Best regards`,
+    msgSarahWhatsApp: `Hi Sarah! 👋
+
+I found some great patterns in the Q4 data + EQ benchmarks that could help scale your team's performance 📊
+
+Your team's top performers align with the Strategist profile. Want to do a quick call to discuss a coaching strategy? ♟️`,
+    msgSarahSMS: `Hi Sarah! Found interesting Q4+EQ patterns for your team. Top performers match Strategist profile. Quick call this week?`,
+    msgSarahChat: `Hey Sarah! I've got some exciting data insights linking your team's sales performance with their EQ profiles. Your Strategists are outperforming! Do you have 15 min to discuss a coaching strategy? ♟️📈`,
+    // Messages — Marcus
+    msgMarcusEmail: `Hola Marcus,
+
+I wanted to reach out about the customer success metrics we've been tracking in LATAM. The results are impressive — your team's consistent delivery aligns perfectly with the Deliverer brain profile that's dominant in your region.
+
+I'd love to collaborate on creating a best practices guide that we could share across regions. Your hands-on experience with implementation would be key.
+
+When would be a good time to connect?
+
+Regards`,
+    msgMarcusWhatsApp: `Hey Marcus! 👋
+
+Your LATAM team's CS metrics are looking great! 📦 The Deliverer profile really shows in the results.
+
+Want to collaborate on a best practices guide? Your implementation experience would be perfect for this 🚀`,
+    msgMarcusSMS: `Hi Marcus! LATAM CS metrics are great - Deliverer profile shows. Let's collaborate on a best practices guide?`,
+    msgMarcusChat: `Hey Marcus! Your LATAM numbers are solid 💪 I see the Deliverer profile really showing through in execution. Want to partner on a cross-region best practices doc? Your implementation insights would be gold 📦`,
+    // Messages — Aiko
+    msgAikoEmail: `Dear Aiko,
+
+I've been reviewing the operational efficiency data across APAC, and I'd appreciate your analytical perspective on some findings.
+
+The data shows a strong correlation between Scientist brain profiles and QA excellence in your region. I've prepared a detailed analysis with methodology notes that I believe would interest you.
+
+Could we schedule a meeting to review the data together? I'd value your scientific approach to validating these patterns.
+
+Best regards`,
+    msgAikoWhatsApp: `Hi Aiko! 🔬
+
+I have some detailed APAC operational data showing interesting QA + brain profile correlations. I've prepared analysis with methodology notes.
+
+Would you like to review the data together? Your analytical perspective would be very helpful 📊`,
+    msgAikoSMS: `Hi Aiko! Have APAC QA + brain profile correlation data to review. Would value your analytical input. Meeting this week?`,
+    msgAikoChat: `Hi Aiko! I've prepared a data analysis on APAC QA performance correlated with Scientist brain profiles. The methodology is documented. Would you like to review together? 🔬📋`,
+    // Messages — Emma
+    msgEmmaEmail: `Hi Emma,
+
+I've been thinking about how we could leverage our EQ data to transform TP's talent development strategy across EMEA. Given your vision for people-first leadership, I think you'll be excited about what the data reveals.
+
+The assessment data shows that employees who improve their EQ scores by just 10% see measurable improvements in both performance and wellbeing metrics. Imagine what a targeted program could achieve across EMEA.
+
+I'd love to brainstorm together on a roadmap that could set a new standard for talent development in the industry.
+
+Warm regards`,
+    msgEmmaWhatsApp: `Hi Emma! 🔮
+
+I have an exciting vision to share — our EQ data could transform EMEA talent development. A 10% EQ improvement = measurable performance + wellbeing gains!
+
+Want to brainstorm a roadmap together? I think this could be industry-leading ✨`,
+    msgEmmaSMS: `Hi Emma! EQ data shows 10% improvement = performance + wellbeing gains. Want to brainstorm a transformative EMEA talent program?`,
+    msgEmmaChat: `Hey Emma! 🔮 I've been thinking big — what if we used our EQ insights to build a best-in-class talent development program for EMEA? The data shows incredible potential. Ready to dream big together? ✨`,
+  },
+
 };
 
 /* Main Page */

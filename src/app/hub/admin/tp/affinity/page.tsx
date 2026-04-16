@@ -338,6 +338,315 @@ const translations = {
     errorDesc: "Could not load benchmark data. Please try again.",
     retry: "Retry",
   },
+  pt: {
+    backToHub: "TP Hub",
+    badge: "Team Affinity",
+    title: "TP Team Affinity",
+    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from 14,886 assessments",
+
+    // Brain styles section
+    brainDistTitle: "Real Brain Style Distribution",
+    brainDistDesc: "Brain style distribution from the TP benchmark based on real data",
+    employees: "assessments",
+
+    // Affinity matrix
+    affinityMatrixTitle: "Style Affinity Matrix",
+    affinityMatrixDesc: "Emotional compatibility calculated from competency profile similarity between brain styles",
+    highAffinity: "High affinity",
+    mediumAffinity: "Medium affinity",
+    lowAffinity: "Low affinity",
+
+    // Complementary pairs
+    complementaryTitle: "Complementary Pairs",
+    complementaryDesc: "Brain style combinations that generate the most competency complementarity",
+    complementaryReason: "Reason",
+
+    // Regional brain style distribution
+    regionalTitle: "Brain Styles by Region",
+    regionalDesc: "How brain styles are distributed across each TP region",
+
+    // Brain style profiles
+    profilesTitle: "Brain Style Profiles",
+    profilesDesc: "Characteristics, strengths, and risks of each brain style found in TP",
+    traits: "Traits",
+    strengths: "Strengths",
+    risks: "Risks",
+    facilitation: "Facilitation",
+
+    // Cross-region insights
+    crossRegionTitle: "Cross-Region Insights",
+    crossRegionDesc: "Affinity patterns across TP global operations",
+
+    // EQ by brain style
+    eqByStyleTitle: "Average EQ by Brain Style",
+    eqByStyleDesc: "Average EQ Total score for each brain style in the TP benchmark",
+    avgEQ: "Avg EQ",
+    count: "Assessments",
+
+    // Info box
+    infoTitle: "TP Affinity Data",
+    infoDesc: "Data based on the real Teleperformance benchmark with 14,886 SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+
+    // Navigation
+    navBenchmark: "Benchmark",
+    navEco: "ECO",
+
+    // Community Affinity section
+    communityTitle: "Community Affinity",
+    communityDesc: "Emotional affinity analysis between your community members",
+    searchPlaceholder: "Search by name, group or country...",
+    recalculate: "Recalculate",
+    calculating: "Calculating affinity...",
+    noMembers: "No members found",
+    overallAffinity: "Overall Affinity",
+    members: "Members",
+    selected: "Selected",
+    context: "Context",
+    relationships: "Relationships",
+    leadership: "Leadership",
+    execution: "Execution",
+    innovation: "Innovation",
+    decision: "Decisions",
+    conversation: "Communication",
+    analyzeSelected: "Analyze Selected",
+    selectedMembers: "selected",
+    clearSelection: "Clear",
+    monitor: "Monitor",
+    monitorTitle: "Affinity Monitor",
+    forAnalysis: "for analysis",
+    inCommunity: "in your community",
+    coachSubtitle: "Your relationship coach",
+    askRowi: "Ask about relationships...",
+    avgAffinity: "Average Affinity",
+    analyzed: "analyzed",
+    notCalculated: "Not calculated",
+    growth: "Growth",
+    collaboration: "Collaboration",
+    understanding: "Understanding",
+    groupAnalysis: "Group Analysis",
+    viewBenchmark: "View Benchmark",
+    viewCommunity: "View Community",
+    tabBenchmark: "TP Benchmark",
+    tabCommunity: "My Community",
+    tabCompare: "Compare",
+    tabMultiContext: "Multi-Context",
+    tabConfig: "Configuration",
+
+    // Compare tab
+    compareTitle: "Affinity Comparator",
+    compareDesc: "Select two people to compare their affinity in detail",
+    compareMemberA: "Person A",
+    compareMemberB: "Person B",
+    compareSelect: "Select...",
+    compareRun: "Compare",
+    compareVs: "vs",
+    compareParts: "Breakdown",
+    compareBrainStyles: "Brain Styles",
+    compareTalents: "Shared Talents",
+    compareCompetencies: "Strong Competencies",
+    compareNoData: "Select two people and click Compare",
+
+    // Multi-context tab
+    multiTitle: "Multi-Context Analysis",
+    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
+    multiSelectMembers: "Select members in the Community tab first",
+    multiRunAll: "Calculate All",
+    multiCalculating: "Calculating all contexts...",
+    multiAvg: "Average",
+    multiMember: "Member",
+
+    // Config tab
+    configTitle: "Affinity Configuration",
+    configDesc: "Adjust weights and parameters for affinity calculation",
+    configWeights: "Context Weights",
+    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
+    configBands: "Thermal Bands",
+    configBandsDesc: "Thresholds for classifying affinity temperature",
+    configHot: "Hot",
+    configWarm: "Warm",
+    configCold: "Cold",
+    configCloseness: "Closeness Multipliers",
+    configClose: "Close",
+    configNeutral: "Neutral",
+    configFar: "Far",
+    configSave: "Save Configuration",
+    configSaving: "Saving...",
+    configSaved: "Saved",
+    configRecalculate: "Recalculate All",
+    configRecalculating: "Recalculating...",
+    configLoadError: "Error loading configuration",
+    configSaveError: "Error saving",
+    configSaveSuccess: "Configuration saved successfully",
+
+    // Detail panel
+    brainStylesLabel: "Brain Styles",
+    sharedTalentsLabel: "Shared Talents",
+    strongCompLabel: "Strong Competencies",
+    insightLabel: "Insight",
+    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
+    askCoachTip: "Ask the Affinity Coach for personalized advice.",
+    groupTip: "Ask the Affinity Coach for recommendations about this group.",
+
+    loading: "Loading affinity data...",
+    errorTitle: "Error loading data",
+    errorDesc: "Could not load benchmark data. Please try again.",
+    retry: "Retry",
+  },
+  it: {
+    backToHub: "TP Hub",
+    badge: "Team Affinity",
+    title: "TP Team Affinity",
+    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from 14,886 assessments",
+
+    // Brain styles section
+    brainDistTitle: "Real Brain Style Distribution",
+    brainDistDesc: "Brain style distribution from the TP benchmark based on real data",
+    employees: "assessments",
+
+    // Affinity matrix
+    affinityMatrixTitle: "Style Affinity Matrix",
+    affinityMatrixDesc: "Emotional compatibility calculated from competency profile similarity between brain styles",
+    highAffinity: "High affinity",
+    mediumAffinity: "Medium affinity",
+    lowAffinity: "Low affinity",
+
+    // Complementary pairs
+    complementaryTitle: "Complementary Pairs",
+    complementaryDesc: "Brain style combinations that generate the most competency complementarity",
+    complementaryReason: "Reason",
+
+    // Regional brain style distribution
+    regionalTitle: "Brain Styles by Region",
+    regionalDesc: "How brain styles are distributed across each TP region",
+
+    // Brain style profiles
+    profilesTitle: "Brain Style Profiles",
+    profilesDesc: "Characteristics, strengths, and risks of each brain style found in TP",
+    traits: "Traits",
+    strengths: "Strengths",
+    risks: "Risks",
+    facilitation: "Facilitation",
+
+    // Cross-region insights
+    crossRegionTitle: "Cross-Region Insights",
+    crossRegionDesc: "Affinity patterns across TP global operations",
+
+    // EQ by brain style
+    eqByStyleTitle: "Average EQ by Brain Style",
+    eqByStyleDesc: "Average EQ Total score for each brain style in the TP benchmark",
+    avgEQ: "Avg EQ",
+    count: "Assessments",
+
+    // Info box
+    infoTitle: "TP Affinity Data",
+    infoDesc: "Data based on the real Teleperformance benchmark with 14,886 SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+
+    // Navigation
+    navBenchmark: "Benchmark",
+    navEco: "ECO",
+
+    // Community Affinity section
+    communityTitle: "Community Affinity",
+    communityDesc: "Emotional affinity analysis between your community members",
+    searchPlaceholder: "Search by name, group or country...",
+    recalculate: "Recalculate",
+    calculating: "Calculating affinity...",
+    noMembers: "No members found",
+    overallAffinity: "Overall Affinity",
+    members: "Members",
+    selected: "Selected",
+    context: "Context",
+    relationships: "Relationships",
+    leadership: "Leadership",
+    execution: "Execution",
+    innovation: "Innovation",
+    decision: "Decisions",
+    conversation: "Communication",
+    analyzeSelected: "Analyze Selected",
+    selectedMembers: "selected",
+    clearSelection: "Clear",
+    monitor: "Monitor",
+    monitorTitle: "Affinity Monitor",
+    forAnalysis: "for analysis",
+    inCommunity: "in your community",
+    coachSubtitle: "Your relationship coach",
+    askRowi: "Ask about relationships...",
+    avgAffinity: "Average Affinity",
+    analyzed: "analyzed",
+    notCalculated: "Not calculated",
+    growth: "Growth",
+    collaboration: "Collaboration",
+    understanding: "Understanding",
+    groupAnalysis: "Group Analysis",
+    viewBenchmark: "View Benchmark",
+    viewCommunity: "View Community",
+    tabBenchmark: "TP Benchmark",
+    tabCommunity: "My Community",
+    tabCompare: "Compare",
+    tabMultiContext: "Multi-Context",
+    tabConfig: "Configuration",
+
+    // Compare tab
+    compareTitle: "Affinity Comparator",
+    compareDesc: "Select two people to compare their affinity in detail",
+    compareMemberA: "Person A",
+    compareMemberB: "Person B",
+    compareSelect: "Select...",
+    compareRun: "Compare",
+    compareVs: "vs",
+    compareParts: "Breakdown",
+    compareBrainStyles: "Brain Styles",
+    compareTalents: "Shared Talents",
+    compareCompetencies: "Strong Competencies",
+    compareNoData: "Select two people and click Compare",
+
+    // Multi-context tab
+    multiTitle: "Multi-Context Analysis",
+    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
+    multiSelectMembers: "Select members in the Community tab first",
+    multiRunAll: "Calculate All",
+    multiCalculating: "Calculating all contexts...",
+    multiAvg: "Average",
+    multiMember: "Member",
+
+    // Config tab
+    configTitle: "Affinity Configuration",
+    configDesc: "Adjust weights and parameters for affinity calculation",
+    configWeights: "Context Weights",
+    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
+    configBands: "Thermal Bands",
+    configBandsDesc: "Thresholds for classifying affinity temperature",
+    configHot: "Hot",
+    configWarm: "Warm",
+    configCold: "Cold",
+    configCloseness: "Closeness Multipliers",
+    configClose: "Close",
+    configNeutral: "Neutral",
+    configFar: "Far",
+    configSave: "Save Configuration",
+    configSaving: "Saving...",
+    configSaved: "Saved",
+    configRecalculate: "Recalculate All",
+    configRecalculating: "Recalculating...",
+    configLoadError: "Error loading configuration",
+    configSaveError: "Error saving",
+    configSaveSuccess: "Configuration saved successfully",
+
+    // Detail panel
+    brainStylesLabel: "Brain Styles",
+    sharedTalentsLabel: "Shared Talents",
+    strongCompLabel: "Strong Competencies",
+    insightLabel: "Insight",
+    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
+    askCoachTip: "Ask the Affinity Coach for personalized advice.",
+    groupTip: "Ask the Affinity Coach for recommendations about this group.",
+
+    loading: "Loading affinity data...",
+    errorTitle: "Error loading data",
+    errorDesc: "Could not load benchmark data. Please try again.",
+    retry: "Retry",
+  },
+
 };
 
 /* =========================================================

@@ -199,6 +199,189 @@ const translations = {
     navCoach: "Coach",
     navOnboarding: "Onboarding",
   },
+  pt: {
+    // Header
+    backToHub: "TP Hub",
+    communityBadge: "Community",
+    pageTitle: "TP EQ Community",
+    pageDescription: "The Teleperformance emotional intelligence community — events, leaderboards, achievements, and peer learning",
+
+    // Leaderboard
+    eqLeaderboard: "EQ Leaderboard",
+    filterGlobal: "Global",
+
+    // Leaderboard member fields
+    deptCustomerSuccess: "Customer Success",
+    deptHR: "HR",
+    deptSales: "Sales",
+    deptOperations: "Operations",
+    deptIT: "IT",
+    deptCustomerService: "Customer Service",
+    deptTraining: "Training",
+
+    brainStyleSuperhero: "Superhero",
+    brainStyleVisionary: "Visionary",
+    brainStyleStrategist: "Strategist",
+    brainStyleInventor: "Inventor",
+    brainStyleScientist: "Scientist",
+    brainStyleGuardian: "Guardian",
+    brainStyleDeliverer: "Deliverer",
+
+    // Community stats
+    statMembers: "Members",
+    statCountries: "Countries",
+    statAchievements: "Achievements",
+    statUpcomingEvents: "Upcoming Events",
+    statAvgEqGrowth: "Avg EQ Growth",
+    statActiveStreaks: "Active Streaks",
+
+    // Achievements section
+    achievementsTitle: "Achievements",
+    unlocked: "unlocked",
+    achEqExplorer: "EQ Explorer",
+    achEqExplorerDesc: "Complete first SEI assessment",
+    achBrainMaster: "Brain Master",
+    achBrainMasterDesc: "Understand all 7 brain profiles",
+    achEmpathyChampion: "Empathy Champion",
+    achEmpathyChampionDesc: "Score above 110 in Empathy",
+    achGrowthMindset: "Growth Mindset",
+    achGrowthMindsetDesc: "Improve EQ by 5+ points",
+    achTeamBuilder: "Team Builder",
+    achTeamBuilderDesc: "Complete 3 team affinity sessions",
+    achGlobalCitizen: "Global Citizen",
+    achGlobalCitizenDesc: "Connect with 5+ regions",
+    achCoachingStar: "Coaching Star",
+    achCoachingStarDesc: "Complete 20 coaching sessions",
+    achEqLegend: "EQ Legend",
+    achEqLegendDesc: "Reach top 5% in EQ score",
+
+    // Events
+    upcomingEvents: "Upcoming Events",
+    participants: "participants",
+    eventEmpathyWeekTitle: "EQ Challenge: Empathy Week",
+    eventEmpathyWeekDesc: "7-day challenge focused on developing Empathy competency across all TP regions",
+    eventBrainStyleTitle: "Brain Style Workshop: Scientists",
+    eventBrainStyleDesc: "Deep-dive workshop for Scientist brain profiles — leveraging analytical strengths",
+    eventCrossCulturalTitle: "Cross-Cultural EQ Masterclass",
+    eventCrossCulturalDesc: "How to adapt emotional communication across TP's 42 country operations",
+    eventHackathonTitle: "EQ Hackathon: Innovation Sprint",
+    eventHackathonDesc: "Teams compete to create the best EQ-driven customer experience solution",
+    eventTypeChallenge: "Challenge",
+    eventTypeWorkshop: "Workshop",
+    eventTypeMasterclass: "Masterclass",
+    eventTypeHackathon: "Hackathon",
+
+    // Learning
+    learningTitle: "Learning",
+    resourceSeiFundamentals: "SEI Fundamentals",
+    resourceSeiFundamentalsType: "Course",
+    resourceNavigateEmotions: "Navigate Emotions Workshop",
+    resourceNavigateEmotionsType: "Workshop",
+    resourceLeadershipEQ: "Leadership EQ Path",
+    resourceLeadershipEQType: "Learning Path",
+    resourceBrainStyles: "Brain Styles Deep Dive",
+    resourceBrainStylesType: "Video Series",
+
+    // Info box
+    infoTitle: "TP EQ Community",
+    infoDescription: "Enterprise EQ community for Teleperformance. Leaderboard scores are aggregated from real SEI assessments. Events and achievements are part of the Rowi gamification engine.",
+
+    // Navigation
+    navCoach: "Coach",
+    navOnboarding: "Onboarding",
+  },
+  it: {
+    // Header
+    backToHub: "TP Hub",
+    communityBadge: "Community",
+    pageTitle: "TP EQ Community",
+    pageDescription: "The Teleperformance emotional intelligence community — events, leaderboards, achievements, and peer learning",
+
+    // Leaderboard
+    eqLeaderboard: "EQ Leaderboard",
+    filterGlobal: "Global",
+
+    // Leaderboard member fields
+    deptCustomerSuccess: "Customer Success",
+    deptHR: "HR",
+    deptSales: "Sales",
+    deptOperations: "Operations",
+    deptIT: "IT",
+    deptCustomerService: "Customer Service",
+    deptTraining: "Training",
+
+    brainStyleSuperhero: "Superhero",
+    brainStyleVisionary: "Visionary",
+    brainStyleStrategist: "Strategist",
+    brainStyleInventor: "Inventor",
+    brainStyleScientist: "Scientist",
+    brainStyleGuardian: "Guardian",
+    brainStyleDeliverer: "Deliverer",
+
+    // Community stats
+    statMembers: "Members",
+    statCountries: "Countries",
+    statAchievements: "Achievements",
+    statUpcomingEvents: "Upcoming Events",
+    statAvgEqGrowth: "Avg EQ Growth",
+    statActiveStreaks: "Active Streaks",
+
+    // Achievements section
+    achievementsTitle: "Achievements",
+    unlocked: "unlocked",
+    achEqExplorer: "EQ Explorer",
+    achEqExplorerDesc: "Complete first SEI assessment",
+    achBrainMaster: "Brain Master",
+    achBrainMasterDesc: "Understand all 7 brain profiles",
+    achEmpathyChampion: "Empathy Champion",
+    achEmpathyChampionDesc: "Score above 110 in Empathy",
+    achGrowthMindset: "Growth Mindset",
+    achGrowthMindsetDesc: "Improve EQ by 5+ points",
+    achTeamBuilder: "Team Builder",
+    achTeamBuilderDesc: "Complete 3 team affinity sessions",
+    achGlobalCitizen: "Global Citizen",
+    achGlobalCitizenDesc: "Connect with 5+ regions",
+    achCoachingStar: "Coaching Star",
+    achCoachingStarDesc: "Complete 20 coaching sessions",
+    achEqLegend: "EQ Legend",
+    achEqLegendDesc: "Reach top 5% in EQ score",
+
+    // Events
+    upcomingEvents: "Upcoming Events",
+    participants: "participants",
+    eventEmpathyWeekTitle: "EQ Challenge: Empathy Week",
+    eventEmpathyWeekDesc: "7-day challenge focused on developing Empathy competency across all TP regions",
+    eventBrainStyleTitle: "Brain Style Workshop: Scientists",
+    eventBrainStyleDesc: "Deep-dive workshop for Scientist brain profiles — leveraging analytical strengths",
+    eventCrossCulturalTitle: "Cross-Cultural EQ Masterclass",
+    eventCrossCulturalDesc: "How to adapt emotional communication across TP's 42 country operations",
+    eventHackathonTitle: "EQ Hackathon: Innovation Sprint",
+    eventHackathonDesc: "Teams compete to create the best EQ-driven customer experience solution",
+    eventTypeChallenge: "Challenge",
+    eventTypeWorkshop: "Workshop",
+    eventTypeMasterclass: "Masterclass",
+    eventTypeHackathon: "Hackathon",
+
+    // Learning
+    learningTitle: "Learning",
+    resourceSeiFundamentals: "SEI Fundamentals",
+    resourceSeiFundamentalsType: "Course",
+    resourceNavigateEmotions: "Navigate Emotions Workshop",
+    resourceNavigateEmotionsType: "Workshop",
+    resourceLeadershipEQ: "Leadership EQ Path",
+    resourceLeadershipEQType: "Learning Path",
+    resourceBrainStyles: "Brain Styles Deep Dive",
+    resourceBrainStylesType: "Video Series",
+
+    // Info box
+    infoTitle: "TP EQ Community",
+    infoDescription: "Enterprise EQ community for Teleperformance. Leaderboard scores are aggregated from real SEI assessments. Events and achievements are part of the Rowi gamification engine.",
+
+    // Navigation
+    navCoach: "Coach",
+    navOnboarding: "Onboarding",
+  },
+
 };
 
 /* Main Page */

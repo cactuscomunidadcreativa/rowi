@@ -153,6 +153,32 @@ const translations = {
     noData: "Complete your SEI assessment to see your level",
     scale: "SEI Scale",
   },
+  pt: {
+    title: "Seu Rowi",
+    subtitle: "Seu Rowi evolui com você",
+    subtitleDesc: "À medida que você desenvolve sua inteligência emocional, seu Rowi cresce e se transforma",
+    seiScore: "Pontuação SEI",
+    seiLevel: "Nível de Inteligência Emocional",
+    seiDesc: "Baseado na metodologia Six Seconds (SEI)",
+    levels: "Níveis de Inteligência Emocional (SEI)",
+    current: "Atual",
+    loading: "Carregando seu Rowi...",
+    noData: "Complete sua avaliação SEI para ver seu nível",
+    scale: "Escala SEI",
+  },
+  it: {
+    title: "Il tuo Rowi",
+    subtitle: "Il tuo Rowi evolve con te",
+    subtitleDesc: "Mentre sviluppi la tua intelligenza emotiva, il tuo Rowi cresce e si trasforma",
+    seiScore: "Punteggio SEI",
+    seiLevel: "Livello di Intelligenza Emotiva",
+    seiDesc: "Basato sulla metodologia Six Seconds (SEI)",
+    levels: "Livelli di Intelligenza Emotiva (SEI)",
+    current: "Attuale",
+    loading: "Caricamento del tuo Rowi...",
+    noData: "Completa la tua valutazione SEI per vedere il tuo livello",
+    scale: "Scala SEI",
+  },
 };
 
 export default function AvatarPage() {
@@ -193,7 +219,7 @@ export default function AvatarPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">{lang === "es" ? "Inicia sesión para ver tu avatar" : "Sign in to see your avatar"}</p>
+        <p className="text-gray-500">{lang === "es" ? "Inicia sesión para ver tu avatar" : lang === "pt" ? "Entre para ver seu avatar" : lang === "it" ? "Accedi per vedere il tuo avatar" : "Sign in to see your avatar"}</p>
       </div>
     );
   }

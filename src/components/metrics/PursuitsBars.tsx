@@ -19,6 +19,18 @@ const translations = {
     choose: "Choose Yourself",
     give: "Give Yourself",
   },
+  pt: {
+    title: "Propósitos (SEI)",
+    know: "Conhecer-se",
+    choose: "Escolher-se",
+    give: "Entregar-se",
+  },
+  it: {
+    title: "Propositi (SEI)",
+    know: "Conoscerti",
+    choose: "Sceglierti",
+    give: "Donarti",
+  },
 };
 
 export function PursuitsBars({

@@ -112,6 +112,84 @@ const translations = {
     ctaSubtitle: "Create your free account and start your journey towards emotional intelligence.",
     ctaButton: "Create free account",
   },
+  pt: {
+    badge: "Tour Interativo",
+    title: "Explore o Rowi",
+    titleHighlight: "em ação",
+    subtitle: "Descubra como o Rowi pode ajudá-lo a desenvolver sua inteligência emocional com dados de exemplo reais.",
+    startTour: "Começar tour",
+    exploreModules: "Explorar módulos",
+    modulesTitle: "Módulos da plataforma",
+    modulesSubtitle: "Clique em qualquer módulo para ver uma demonstração interativa",
+    dashboard: {
+      title: "Dashboard",
+      desc: "Seu centro de controle emocional com métricas SEI, competências e evolução do seu Rowi.",
+      features: ["Pontuação EQ total", "8 Competências SEI", "Evolução do avatar"],
+    },
+    affinity: {
+      title: "Affinity",
+      desc: "Descubra sua compatibilidade emocional com outros membros e melhore seus relacionamentos.",
+      features: ["Compatibilidade emocional", "Estilos cerebrais", "Recomendações"],
+    },
+    eco: {
+      title: "ECO",
+      desc: "Otimize sua comunicação emocional com mensagens adaptadas a cada pessoa.",
+      features: ["Comunicação adaptada", "Análise de contexto", "Múltiplos canais"],
+    },
+    coach: {
+      title: "Rowi Coach",
+      desc: "Seu coach de inteligência emocional disponível 24/7 para orientá-lo em seu crescimento.",
+      features: ["Chat com IA", "Conselhos personalizados", "Acompanhamento contínuo"],
+    },
+    tp: {
+      title: "Benchmark TP",
+      desc: "Demo real com 14.886 avaliações SEI da Teleperformance. Benchmarking corporativo em ação.",
+      features: ["14.886 avaliações reais", "Insights por região e função", "Perfis cerebrais"],
+    },
+    viewDemo: "Ver demo",
+    ctaTitle: "Gostou do que viu?",
+    ctaSubtitle: "Crie sua conta grátis e comece sua jornada rumo à inteligência emocional.",
+    ctaButton: "Criar conta grátis",
+  },
+  it: {
+    badge: "Tour Interattivo",
+    title: "Esplora Rowi",
+    titleHighlight: "in azione",
+    subtitle: "Scopri come Rowi può aiutarti a sviluppare la tua intelligenza emotiva con dati di esempio reali.",
+    startTour: "Inizia il tour",
+    exploreModules: "Esplora i moduli",
+    modulesTitle: "Moduli della piattaforma",
+    modulesSubtitle: "Clicca su qualsiasi modulo per vedere una dimostrazione interattiva",
+    dashboard: {
+      title: "Dashboard",
+      desc: "Il tuo centro di controllo emotivo con metriche SEI, competenze ed evoluzione del tuo Rowi.",
+      features: ["Punteggio EQ totale", "8 Competenze SEI", "Evoluzione dell'avatar"],
+    },
+    affinity: {
+      title: "Affinity",
+      desc: "Scopri la tua compatibilità emotiva con altri membri e migliora le tue relazioni.",
+      features: ["Compatibilità emotiva", "Stili cerebrali", "Raccomandazioni"],
+    },
+    eco: {
+      title: "ECO",
+      desc: "Ottimizza la tua comunicazione emotiva con messaggi adattati a ogni persona.",
+      features: ["Comunicazione adattata", "Analisi del contesto", "Più canali"],
+    },
+    coach: {
+      title: "Rowi Coach",
+      desc: "Il tuo coach di intelligenza emotiva disponibile 24/7 per guidarti nella tua crescita.",
+      features: ["Chat con IA", "Consigli personalizzati", "Monitoraggio continuo"],
+    },
+    tp: {
+      title: "Benchmark TP",
+      desc: "Demo reale con 14.886 valutazioni SEI da Teleperformance. Benchmarking aziendale in azione.",
+      features: ["14.886 valutazioni reali", "Insight per regione e ruolo", "Profili cerebrali"],
+    },
+    viewDemo: "Vedi demo",
+    ctaTitle: "Ti è piaciuto quello che hai visto?",
+    ctaSubtitle: "Crea il tuo account gratuito e inizia il tuo viaggio verso l'intelligenza emotiva.",
+    ctaButton: "Crea account gratis",
+  },
 };
 
 const modules = [
@@ -346,10 +424,10 @@ export default function DemoPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { icon: Brain, value: "8", label: lang === "es" ? "Competencias SEI" : "SEI Competencies" },
-              { icon: Users, value: "5", label: lang === "es" ? "Niveles de evolución" : "Evolution levels" },
-              { icon: TrendingUp, value: "135", label: lang === "es" ? "Puntuación máxima EQ" : "Max EQ score" },
-              { icon: Heart, value: "24/7", label: lang === "es" ? "Coach disponible" : "Coach available" },
+              { icon: Brain, value: "8", label: lang === "es" ? "Competencias SEI" : lang === "pt" ? "Competências SEI" : lang === "it" ? "Competenze SEI" : "SEI Competencies" },
+              { icon: Users, value: "5", label: lang === "es" ? "Niveles de evolución" : lang === "pt" ? "Níveis de evolução" : lang === "it" ? "Livelli di evoluzione" : "Evolution levels" },
+              { icon: TrendingUp, value: "135", label: lang === "es" ? "Puntuación máxima EQ" : lang === "pt" ? "Pontuação máxima EQ" : lang === "it" ? "Punteggio EQ massimo" : "Max EQ score" },
+              { icon: Heart, value: "24/7", label: lang === "es" ? "Coach disponible" : lang === "pt" ? "Coach disponível" : lang === "it" ? "Coach disponibile" : "Coach available" },
             ].map((stat, i) => (
               <motion.div
                 key={i}

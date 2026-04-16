@@ -34,6 +34,20 @@ const translations = {
     minrowi: { label: "Mini Rowi", tip: "Your initial emotional guide" },
     rowi: { label: "Rowi", tip: "Coach calibrated with you" },
   },
+  pt: {
+    egg: { label: "Ovinho", tip: "Comece sua jornada" },
+    signals: { label: "Sinais", tip: "Complete seu SEI" },
+    almost: { label: "Quase pronto", tip: "Complete seu perfil pessoal" },
+    minrowi: { label: "Mini Rowi", tip: "Seu guia emocional inicial" },
+    rowi: { label: "Rowi", tip: "Coach calibrado com você" },
+  },
+  it: {
+    egg: { label: "Uovetto", tip: "Inizia il tuo viaggio" },
+    signals: { label: "Segnali", tip: "Completa il tuo SEI" },
+    almost: { label: "Quasi pronto", tip: "Completa il tuo profilo personale" },
+    minrowi: { label: "Mini Rowi", tip: "La tua guida emotiva iniziale" },
+    rowi: { label: "Rowi", tip: "Coach calibrato con te" },
+  },
 };
 
 /* =========================================================

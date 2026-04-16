@@ -164,6 +164,115 @@ const translations = {
     finishBtn: "Complete onboarding",
     demoNote: "This is a demo of the onboarding flow. In production, each TP employee would complete this process with real data from their Six Seconds SEI assessment.",
   },
+  pt: {
+    badge: "TP Onboarding",
+    backToTP: "TP Hub",
+
+    // Step 1: Welcome
+    welcomeTitle: "Welcome to Rowi",
+    welcomeSubtitle: "Your emotional intelligence platform at Teleperformance",
+    welcomeDesc: "In the next few minutes, you\u2019ll discover your emotional intelligence profile and how you can grow within TP.",
+    welcomeFeatures: [
+      "Personalized SEI assessment",
+      "Comparison with TP benchmarks",
+      "Team matching & compatibility",
+      "24/7 AI coaching available",
+    ],
+    startBtn: "Start my journey",
+
+    // Step 2: Profile
+    profileTitle: "Your TP Profile",
+    profileSubtitle: "Tell us about your role to personalize your experience",
+    profileRegion: "Region",
+    profileRegions: ["North America", "Latin America", "EMEA", "Asia Pacific"],
+    profileRole: "Current role",
+    profileRoles: ["Customer Service", "Sales", "HR", "IT & Tech", "Operations", "Management"],
+    profileNewHire: "Are you a new hire?",
+    continueBtn: "Continue",
+
+    // Step 3: Assessment
+    assessmentTitle: "SEI Assessment",
+    assessmentSubtitle: "Six Seconds SEI Assessment simulation",
+    assessmentNote: "In production, the real Six Seconds assessment integrates here. For this demo, we show simulated results.",
+    simulateBtn: "Simulate completed assessment",
+    backBtn: "Back",
+
+    // Step 4: Results
+    resultsTitle: "Your SEI Results",
+    resultsSubtitle: "Your emotional intelligence profile",
+    eqScore: "Total EQ Score",
+    yourScore: "Your score",
+    tpAverage: "TP Average",
+    roleAverage: "Role Average",
+    topPerformer: "Top Performers",
+    competencies: "Competencies",
+    brainProfile: "Your Brain Profile",
+    topTalents: "Your Top Talents",
+    seeMatches: "See my team",
+
+    // Step 5: Match
+    matchTitle: "Your Team",
+    matchSubtitle: "People with high emotional compatibility in your area",
+    compatibility: "Compatibility",
+    brainStyle: "Brain Profile",
+    finishBtn: "Complete onboarding",
+    demoNote: "This is a demo of the onboarding flow. In production, each TP employee would complete this process with real data from their Six Seconds SEI assessment.",
+  },
+  it: {
+    badge: "TP Onboarding",
+    backToTP: "TP Hub",
+
+    // Step 1: Welcome
+    welcomeTitle: "Welcome to Rowi",
+    welcomeSubtitle: "Your emotional intelligence platform at Teleperformance",
+    welcomeDesc: "In the next few minutes, you\u2019ll discover your emotional intelligence profile and how you can grow within TP.",
+    welcomeFeatures: [
+      "Personalized SEI assessment",
+      "Comparison with TP benchmarks",
+      "Team matching & compatibility",
+      "24/7 AI coaching available",
+    ],
+    startBtn: "Start my journey",
+
+    // Step 2: Profile
+    profileTitle: "Your TP Profile",
+    profileSubtitle: "Tell us about your role to personalize your experience",
+    profileRegion: "Region",
+    profileRegions: ["North America", "Latin America", "EMEA", "Asia Pacific"],
+    profileRole: "Current role",
+    profileRoles: ["Customer Service", "Sales", "HR", "IT & Tech", "Operations", "Management"],
+    profileNewHire: "Are you a new hire?",
+    continueBtn: "Continue",
+
+    // Step 3: Assessment
+    assessmentTitle: "SEI Assessment",
+    assessmentSubtitle: "Six Seconds SEI Assessment simulation",
+    assessmentNote: "In production, the real Six Seconds assessment integrates here. For this demo, we show simulated results.",
+    simulateBtn: "Simulate completed assessment",
+    backBtn: "Back",
+
+    // Step 4: Results
+    resultsTitle: "Your SEI Results",
+    resultsSubtitle: "Your emotional intelligence profile",
+    eqScore: "Total EQ Score",
+    yourScore: "Your score",
+    tpAverage: "TP Average",
+    roleAverage: "Role Average",
+    topPerformer: "Top Performers",
+    competencies: "Competencies",
+    brainProfile: "Your Brain Profile",
+    topTalents: "Your Top Talents",
+    seeMatches: "See my team",
+
+    // Step 5: Match
+    matchTitle: "Your Team",
+    matchSubtitle: "People with high emotional compatibility in your area",
+    compatibility: "Compatibility",
+    brainStyle: "Brain Profile",
+    finishBtn: "Complete onboarding",
+    demoNote: "This is a demo of the onboarding flow. In production, each TP employee would complete this process with real data from their Six Seconds SEI assessment.",
+  },
+
 };
 
 export default function TPOnboardingPage() {

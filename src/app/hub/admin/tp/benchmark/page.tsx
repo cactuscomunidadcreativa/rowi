@@ -201,6 +201,191 @@ const translations = {
     navDashboard: "Dashboard",
     navAffinity: "Affinity",
   },
+  pt: {
+    // Header
+    backToHub: "TP Hub",
+    badgeLabel: "Teleperformance Benchmark",
+    pageTitle: "EQ Benchmark — Teleperformance",
+    pageSubtitle: "14,886 SEI assessments analyzed across 42 countries. Corporate benchmarking in action.",
+
+    // Section tabs
+    tabOverview: "Overview",
+    tabCompetencies: "Competencies",
+    tabOutcomes: "Outcomes",
+    tabBrainProfiles: "Brain Profiles",
+    tabInsights: "Insights",
+
+    // Overview section
+    sectionOverview: "Overview",
+    statAvgEQ: "Average EQ",
+    statAssessments: "Assessments",
+    statCountries: "Countries",
+    statStrongestCompetency: "Strongest Competency",
+    globalAverage: "TP Global Average",
+    seiScale: "SEI Scale: 65–135",
+    threePursuits: "Three Pursuits",
+    regionalDistribution: "Regional Distribution",
+    assessments: "assessments",
+
+    // Pursuits
+    pursuitKnow: "Know Yourself",
+    pursuitChoose: "Choose Yourself",
+    pursuitGive: "Give Yourself",
+
+    // Competencies section
+    sectionCompetencies: "SEI Competencies",
+    legendAverage: "Average",
+    legendTopPerformer: "Top Performer",
+    byJobFunction: "By Job Function",
+
+    // Competency names
+    compEmotionalLiteracy: "Emotional Literacy",
+    compRecognizePatterns: "Recognize Patterns",
+    compConsequentialThinking: "Consequential Thinking",
+    compNavigateEmotions: "Navigate Emotions",
+    compIntrinsicMotivation: "Intrinsic Motivation",
+    compExerciseOptimism: "Exercise Optimism",
+    compIncreaseEmpathy: "Increase Empathy",
+    compPursueNobleGoals: "Pursue Noble Goals",
+
+    // Outcomes section
+    sectionOutcomes: "Outcomes",
+    outcomeEffectiveness: "Effectiveness",
+    outcomeRelationships: "Relationships",
+    outcomeWellbeing: "Wellbeing",
+    outcomeQualityOfLife: "Quality of Life",
+
+    // Brain Profiles section
+    sectionBrainProfiles: "Brain Profiles",
+    brainScientist: "Scientist",
+    brainDeliverer: "Deliverer",
+    brainStrategist: "Strategist",
+    brainInventor: "Inventor",
+    brainGuardian: "Guardian",
+    brainVisionary: "Visionary",
+    brainSuperhero: "Superhero",
+
+    // Job Functions
+    jobCustomerService: "Customer Service",
+    jobSalesBusinessDev: "Sales & Business Dev",
+    jobHumanResources: "Human Resources",
+    jobITTechnology: "IT & Technology",
+    jobOperations: "Operations",
+
+    // Regions
+    regionNorthAmerica: "North America",
+    regionAsiaPacific: "Asia Pacific",
+    regionEMEA: "EMEA",
+    regionLatinAmerica: "Latin America",
+
+    // Insights section
+    sectionInsights: "Key Insights",
+    insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
+    insight2: "HR has the highest average EQ (101.1), suggesting a correlation between EQ and people management roles",
+    insight3: "Intrinsic Motivation (IM) is the strongest competency globally — key for retention",
+    insight4: "The 'Scientist' brain profile dominates (19%), indicating a data-driven analytical culture",
+
+    // Footer
+    footerText: "Real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized.",
+    footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // Navigation
+    navDashboard: "Dashboard",
+    navAffinity: "Affinity",
+  },
+  it: {
+    // Header
+    backToHub: "TP Hub",
+    badgeLabel: "Teleperformance Benchmark",
+    pageTitle: "EQ Benchmark — Teleperformance",
+    pageSubtitle: "14,886 SEI assessments analyzed across 42 countries. Corporate benchmarking in action.",
+
+    // Section tabs
+    tabOverview: "Overview",
+    tabCompetencies: "Competencies",
+    tabOutcomes: "Outcomes",
+    tabBrainProfiles: "Brain Profiles",
+    tabInsights: "Insights",
+
+    // Overview section
+    sectionOverview: "Overview",
+    statAvgEQ: "Average EQ",
+    statAssessments: "Assessments",
+    statCountries: "Countries",
+    statStrongestCompetency: "Strongest Competency",
+    globalAverage: "TP Global Average",
+    seiScale: "SEI Scale: 65–135",
+    threePursuits: "Three Pursuits",
+    regionalDistribution: "Regional Distribution",
+    assessments: "assessments",
+
+    // Pursuits
+    pursuitKnow: "Know Yourself",
+    pursuitChoose: "Choose Yourself",
+    pursuitGive: "Give Yourself",
+
+    // Competencies section
+    sectionCompetencies: "SEI Competencies",
+    legendAverage: "Average",
+    legendTopPerformer: "Top Performer",
+    byJobFunction: "By Job Function",
+
+    // Competency names
+    compEmotionalLiteracy: "Emotional Literacy",
+    compRecognizePatterns: "Recognize Patterns",
+    compConsequentialThinking: "Consequential Thinking",
+    compNavigateEmotions: "Navigate Emotions",
+    compIntrinsicMotivation: "Intrinsic Motivation",
+    compExerciseOptimism: "Exercise Optimism",
+    compIncreaseEmpathy: "Increase Empathy",
+    compPursueNobleGoals: "Pursue Noble Goals",
+
+    // Outcomes section
+    sectionOutcomes: "Outcomes",
+    outcomeEffectiveness: "Effectiveness",
+    outcomeRelationships: "Relationships",
+    outcomeWellbeing: "Wellbeing",
+    outcomeQualityOfLife: "Quality of Life",
+
+    // Brain Profiles section
+    sectionBrainProfiles: "Brain Profiles",
+    brainScientist: "Scientist",
+    brainDeliverer: "Deliverer",
+    brainStrategist: "Strategist",
+    brainInventor: "Inventor",
+    brainGuardian: "Guardian",
+    brainVisionary: "Visionary",
+    brainSuperhero: "Superhero",
+
+    // Job Functions
+    jobCustomerService: "Customer Service",
+    jobSalesBusinessDev: "Sales & Business Dev",
+    jobHumanResources: "Human Resources",
+    jobITTechnology: "IT & Technology",
+    jobOperations: "Operations",
+
+    // Regions
+    regionNorthAmerica: "North America",
+    regionAsiaPacific: "Asia Pacific",
+    regionEMEA: "EMEA",
+    regionLatinAmerica: "Latin America",
+
+    // Insights section
+    sectionInsights: "Key Insights",
+    insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
+    insight2: "HR has the highest average EQ (101.1), suggesting a correlation between EQ and people management roles",
+    insight3: "Intrinsic Motivation (IM) is the strongest competency globally — key for retention",
+    insight4: "The 'Scientist' brain profile dominates (19%), indicating a data-driven analytical culture",
+
+    // Footer
+    footerText: "Real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized.",
+    footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // Navigation
+    navDashboard: "Dashboard",
+    navAffinity: "Affinity",
+  },
+
 };
 
 const TP_STATS = { totalAssessments: 14886, countries: 42, avgEQ: 98.7, avgEffectiveness: 101.2, avgRelationships: 99.8, avgWellbeing: 97.4, avgQualityOfLife: 98.1 };

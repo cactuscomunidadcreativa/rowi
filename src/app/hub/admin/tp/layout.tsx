@@ -25,6 +25,25 @@ const translations = {
     required: "Required: @6seconds.org email",
     backToAdmin: "Back to Admin",
   },
+  pt: {
+    loading: "Loading...",
+    restricted: "Access Restricted",
+    restrictedDesc: "The Teleperformance Benchmark Demo is exclusively available to authorized Six Seconds partners.",
+    currentEmail: "Current email",
+    notSignedIn: "Not signed in",
+    required: "Required: @6seconds.org email",
+    backToAdmin: "Back to Admin",
+  },
+  it: {
+    loading: "Loading...",
+    restricted: "Access Restricted",
+    restrictedDesc: "The Teleperformance Benchmark Demo is exclusively available to authorized Six Seconds partners.",
+    currentEmail: "Current email",
+    notSignedIn: "Not signed in",
+    required: "Required: @6seconds.org email",
+    backToAdmin: "Back to Admin",
+  },
+
 };
 
 export default function TPLayout({ children }: { children: ReactNode }) {

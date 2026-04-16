@@ -136,6 +136,69 @@ const translations = {
     prevNav: "ECO",
     nextNav: "Community",
   },
+  pt: {
+    back: "TP Hub",
+    badge: "AI Coach",
+    title: "Rowi Coach — TP Edition",
+    subtitle: "Your AI emotional intelligence coach, contextualized with Teleperformance benchmark data from 14,886 SEI assessments",
+
+    chatTitle: "Rowi Coach — TP",
+    chatStatus: "Online • 14,886 assessments loaded",
+    suggestedTitle: "Try asking...",
+    inputPlaceholder: "Ask Rowi Coach anything...",
+
+    featuresTitle: "Coach Capabilities",
+    feature1: "Personalized coaching based on your SEI profile and TP benchmarks",
+    feature2: "Access to 14,886 assessment insights for contextualized advice",
+    feature3: "Cross-cultural EQ guidance across 42 countries",
+    feature4: "Brain style-specific growth exercises and techniques",
+    feature5: "Real-time progress tracking against TP top performers",
+    feature6: "Available 24/7 with unlimited coaching conversations",
+
+    infoTitle: "TP-Contextualized Coaching",
+    infoDesc: "Rowi Coach uses aggregated TP benchmark data (14,886 assessments, 42 countries) to provide contextual EQ coaching specific to your organization.",
+
+    statsTitle: "TP Quick Stats",
+    statsGlobalEQ: "Global EQ Avg",
+    statsTopComp: "Top Competency",
+    statsGrowthArea: "Growth Area",
+    statsTopBrain: "Top Brain Style",
+
+    prevNav: "ECO",
+    nextNav: "Community",
+  },
+  it: {
+    back: "TP Hub",
+    badge: "AI Coach",
+    title: "Rowi Coach — TP Edition",
+    subtitle: "Your AI emotional intelligence coach, contextualized with Teleperformance benchmark data from 14,886 SEI assessments",
+
+    chatTitle: "Rowi Coach — TP",
+    chatStatus: "Online • 14,886 assessments loaded",
+    suggestedTitle: "Try asking...",
+    inputPlaceholder: "Ask Rowi Coach anything...",
+
+    featuresTitle: "Coach Capabilities",
+    feature1: "Personalized coaching based on your SEI profile and TP benchmarks",
+    feature2: "Access to 14,886 assessment insights for contextualized advice",
+    feature3: "Cross-cultural EQ guidance across 42 countries",
+    feature4: "Brain style-specific growth exercises and techniques",
+    feature5: "Real-time progress tracking against TP top performers",
+    feature6: "Available 24/7 with unlimited coaching conversations",
+
+    infoTitle: "TP-Contextualized Coaching",
+    infoDesc: "Rowi Coach uses aggregated TP benchmark data (14,886 assessments, 42 countries) to provide contextual EQ coaching specific to your organization.",
+
+    statsTitle: "TP Quick Stats",
+    statsGlobalEQ: "Global EQ Avg",
+    statsTopComp: "Top Competency",
+    statsGrowthArea: "Growth Area",
+    statsTopBrain: "Top Brain Style",
+
+    prevNav: "ECO",
+    nextNav: "Community",
+  },
+
 };
 
 /* Components */

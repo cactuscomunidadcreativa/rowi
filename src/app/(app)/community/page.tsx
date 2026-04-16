@@ -398,6 +398,355 @@ const translations = {
     loading: "Loading your community...",
     refreshing: "Refreshing...",
   },
+  pt: {
+    title: "My Community",
+    subtitle: "The people who are part of your emotional journey",
+
+    // Tabs
+    tabs: {
+      myPeople: "My People",
+      invited: "Invited",
+      rowiverse: "Rowiverse",
+      communities: "Communities",
+    },
+
+    // Communities tab
+    comm: {
+      title: "My Communities",
+      desc: "Communities you belong to and their sub-communities",
+      empty: "You don't belong to any community yet",
+      members: "members",
+      subCommunities: "sub-communities",
+      parent: "Parent community",
+      viewMembers: "View members",
+      backToList: "Back to communities",
+      role: "Role",
+      owner: "Owner",
+      admin: "Admin",
+      member: "Member",
+      viewer: "Viewer",
+      inherited: "Inherited",
+      loadingMembers: "Loading members...",
+      noMembers: "This community has no members yet",
+    },
+
+    // Stats
+    stats: {
+      total: "Total",
+      connected: "Connected",
+      pending: "Pending",
+      avgAffinity: "Avg. affinity",
+    },
+
+    // Search & Filters
+    search: "Search by name or email...",
+    filters: "Filters",
+    clearFilters: "Clear filters",
+    allGroups: "All groups",
+    allCloseness: "All closeness",
+    onlyWithAffinity: "Only with affinity",
+
+    // Groups
+    groups: {
+      work: "Work",
+      family: "Family",
+      friends: "Friends",
+      toMeet: "To meet",
+      rowiverse: "Rowiverse",
+    },
+
+    // Closeness (5 levels)
+    closeness: {
+      veryClose: "Very close",
+      close: "Close",
+      neutral: "Neutral",
+      distant: "Distant",
+      veryDistant: "Very distant",
+    },
+
+    // Connection Types
+    connectionTypes: {
+      colleague: "Colleague",
+      boss: "Boss/Supervisor",
+      directReport: "Direct report",
+      mentor: "Mentor",
+      mentee: "Mentee",
+      partner: "Partner",
+      client: "Client",
+      friend: "Friend",
+      familyMember: "Family member",
+      acquaintance: "Acquaintance",
+      other: "Other",
+    },
+    fieldConnectionType: "Relationship type",
+
+    // Invite Modal
+    inviteTitle: "Invite to my community",
+    inviteDesc: "Send an invitation via email, WhatsApp or SMS",
+    inviteContact: "Email or phone (+country code)",
+    inviteName: "Name (optional)",
+    inviteMessage: "Custom message (optional)",
+    inviteDefaultMessage: "Hi! I'd like to connect with you on Rowi to strengthen our relationship.",
+    sendInvite: "Create invitation",
+    inviteSent: "Invitation created!",
+    inviteError: "Error creating invitation",
+    planLimit: "Your plan allows inviting up to",
+    people: "people",
+    upgradePlan: "Upgrade plan",
+    remainingInvites: "invitations remaining",
+    sendVia: "Send via:",
+    copyLink: "Copy link",
+    linkCopied: "Link copied!",
+
+    // Member Actions
+    actions: {
+      edit: "Edit",
+      delete: "Delete",
+      recalculate: "Recalculate affinity",
+      viewProfile: "View profile",
+    },
+
+    // Edit Modal
+    editTitle: "Edit member",
+    editSave: "Save changes",
+    editCancel: "Cancel",
+    editSuccess: "Changes saved",
+    editError: "Error saving",
+    fieldName: "Name",
+    fieldEmail: "Email",
+    fieldGroup: "Group",
+    fieldCloseness: "Closeness",
+    fieldCountry: "Country",
+    fieldBrainStyle: "Brain style",
+
+    // Delete confirmation
+    deleteTitle: "Delete member",
+    deleteConfirm: "Are you sure you want to delete",
+    deleteWarning: "This action cannot be undone and all affinity data will be lost.",
+    deleteButton: "Yes, delete",
+
+    // Rowiverse
+    rowiverseTitle: "Discover the Rowiverse",
+    rowiverseDesc: "Find people with public profiles in Rowi's global community",
+    rowiverseSearch: "Search Rowiverse...",
+    rowiverseEmpty: "No public profiles found",
+    publicProfile: "Public profile",
+    sendRequest: "Connect",
+    requestSent: "Connected",
+    addToCommunity: "Add to my community",
+    added: "Added",
+
+    // Member Card
+    noStyle: "No style defined",
+    noAffinity: "No affinity",
+    viewProfile: "View profile",
+    calculateAffinity: "Calculate affinity",
+
+    // Affinity levels
+    affinity: {
+      fullTrust: "Full trust",
+      goodConnection: "Good connection",
+      mediumPotential: "Medium potential",
+      lowConnection: "Low connection",
+      distant: "Distant",
+      noConnection: "No connection",
+    },
+
+    // Empty states
+    noMembers: "You don't have members in your community yet",
+    noInvites: "You don't have pending invitations",
+    startInviting: "Start inviting the people who matter to you",
+    addManually: "Add manually",
+
+    // Pending invites
+    pendingInvites: "Pending invitations",
+    sentOn: "Sent on",
+    expiresOn: "Expires on",
+    resend: "Resend",
+    cancel: "Cancel",
+    expired: "Expired",
+    accepted: "Accepted",
+    pending: "Pending",
+
+    // Loading
+    loading: "Loading your community...",
+    refreshing: "Refreshing...",
+  },
+  it: {
+    title: "My Community",
+    subtitle: "The people who are part of your emotional journey",
+
+    // Tabs
+    tabs: {
+      myPeople: "My People",
+      invited: "Invited",
+      rowiverse: "Rowiverse",
+      communities: "Communities",
+    },
+
+    // Communities tab
+    comm: {
+      title: "My Communities",
+      desc: "Communities you belong to and their sub-communities",
+      empty: "You don't belong to any community yet",
+      members: "members",
+      subCommunities: "sub-communities",
+      parent: "Parent community",
+      viewMembers: "View members",
+      backToList: "Back to communities",
+      role: "Role",
+      owner: "Owner",
+      admin: "Admin",
+      member: "Member",
+      viewer: "Viewer",
+      inherited: "Inherited",
+      loadingMembers: "Loading members...",
+      noMembers: "This community has no members yet",
+    },
+
+    // Stats
+    stats: {
+      total: "Total",
+      connected: "Connected",
+      pending: "Pending",
+      avgAffinity: "Avg. affinity",
+    },
+
+    // Search & Filters
+    search: "Search by name or email...",
+    filters: "Filters",
+    clearFilters: "Clear filters",
+    allGroups: "All groups",
+    allCloseness: "All closeness",
+    onlyWithAffinity: "Only with affinity",
+
+    // Groups
+    groups: {
+      work: "Work",
+      family: "Family",
+      friends: "Friends",
+      toMeet: "To meet",
+      rowiverse: "Rowiverse",
+    },
+
+    // Closeness (5 levels)
+    closeness: {
+      veryClose: "Very close",
+      close: "Close",
+      neutral: "Neutral",
+      distant: "Distant",
+      veryDistant: "Very distant",
+    },
+
+    // Connection Types
+    connectionTypes: {
+      colleague: "Colleague",
+      boss: "Boss/Supervisor",
+      directReport: "Direct report",
+      mentor: "Mentor",
+      mentee: "Mentee",
+      partner: "Partner",
+      client: "Client",
+      friend: "Friend",
+      familyMember: "Family member",
+      acquaintance: "Acquaintance",
+      other: "Other",
+    },
+    fieldConnectionType: "Relationship type",
+
+    // Invite Modal
+    inviteTitle: "Invite to my community",
+    inviteDesc: "Send an invitation via email, WhatsApp or SMS",
+    inviteContact: "Email or phone (+country code)",
+    inviteName: "Name (optional)",
+    inviteMessage: "Custom message (optional)",
+    inviteDefaultMessage: "Hi! I'd like to connect with you on Rowi to strengthen our relationship.",
+    sendInvite: "Create invitation",
+    inviteSent: "Invitation created!",
+    inviteError: "Error creating invitation",
+    planLimit: "Your plan allows inviting up to",
+    people: "people",
+    upgradePlan: "Upgrade plan",
+    remainingInvites: "invitations remaining",
+    sendVia: "Send via:",
+    copyLink: "Copy link",
+    linkCopied: "Link copied!",
+
+    // Member Actions
+    actions: {
+      edit: "Edit",
+      delete: "Delete",
+      recalculate: "Recalculate affinity",
+      viewProfile: "View profile",
+    },
+
+    // Edit Modal
+    editTitle: "Edit member",
+    editSave: "Save changes",
+    editCancel: "Cancel",
+    editSuccess: "Changes saved",
+    editError: "Error saving",
+    fieldName: "Name",
+    fieldEmail: "Email",
+    fieldGroup: "Group",
+    fieldCloseness: "Closeness",
+    fieldCountry: "Country",
+    fieldBrainStyle: "Brain style",
+
+    // Delete confirmation
+    deleteTitle: "Delete member",
+    deleteConfirm: "Are you sure you want to delete",
+    deleteWarning: "This action cannot be undone and all affinity data will be lost.",
+    deleteButton: "Yes, delete",
+
+    // Rowiverse
+    rowiverseTitle: "Discover the Rowiverse",
+    rowiverseDesc: "Find people with public profiles in Rowi's global community",
+    rowiverseSearch: "Search Rowiverse...",
+    rowiverseEmpty: "No public profiles found",
+    publicProfile: "Public profile",
+    sendRequest: "Connect",
+    requestSent: "Connected",
+    addToCommunity: "Add to my community",
+    added: "Added",
+
+    // Member Card
+    noStyle: "No style defined",
+    noAffinity: "No affinity",
+    viewProfile: "View profile",
+    calculateAffinity: "Calculate affinity",
+
+    // Affinity levels
+    affinity: {
+      fullTrust: "Full trust",
+      goodConnection: "Good connection",
+      mediumPotential: "Medium potential",
+      lowConnection: "Low connection",
+      distant: "Distant",
+      noConnection: "No connection",
+    },
+
+    // Empty states
+    noMembers: "You don't have members in your community yet",
+    noInvites: "You don't have pending invitations",
+    startInviting: "Start inviting the people who matter to you",
+    addManually: "Add manually",
+
+    // Pending invites
+    pendingInvites: "Pending invitations",
+    sentOn: "Sent on",
+    expiresOn: "Expires on",
+    resend: "Resend",
+    cancel: "Cancel",
+    expired: "Expired",
+    accepted: "Accepted",
+    pending: "Pending",
+
+    // Loading
+    loading: "Loading your community...",
+    refreshing: "Refreshing...",
+  },
+
 };
 
 const GROUP_ICONS = {

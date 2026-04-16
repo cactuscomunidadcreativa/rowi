@@ -53,7 +53,7 @@ export async function GET(req: Request) {
           ns,
           key: r.key,
           es: r.lang === "es" ? r.value : "",
-          en: r.lang === "en" ? r.value : "",
+          en: r.lang !== "es" ? r.value : "",
           pt: r.lang === "pt" ? r.value : "",
           it: r.lang === "it" ? r.value : "",
         });

@@ -30,14 +30,14 @@ export default function ForYouPage() {
     <div className="min-h-screen pt-16">
       <HeroSection
         content={{
-          badge: lang === "en" ? "👤 For You" : "👤 Para ti",
-          title1: lang === "en" ? "Your space for" : "Tu espacio de",
-          title2: lang === "en" ? "personal growth" : "crecimiento personal",
+          badge: lang !== "es" ? "👤 For You" : "👤 Para ti",
+          title1: lang !== "es" ? "Your space for" : "Tu espacio de",
+          title2: lang !== "es" ? "personal growth" : "crecimiento personal",
           subtitle: lang === "en"
             ? "A safe place to explore your emotions, develop your potential and connect with like-minded people."
             : "Un lugar seguro donde explorar tus emociones, desarrollar tu potencial y conectar con personas afines.",
-          ctaPrimary: lang === "en" ? "Start free" : "Comenzar gratis",
-          ctaSecondary: lang === "en" ? "See plans" : "Ver planes",
+          ctaPrimary: lang !== "es" ? "Start free" : "Comenzar gratis",
+          ctaSecondary: lang !== "es" ? "See plans" : "Ver planes",
           ctaSecondaryHref: "/pricing",
           image: "/rowivectors/Rowi-06.png"
         }}
@@ -46,15 +46,15 @@ export default function ForYouPage() {
       <RowiEvolution />
       <FeaturesSection
         content={{
-          title1: lang === "en" ? "The Complete" : "La Experiencia",
-          title2: lang === "en" ? "Experience" : "Completa",
+          title1: lang !== "es" ? "The Complete" : "La Experiencia",
+          title2: lang !== "es" ? "Experience" : "Completa",
           subtitle: lang === "en"
             ? "Everything you need for your emotional development"
             : "Todo lo que necesitas para tu desarrollo emocional",
           features: [
             {
               icon: "sparkles",
-              title: lang === "en" ? "Personal Rowi" : "Rowi Personal",
+              title: lang !== "es" ? "Personal Rowi" : "Rowi Personal",
               description: lang === "en"
                 ? "Your AI coach that knows you and accompanies you on your journey"
                 : "Tu coach de IA que te conoce y te acompaña en tu viaje",
@@ -62,7 +62,7 @@ export default function ForYouPage() {
             },
             {
               icon: "heart",
-              title: lang === "en" ? "Emotional Matches" : "Matches Emocionales",
+              title: lang !== "es" ? "Emotional Matches" : "Matches Emocionales",
               description: lang === "en"
                 ? "Connect with people who vibrate on your same frequency"
                 : "Conecta con personas que vibran en tu misma frecuencia",
@@ -70,7 +70,7 @@ export default function ForYouPage() {
             },
             {
               icon: "bar-chart",
-              title: lang === "en" ? "Your Dashboard" : "Tu Dashboard",
+              title: lang !== "es" ? "Your Dashboard" : "Tu Dashboard",
               description: lang === "en"
                 ? "Visualize your progress and celebrate your achievements"
                 : "Visualiza tu progreso y celebra tus logros",
@@ -78,7 +78,7 @@ export default function ForYouPage() {
             },
             {
               icon: "target",
-              title: lang === "en" ? "Personal Goals" : "Metas Personales",
+              title: lang !== "es" ? "Personal Goals" : "Metas Personales",
               description: lang === "en"
                 ? "Define and achieve emotional development objectives"
                 : "Define y alcanza objetivos de desarrollo emocional",
@@ -86,7 +86,7 @@ export default function ForYouPage() {
             },
             {
               icon: "users",
-              title: lang === "en" ? "Communities" : "Comunidades",
+              title: lang !== "es" ? "Communities" : "Comunidades",
               description: lang === "en"
                 ? "Join interest groups and grow together"
                 : "Únete a grupos de interés y crecimiento conjunto",
@@ -94,7 +94,7 @@ export default function ForYouPage() {
             },
             {
               icon: "star",
-              title: lang === "en" ? "Gamification" : "Gamificación",
+              title: lang !== "es" ? "Gamification" : "Gamificación",
               description: lang === "en"
                 ? "Watch your Rowi evolve as you grow"
                 : "Observa a tu Rowi evolucionar mientras creces",
@@ -106,14 +106,14 @@ export default function ForYouPage() {
       />
       <TestimonialsSection
         content={{
-          title: lang === "en" ? "What our users say" : "Lo que dicen nuestros usuarios",
+          title: lang !== "es" ? "What our users say" : "Lo que dicen nuestros usuarios",
           testimonials: [
             {
               quote: lang === "en"
                 ? "Rowi has helped me better understand my emotions and communicate more effectively."
                 : "Rowi me ha ayudado a entender mejor mis emociones y a comunicarme de manera más efectiva.",
               author: "María García",
-              role: lang === "en" ? "Designer" : "Diseñadora",
+              role: lang !== "es" ? "Designer" : "Diseñadora",
               rating: 5
             },
             {
@@ -121,7 +121,7 @@ export default function ForYouPage() {
                 ? "Gamification makes personal development fun. My Rowi is already a young one!"
                 : "La gamificación hace que el desarrollo personal sea divertido. ¡Mi Rowi ya es un joven!",
               author: "Carlos López",
-              role: lang === "en" ? "Developer" : "Desarrollador",
+              role: lang !== "es" ? "Developer" : "Desarrollador",
               rating: 5
             },
             {
@@ -129,7 +129,7 @@ export default function ForYouPage() {
                 ? "Emotional matches connected me with amazing people who are now close friends."
                 : "Los matches emocionales me conectaron con personas increíbles que ahora son amigos cercanos.",
               author: "Ana Martínez",
-              role: lang === "en" ? "Entrepreneur" : "Emprendedora",
+              role: lang !== "es" ? "Entrepreneur" : "Emprendedora",
               rating: 5
             },
           ]
@@ -138,11 +138,11 @@ export default function ForYouPage() {
       />
       <CTASection
         content={{
-          title: lang === "en" ? "Start your journey today" : "Comienza tu viaje hoy",
+          title: lang !== "es" ? "Start your journey today" : "Comienza tu viaje hoy",
           subtitle: lang === "en"
             ? "It's free and only takes 2 minutes to create your account."
             : "Es gratis y solo toma 2 minutos crear tu cuenta.",
-          buttonText: lang === "en" ? "Meet my Rowi" : "Conocer a mi Rowi",
+          buttonText: lang !== "es" ? "Meet my Rowi" : "Conocer a mi Rowi",
           buttonIcon: "heart"
         }}
         config={{ gradient: true }}

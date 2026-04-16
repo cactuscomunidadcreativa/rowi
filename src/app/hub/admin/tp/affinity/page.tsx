@@ -432,7 +432,7 @@ const COMPLEMENTARY_PAIRS: { a: string; b: string; reasonEs: string; reasonEn: s
 ========================================================= */
 export default function TPAffinityPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [activeTab, setActiveTab] = useState<TabType>("community");
   const [brainStyleGroups, setBrainStyleGroups] = useState<BrainStyleGroup[]>([]);
@@ -450,7 +450,7 @@ export default function TPAffinityPage() {
   const [loadingAll, setLoadingAll] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);
   const [chat, setChat] = useState<{ role: "assistant" | "user"; content: string }[]>([
-    { role: "assistant", content: lang === "en" ? "Hi, I'm Rowi. Who would you like to connect with better today?" : "Hola, soy Rowi. ¿Con quién te gustaría conectar mejor hoy?" },
+    { role: "assistant", content: lang !== "es" ? "Hi, I'm Rowi. Who would you like to connect with better today?" : "Hola, soy Rowi. ¿Con quién te gustaría conectar mejor hoy?" },
   ]);
   const [coachInput, setCoachInput] = useState("");
   const [rowiTyping, setRowiTyping] = useState(false);
@@ -921,7 +921,7 @@ export default function TPAffinityPage() {
                         onChange={(e) => setGroupFilter(e.target.value)}
                         className="text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-[var(--rowi-muted)] focus:outline-none"
                       >
-                        <option value="all">{lang === "en" ? "All Groups" : "Todos los Grupos"}</option>
+                        <option value="all">{lang !== "es" ? "All Groups" : "Todos los Grupos"}</option>
                         {availableGroups.map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -1640,7 +1640,7 @@ export default function TPAffinityPage() {
               const lvl = levelFromHeat135(Math.round((normPct * 135) / 100));
               return (<>
                 <span className="text-2xl font-bold" style={{ color: lvl.color }}>{avgSim.toFixed(1)}%</span>
-                <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Avg Similarity" : "Similitud Prom."}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Avg Similarity" : "Similitud Prom."}</span>
               </>);
             })()}
           </div>
@@ -1658,21 +1658,21 @@ export default function TPAffinityPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Brain Styles" : "Estilos Cerebrales"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Brain Styles" : "Estilos Cerebrales"}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-purple-500">{brainStyleGroups.length}</span>
-            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "identified" : "identificados"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "identified" : "identificados"}</span>
           </div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Globe className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "Regions" : "Regiones"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Regions" : "Regiones"}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-blue-500">{regionGroups.length}</span>
-            <span className="text-xs text-[var(--rowi-muted)]">{lang === "en" ? "global" : "globales"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "global" : "globales"}</span>
           </div>
         </div>
       </div>
@@ -1848,7 +1848,7 @@ export default function TPAffinityPage() {
               </table>
             </div>
             {/* Top pairs list */}
-            <h3 className="text-sm font-semibold mb-3">{lang === "en" ? "Top Affinity Pairs" : "Pares de Mayor Afinidad"}</h3>
+            <h3 className="text-sm font-semibold mb-3">{lang !== "es" ? "Top Affinity Pairs" : "Pares de Mayor Afinidad"}</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {affinityMatrix.slice(0, 8).map((pair, i) => {
                 const affinityLevel = pair.similarity > 99.5 ? "high" : pair.similarity > 99 ? "medium" : "low";
@@ -1928,7 +1928,7 @@ export default function TPAffinityPage() {
                 <span className="ml-auto text-lg font-bold text-pink-600">{pair.score}%</span>
               </div>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang === "en" ? pair.reasonEn : pair.reasonEs}
+                {lang !== "es" ? pair.reasonEn : pair.reasonEs}
               </p>
             </motion.div>
           ))}
@@ -2009,7 +2009,7 @@ export default function TPAffinityPage() {
               <table className="w-full text-xs">
                 <thead>
                   <tr>
-                    <th className="p-2 text-left text-[var(--rowi-muted)]">{lang === "en" ? "Region" : "Region"}</th>
+                    <th className="p-2 text-left text-[var(--rowi-muted)]">{lang !== "es" ? "Region" : "Region"}</th>
                     {regionGroups.filter(r => r.count > 50).slice(0, 8).map((r) => (
                       <th key={r.name} className="p-2 text-center text-blue-600 font-medium">
                         <span className="text-[10px]">{r.name.slice(0, 12)}</span>

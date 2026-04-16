@@ -233,7 +233,7 @@ export default function RowiCoach() {
       setMediaRecorder(recorder);
       setRecording(true);
     } catch {
-      alert(lang === "en" ? "Could not access the microphone." : "No se pudo acceder al micrófono.");
+      alert(lang !== "es" ? "Could not access the microphone." : "No se pudo acceder al micrófono.");
     }
   }
 
@@ -441,8 +441,8 @@ export default function RowiCoach() {
               </div>
               <p className="text-xs text-white/80">
                 {isLoggedIn
-                  ? (lang === "en" ? "Your EI companion" : "Tu compañero de IE")
-                  : (lang === "en" ? "Emotional Intelligence" : "Inteligencia Emocional")}
+                  ? (lang !== "es" ? "Your EI companion" : "Tu compañero de IE")
+                  : (lang !== "es" ? "Emotional Intelligence" : "Inteligencia Emocional")}
               </p>
             </div>
             {isLoggedIn && (

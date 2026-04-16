@@ -238,7 +238,7 @@ const translations = {
 
 export default function ClientDashboard() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [base, setBase] = useState<any>(null);
   const [loading, setLoading] = useState(true);

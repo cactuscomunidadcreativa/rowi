@@ -157,7 +157,7 @@ const translations = {
 
 export default function AvatarPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const { data: session, status } = useSession();
 
   const isAuthenticated = status === "authenticated" && !!session?.user;

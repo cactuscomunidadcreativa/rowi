@@ -278,7 +278,7 @@ export default function HubRolesClient() {
   }
 
   /* ── Render ── */
-  const l = lang === "en" ? "en" : "es";
+  const l = lang !== "es" ? "en" : "es";
 
   function RoleIcon({ role }: { role: RoleDynamic }) {
     const slug = role.name.toLowerCase().replace(/\s+/g, "");

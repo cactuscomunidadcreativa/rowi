@@ -56,13 +56,13 @@ export default function ProductIntegrationsPage() {
     <div className="min-h-screen pt-16">
       <HeroSection
         content={{
-          badge: lang === "en" ? "🔌 Integrations" : "🔌 Integraciones",
-          title1: lang === "en" ? "Connect Rowi with" : "Conecta Rowi con",
-          title2: lang === "en" ? "your tools" : "tus herramientas",
+          badge: lang !== "es" ? "🔌 Integrations" : "🔌 Integraciones",
+          title1: lang !== "es" ? "Connect Rowi with" : "Conecta Rowi con",
+          title2: lang !== "es" ? "your tools" : "tus herramientas",
           subtitle: lang === "en"
             ? "Integrate emotional intelligence into your daily workflow. Slack, Teams, calendars and more."
             : "Integra la inteligencia emocional en tu flujo de trabajo diario. Slack, Teams, calendarios y más.",
-          ctaPrimary: lang === "en" ? "View integrations" : "Ver integraciones",
+          ctaPrimary: lang !== "es" ? "View integrations" : "Ver integraciones",
           ctaPrimaryHref: "/contact",
           image: "/rowivectors/Rowi-06.png",
         }}
@@ -71,9 +71,9 @@ export default function ProductIntegrationsPage() {
 
       <FeaturesSection
         content={{
-          title1: lang === "en" ? "Available" : "Integraciones",
-          title2: lang === "en" ? "integrations" : "disponibles",
-          subtitle: lang === "en" ? "Rowi where you need it" : "Rowi donde lo necesites",
+          title1: lang !== "es" ? "Available" : "Integraciones",
+          title2: lang !== "es" ? "integrations" : "disponibles",
+          subtitle: lang !== "es" ? "Rowi where you need it" : "Rowi donde lo necesites",
           features: [
             {
               icon: "message-circle",
@@ -130,11 +130,11 @@ export default function ProductIntegrationsPage() {
 
       <CTASection
         content={{
-          title: lang === "en" ? "Need a specific integration?" : "¿Necesitas una integración específica?",
+          title: lang !== "es" ? "Need a specific integration?" : "¿Necesitas una integración específica?",
           subtitle: lang === "en"
             ? "Contact us and let's discuss how to connect Rowi with your existing systems."
             : "Contáctanos y conversemos sobre cómo conectar Rowi con tus sistemas existentes.",
-          buttonText: lang === "en" ? "Contact team" : "Contactar equipo",
+          buttonText: lang !== "es" ? "Contact team" : "Contactar equipo",
           buttonIcon: "zap",
         }}
         config={{ gradient: true }}

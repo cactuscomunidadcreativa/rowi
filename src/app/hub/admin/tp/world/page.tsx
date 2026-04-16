@@ -503,7 +503,7 @@ function ErrorState({ title, desc, onRetry }: { title: string; desc: string; onR
 ========================================================= */
 export default function TPWorldPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [selectedBenchmark, setSelectedBenchmark] = useState<BenchmarkKey>("global");
 
   // --- Live data from APIs ---

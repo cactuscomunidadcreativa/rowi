@@ -356,10 +356,10 @@ export default function ElearningDashboardPage() {
         </h3>
         <div className="space-y-3">
           {[
-            { user: "María G.", action: labels.activity.completed, item: "Navegar Emociones - Acción 1", type: "COMPETENCY", time: lang === "en" ? "5 min ago" : "Hace 5 min" },
-            { user: "Carlos R.", action: labels.activity.started, item: "Brain Talent BBE - Ejercicio", type: "BRAIN_TALENT", time: lang === "en" ? "12 min ago" : "Hace 12 min" },
-            { user: "Ana L.", action: labels.activity.completed, item: "Outcome: Influencia", type: "OUTCOME", time: lang === "en" ? "25 min ago" : "Hace 25 min" },
-            { user: "Pedro M.", action: labels.activity.rated, item: "Ejercitar Optimismo ⭐⭐⭐⭐⭐", type: "COMPETENCY", time: lang === "en" ? "1h ago" : "Hace 1h" },
+            { user: "María G.", action: labels.activity.completed, item: "Navegar Emociones - Acción 1", type: "COMPETENCY", time: lang !== "es" ? "5 min ago" : "Hace 5 min" },
+            { user: "Carlos R.", action: labels.activity.started, item: "Brain Talent BBE - Ejercicio", type: "BRAIN_TALENT", time: lang !== "es" ? "12 min ago" : "Hace 12 min" },
+            { user: "Ana L.", action: labels.activity.completed, item: "Outcome: Influencia", type: "OUTCOME", time: lang !== "es" ? "25 min ago" : "Hace 25 min" },
+            { user: "Pedro M.", action: labels.activity.rated, item: "Ejercitar Optimismo ⭐⭐⭐⭐⭐", type: "COMPETENCY", time: lang !== "es" ? "1h ago" : "Hace 1h" },
           ].map((activity, idx) => (
             <div
               key={idx}

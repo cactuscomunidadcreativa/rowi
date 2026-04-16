@@ -327,7 +327,7 @@ const translations = {
 export default function TPAdminHub() {
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const TP_QUICK_STATS = [
     { icon: Activity, value: "98.7", label: t.statAvgEQ, color: "#7B2D8E" },

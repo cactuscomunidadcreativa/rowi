@@ -650,7 +650,7 @@ function TimelinePhase({
 ========================================================= */
 export default function TPROIPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   /* ---- API state ---- */
   const [correlations, setCorrelations] = useState<CorrelationItem[]>([]);

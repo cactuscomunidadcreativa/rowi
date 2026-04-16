@@ -266,7 +266,7 @@ export default function NavBar() {
   const pathname = usePathname();
   const { data } = useSession();
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations]?.nav || translations.es.nav;
+  const t = translations[lang as keyof typeof translations]?.nav || translations.en.nav;
 
   // Hook de contexto multi-rol
   let userContext;

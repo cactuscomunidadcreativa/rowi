@@ -68,7 +68,7 @@ export default function RowiLevelPill({
   showLabel = true,
 }: Props) {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const lv = resolveLevel(signals);
   const levelText = t[lv.key as keyof typeof t];
 

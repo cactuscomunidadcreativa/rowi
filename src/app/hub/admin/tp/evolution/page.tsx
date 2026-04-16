@@ -554,7 +554,7 @@ function TeamBarChart({ evolutions }: { evolutions: ApiEvolution[] }) {
 ========================================================= */
 export default function TPEvolutionPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [evolutions, setEvolutions] = useState<ApiEvolution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -820,9 +820,9 @@ export default function TPEvolutionPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                       <span className="text-lg">{lvl.emoji}</span>
-                      <span className="text-[var(--rowi-muted)]">{lang === "en" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
-                        {lang === "en" ? lvl.labelEN : lvl.label}
+                        {lang !== "es" ? lvl.labelEN : lvl.label}
                       </span>
                     </div>
                   );
@@ -889,9 +889,9 @@ export default function TPEvolutionPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                       <span className="text-lg">{lvl.emoji}</span>
-                      <span className="text-[var(--rowi-muted)]">{lang === "en" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
-                        {lang === "en" ? lvl.labelEN : lvl.label}
+                        {lang !== "es" ? lvl.labelEN : lvl.label}
                       </span>
                     </div>
                   );

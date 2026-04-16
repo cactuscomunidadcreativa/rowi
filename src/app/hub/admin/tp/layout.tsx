@@ -30,7 +30,7 @@ const translations = {
 export default function TPLayout({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   if (status === "loading") {
     return (

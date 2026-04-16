@@ -357,7 +357,7 @@ export default function RowiEvolution({
                   style={{ backgroundColor: currentStage.seiLevel.color }}
                 />
                 <span className="font-semibold">
-                  {currentStage.seiLevel.emoji} {lang === "en" ? currentStage.seiLevel.labelEN : currentStage.seiLevel.label}
+                  {currentStage.seiLevel.emoji} {lang !== "es" ? currentStage.seiLevel.labelEN : currentStage.seiLevel.label}
                 </span>
                 <span className="text-sm text-[var(--rowi-muted)] font-mono">
                   {currentStage.seiLevel.min}-{currentStage.seiLevel.max}
@@ -418,7 +418,7 @@ export default function RowiEvolution({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-lg flex items-center gap-2">
-                        {lang === "en" ? stage.seiLevel.labelEN : stage.seiLevel.label}
+                        {lang !== "es" ? stage.seiLevel.labelEN : stage.seiLevel.label}
                         {activeStage === stage.id && (
                           <motion.span
                             initial={{ scale: 0 }}
@@ -440,7 +440,7 @@ export default function RowiEvolution({
                       </span>
                     </div>
                     <p className="text-sm text-[var(--rowi-muted)] line-clamp-2">
-                      {lang === "en" ? stage.seiLevel.descriptionEN : stage.seiLevel.description}
+                      {lang !== "es" ? stage.seiLevel.descriptionEN : stage.seiLevel.description}
                     </p>
                   </div>
                 </div>
@@ -536,7 +536,7 @@ export default function RowiEvolution({
                     : "text-[var(--rowi-muted)]"
                 }`}
               >
-                {stage.seiLevel.emoji} {lang === "en" ? stage.seiLevel.labelEN : stage.seiLevel.label}
+                {stage.seiLevel.emoji} {lang !== "es" ? stage.seiLevel.labelEN : stage.seiLevel.label}
               </span>
             ))}
           </div>

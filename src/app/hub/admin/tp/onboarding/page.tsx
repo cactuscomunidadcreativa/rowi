@@ -168,7 +168,7 @@ const translations = {
 
 export default function TPOnboardingPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const isEs = lang === "es";
 
   const [currentStep, setCurrentStep] = useState(0);

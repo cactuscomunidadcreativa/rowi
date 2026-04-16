@@ -13,15 +13,15 @@ export default function ProductAffinityPage() {
       {/* Hero Section */}
       <HeroSection
         content={{
-          badge: lang === "en" ? "🤝 Human Collaboration" : "🤝 Colaboración Humana",
-          title1: lang === "en" ? "Work better" : "Trabaja mejor",
-          title2: lang === "en" ? "together" : "en equipo",
+          badge: lang !== "es" ? "🤝 Human Collaboration" : "🤝 Colaboración Humana",
+          title1: lang !== "es" ? "Work better" : "Trabaja mejor",
+          title2: lang !== "es" ? "together" : "en equipo",
           subtitle: lang === "en"
             ? "Affinity transforms Emotional Intelligence profiles into practical insights to improve collaboration, interaction and results, inside and outside of work."
             : "Affinity transforma perfiles de Inteligencia Emocional en insights prácticos para mejorar la colaboración, la interacción y los resultados, dentro y fuera del trabajo.",
-          ctaPrimary: lang === "en" ? "Discover Affinity" : "Descubrir Affinity",
+          ctaPrimary: lang !== "es" ? "Discover Affinity" : "Descubrir Affinity",
           ctaPrimaryHref: "/register",
-          ctaSecondary: lang === "en" ? "See how it works" : "Ver cómo funciona",
+          ctaSecondary: lang !== "es" ? "See how it works" : "Ver cómo funciona",
           ctaSecondaryHref: "#how-it-works",
           image: "/rowivectors/Rowi-06.png"
         }}
@@ -59,10 +59,10 @@ export default function ProductAffinityPage() {
       <StatsSection
         content={{
           stats: [
-            { value: "32", suffix: "%", label: lang === "en" ? "Better collaboration" : "Mejor colaboración" },
-            { value: "45", suffix: "%", label: lang === "en" ? "Less friction" : "Menos fricción" },
-            { value: "28", suffix: "%", label: lang === "en" ? "Higher execution" : "Mayor ejecución" },
-            { value: "3", suffix: "x", label: lang === "en" ? "Faster decisions" : "Decisiones más rápidas" },
+            { value: "32", suffix: "%", label: lang !== "es" ? "Better collaboration" : "Mejor colaboración" },
+            { value: "45", suffix: "%", label: lang !== "es" ? "Less friction" : "Menos fricción" },
+            { value: "28", suffix: "%", label: lang !== "es" ? "Higher execution" : "Mayor ejecución" },
+            { value: "3", suffix: "x", label: lang !== "es" ? "Faster decisions" : "Decisiones más rápidas" },
           ]
         }}
         config={{ layout: "gradient", columns: 4 }}
@@ -79,7 +79,7 @@ export default function ProductAffinityPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2)]/10 text-[var(--rowi-g2)] text-sm font-medium mb-4"
             >
               <Briefcase className="w-4 h-4" />
-              {lang === "en" ? "Applied Collaboration" : "Colaboración Aplicada"}
+              {lang !== "es" ? "Applied Collaboration" : "Colaboración Aplicada"}
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -87,8 +87,8 @@ export default function ProductAffinityPage() {
               viewport={{ once: true }}
               className="text-3xl md:text-5xl font-bold mb-4"
             >
-              {lang === "en" ? "What Affinity" : "Qué permite"}{" "}
-              <span className="rowi-gradient-text">{lang === "en" ? "enables" : "Affinity"}</span>
+              {lang !== "es" ? "What Affinity" : "Qué permite"}{" "}
+              <span className="rowi-gradient-text">{lang !== "es" ? "enables" : "Affinity"}</span>
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -107,7 +107,7 @@ export default function ProductAffinityPage() {
             {[
               {
                 icon: Users,
-                title: lang === "en" ? "Understand how to collaborate" : "Entender cómo colaborar",
+                title: lang !== "es" ? "Understand how to collaborate" : "Entender cómo colaborar",
                 desc: lang === "en"
                   ? "See how to work better with each person based on their emotional profile"
                   : "Comprende cómo trabajar mejor con cada persona según su perfil emocional",
@@ -115,7 +115,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: Brain,
-                title: lang === "en" ? "Information processing" : "Procesamiento de información",
+                title: lang !== "es" ? "Information processing" : "Procesamiento de información",
                 desc: lang === "en"
                   ? "See how each person processes information and makes decisions"
                   : "Ve cómo cada uno procesa la información y toma decisiones",
@@ -123,7 +123,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: MessageCircle,
-                title: lang === "en" ? "Adaptive communication" : "Comunicación adaptativa",
+                title: lang !== "es" ? "Adaptive communication" : "Comunicación adaptativa",
                 desc: lang === "en"
                   ? "Adjust your communication style based on the other's emotional profile"
                   : "Ajusta la comunicación según el perfil emocional del otro",
@@ -131,7 +131,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: Zap,
-                title: lang === "en" ? "Reduce friction" : "Reducir fricciones",
+                title: lang !== "es" ? "Reduce friction" : "Reducir fricciones",
                 desc: lang === "en"
                   ? "Eliminate unnecessary friction in teams and projects"
                   : "Elimina fricciones innecesarias en equipos y proyectos",
@@ -139,7 +139,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: Puzzle,
-                title: lang === "en" ? "Intelligent role assignment" : "Asignación inteligente de roles",
+                title: lang !== "es" ? "Intelligent role assignment" : "Asignación inteligente de roles",
                 desc: lang === "en"
                   ? "Assign roles based on real strengths, not assumptions"
                   : "Asigna roles de forma inteligente, según fortalezas reales",
@@ -147,7 +147,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: Rocket,
-                title: lang === "en" ? "Improve execution" : "Mejorar la ejecución",
+                title: lang !== "es" ? "Improve execution" : "Mejorar la ejecución",
                 desc: lang === "en"
                   ? "Focus on results, not just relationships"
                   : "Mejora la ejecución, no solo la relación",
@@ -183,8 +183,8 @@ export default function ProductAffinityPage() {
               viewport={{ once: true }}
               className="text-3xl md:text-5xl font-bold mb-4"
             >
-              {lang === "en" ? "Interaction at" : "Interacción en"}{" "}
-              <span className="rowi-gradient-text">{lang === "en" ? "multiple levels" : "múltiples niveles"}</span>
+              {lang !== "es" ? "Interaction at" : "Interacción en"}{" "}
+              <span className="rowi-gradient-text">{lang !== "es" ? "multiple levels" : "múltiples niveles"}</span>
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -203,7 +203,7 @@ export default function ProductAffinityPage() {
             {[
               {
                 icon: Heart,
-                title: lang === "en" ? "Personal" : "Personal",
+                title: lang !== "es" ? "Personal" : "Personal",
                 items: lang === "en"
                   ? ["Emotional styles", "Reactions", "Motivators"]
                   : ["Estilos emocionales", "Reacciones", "Motivadores"],
@@ -211,7 +211,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: Briefcase,
-                title: lang === "en" ? "Work" : "Laboral",
+                title: lang !== "es" ? "Work" : "Laboral",
                 items: lang === "en"
                   ? ["Collaboration", "Leadership", "Execution", "Feedback"]
                   : ["Colaboración", "Liderazgo", "Ejecución", "Feedback"],
@@ -219,7 +219,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: UserCheck,
-                title: lang === "en" ? "Relational" : "Relacional",
+                title: lang !== "es" ? "Relational" : "Relacional",
                 items: lang === "en"
                   ? ["Trust", "Friction", "Complementarity"]
                   : ["Confianza", "Fricción", "Complementariedad"],
@@ -227,7 +227,7 @@ export default function ProductAffinityPage() {
               },
               {
                 icon: BarChart3,
-                title: lang === "en" ? "Operational" : "Operativo",
+                title: lang !== "es" ? "Operational" : "Operativo",
                 items: lang === "en"
                   ? ["How they work together", "Make decisions", "Solve problems"]
                   : ["Cómo trabajan juntos", "Deciden", "Resuelven problemas"],
@@ -263,15 +263,15 @@ export default function ProductAffinityPage() {
       {/* Use Cases */}
       <FeaturesSection
         content={{
-          title1: lang === "en" ? "Affinity in" : "Affinity en",
-          title2: lang === "en" ? "action" : "acción",
+          title1: lang !== "es" ? "Affinity in" : "Affinity en",
+          title2: lang !== "es" ? "action" : "acción",
           subtitle: lang === "en"
             ? "See how teams and individuals use Affinity to collaborate better"
             : "Descubre cómo equipos e individuos usan Affinity para colaborar mejor",
           features: [
             {
               icon: "users",
-              title: lang === "en" ? "Team Building" : "Formación de equipos",
+              title: lang !== "es" ? "Team Building" : "Formación de equipos",
               description: lang === "en"
                 ? "Build high-performance teams based on emotional complementarity"
                 : "Forma equipos de alto rendimiento basados en complementariedad emocional",
@@ -279,7 +279,7 @@ export default function ProductAffinityPage() {
             },
             {
               icon: "target",
-              title: lang === "en" ? "Leadership Development" : "Desarrollo de liderazgo",
+              title: lang !== "es" ? "Leadership Development" : "Desarrollo de liderazgo",
               description: lang === "en"
                 ? "Help leaders understand and adapt to their team's emotional profiles"
                 : "Ayuda a líderes a entender y adaptarse a los perfiles emocionales de su equipo",
@@ -287,7 +287,7 @@ export default function ProductAffinityPage() {
             },
             {
               icon: "zap",
-              title: lang === "en" ? "Conflict Resolution" : "Resolución de conflictos",
+              title: lang !== "es" ? "Conflict Resolution" : "Resolución de conflictos",
               description: lang === "en"
                 ? "Understand the root of friction and resolve it with emotional intelligence"
                 : "Entiende la raíz de las fricciones y resuélvelas con inteligencia emocional",
@@ -295,7 +295,7 @@ export default function ProductAffinityPage() {
             },
             {
               icon: "sparkles",
-              title: lang === "en" ? "Onboarding" : "Onboarding",
+              title: lang !== "es" ? "Onboarding" : "Onboarding",
               description: lang === "en"
                 ? "Integrate new members faster by understanding their collaboration style"
                 : "Integra nuevos miembros más rápido entendiendo su estilo de colaboración",
@@ -309,11 +309,11 @@ export default function ProductAffinityPage() {
       {/* CTA Section */}
       <CTASection
         content={{
-          title: lang === "en" ? "Ready to collaborate better?" : "¿Listo para colaborar mejor?",
+          title: lang !== "es" ? "Ready to collaborate better?" : "¿Listo para colaborar mejor?",
           subtitle: lang === "en"
             ? "Discover how Affinity can transform the way your team works together."
             : "Descubre cómo Affinity puede transformar la forma en que tu equipo trabaja junto.",
-          buttonText: lang === "en" ? "Start with Affinity" : "Comenzar con Affinity",
+          buttonText: lang !== "es" ? "Start with Affinity" : "Comenzar con Affinity",
           buttonIcon: "users"
         }}
         config={{ gradient: true }}

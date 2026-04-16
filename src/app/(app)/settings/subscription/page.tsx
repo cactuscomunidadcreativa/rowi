@@ -233,7 +233,7 @@ export default function SubscriptionPage() {
               return (
                 <div key={idx} className="flex items-center gap-2 text-sm">
                   <Check size={16} style={{ color: COLORS.green }} />
-                  <span>{lang === "en" ? en : es}</span>
+                  <span>{lang !== "es" ? en : es}</span>
                 </div>
               );
             })}

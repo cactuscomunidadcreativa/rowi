@@ -154,7 +154,7 @@ const modules = [
 
 export default function DemoPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
 
   return (

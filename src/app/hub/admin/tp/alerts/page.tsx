@@ -298,7 +298,7 @@ function compLabel(comp: string, lang: string): string {
 ========================================================= */
 export default function TPAlertsPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   /* ---- Filter state ---- */
   const [severityFilter, setSeverityFilter] = useState("all");
@@ -663,7 +663,7 @@ export default function TPAlertsPage() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {teamHealthGrid.map((team, i) => {
-            const levelLabel = lang === "en" ? team.eqLevel.labelEN : team.eqLevel.label;
+            const levelLabel = lang !== "es" ? team.eqLevel.labelEN : team.eqLevel.label;
             return (
             <motion.div key={team.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-3">

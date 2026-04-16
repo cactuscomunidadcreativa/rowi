@@ -127,7 +127,7 @@ export default function PublicWorldMap() {
 
   const getCountryName = (code: string): string => {
     if (!data?.countryNames[code]) return code;
-    return lang === "en" ? data.countryNames[code].en : data.countryNames[code].es;
+    return lang !== "es" ? data.countryNames[code].en : data.countryNames[code].es;
   };
 
   if (loading) {

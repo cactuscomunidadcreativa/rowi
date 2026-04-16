@@ -13,7 +13,7 @@ const translations = {
 
 export function MoodChip({ text, emoji }: { text: string; emoji: string }) {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2 shadow-sm flex items-center gap-3">

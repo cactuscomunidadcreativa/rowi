@@ -275,7 +275,7 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: any }) {
 export default function TPBenchmarkPage() {
   const [activeSection, setActiveSection] = useState("overview");
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const TP_COMPETENCIES = [
     { key: "EL", name: t.compEmotionalLiteracy, pursuit: "know", avg: 97.3, topPerformer: 118.2, color: "#3b82f6" },

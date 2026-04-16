@@ -238,7 +238,7 @@ function HubLoginContent() {
           <button
             onClick={() => setLang("en")}
             className={`px-3 py-1 rounded text-sm ${
-              lang === "en" ? "bg-white/20" : "opacity-60 hover:opacity-80"
+              lang !== "es" ? "bg-white/20" : "opacity-60 hover:opacity-80"
             }`}
           >
             🇺🇸 EN

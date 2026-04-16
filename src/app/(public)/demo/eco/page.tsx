@@ -158,7 +158,7 @@ const translations = {
 ========================================================= */
 export default function DemoEcoPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [selectedChannel, setSelectedChannel] = useState("email");
   const [copied, setCopied] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);

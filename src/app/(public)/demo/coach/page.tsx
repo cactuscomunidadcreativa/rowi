@@ -165,7 +165,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
 ========================================================= */
 export default function DemoCoachPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [messages, setMessages] = useState(DEMO_CONVERSATION[lang as keyof typeof DEMO_CONVERSATION] || DEMO_CONVERSATION.es);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);

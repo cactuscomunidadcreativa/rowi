@@ -293,7 +293,7 @@ function OutcomeCard({ outcome, name }: { outcome: typeof TP_OUTCOMES[0]; name: 
 ========================================================= */
 export default function TPDashboardPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
     <div className="space-y-8">

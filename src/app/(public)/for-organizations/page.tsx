@@ -57,14 +57,14 @@ export default function ForOrganizationsPage() {
     <div className="min-h-screen pt-16">
       <HeroSection
         content={{
-          badge: lang === "en" ? "🏢 For Business" : "🏢 Para empresas",
-          title1: lang === "en" ? "Emotional intelligence" : "Inteligencia emocional",
-          title2: lang === "en" ? "for your organization" : "para tu organización",
+          badge: lang !== "es" ? "🏢 For Business" : "🏢 Para empresas",
+          title1: lang !== "es" ? "Emotional intelligence" : "Inteligencia emocional",
+          title2: lang !== "es" ? "for your organization" : "para tu organización",
           subtitle: lang === "en"
             ? "Boost your team's wellbeing and performance with data-driven emotional development tools."
             : "Potencia el bienestar y rendimiento de tu equipo con herramientas de desarrollo emocional basadas en datos.",
-          ctaPrimary: lang === "en" ? "Request demo" : "Solicitar demo",
-          ctaSecondary: lang === "en" ? "See success stories" : "Ver casos de éxito",
+          ctaPrimary: lang !== "es" ? "Request demo" : "Solicitar demo",
+          ctaSecondary: lang !== "es" ? "See success stories" : "Ver casos de éxito",
           image: "/rowivectors/Rowi-06.png",
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
@@ -73,10 +73,10 @@ export default function ForOrganizationsPage() {
       <StatsSection
         content={{
           stats: [
-            { value: "32", suffix: "%", label: lang === "en" ? "Communication improvement" : "Mejora en comunicación" },
-            { value: "45", suffix: "%", label: lang === "en" ? "Conflict reduction" : "Reducción de conflictos" },
-            { value: "28", suffix: "%", label: lang === "en" ? "Productivity increase" : "Aumento de productividad" },
-            { value: "3", suffix: "x", label: lang === "en" ? "Average ROI" : "ROI promedio" },
+            { value: "32", suffix: "%", label: lang !== "es" ? "Communication improvement" : "Mejora en comunicación" },
+            { value: "45", suffix: "%", label: lang !== "es" ? "Conflict reduction" : "Reducción de conflictos" },
+            { value: "28", suffix: "%", label: lang !== "es" ? "Productivity increase" : "Aumento de productividad" },
+            { value: "3", suffix: "x", label: lang !== "es" ? "Average ROI" : "ROI promedio" },
           ],
         }}
         config={{ layout: "gradient", columns: 4 }}
@@ -84,15 +84,15 @@ export default function ForOrganizationsPage() {
 
       <FeaturesSection
         content={{
-          title1: lang === "en" ? "B2B" : "Soluciones",
-          title2: lang === "en" ? "Solutions" : "B2B",
+          title1: lang !== "es" ? "B2B" : "Soluciones",
+          title2: lang !== "es" ? "Solutions" : "B2B",
           subtitle: lang === "en"
             ? "Enterprise tools for organizations of any size"
             : "Herramientas enterprise para organizaciones de cualquier tamaño",
           features: [
             {
               icon: "users",
-              title: lang === "en" ? "Team Assessments" : "Evaluaciones de Equipo",
+              title: lang !== "es" ? "Team Assessments" : "Evaluaciones de Equipo",
               description: lang === "en"
                 ? "Map your organization's emotional intelligence with group SEI assessments"
                 : "Mapea la inteligencia emocional de tu organización con evaluaciones SEI grupales",
@@ -100,7 +100,7 @@ export default function ForOrganizationsPage() {
             },
             {
               icon: "bar-chart",
-              title: lang === "en" ? "Advanced Analytics" : "Analytics Avanzados",
+              title: lang !== "es" ? "Advanced Analytics" : "Analytics Avanzados",
               description: lang === "en"
                 ? "Executive dashboards with real-time EI metrics"
                 : "Dashboards ejecutivos con métricas de IE en tiempo real",
@@ -108,7 +108,7 @@ export default function ForOrganizationsPage() {
             },
             {
               icon: "heart",
-              title: lang === "en" ? "Team Affinity" : "Team Affinity",
+              title: lang !== "es" ? "Team Affinity" : "Team Affinity",
               description: lang === "en"
                 ? "Optimize team composition by emotional affinity"
                 : "Optimiza la composición de equipos por afinidad emocional",
@@ -116,7 +116,7 @@ export default function ForOrganizationsPage() {
             },
             {
               icon: "shield",
-              title: lang === "en" ? "SSO & Security" : "SSO & Seguridad",
+              title: lang !== "es" ? "SSO & Security" : "SSO & Seguridad",
               description: lang === "en"
                 ? "Enterprise integration with the highest security standards"
                 : "Integración empresarial con los más altos estándares de seguridad",
@@ -124,7 +124,7 @@ export default function ForOrganizationsPage() {
             },
             {
               icon: "sparkles",
-              title: lang === "en" ? "Corporate Rowi" : "Rowi Corporativo",
+              title: lang !== "es" ? "Corporate Rowi" : "Rowi Corporativo",
               description: lang === "en"
                 ? "Personalized AI coach for every member of your organization"
                 : "Coach IA personalizado para cada colaborador de tu organización",
@@ -132,7 +132,7 @@ export default function ForOrganizationsPage() {
             },
             {
               icon: "zap",
-              title: lang === "en" ? "API & Integrations" : "API & Integraciones",
+              title: lang !== "es" ? "API & Integrations" : "API & Integraciones",
               description: lang === "en"
                 ? "Connect with Slack, Teams, HRIS and more existing tools"
                 : "Conecta con Slack, Teams, HRIS y más herramientas existentes",
@@ -145,7 +145,7 @@ export default function ForOrganizationsPage() {
 
       <TestimonialsSection
         content={{
-          title: lang === "en" ? "Companies that trust Rowi" : "Empresas que confían en Rowi",
+          title: lang !== "es" ? "Companies that trust Rowi" : "Empresas que confían en Rowi",
           testimonials: [
             {
               quote: lang === "en"
@@ -181,13 +181,13 @@ export default function ForOrganizationsPage() {
 
       <CTASection
         content={{
-          title: lang === "en" ? "Ready to transform your organization?" : "¿Listo para transformar tu organización?",
+          title: lang !== "es" ? "Ready to transform your organization?" : "¿Listo para transformar tu organización?",
           subtitle: lang === "en"
             ? "Schedule a personalized demo and discover how Rowi can help your team."
             : "Agenda una demo personalizada y descubre cómo Rowi puede ayudar a tu equipo.",
-          buttonText: lang === "en" ? "Request demo" : "Solicitar demo",
+          buttonText: lang !== "es" ? "Request demo" : "Solicitar demo",
           buttonIcon: "rocket",
-          secondaryButtonText: lang === "en" ? "Download brochure" : "Descargar brochure",
+          secondaryButtonText: lang !== "es" ? "Download brochure" : "Descargar brochure",
         }}
         config={{ gradient: true }}
       />

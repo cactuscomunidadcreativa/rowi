@@ -263,7 +263,7 @@ function OutcomeCard({ outcome, lang }: { outcome: typeof DEMO_OUTCOMES[0]; lang
 ========================================================= */
 export default function DemoDashboardPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
     <div className="min-h-screen pt-16 pb-24 bg-[var(--rowi-background)]">

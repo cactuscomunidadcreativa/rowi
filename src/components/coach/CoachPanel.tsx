@@ -279,8 +279,8 @@ type Props = {
 
 export default function CoachPanel({ profile, compact = false, insights: passedInsights }: Props) {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
-  const langKey = (lang === "en" ? "en" : "es") as "es" | "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
+  const langKey = (lang !== "es" ? "en" : "es") as "es" | "en";
 
   const [question, setQuestion] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -312,9 +312,9 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
       });
 
       const data = await r.json();
-      setResponse(data.text || (lang === "en" ? "Could not get a response." : "No pude obtener una respuesta."));
+      setResponse(data.text || (lang !== "es" ? "Could not get a response." : "No pude obtener una respuesta."));
     } catch {
-      setResponse(lang === "en" ? "Error processing query." : "Error al procesar la consulta.");
+      setResponse(lang !== "es" ? "Error processing query." : "Error al procesar la consulta.");
     }
 
     setThinking(false);

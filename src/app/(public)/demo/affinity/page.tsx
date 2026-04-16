@@ -132,7 +132,7 @@ const translations = {
    Componentes
 ========================================================= */
 function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: string }) {
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
     <motion.div
@@ -211,7 +211,7 @@ function BrainStyleCard({ style, lang }: { style: typeof BRAIN_STYLES[0]; lang: 
 ========================================================= */
 export default function DemoAffinityPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
     <div className="min-h-screen pt-16 pb-24 bg-[var(--rowi-background)]">

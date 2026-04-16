@@ -273,7 +273,7 @@ Want to brainstorm a roadmap together? I think this could be industry-leading âœ
 /* Main Page */
 export default function TPEcoPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [selectedRecipient, setSelectedRecipient] = useState("sarah");
   const [selectedChannel, setSelectedChannel] = useState("email");

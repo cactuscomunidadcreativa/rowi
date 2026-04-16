@@ -457,7 +457,7 @@ type RowiverseProfile = {
 ========================================================= */
 export default function CommunityPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [activeTab, setActiveTab] = useState<"myPeople" | "invited" | "rowiverse" | "communities">("myPeople");
   const [members, setMembers] = useState<Member[]>([]);

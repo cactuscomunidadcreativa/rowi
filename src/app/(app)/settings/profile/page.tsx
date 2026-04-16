@@ -551,7 +551,7 @@ export default function ProfileSettingsPage() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
+    return new Date(dateStr).toLocaleDateString(lang !== "es" ? "en-US" : "es-ES", {
       year: "numeric",
       month: "long",
       day: "numeric",

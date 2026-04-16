@@ -205,7 +205,7 @@ const translations = {
 export default function TPCommunityPage() {
   const [leaderboardFilter, setLeaderboardFilter] = useState("global");
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const LEADERBOARD = [
     { rank: 1, name: "Priya Sharma", region: "APAC", dept: t.deptCustomerSuccess, eqScore: 118.7, growth: "+8.3", brainStyle: t.brainStyleSuperhero, emoji: "\u{1f9b8}", avatar: "/rowivectors/Rowi-06.png" },

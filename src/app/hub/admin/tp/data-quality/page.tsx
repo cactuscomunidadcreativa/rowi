@@ -313,7 +313,7 @@ function CompletenessBar({ value }: { value: number }) {
 ========================================================= */
 export default function TPDataQualityPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [data, setData] = useState<DataQualityResponse | null>(null);
   const [loading, setLoading] = useState(true);

@@ -397,7 +397,7 @@ function FitGauge({ score }: { score: number }) {
 ========================================================= */
 export default function TPSelectionPage() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   /* ---- API state ---- */
   const [topPerformers, setTopPerformers] = useState<any[]>([]);

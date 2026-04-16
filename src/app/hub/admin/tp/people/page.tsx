@@ -434,7 +434,7 @@ function PersonSelector({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -660,7 +660,7 @@ function RadarChart({ personA, personB, t }: { personA: Person; personB: Person;
 ========================================================= */
 export default function TPPeopleComparator() {
   const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.es;
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   // API state
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
@@ -966,7 +966,7 @@ export default function TPPeopleComparator() {
                         const lvl = getEqLevel(personA.eqTotal);
                         return (
                           <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
-                            {lvl.emoji} {lang === "en" ? lvl.labelEN : lvl.label}
+                            {lvl.emoji} {lang !== "es" ? lvl.labelEN : lvl.label}
                           </span>
                         );
                       })()}
@@ -1002,7 +1002,7 @@ export default function TPPeopleComparator() {
                         const lvl = getEqLevel(personB.eqTotal);
                         return (
                           <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
-                            {lvl.emoji} {lang === "en" ? lvl.labelEN : lvl.label}
+                            {lvl.emoji} {lang !== "es" ? lvl.labelEN : lvl.label}
                           </span>
                         );
                       })()}

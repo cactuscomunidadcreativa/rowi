@@ -68,6 +68,25 @@ export default function Sidebar() {
     },
 
     // ═══════════════════════════════════════════════════════
+    // 💼 WORKSPACES (HR, Coaching, Consulting, Team Leaders)
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.workspaces",
+      icon: Briefcase,
+      priority: 97,
+      items: [
+        { href: "/workspace", labelKey: "admin.nav.workspacesAll", icon: Briefcase, badge: "NEW" },
+        { href: "/workspace/new", labelKey: "admin.nav.workspaceNew", icon: Sparkles },
+        { href: "/workspace?type=COACHING", labelKey: "admin.nav.workspaceCoaching", icon: Target },
+        { href: "/workspace?type=SELECTION", labelKey: "admin.nav.workspaceSelection", icon: UserCheck },
+        { href: "/workspace?type=TEAM_UNIT", labelKey: "admin.nav.workspaceTeam", icon: Users2 },
+        { href: "/workspace?type=HR_COHORT", labelKey: "admin.nav.workspaceHr", icon: Building2 },
+        { href: "/workspace?type=CONSULTING", labelKey: "admin.nav.workspaceConsulting", icon: Briefcase },
+        { href: "/workspace?type=MENTORING", labelKey: "admin.nav.workspaceMentoring", icon: HeartHandshake },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
     // 🏢 TELEPERFORMANCE DEMO (Enterprise Client)
     // ═══════════════════════════════════════════════════════
     {

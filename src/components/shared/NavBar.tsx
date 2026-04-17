@@ -240,17 +240,17 @@ const SOCIAL_LINKS = [
 ========================================================= */
 const ROLE_LINKS = [
   // Team/Manager views
-  { href: "/team", key: "team", icon: Users, roles: ["TEAM_LEADER", "MANAGER", "ADMIN", "OWNER"] },
+  { href: "/workspace", key: "team", icon: Users, roles: ["TEAM_LEADER", "MANAGER", "ADMIN", "OWNER"] },
   { href: "/reports", key: "reports", icon: FileText, roles: ["MANAGER", "ADMIN", "OWNER", "REGION_LEADER"] },
 
-  // HR views
-  { href: "/hr", key: "hr", icon: Briefcase, roles: ["HR", "ADMIN", "OWNER"] },
+  // HR views - unifica con workspace (mantiene /hub/admin/hr para admin)
+  { href: "/workspace?type=HR_COHORT", key: "hr", icon: Briefcase, roles: ["HR", "ADMIN", "OWNER"] },
 
-  // Coach views
-  { href: "/coaching", key: "coaching", icon: GraduationCap, roles: ["COACH", "MENTOR", "CONSULTANT"] },
+  // Coach views - unifica con workspace
+  { href: "/workspace?type=COACHING", key: "coaching", icon: GraduationCap, roles: ["COACH", "MENTOR", "CONSULTANT"] },
 
-  // Consultant views
-  { href: "/clients", key: "clients", icon: Briefcase, roles: ["CONSULTANT"] },
+  // Consultant views - unifica con workspace
+  { href: "/workspace?type=CONSULTING", key: "clients", icon: Briefcase, roles: ["CONSULTANT"] },
 
   // Finance views
   { href: "/finance", key: "finance", icon: DollarSign, roles: ["FINANCIAL", "BILLING", "ADMIN", "OWNER"] },

@@ -152,6 +152,13 @@ model User {
   messageParticipants   MessageParticipant[]
   sentMessages          Message[]
 
+  // 🏢 Workspace professional roles
+  authoredCoachNotes    CoachNote[]          @relation("CoachNoteAuthor")
+  createdDevPlans       DevelopmentPlan[]    @relation("DevPlanCreator")
+  createdCampaigns      AssessmentCampaign[] @relation("CampaignCreator")
+  resolvedAlerts        WorkspaceAlert[]     @relation("AlertResolver")
+  createdClientAccess   ClientAccess[]       @relation("ClientAccessCreator")
+
   @@map("user")
 }
 
@@ -773,6 +780,9 @@ model Organization {
   tenantLinks     OrganizationToTenant[] @relation("OrganizationToTenantLink")
   rowiCommunities RowiCommunity[]        @relation("OrganizationToCommunity")
 
+  // 🏢 Workspaces donde esta organizacion es el cliente
+  clientWorkspaces RowiCommunity[] @relation("ClientWorkspaces")
+
   // 📊 Benchmarks vinculados a esta Organización
   benchmarks Benchmark[] @relation("OrganizationToBenchmark")
 
@@ -907,6 +917,14 @@ model CommunityMember {
   snapshots            EqSnapshot[]
   taskCollaborations   TaskCollaborator[]
 
+  // 🏢 Link opcional a Workspace (RowiCommunity con workspaceType)
+  communityId    String?
+  community      RowiCommunity? @relation("CommunityToMembers", fields: [communityId], references: [id])
+
+  // 🔐 Consent GDPR
+  consentGiven   Boolean  @default(false)
+  consentAt      DateTime?
+
   @@index([tenantId])
   @@index([hubId])
   @@index([userId])
@@ -914,6 +932,7 @@ model CommunityMember {
   @@index([firstName])
   @@index([lastName])
   @@index([rowiverseUserId]) // ✅ índice global
+  @@index([communityId])
   @@map("community_member")
 }
 
@@ -2864,6 +2883,15 @@ model RowiCommunity {
   language      String?
   executionTime Int?
 
+  // 🏢 Workspace fields (HR/Coaching/Consulting/TeamUnit/Mentoring)
+  workspaceType    WorkspaceType?
+  clientOrgId      String?
+  clientOrg        Organization? @relation("ClientWorkspaces", fields: [clientOrgId], references: [id], onDelete: SetNull)
+  targetRole       String? // Para SELECTION: rol objetivo (ej. "Gerente Comercial")
+  projectStartDate DateTime?
+  projectEndDate   DateTime?
+  projectStatus    String? // active | paused | completed | archived
+
   // 🔗 Relaciones jerárquicas (todas con nombres explícitos)
   rowiVerse    RowiVerse?    @relation("RowiVerseToCommunity", fields: [rowiVerseId], references: [id], map: "fk_rowiCommunity_rowiVerseId", onDelete: Cascade)
   superHub     SuperHub?     @relation("SuperHubToCommunity", fields: [superHubId], references: [id], map: "fk_rowiCommunity_superHubId", onDelete: Cascade)
@@ -2882,12 +2910,23 @@ model RowiCommunity {
   CommunityBatch CommunityBatch[]
   feedPosts      RowiFeed[]           @relation("FeedCommunity")
 
+  // 🏢 Workspace features
+  communityMembers CommunityMember[]    @relation("CommunityToMembers")
+  benchmarks       Benchmark[]          @relation("CommunityToBenchmarks")
+  coachNotes       CoachNote[]
+  developmentPlans DevelopmentPlan[]
+  campaigns        AssessmentCampaign[]
+  workspaceAlerts  WorkspaceAlert[]
+  clientAccess     ClientAccess[]
+
   // 🧭 Índices
   @@index([rowiVerseId])
   @@index([superHubId])
   @@index([hubId])
   @@index([tenantId])
   @@index([organizationId])
+  @@index([workspaceType])
+  @@index([clientOrgId])
   @@map("rowi_community")
 }
 
@@ -3819,6 +3858,7 @@ model Benchmark {
   tenant       Tenant?       @relation("TenantToBenchmark", fields: [tenantId], references: [id])
   hub          Hub?          @relation("HubToBenchmark", fields: [hubId], references: [id])
   organization Organization? @relation("OrganizationToBenchmark", fields: [organizationId], references: [id])
+  community    RowiCommunity? @relation("CommunityToBenchmarks", fields: [communityId], references: [id])
 
   dataPoints       BenchmarkDataPoint[]
   statistics       BenchmarkStatistic[]
@@ -3830,6 +3870,7 @@ model Benchmark {
   @@index([type, scope, isActive])
   @@index([tenantId])
   @@index([hubId])
+  @@index([communityId])
   @@map("benchmark")
 }
 
@@ -5977,3 +6018,148 @@ model RowiChatFeedback {
   @@index([type])
   @@map("rowi_chat_feedback")
 }
+
+/* =========================================================
+   🏢 WORKSPACE MODULE (HR, Coaching, Consulting, Team Leader)
+   ---------------------------------------------------------
+   Extension de RowiCommunity para uso profesional.
+   Un workspace = RowiCommunity con workspaceType set.
+========================================================= */
+
+enum WorkspaceType {
+  COACHING      // Coach 1:1 o grupal
+  CONSULTING    // Consultor con proyectos para clientes externos
+  HR_COHORT     // HR Manager gestionando cohortes internos
+  TEAM_UNIT     // Team Leader con reportes directos
+  MENTORING     // Programa de mentoria
+  SELECTION     // Seleccion/reclutamiento de personal
+}
+
+/// 📝 Notas privadas del coach sobre miembros/sesiones
+model CoachNote {
+  id           String         @id @default(cuid())
+  communityId  String
+  memberId     String?        // Nota sobre miembro especifico (opcional)
+  authorId     String         // User que escribio
+  title        String?
+  content      String         @db.Text
+  category     String?        // session | observation | goal | concern
+  tags         String[]
+  isPrivate    Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author       User           @relation("CoachNoteAuthor", fields: [authorId], references: [id])
+
+  @@index([communityId, memberId])
+  @@index([authorId])
+  @@map("coach_note")
+}
+
+/// 🎯 Plan de desarrollo por miembro (auto-generable por IA)
+model DevelopmentPlan {
+  id           String         @id @default(cuid())
+  communityId  String
+  memberId     String         // CommunityMember.id o User.id
+  memberType   String         @default("community_member") // community_member | user
+  title        String
+  description  String?        @db.Text
+  goals        Json           // Array de SMART goals [{ title, description, targetDate, status, progress }]
+  strengths    String[]       // Competencias fortaleza detectadas
+  gaps         String[]       // Areas de mejora
+  resources    Json?          // [{ type, title, url, description }]
+  status       String         @default("active") // active | completed | paused | archived
+  targetDate   DateTime?
+  createdById  String         // Coach
+  aiGenerated  Boolean        @default(false)
+  aiPrompt     String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy    User           @relation("DevPlanCreator", fields: [createdById], references: [id])
+
+  @@index([communityId, memberId])
+  @@index([status])
+  @@map("development_plan")
+}
+
+/// 📅 Campaigns de evaluacion (SEI re-assessments periodicos, mood pulse, etc.)
+model AssessmentCampaign {
+  id              String         @id @default(cuid())
+  communityId     String
+  name            String
+  description     String?        @db.Text
+  assessmentType  String         // SEI | MoodPulse | Custom
+  targetMemberIds String[]       // Vacio = todos los miembros
+  scheduledAt     DateTime
+  dueAt           DateTime?
+  cycleId         String?        // Para agrupar re-assessments (Q1 2026, etc.)
+  status          String         @default("scheduled") // scheduled | active | completed | cancelled
+  sentCount       Int            @default(0)
+  responseCount   Int            @default(0)
+  reminderDays    Int[]          @default([3, 7])
+  lastReminderAt  DateTime?
+  createdById     String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  community       RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy       User           @relation("CampaignCreator", fields: [createdById], references: [id])
+
+  @@index([communityId, status])
+  @@index([scheduledAt])
+  @@map("assessment_campaign")
+}
+
+/// 🚨 Alertas inteligentes detectadas por IA (EQ drops, mood bajo, anomalias)
+model WorkspaceAlert {
+  id           String         @id @default(cuid())
+  communityId  String
+  memberId     String?        // Alerta sobre miembro especifico (opcional)
+  severity     String         // info | warning | critical
+  type         String         // eq_drop | mood_low | anomaly | inactive | goal_overdue | benchmark_ready
+  title        String
+  message      String         @db.Text
+  actionSuggestion String?    @db.Text
+  metadata     Json?
+  resolvedAt   DateTime?
+  resolvedById String?
+  dismissedAt  DateTime?
+  createdAt    DateTime       @default(now())
+
+  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  resolvedBy   User?          @relation("AlertResolver", fields: [resolvedById], references: [id])
+
+  @@index([communityId, resolvedAt])
+  @@index([severity, type])
+  @@map("workspace_alert")
+}
+
+/// 🔑 Acceso del cliente externo al workspace (readonly portal)
+model ClientAccess {
+  id           String         @id @default(cuid())
+  communityId  String
+  clientEmail  String
+  clientName   String?
+  accessToken  String         @unique @default(cuid())
+  permissions  Json           @default("{}")
+  // permissions: { viewDashboard, viewBenchmark, viewIndividuals, viewNotes, exportPdf }
+  expiresAt    DateTime?
+  lastAccessAt DateTime?
+  accessCount  Int            @default(0)
+  revokedAt    DateTime?
+  createdById  String
+  createdAt    DateTime       @default(now())
+
+  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy    User           @relation("ClientAccessCreator", fields: [createdById], references: [id])
+
+  @@index([communityId])
+  @@index([accessToken])
+  @@map("client_access")
+}
+
+// Audit log usa ActivityLog existente - no se duplica
+// Ver linea ~2615 model ActivityLog

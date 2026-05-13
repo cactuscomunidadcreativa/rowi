@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useState } from "react";
 import { Image, Lock, Globe2, Users } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function CommunityForm({
   open,
@@ -80,7 +81,7 @@ export default function CommunityForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Crear nueva comunidad</DialogTitle>
+          <DialogTitle>{t("admin.communities.form.createTitle")}</DialogTitle>
           <DialogDescription>
             Define los detalles básicos para tu nueva comunidad dentro del Hub.
           </DialogDescription>
@@ -89,27 +90,27 @@ export default function CommunityForm({
         <div className="space-y-4">
           {/* Nombre */}
           <Input
-            placeholder="Nombre de la comunidad"
+            placeholder={t("admin.communities.form.namePlaceholder")}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
 
           {/* Descripción */}
           <Textarea
-            placeholder="Descripción breve"
+            placeholder={t("admin.communities.form.descriptionPlaceholder")}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
 
           {/* Categoría */}
           <div>
-            <label className="text-sm font-medium text-gray-600">Categoría</label>
+            <label className="text-sm font-medium text-gray-600">{t("admin.communities.form.category")}</label>
             <Select
               value={form.category}
               onValueChange={(v) => setForm({ ...form, category: v })}
             >
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecciona categoría (opcional)" />
+                <SelectValue placeholder={t("admin.communities.form.selectCategoryOptional")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="mindfulness">🧘 Mindfulness</SelectItem>
@@ -123,13 +124,13 @@ export default function CommunityForm({
 
           {/* Visibilidad */}
           <div>
-            <label className="text-sm font-medium text-gray-600">Visibilidad</label>
+            <label className="text-sm font-medium text-gray-600">{t("admin.communities.form.visibility")}</label>
             <Select
               value={form.visibility}
               onValueChange={(v) => setForm({ ...form, visibility: v })}
             >
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecciona visibilidad" />
+                <SelectValue placeholder={t("admin.communities.form.selectVisibility")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">
@@ -160,7 +161,7 @@ export default function CommunityForm({
               <Image className="w-4 h-4 text-gray-400" /> Imagen de portada (URL)
             </label>
             <Input
-              placeholder="https://..."
+              placeholder={t("admin.communities.form.imageUrlPlaceholder")}
               value={form.bannerUrl}
               onChange={(e) => setForm({ ...form, bannerUrl: e.target.value })}
             />

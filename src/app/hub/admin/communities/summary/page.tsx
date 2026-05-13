@@ -21,7 +21,7 @@ interface Community {
 }
 
 export default function CommunitiesSummaryPage() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [totalCommunities, setTotalCommunities] = useState(0);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -154,9 +154,9 @@ export default function CommunitiesSummaryPage() {
             <table className="min-w-full text-sm text-gray-700 dark:text-gray-200">
               <thead className="bg-rowi-blueDay/10 text-rowi-blueDay uppercase text-xs">
                 <tr>
-                  <th className="px-4 py-3 text-left">Comunidad</th>
-                  <th className="px-4 py-3 text-left">Miembros</th>
-                  <th className="px-4 py-3 text-left">Usuarios Rowi</th>
+                  <th className="px-4 py-3 text-left">{t("admin.communities.summary.community")}</th>
+                  <th className="px-4 py-3 text-left">{t("admin.communities.summary.members")}</th>
+                  <th className="px-4 py-3 text-left">{t("admin.communities.summary.rowiUsers")}</th>
                 </tr>
               </thead>
               <tbody>

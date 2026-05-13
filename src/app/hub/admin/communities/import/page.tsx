@@ -570,7 +570,7 @@ export default function ImportCommunitiesPage() {
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">SuperHub</label>
+                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.superhub")}</label>
                       <AdminSelect
                         value={newCommunity.superHubId}
                         onChange={(v) => setNewCommunity({ ...newCommunity, superHubId: v })}
@@ -581,7 +581,7 @@ export default function ImportCommunitiesPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Hub</label>
+                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.hub")}</label>
                       <AdminSelect
                         value={newCommunity.hubId}
                         onChange={(v) => setNewCommunity({ ...newCommunity, hubId: v })}
@@ -592,7 +592,7 @@ export default function ImportCommunitiesPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Tenant</label>
+                      <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.tenant")}</label>
                       <AdminSelect
                         value={newCommunity.tenantId}
                         onChange={(v) => setNewCommunity({ ...newCommunity, tenantId: v })}

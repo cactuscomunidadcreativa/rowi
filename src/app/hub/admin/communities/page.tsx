@@ -689,7 +689,7 @@ export default function AdminCommunitiesPage() {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">SuperHub</label>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.superhub")}</label>
                   <AdminSelect
                     value={editor.superHubId}
                     onChange={(v) => setEditor({ ...editor, superHubId: v })}
@@ -700,7 +700,7 @@ export default function AdminCommunitiesPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Hub</label>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.hub")}</label>
                   <AdminSelect
                     value={editor.hubId}
                     onChange={(v) => setEditor({ ...editor, hubId: v })}
@@ -711,7 +711,7 @@ export default function AdminCommunitiesPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">Tenant</label>
+                  <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">{t("admin.communities.filters.tenant")}</label>
                   <AdminSelect
                     value={editor.tenantId}
                     onChange={(v) => setEditor({ ...editor, tenantId: v })}

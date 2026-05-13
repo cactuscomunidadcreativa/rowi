@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+import { useI18n } from "@/lib/i18n/I18nProvider";
   UserCircle2,
   Brain,
   Calendar,
@@ -21,6 +22,7 @@ import {
  */
 
 export default function MemberProfilePage() {
+  const { t } = useI18n();
   const { id } = useParams();
   const [member, setMember] = useState<any>(null);
   const [snapshots, setSnapshots] = useState<any[]>([]);
@@ -118,14 +120,14 @@ export default function MemberProfilePage() {
 
             {/* GRID PRINCIPAL */}
             <div className="grid md:grid-cols-2 gap-8">
-              <CardBlock title="Competencias Principales (K·C·G)">
+              <CardBlock title={t("admin.communities.member.mainCompetencies")}>
                 <Bar label="Know Yourself" value={s.K} />
                 <Bar label="Choose Yourself" value={s.C} />
                 <Bar label="Give Yourself" value={s.G} />
               </CardBlock>
 
               {s.subfactors?.length > 0 && (
-                <CardBlock title="Subfactores SEI">
+                <CardBlock title={t("admin.communities.member.subfactorsSEI")}>
                   {s.subfactors.map((sf: any) => (
                     <Bar key={sf.key} label={sf.label || sf.key} value={sf.score} />
                   ))}
@@ -133,7 +135,7 @@ export default function MemberProfilePage() {
               )}
 
               {s.outcomes?.length > 0 && (
-                <CardBlock title="Resultados (Outcomes)">
+                <CardBlock title={t("admin.communities.member.outcomes")}>
                   {s.outcomes.map((o: any) => (
                     <Bar key={o.key} label={o.label || o.key} value={o.score} />
                   ))}
@@ -141,7 +143,7 @@ export default function MemberProfilePage() {
               )}
 
               {s.success?.length > 0 && (
-                <CardBlock title="Factores de Éxito">
+                <CardBlock title={t("admin.communities.member.successFactors")}>
                   {s.success.map((x: any) => (
                     <Bar key={x.key} label={x.label || x.key} value={x.score} />
                   ))}
@@ -149,7 +151,7 @@ export default function MemberProfilePage() {
               )}
 
               {s.talents?.length > 0 && (
-                <CardBlock title="Talentos del Cerebro">
+                <CardBlock title={t("admin.communities.member.brainTalents")}>
                   {s.talents.map((t: any) => (
                     <Bar key={t.key} label={t.label || t.key} value={t.score} />
                   ))}

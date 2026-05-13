@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Search, Loader2, CheckCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface LinkUserModalProps {
   memberId: string;
@@ -16,6 +17,7 @@ export default function LinkUserModal({
   onClose,
   onLinked,
 }: LinkUserModalProps) {
+  const { t } = useI18n();
   const [users, setUsers] = useState<any[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -85,7 +87,7 @@ export default function LinkUserModal({
           <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Buscar por nombre o email..."
+            placeholder={t("admin.communities.linkUser.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rowi-blueDay"

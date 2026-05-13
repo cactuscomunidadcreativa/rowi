@@ -3623,5 +3623,8 @@
   "admin.benchmarks.upload.errorLabel": "Erro",
   "admin.benchmarks.pursuit.focus": "FOCO",
   "admin.benchmarks.pursuit.decisions": "DECISÕES",
-  "admin.benchmarks.pursuit.drive": "IMPULSO"
+  "admin.benchmarks.pursuit.drive": "IMPULSO",
+  "post.new.comingSoonTitle": "Em breve",
+  "post.new.comingSoonMessage": "Estamos preparando uma experiência melhor para criar e compartilhar seus posts. Volte em breve.",
+  "post.new.backToFeed": "Voltar ao feed"
 }

@@ -1,21 +1,19 @@
 // src/app/api/hub/test-messaging/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerAuthUser } from "@/core/auth";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
 /* =========================================================
-   🧪 Test Messaging Connection API
+   🧪 Test Messaging Connection API (super-admin only)
    ---------------------------------------------------------
    POST → Test email, SMS or WhatsApp connection
 ========================================================= */
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser();
-    if (!auth) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const body = await req.json();
     const { type, config } = body;

@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-import { useI18n } from "@/lib/i18n/I18nProvider";
   UserCircle2,
   Brain,
   Calendar,
@@ -12,6 +11,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
   HeartHandshake,
   Rocket,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /**
  * =========================================================

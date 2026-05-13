@@ -264,7 +264,7 @@ export default function AffinityPage() {
       setLoadingByMember((s) => ({ ...s, [member.id]: true }));
 
       const url = `/api/affinity?project=${normalizedProject}&memberId=${member.id}`;
-      console.log("[Affinity] Loading:", url);
+      if (process.env.NODE_ENV !== "production") console.log("[Affinity] Loading:", url);
 
       const r = await fetch(url, {
         cache: "no-store",
@@ -276,7 +276,7 @@ export default function AffinityPage() {
       }
 
       const j = await r.json();
-      console.log("[Affinity] Response for", member.name, ":", j?.ok, "heat:", j?.items?.[0]?.heat || j?.heat);
+      if (process.env.NODE_ENV !== "production") console.log("[Affinity] Response for", member.name, ":", j?.ok, "heat:", j?.items?.[0]?.heat || j?.heat);
 
       // Handle both direct response and items array format
       const aff = j?.items?.[0] ?? (j?.ok && (j?.heat || j?.heat135) ? j : null);
@@ -314,7 +314,7 @@ export default function AffinityPage() {
   async function loadAffinityForMultiple(membersToLoad: Member[]) {
     if (!membersToLoad.length) return;
 
-    console.log(`[Affinity] Loading ${membersToLoad.length} members...`);
+    if (process.env.NODE_ENV !== "production") console.log(`[Affinity] Loading ${membersToLoad.length} members...`);
 
     // Mark all as loading
     const loadingState: Record<string, boolean> = {};
@@ -351,13 +351,13 @@ export default function AffinityPage() {
     }
 
     // Update state with all results at once to avoid race conditions
-    console.log(`[Affinity] Updating state with ${Object.keys(results).length} results`);
+    if (process.env.NODE_ENV !== "production") console.log(`[Affinity] Updating state with ${Object.keys(results).length} results`);
     setAffByMember((prev) => ({
       ...prev,
       ...results,
     }));
 
-    console.log(`[Affinity] Finished loading ${membersToLoad.length} members`);
+    if (process.env.NODE_ENV !== "production") console.log(`[Affinity] Finished loading ${membersToLoad.length} members`);
   }
 
   /* =========================================================
@@ -384,7 +384,7 @@ export default function AffinityPage() {
         ? `Contexto de afinidad (proyecto: ${normalizedProject}):\n${memberContext}\n\nPregunta del usuario: ${seed}`
         : seed;
 
-      console.log("[AffinityCoach] Sending:", { intent: "affinity", locale: lang, ask: contextualAsk.substring(0, 100) + "..." });
+      if (process.env.NODE_ENV !== "production") console.log("[AffinityCoach] Sending:", { intent: "affinity", locale: lang, ask: contextualAsk.substring(0, 100) + "..." });
 
       const res = await fetch("/api/rowi", {
         method: "POST",
@@ -403,7 +403,7 @@ export default function AffinityPage() {
       }
 
       const j = await res.json();
-      console.log("[AffinityCoach] Response:", j);
+      if (process.env.NODE_ENV !== "production") console.log("[AffinityCoach] Response:", j);
       setChat((c) => [...c, { role: "assistant", content: j?.text || "No pude generar respuesta ahora." }]);
     } catch (err) {
       console.error("[AffinityCoach] Error:", err);

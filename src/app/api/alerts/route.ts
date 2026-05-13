@@ -1,6 +1,6 @@
 // apps/rowi/src/app/api/alerts/route.ts
 import { NextResponse } from "next/server";
-import { getAlerts } from "@/lib/kernel/alerts.service";
+import { emitAlert } from "@/lib/kernel/alerts.service";
 
 export async function POST(req: Request) {
   const body = await req.json();

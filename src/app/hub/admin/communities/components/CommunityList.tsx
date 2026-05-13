@@ -13,7 +13,6 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Users2, Eye, Lock, Globe2, MessageSquare } from "lucide-react";
 import CommunityActions from "./CommunityActions";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function CommunityList({ data = [], onDelete }: { data: any[]; onDelete?: (id: string) => void }) {
   if (!data?.length)
@@ -65,21 +64,13 @@ export default function CommunityList({ data = [], onDelete }: { data: any[]; on
           </CardHeader>
 
           <CardContent className="px-4 pb-3 space-y-3">
-            {/* Descripción corta con tooltip */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-xs text-muted-foreground line-clamp-3 cursor-help">
-                    {c.description || "Sin descripción disponible."}
-                  </p>
-                </TooltipTrigger>
-                {c.description && (
-                  <TooltipContent className="max-w-xs text-xs">
-                    {c.description}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            {/* Descripción corta con tooltip nativo (atributo title) */}
+            <p
+              className="text-xs text-muted-foreground line-clamp-3 cursor-help"
+              title={c.description || undefined}
+            >
+              {c.description || "Sin descripción disponible."}
+            </p>
 
             {/* Métricas */}
             <div className="flex justify-between items-center text-[12px] text-gray-600 dark:text-gray-300 pt-1">

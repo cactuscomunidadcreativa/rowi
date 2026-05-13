@@ -265,6 +265,7 @@ Combina las perspectivas de cada agente en una respuesta fluida y accionable.`;
         `Responde en ${language} con un resumen emocionalmente relevante y 1 idea práctica.`,
       ].join("\n");
 
+      const ai = await getOpenAIClient();
       const completion = await ai.chat.completions.create({
         model: "gpt-4o-mini",
         temperature: 0.5,

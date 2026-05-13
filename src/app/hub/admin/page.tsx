@@ -49,6 +49,7 @@ interface ScopeInfo {
 
 export default function AdminDashboard() {
   const { t, ready } = useI18n();
+  const seiToast = useRowiSEIToast();
   const [stats, setStats] = useState<DashboardStats>({
     users: 0,
     tenants: 0,
@@ -96,15 +97,7 @@ export default function AdminDashboard() {
   const quickLinks = isSuperAdmin ? allLinks : allLinks.filter((l) => !l.superOnly);
 
   function handleTestSEI() {
-    if (typeof RowiSEIToast !== "undefined") {
-      RowiSEIToast.show(
-        "ky",
-        t("admin.dashboard.seiTitle"),
-        t("admin.dashboard.seiMessage")
-      );
-    } else {
-      toast.success(t("admin.dashboard.seiTitle"));
-    }
+    seiToast.show("ky", t("admin.dashboard.seiMessage"));
   }
 
   return (

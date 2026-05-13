@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type OpenAI from "openai";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { getServerAuthUser } from "@/core/auth";

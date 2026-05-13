@@ -35,6 +35,7 @@ export default function UserInspector({
   userId: string;
   onClose: () => void;
 }) {
+  const { lang } = useI18n();
   const [user, setUser] = useState<any | null>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);

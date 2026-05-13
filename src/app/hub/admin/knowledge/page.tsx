@@ -28,7 +28,7 @@ const KNOW_T = {
 };
 
 export default function KnowledgeAdminPage() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const [resources, setResources] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -134,7 +134,7 @@ export default function KnowledgeAdminPage() {
           <div className="flex items-center bg-white/70 dark:bg-gray-800/60 rounded-lg px-3 py-2 flex-1">
             <Search className="w-4 h-4 text-rowi-blueDay mr-2" />
             <input
-              placeholder="Buscar por título, etiqueta o agente..."
+              placeholder={t("admin.knowledge.searchPlaceholder")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -149,28 +149,28 @@ export default function KnowledgeAdminPage() {
             onChange={(e) => setFilterKind(e.target.value)}
             className={selectRowi}
           >
-            <option value="all">Todos los tipos</option>
-            <option value="manual">Manual</option>
-            <option value="insight">Insight</option>
+            <option value="all">{t("admin.knowledge.allTypes")}</option>
+            <option value="manual">{t("admin.knowledge.typeManual")}</option>
+            <option value="insight">{t("admin.knowledge.typeInsight")}</option>
             <option value="ia">IA</option>
           </select>
 
           <select value={filterHub} onChange={(e) => setFilterHub(e.target.value)} className={selectRowi}>
-            <option value="">Todos los Hubs</option>
+            <option value="">{t("admin.knowledge.allHubs")}</option>
             {hubs.map((h) => (
               <option key={h}>{h}</option>
             ))}
           </select>
 
           <select value={filterTenant} onChange={(e) => setFilterTenant(e.target.value)} className={selectRowi}>
-            <option value="">Todos los Tenants</option>
+            <option value="">{t("admin.knowledge.allTenants")}</option>
             {tenants.map((t) => (
               <option key={t}>{t}</option>
             ))}
           </select>
 
           <select value={filterSuperHub} onChange={(e) => setFilterSuperHub(e.target.value)} className={selectRowi}>
-            <option value="">Todos los SuperHubs</option>
+            <option value="">{t("admin.knowledge.allSuperhubs")}</option>
             {superHubs.map((s) => (
               <option key={s}>{s}</option>
             ))}
@@ -189,10 +189,10 @@ export default function KnowledgeAdminPage() {
         </h2>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <input placeholder="Título" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputRowi} />
-          <input placeholder="URL o fuente" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} className={inputRowi} />
-          <input placeholder="Tipo (manual, insight, IA)" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={inputRowi} />
-          <input placeholder="Etiquetas (coma)" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} className={inputRowi} />
+          <input placeholder={t("admin.knowledge.formTitle")} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputRowi} />
+          <input placeholder={t("admin.knowledge.formUrl")} value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} className={inputRowi} />
+          <input placeholder={t("admin.knowledge.formKind")} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={inputRowi} />
+          <input placeholder={t("admin.knowledge.formTags")} value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} className={inputRowi} />
 
           {/* Vincular agentes */}
           <div className="col-span-full border rounded-xl p-3 bg-white/50 dark:bg-gray-800/40">

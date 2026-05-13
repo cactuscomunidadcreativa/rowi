@@ -19,6 +19,7 @@ import {
   Landmark,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    🌐 Panel de Prompts IA — Rowi Prompt Manager
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 ========================================================= */
 
 export default function PromptsPage() {
+  const { t } = useI18n();
   const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -43,7 +45,7 @@ export default function PromptsPage() {
       setAgents(Array.isArray(data.agents) ? data.agents : []);
     } catch (err) {
       console.error(err);
-      toast.error("Error cargando prompts");
+      toast.error(t("admin.prompts.errorLoading"));
     } finally {
       setLoading(false);
     }
@@ -100,7 +102,7 @@ export default function PromptsPage() {
         </div>
         <div className="flex gap-2">
           <Input
-            placeholder="Buscar agente..."
+            placeholder={t("admin.prompts.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-60"
@@ -116,7 +118,7 @@ export default function PromptsPage() {
           <Loader2 className="w-4 h-4 animate-spin" /> Cargando prompts...
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No se encontraron prompts.</p>
+        <p className="text-sm text-muted-foreground">{t("admin.prompts.noResults")}</p>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((a) => {

@@ -135,7 +135,7 @@ export default function LandingBuilderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      toast.success("Sección guardada");
+      toast.success(t("admin.landingBuilder.sectionSaved"));
       loadSections();
     } catch (e: any) {
       toast.error(e.message);
@@ -161,7 +161,7 @@ export default function LandingBuilderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      toast.success("Sección eliminada");
+      toast.success(t("admin.landingBuilder.sectionDeleted"));
       setSelectedSection(null);
       loadSections();
     } catch (e: any) {
@@ -189,7 +189,7 @@ export default function LandingBuilderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      toast.success("Sección creada");
+      toast.success(t("admin.landingBuilder.sectionCreated"));
       setShowAddModal(false);
       loadSections();
     } catch (e: any) {
@@ -225,9 +225,9 @@ export default function LandingBuilderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderedIds }),
       });
-      toast.success("Orden actualizado");
+      toast.success(t("admin.landingBuilder.orderUpdated"));
     } catch (e: any) {
-      toast.error("Error al reordenar");
+      toast.error(t("admin.landingBuilder.errorReordering"));
     }
 
     setDraggedIndex(null);

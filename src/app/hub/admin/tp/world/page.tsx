@@ -655,7 +655,7 @@ function ErrorState({ title, desc, onRetry }: { title: string; desc: string; onR
    Main Page
 ========================================================= */
 export default function TPWorldPage() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
   const [selectedBenchmark, setSelectedBenchmark] = useState<BenchmarkKey>("global");
 
@@ -1045,7 +1045,7 @@ export default function TPWorldPage() {
         </h2>
         <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.compChartDesc}</p>
         <div className="flex items-center gap-6 mb-4 text-xs">
-          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#7B2D8E" }} /><span>Teleperformance</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#7B2D8E" }} /><span>{t("admin.tp.world.teleperformance")}</span></div>
           <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: compareColor }} /><span>{compareName}</span></div>
           <div className="flex items-center gap-2 ml-auto"><span className="text-[var(--rowi-muted)]">{t.delta}</span></div>
         </div>

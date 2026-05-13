@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    🧱 Layout Visual Builder — v4.1
@@ -49,6 +50,7 @@ function normalizeLayout(layout: any) {
 }
 
 export default function EditLayoutPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const { id } = useParams();
   const [layout, setLayout] = useState<any | null>(null);
@@ -128,7 +130,7 @@ export default function EditLayoutPage() {
     if (!newZone.trim()) return toast.warning("Ingresa un nombre para la zona");
     const zoneKey = newZone.trim().replace(/\s+/g, "_").toLowerCase();
     const zones = { ...layout.structure.zones };
-    if (zones[zoneKey]) return toast.error("Ya existe esa zona");
+    if (zones[zoneKey]) return toast.error(t("admin.layouts.zoneExists"));
     zones[zoneKey] = { components: [] };
     setLayout({ ...layout, structure: { zones } });
     setNewZone("");
@@ -138,7 +140,7 @@ export default function EditLayoutPage() {
   function removeZone(zoneKey: string) {
     const zones = { ...layout.structure.zones };
     if (["header", "main", "footer"].includes(zoneKey))
-      return toast.error("No puedes eliminar zonas base");
+      return toast.error(t("admin.layouts.cantRemoveBaseZones"));
     delete zones[zoneKey];
     setLayout({ ...layout, structure: { zones } });
   }
@@ -234,13 +236,13 @@ export default function EditLayoutPage() {
       {/* Info general */}
       <Card className="p-4 border border-border shadow-sm bg-white dark:bg-zinc-900">
         <Input
-          placeholder="Nombre del layout"
+          placeholder={t("admin.layouts.namePlaceholder")}
           value={layout.name}
           onChange={(e) => setLayout({ ...layout, name: e.target.value })}
           className="mb-2"
         />
         <Textarea
-          placeholder="Descripción..."
+          placeholder={t("admin.layouts.descriptionPlaceholder")}
           value={layout.description || ""}
           onChange={(e) => setLayout({ ...layout, description: e.target.value })}
         />
@@ -291,7 +293,7 @@ export default function EditLayoutPage() {
           {/* ➕ Agregar zona */}
           <Card className="p-4 flex items-center gap-2 border border-dashed">
             <Input
-              placeholder="Nombre de nueva zona (ej: sidebar, hero, stats)"
+              placeholder={t("admin.layouts.newZonePlaceholder")}
               value={newZone}
               onChange={(e) => setNewZone(e.target.value)}
               className="flex-1"

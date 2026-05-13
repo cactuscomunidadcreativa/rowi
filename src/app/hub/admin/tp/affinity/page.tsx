@@ -740,7 +740,7 @@ const COMPLEMENTARY_PAIRS: { a: string; b: string; reasonEs: string; reasonEn: s
    Main Page
 ========================================================= */
 export default function TPAffinityPage() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [activeTab, setActiveTab] = useState<TabType>("community");
@@ -1541,7 +1541,7 @@ export default function TPAffinityPage() {
                       <Bot className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Affinity Coach</h3>
+                      <h3 className="font-semibold">{t("admin.tp.affinity.coachTitle")}</h3>
                       <p className="text-xs text-[var(--rowi-muted)]">{t.coachSubtitle}</p>
                     </div>
                   </div>

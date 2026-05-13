@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/requireAuth";
 
 export const runtime = "nodejs";
 
@@ -13,21 +14,42 @@ export const runtime = "nodejs";
  *
  * Query params:
  *  - communityId: ID de la comunidad (requerido)
+ *
+ * 🔐 Autorización:
+ *  - El solicitante debe ser miembro de la comunidad,
+ *    o ser super admin.
  * =========================================================
  */
 export async function GET(req: NextRequest) {
-  // Obtener communityId de query params
-  const searchParams = req.nextUrl.searchParams;
-  const communityId = searchParams.get("communityId");
-
-  if (!communityId) {
-    return NextResponse.json(
-      { error: "communityId is required" },
-      { status: 400 }
-    );
-  }
-
   try {
+    const auth = await requireAuth();
+    if (!auth.success) return auth.error;
+
+    // Obtener communityId de query params
+    const searchParams = req.nextUrl.searchParams;
+    const communityId = searchParams.get("communityId");
+
+    if (!communityId) {
+      return NextResponse.json(
+        { error: "communityId is required" },
+        { status: 400 }
+      );
+    }
+
+    // 🔐 Membership check: el usuario debe pertenecer a la comunidad o ser super admin
+    if (!auth.user.isSuperAdmin) {
+      const isMember = await prisma.rowiCommunityUser.findFirst({
+        where: { communityId, userId: auth.user.id },
+        select: { id: true },
+      });
+      if (!isMember) {
+        return NextResponse.json(
+          { error: "No autorizado para ver los miembros de esta comunidad" },
+          { status: 403 }
+        );
+      }
+    }
+
     const members = await prisma.rowiCommunityUser.findMany({
       where: { communityId },
       orderBy: { joinedAt: "asc" },

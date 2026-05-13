@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/requireAuth";
 
 export const runtime = "nodejs";
 
@@ -9,10 +10,18 @@ export const runtime = "nodejs";
  * ---------------------------------------------------------
  * /api/hub/eq/snapshots?memberId=xxx
  * /api/hub/eq/snapshots?userId=yyy
+ *
+ * 🔐 Autorización:
+ *  - El propio usuario puede ver sus snapshots.
+ *  - Un super admin puede ver los de cualquiera.
+ *  - Otros casos → 403.
  * =========================================================
  */
 export async function GET(req: Request) {
   try {
+    const auth = await requireAuth();
+    if (!auth.success) return auth.error;
+
     const { searchParams } = new URL(req.url);
     const memberId = searchParams.get("memberId");
     const userIdParam = searchParams.get("userId");
@@ -24,7 +33,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // 🧩 Si tenemos un memberId, buscamos el userId asociado
+    // 🧩 Resolver el userId final (a partir de memberId si hace falta)
     let userId: string | undefined = userIdParam || undefined;
     if (memberId) {
       const member = await prisma.rowiCommunityUser.findUnique({
@@ -32,6 +41,14 @@ export async function GET(req: Request) {
         select: { userId: true },
       });
       if (member?.userId) userId = member.userId;
+    }
+
+    // 🔐 Ownership check: solo el propio usuario o un super admin
+    if (userId && userId !== auth.user.id && !auth.user.isSuperAdmin) {
+      return NextResponse.json(
+        { error: "No autorizado para ver estos snapshots" },
+        { status: 403 }
+      );
     }
 
     const snapshots = await prisma.eqSnapshot.findMany({

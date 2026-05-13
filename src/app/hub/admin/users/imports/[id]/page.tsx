@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckSquare, Building2, Layers, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function ImportDetailPage({ params }: any) {
+  const { t } = useI18n();
   const [batch, setBatch] = useState<any>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [assign, setAssign] = useState({ tenantId: "", hubId: "", organizationId: "" });
@@ -51,7 +53,7 @@ export default function ImportDetailPage({ params }: any) {
       </div>
     );
 
-  if (!batch) return <p className="text-center p-6">Batch no encontrado</p>;
+  if (!batch) return <p className="text-center p-6">{t("admin.users.batch.notFound")}</p>;
 
   return (
     <main className="p-6 space-y-6">
@@ -75,7 +77,7 @@ export default function ImportDetailPage({ params }: any) {
           onChange={(e) => setAssign({ ...assign, tenantId: e.target.value })}
         >
           <option value="">🧱 Tenant</option>
-          <option value="tenant1">Tenant Ejemplo</option>
+          <option value="tenant1">{t("admin.users.batch.tenantExample")}</option>
         </select>
 
         <select
@@ -83,7 +85,7 @@ export default function ImportDetailPage({ params }: any) {
           onChange={(e) => setAssign({ ...assign, hubId: e.target.value })}
         >
           <option value="">🔹 Hub</option>
-          <option value="hub1">Hub Ejemplo</option>
+          <option value="hub1">{t("admin.users.batch.hubExample")}</option>
         </select>
 
         <select
@@ -91,7 +93,7 @@ export default function ImportDetailPage({ params }: any) {
           onChange={(e) => setAssign({ ...assign, organizationId: e.target.value })}
         >
           <option value="">🏢 Organización</option>
-          <option value="org1">Org Ejemplo</option>
+          <option value="org1">{t("admin.users.batch.orgExample")}</option>
         </select>
       </div>
 
@@ -99,10 +101,10 @@ export default function ImportDetailPage({ params }: any) {
         <table className="w-full text-xs border-collapse">
           <thead className="bg-gray-50 dark:bg-zinc-800">
             <tr>
-              <th className="p-2 text-left">Seleccionar</th>
-              <th className="p-2 text-left">Nombre</th>
-              <th className="p-2 text-left">Email</th>
-              <th className="p-2 text-left">Rol</th>
+              <th className="p-2 text-left">{t("admin.users.batch.select")}</th>
+              <th className="p-2 text-left">{t("admin.users.batch.name")}</th>
+              <th className="p-2 text-left">{t("admin.users.batch.email")}</th>
+              <th className="p-2 text-left">{t("admin.users.batch.role")}</th>
             </tr>
           </thead>
           <tbody>

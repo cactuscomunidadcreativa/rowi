@@ -7,11 +7,13 @@ import { Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import Papa from "papaparse";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    📦 ImportUserModal — Subida y previsualización de usuarios
 ========================================================= */
 export default function ImportUserModal({ tenants = [], onComplete }: any) {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [tenantId, setTenantId] = useState("");
@@ -49,7 +51,7 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
         toast.info(`Archivo cargado (${parsed.length} registros detectados)`);
       } catch (err: any) {
         console.error(err);
-        toast.error("Error leyendo el archivo");
+        toast.error(t("admin.users.import.errorReadingFile"));
       }
     };
 
@@ -64,8 +66,8 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
      🚀 Subir al servidor y crear usuarios
   ========================================================== */
   async function handleUpload() {
-    if (!file) return toast.error("Selecciona un archivo antes de continuar");
-    if (!tenantId) return toast.error("Selecciona un tenant antes de importar");
+    if (!file) return toast.error(t("admin.users.import.selectFileFirst"));
+    if (!tenantId) return toast.error(t("admin.users.import.selectTenantFirst"));
 
     const formData = new FormData();
     formData.append("file", file);
@@ -94,7 +96,7 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
       onComplete?.();
     } catch (err: any) {
       console.error(err);
-      toast.error("Error subiendo archivo");
+      toast.error(t("admin.users.import.errorUploading"));
     } finally {
       setLoading(false);
     }
@@ -127,13 +129,13 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
         <div className="space-y-3">
           {/* Tenant */}
           <div>
-            <label className="text-xs text-gray-500">Tenant de destino</label>
+            <label className="text-xs text-gray-500">{t("admin.users.import.targetTenant")}</label>
             <select
               className="w-full h-9 border rounded-md px-2"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
             >
-              <option value="">Seleccionar...</option>
+              <option value="">{t("admin.users.import.selectGeneric")}</option>
               {tenants.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -144,7 +146,7 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
 
           {/* Archivo */}
           <div>
-            <label className="text-xs text-gray-500">Archivo CSV o Excel</label>
+            <label className="text-xs text-gray-500">{t("admin.users.import.csvOrExcelFile")}</label>
             <input
               type="file"
               accept=".csv,.xlsx,.xls"

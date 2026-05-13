@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Upload, FileSpreadsheet, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    📤 Importar Usuarios desde CSV (Batch Import)
@@ -13,6 +14,7 @@ import { toast } from "sonner";
    Permite subir archivos CSV para crear usuarios preconfigurados
 ========================================================= */
 export default function UserImportsPage() {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [batches, setBatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function UserImportsPage() {
       setBatches(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      toast.error("Error cargando importaciones");
+      toast.error(t("admin.users.imports.errorLoading"));
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,7 @@ export default function UserImportsPage() {
   ========================================================== */
   async function handleUpload() {
     if (!file) {
-      toast.error("Selecciona un archivo CSV primero");
+      toast.error(t("admin.users.imports.selectCSVFirst"));
       return;
     }
 
@@ -96,11 +98,11 @@ export default function UserImportsPage() {
           <Button onClick={handleUpload} disabled={uploading}>
             {uploading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Subiendo...
+                <Loader2 className="w-4 h-4 animate-spin" /> {t('admin.users.imports.uploading')}
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4" /> Subir CSV
+                <Upload className="w-4 h-4" /> {t('admin.users.imports.uploadCSV')}
               </>
             )}
           </Button>

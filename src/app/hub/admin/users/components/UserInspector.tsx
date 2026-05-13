@@ -35,7 +35,7 @@ export default function UserInspector({
   userId: string;
   onClose: () => void;
 }) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const [user, setUser] = useState<any | null>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);
@@ -96,7 +96,7 @@ export default function UserInspector({
       setAffinity(affinityData.snapshots || []);
     } catch (e: any) {
       console.error(e);
-      toast.error("Error cargando datos del usuario");
+      toast.error(t("admin.users.inspector.errorLoadingUser"));
     } finally {
       setLoading(false);
     }
@@ -119,10 +119,10 @@ export default function UserInspector({
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error);
-      toast.success("✅ Usuario actualizado correctamente");
+      toast.success(t("admin.users.inspector.userUpdated"));
       onClose();
     } catch (e: any) {
-      toast.error(e.message);
+      console.error(e); toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }
@@ -136,7 +136,7 @@ export default function UserInspector({
       <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
         <Card className="p-6 bg-white dark:bg-zinc-900 flex items-center gap-2">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <p>{lang === "es" ? "Cargando usuario..." : lang === "pt" ? "Carregando usuário..." : lang === "it" ? "Caricamento utente..." : "Loading user..."}</p>
+          <p>{lang === "es" ? t("admin.users.inspector.loadingUser") : t("admin.users.inspector.loadingUser")}</p>
         </Card>
       </div>
     );
@@ -153,27 +153,27 @@ export default function UserInspector({
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-semibold flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-500" />{" "}
-            {user.name || "Usuario"}
+            {user.name || t("admin.users.inspector.unknownUser")}
           </h1>
           <Button size="sm" variant="ghost" onClick={onClose}>
-            <X className="w-4 h-4" /> Cerrar
+            <X className="w-4 h-4" /> {t("admin.users.inspector.close")}
           </Button>
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="info" className="w-full">
           <TabsList className="grid grid-cols-4 mb-3">
-            <TabsTrigger value="info">👤 Info</TabsTrigger>
-            <TabsTrigger value="structure">🧱 Estructura</TabsTrigger>
-            <TabsTrigger value="roles">💼 Roles & Planes</TabsTrigger>
-            <TabsTrigger value="activity">📊 Actividad & Insights</TabsTrigger>
+            <TabsTrigger value="info">{t("admin.users.inspector.tabInfo")}</TabsTrigger>
+            <TabsTrigger value="structure">{t("admin.users.inspector.tabStructure")}</TabsTrigger>
+            <TabsTrigger value="roles">{t("admin.users.inspector.tabRoles")}</TabsTrigger>
+            <TabsTrigger value="activity">{t("admin.users.inspector.tabActivity")}</TabsTrigger>
           </TabsList>
 
           {/* TAB 1 - Info */}
           <TabsContent value="info" className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500">Email</label>
+                <label className="text-xs text-gray-500">{t("admin.users.inspector.email")}</label>
                 <input
                   value={user.email || ""}
                   className="w-full border rounded-md px-2 h-8"
@@ -183,7 +183,7 @@ export default function UserInspector({
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500">Rol global</label>
+                <label className="text-xs text-gray-500">{t("admin.users.inspector.globalRole")}</label>
                 <select
                   value={user.organizationRole || ""}
                   onChange={(e) =>
@@ -211,7 +211,7 @@ export default function UserInspector({
                     setUser({ ...user, allowAI: e.target.checked })
                   }
                 />
-                IA habilitada
+                {t("admin.users.inspector.aiEnabled")}
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -229,19 +229,19 @@ export default function UserInspector({
           {/* TAB 2 - Estructura */}
           <TabsContent value="structure" className="space-y-5">
             <StructureSection
-              title="Tenants"
+              title={t("admin.users.inspector.tenants")}
               icon={Building2}
               items={user.memberships || []}
               all={tenants}
             />
             <StructureSection
-              title="Hubs"
+              title={t("admin.users.inspector.hubs")}
               icon={Layers}
               items={user.hubMemberships || []}
               all={hubs}
             />
             <StructureSection
-              title="Organizaciones"
+              title={t("admin.users.inspector.organizations")}
               icon={Users}
               items={user.orgMemberships || []}
               all={orgs}
@@ -289,25 +289,25 @@ export default function UserInspector({
             {usage.analytics && (
               <div className="grid sm:grid-cols-4 gap-3 mb-4">
                 <Card className="p-3 text-center border bg-blue-50 dark:bg-blue-900/20">
-                  <p className="text-xs text-gray-500">Tokens totales</p>
+                  <p className="text-xs text-gray-500">{t("admin.users.inspector.totalTokens")}</p>
                   <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
                     {usage.analytics.totalTokens?.toLocaleString() || 0}
                   </p>
                 </Card>
                 <Card className="p-3 text-center border bg-purple-50 dark:bg-purple-900/20">
-                  <p className="text-xs text-gray-500">Sesiones IA</p>
+                  <p className="text-xs text-gray-500">{t("admin.users.inspector.aiSessions")}</p>
                   <p className="text-xl font-semibold text-purple-600 dark:text-purple-400">
                     {usage.analytics.totalSessions || 0}
                   </p>
                 </Card>
                 <Card className="p-3 text-center border bg-emerald-50 dark:bg-emerald-900/20">
-                  <p className="text-xs text-gray-500">Agente más usado</p>
+                  <p className="text-xs text-gray-500">{t("admin.users.inspector.mostUsedAgent")}</p>
                   <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {usage.analytics.mostUsedFeature || "—"}
                   </p>
                 </Card>
                 <Card className="p-3 text-center border bg-orange-50 dark:bg-orange-900/20">
-                  <p className="text-xs text-gray-500">Último uso</p>
+                  <p className="text-xs text-gray-500">{t("admin.users.inspector.lastUse")}</p>
                   <p className="text-sm font-medium text-orange-700 dark:text-orange-400">
                     {usage.analytics.lastUsage
                       ? new Date(
@@ -321,17 +321,17 @@ export default function UserInspector({
 
             <ActivitySection
               icon={ActivitySquare}
-              title="Acciones recientes"
+              title={t("admin.users.inspector.recentActivity")}
               data={activity}
             />
             <ActivitySection
               icon={Sparkles}
-              title="Afinidad emocional"
+              title={t("admin.users.inspector.emotionalAffinity")}
               data={affinity}
             />
             <ActivitySection
               icon={Clock4}
-              title="Consumo IA (histórico)"
+              title={t("admin.users.inspector.aiUsageHistory")}
               data={usage.usage || []}
             />
           </TabsContent>
@@ -385,7 +385,7 @@ function ActivitySection({ icon: Icon, title, data }: any) {
         <Icon className="w-4 h-4 text-blue-500" /> {title}
       </h3>
       {data.length === 0 ? (
-        <p className="text-xs text-gray-400">No hay registros.</p>
+        <p className="text-xs text-gray-400">{t("admin.users.inspector.noRecords")}</p>
       ) : (
         <ul className="text-xs space-y-1 max-h-48 overflow-y-auto border p-2 rounded-md bg-gray-50 dark:bg-zinc-800">
           {data.map((d: any, i: number) => (

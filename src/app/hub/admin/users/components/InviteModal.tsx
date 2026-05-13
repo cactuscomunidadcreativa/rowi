@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type InviteModalProps = {
   tenants: { id: string; name: string }[];
@@ -15,6 +16,7 @@ type InviteModalProps = {
 };
 
 export default function InviteModal({ tenants, roles }: InviteModalProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -28,7 +30,7 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
 
   async function sendInvite() {
     if (!form.email) {
-      toast.error("Debes ingresar un correo electrónico");
+      toast.error(t("admin.users.invite.emailRequired"));
       return;
     }
     startTransition(async () => {
@@ -40,7 +42,7 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Error al crear invitación");
-        toast.success("Invitación enviada ✅");
+        toast.success(t("admin.users.invite.sent"));
         setInviteLink(data.link);
         setForm({ email: "", tenantId: "", role: "", planId: "", expiresInDays: 7 });
       } catch (e: any) {
@@ -58,15 +60,15 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Invitar nuevo usuario</DialogTitle>
+          <DialogTitle>{t("admin.users.invite.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid gap-2">
-            <Label>Email</Label>
+            <Label>{t("admin.users.invite.email")}</Label>
             <Input
               type="email"
-              placeholder="correo@empresa.com"
+              placeholder={t("admin.users.invite.emailPlaceholder")}
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
@@ -79,7 +81,7 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
               value={form.tenantId}
               onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
             >
-              <option value="">Seleccionar tenant...</option>
+              <option value="">{t("admin.users.invite.selectTenant")}</option>
               {tenants.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -89,13 +91,13 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label>Rol asignado</Label>
+            <Label>{t("admin.users.invite.assignedRole")}</Label>
             <select
               className="border rounded-md h-9 px-2 text-sm"
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
             >
-              <option value="">Seleccionar rol...</option>
+              <option value="">{t("admin.users.invite.selectRole")}</option>
               {roles.map((r) => (
                 <option key={r.id} value={r.name}>
                   {r.name} ({r.level})
@@ -105,7 +107,7 @@ export default function InviteModal({ tenants, roles }: InviteModalProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label>Días hasta expiración</Label>
+            <Label>{t("admin.users.invite.daysUntilExpiration")}</Label>
             <Input
               type="number"
               value={form.expiresInDays}

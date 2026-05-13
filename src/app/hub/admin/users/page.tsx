@@ -1020,12 +1020,12 @@ function UserForm({
                 <p className="text-xs font-medium text-[var(--rowi-muted)]">{t("admin.users.currentAssignments", "Asignaciones actuales:")}</p>
                 {user.hubs?.map((hub: any, i: number) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
-                    <span className="text-[var(--rowi-muted)]">Hub:</span>
+                    <span className="text-[var(--rowi-muted)]">{t("admin.users.list.hub")}</span>
                     <span className="font-medium text-[var(--rowi-foreground)]">{hub.name}</span>
                     {hub.superHub && (
                       <>
                         <span className="text-[var(--rowi-muted)]">→</span>
-                        <span className="text-[var(--rowi-muted)]">SuperHub:</span>
+                        <span className="text-[var(--rowi-muted)]">{t("admin.users.list.superhub")}</span>
                         <span className="font-medium text-[var(--rowi-foreground)]">{hub.superHub.name}</span>
                       </>
                     )}
@@ -1033,7 +1033,7 @@ function UserForm({
                 ))}
                 {user.orgMemberships?.map((om: any, i: number) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
-                    <span className="text-[var(--rowi-muted)]">Org:</span>
+                    <span className="text-[var(--rowi-muted)]">{t("admin.users.list.org")}</span>
                     <span className="font-medium text-[var(--rowi-foreground)]">{om.organization?.name || om.organizationId}</span>
                     <AdminBadge variant="neutral" className="text-[10px]">{om.role}</AdminBadge>
                   </div>
@@ -1108,7 +1108,7 @@ function UserForm({
               <div className="p-3 bg-[var(--rowi-background)] rounded-lg">
                 <div className="grid grid-cols-3 gap-3 text-xs">
                   <div>
-                    <span className="text-[var(--rowi-muted)]">Snapshots:</span>
+                    <span className="text-[var(--rowi-muted)]">{t("admin.users.list.snapshots")}</span>
                     <span className="ml-1 font-medium">{user.eqSnapshots.length}</span>
                   </div>
                   {user.eqSnapshots[0] && (
@@ -1126,11 +1126,11 @@ function UserForm({
                         <span className="ml-1 font-medium">{user.eqSnapshots[0].G || "—"}</span>
                       </div>
                       <div>
-                        <span className="text-[var(--rowi-muted)]">Overall:</span>
+                        <span className="text-[var(--rowi-muted)]">{t("admin.users.list.overall")}</span>
                         <span className="ml-1 font-medium">{user.eqSnapshots[0].overall4 || "—"}</span>
                       </div>
                       <div>
-                        <span className="text-[var(--rowi-muted)]">Brain Style:</span>
+                        <span className="text-[var(--rowi-muted)]">{t("admin.users.list.brainStyle")}</span>
                         <span className="ml-1 font-medium">{user.eqSnapshots[0].brainStyle || "—"}</span>
                       </div>
                     </>

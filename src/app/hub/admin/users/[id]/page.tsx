@@ -16,6 +16,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
  */
 
 export default function UserTimelineProfile() {
+  const { t } = useI18n();
   const { lang } = useI18n();
   const { id } = useParams();
   const [user, setUser] = useState<any>(null);
@@ -57,7 +58,7 @@ export default function UserTimelineProfile() {
   if (loading)
     return <p className="p-6 text-sm text-muted-foreground">{lang === "es" ? "Cargando perfil..." : lang === "pt" ? "Carregando perfil..." : lang === "it" ? "Caricamento profilo..." : "Loading profile..."}</p>;
   if (!user)
-    return <p className="p-6 text-sm text-muted-foreground">Usuario no encontrado.</p>;
+    return <p className="p-6 text-sm text-muted-foreground">{t("admin.users.detail.userNotFound")}</p>;
 
   return (
     <div className="p-8 space-y-8">
@@ -127,7 +128,7 @@ export default function UserTimelineProfile() {
                 </div>
 
                 {/* Subfactores */}
-                <SectionTitle title="Subfactores" />
+                <SectionTitle title={t("admin.users.detail.subfactors")} />
                 <GridBars
                   data={[
                     ["EL", s.EL],
@@ -142,7 +143,7 @@ export default function UserTimelineProfile() {
                 />
 
                 {/* Outcomes */}
-                <SectionTitle title="Outcomes" />
+                <SectionTitle title={t("admin.users.detail.outcomes")} />
                 <GridBars
                   data={[
                     ["Effectiveness", s.effectiveness],
@@ -153,7 +154,7 @@ export default function UserTimelineProfile() {
                 />
 
                 {/* Factores de Éxito */}
-                <SectionTitle title="Factores de Éxito" />
+                <SectionTitle title={t("admin.users.detail.successFactors")} />
                 <GridBars
                   data={[
                     ["Influence", s.Influence],
@@ -170,7 +171,7 @@ export default function UserTimelineProfile() {
                 {/* Reflexiones / Progress */}
                 {snapProgress.length > 0 && (
                   <>
-                    <SectionTitle title="Reflexiones y Progreso" />
+                    <SectionTitle title={t("admin.users.detail.reflectionsProgress")} />
                     <div className="mt-2 border-t pt-3 space-y-4">
                       {snapProgress.map((p) => (
                         <div
@@ -188,17 +189,17 @@ export default function UserTimelineProfile() {
 
                           {p.reflection && (
                             <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                              💭 <strong>Reflexión:</strong> {p.reflection}
+                              💭 <strong>{t("admin.users.detail.reflection")}:</strong> {p.reflection}
                             </p>
                           )}
                           {p.insight && (
                             <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                              ✨ <strong>Insight:</strong> {p.insight}
+                              ✨ <strong>{t("admin.users.detail.insight")}:</strong> {p.insight}
                             </p>
                           )}
                           {p.actionPlan && (
                             <p className="text-sm text-gray-700 dark:text-gray-300">
-                              🚀 <strong>Plan de acción:</strong> {p.actionPlan}
+                              🚀 <strong>{t("admin.users.detail.actionPlan")}:</strong> {p.actionPlan}
                             </p>
                           )}
                         </div>

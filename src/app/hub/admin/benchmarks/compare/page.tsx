@@ -533,7 +533,7 @@ export default function CompareBenchmarksPage() {
       setTopPerformersByOutcome(results);
     } catch (error) {
       console.error("Error loading top performers:", error);
-      toast.error("Error al cargar top performers");
+      toast.error(t("admin.benchmarks.compare.errorLoadingTopPerformers"));
     } finally {
       setLoadingTopPerformers(false);
     }
@@ -637,9 +637,9 @@ export default function CompareBenchmarksPage() {
             updateSegment(segmentIndex, "country", "");
           }
         }}
-        placeholder="Todos"
-        searchPlaceholder="Buscar..."
-        emptyMessage="Sin resultados"
+        placeholder={t("admin.benchmarks.compare.allFilter")}
+        searchPlaceholder={t("admin.benchmarks.compare.searchPlaceholder")}
+        emptyMessage={t("admin.benchmarks.compare.noResults")}
         showCount={true}
         className="text-xs"
       />
@@ -897,14 +897,14 @@ export default function CompareBenchmarksPage() {
                         value={segment.name}
                         onChange={(e) => updateSegment(idx, "name", e.target.value)}
                         className="text-sm font-semibold text-[var(--rowi-foreground)] bg-transparent border-b border-dashed border-[var(--rowi-card-border)] focus:border-[var(--rowi-primary)] outline-none px-1 min-w-[150px]"
-                        placeholder={idx === 0 ? "Ej: Latinoamérica" : idx === 1 ? "Ej: Norteamérica" : `Segmento ${idx + 1}`}
+                        placeholder={idx === 0 ? t("admin.benchmarks.compare.exampleLatam") : idx === 1 ? t("admin.benchmarks.compare.exampleNorthAmerica") : `${t("admin.benchmarks.compare.segmentLabel")} ${idx + 1}`}
                       />
                     </div>
                     {segments.length > 2 && (
                       <button
                         onClick={() => removeSegment(idx)}
                         className="p-1 text-[var(--rowi-muted)] hover:text-red-500 transition-colors"
-                        title="Eliminar segmento"
+                        title={t("admin.benchmarks.compare.removeSegment")}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -1076,7 +1076,7 @@ export default function CompareBenchmarksPage() {
                     </div>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[var(--rowi-muted)]">Muestra:</span>
+                        <span className="text-[var(--rowi-muted)]">{t("admin.benchmarks.compare.sample")}:</span>
                         <span className="font-bold">{segment.sampleSize.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
@@ -1087,7 +1087,7 @@ export default function CompareBenchmarksPage() {
                       </div>
                       {segment.topCompetencies.length > 0 && (
                         <div className="pt-2 border-t border-[var(--rowi-card-border)]">
-                          <p className="text-[var(--rowi-muted)] mb-1">Top competencias:</p>
+                          <p className="text-[var(--rowi-muted)] mb-1">{t("admin.benchmarks.compare.topCompetencies")}:</p>
                           <div className="flex flex-wrap gap-1">
                             {segment.topCompetencies.map((c) => (
                               <span key={c.key} className="px-1.5 py-0.5 bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] rounded">
@@ -1197,11 +1197,11 @@ export default function CompareBenchmarksPage() {
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-[var(--rowi-muted)]">Efectividad</span>
+                          <span className="text-xs text-[var(--rowi-muted)]">{t("admin.benchmarks.compare.effectiveness")}</span>
                           <span className="text-sm font-medium">{effectivenessData?.mean?.toFixed(1) || "-"}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-[var(--rowi-muted)]">Bienestar</span>
+                          <span className="text-xs text-[var(--rowi-muted)]">{t("admin.benchmarks.compare.wellbeing")}</span>
                           <span className="text-sm font-medium">{wellbeingData?.mean?.toFixed(1) || "-"}</span>
                         </div>
                       </div>
@@ -1545,12 +1545,12 @@ export default function CompareBenchmarksPage() {
                         <h4 className="text-sm font-semibold text-[var(--rowi-foreground)]">
                           {data.segmentName}
                         </h4>
-                        {idx === 0 && <span className="text-xs text-[var(--rowi-primary)]">(Base)</span>}
+                        {idx === 0 && <span className="text-xs text-[var(--rowi-primary)]">({t("admin.benchmarks.compare.base")})</span>}
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-center p-2 rounded bg-[var(--rowi-background)]">
-                          <span className="text-xs text-[var(--rowi-muted)]">Top Performers</span>
+                          <span className="text-xs text-[var(--rowi-muted)]">{t("admin.benchmarks.compare.topPerformersLabel")}</span>
                           <span className="text-sm font-bold text-[var(--rowi-primary)]">
                             {data.topPerformerCount.toLocaleString()} ({data.percentage.toFixed(1)}%)
                           </span>

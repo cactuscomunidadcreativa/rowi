@@ -1085,7 +1085,7 @@ export default function TopPerformersPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">FOCUS</span>
+                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">{t("admin.benchmarks.pursuit.focus")}</span>
                   </div>
                   {selectedProfile.topTalents.slice(0, 6).map((talent) => (
                     <div key={talent.key} className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
@@ -1111,7 +1111,7 @@ export default function TopPerformersPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-sm font-semibold text-red-600 dark:text-red-400">DECISIONS</span>
+                    <span className="text-sm font-semibold text-red-600 dark:text-red-400">{t("admin.benchmarks.pursuit.decisions")}</span>
                   </div>
                   {selectedProfile.topTalents.slice(6, 12).map((talent) => (
                     <div key={talent.key} className="flex items-center justify-between p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -1137,7 +1137,7 @@ export default function TopPerformersPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">DRIVE</span>
+                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">{t("admin.benchmarks.pursuit.drive")}</span>
                   </div>
                   {selectedProfile.topTalents.slice(12, 18).map((talent) => (
                     <div key={talent.key} className="flex items-center justify-between p-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">

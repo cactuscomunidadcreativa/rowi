@@ -380,7 +380,7 @@ export default function UploadBenchmarkPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)] text-[var(--rowi-foreground)]"
-                placeholder="SOH 2018-2024 Global"
+                placeholder={t("admin.benchmarks.upload.examplePlaceholder")}
                 disabled={isUploading}
               />
             </div>
@@ -502,7 +502,7 @@ export default function UploadBenchmarkPage() {
               {uploadState.phase === "error" && uploadState.error && (
                 <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                   <p className="text-red-700 dark:text-red-300 text-sm">
-                    <strong>Error:</strong> {uploadState.error}
+                    <strong>{t("admin.benchmarks.upload.errorLabel")}:</strong> {uploadState.error}
                   </p>
                 </div>
               )}

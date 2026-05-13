@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 interface SegmentWithBenchmark {
   name: string;
@@ -114,12 +114,8 @@ async function calculateSegmentStats(
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const headerEmail = req.headers.get("x-user-email");
-
-    if (!session?.user?.email && !headerEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const body: CrossCompareRequest = await req.json();
     const { segments, metricGroups = ["core", "competencies", "outcomes", "talents"] } = body;

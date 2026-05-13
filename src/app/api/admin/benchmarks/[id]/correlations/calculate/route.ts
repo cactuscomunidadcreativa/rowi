@@ -15,10 +15,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { EQ_COMPETENCIES, BRAIN_TALENTS, pearsonCorrelation } from "@/lib/benchmarks";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const maxDuration = 300; // 5 minutos
 
@@ -244,10 +244,8 @@ function calculateGroupedCorrelations(
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id: benchmarkId } = await params;
 

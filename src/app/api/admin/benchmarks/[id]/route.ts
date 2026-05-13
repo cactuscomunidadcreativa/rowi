@@ -6,8 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import { prisma } from "@/core/prisma";
 
 interface RouteParams {
@@ -19,13 +18,8 @@ interface RouteParams {
 // =========================================================
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    // Allow auth via session or x-user-email header
-    const session = await getServerSession(authOptions);
-    const headerEmail = req.headers.get("x-user-email");
-
-    if (!session?.user?.email && !headerEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await params;
 
@@ -275,10 +269,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 // =========================================================
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await params;
     const body = await req.json();
@@ -314,10 +306,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 // =========================================================
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await params;
 

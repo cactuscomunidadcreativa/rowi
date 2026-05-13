@@ -5,10 +5,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { SOH_COLUMN_MAPPING as COLUMN_MAPPING } from "@/lib/benchmarks/column-mapping";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -48,10 +48,8 @@ const TALENTS = [
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await params;
     const body: CompareSegmentsRequest = await req.json();

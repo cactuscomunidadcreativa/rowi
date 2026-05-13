@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -23,12 +23,8 @@ const VALID_GROUP_FIELDS = ["region", "country", "jobRole", "jobFunction", "sect
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const session = await getServerSession(authOptions);
-    const headerEmail = req.headers.get("x-user-email");
-
-    if (!session?.user?.email && !headerEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id } = await params;
     const { searchParams } = new URL(req.url);

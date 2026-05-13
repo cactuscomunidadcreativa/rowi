@@ -7,10 +7,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { Prisma } from "@prisma/client";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const maxDuration = 300; // 5 minutos
 
@@ -134,10 +134,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const { id: benchmarkId } = await params;
 

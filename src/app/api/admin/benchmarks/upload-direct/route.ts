@@ -13,6 +13,7 @@ import { getToken } from "next-auth/jwt";
 import { put } from "@vercel/blob";
 import { prisma } from "@/core/prisma";
 import { waitUntil } from "@vercel/functions";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 // Use edge runtime for larger body size limit
 export const runtime = "nodejs";
@@ -20,17 +21,10 @@ export const maxDuration = 60; // 60 seconds timeout
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth via header or JWT
-    let userEmail = req.headers.get("x-user-email");
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
-    if (!userEmail || userEmail === "") {
-      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-      userEmail = token?.email as string;
-    }
-
-    if (!userEmail || userEmail === "") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userEmail = auth.user.email;
 
     // Parse FormData
     const formData = await req.formData();

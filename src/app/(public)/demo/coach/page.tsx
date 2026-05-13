@@ -202,7 +202,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
    Página principal
 ========================================================= */
 export default function DemoCoachPage() {
-  const { lang, t } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
   const [messages, setMessages] = useState(DEMO_CONVERSATION[lang as keyof typeof DEMO_CONVERSATION] || DEMO_CONVERSATION.es);
   const [input, setInput] = useState("");
@@ -286,7 +286,7 @@ export default function DemoCoachPage() {
                   />
                 </div>
                 <div className="text-white">
-                  <h3 className="font-bold">{t("public.coach.rowiCoach")}</h3>
+                  <h3 className="font-bold">{tFn("public.coach.rowiCoach")}</h3>
                   <p className="text-sm text-white/80">
                     {lang === "es" ? "En línea" : "Online"}
                   </p>

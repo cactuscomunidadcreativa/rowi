@@ -572,7 +572,7 @@ function PersonSelector({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { lang, t } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const filtered = useMemo(() => {
@@ -674,7 +674,7 @@ function PersonSelector({
                 </button>
               ))}
               {filtered.length === 0 && (
-                <div className="px-3 py-4 text-sm text-[var(--rowi-muted)] text-center">{t("admin.tp.people.noResults")}</div>
+                <div className="px-3 py-4 text-sm text-[var(--rowi-muted)] text-center">{tFn("admin.tp.people.noResults")}</div>
               )}
             </div>
           </motion.div>

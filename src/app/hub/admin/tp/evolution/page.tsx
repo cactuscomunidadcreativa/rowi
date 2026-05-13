@@ -738,7 +738,7 @@ function TeamBarChart({ evolutions }: { evolutions: ApiEvolution[] }) {
    Main Page Component
 ========================================================= */
 export default function TPEvolutionPage() {
-  const { lang, t } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [evolutions, setEvolutions] = useState<ApiEvolution[]>([]);
@@ -976,7 +976,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-blue-500">{firstA.eqTotal.toFixed(1)}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">{t("admin.tp.evolution.eqTotal")}</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{tFn("admin.tp.evolution.eqTotal")}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {COMP_KEYS.map((key) => (
@@ -988,7 +988,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="mt-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                   <span className="text-lg">{getBrainStyleEmoji(evo.brainStyle)}</span>
-                  <span className="text-[var(--rowi-muted)]">{t("admin.tp.evolution.brainStyle")}</span>
+                  <span className="text-[var(--rowi-muted)]">{tFn("admin.tp.evolution.brainStyle")}</span>
                   <span
                     className="font-medium px-2 py-0.5 rounded-full text-xs"
                     style={{

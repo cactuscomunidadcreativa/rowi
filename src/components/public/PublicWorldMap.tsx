@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Globe2, Users, MessageCircle, TrendingUp, Clock } from "lucide-react";
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { useI18n } from "@/lib/i18n/useI18n";
 
 interface CountryData {
@@ -29,6 +30,9 @@ const COLORS = {
   users: "#3b82f6",
   newUsers: "#10b981",
 };
+
+// TopoJSON de mundo (CDN público, dominio público)
+const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const t = {
   es: {
@@ -59,17 +63,35 @@ const t = {
     benchmarks: "SEI Benchmarks",
     users: "Rowi Users",
   },
+  pt: {
+    title: "Comunidade Global Rowi",
+    subtitle: "Pessoas desenvolvendo sua inteligência emocional no mundo todo",
+    activeUsers: "Usuários Ativos",
+    conversations: "Conversas",
+    satisfaction: "Satisfação",
+    availability: "Disponibilidade",
+    countries: "Países",
+    rowiers: "Rowiers",
+    newRowiers: "Novos Rowiers",
+    last3months: "últimos 3 meses",
+    benchmarks: "Benchmarks SEI",
+    users: "Usuários Rowi",
+  },
+  it: {
+    title: "Comunità Globale Rowi",
+    subtitle: "Persone che sviluppano la propria intelligenza emotiva in tutto il mondo",
+    activeUsers: "Utenti Attivi",
+    conversations: "Conversazioni",
+    satisfaction: "Soddisfazione",
+    availability: "Disponibilità",
+    countries: "Paesi",
+    rowiers: "Rowiers",
+    newRowiers: "Nuovi Rowiers",
+    last3months: "ultimi 3 mesi",
+    benchmarks: "Benchmark SEI",
+    users: "Utenti Rowi",
+  },
 };
-
-/**
- * Convierte coordenadas geográficas (lon, lat) a porcentaje x,y en un contenedor
- * Proyección Equirectangular simplificada
- */
-function geoToPercent(lon: number, lat: number): { x: number; y: number } {
-  const x = ((lon + 180) / 360) * 100;
-  const y = ((85 - lat) / 145) * 100;
-  return { x: Math.max(2, Math.min(98, x)), y: Math.max(2, Math.min(98, y)) };
-}
 
 export default function PublicWorldMap() {
   const { lang } = useI18n();
@@ -105,12 +127,12 @@ export default function PublicWorldMap() {
   }, []);
 
   const getMarkerSize = (total: number): number => {
-    if (total > 50000) return 24;
-    if (total > 20000) return 20;
-    if (total > 10000) return 16;
-    if (total > 1000) return 12;
-    if (total > 100) return 9;
-    return 7;
+    if (total > 50000) return 12;
+    if (total > 20000) return 10;
+    if (total > 10000) return 8;
+    if (total > 1000) return 6;
+    if (total > 100) return 5;
+    return 4;
   };
 
   const getDominantColor = (country: CountryData): string => {
@@ -192,7 +214,7 @@ export default function PublicWorldMap() {
           <StatCard icon={<Clock className="w-5 h-5" />} value={summary.availability} label={text.availability} color="orange" />
         </motion.div>
 
-        {/* Map — Simple dot-based world map */}
+        {/* Map — Real world map with react-simple-maps */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -201,116 +223,104 @@ export default function PublicWorldMap() {
           className="relative"
         >
           <div className="relative w-full h-[350px] md:h-[450px] rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 border border-gray-200 dark:border-zinc-700 shadow-lg overflow-hidden">
-            {/* World map background — simplified continent shapes */}
-            <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]">
-              <svg viewBox="0 0 1000 500" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-                <g fill="currentColor" className="text-gray-500">
-                  {/* North America */}
-                  <ellipse cx="220" cy="155" rx="95" ry="75" />
-                  {/* Central America */}
-                  <ellipse cx="240" cy="240" rx="30" ry="25" />
-                  {/* South America */}
-                  <ellipse cx="300" cy="330" rx="55" ry="90" />
-                  {/* Europe */}
-                  <ellipse cx="505" cy="125" rx="55" ry="45" />
-                  {/* Africa */}
-                  <ellipse cx="520" cy="280" rx="60" ry="85" />
-                  {/* Middle East */}
-                  <ellipse cx="590" cy="195" rx="30" ry="30" />
-                  {/* Asia */}
-                  <ellipse cx="690" cy="150" rx="110" ry="75" />
-                  {/* Southeast Asia */}
-                  <ellipse cx="740" cy="260" rx="40" ry="35" />
-                  {/* Oceania */}
-                  <ellipse cx="810" cy="350" rx="55" ry="35" />
-                </g>
-              </svg>
-            </div>
+            <ComposableMap
+              projection="geoEqualEarth"
+              projectionConfig={{ scale: 165 }}
+              className="w-full h-full"
+              style={{ width: "100%", height: "100%" }}
+            >
+              <Geographies geography={GEO_URL}>
+                {({ geographies }: { geographies: any[] }) =>
+                  geographies.map((geo) => (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill="#cbd5e1"
+                      stroke="#ffffff"
+                      strokeWidth={0.5}
+                      className="dark:fill-zinc-700"
+                      style={{
+                        default: { outline: "none" },
+                        hover: { outline: "none", fill: "#94a3b8" },
+                        pressed: { outline: "none" },
+                      }}
+                    />
+                  ))
+                }
+              </Geographies>
 
-            {/* Data Points */}
-            {mapData.map((country, idx) => {
-              if (!country.coordinates || country.total === 0) return null;
-              const pos = geoToPercent(country.coordinates[0], country.coordinates[1]);
-              const size = getMarkerSize(country.total);
-              const color = getDominantColor(country);
-              const isHovered = hoveredCountry?.code === country.code;
+              {/* Data Markers */}
+              {mapData.map((country) => {
+                if (!country.coordinates || country.total === 0) return null;
+                const size = getMarkerSize(country.total);
+                const color = getDominantColor(country);
+                const isHovered = hoveredCountry?.code === country.code;
 
-              return (
-                <motion.div
-                  key={country.code}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3 + idx * 0.02, type: "spring" }}
-                  className="absolute cursor-pointer group"
-                  style={{
-                    left: `${pos.x}%`,
-                    top: `${pos.y}%`,
-                    transform: "translate(-50%, -50%)",
-                    zIndex: isHovered ? 50 : 10,
-                  }}
-                  onMouseEnter={() => setHoveredCountry(country)}
-                  onMouseLeave={() => setHoveredCountry(null)}
-                >
-                  {/* Pulse ring */}
-                  <div
-                    className="absolute rounded-full animate-ping"
+                return (
+                  <Marker
+                    key={country.code}
+                    coordinates={country.coordinates}
+                    onMouseEnter={() => setHoveredCountry(country)}
+                    onMouseLeave={() => setHoveredCountry(null)}
                     style={{
-                      width: size + 8,
-                      height: size + 8,
-                      backgroundColor: color,
-                      opacity: 0.15,
-                      left: "50%",
-                      top: "50%",
-                      transform: "translate(-50%, -50%)",
+                      default: { cursor: "pointer" },
+                      hover: { cursor: "pointer" },
+                      pressed: { cursor: "pointer" },
                     }}
-                  />
-                  {/* Dot */}
-                  <div
-                    className="rounded-full border-2 border-white dark:border-zinc-700 shadow-md transition-transform group-hover:scale-150"
-                    style={{
-                      width: size,
-                      height: size,
-                      backgroundColor: color,
-                    }}
-                  />
+                  >
+                    {/* Pulse */}
+                    <circle
+                      r={size + 4}
+                      fill={color}
+                      opacity={0.2}
+                      className="animate-ping"
+                      style={{ transformOrigin: "center" }}
+                    />
+                    {/* Dot */}
+                    <circle
+                      r={isHovered ? size * 1.3 : size}
+                      fill={color}
+                      stroke="#ffffff"
+                      strokeWidth={1.5}
+                      style={{ transition: "r 150ms ease-out" }}
+                    />
+                  </Marker>
+                );
+              })}
+            </ComposableMap>
 
-                  {/* Tooltip on hover */}
-                  {isHovered && (
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-3 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-xl text-sm min-w-[160px] whitespace-nowrap z-50">
-                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">
-                        {getCountryName(country.code)}
-                      </h4>
-                      <div className="space-y-1 text-xs">
-                        {country.benchmarks > 0 && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">{text.benchmarks}:</span>
-                            <span className="font-medium text-purple-600">{formatNumber(country.benchmarks)}</span>
-                          </div>
-                        )}
-                        {country.users > 0 && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">{text.users}:</span>
-                            <span className="font-medium text-blue-600">{formatNumber(country.users)}</span>
-                          </div>
-                        )}
-                        {country.newUsers > 0 && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">{text.newRowiers}:</span>
-                            <span className="font-medium text-green-500">+{country.newUsers}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between gap-4 pt-1 border-t border-gray-200 dark:border-zinc-700 mt-1">
-                          <span className="text-gray-500">Total:</span>
-                          <span className="font-bold">{formatNumber(country.total)}</span>
-                        </div>
-                      </div>
-                      {/* Arrow */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-zinc-800 border-b border-r border-gray-200 dark:border-zinc-700 transform rotate-45 -mt-1" />
+            {/* Tooltip on hover */}
+            {hoveredCountry && (
+              <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded-xl bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-xl text-sm min-w-[180px] whitespace-nowrap z-50">
+                <h4 className="font-bold text-gray-900 dark:text-white mb-2">
+                  {getCountryName(hoveredCountry.code)}
+                </h4>
+                <div className="space-y-1 text-xs">
+                  {hoveredCountry.benchmarks > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-500">{text.benchmarks}:</span>
+                      <span className="font-medium text-purple-600">{formatNumber(hoveredCountry.benchmarks)}</span>
                     </div>
                   )}
-                </motion.div>
-              );
-            })}
+                  {hoveredCountry.users > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-500">{text.users}:</span>
+                      <span className="font-medium text-blue-600">{formatNumber(hoveredCountry.users)}</span>
+                    </div>
+                  )}
+                  {hoveredCountry.newUsers > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-500">{text.newRowiers}:</span>
+                      <span className="font-medium text-green-500">+{hoveredCountry.newUsers}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4 pt-1 border-t border-gray-200 dark:border-zinc-700 mt-1">
+                    <span className="text-gray-500">Total:</span>
+                    <span className="font-bold">{formatNumber(hoveredCountry.total)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Legend */}
             <div className="absolute bottom-4 left-4 flex flex-wrap gap-3 p-3 rounded-lg bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm border border-gray-200 dark:border-zinc-700 text-xs">

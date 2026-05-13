@@ -1,108 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type Translations = Record<string, string>;
-const cache: Record<string, Translations> = {};
-
 /**
- * 🎯 useI18n — Hook de traducción en cliente (versión BD real)
- * -------------------------------------------------------------
- * ✔ Carga traducciones desde Prisma vía /api/hub/translations?format=dict
- * ✔ Escucha cambios de idioma globales
- * ✔ Cachea por tenant + idioma
- * ✔ Soporta fallback automático si una clave no se encuentra
+ * 🔄 useI18n — Wrapper LEGACY (DEPRECATED)
+ * ---------------------------------------------------------
+ * Mantiene la firma `{ t, locale, setLocale }` que usaban
+ * los componentes antes de consolidar en I18nProvider.
+ *
+ * No mantiene state propio: todo viene del contexto del Provider.
+ * Esto elimina las race conditions y el cache duplicado de
+ * traducciones que existían cuando este hook tenía su propio
+ * fetch + cache + listener del evento `rowi:lang-changed`.
+ *
+ * Para componentes nuevos, importar directamente desde:
+ *   import { useI18n } from "@/lib/i18n/I18nProvider";
  */
-export function useI18n(defaultNs = "common") {
-  const [locale, setLocale] = useState<"es" | "en" | "pt" | "it">("es");
-  const [tData, setTData] = useState<Translations>({});
+import { useI18n as useProvider } from "./I18nProvider";
 
-  /* =========================================================
-     🌍 Inicializar idioma al montar
-  ========================================================== */
-  useEffect(() => {
-    const stored =
-      (localStorage.getItem("rowi.lang") as string) ||
-      document.documentElement.getAttribute("data-lang") ||
-      "es";
-
-    const safeLang = ["es", "en", "pt", "it"].includes(stored)
-      ? (stored as "es" | "en" | "pt" | "it")
-      : "es";
-
-    setLocale(safeLang);
-  }, []);
-
-  /* =========================================================
-     🔁 Escuchar cambio de idioma global (sin reload)
-  ========================================================== */
-  useEffect(() => {
-    const onLangChange = (e: CustomEvent) => {
-      const next = e.detail;
-      if (next && next !== locale) {
-        console.log("🌐 Cambio de idioma detectado:", next);
-        Object.keys(cache).forEach((k) => {
-          if (k.startsWith(`${locale}:`)) delete cache[k];
-        });
-        setLocale(next);
-      }
-    };
-
-    window.addEventListener("rowi:lang-changed", onLangChange as EventListener);
-    return () =>
-      window.removeEventListener("rowi:lang-changed", onLangChange as EventListener);
-  }, [locale]);
-
-  /* =========================================================
-     🧠 Cargar traducciones desde Prisma (vía API)
-  ========================================================== */
-  useEffect(() => {
-    const tenant =
-      document.documentElement.getAttribute("data-tenant") || "six-seconds-global";
-    const cacheKey = `${tenant}:${locale}`;
-
-    // Si ya están cacheadas, no recarga
-    if (cache[cacheKey]) {
-      setTData(cache[cacheKey]);
-      return;
-    }
-
-    (async () => {
-      try {
-        console.log(`🌍 Cargando traducciones desde BD (${locale})...`);
-        const res = await fetch(`/api/hub/translations?format=dict&lang=${locale}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-
-        if (data?.ok && data?.dict) {
-          cache[cacheKey] = data.dict;
-          setTData(data.dict);
-          console.log(`✅ ${Object.keys(data.dict).length} traducciones cargadas.`);
-        } else {
-          console.warn("⚠️ No se encontraron traducciones válidas para:", locale);
-        }
-      } catch (err) {
-        console.error("❌ Error al cargar traducciones desde BD:", err);
-      }
-    })();
-  }, [locale, defaultNs]);
-
-  /* =========================================================
-     🔠 Función traductora tolerante
-  ========================================================== */
-  function t(key: string, fallback?: string): string {
-    if (tData[key]) return tData[key];
-
-    // Busca coincidencia por sufijo (ej: “dashboard” → “page.dashboard”)
-    const simple = key.split(".").pop()!;
-    const match = Object.entries(tData).find(([k]) =>
-      k.toLowerCase().endsWith(simple.toLowerCase())
-    );
-    if (match) return match[1];
-
-    return fallback || key;
-  }
-
-  return { t, locale, setLocale };
+export function useI18n(_defaultNs = "common") {
+  const { t, lang, setLang } = useProvider();
+  return {
+    t,
+    /** Alias legacy: el Provider la expone como `lang` */
+    locale: lang,
+    /** Alias legacy: el Provider la expone como `setLang` */
+    setLocale: setLang,
+  };
 }

@@ -71,9 +71,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-zinc-950 dark:to-zinc-900 text-gray-900 dark:text-gray-100">
         <I18nProvider>
           <BetaBanner />
-          <ClientWrapper>
-            <main className="min-h-[90vh]">{children}</main>
-          </ClientWrapper>
+          <ClientWrapper>{children}</ClientWrapper>
         </I18nProvider>
       </body>
     </html>

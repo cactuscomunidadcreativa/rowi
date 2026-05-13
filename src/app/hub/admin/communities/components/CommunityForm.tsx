@@ -32,6 +32,7 @@ export default function CommunityForm({
   onOpenChange: (v: boolean) => void;
   onCreated: (item: any) => void;
 }) {
+  const { t } = useI18n();
   const [form, setForm] = useState({
     name: "",
     description: "",

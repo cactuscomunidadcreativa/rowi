@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Search, User, FileSpreadsheet, RefreshCw, ChevronDown, X, Check } from "lucide-react";
 import useSWR from "swr";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type UploadResult = {
   ok: boolean;
@@ -147,7 +148,7 @@ function MemberSearch({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Escribe al menos 2 caracteres..."
+              placeholder={t("admin.eqUpload.searchPlaceholder")}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
             />
             {search && (
@@ -385,13 +386,13 @@ function SingleMemberEqForm({ userId }: { userId: string }) {
       {/* Brain Style y Country */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Brain Style</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.eqUpload.brainStyle")}</label>
           <select
             value={formData.brainStyle}
             onChange={(e) => handleChange("brainStyle", e.target.value)}
             className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
           >
-            <option value="">Seleccionar...</option>
+            <option value="">{t("admin.eqUpload.selectGeneric")}</option>
             {BRAIN_STYLES.map((style) => (
               <option key={style} value={style}>
                 {style}
@@ -400,13 +401,13 @@ function SingleMemberEqForm({ userId }: { userId: string }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">País</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.eqUpload.country")}</label>
           <input
             type="text"
             value={formData.country}
             onChange={(e) => handleChange("country", e.target.value)}
             className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-            placeholder="PE, MX, CO..."
+            placeholder={t("admin.eqUpload.countryPlaceholder")}
           />
         </div>
       </div>
@@ -436,6 +437,7 @@ function SingleMemberEqForm({ userId }: { userId: string }) {
 }
 
 export default function EqUploadPage() {
+  const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewRow[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -556,7 +558,7 @@ maria@example.com,María,López,MX,105,100,98,100,95,92,90,95,88,100,90,Intuitiv
   return (
     <main className="p-6 space-y-6 max-w-5xl mx-auto">
       <header>
-        <h1 className="text-2xl font-bold">Cargar Resultados SEI</h1>
+        <h1 className="text-2xl font-bold">{t("admin.eqUpload.title")}</h1>
         <p className="text-gray-500 mt-1">
           Sube los resultados de las evaluaciones SEI de Six Seconds
         </p>
@@ -617,7 +619,7 @@ maria@example.com,María,López,MX,105,100,98,100,95,92,90,95,88,100,90,Intuitiv
           <section className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h2 className="font-medium text-blue-800 dark:text-blue-200 mb-2">📋 Instrucciones</h2>
             <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• El CSV debe tener una columna <strong>Email</strong> para identificar al usuario</li>
+              <li dangerouslySetInnerHTML={{__html: `• ${t("admin.eqUpload.emailColInfo")}`}} />
               <li>• Columnas de scores: Know Yourself Score, Choose Yourself Score, Give Yourself Score</li>
               <li>• Competencias: EL, RP, ACT, NE, IM, OP, EMP, NG</li>
               <li>• Opcional: Profile (Brain Style), Country</li>
@@ -670,12 +672,12 @@ maria@example.com,María,López,MX,105,100,98,100,95,92,90,95,88,100,90,Intuitiv
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="text-left text-gray-500 border-b">
-                        <th className="py-2 pr-3">Email</th>
-                        <th className="py-2 pr-3">Nombre</th>
+                        <th className="py-2 pr-3">{t("admin.eqUpload.colEmail")}</th>
+                        <th className="py-2 pr-3">{t("admin.eqUpload.colName")}</th>
                         <th className="py-2 pr-3">KY</th>
                         <th className="py-2 pr-3">CY</th>
                         <th className="py-2 pr-3">GY</th>
-                        <th className="py-2 pr-3">Brain Style</th>
+                        <th className="py-2 pr-3">{t("admin.eqUpload.brainStyle")}</th>
                       </tr>
                     </thead>
                     <tbody>

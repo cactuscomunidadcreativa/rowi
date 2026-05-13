@@ -11,11 +11,13 @@ import { toast } from "sonner";
 import EQRadar from "@/components/charts/EQRadar";
 import EQBar from "@/components/charts/EQBar";
 import HistoryLine from "@/components/charts/HistoryLine";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    🎛 EMOTIONS HUB DASHBOARD — ROWI MASTER EDITION
    ========================================================= */
 export default function EmotionsDashboardPage() {
+  const { t } = useI18n();
   const [superHubs, setSuperHubs] = useState<any[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);
@@ -42,7 +44,7 @@ export default function EmotionsDashboardPage() {
         setTenants(Array.isArray(t) ? t : []);
         setHubs(Array.isArray(h) ? h : []);
       } catch {
-        toast.error("Error cargando estructura jerárquica");
+        toast.error(t("admin.emotions.errorLoadingHierarchy"));
       }
     }
     loadHierarchy();
@@ -69,7 +71,7 @@ export default function EmotionsDashboardPage() {
         const json = await res.json();
         setSummary(json);
       } catch (e) {
-        toast.error("Error cargando datos emocionales");
+        toast.error(t("admin.emotions.errorLoadingEmotional"));
       }
     });
 
@@ -165,7 +167,7 @@ export default function EmotionsDashboardPage() {
 
       {/* 📊 EQ Promedio */}
       <section>
-        <ChartCard title="EQ Promedio (Competencias)" icon={<Radar />}>
+        <ChartCard title={t("admin.emotions.eqAvgCompetencies")} icon={<Radar />}>
           <EQRadar
             // @ts-ignore
             data={(dist?.competencies ?? []).map((c) => ({
@@ -178,7 +180,7 @@ export default function EmotionsDashboardPage() {
 
       {/* 📊 K / C / G Promedio */}
       <section>
-        <ChartCard title="K / C / G Promedio" icon={<BarChart2 />}>
+        <ChartCard title={t("admin.emotions.kcgAvg")} icon={<BarChart2 />}>
           <EQBar
             // @ts-ignore
             data={[
@@ -192,7 +194,7 @@ export default function EmotionsDashboardPage() {
 
       {/* 📈 EQ Histórico */}
       <section>
-        <ChartCard title="EQ Histórico (overall4)" icon={<TrendingUp />}>
+        <ChartCard title={t("admin.emotions.eqHistorical")} icon={<TrendingUp />}>
           <HistoryLine
             // @ts-ignore
             data={(series?.eq ?? []).map((s) => ({ date: s.date, value: s.overall4 }))}
@@ -203,22 +205,22 @@ export default function EmotionsDashboardPage() {
 
       {/* 💡 Subfactores */}
       <section>
-        <StatList title="Subfactores" items={dist?.subfactors || []} />
+        <StatList title={t("admin.emotions.subfactors")} items={dist?.subfactors || []} />
       </section>
 
       {/* 💡 Valores */}
       <section>
-        <StatList title="Valores" items={dist?.values || []} />
+        <StatList title={t("admin.emotions.values")} items={dist?.values || []} />
       </section>
 
       {/* 💡 Talentos */}
       <section>
-        <StatList title="Talentos" items={dist?.talents || []} />
+        <StatList title={t("admin.emotions.talents")} items={dist?.talents || []} />
       </section>
 
       {/* 🔥 Afinidad Promedio */}
       <section>
-        <ChartCard title="Afinidad Promedio" icon={<Flame />}>
+        <ChartCard title={t("admin.emotions.affinityAvg")} icon={<Flame />}>
           <HistoryLine
             // @ts-ignore
             data={(series?.affinity ?? []).map((s) => ({ date: s.date, value: s.heat }))}
@@ -229,7 +231,7 @@ export default function EmotionsDashboardPage() {
 
       {/* 🎭 Moods más frecuentes */}
       <section>
-        <ChartCard title="Moods más frecuentes" icon={<Database />}>
+        <ChartCard title={t("admin.emotions.frequentMoods")} icon={<Database />}>
           <ul className="text-sm space-y-1 overflow-y-auto max-h-[260px] scrollbar-thin scrollbar-thumb-rowi-blueDay/30">
             {(dist?.moods ?? [])
               .sort((a: any, b: any) => b._count - a._count)

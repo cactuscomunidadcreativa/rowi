@@ -112,14 +112,22 @@ export default function PublicNavbar() {
             )}
           </button>
 
-          {/* Language Switcher */}
-          <button
-            onClick={() => setLang(lang === "es" ? "en" : "es")}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1 text-sm"
-          >
-            <Globe className="w-4 h-4" />
-            <span className="hidden sm:inline">{lang.toUpperCase()}</span>
-          </button>
+          {/* Language Switcher (ES / EN / PT / IT) */}
+          <div className="relative flex items-center gap-1 text-sm">
+            <Globe className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as "es" | "en" | "pt" | "it")}
+              aria-label="Language"
+              title={lang === "es" ? "Cambiar idioma" : "Change language"}
+              className="appearance-none bg-transparent pl-1 pr-4 py-1 rounded-lg cursor-pointer text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]"
+            >
+              <option value="es">ES</option>
+              <option value="en">EN</option>
+              <option value="pt">PT</option>
+              <option value="it">IT</option>
+            </select>
+          </div>
 
           {/* Auth Buttons */}
           {isLoggedIn ? (

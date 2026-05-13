@@ -42,7 +42,7 @@ export default function WorkspaceCoachPage({
         { role: "assistant", content: data.answer || data.error || "Error" },
       ]);
     } catch (err: any) {
-      setMessages((m) => [...m, { role: "assistant", content: err.message }]);
+      console.error(err); setMessages((m) => [...m, { role: "assistant", content: t("common.unexpectedError") }]);
     } finally {
       setSending(false);
     }

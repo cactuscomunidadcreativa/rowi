@@ -3911,5 +3911,10 @@
   "workspace.teams.ungrouped": "Non raggruppato",
   "workspace.world.distribution": "Distribuzione geografica",
   "workspace.world.subtitle": "Mappa mondiale del workspace",
-  "workspace.world.topCountry": "Paese principale"
+  "workspace.world.topCountry": "Paese principale",
+  "admin.aiCoach.name": "Nome",
+  "admin.aiCoach.model": "Modello",
+  "admin.aiCoach.description": "Descrizione",
+  "admin.aiCoach.mainPrompt": "Prompt principale",
+  "public.coach.rowiCoach": "Rowi Coach"
 }

@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function RowiCoachPage() {
+  const { t } = useI18n();
   const [agent, setAgent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,7 +75,7 @@ export default function RowiCoachPage() {
 
       <Card className="p-4 space-y-3">
         <div>
-          <label className="text-xs font-medium">Nombre</label>
+          <label className="text-xs font-medium">{t("admin.aiCoach.name")}</label>
           <Input
             value={agent.name}
             onChange={(e) => setAgent({ ...agent, name: e.target.value })}
@@ -81,7 +83,7 @@ export default function RowiCoachPage() {
         </div>
 
         <div>
-          <label className="text-xs font-medium">Modelo</label>
+          <label className="text-xs font-medium">{t("admin.aiCoach.model")}</label>
           <Input
             value={agent.model || ""}
             onChange={(e) => setAgent({ ...agent, model: e.target.value })}
@@ -90,7 +92,7 @@ export default function RowiCoachPage() {
         </div>
 
         <div>
-          <label className="text-xs font-medium">Descripción</label>
+          <label className="text-xs font-medium">{t("admin.aiCoach.description")}</label>
           <Textarea
             value={agent.description || ""}
             onChange={(e) => setAgent({ ...agent, description: e.target.value })}
@@ -99,7 +101,7 @@ export default function RowiCoachPage() {
         </div>
 
         <div>
-          <label className="text-xs font-medium">Prompt principal</label>
+          <label className="text-xs font-medium">{t("admin.aiCoach.mainPrompt")}</label>
           <Textarea
             value={agent.prompt || ""}
             onChange={(e) => setAgent({ ...agent, prompt: e.target.value })}

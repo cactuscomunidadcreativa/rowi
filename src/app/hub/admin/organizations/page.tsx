@@ -157,7 +157,7 @@ export default function OrganizationsPage() {
       setEditor(null);
       loadData();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }
@@ -176,7 +176,7 @@ export default function OrganizationsPage() {
       toast.success(t("admin.organizations.deleted"));
       loadData();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     }
   }
 

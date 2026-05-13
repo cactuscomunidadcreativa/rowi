@@ -77,7 +77,7 @@ export default function WorkspaceMembersPage({
       if (!res.ok) throw new Error((await res.json()).error);
       await loadMembers();
     } catch (err: any) {
-      alert(err.message);
+      alert(t("common.unexpectedError"));
     }
   }
 

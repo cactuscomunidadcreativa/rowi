@@ -86,7 +86,7 @@ export default function AgentsPage() {
       toast.success(data.message || t("admin.agents.syncSuccess"));
       loadAgents();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSyncing(false);
     }

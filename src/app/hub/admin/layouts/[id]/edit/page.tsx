@@ -78,7 +78,7 @@ export default function EditLayoutPage() {
       if (!data.ok) throw new Error(data.error || "Error al cargar layout");
       setLayout(normalizeLayout(data.layout));
     } catch (err: any) {
-      toast.error(err.message || "Error al cargar layout");
+      toast.error("Error al cargar layout");
     } finally {
       setLoading(false);
     }
@@ -159,7 +159,7 @@ export default function EditLayoutPage() {
       toast.success("✅ Layout guardado correctamente");
       router.push("/hub/admin/layouts");
     } catch (err: any) {
-      toast.error(err.message || "Error guardando layout");
+      toast.error("Error guardando layout");
     } finally {
       setSaving(false);
     }

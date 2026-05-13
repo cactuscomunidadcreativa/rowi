@@ -224,7 +224,7 @@ export default function UploadBenchmarkPage() {
           message: t("admin.benchmarks.upload.errorMessage"),
           error: error.message || t("admin.benchmarks.upload.failed"),
         });
-        toast.error(error.message || t("admin.benchmarks.upload.failed"));
+        toast.error(t("common.unexpectedError"));
       }
     }
   };

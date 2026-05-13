@@ -3626,5 +3626,9 @@
   "admin.benchmarks.pursuit.drive": "DRIVE",
   "post.new.comingSoonTitle": "Coming soon",
   "post.new.comingSoonMessage": "We're building a better experience to create and share your posts. Check back soon.",
-  "post.new.backToFeed": "Back to feed"
+  "post.new.backToFeed": "Back to feed",
+  "common.unexpectedError": "An unexpected error occurred. Please try again.",
+  "common.networkError": "Connection error. Check your internet and try again.",
+  "common.couldNotSave": "Could not save. Please try again.",
+  "common.couldNotLoad": "Could not load. Please try again."
 }

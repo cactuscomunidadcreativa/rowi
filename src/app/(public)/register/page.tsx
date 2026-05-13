@@ -650,7 +650,7 @@ function RegisterPageContent() {
         throw new Error(data.error);
       }
     } catch (error: any) {
-      toast.error(error.message || t.errors.checkout);
+      toast.error(t.errors.checkout);
       setLoading(false);
     }
   }

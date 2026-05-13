@@ -249,7 +249,7 @@ export default function ImportCommunitiesPage() {
       setResult(data);
       toast.success(t("admin.import.success"));
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
       setProgress(0);
     } finally {
       setLoading(false);

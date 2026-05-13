@@ -219,7 +219,7 @@ export default function PlatformConfigPage() {
 
       toast.success(t("admin.platformConfig.saved") || "Configuración guardada correctamente");
     } catch (err: any) {
-      toast.error(err.message || t("admin.platformConfig.saveError") || "Error al guardar");
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }

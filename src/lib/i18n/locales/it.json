@@ -3626,5 +3626,9 @@
   "admin.benchmarks.pursuit.drive": "SPINTA",
   "post.new.comingSoonTitle": "Prossimamente",
   "post.new.comingSoonMessage": "Stiamo costruendo un'esperienza migliore per creare e condividere i tuoi post. Torna presto.",
-  "post.new.backToFeed": "Torna al feed"
+  "post.new.backToFeed": "Torna al feed",
+  "common.unexpectedError": "Si è verificato un errore imprevisto. Riprova.",
+  "common.networkError": "Errore di connessione. Controlla la tua internet e riprova.",
+  "common.couldNotSave": "Impossibile salvare. Riprova.",
+  "common.couldNotLoad": "Impossibile caricare. Riprova."
 }

@@ -32,7 +32,7 @@ export default function AgentsEditModal({ agent, tenants, superHubs, orgs, onClo
       toast.success(j.message);
       onClose();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Ocurrió un error inesperado. Intenta de nuevo.");
     } finally {
       setSaving(false);
     }

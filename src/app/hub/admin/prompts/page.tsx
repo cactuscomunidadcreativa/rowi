@@ -83,7 +83,7 @@ export default function PromptsPage() {
       setEditing(null);
       loadPrompts();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error("Ocurrió un error inesperado. Intenta de nuevo.");
     } finally {
       setSaving(false);
     }

@@ -3626,5 +3626,9 @@
   "admin.benchmarks.pursuit.drive": "IMPULSO",
   "post.new.comingSoonTitle": "Em breve",
   "post.new.comingSoonMessage": "Estamos preparando uma experiência melhor para criar e compartilhar seus posts. Volte em breve.",
-  "post.new.backToFeed": "Voltar ao feed"
+  "post.new.backToFeed": "Voltar ao feed",
+  "common.unexpectedError": "Ocorreu um erro inesperado. Tente novamente.",
+  "common.networkError": "Erro de conexão. Verifique sua internet e tente novamente.",
+  "common.couldNotSave": "Não foi possível salvar. Tente novamente.",
+  "common.couldNotLoad": "Não foi possível carregar. Tente novamente."
 }

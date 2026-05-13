@@ -210,7 +210,7 @@ export default function BrandingPage() {
       // Aplicar colores inmediatamente
       applyPreview();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }

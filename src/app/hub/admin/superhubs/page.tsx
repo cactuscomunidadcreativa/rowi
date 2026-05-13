@@ -155,7 +155,7 @@ export default function SuperHubsPage() {
       resetForm();
       loadSuperHubs();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }
@@ -179,7 +179,7 @@ export default function SuperHubsPage() {
       toast.success(t("admin.superhubs.deleted"));
       loadSuperHubs();
     } catch (err: any) {
-      toast.error(err.message || t("common.error"));
+      toast.error(t("common.unexpectedError"));
     }
   }
 

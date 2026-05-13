@@ -94,7 +94,7 @@ export default function ImportUserModal({ tenants = [], onComplete }: any) {
       onComplete?.();
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Error subiendo archivo");
+      toast.error("Error subiendo archivo");
     } finally {
       setLoading(false);
     }

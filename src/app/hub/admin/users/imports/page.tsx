@@ -65,7 +65,7 @@ export default function UserImportsPage() {
       setFile(null);
       loadBatches();
     } catch (err: any) {
-      toast.error(err.message || "Error al subir CSV");
+      toast.error("Error al subir CSV");
     } finally {
       setUploading(false);
     }

@@ -257,7 +257,7 @@ export default function UsersPage() {
       setCreator(null);
       loadAll();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(t("common.unexpectedError"));
     } finally {
       setSaving(false);
     }

@@ -48,7 +48,7 @@ export default function AgentsToggleModal({
   orgs,
   onClose,
 }: any) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const at = AGT_T[lang as keyof typeof AGT_T] || AGT_T.en;
   const [scope, setScope] = useState<"global" | "superhub" | "tenant" | "hub" | "org">(
     agent.scope || "global"
@@ -113,7 +113,7 @@ export default function AgentsToggleModal({
       {/* Nivel jerárquico */}
       <div className="grid sm:grid-cols-2 gap-3 items-center">
         <div>
-          <label className="text-xs text-muted-foreground">Nivel</label>
+          <label className="text-xs text-muted-foreground">{t("admin.agents.toggleModal.level")}</label>
           <select
             className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
             value={scope}
@@ -132,7 +132,7 @@ export default function AgentsToggleModal({
 
         {scope !== "global" && (
           <div>
-            <label className="text-xs text-muted-foreground">Entidad</label>
+            <label className="text-xs text-muted-foreground">{t("admin.agents.toggleModal.entity")}</label>
             <select
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
               value={selected}

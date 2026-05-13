@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function AgentsEditModal({ agent, tenants, superHubs, orgs, onClose }: any) {
+  const { t } = useI18n();
   const [scope, setScope] = useState("tenant");
   const [prompt, setPrompt] = useState(agent.prompt || "");
   const [saving, setSaving] = useState(false);
@@ -58,9 +60,9 @@ export default function AgentsEditModal({ agent, tenants, superHubs, orgs, onClo
           value={scope}
           onChange={(e) => setScope(e.target.value)}
         >
-          <option value="tenant">Tenant</option>
-          <option value="superhub">SuperHub</option>
-          <option value="org">Organización</option>
+          <option value="tenant">{t("admin.agents.editModal.tenant")}</option>
+          <option value="superhub">{t("admin.agents.editModal.superhub")}</option>
+          <option value="org">{t("admin.agents.editModal.org")}</option>
         </select>
 
         <select
@@ -80,7 +82,7 @@ export default function AgentsEditModal({ agent, tenants, superHubs, orgs, onClo
       <Textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Escribe o personaliza el prompt aquí..."
+        placeholder={t("admin.agents.editModal.promptPlaceholder")}
         className="h-60 text-sm font-mono"
       />
 

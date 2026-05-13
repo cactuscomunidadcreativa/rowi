@@ -3759,5 +3759,11 @@
   "admin.layouts.namePlaceholder": "Nome del layout",
   "admin.layouts.descriptionPlaceholder": "Descrizione...",
   "admin.layouts.newZonePlaceholder": "Nome della nuova zona (es: sidebar, hero, stats)",
-  "admin.landingBuilder.errorReordering": "Errore nel riordinamento"
+  "admin.landingBuilder.errorReordering": "Errore nel riordinamento",
+  "admin.agents.toggleModal.level": "Livello",
+  "admin.agents.toggleModal.entity": "Entità",
+  "admin.agents.editModal.tenant": "Tenant",
+  "admin.agents.editModal.superhub": "SuperHub",
+  "admin.agents.editModal.org": "Organizzazione",
+  "admin.agents.editModal.promptPlaceholder": "Scrivi o personalizza il prompt qui..."
 }

@@ -3759,5 +3759,11 @@
   "admin.layouts.namePlaceholder": "Layout name",
   "admin.layouts.descriptionPlaceholder": "Description...",
   "admin.layouts.newZonePlaceholder": "New zone name (e.g.: sidebar, hero, stats)",
-  "admin.landingBuilder.errorReordering": "Error reordering"
+  "admin.landingBuilder.errorReordering": "Error reordering",
+  "admin.agents.toggleModal.level": "Level",
+  "admin.agents.toggleModal.entity": "Entity",
+  "admin.agents.editModal.tenant": "Tenant",
+  "admin.agents.editModal.superhub": "SuperHub",
+  "admin.agents.editModal.org": "Organization",
+  "admin.agents.editModal.promptPlaceholder": "Write or customize the prompt here..."
 }

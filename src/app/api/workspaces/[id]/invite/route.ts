@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
+import { sendInviteEmail } from "@/lib/email/sendInviteEmail";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -34,6 +35,16 @@ export async function POST(
       select: { id: true, name: true, slug: true },
     });
     if (!workspace) return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+
+    // Información del invitador para el email
+    const inviter = await prisma.user.findUnique({
+      where: { id: token.sub },
+      select: { name: true, email: true, language: true },
+    });
+    const inviterName = inviter?.name || inviter?.email || null;
+    const recipientLocale = (req.nextUrl.searchParams.get("lang") ||
+      inviter?.language ||
+      "es") as "es" | "en" | "pt" | "it";
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -88,11 +99,24 @@ export async function POST(
 
     const inviteUrl = `${req.nextUrl.origin}/invite/${tokenStr}`;
 
+    // Enviar email (no bloqueante: si falla, el inviteUrl sigue disponible)
+    const emailResult = await sendInviteEmail({
+      to: email.trim().toLowerCase(),
+      inviteUrl,
+      inviterName,
+      workspaceName: workspace.name,
+      role,
+      locale: recipientLocale,
+    });
+
     return NextResponse.json({
       success: true,
       existing: false,
       inviteId: invite.id,
       inviteUrl,
+      emailSent: emailResult.ok && !emailResult.skipped,
+      emailSkipped: !!emailResult.skipped,
+      emailError: emailResult.ok ? undefined : emailResult.error,
     });
   } catch (err: any) {
     console.error("POST /api/workspaces/[id]/invite error:", err);

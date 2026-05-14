@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
+import { sendInviteEmail } from "@/lib/email/sendInviteEmail";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -79,14 +80,25 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Aquí puedes integrar envío de correo si quieres:
-    // await sendInviteEmail(email, token, tenantId);
+    // Enviar email de invitación (reusa el helper compartido)
+    const link = `${process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin}/invite/${token}`;
+    const emailResult = await sendInviteEmail({
+      to: email.toLowerCase(),
+      inviteUrl: link,
+      inviterName: actor.name || actor.email,
+      workspaceName: invite.tenant?.name || null,
+      role,
+      locale: (actor.language as any) || "es",
+    });
 
     return NextResponse.json({
       ok: true,
       message: "Invitación generada correctamente ✅",
       invite,
-      link: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${token}`,
+      link,
+      emailSent: emailResult.ok && !emailResult.skipped,
+      emailSkipped: !!emailResult.skipped,
+      emailError: emailResult.ok ? undefined : emailResult.error,
     });
   } catch (e: any) {
     console.error("❌ [POST /admin/users/invite] Error:", e);

@@ -3940,5 +3940,7 @@
   "social.messages.discoverConnections": "Descubrir personas →",
   "social.messages.origin.connection": "Conexión",
   "social.messages.origin.community": "Comunidad",
-  "social.messages.origin.team": "Equipo"
+  "social.messages.origin.team": "Equipo",
+  "social.messages.noAccountBadge": "Sin cuenta",
+  "social.messages.noAccountTooltip": "Esta persona aún no se registró en Rowi. Invítala desde Workspace o Conexiones para poder enviarle mensajes."
 }

@@ -71,13 +71,16 @@ export default function MessagesPage() {
   const [connections, setConnections] = useState<
     Array<{
       key: string;
-      userId: string;
+      /** userId real para crear thread. null si la persona no tiene cuenta. */
+      userId: string | null;
+      email: string | null;
       name: string;
       image: string | null;
       headline: string | null;
-      /** "connection" | "community" | "team" — para el badge */
+      /** "connection" | "community" | "team" — para el badge de origen */
       origin: "connection" | "community" | "team";
       originLabel: string;
+      hasAccount: boolean;
     }>
   >([]);
   const [loadingConnections, setLoadingConnections] = useState(false);
@@ -180,45 +183,53 @@ export default function MessagesPage() {
       const connData = connRes && connRes.ok ? await connRes.json() : { connections: [] };
       const memData = memRes && memRes.ok ? await memRes.json() : { members: [] };
 
-      const byUserId = new Map<
-        string,
-        {
-          key: string;
-          userId: string;
-          name: string;
-          image: string | null;
-          headline: string | null;
-          origin: "connection" | "community" | "team";
-          originLabel: string;
-        }
-      >();
+      type Entry = {
+        key: string;
+        userId: string | null;
+        email: string | null;
+        name: string;
+        image: string | null;
+        headline: string | null;
+        origin: "connection" | "community" | "team";
+        originLabel: string;
+        hasAccount: boolean;
+      };
+      const byKey = new Map<string, Entry>();
+      const claimedUserIds = new Set<string>();
+      const claimedEmails = new Set<string>();
 
-      // 1) Conexiones (prioridad alta, las metemos primero)
+      // 1) Conexiones (siempre tienen cuenta)
       for (const c of connData.connections || []) {
         const u = c.user;
         if (!u?.id) continue;
-        byUserId.set(u.id, {
+        const entry: Entry = {
           key: `conn-${c.id}`,
           userId: u.id,
+          email: u.email?.toLowerCase() || null,
           name: u.name || u.email?.split("@")[0] || "Usuario",
           image: u.image || null,
           headline: u.headline || null,
           origin: "connection",
           originLabel: t("social.messages.origin.connection", "Conexión"),
-        });
+          hasAccount: true,
+        };
+        byKey.set(entry.key, entry);
+        claimedUserIds.add(u.id);
+        if (entry.email) claimedEmails.add(entry.email);
       }
 
-      // 2) Miembros de comunidad / teammates
-      //    Solo los items con id "user_..." porque ese prefijo indica
-      //    que hay un User real vinculado al cual sí podemos mensajear.
+      // 2) Miembros de comunidad + teammates (ahora TODOS, no solo los con cuenta)
       for (const m of memData.members || []) {
-        if (typeof m.id !== "string" || !m.id.startsWith("user_")) continue;
-        const userId = m.id.replace("user_", "");
-        if (byUserId.has(userId)) continue; // ya es conexión
+        const hasAccount = !!m.hasAccount && !!m.userId;
+        if (hasAccount && claimedUserIds.has(m.userId)) continue;
+        const emailLc = m.email?.toLowerCase() || null;
+        if (emailLc && claimedEmails.has(emailLc)) continue;
+
         const isTeam = m.source === "tenant_user" || m.connectionType === "teammate";
-        byUserId.set(userId, {
+        const entry: Entry = {
           key: `mem-${m.id}`,
-          userId,
+          userId: m.userId || null,
+          email: emailLc,
           name: m.name || m.email?.split("@")[0] || "Usuario",
           image: null,
           headline: m.brainStyle || m.hubName || null,
@@ -226,10 +237,19 @@ export default function MessagesPage() {
           originLabel: isTeam
             ? t("social.messages.origin.team", "Equipo")
             : t("social.messages.origin.community", "Comunidad"),
-        });
+          hasAccount,
+        };
+        byKey.set(entry.key, entry);
+        if (hasAccount && m.userId) claimedUserIds.add(m.userId);
+        if (emailLc) claimedEmails.add(emailLc);
       }
 
-      setConnections(Array.from(byUserId.values()));
+      // Ordenar: con cuenta primero, alfabético dentro de cada grupo
+      const sorted = Array.from(byKey.values()).sort((a, b) => {
+        if (a.hasAccount !== b.hasAccount) return a.hasAccount ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+      setConnections(sorted);
     } catch (err) {
       console.error("Error loading connections/members:", err);
       setConnections([]);
@@ -602,12 +622,25 @@ export default function MessagesPage() {
                         : c.origin === "team"
                           ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400";
+                    const clickable = c.hasAccount && c.userId;
                     return (
                       <button
                         key={c.key}
-                        onClick={() => startThread(c.userId)}
-                        disabled={startingThread === c.userId}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-50 dark:border-zinc-800/50 disabled:opacity-50"
+                        onClick={() => clickable && startThread(c.userId!)}
+                        disabled={!clickable || startingThread === c.userId}
+                        title={
+                          clickable
+                            ? undefined
+                            : t(
+                                "social.messages.noAccountTooltip",
+                                "Esta persona aún no se registró en Rowi. Invítala desde Workspace o Conexiones para poder enviarle mensajes."
+                              )
+                        }
+                        className={`w-full flex items-center gap-3 p-3 border-b border-gray-50 dark:border-zinc-800/50 transition-colors ${
+                          clickable
+                            ? "hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
+                            : "opacity-60 cursor-not-allowed"
+                        } disabled:opacity-50`}
                       >
                         {c.image ? (
                           <img
@@ -616,12 +649,18 @@ export default function MessagesPage() {
                             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-bold flex-shrink-0">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ${
+                              clickable
+                                ? "bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)]"
+                                : "bg-gradient-to-br from-gray-400 to-gray-500 dark:from-zinc-600 dark:to-zinc-700"
+                            }`}
+                          >
                             {c.name.charAt(0) || "?"}
                           </div>
                         )}
                         <div className="flex-1 min-w-0 text-left">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                               {c.name}
                             </p>
@@ -630,10 +669,23 @@ export default function MessagesPage() {
                             >
                               {c.originLabel}
                             </span>
+                            {!clickable && (
+                              <span className="px-1.5 py-0.5 text-[9px] rounded-full font-medium whitespace-nowrap bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400">
+                                {t(
+                                  "social.messages.noAccountBadge",
+                                  "Sin cuenta"
+                                )}
+                              </span>
+                            )}
                           </div>
                           {c.headline && (
                             <p className="text-xs text-gray-500 truncate">
                               {c.headline}
+                            </p>
+                          )}
+                          {!clickable && c.email && (
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">
+                              {c.email}
                             </p>
                           )}
                         </div>

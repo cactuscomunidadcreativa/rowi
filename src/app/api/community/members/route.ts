@@ -176,6 +176,11 @@ export async function GET(req: NextRequest) {
       // Get brainStyle from member or linked user
       const brainStyle = m.brainStyle || (m as any).user?.eqSnapshots?.[0]?.brainStyle;
 
+      // `userId` real (cuando este CommunityMember está vinculado a una
+      // cuenta de Rowi). Si está vinculado, se puede mensajear, invitar
+      // a workspaces, etc. Si no, sólo tenemos su email importado de un CSV.
+      const linkedUserId = (m as any).user?.id || m.userId || null;
+
       return {
         id: m.id,
         name: m.name,
@@ -189,6 +194,8 @@ export async function GET(req: NextRequest) {
         hubId: m.hubId || undefined,
         hubName: (m as any).hub?.name || undefined,
         ownerId: m.ownerId,
+        userId: linkedUserId,
+        hasAccount: !!linkedUserId,
         affinityHeat135: heat,
         affinityPercent:
           typeof heat === "number"
@@ -229,6 +236,8 @@ export async function GET(req: NextRequest) {
             const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
             return {
               id: `user_${u.id}`,
+              userId: u.id,
+              hasAccount: true,
               name: u.name || u.email?.split("@")[0] || "Unknown",
               email: u.email || undefined,
               country: u.country || undefined,
@@ -272,6 +281,8 @@ export async function GET(req: NextRequest) {
           const avgScore = snap ? Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3) : null;
           return {
             id: `user_${u.id}`,
+            userId: u.id,
+            hasAccount: true,
             name: u.name || u.email?.split("@")[0] || "Unknown",
             email: u.email || undefined,
             country: u.country || undefined,

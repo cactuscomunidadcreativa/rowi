@@ -73,8 +73,14 @@ function readActiveContextId(): string | null {
 function writeActiveContextId(id: string) {
   if (typeof document === "undefined") return;
   // 30 days, path=/ so all server routes can read it.
+  // Secure flag only over HTTPS — leaving it off on http://localhost so
+  // dev still works. samesite=lax protects navigations from CSRF.
   const maxAge = 60 * 60 * 24 * 30;
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(id)}; path=/; max-age=${maxAge}; samesite=lax`;
+  const secure =
+    typeof window !== "undefined" && window.location?.protocol === "https:"
+      ? "; secure"
+      : "";
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(id)}; path=/; max-age=${maxAge}; samesite=lax${secure}`;
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());

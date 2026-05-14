@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
   }
 
   const status =
-    clientTenantId && clientTenantId === (auth as any).primaryTenantId
+    clientTenantId && clientTenantId === auth.primaryTenantId
       ? "active"
       : "proposed";
 

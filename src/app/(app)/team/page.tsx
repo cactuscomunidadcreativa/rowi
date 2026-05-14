@@ -53,13 +53,17 @@ export default function TeamPage() {
           allProfiles: json.allProfiles,
         });
       } catch (e: any) {
-        setError(e?.message || t("team.loadError", "Error cargando equipo"));
+        setError(e?.message || "Error cargando equipo");
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [t]);
+    // t is intentionally NOT a dep — it's a non-memoized function from
+    // I18nProvider, so depending on it would loop. Falling back to a
+    // hardcoded ES string for the error message is fine; success-path
+    // strings inside the JSX still re-render through t() normally.
+  }, []);
 
   if (loading) {
     return (

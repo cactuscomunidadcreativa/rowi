@@ -184,11 +184,53 @@ export default function RowiCoachPage() {
     boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs]);
 
+  // Persist chat per agent so we don't greet again on every page revisit.
+  // Show the welcome again only if there's no history, or if the last
+  // message is older than 3 hours (a natural "new session" boundary).
+  const STORAGE_KEY = `rowi.chat.${scope}`;
+  const STALE_AFTER_MS = 3 * 60 * 60 * 1000;
+
   useEffect(() => {
-    setMsgs([{ role: "rowi", text: getWelcome(scope), timestamp: new Date() }]);
     setAiInfo(null);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { msgs: Msg[]; updatedAt: number };
+        const isFresh =
+          parsed.updatedAt &&
+          Date.now() - parsed.updatedAt < STALE_AFTER_MS &&
+          Array.isArray(parsed.msgs) &&
+          parsed.msgs.length > 0;
+        if (isFresh) {
+          setMsgs(
+            parsed.msgs.map((m) => ({
+              ...m,
+              timestamp: new Date(m.timestamp),
+            })),
+          );
+          return;
+        }
+      }
+    } catch {
+      // ignore parse errors, fall through to greeting
+    }
+    setMsgs([{ role: "rowi", text: getWelcome(scope), timestamp: new Date() }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scope]);
+
+  // Save messages on every change so the next visit can restore them.
+  useEffect(() => {
+    if (msgs.length === 0) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ msgs, updatedAt: Date.now() }),
+      );
+    } catch {
+      // ignore storage quota / private mode errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msgs]);
 
   /* ---- send ---- */
   async function send(override?: string) {

@@ -4399,5 +4399,7 @@
   "selection.candidate.lookup.workspaceMatches": "workspace match(es)",
   "selection.candidate.lookup.hasSEI": "Has SEI snapshot",
   "selection.candidate.lookup.affinitySnapshots": "affinity snapshot(s)",
-  "selection.candidate.lookup.useExisting": "Use existing data"
+  "selection.candidate.lookup.useExisting": "Use existing data",
+  "org.workspaces.orphanTitle": "members without an assigned workspace",
+  "org.workspaces.orphanHint": "These contacts are in your organization but don't belong to any workspace. Create one and assign them, or move them from the admin panel."
 }

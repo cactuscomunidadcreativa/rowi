@@ -127,6 +127,10 @@ export async function GET() {
       openAlerts,
       criticalAlerts,
       recentSnapshots,
+      // Real members-per-workspace counts — Prisma's `_count` was returning 0
+      // for some legacy communities, so we compute it from a groupBy.
+      memberByCommunity,
+      orphanMembers,
     ] = await Promise.all([
       prisma.employeeProfile.count({ where: tenantFilter }),
       prisma.employeeProfile.count({
@@ -208,7 +212,21 @@ export async function GET() {
           at: { gte: thirtyDaysAgo },
         },
       }),
+      prisma.communityMember.groupBy({
+        by: ["communityId"],
+        where: { ...tenantFilter, communityId: { not: null } },
+        _count: true,
+      }),
+      prisma.communityMember.count({
+        where: { ...tenantFilter, communityId: null },
+      }),
     ]);
+
+    // Build a quick lookup so we can attach real counts to the workspace cards.
+    const memberCountByCommunity = new Map<string, number>();
+    for (const row of memberByCommunity) {
+      if (row.communityId) memberCountByCommunity.set(row.communityId, row._count);
+    }
 
     return NextResponse.json({
       ok: true,
@@ -238,7 +256,14 @@ export async function GET() {
         workspaces: {
           total: workspaces.length,
           active: activeWorkspaces,
-          recent: workspaces,
+          recent: workspaces.map((w) => ({
+            ...w,
+            _count: {
+              communityMembers:
+                memberCountByCommunity.get(w.id) ?? w._count.communityMembers,
+            },
+          })),
+          orphanMembers,
         },
         diversity: {
           brainStyles: brainStyleAgg

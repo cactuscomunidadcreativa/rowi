@@ -34,6 +34,7 @@ type Summary = {
     workspaces: {
       total: number;
       active: number;
+      orphanMembers?: number;
       recent: Array<{
         id: string;
         name: string;
@@ -220,6 +221,26 @@ export default function OrganizationHubPage() {
             </Link>
           </div>
         </div>
+        {(s.workspaces.orphanMembers ?? 0) > 0 && (
+          <div className="mb-4 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                {s.workspaces.orphanMembers}{" "}
+                {t(
+                  "org.workspaces.orphanTitle",
+                  "miembros sin workspace asignado",
+                )}
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                {t(
+                  "org.workspaces.orphanHint",
+                  "Estos contactos están en tu organización pero no pertenecen a ningún workspace. Crea uno y asígnalos, o muévelos desde el admin.",
+                )}
+              </p>
+            </div>
+          </div>
+        )}
         {s.workspaces.recent.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700 p-10 text-center">
             <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-3" />

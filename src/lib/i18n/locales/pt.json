@@ -4480,5 +4480,8 @@
   "team.unknownRole": "Cargo não especificado",
   "team.reportSingular": "reporte direto",
   "team.reportPlural": "reportes diretos",
-  "team.since": "Desde"
+  "team.since": "Desde",
+  "account.context.switchTitle": "Mudar contexto ativo",
+  "account.context.dropdownTitle": "Contexto ativo",
+  "account.context.dropdownHint": "Mude o chapéu que você usa no Rowi."
 }

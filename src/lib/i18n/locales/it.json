@@ -4480,5 +4480,8 @@
   "team.unknownRole": "Ruolo non specificato",
   "team.reportSingular": "report diretto",
   "team.reportPlural": "report diretti",
-  "team.since": "Dal"
+  "team.since": "Dal",
+  "account.context.switchTitle": "Cambia contesto attivo",
+  "account.context.dropdownTitle": "Contesto attivo",
+  "account.context.dropdownHint": "Cambia il cappello che indossi in Rowi."
 }

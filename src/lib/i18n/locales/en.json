@@ -4480,5 +4480,8 @@
   "team.unknownRole": "Role not specified",
   "team.reportSingular": "direct report",
   "team.reportPlural": "direct reports",
-  "team.since": "Since"
+  "team.since": "Since",
+  "account.context.switchTitle": "Switch active context",
+  "account.context.dropdownTitle": "Active context",
+  "account.context.dropdownHint": "Change the hat you wear in Rowi."
 }

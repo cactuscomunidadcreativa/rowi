@@ -4480,5 +4480,8 @@
   "team.unknownRole": "Rol no especificado",
   "team.reportSingular": "reporte directo",
   "team.reportPlural": "reportes directos",
-  "team.since": "Desde"
+  "team.since": "Desde",
+  "account.context.switchTitle": "Cambiar contexto activo",
+  "account.context.dropdownTitle": "Contexto activo",
+  "account.context.dropdownHint": "Cambia el sombrero que usas en Rowi."
 }

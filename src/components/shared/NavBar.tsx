@@ -12,6 +12,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import useSWR from "swr";
 import ContextSwitcher from "./ContextSwitcher";
+import AccountContextChip from "./AccountContextChip";
 import { useUserContext } from "@/contexts/UserContextProvider";
 
 // Fetcher para SWR
@@ -653,6 +654,8 @@ export default function NavBar() {
               {t.signin}
             </Link>
           ) : (
+            <>
+            <AccountContextChip />
             <div id="rowi-user-menu" className="relative">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
@@ -839,6 +842,7 @@ export default function NavBar() {
                 )}
               </AnimatePresence>
             </div>
+            </>
           )}
 
           {/* Mobile Menu Button */}

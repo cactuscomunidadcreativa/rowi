@@ -20,6 +20,7 @@ import {
   Sparkles,
   Calendar,
   ClipboardCheck,
+  Network,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -51,6 +52,32 @@ type Summary = {
     };
     alerts: { open: number; critical: number };
     activity: { snapshotsLast30Days: number };
+    hubs: {
+      total: number;
+      recent: Array<{
+        id: string;
+        name: string;
+        slug: string | null;
+        description: string | null;
+        _count: {
+          memberships: number;
+          organizations: number;
+          organizationLinks: number;
+        };
+      }>;
+    };
+    communities: {
+      total: number;
+      recent: Array<{
+        id: string;
+        name: string;
+        slug: string | null;
+        description: string | null;
+        type: string | null;
+        createdAt: string;
+      }>;
+    };
+    affinity: { profiles: number; snapshots: number };
   } | null;
 };
 
@@ -302,6 +329,132 @@ export default function OrganizationHubPage() {
           </div>
         )}
       </section>
+
+      {/* Hubs section — surfaces the org unit container so users can see the
+          hierarchy: tenant → hubs → workspaces → members. */}
+      {s.hubs.total > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Network className="w-5 h-5 text-[var(--rowi-g2)]" />
+              {t("org.hubs.title", "Hubs")}
+              <span className="text-sm font-normal text-gray-500">
+                · {s.hubs.total}
+              </span>
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {s.hubs.recent.map((h, i) => (
+              <motion.div
+                key={h.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 flex items-center justify-center mb-3">
+                  <Network className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  {h.name}
+                </h3>
+                {h.description && (
+                  <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                    {h.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-3 pt-3 mt-3 border-t border-gray-100 dark:border-zinc-800 text-xs text-gray-500">
+                  <span className="inline-flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    {h._count.memberships}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {h._count.organizations + h._count.organizationLinks}{" "}
+                    {t("org.hubs.orgs", "orgs")}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Communities (non-workspace RowiCommunity) — separated so people can
+          tell apart projects (workspaces) from broader social communities. */}
+      {s.communities.total > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Users className="w-5 h-5 text-[var(--rowi-g2)]" />
+              {t("org.communities.title", "Comunidades")}
+              <span className="text-sm font-normal text-gray-500">
+                · {s.communities.total}
+              </span>
+            </h2>
+            <Link
+              href="/community"
+              className="text-sm text-[var(--rowi-g2)] hover:underline inline-flex items-center gap-1"
+            >
+              {t("hr.viewAll", "Ver todas")}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {s.communities.recent.map((c, i) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 flex items-center justify-center mb-3">
+                  <Heart className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  {c.name}
+                </h3>
+                {c.description && (
+                  <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                    {c.description}
+                  </p>
+                )}
+                {c.type && (
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400 mt-2">
+                    {c.type}
+                  </p>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Affinity quick surface — relational health is a first-class part of
+          the hub, not buried in admin. */}
+      <Link
+        href="/affinity"
+        className="block bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-200/40 dark:border-rose-700/30 rounded-2xl p-5 hover:border-[var(--rowi-g2)] transition-colors group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+            <Heart className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {t("org.affinity.title", "Afinidad cerebral")}
+            </h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {s.affinity.profiles}{" "}
+              {t("org.affinity.profiles", "perfiles")} ·{" "}
+              {s.affinity.snapshots}{" "}
+              {t("org.affinity.snapshots", "snapshots")}
+            </p>
+          </div>
+          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[var(--rowi-g2)] group-hover:translate-x-1 transition-all" />
+        </div>
+      </Link>
 
       {/* HR + Activity row */}
       <div className="grid gap-4 lg:grid-cols-3">

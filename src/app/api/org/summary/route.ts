@@ -228,6 +228,51 @@ export async function GET() {
       if (row.communityId) memberCountByCommunity.set(row.communityId, row._count);
     }
 
+    // ── Hubs + non-workspace communities + affinity surfaces.
+    // The org hub is the place where all the pieces of the hierarchy should
+    // be visible at a glance: hubs (org units), workspaces (active projects),
+    // communities (broader groupings), affinity (relational health).
+    const [hubs, communitiesAll, affinityProfiles, affinitySnapshots] =
+      await Promise.all([
+        prisma.hub.findMany({
+          where: tenantFilter,
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            _count: {
+              select: {
+                memberships: true,
+                organizations: true,
+                organizationLinks: true,
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 6,
+        }),
+        prisma.rowiCommunity.findMany({
+          where: { ...tenantFilter, workspaceType: null },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            type: true,
+            createdAt: true,
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 6,
+        }),
+        prisma.affinityProfile.count({
+          where: { user: { primaryTenantId: { in: tenantIds } } },
+        }),
+        prisma.affinitySnapshot.count({
+          where: { user: { primaryTenantId: { in: tenantIds } } },
+        }),
+      ]);
+
     return NextResponse.json({
       ok: true,
       scope: "tenant",
@@ -279,6 +324,18 @@ export async function GET() {
         },
         activity: {
           snapshotsLast30Days: recentSnapshots,
+        },
+        hubs: {
+          total: hubs.length,
+          recent: hubs,
+        },
+        communities: {
+          total: communitiesAll.length,
+          recent: communitiesAll,
+        },
+        affinity: {
+          profiles: affinityProfiles,
+          snapshots: affinitySnapshots,
         },
       },
     });

@@ -4401,5 +4401,11 @@
   "selection.candidate.lookup.affinitySnapshots": "snapshot(s) de afinidade",
   "selection.candidate.lookup.useExisting": "Usar dados existentes",
   "org.workspaces.orphanTitle": "membros sem workspace atribuído",
-  "org.workspaces.orphanHint": "Estes contatos estão na sua organização mas não pertencem a nenhum workspace. Crie um e atribua-os, ou mova-os do painel de admin."
+  "org.workspaces.orphanHint": "Estes contatos estão na sua organização mas não pertencem a nenhum workspace. Crie um e atribua-os, ou mova-os do painel de admin.",
+  "org.hubs.title": "Hubs",
+  "org.hubs.orgs": "orgs",
+  "org.communities.title": "Comunidades",
+  "org.affinity.title": "Afinidade cerebral",
+  "org.affinity.profiles": "perfis",
+  "org.affinity.snapshots": "snapshots"
 }

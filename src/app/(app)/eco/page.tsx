@@ -731,8 +731,96 @@ export default function EcoPage() {
                   exit={{ opacity: 0, y: -20, scale: 0.97 }}
                   className="space-y-4"
                 >
-                  {/* Recipient Analysis */}
-                  {out.analysis && (
+                  {/* Group Analysis — visible solo cuando hay 2+ destinatarios */}
+                  {out.analysis?.isGroup && (
+                    <div className="rounded-2xl border border-blue-200 dark:border-blue-800/40 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/15 dark:to-zinc-900 p-5 shadow-sm">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                          <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {t("eco.groupAnalysis.title", "Análisis del grupo")}
+                          </h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {out.analysis.recipients?.length}{" "}
+                            {t("eco.groupAnalysis.recipientsLabel", "destinatarios")}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Lista de destinatarios con sus brain styles */}
+                      <div className="grid sm:grid-cols-2 gap-2 mb-4">
+                        {out.analysis.recipients?.map((r: any) => (
+                          <div
+                            key={r.name}
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/50 border border-blue-100 dark:border-blue-900/30"
+                          >
+                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {r.name}
+                            </span>
+                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium whitespace-nowrap ml-2">
+                              {r.brainStyle}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Distribución de estilos */}
+                      {out.analysis.styleDistribution &&
+                        Object.keys(out.analysis.styleDistribution).length > 1 && (
+                          <div className="mb-3">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                              {t("eco.groupAnalysis.styleMix", "Mezcla de estilos")}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {Object.entries(out.analysis.styleDistribution).map(
+                                ([style, count]) => (
+                                  <span
+                                    key={style}
+                                    className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                                  >
+                                    {style} × {count as number}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Talentos comunes a TODOS */}
+                      {out.analysis.commonAcrossAll?.length > 0 && (
+                        <div className="pt-3 border-t border-blue-200 dark:border-blue-800/40">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                            {t(
+                              "eco.groupAnalysis.commonTalents",
+                              "Talentos que compartes con TODOS"
+                            )}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {out.analysis.commonAcrossAll.map((talent: string) => (
+                              <span
+                                key={talent}
+                                className="px-2.5 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium"
+                              >
+                                {talent}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40 text-xs text-gray-600 dark:text-gray-400 italic">
+                        {t(
+                          "eco.groupAnalysis.aiNote",
+                          "El mensaje se adapta al perfil colectivo del grupo, buscando el denominador común y respetando las diferencias clave."
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recipient Analysis — Solo cuando hay 1 destinatario */}
+                  {out.analysis && !out.analysis.isGroup && (
                     <div className="rounded-2xl border border-purple-200 dark:border-purple-800/40 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/15 dark:to-zinc-900 p-5 shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">

@@ -3927,5 +3927,10 @@
   "workspace.empty.inviteCta": "Invia invito",
   "workspace.empty.exploreModules": "Esplora i moduli disponibili",
   "weekflow.sections.shareWithTeam": "Condividi con il tuo team",
-  "weekflow.sections.writeHere": "Scrivi qui..."
+  "weekflow.sections.writeHere": "Scrivi qui...",
+  "eco.groupAnalysis.title": "Analisi del gruppo",
+  "eco.groupAnalysis.recipientsLabel": "destinatari",
+  "eco.groupAnalysis.styleMix": "Mix di stili",
+  "eco.groupAnalysis.commonTalents": "Talenti che condividi con TUTTI",
+  "eco.groupAnalysis.aiNote": "Il messaggio si adatta al profilo collettivo del gruppo, cercando il denominatore comune e rispettando le differenze chiave."
 }

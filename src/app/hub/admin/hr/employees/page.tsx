@@ -3,6 +3,7 @@
 import { Users } from "lucide-react";
 import { AdminPage } from "@/components/admin/AdminPage";
 import { EntityTable, type Column } from "@/components/admin/EntityTable";
+import { ManagerCell } from "./_ManagerCell";
 
 type EmployeeRow = {
   id: string;
@@ -13,8 +14,15 @@ type EmployeeRow = {
   salaryUsd: string | null;
   contractType: string | null;
   createdAt: string;
+  tenantId: string | null;
   user?: { id: string; name: string | null; email: string | null } | null;
   tenant?: { id: string; name: string } | null;
+  manager?: {
+    id: string;
+    position: string | null;
+    user: { id: string; name: string | null } | null;
+  } | null;
+  _count?: { reports: number };
 };
 
 const columns: Column<EmployeeRow>[] = [
@@ -33,6 +41,25 @@ const columns: Column<EmployeeRow>[] = [
   },
   { key: "position", labelKey: "admin.hr.col.position", fallback: "Position" },
   { key: "department", labelKey: "admin.hr.col.department", fallback: "Department" },
+  {
+    key: "manager",
+    labelKey: "admin.hr.col.manager",
+    fallback: "Manager",
+    render: (r) => <ManagerCell row={r} />,
+  },
+  {
+    key: "reports",
+    labelKey: "admin.hr.col.reports",
+    fallback: "Reports",
+    render: (r) =>
+      r._count?.reports ? (
+        <span className="text-[var(--rowi-foreground)]">
+          {r._count.reports}
+        </span>
+      ) : (
+        <span className="text-[var(--rowi-muted)]">—</span>
+      ),
+  },
   {
     key: "status",
     labelKey: "admin.hr.col.status",

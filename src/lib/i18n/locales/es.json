@@ -4485,5 +4485,14 @@
   "account.context.dropdownTitle": "Contexto activo",
   "account.context.dropdownHint": "Cambia el sombrero que usas en Rowi.",
   "org.activeContextFilter": "Filtrado por contexto activo",
-  "org.accessibleTenants": "tenants accesibles"
+  "org.accessibleTenants": "tenants accesibles",
+  "admin.hr.col.manager": "Manager",
+  "admin.hr.col.reports": "Reportes",
+  "admin.hr.manager.edit": "Editar manager",
+  "admin.hr.manager.pick": "Asignar manager",
+  "admin.hr.manager.none": "Sin manager",
+  "admin.hr.manager.noCandidates": "No hay otros empleados activos en este tenant.",
+  "admin.hr.manager.loadError": "Error cargando candidatos",
+  "admin.hr.manager.saveError": "Error al guardar",
+  "admin.hr.manager.saved": "Manager actualizado"
 }

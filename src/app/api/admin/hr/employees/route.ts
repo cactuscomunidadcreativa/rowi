@@ -12,6 +12,14 @@ export async function GET(req: NextRequest) {
     include: {
       user: { select: { id: true, name: true, email: true } },
       tenant: { select: { id: true, name: true } },
+      manager: {
+        select: {
+          id: true,
+          position: true,
+          user: { select: { id: true, name: true } },
+        },
+      },
+      _count: { select: { reports: true } },
     },
   });
 }

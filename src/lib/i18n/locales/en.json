@@ -4485,5 +4485,14 @@
   "account.context.dropdownTitle": "Active context",
   "account.context.dropdownHint": "Change the hat you wear in Rowi.",
   "org.activeContextFilter": "Filtered by active context",
-  "org.accessibleTenants": "accessible tenants"
+  "org.accessibleTenants": "accessible tenants",
+  "admin.hr.col.manager": "Manager",
+  "admin.hr.col.reports": "Reports",
+  "admin.hr.manager.edit": "Edit manager",
+  "admin.hr.manager.pick": "Assign manager",
+  "admin.hr.manager.none": "No manager",
+  "admin.hr.manager.noCandidates": "No other active employees in this tenant.",
+  "admin.hr.manager.loadError": "Could not load candidates",
+  "admin.hr.manager.saveError": "Save failed",
+  "admin.hr.manager.saved": "Manager updated"
 }

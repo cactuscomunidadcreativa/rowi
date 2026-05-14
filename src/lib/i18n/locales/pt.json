@@ -4485,5 +4485,14 @@
   "account.context.dropdownTitle": "Contexto ativo",
   "account.context.dropdownHint": "Mude o chapéu que você usa no Rowi.",
   "org.activeContextFilter": "Filtrado pelo contexto ativo",
-  "org.accessibleTenants": "tenants acessíveis"
+  "org.accessibleTenants": "tenants acessíveis",
+  "admin.hr.col.manager": "Gestor",
+  "admin.hr.col.reports": "Reportes",
+  "admin.hr.manager.edit": "Editar gestor",
+  "admin.hr.manager.pick": "Atribuir gestor",
+  "admin.hr.manager.none": "Sem gestor",
+  "admin.hr.manager.noCandidates": "Não há outros funcionários ativos neste tenant.",
+  "admin.hr.manager.loadError": "Erro ao carregar candidatos",
+  "admin.hr.manager.saveError": "Falha ao salvar",
+  "admin.hr.manager.saved": "Gestor atualizado"
 }

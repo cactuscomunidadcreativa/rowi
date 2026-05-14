@@ -4485,5 +4485,14 @@
   "account.context.dropdownTitle": "Contesto attivo",
   "account.context.dropdownHint": "Cambia il cappello che indossi in Rowi.",
   "org.activeContextFilter": "Filtrato per contesto attivo",
-  "org.accessibleTenants": "tenant accessibili"
+  "org.accessibleTenants": "tenant accessibili",
+  "admin.hr.col.manager": "Manager",
+  "admin.hr.col.reports": "Report",
+  "admin.hr.manager.edit": "Modifica manager",
+  "admin.hr.manager.pick": "Assegna manager",
+  "admin.hr.manager.none": "Nessun manager",
+  "admin.hr.manager.noCandidates": "Non ci sono altri dipendenti attivi in questo tenant.",
+  "admin.hr.manager.loadError": "Errore nel caricamento dei candidati",
+  "admin.hr.manager.saveError": "Salvataggio fallito",
+  "admin.hr.manager.saved": "Manager aggiornato"
 }

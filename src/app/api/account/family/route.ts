@@ -143,6 +143,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Application-level dedup when the DB unique index can't help us.
+  // Postgres treats NULLs as distinct, so @@unique([ownerId, relatedUserId])
+  // doesn't catch (owner, null) duplicates. We dedup by email when the
+  // related person has no account yet — declaring "wife@x.com" twice
+  // should 409, not silently create two rows.
+  if (relatedEmail && !relatedUserId) {
+    const existing = await prisma.familyRelation.findFirst({
+      where: { ownerId: auth.id, relatedEmail },
+      select: { id: true },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { ok: false, error: "Ya existe una relación con ese email" },
+        { status: 409 },
+      );
+    }
+  }
+
   // If the related person has no account or no email, consent is N/A.
   // If they do have an account, consent starts pending.
   const consentStatus = relatedUserId ? "pending" : "not_required";

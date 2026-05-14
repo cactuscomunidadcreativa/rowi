@@ -4483,5 +4483,7 @@
   "team.since": "Desde",
   "account.context.switchTitle": "Cambiar contexto activo",
   "account.context.dropdownTitle": "Contexto activo",
-  "account.context.dropdownHint": "Cambia el sombrero que usas en Rowi."
+  "account.context.dropdownHint": "Cambia el sombrero que usas en Rowi.",
+  "org.activeContextFilter": "Filtrado por contexto activo",
+  "org.accessibleTenants": "tenants accesibles"
 }

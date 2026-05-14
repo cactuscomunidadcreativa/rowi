@@ -4483,5 +4483,7 @@
   "team.since": "Since",
   "account.context.switchTitle": "Switch active context",
   "account.context.dropdownTitle": "Active context",
-  "account.context.dropdownHint": "Change the hat you wear in Rowi."
+  "account.context.dropdownHint": "Change the hat you wear in Rowi.",
+  "org.activeContextFilter": "Filtered by active context",
+  "org.accessibleTenants": "accessible tenants"
 }

@@ -4483,5 +4483,7 @@
   "team.since": "Dal",
   "account.context.switchTitle": "Cambia contesto attivo",
   "account.context.dropdownTitle": "Contesto attivo",
-  "account.context.dropdownHint": "Cambia il cappello che indossi in Rowi."
+  "account.context.dropdownHint": "Cambia il cappello che indossi in Rowi.",
+  "org.activeContextFilter": "Filtrato per contesto attivo",
+  "org.accessibleTenants": "tenant accessibili"
 }

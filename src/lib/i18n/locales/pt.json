@@ -4483,5 +4483,7 @@
   "team.since": "Desde",
   "account.context.switchTitle": "Mudar contexto ativo",
   "account.context.dropdownTitle": "Contexto ativo",
-  "account.context.dropdownHint": "Mude o chapéu que você usa no Rowi."
+  "account.context.dropdownHint": "Mude o chapéu que você usa no Rowi.",
+  "org.activeContextFilter": "Filtrado pelo contexto ativo",
+  "org.accessibleTenants": "tenants acessíveis"
 }

@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/core/prisma";
 import { requireAuth } from "@/core/auth/requireAdmin";
+import {
+  ACTIVE_CONTEXT_COOKIE,
+  resolveContextTenantId,
+} from "@/lib/account/contexts";
 
 export const preferredRegion = "iad1";
 
@@ -80,7 +85,29 @@ export async function GET() {
       if (c.community?.tenantId) tenantIdSet.add(c.community.tenantId);
     }
 
-    const tenantIds = Array.from(tenantIdSet);
+    const allAccessibleTenantIds = Array.from(tenantIdSet);
+
+    // ── Active context filter (cookie set by AccountContextChip).
+    // If the cookie points to a tenant the user actually has access to,
+    // narrow the working set to just that one. Otherwise the broader set
+    // is kept — we never want the cookie to GRANT access, only to filter
+    // existing access.
+    const cookieStore = await cookies();
+    const activeContextCookie = cookieStore.get(ACTIVE_CONTEXT_COOKIE)?.value;
+    let resolvedContextTenantId: string | null = null;
+    let tenantIds = allAccessibleTenantIds;
+
+    if (activeContextCookie) {
+      resolvedContextTenantId = await resolveContextTenantId(activeContextCookie);
+      if (
+        resolvedContextTenantId &&
+        tenantIdSet.has(resolvedContextTenantId)
+      ) {
+        tenantIds = [resolvedContextTenantId];
+      } else {
+        resolvedContextTenantId = null;
+      }
+    }
 
     if (tenantIds.length === 0) {
       return NextResponse.json({
@@ -365,6 +392,12 @@ export async function GET() {
       isSuperAdmin,
       tenant: primaryDisplayTenant,
       tenantCount: tenantIds.length,
+      activeContextFilter: resolvedContextTenantId
+        ? {
+            tenantId: resolvedContextTenantId,
+            scopedFrom: allAccessibleTenantIds.length,
+          }
+        : null,
       summary: {
         people: {
           employees: employeesCount,

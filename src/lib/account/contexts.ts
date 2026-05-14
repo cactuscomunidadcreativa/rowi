@@ -328,3 +328,79 @@ export async function getActiveContexts(
   contexts.sort((a, b) => a.weight - b.weight);
   return contexts;
 }
+
+/**
+ * Cookie name where AccountContextChip stores the active context id.
+ * Kept here so both the chip (client) and server routes use the same
+ * literal — drift between them silently breaks the filter.
+ */
+export const ACTIVE_CONTEXT_COOKIE = "rowi_active_context";
+
+/**
+ * Given the cookie value (the context's `id`, e.g. "tenant_primary:abc"
+ * or "employee:profileId"), resolve which Tenant — if any — should be
+ * used to filter org-scoped reads.
+ *
+ * Returns null when the active context is not tenant-bound (personal,
+ * family, service_client) or when the referenced entity cannot be
+ * resolved. Callers should fall back to the broader access set in
+ * that case rather than returning an empty result.
+ *
+ * IMPORTANT: this only RESOLVES the tenant id. It does NOT verify the
+ * caller actually has access — that's the caller's job, since the
+ * permission model is shared across the codebase.
+ */
+export async function resolveContextTenantId(
+  cookieValue: string | null | undefined,
+): Promise<string | null> {
+  if (!cookieValue || typeof cookieValue !== "string") return null;
+  const sepIdx = cookieValue.indexOf(":");
+  if (sepIdx < 0) return null;
+  const kind = cookieValue.slice(0, sepIdx);
+  const ref = cookieValue.slice(sepIdx + 1);
+  if (!ref) return null;
+
+  switch (kind) {
+    case "tenant_primary":
+      // ref is the tenantId itself.
+      return ref;
+
+    case "employee": {
+      const emp = await prisma.employeeProfile.findUnique({
+        where: { id: ref },
+        select: { tenantId: true },
+      });
+      return emp?.tenantId || null;
+    }
+
+    case "workspace_pro": {
+      const com = await prisma.rowiCommunity.findUnique({
+        where: { id: ref },
+        select: { tenantId: true },
+      });
+      return com?.tenantId || null;
+    }
+
+    case "service_provider": {
+      const eng = await prisma.serviceEngagement.findUnique({
+        where: { id: ref },
+        select: {
+          clientTenantId: true,
+          clientCommunity: { select: { tenantId: true } },
+        },
+      });
+      return eng?.clientTenantId || eng?.clientCommunity?.tenantId || null;
+    }
+
+    case "manager":
+    case "personal":
+    case "family":
+    case "family_inbound":
+    case "service_client":
+      // Not tenant-scoped.
+      return null;
+
+    default:
+      return null;
+  }
+}

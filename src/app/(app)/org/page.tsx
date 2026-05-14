@@ -28,6 +28,7 @@ type Summary = {
   scope: "personal" | "tenant";
   isSuperAdmin: boolean;
   tenant: { id: string; name: string; slug: string | null } | null;
+  activeContextFilter?: { tenantId: string; scopedFrom: number } | null;
   summary: {
     people: { employees: number; activeEmployees: number; members: number; withSEI: number };
     hr: { pendingLeaves: number; openReviews: number };
@@ -176,6 +177,20 @@ export default function OrganizationHubPage() {
               "Tu organización en Rowi — métricas en vivo, equipos y bienestar emocional unificados.",
             )}
           </p>
+          {data.activeContextFilter && data.activeContextFilter.scopedFrom > 1 && (
+            <p className="mt-3 text-xs text-white/90 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm">
+              <span>
+                {t(
+                  "org.activeContextFilter",
+                  "Filtrado por contexto activo",
+                )}
+              </span>
+              <span className="opacity-70">
+                ({data.activeContextFilter.scopedFrom}{" "}
+                {t("org.accessibleTenants", "tenants accesibles")})
+              </span>
+            </p>
+          )}
         </div>
       </motion.div>
 

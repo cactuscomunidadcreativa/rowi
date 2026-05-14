@@ -12,6 +12,9 @@ import {
   Loader2,
   Check,
   CheckCheck,
+  Plus,
+  X,
+  UserPlus,
 } from "lucide-react";
 
 /* =========================================================
@@ -62,6 +65,23 @@ export default function MessagesPage() {
   const [showThreadList, setShowThreadList] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
+
+  /* === Estado del modal "Nueva conversación" === */
+  const [showNewThread, setShowNewThread] = useState(false);
+  const [connections, setConnections] = useState<
+    Array<{
+      id: string;
+      otherUser: {
+        id: string;
+        name: string | null;
+        image: string | null;
+        headline?: string | null;
+      };
+    }>
+  >([]);
+  const [loadingConnections, setLoadingConnections] = useState(false);
+  const [newThreadSearch, setNewThreadSearch] = useState("");
+  const [startingThread, setStartingThread] = useState<string | null>(null);
 
   // Fetch threads
   const fetchThreads = useCallback(async () => {
@@ -138,6 +158,65 @@ export default function MessagesPage() {
     }
   };
 
+  /* =========================================================
+     ➕ Iniciar conversación nueva
+  ========================================================= */
+  const openNewThread = async () => {
+    setShowNewThread(true);
+    setNewThreadSearch("");
+    setLoadingConnections(true);
+    try {
+      const res = await fetch("/api/social/connections?status=active");
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.connections)) {
+        // El endpoint expone la otra persona como `user`; aquí la
+        // re-etiquetamos como `otherUser` para consistencia con el
+        // resto del componente (que ya usa otherUser en threads).
+        setConnections(
+          data.connections.map((c: any) => ({
+            id: c.id,
+            otherUser: c.user,
+          }))
+        );
+      } else {
+        setConnections([]);
+      }
+    } catch (err) {
+      console.error("Error loading connections:", err);
+      setConnections([]);
+    } finally {
+      setLoadingConnections(false);
+    }
+  };
+
+  const startThread = async (userId: string) => {
+    setStartingThread(userId);
+    try {
+      const res = await fetch("/api/social/messages/threads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (data.ok && data.thread) {
+        await fetchThreads();
+        setSelectedThreadId(data.thread.id);
+        setShowThreadList(false);
+        setShowNewThread(false);
+      }
+    } catch (err) {
+      console.error("Error starting thread:", err);
+    } finally {
+      setStartingThread(null);
+    }
+  };
+
+  const filteredConnections = newThreadSearch
+    ? connections.filter((c) =>
+        c.otherUser?.name?.toLowerCase().includes(newThreadSearch.toLowerCase())
+      )
+    : connections;
+
   const selectedThread = threads.find((t) => t.id === selectedThreadId);
   const filteredThreads = search
     ? threads.filter((t) =>
@@ -154,10 +233,20 @@ export default function MessagesPage() {
         }`}
       >
         <div className="p-4 border-b border-gray-200 dark:border-zinc-800">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-[var(--rowi-g2)]" />
-            {t("social.messages.title")}
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[var(--rowi-g2)]" />
+              {t("social.messages.title")}
+            </h1>
+            <button
+              onClick={openNewThread}
+              title={t("social.messages.newConversation", "Nueva conversación")}
+              aria-label={t("social.messages.newConversation", "Nueva conversación")}
+              className="p-2 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white hover:opacity-90 transition-opacity shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
           <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -176,10 +265,17 @@ export default function MessagesPage() {
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
             </div>
           ) : filteredThreads.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 text-sm">
+            <div className="text-center py-10 text-gray-400 text-sm px-4">
               <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p>{t("social.messages.empty")}</p>
               <p className="text-xs mt-1">{t("social.messages.empty.desc")}</p>
+              <button
+                onClick={openNewThread}
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t("social.messages.newConversation", "Nueva conversación")}
+              </button>
             </div>
           ) : (
             filteredThreads.map((thread) => (
@@ -358,6 +454,137 @@ export default function MessagesPage() {
           </>
         )}
       </div>
+
+      {/* ==========================================================
+          ➕ Modal "Nueva conversación"
+          - Lista conexiones activas (rowiRelation status=active)
+          - Click → crea/encuentra thread y lo abre
+          ========================================================== */}
+      <AnimatePresence>
+        {showNewThread && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowNewThread(false)}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-zinc-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
+                    <UserPlus className="w-4 h-4 text-white" />
+                  </div>
+                  <h2 className="font-semibold text-gray-900 dark:text-white">
+                    {t("social.messages.newConversation", "Nueva conversación")}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowNewThread(false)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Search */}
+              <div className="p-3 border-b border-gray-100 dark:border-zinc-800">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t(
+                      "social.messages.searchConnection",
+                      "Buscar entre tus conexiones..."
+                    )}
+                    value={newThreadSearch}
+                    onChange={(e) => setNewThreadSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {/* Connections list */}
+              <div className="flex-1 overflow-y-auto">
+                {loadingConnections ? (
+                  <div className="flex items-center justify-center py-10">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  </div>
+                ) : filteredConnections.length === 0 ? (
+                  <div className="text-center py-10 text-gray-400 text-sm px-4">
+                    <UserPlus className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p>
+                      {connections.length === 0
+                        ? t(
+                            "social.messages.noConnections",
+                            "Aún no tienes conexiones"
+                          )
+                        : t(
+                            "social.messages.noConnectionsMatch",
+                            "Ninguna conexión coincide"
+                          )}
+                    </p>
+                    {connections.length === 0 && (
+                      <a
+                        href="/social/connections"
+                        className="inline-block mt-3 text-xs text-[var(--rowi-g2)] hover:underline"
+                      >
+                        {t(
+                          "social.messages.discoverConnections",
+                          "Descubrir personas →"
+                        )}
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  filteredConnections.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => startThread(c.otherUser.id)}
+                      disabled={startingThread === c.otherUser.id}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-50 dark:border-zinc-800/50 disabled:opacity-50"
+                    >
+                      {c.otherUser?.image ? (
+                        <img
+                          src={c.otherUser.image}
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-bold flex-shrink-0">
+                          {c.otherUser?.name?.charAt(0) || "?"}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {c.otherUser?.name || "Usuario"}
+                        </p>
+                        {c.otherUser?.headline && (
+                          <p className="text-xs text-gray-500 truncate">
+                            {c.otherUser.headline}
+                          </p>
+                        )}
+                      </div>
+                      {startingThread === c.otherUser.id && (
+                        <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)]" />
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -3932,5 +3932,10 @@
   "eco.groupAnalysis.recipientsLabel": "recipients",
   "eco.groupAnalysis.styleMix": "Style mix",
   "eco.groupAnalysis.commonTalents": "Talents you share with EVERYONE",
-  "eco.groupAnalysis.aiNote": "The message adapts to the group's collective profile, finding common ground and respecting key differences."
+  "eco.groupAnalysis.aiNote": "The message adapts to the group's collective profile, finding common ground and respecting key differences.",
+  "social.messages.newConversation": "New conversation",
+  "social.messages.searchConnection": "Search your connections...",
+  "social.messages.noConnections": "You don't have connections yet",
+  "social.messages.noConnectionsMatch": "No connection matches",
+  "social.messages.discoverConnections": "Discover people →"
 }

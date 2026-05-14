@@ -342,63 +342,67 @@ export async function POST(req: NextRequest) {
     };
 
     /* =========================================================
-       📝 Prompt para IA — describe a TODO el grupo
+       📝 Prompt para IA — contexto en prosa, NO en bullets
+       (si le pasamos bullets, el AI tiende a producir bullets)
     ========================================================= */
     const generateAIPrompt = () => {
-      const channelInstructions: Record<Channel, string> = {
-        email: "Formato: Email profesional con asunto claro y cuerpo estructurado.",
-        whatsapp: "Formato: WhatsApp (máx 200 caracteres, tono casual, directo).",
-        sms: "Formato: SMS (máx 160 caracteres, muy breve).",
-        call: "Formato: Guión de llamada con apertura, desarrollo y cierre.",
-        speech: "Formato: Discurso breve con pausas naturales.",
+      const channelHint: Record<Channel, string> = {
+        email: "Es un email. Formal pero humano. Asunto breve + cuerpo en párrafos.",
+        whatsapp: "Es un WhatsApp. Casual, directo, máximo 200 caracteres. Sin saludo formal.",
+        sms: "Es un SMS. Muy breve, máximo 160 caracteres.",
+        call: "Es un guión de llamada. Conversacional, con un par de transiciones naturales.",
+        speech: "Es un discurso breve. Lenguaje hablado, con pausas implícitas.",
       };
 
+      const recipientNames = targets.map((t) => t.name);
+      const greetingName =
+        recipientNames.length === 1
+          ? recipientNames[0]
+          : recipientNames.length === 2
+            ? recipientNames.join(" y ")
+            : recipientNames.slice(0, -1).join(", ") + " y " + recipientNames[recipientNames.length - 1];
+
       let prompt = isGroup
-        ? `Escribe un ${body.channel === "email" ? "email" : body.channel === "whatsapp" ? "mensaje de WhatsApp" : body.channel === "sms" ? "SMS" : body.channel === "call" ? "guión de llamada" : "discurso"} dirigido a un GRUPO de ${targets.length} personas. El mensaje debe ser uno solo, pero debe conectar con todos los perfiles a la vez.\n\n`
-        : `Escribe un ${body.channel === "email" ? "email" : body.channel === "whatsapp" ? "mensaje de WhatsApp" : body.channel === "sms" ? "SMS" : body.channel === "call" ? "guión de llamada" : "discurso"} para ${targets[0].name}.\n\n`;
+        ? `Vas a escribir un mensaje dirigido a un grupo: ${greetingName}. ${channelHint[body.channel]}\n\nLo que quiero comunicarles: ${body.goal}\n\n`
+        : `Vas a escribir un mensaje para ${targets[0].name}. ${channelHint[body.channel]}\n\nLo que quiero comunicar: ${body.goal}\n\n`;
 
-      prompt += `**OBJETIVO:** ${body.goal}\n\n`;
-
+      // Contexto interno en prosa narrativa, NO bullets — para que el AI no lo copie.
       if (isGroup) {
-        prompt += `**DESTINATARIOS (${targets.length} personas):**\n`;
-        perTarget.forEach((pt, i) => {
-          prompt += `${i + 1}. ${pt.name} — ${pt.brainStyle}\n`;
-          prompt += `   • Tono preferido: ${pt.prefs.tone}\n`;
-          prompt += `   • Enfoque: ${pt.prefs.approach}\n`;
-          prompt += `   • Evitar: ${pt.prefs.avoid}\n`;
-          if (pt.sharedTalents.length > 0) {
-            prompt += `   • Talentos compartidos contigo: ${pt.sharedTalents.slice(0, 3).join(", ")}\n`;
-          }
-        });
-        prompt += `\n`;
+        const dominantStyle =
+          Object.entries(styleDistribution).sort((a, b) => b[1] - a[1])[0]?.[0];
 
-        if (commonAcrossAll.length > 0) {
-          prompt += `**TALENTOS QUE COMPARTES CON TODO EL GRUPO:** ${commonAcrossAll.slice(0, 4).join(", ")}\n\n`;
-        }
+        prompt += `Contexto interno (no lo cites en el mensaje): este grupo mezcla varios perfiles cognitivos. `;
+        const stylePhrases = perTarget.map(
+          (pt) => `${pt.name} es ${pt.brainStyle.toLowerCase()} (responde mejor a un tono ${pt.prefs.tone})`
+        );
+        prompt += stylePhrases.join("; ") + ". ";
 
-        const dominantStyle = Object.entries(styleDistribution).sort((a, b) => b[1] - a[1])[0]?.[0];
         if (dominantStyle) {
-          prompt += `**ESTILO DOMINANTE EN EL GRUPO:** ${dominantStyle} (${styleDistribution[dominantStyle]}/${targets.length})\n\n`;
+          prompt += `El estilo más común en el grupo es ${dominantStyle.toLowerCase()}. `;
         }
-
-        prompt += `**ESTRATEGIA:** Busca el denominador común entre los estilos. Si hay perfiles muy distintos, prioriza claridad y respeto por las diferencias. Evita lo que "Evitar" lista para más de un destinatario.\n\n`;
+        if (commonAcrossAll.length > 0) {
+          prompt += `Algo que compartes con todos: ${commonAcrossAll.slice(0, 3).join(", ").toLowerCase()}. `;
+        }
+        prompt += `Recuerda: no menciones nada de esto explícitamente en el mensaje; úsalo solo para calibrar tono y ejemplos.\n\n`;
       } else {
         const only = perTarget[0];
-        prompt += `**DESTINATARIO (${only.brainStyle}):**\n`;
-        prompt += `• Comunicación: ${only.prefs.tone}\n`;
-        prompt += `• Enfoque: ${only.prefs.approach}\n`;
-        prompt += `• NO usar: ${only.prefs.avoid}\n\n`;
+        prompt += `Contexto interno (no lo cites en el mensaje): ${only.name} es ${only.brainStyle.toLowerCase()}, responde mejor a un tono ${only.prefs.tone}. `;
         if (only.sharedTalents.length > 0) {
-          prompt += `**PUNTOS DE CONEXIÓN:** ${only.sharedTalents.slice(0, 3).join(", ")}\n\n`;
+          prompt += `Comparten estos talentos: ${only.sharedTalents.slice(0, 3).join(", ").toLowerCase()}. `;
         }
-        if (only.bio) prompt += `**CONTEXTO:** ${only.bio}\n\n`;
+        if (only.bio) prompt += `Contexto adicional: ${only.bio}. `;
+        prompt += `Úsalo para calibrar, no para mencionarlo.\n\n`;
       }
 
       if (body.ask) {
-        prompt += `**INSTRUCCIONES ADICIONALES:** ${body.ask}\n\n`;
+        prompt += `Instrucción específica del remitente: ${body.ask}\n\n`;
       }
 
-      prompt += `${channelInstructions[body.channel]}`;
+      prompt += `Devuelve el JSON con subject (o null), text (mensaje natural sin bullets) ${
+        isGroup
+          ? "e insight (2-4 frases para mí explicando qué tienen en común y cómo abordarlos)"
+          : "e insight: null"
+      }.`;
       return prompt;
     };
 
@@ -426,24 +430,39 @@ export async function POST(req: NextRequest) {
 
     /* =========================================================
        🤖 Intentar con IA siempre
+       Devuelve DOS cosas:
+         - "text": el mensaje real, natural, listo para enviar
+         - "insight": (solo cuando isGroup) análisis privado para el
+           remitente sobre qué tienen en común y cómo abordarlos
     ========================================================= */
     try {
       const systemPrompt = `Eres ECO, un experto en comunicación emocionalmente inteligente.
-Tu trabajo es generar mensajes altamente personalizados basados en el perfil cognitivo del receptor (o receptores).
+Generas DOS cosas distintas: un MENSAJE para enviar, y un INSIGHT privado para el remitente.
 
-REGLAS:
-1. Adapta el tono y estructura al Brain Style del receptor.
-2. Si hay varios receptores, busca el denominador común y respeta las diferencias clave.
-3. Si hay talentos compartidos, úsalos para crear conexión.
-4. Respeta el canal de comunicación (longitud y formalidad).
-5. Sé auténtico, no genérico.
-6. El mensaje debe estar listo para enviar, NO generes un prompt.
-7. Escribe en español a menos que se indique lo contrario.
+=== REGLAS DEL MENSAJE (text) ===
+- Suena como una persona escribiendo a otra(s), no como un template corporativo.
+- NO uses bullet points, NO uses "pros/contras", NO uses secciones marcadas con headers, NO uses asteriscos ni markdown.
+- Frases completas, párrafos breves (2-4 frases por párrafo).
+- Tono cálido, conversacional, adaptado al canal (email un poco más formal, WhatsApp casual, SMS muy breve).
+- Si hay varios destinatarios, escríbeles como si los conocieras a todos a la vez ("Hola Jaime, María y Daniela," / "Quiero plantearles..." / "¿qué les parece?").
+- NUNCA menciones explícitamente brain styles, "perfil cognitivo", talentos, ni el análisis. Eso es información tuya como redactor, no se cuela en el mensaje.
+- El mensaje cuenta la idea principal en lenguaje humano, no la formula como receta.
 
-Responde SOLO en formato JSON:
+=== REGLAS DEL INSIGHT (insight, solo si hay varios destinatarios) ===
+- 2-4 frases CORTAS, dirigidas al remitente (uso de "tú").
+- Aterriza qué tienen en común los destinatarios y dónde difieren.
+- Sugerencia ACCIONABLE de cómo abordarlos sin asumir nada.
+- Tono útil, no académico. No repitas la palabra "denominador común" — sé concreto.
+
+=== IDIOMA ===
+Escribe en español a menos que se indique otro idioma.
+
+=== FORMATO DE RESPUESTA ===
+Responde SOLO en JSON válido:
 {
-  "subject": "Asunto (solo para email, null para otros)",
-  "text": "Cuerpo del mensaje listo para enviar"
+  "subject": "Asunto del email, o null para otros canales",
+  "text": "El mensaje natural listo para enviar, sin markdown ni bullets",
+  "insight": "Insight privado de 2-4 frases sobre el grupo (solo si hay 2+ destinatarios; null si hay 1)"
 }`;
 
       const userPrompt = generateAIPrompt();

@@ -810,12 +810,27 @@ export default function EcoPage() {
                         </div>
                       )}
 
-                      <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40 text-xs text-gray-600 dark:text-gray-400 italic">
-                        {t(
-                          "eco.groupAnalysis.aiNote",
-                          "El mensaje se adapta al perfil colectivo del grupo, buscando el denominador común y respetando las diferencias clave."
-                        )}
-                      </div>
+                      {/* Insight de la IA — análisis privado del grupo */}
+                      {out.refined?.insight ? (
+                        <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                              {t("eco.groupAnalysis.aiInsight", "Para ti")}
+                            </p>
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {out.refined.insight}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40 text-xs text-gray-600 dark:text-gray-400 italic">
+                          {t(
+                            "eco.groupAnalysis.aiNote",
+                            "El mensaje se adapta al perfil colectivo del grupo, buscando el denominador común y respetando las diferencias clave."
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

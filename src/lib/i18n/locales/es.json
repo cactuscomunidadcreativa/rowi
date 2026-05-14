@@ -3925,5 +3925,7 @@
   "workspace.empty.inviteTitle": "Invitar uno por uno",
   "workspace.empty.inviteDesc": "Envía una invitación por email asignando rol (Member, Client, Coach o Mentor).",
   "workspace.empty.inviteCta": "Enviar invitación",
-  "workspace.empty.exploreModules": "Explora los módulos disponibles"
+  "workspace.empty.exploreModules": "Explora los módulos disponibles",
+  "weekflow.sections.shareWithTeam": "Comparte con tu equipo",
+  "weekflow.sections.writeHere": "Escribe aquí..."
 }

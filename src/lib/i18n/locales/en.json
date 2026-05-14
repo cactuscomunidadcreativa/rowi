@@ -3925,5 +3925,7 @@
   "workspace.empty.inviteTitle": "Invite one by one",
   "workspace.empty.inviteDesc": "Send an email invitation assigning a role (Member, Client, Coach or Mentor).",
   "workspace.empty.inviteCta": "Send invitation",
-  "workspace.empty.exploreModules": "Explore the available modules"
+  "workspace.empty.exploreModules": "Explore the available modules",
+  "weekflow.sections.shareWithTeam": "Share with your team",
+  "weekflow.sections.writeHere": "Write here..."
 }

@@ -3925,5 +3925,7 @@
   "workspace.empty.inviteTitle": "Convidar um por um",
   "workspace.empty.inviteDesc": "Envie um convite por email atribuindo um papel (Member, Client, Coach ou Mentor).",
   "workspace.empty.inviteCta": "Enviar convite",
-  "workspace.empty.exploreModules": "Explore os módulos disponíveis"
+  "workspace.empty.exploreModules": "Explore os módulos disponíveis",
+  "weekflow.sections.shareWithTeam": "Compartilhe com sua equipe",
+  "weekflow.sections.writeHere": "Escreva aqui..."
 }

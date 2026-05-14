@@ -80,6 +80,14 @@ const SECTION_CONFIG = {
   },
 };
 
+/** Convierte el enum del backend (SHOW_TELL / TO_DISCUSS / FOCUS) al
+ *  formato de las claves i18n (showTell / toDiscuss / focus). */
+function sectionTypeKey(sectionType: string): string {
+  return sectionType
+    .toLowerCase()
+    .replace(/_([a-z])/g, (_m, c) => c.toUpperCase());
+}
+
 export default function WeekFlowHubPage() {
   const { t } = useI18n();
   const router = useRouter();
@@ -293,20 +301,22 @@ export default function WeekFlowHubPage() {
                 <CardHeader className={cn("pb-3", config.bgColor)}>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Icon className={cn("w-5 h-5", config.color)} />
-                    {t(`weekflow.sections.${sectionType.toLowerCase()}.title`) || sectionType}
+                    {t(`weekflow.sections.${sectionTypeKey(sectionType)}.title`, sectionType)}
                   </CardTitle>
                   <CardDescription>
-                    {t(`weekflow.sections.${sectionType.toLowerCase()}.description`) ||
-                      "Comparte con tu equipo"}
+                    {t(
+                      `weekflow.sections.${sectionTypeKey(sectionType)}.description`,
+                      t("weekflow.sections.shareWithTeam", "Comparte con tu equipo")
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <div className="flex gap-2">
                     <Textarea
-                      placeholder={
-                        t(`weekflow.sections.${sectionType.toLowerCase()}.placeholder`) ||
-                        "Escribe aquí..."
-                      }
+                      placeholder={t(
+                        `weekflow.sections.${sectionTypeKey(sectionType)}.placeholder`,
+                        t("weekflow.sections.writeHere", "Escribe aquí...")
+                      )}
                       value={newContribution[sectionType]}
                       onChange={(e) =>
                         setNewContribution((prev) => ({

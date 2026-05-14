@@ -183,20 +183,31 @@ export async function GET() {
         where: { ...tenantFilter, projectStatus: "active" },
       }),
       // Brain style + country sources — CommunityMember has these fields
-      // directly, AND EqSnapshot does too. We fetch both and merge so a
-      // person whose member row has no brainStyle but whose snapshot does
-      // still contributes to the distribution.
+      // directly, AND EqSnapshot does too. We fetch every person who has
+      // EITHER field populated (so members with only a country, no brain
+      // style, still show up in the country distribution).
       prisma.communityMember.findMany({
-        where: { ...tenantFilter, brainStyle: { not: null } },
+        where: {
+          ...tenantFilter,
+          OR: [
+            { brainStyle: { not: null } },
+            { country: { not: null } },
+          ],
+        },
         select: { id: true, brainStyle: true, country: true },
       }),
       prisma.eqSnapshot.findMany({
         where: {
-          brainStyle: { not: null },
           OR: [
-            { member: { tenantId: { in: tenantIds } } },
-            { user: { primaryTenantId: { in: tenantIds } } },
+            { brainStyle: { not: null } },
+            { country: { not: null } },
           ],
+          AND: {
+            OR: [
+              { member: { tenantId: { in: tenantIds } } },
+              { user: { primaryTenantId: { in: tenantIds } } },
+            ],
+          },
         },
         select: {
           brainStyle: true,
@@ -251,18 +262,32 @@ export async function GET() {
     // ── Merge brain style + country distributions from CommunityMember AND
     // EqSnapshot. People are deduplicated by (memberId | userId) so we don't
     // double-count someone who has both a member row and snapshots.
-    const brainStyleCounts: Record<string, number> = {};
-    const countryCounts: Record<string, number> = {};
+    //
+    // Normalize values: trim + casefold for the bucket key, keep the first
+    // seen original casing for the display label. That way "Peru" / "Perú" /
+    // " peru " all collapse to a single bucket without losing accents.
+    type Bucket = { count: number; label: string };
+    const brainStyleBuckets = new Map<string, Bucket>();
+    const countryBuckets = new Map<string, Bucket>();
     const seenMemberKeys = new Set<string>();
+
+    function bump(map: Map<string, Bucket>, raw: string | null) {
+      if (!raw) return;
+      const label = raw.trim();
+      if (!label) return;
+      const key = label.toLocaleLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+      const existing = map.get(key);
+      if (existing) {
+        existing.count++;
+      } else {
+        map.set(key, { count: 1, label });
+      }
+    }
 
     for (const m of membersWithBrainStyle) {
       seenMemberKeys.add(`m:${m.id}`);
-      if (m.brainStyle) {
-        brainStyleCounts[m.brainStyle] = (brainStyleCounts[m.brainStyle] || 0) + 1;
-      }
-      if (m.country) {
-        countryCounts[m.country] = (countryCounts[m.country] || 0) + 1;
-      }
+      bump(brainStyleBuckets, m.brainStyle);
+      bump(countryBuckets, m.country);
     }
 
     // Snapshots are pre-ordered desc by `at` — take the first one per person.
@@ -276,22 +301,18 @@ export async function GET() {
       if (!key) continue;
       if (seenMemberKeys.has(key) || handledFromSnapshot.has(key)) continue;
       handledFromSnapshot.add(key);
-      if (s.brainStyle) {
-        brainStyleCounts[s.brainStyle] = (brainStyleCounts[s.brainStyle] || 0) + 1;
-      }
-      if (s.country) {
-        countryCounts[s.country] = (countryCounts[s.country] || 0) + 1;
-      }
+      bump(brainStyleBuckets, s.brainStyle);
+      bump(countryBuckets, s.country);
     }
 
-    const brainStyleAggMerged = Object.entries(brainStyleCounts)
-      .sort(([, a], [, b]) => b - a)
+    const brainStyleAggMerged = Array.from(brainStyleBuckets.values())
+      .sort((a, b) => b.count - a.count)
       .slice(0, 6)
-      .map(([style, count]) => ({ style, count }));
-    const countryAggMerged = Object.entries(countryCounts)
-      .sort(([, a], [, b]) => b - a)
+      .map((b) => ({ style: b.label, count: b.count }));
+    const countryAggMerged = Array.from(countryBuckets.values())
+      .sort((a, b) => b.count - a.count)
       .slice(0, 8)
-      .map(([country, count]) => ({ country, count }));
+      .map((b) => ({ country: b.label, count: b.count }));
 
     // ── Hubs + non-workspace communities + affinity surfaces.
     // The org hub is the place where all the pieces of the hierarchy should

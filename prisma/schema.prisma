@@ -159,6 +159,14 @@ model User {
   resolvedAlerts        WorkspaceAlert[]     @relation("AlertResolver")
   createdClientAccess   ClientAccess[]       @relation("ClientAccessCreator")
 
+  // 👨‍👩‍👧 Family contexts
+  familyOwned       FamilyRelation[] @relation("FamilyRelationOwner")
+  familyRelatedTo   FamilyRelation[] @relation("FamilyRelationRelated")
+
+  // 🤝 Service contexts (provider o cliente individual)
+  servicesProvided  ServiceEngagement[] @relation("ServiceEngagementProvider")
+  servicesReceived  ServiceEngagement[] @relation("ServiceEngagementUserClient")
+
   @@map("user")
 }
 
@@ -616,6 +624,9 @@ model Tenant {
   // 🏢 Configuración de Cultura IA
   aiCultureConfigs AiCultureConfig[]
 
+  // 🤝 Coaches/consultores externos prestando servicio a este tenant
+  serviceEngagements ServiceEngagement[] @relation("ServiceEngagementTenantClient")
+
   @@index([name])
   @@index([slug])
   @@index([rowiVerseId])
@@ -791,6 +802,9 @@ model Organization {
 
   // 🏢 Configuración de Cultura IA
   aiCultureConfigs AiCultureConfig[]
+
+  // 🤝 Coaches/consultores externos prestando servicio a esta organización
+  serviceEngagements ServiceEngagement[] @relation("ServiceEngagementOrgClient")
 
   @@index([rowiVerseId])
   @@index([superHubId])
@@ -2111,6 +2125,13 @@ model EmployeeProfile {
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   projectId    String?
+
+  // 🌲 Reporting line — self-FK so an employee can have a manager
+  // and a manager can have multiple direct reports.
+  managerId    String?
+  manager      EmployeeProfile?    @relation("EmployeeManagerHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  reports      EmployeeProfile[]   @relation("EmployeeManagerHierarchy")
+
   Project      Project?            @relation(fields: [projectId], references: [id])
   tenant       Tenant?             @relation(fields: [tenantId], references: [id])
   user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -2120,7 +2141,80 @@ model EmployeeProfile {
   logs         ProductivityLog[]
   timeEntries  TimeEntry[]
 
+  @@index([managerId])
   @@map("employee_profile")
+}
+
+/// 👨‍👩‍👧 FamilyRelation — vínculos personales declarados por el usuario.
+/// ---------------------------------------------------------
+/// Permite que un usuario registre su esposa/o, hijos, padres, etc.,
+/// con o sin cuenta propia. Si el relatedUser todavía no se registró,
+/// se guarda el email para auto-vincular al hacer signup.
+/// Consent: el owner declara, pero la otra persona (si tiene cuenta)
+/// debe aceptar antes de que aparezcan en su lado.
+model FamilyRelation {
+  id            String   @id @default(cuid())
+  ownerId       String                  // El usuario que declara el vínculo
+  relatedUserId String?                 // Si la otra persona ya tiene cuenta
+  relatedEmail  String?                 // Si no, email para auto-vincular en signup
+  relatedName   String?                 // Nombre de display (útil para hijos sin email)
+  relationship  String                  // partner | spouse | child | parent | sibling | other
+  consentStatus String   @default("pending") // pending | accepted | declined | not_required
+  consentAt     DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner       User  @relation("FamilyRelationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  relatedUser User? @relation("FamilyRelationRelated", fields: [relatedUserId], references: [id], onDelete: SetNull)
+
+  @@unique([ownerId, relatedUserId])
+  @@index([ownerId])
+  @@index([relatedUserId])
+  @@index([relatedEmail])
+  @@index([relationship])
+  @@map("family_relation")
+}
+
+/// 🤝 ServiceEngagement — vínculo provider ↔ cliente sin contrato laboral.
+/// ---------------------------------------------------------
+/// Para coaches, consultores, mentores, facilitadores y advisors que
+/// sirven a múltiples orgs/comunidades/individuos sin ser empleados.
+/// El cliente puede ser un Tenant, una RowiCommunity (workspace),
+/// una Organization o un User individual (coaching 1:1).
+model ServiceEngagement {
+  id                   String    @id @default(cuid())
+  providerId           String                          // El User que presta el servicio
+  serviceRole          String                          // coach | consultant | mentor | facilitator | trainer | advisor
+  clientTenantId       String?
+  clientCommunityId    String?
+  clientOrganizationId String?
+  clientUserId         String?
+  status               String    @default("active")    // active | paused | ended | proposed
+  startDate            DateTime?
+  endDate              DateTime?
+  hourlyRate           Decimal?  @db.Decimal(10, 2)
+  currency             String?   @default("USD")
+  scope                String?                         // Breve descripción del scope
+  notes                String?
+  meta                 Json?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  provider           User           @relation("ServiceEngagementProvider", fields: [providerId], references: [id], onDelete: Cascade)
+  clientTenant       Tenant?        @relation("ServiceEngagementTenantClient", fields: [clientTenantId], references: [id], onDelete: SetNull)
+  clientCommunity    RowiCommunity? @relation("ServiceEngagementCommunityClient", fields: [clientCommunityId], references: [id], onDelete: SetNull)
+  clientOrganization Organization?  @relation("ServiceEngagementOrgClient", fields: [clientOrganizationId], references: [id], onDelete: SetNull)
+  clientUser         User?          @relation("ServiceEngagementUserClient", fields: [clientUserId], references: [id], onDelete: SetNull)
+
+  @@index([providerId])
+  @@index([clientTenantId])
+  @@index([clientCommunityId])
+  @@index([clientOrganizationId])
+  @@index([clientUserId])
+  @@index([status])
+  @@index([serviceRole])
+  @@map("service_engagement")
 }
 
 model PerformanceReview {
@@ -2918,6 +3012,9 @@ model RowiCommunity {
   campaigns        AssessmentCampaign[]
   workspaceAlerts  WorkspaceAlert[]
   clientAccess     ClientAccess[]
+
+  // 🤝 Coaches/consultores externos prestando servicio a este workspace
+  serviceEngagements ServiceEngagement[] @relation("ServiceEngagementCommunityClient")
 
   // 🧭 Índices
   @@index([rowiVerseId])

@@ -7,34 +7,82 @@ export const preferredRegion = "iad1";
 /**
  * GET /api/org/summary
  *
- * Returns a snapshot of the authenticated user's primary tenant: who's in it,
- * their EQ averages, top brain styles, recent workspaces, open alerts and
- * country distribution. This is the data behind /org (the tenant Organization
- * Hub — same UX shape as the TP Demo but with real data scoped to the user's
- * own tenant).
+ * Returns a snapshot of the authenticated user's organization. We resolve
+ * the "tenants this user belongs to" from every source the data model
+ * gives us:
+ *   - User.primaryTenantId
+ *   - Membership records (tenant-level membership)
+ *   - HubMembership → hub.tenantId
+ *   - RowiCommunityUser → community.tenantId (workspaces they manage/are in)
+ *   - CommunityMember (managed members imported with their email) → community.tenantId
  *
- * Available to any authenticated user with a primaryTenantId. Returns
- * `scope: "personal"` (with empty data) if the user has no tenant yet.
+ * That makes the page work for a coach/HR/consultant whose account was
+ * never given a primaryTenantId but who is wired into the workspaces via
+ * any of the membership shapes above.
+ *
+ * Available to any authenticated user. Returns `scope: "personal"` with
+ * empty data if we couldn't link them to any tenant.
  */
 export async function GET() {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
 
   try {
+    const userId = auth.user.id;
+    const userEmail = (auth.user.email || "").toLowerCase();
+
     const dbUser = await prisma.user.findUnique({
-      where: { id: auth.user.id },
+      where: { id: userId },
       select: {
         primaryTenantId: true,
-        permissions: { select: { role: true, scopeType: true } },
+        permissions: { select: { role: true, scopeType: true, scopeId: true } },
       },
     });
 
     const isSuperAdmin = (dbUser?.permissions || []).some(
-      (p) => p.role?.toLowerCase() === "superadmin" && p.scopeType === "rowiverse",
+      (p) =>
+        p.role?.toLowerCase() === "superadmin" && p.scopeType === "rowiverse",
     );
 
-    const tenantId = dbUser?.primaryTenantId;
-    if (!tenantId) {
+    // ── Resolve every tenant ID this user has any kind of access to.
+    const [memberships, hubMemberships, communityUsers, communityMembers] =
+      await Promise.all([
+        prisma.membership.findMany({
+          where: { userId },
+          select: { tenantId: true },
+        }),
+        prisma.hubMembership.findMany({
+          where: { userId },
+          select: { hub: { select: { tenantId: true } } },
+        }),
+        prisma.rowiCommunityUser.findMany({
+          where: { userId },
+          select: { community: { select: { tenantId: true } } },
+        }),
+        userEmail
+          ? prisma.communityMember.findMany({
+              where: { email: userEmail },
+              select: { community: { select: { tenantId: true } } },
+            })
+          : Promise.resolve([]),
+      ]);
+
+    const tenantIdSet = new Set<string>();
+    if (dbUser?.primaryTenantId) tenantIdSet.add(dbUser.primaryTenantId);
+    for (const m of memberships) if (m.tenantId) tenantIdSet.add(m.tenantId);
+    for (const h of hubMemberships) {
+      if (h.hub?.tenantId) tenantIdSet.add(h.hub.tenantId);
+    }
+    for (const c of communityUsers) {
+      if (c.community?.tenantId) tenantIdSet.add(c.community.tenantId);
+    }
+    for (const c of communityMembers) {
+      if (c.community?.tenantId) tenantIdSet.add(c.community.tenantId);
+    }
+
+    const tenantIds = Array.from(tenantIdSet);
+
+    if (tenantIds.length === 0) {
       return NextResponse.json({
         ok: true,
         scope: "personal",
@@ -44,14 +92,21 @@ export async function GET() {
       });
     }
 
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId },
+    // Use the first tenant for the display name. The summary aggregates
+    // across ALL accessible tenants — useful when a consultant is wired
+    // into more than one client tenant.
+    const primaryDisplayTenant = await prisma.tenant.findFirst({
+      where: {
+        id: dbUser?.primaryTenantId
+          ? dbUser.primaryTenantId
+          : { in: tenantIds },
+      },
       select: { id: true, name: true, slug: true },
     });
 
-    const tenantFilter = { tenantId };
+    const tenantFilter = { tenantId: { in: tenantIds } };
     const memberTenantFilter = {
-      community: { tenantId },
+      community: { tenantId: { in: tenantIds } },
     };
 
     const thirtyDaysAgo = new Date();
@@ -78,17 +133,17 @@ export async function GET() {
         where: { ...tenantFilter, status: "ACTIVE" },
       }),
       prisma.leaveRequest.count({
-        where: { status: "PENDING", employee: { tenantId } },
+        where: { status: "PENDING", employee: { tenantId: { in: tenantIds } } },
       }),
       prisma.performanceReview.count({
-        where: { status: "open", employee: { tenantId } },
+        where: { status: "open", employee: { tenantId: { in: tenantIds } } },
       }),
       prisma.communityMember.count({
-        where: { tenantId },
+        where: tenantFilter,
       }),
       prisma.communityMember.count({
         where: {
-          tenantId,
+          ...tenantFilter,
           snapshots: { some: { dataset: "actual", overall4: { not: null } } },
         },
       }),
@@ -96,7 +151,7 @@ export async function GET() {
         _avg: { overall4: true, K: true, C: true, G: true },
         where: {
           dataset: "actual",
-          member: { tenantId },
+          member: tenantFilter,
           overall4: { not: null },
         },
       }),
@@ -119,28 +174,28 @@ export async function GET() {
       }),
       prisma.communityMember.groupBy({
         by: ["brainStyle"],
-        where: { tenantId, brainStyle: { not: null } },
+        where: { ...tenantFilter, brainStyle: { not: null } },
         _count: true,
         orderBy: { _count: { brainStyle: "desc" } },
         take: 6,
       }),
       prisma.communityMember.groupBy({
         by: ["country"],
-        where: { tenantId, country: { not: null } },
+        where: { ...tenantFilter, country: { not: null } },
         _count: true,
         orderBy: { _count: { country: "desc" } },
         take: 8,
       }),
       prisma.workspaceAlert.count({
         where: {
-          community: { tenantId },
+          community: { tenantId: { in: tenantIds } },
           resolvedAt: null,
           dismissedAt: null,
         },
       }),
       prisma.workspaceAlert.count({
         where: {
-          community: { tenantId },
+          community: { tenantId: { in: tenantIds } },
           severity: "critical",
           resolvedAt: null,
           dismissedAt: null,
@@ -159,7 +214,8 @@ export async function GET() {
       ok: true,
       scope: "tenant",
       isSuperAdmin,
-      tenant,
+      tenant: primaryDisplayTenant,
+      tenantCount: tenantIds.length,
       summary: {
         people: {
           employees: employeesCount,

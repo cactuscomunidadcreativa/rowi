@@ -21,7 +21,7 @@ import {
   Link2, Earth, Upload, Settings, Trophy, Medal, Star, Flame,
   Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
   Shield, GitBranch, ToggleRight, KeyRound,
-  Handshake, Rss, MessageCircle,
+  Handshake, Rss, MessageCircle, Boxes,
 } from "lucide-react";
 
 /* =========================================================
@@ -62,7 +62,8 @@ export default function Sidebar() {
       priority: 100,
       items: [
         { href: "/hub/admin", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-        { href: "/hub/admin/routes-map", labelKey: "admin.nav.routesMap", icon: Network, badge: "NEW" },
+        { href: "/hub/admin/inventory", labelKey: "admin.nav.inventory", icon: Boxes, badge: "NEW" },
+        { href: "/hub/admin/routes-map", labelKey: "admin.nav.routesMap", icon: Network },
         { href: "/hub/admin/user-roles", labelKey: "admin.nav.userRoles", icon: Shield, badge: "NEW" },
         { href: "/hub/admin/users", labelKey: "admin.nav.users", icon: Users },
         { href: "/hub/admin/communities", labelKey: "admin.nav.communities", icon: HeartHandshake },

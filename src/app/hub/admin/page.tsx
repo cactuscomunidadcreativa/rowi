@@ -16,6 +16,8 @@ import {
   Activity,
   RefreshCcw,
   Shield,
+  Boxes,
+  ChevronRight,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -121,6 +123,30 @@ export default function AdminDashboard() {
       }
     >
       <div className="space-y-6">
+        {/* Master Inventory CTA */}
+        <Link href="/hub/admin/inventory" className="block">
+          <AdminCard className="group hover:scale-[1.01] transition-transform cursor-pointer border-2 border-[var(--rowi-primary)]/30 bg-gradient-to-br from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg flex-shrink-0">
+                <Boxes className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-[var(--rowi-foreground)] flex items-center gap-2">
+                  {t("admin.inventory.cardTitle", "Master Inventory")}
+                  <AdminBadge variant="info">NEW</AdminBadge>
+                </h3>
+                <p className="text-xs text-[var(--rowi-muted)] mt-0.5">
+                  {t(
+                    "admin.inventory.cardDescription",
+                    "Counts and drill-down for every entity in the platform.",
+                  )}
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] group-hover:translate-x-1 transition-all flex-shrink-0" />
+            </div>
+          </AdminCard>
+        </Link>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickLinks.map((link) => (

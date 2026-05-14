@@ -39,6 +39,19 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     /* ==========================================================
+       0) REDIRECT — Send post-signin users through /start which
+          server-side picks the right home based on their role.
+    ========================================================== */
+    async redirect({ url, baseUrl }) {
+      // Honour explicit callback URLs (e.g. user signed in from /weekflow → go back).
+      if (url.startsWith(baseUrl + "/")) return url;
+      if (url.startsWith("/") && !url.startsWith("//")) return baseUrl + url;
+      // For the default-redirect case (bare baseUrl), land on /start.
+      if (url === baseUrl || url === baseUrl + "/") return baseUrl + "/start";
+      return baseUrl;
+    },
+
+    /* ==========================================================
        1) JWT — Cargar datos críticos en el token (solo primer login)
     ========================================================== */
     async jwt({ token, user }) {

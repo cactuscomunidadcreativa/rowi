@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2 } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -30,6 +30,7 @@ const translations = {
       eco: "ECO",
       rowicoach: "Rowi Coach",
       workspace: "Workspace",
+      org: "Organización",
       weekflow: "WeekFlow",
       signin: "Iniciar sesión",
       signout: "Cerrar sesión",
@@ -74,6 +75,7 @@ const translations = {
       eco: "ECO",
       rowicoach: "Rowi Coach",
       workspace: "Workspace",
+      org: "Organization",
       weekflow: "WeekFlow",
       signin: "Sign in",
       signout: "Sign out",
@@ -118,6 +120,7 @@ const translations = {
       eco: "ECO",
       rowicoach: "Rowi Coach",
       workspace: "Workspace",
+      org: "Organização",
       weekflow: "WeekFlow",
       signin: "Entrar",
       signout: "Sair",
@@ -162,6 +165,7 @@ const translations = {
       eco: "ECO",
       rowicoach: "Rowi Coach",
       workspace: "Workspace",
+      org: "Organizzazione",
       weekflow: "WeekFlow",
       signin: "Accedi",
       signout: "Esci",
@@ -223,6 +227,7 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 ========================================================= */
 const BASE_LINKS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
+  { href: "/org", key: "org", icon: Building2, roles: ["*"] },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"] },
   { href: "/community", key: "community", icon: Users, roles: ["*"] },
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },

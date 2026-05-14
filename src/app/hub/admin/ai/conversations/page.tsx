@@ -62,9 +62,11 @@ const columns: Column<ChatRow>[] = [
     labelKey: "admin.ai.conversations.col.content",
     fallback: "Content",
     render: (r) => (
-      <span className="line-clamp-2 text-xs max-w-md block">{r.content}</span>
+      <div className="text-xs leading-relaxed max-w-md max-h-12 overflow-hidden text-ellipsis">
+        {r.content.length > 220 ? r.content.slice(0, 220) + "…" : r.content}
+      </div>
     ),
-    className: "max-w-md",
+    className: "max-w-md align-top",
   },
   { key: "intent", labelKey: "admin.ai.conversations.col.intent", fallback: "Intent" },
   {

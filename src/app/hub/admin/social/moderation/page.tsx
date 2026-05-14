@@ -77,7 +77,9 @@ export default function ModerationQueuePage() {
       fallback: "Content",
       render: (r) => (
         <div className="max-w-md">
-          <span className="line-clamp-3 text-xs">{r.content}</span>
+          <div className="text-xs leading-relaxed max-h-16 overflow-hidden">
+            {r.content.length > 240 ? r.content.slice(0, 240) + "…" : r.content}
+          </div>
           {r.mediaUrl && (
             <span className="text-[10px] text-[var(--rowi-muted)] mt-1 inline-block">
               📎 {r.mediaUrl.split("/").pop()}

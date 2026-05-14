@@ -56,7 +56,13 @@ const columns: Column<EcoEventRow>[] = [
     labelKey: "admin.eco.col.message",
     fallback: "Message",
     render: (r) => (
-      <span className="line-clamp-2 max-w-md text-xs">{r.message || "—"}</span>
+      <div className="text-xs leading-relaxed max-w-md max-h-12 overflow-hidden">
+        {r.message
+          ? r.message.length > 200
+            ? r.message.slice(0, 200) + "…"
+            : r.message
+          : "—"}
+      </div>
     ),
     className: "max-w-md",
   },

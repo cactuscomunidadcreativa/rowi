@@ -53,7 +53,9 @@ const columns: Column<CoachNoteRow>[] = [
     labelKey: "admin.coaching.col.preview",
     fallback: "Preview",
     render: (r) => (
-      <span className="line-clamp-2 text-xs max-w-md block">{r.content}</span>
+      <div className="text-xs leading-relaxed max-w-md max-h-12 overflow-hidden">
+        {r.content.length > 200 ? r.content.slice(0, 200) + "…" : r.content}
+      </div>
     ),
     className: "max-w-md",
   },

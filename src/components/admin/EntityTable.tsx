@@ -131,7 +131,7 @@ export function EntityTable<T extends { id: string }>({
                     {columns.map((c) => (
                       <td
                         key={c.key}
-                        className={`px-3 py-2 text-[var(--rowi-foreground)] ${c.className || ""}`}
+                        className={`px-3 py-2 align-top text-[var(--rowi-foreground)] ${c.className || ""}`}
                       >
                         {c.render
                           ? c.render(row)

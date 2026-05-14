@@ -57,7 +57,11 @@ const columns: Column<AlertRow>[] = [
     key: "message",
     labelKey: "admin.coaching.col.message",
     fallback: "Message",
-    render: (r) => <span className="line-clamp-2 text-xs max-w-md block">{r.message}</span>,
+    render: (r) => (
+      <div className="text-xs leading-relaxed max-w-md max-h-12 overflow-hidden">
+        {r.message.length > 200 ? r.message.slice(0, 200) + "…" : r.message}
+      </div>
+    ),
     className: "max-w-md",
   },
   {

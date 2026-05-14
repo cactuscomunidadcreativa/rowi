@@ -413,24 +413,24 @@ export default function NavBar() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="mx-auto max-w-7xl h-16 px-4 flex items-center justify-between gap-4">
+      <div className="mx-auto max-w-screen-2xl h-16 px-4 flex items-center justify-between gap-2 lg:gap-4">
         {/* Logo + Context Switcher */}
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="flex items-center gap-2 lg:gap-4 flex-shrink-0 min-w-0">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Image src="/rowi-logo.png" alt="Rowi" width={32} height={32} className="rounded-lg flex-shrink-0" />
             <span className="font-bold text-lg rowi-gradient-text hidden sm:block">Rowi</span>
           </Link>
 
-          {/* Context Switcher - Solo si tiene múltiples contextos */}
+          {/* Context Switcher - Solo en pantallas grandes para no consumir espacio del centro */}
           {isLogged && hasMultipleContexts && (
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <ContextSwitcher />
             </div>
           )}
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+        <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0">
           {visibleLinks.slice(0, 7).map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
@@ -439,14 +439,15 @@ export default function NavBar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                title={label}
+                className={`flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active
                     ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
                     : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span className="hidden lg:inline">{label}</span>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="hidden xl:inline whitespace-nowrap">{label}</span>
               </Link>
             );
           })}
@@ -456,14 +457,15 @@ export default function NavBar() {
             <div id="rowi-social-dropdown" className="relative">
               <button
                 onClick={() => setSocialDropdownOpen((v) => !v)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                title={t.social}
+                className={`flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isSocialActive
                     ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
                     : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`}
               >
-                <Users2 className="w-4 h-4" />
-                <span className="hidden lg:inline">{t.social}</span>
+                <Users2 className="w-4 h-4 flex-shrink-0" />
+                <span className="hidden xl:inline whitespace-nowrap">{t.social}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${socialDropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
@@ -503,7 +505,7 @@ export default function NavBar() {
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 lg:gap-2 flex-shrink-0">
           <LangToggle />
           <ThemeToggle />
 
@@ -667,7 +669,7 @@ export default function NavBar() {
                     </span>
                   )}
                 </div>
-                <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
+                <span className="hidden xl:inline text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
                   {userName}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${menuOpen ? "rotate-180" : ""}`} />

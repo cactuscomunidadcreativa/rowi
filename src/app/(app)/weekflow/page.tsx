@@ -152,8 +152,8 @@ export default function WeekFlowPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           {/* Personal Tasks */}
-          <div
-            onClick={() => router.push("/weekflow/tasks")}
+          <Link
+            href="/weekflow/tasks"
             className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
@@ -164,11 +164,11 @@ export default function WeekFlowPage() {
               <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.tasksDesc}</p>
             </div>
             <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
-          </div>
+          </Link>
 
           {/* Insights */}
-          <div
-            onClick={() => router.push("/weekflow/tasks/insights")}
+          <Link
+            href="/weekflow/tasks/insights"
             className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
@@ -179,7 +179,7 @@ export default function WeekFlowPage() {
               <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.insightsDesc}</p>
             </div>
             <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
-          </div>
+          </Link>
         </motion.div>
 
         {/* Plan gate */}

@@ -7,13 +7,51 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Upload, FileSpreadsheet, Check, Loader2, AlertCircle, Download } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
+type Lang = "es" | "en" | "pt" | "it";
+
+const TEMPLATE_BY_LANG: Record<Lang, { header: string; rows: string[] }> = {
+  es: {
+    header:
+      "Nombre,Apellido,Email,Pais,K,C,G,EL,RP,ACT,NE,IM,OP,EMP,NG,Overall4,Estilo cerebral",
+    rows: [
+      "Maria,Gonzalez,maria@ejemplo.com,Mexico,95,102,108,98,105,100,110,105,112,108,110,105,Empatico",
+      "Juan,Lopez,juan@ejemplo.com,Argentina,110,115,105,112,108,118,105,120,108,102,100,108,Cientifico",
+    ],
+  },
+  en: {
+    header:
+      "First Name,Last Name,Email,Country,K,C,G,EL,RP,ACT,NE,IM,OP,EMP,NG,Overall4,Brain Style",
+    rows: [
+      "Maria,Gonzalez,maria@example.com,USA,95,102,108,98,105,100,110,105,112,108,110,105,Empathic",
+      "John,Smith,john@example.com,UK,110,115,105,112,108,118,105,120,108,102,100,108,Scientific",
+    ],
+  },
+  pt: {
+    header:
+      "Nome,Sobrenome,Email,Pais,K,C,G,EL,RP,ACT,NE,IM,OP,EMP,NG,Overall4,Estilo cerebral",
+    rows: [
+      "Maria,Gonzalez,maria@exemplo.com,Brasil,95,102,108,98,105,100,110,105,112,108,110,105,Empatico",
+      "Joao,Silva,joao@exemplo.com,Portugal,110,115,105,112,108,118,105,120,108,102,100,108,Cientifico",
+    ],
+  },
+  it: {
+    header:
+      "Nome,Cognome,Email,Paese,K,C,G,EL,RP,ACT,NE,IM,OP,EMP,NG,Overall4,Stile cerebrale",
+    rows: [
+      "Maria,Rossi,maria@esempio.it,Italia,95,102,108,98,105,100,110,105,112,108,110,105,Empatico",
+      "Marco,Bianchi,marco@esempio.it,Italia,110,115,105,112,108,118,105,120,108,102,100,108,Scientifico",
+    ],
+  },
+};
+
 export default function UploadCsvPage({
   params,
 }: {
   params: Promise<{ communityId: string }>;
 }) {
   const { communityId } = use(params);
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const L = (lang as Lang) in TEMPLATE_BY_LANG ? (lang as Lang) : "en";
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -41,12 +79,10 @@ export default function UploadCsvPage({
     }
   }
 
-  const TEMPLATE_CSV = `First Name,Last Name,Email,Country,K,C,G,EL,RP,ACT,NE,IM,OP,EMP,NG,Overall4,Brain Style
-Maria,Gonzalez,maria@example.com,Mexico,95,102,108,98,105,100,110,105,112,108,110,105,Empatico
-John,Smith,john@example.com,USA,110,115,105,112,108,118,105,120,108,102,100,108,Cientifico`;
-
   function downloadTemplate() {
-    const blob = new Blob([TEMPLATE_CSV], { type: "text/csv" });
+    const tpl = TEMPLATE_BY_LANG[L];
+    const csv = [tpl.header, ...tpl.rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

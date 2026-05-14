@@ -69,6 +69,45 @@ const MODULE_CONFIG: Record<
   "client-portal": { icon: Globe, gradient: "from-slate-500 to-zinc-600", labelKey: "workspace.modules.clientPortal" },
 };
 
+// Roles with full module access.
+const PROFESSIONAL_ROLES = new Set([
+  "owner",
+  "admin",
+  "coach",
+  "consultant",
+  "hr_manager",
+  "team_leader",
+  "mentor",
+]);
+
+// Modules visible to viewer roles ("member", "client"). All others are hidden.
+const VIEWER_MODULES = new Set([
+  "dashboard",
+  "benchmark",
+  "evolution",
+  "insights",
+  "reports",
+  "client-portal",
+]);
+
+function visibleModules(allModules: string[], role: string | null): string[] {
+  if (!role) return ["dashboard"];
+  if (PROFESSIONAL_ROLES.has(role)) return allModules;
+  return allModules.filter((m) => VIEWER_MODULES.has(m));
+}
+
+const ROLE_BADGE_GRADIENT: Record<string, string> = {
+  owner: "from-violet-500 to-purple-600",
+  admin: "from-violet-500 to-purple-600",
+  coach: "from-emerald-500 to-green-600",
+  consultant: "from-amber-500 to-orange-600",
+  hr_manager: "from-indigo-500 to-blue-600",
+  team_leader: "from-teal-500 to-cyan-600",
+  mentor: "from-pink-500 to-rose-600",
+  member: "from-blue-500 to-cyan-600",
+  client: "from-slate-500 to-zinc-600",
+};
+
 export default function WorkspaceLandingPage({
   params,
 }: {
@@ -98,7 +137,10 @@ export default function WorkspaceLandingPage({
   const template = workspace?.workspaceType
     ? getTemplateByType(workspace.workspaceType as any)
     : null;
-  const modules = template?.modules || ["dashboard", "members"];
+  const allModules = template?.modules || ["dashboard", "members"];
+  const modules = visibleModules(allModules, role);
+  const isViewer = role !== null && !PROFESSIONAL_ROLES.has(role);
+  const roleGradient = role ? ROLE_BADGE_GRADIENT[role] || "from-gray-500 to-gray-600" : "from-gray-500 to-gray-600";
 
   if (error) {
     return (
@@ -184,21 +226,31 @@ export default function WorkspaceLandingPage({
                   <Users className="w-4 h-4" />
                   {totalMembers} {t("workspace.list.members")}
                 </span>
+                {role && (
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-white text-xs font-medium bg-gradient-to-r ${roleGradient}`}
+                    title={t("workspace.role.tooltip", "Your role in this workspace")}
+                  >
+                    {t(`workspace.role.${role}`, role)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
-          <Link
-            href={`/workspace/${communityId}/settings`}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-            aria-label={t("workspace.modules.settings")}
-          >
-            <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </Link>
+          {!isViewer && (
+            <Link
+              href={`/workspace/${communityId}/settings`}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label={t("workspace.modules.settings")}
+            >
+              <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </Link>
+          )}
         </div>
       </motion.div>
 
-      {/* Getting Started CTA — visible solo si el workspace está vacío */}
-      {totalMembers <= 1 && (
+      {/* Getting Started CTA — visible solo para profesionales si el workspace está vacío */}
+      {totalMembers <= 1 && !isViewer && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

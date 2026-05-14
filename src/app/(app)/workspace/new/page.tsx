@@ -27,8 +27,24 @@ export default function NewWorkspacePage() {
 
   const selectedTemplate = WORKSPACE_TEMPLATES.find((t) => t.key === templateKey);
 
+  const NAME_MIN = 3;
+  const NAME_MAX = 80;
+  const DESC_MAX = 280;
+
+  const trimmedName = name.trim();
+  const nameError =
+    trimmedName.length > 0 && trimmedName.length < NAME_MIN
+      ? t("workspace.new.validation.nameTooShort", "Mínimo 3 caracteres")
+      : trimmedName.length > NAME_MAX
+        ? t("workspace.new.validation.nameTooLong", "Máximo 80 caracteres")
+        : "";
+  const descError =
+    description.length > DESC_MAX
+      ? t("workspace.new.validation.descTooLong", "Máximo 280 caracteres")
+      : "";
+
   async function handleCreate() {
-    if (!templateKey || !name.trim()) return;
+    if (!templateKey || !trimmedName || nameError || descError) return;
     setLoading(true);
     setError("");
     try {
@@ -37,7 +53,7 @@ export default function NewWorkspacePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           templateKey,
-          name: name.trim(),
+          name: trimmedName,
           description: description.trim() || undefined,
           targetRole: targetRole.trim() || undefined,
           projectStartDate: startDate || undefined,
@@ -45,10 +61,11 @@ export default function NewWorkspacePage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
+      if (!res.ok) throw new Error(data.error || t("workspace.new.error"));
       router.push(`/workspace/${data.workspace.id}`);
-    } catch (err: any) {
-      setError(err.message || t("workspace.new.error"));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("workspace.new.error");
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -56,8 +73,9 @@ export default function NewWorkspacePage() {
 
   const canProceed = () => {
     if (step === 1) return !!templateKey;
-    if (step === 2) return name.trim().length >= 3;
-    if (step === 3) return true; // opcional
+    if (step === 2)
+      return trimmedName.length >= NAME_MIN && trimmedName.length <= NAME_MAX && !descError;
+    if (step === 3) return true;
     return true;
   };
 
@@ -180,9 +198,28 @@ export default function NewWorkspacePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("workspace.new.namePlaceholder")}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent"
+                  maxLength={NAME_MAX + 10}
+                  className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent ${
+                    nameError
+                      ? "border-red-300 dark:border-red-700"
+                      : "border-gray-200 dark:border-zinc-700"
+                  }`}
                   autoFocus
                 />
+                <div className="flex items-center justify-between mt-1.5 text-xs">
+                  <span className={nameError ? "text-red-600" : "text-gray-400"}>
+                    {nameError || ""}
+                  </span>
+                  <span
+                    className={
+                      trimmedName.length > NAME_MAX
+                        ? "text-red-500 font-medium"
+                        : "text-gray-400"
+                    }
+                  >
+                    {trimmedName.length}/{NAME_MAX}
+                  </span>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -193,8 +230,27 @@ export default function NewWorkspacePage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t("workspace.new.descriptionPlaceholder")}
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent resize-none"
+                  maxLength={DESC_MAX + 30}
+                  className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent resize-none ${
+                    descError
+                      ? "border-red-300 dark:border-red-700"
+                      : "border-gray-200 dark:border-zinc-700"
+                  }`}
                 />
+                <div className="flex items-center justify-between mt-1.5 text-xs">
+                  <span className={descError ? "text-red-600" : "text-gray-400"}>
+                    {descError || ""}
+                  </span>
+                  <span
+                    className={
+                      description.length > DESC_MAX
+                        ? "text-red-500 font-medium"
+                        : "text-gray-400"
+                    }
+                  >
+                    {description.length}/{DESC_MAX}
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>

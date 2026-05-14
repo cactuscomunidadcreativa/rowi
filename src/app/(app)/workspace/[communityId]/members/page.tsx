@@ -16,7 +16,9 @@ import {
   Loader2,
   Circle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 type Member = {
   id: string;
@@ -50,6 +52,8 @@ export default function WorkspaceMembersPage({
   const [members, setMembers] = useState<Member[] | null>(null);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; type: string; name: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -67,17 +71,26 @@ export default function WorkspaceMembersPage({
     }
   }
 
-  async function removeMember(id: string, type: string) {
-    if (!confirm(t("workspace.members.confirmRemove", "Remove this member?"))) return;
+  function requestRemoveMember(id: string, type: string, name: string) {
+    setPendingRemoval({ id, type, name });
+  }
+
+  async function confirmRemoveMember() {
+    if (!pendingRemoval) return;
+    setRemoving(true);
     try {
       const res = await fetch(
-        `/api/workspaces/${communityId}/members?memberId=${id}&type=${type}`,
-        { method: "DELETE" }
+        `/api/workspaces/${communityId}/members?memberId=${pendingRemoval.id}&type=${pendingRemoval.type}`,
+        { method: "DELETE" },
       );
       if (!res.ok) throw new Error((await res.json()).error);
+      toast.success(t("workspace.members.removed", "Member removed"));
+      setPendingRemoval(null);
       await loadMembers();
-    } catch (err: any) {
-      alert(t("common.unexpectedError"));
+    } catch {
+      toast.error(t("common.unexpectedError", "Unexpected error"));
+    } finally {
+      setRemoving(false);
     }
   }
 
@@ -244,8 +257,9 @@ export default function WorkspaceMembersPage({
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => removeMember(m.id, m.type)}
+                        onClick={() => requestRemoveMember(m.id, m.type, m.name)}
                         className="p-1.5 text-gray-400 hover:text-red-500 rounded transition-colors"
+                        aria-label={t("workspace.members.remove", "Remove member")}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -263,6 +277,24 @@ export default function WorkspaceMembersPage({
           {error}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!pendingRemoval}
+        title={t("workspace.members.confirmRemove", "Remove this member?")}
+        message={
+          pendingRemoval
+            ? t(
+                "workspace.members.confirmRemoveDetail",
+                `"${pendingRemoval.name}" will be removed from this workspace. Their SEI snapshots are kept.`,
+              ).replace("{name}", pendingRemoval.name)
+            : undefined
+        }
+        confirmLabel={t("actions.remove", "Remove")}
+        variant="danger"
+        loading={removing}
+        onConfirm={confirmRemoveMember}
+        onCancel={() => setPendingRemoval(null)}
+      />
     </div>
   );
 }

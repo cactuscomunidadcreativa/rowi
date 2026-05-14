@@ -84,7 +84,10 @@ export default function InviteMemberPage({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="person@example.com"
+                  placeholder={t(
+                    "workspace.members.invite.emailPlaceholder",
+                    "person@example.com",
+                  )}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent text-sm"
                   autoFocus
                 />

@@ -248,8 +248,8 @@ const ROLE_LINKS = [
   { href: "/workspace", key: "team", icon: Users, roles: ["TEAM_LEADER", "MANAGER", "ADMIN", "OWNER"] },
   { href: "/reports", key: "reports", icon: FileText, roles: ["MANAGER", "ADMIN", "OWNER", "REGION_LEADER"] },
 
-  // HR views - unifica con workspace (mantiene /hub/admin/hr para admin)
-  { href: "/workspace?type=HR_COHORT", key: "hr", icon: Briefcase, roles: ["HR", "ADMIN", "OWNER"] },
+  // HR landing — metrics + cohorts. Detailed admin views live under /hub/admin/hr/*.
+  { href: "/hr", key: "hr", icon: Briefcase, roles: ["HR", "ADMIN", "OWNER"] },
 
   // Coach views - unifica con workspace
   { href: "/workspace?type=COACHING", key: "coaching", icon: GraduationCap, roles: ["COACH", "MENTOR", "CONSULTANT"] },

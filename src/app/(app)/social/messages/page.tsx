@@ -70,13 +70,14 @@ export default function MessagesPage() {
   const [showNewThread, setShowNewThread] = useState(false);
   const [connections, setConnections] = useState<
     Array<{
-      id: string;
-      otherUser: {
-        id: string;
-        name: string | null;
-        image: string | null;
-        headline?: string | null;
-      };
+      key: string;
+      userId: string;
+      name: string;
+      image: string | null;
+      headline: string | null;
+      /** "connection" | "community" | "team" — para el badge */
+      origin: "connection" | "community" | "team";
+      originLabel: string;
     }>
   >([]);
   const [loadingConnections, setLoadingConnections] = useState(false);
@@ -160,29 +161,77 @@ export default function MessagesPage() {
 
   /* =========================================================
      ➕ Iniciar conversación nueva
+     Combina 3 fuentes (dedup por userId):
+       1. Conexiones activas (rowiRelation)
+       2. Miembros de tu RowiCommunity con cuenta vinculada
+       3. Compañeros del mismo tenant
+     El backend (POST /threads) acepta cualquiera de las tres.
   ========================================================= */
   const openNewThread = async () => {
     setShowNewThread(true);
     setNewThreadSearch("");
     setLoadingConnections(true);
     try {
-      const res = await fetch("/api/social/connections?status=active");
-      const data = await res.json();
-      if (data.ok && Array.isArray(data.connections)) {
-        // El endpoint expone la otra persona como `user`; aquí la
-        // re-etiquetamos como `otherUser` para consistencia con el
-        // resto del componente (que ya usa otherUser en threads).
-        setConnections(
-          data.connections.map((c: any) => ({
-            id: c.id,
-            otherUser: c.user,
-          }))
-        );
-      } else {
-        setConnections([]);
+      const [connRes, memRes] = await Promise.all([
+        fetch("/api/social/connections?status=active").catch(() => null),
+        fetch("/api/community/members").catch(() => null),
+      ]);
+
+      const connData = connRes && connRes.ok ? await connRes.json() : { connections: [] };
+      const memData = memRes && memRes.ok ? await memRes.json() : { members: [] };
+
+      const byUserId = new Map<
+        string,
+        {
+          key: string;
+          userId: string;
+          name: string;
+          image: string | null;
+          headline: string | null;
+          origin: "connection" | "community" | "team";
+          originLabel: string;
+        }
+      >();
+
+      // 1) Conexiones (prioridad alta, las metemos primero)
+      for (const c of connData.connections || []) {
+        const u = c.user;
+        if (!u?.id) continue;
+        byUserId.set(u.id, {
+          key: `conn-${c.id}`,
+          userId: u.id,
+          name: u.name || u.email?.split("@")[0] || "Usuario",
+          image: u.image || null,
+          headline: u.headline || null,
+          origin: "connection",
+          originLabel: t("social.messages.origin.connection", "Conexión"),
+        });
       }
+
+      // 2) Miembros de comunidad / teammates
+      //    Solo los items con id "user_..." porque ese prefijo indica
+      //    que hay un User real vinculado al cual sí podemos mensajear.
+      for (const m of memData.members || []) {
+        if (typeof m.id !== "string" || !m.id.startsWith("user_")) continue;
+        const userId = m.id.replace("user_", "");
+        if (byUserId.has(userId)) continue; // ya es conexión
+        const isTeam = m.source === "tenant_user" || m.connectionType === "teammate";
+        byUserId.set(userId, {
+          key: `mem-${m.id}`,
+          userId,
+          name: m.name || m.email?.split("@")[0] || "Usuario",
+          image: null,
+          headline: m.brainStyle || m.hubName || null,
+          origin: isTeam ? "team" : "community",
+          originLabel: isTeam
+            ? t("social.messages.origin.team", "Equipo")
+            : t("social.messages.origin.community", "Comunidad"),
+        });
+      }
+
+      setConnections(Array.from(byUserId.values()));
     } catch (err) {
-      console.error("Error loading connections:", err);
+      console.error("Error loading connections/members:", err);
       setConnections([]);
     } finally {
       setLoadingConnections(false);
@@ -213,7 +262,7 @@ export default function MessagesPage() {
 
   const filteredConnections = newThreadSearch
     ? connections.filter((c) =>
-        c.otherUser?.name?.toLowerCase().includes(newThreadSearch.toLowerCase())
+        c.name?.toLowerCase().includes(newThreadSearch.toLowerCase())
       )
     : connections;
 
@@ -526,11 +575,11 @@ export default function MessagesPage() {
                       {connections.length === 0
                         ? t(
                             "social.messages.noConnections",
-                            "Aún no tienes conexiones"
+                            "Aún no tienes contactos disponibles"
                           )
                         : t(
                             "social.messages.noConnectionsMatch",
-                            "Ninguna conexión coincide"
+                            "Nadie coincide con tu búsqueda"
                           )}
                     </p>
                     {connections.length === 0 && (
@@ -546,39 +595,54 @@ export default function MessagesPage() {
                     )}
                   </div>
                 ) : (
-                  filteredConnections.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => startThread(c.otherUser.id)}
-                      disabled={startingThread === c.otherUser.id}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-50 dark:border-zinc-800/50 disabled:opacity-50"
-                    >
-                      {c.otherUser?.image ? (
-                        <img
-                          src={c.otherUser.image}
-                          alt=""
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-bold flex-shrink-0">
-                          {c.otherUser?.name?.charAt(0) || "?"}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {c.otherUser?.name || "Usuario"}
-                        </p>
-                        {c.otherUser?.headline && (
-                          <p className="text-xs text-gray-500 truncate">
-                            {c.otherUser.headline}
-                          </p>
+                  filteredConnections.map((c) => {
+                    const badgeStyle =
+                      c.origin === "connection"
+                        ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                        : c.origin === "team"
+                          ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                          : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400";
+                    return (
+                      <button
+                        key={c.key}
+                        onClick={() => startThread(c.userId)}
+                        disabled={startingThread === c.userId}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-50 dark:border-zinc-800/50 disabled:opacity-50"
+                      >
+                        {c.image ? (
+                          <img
+                            src={c.image}
+                            alt=""
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-bold flex-shrink-0">
+                            {c.name.charAt(0) || "?"}
+                          </div>
                         )}
-                      </div>
-                      {startingThread === c.otherUser.id && (
-                        <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)]" />
-                      )}
-                    </button>
-                  ))
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {c.name}
+                            </p>
+                            <span
+                              className={`px-1.5 py-0.5 text-[9px] rounded-full font-medium whitespace-nowrap ${badgeStyle}`}
+                            >
+                              {c.originLabel}
+                            </span>
+                          </div>
+                          {c.headline && (
+                            <p className="text-xs text-gray-500 truncate">
+                              {c.headline}
+                            </p>
+                          )}
+                        </div>
+                        {startingThread === c.userId && (
+                          <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)]" />
+                        )}
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </motion.div>

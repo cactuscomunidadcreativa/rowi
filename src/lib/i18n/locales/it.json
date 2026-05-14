@@ -3937,5 +3937,8 @@
   "social.messages.searchConnection": "Cerca tra le tue connessioni...",
   "social.messages.noConnections": "Non hai ancora connessioni",
   "social.messages.noConnectionsMatch": "Nessuna connessione corrisponde",
-  "social.messages.discoverConnections": "Scopri persone →"
+  "social.messages.discoverConnections": "Scopri persone →",
+  "social.messages.origin.connection": "Connessione",
+  "social.messages.origin.community": "Comunità",
+  "social.messages.origin.team": "Team"
 }

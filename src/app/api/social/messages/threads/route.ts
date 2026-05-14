@@ -131,20 +131,57 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verificar que son conexiones activas
-    const relation = await prisma.rowiRelation.findFirst({
-      where: {
-        OR: [
-          { initiatorId: user.id, receiverId: otherUserId },
-          { initiatorId: otherUserId, receiverId: user.id },
-        ],
-        status: "active",
-      },
-    });
+    // El usuario puede mensajear si tiene CUALQUIERA de estos vínculos:
+    //   1. Una conexión activa (rowiRelation) — patrón clásico tipo LinkedIn
+    //   2. Pertenecer a la MISMA RowiCommunity que el otro usuario
+    //   3. Pertenecer al MISMO tenant (compañeros de equipo)
+    // Esto refleja el modelo real: cualquier miembro de tu comunidad
+    // o tu organización debe poder iniciar una conversación.
 
-    if (!relation) {
+    const [relation, sharedCommunity, sameTenant] = await Promise.all([
+      prisma.rowiRelation.findFirst({
+        where: {
+          OR: [
+            { initiatorId: user.id, receiverId: otherUserId },
+            { initiatorId: otherUserId, receiverId: user.id },
+          ],
+          status: "active",
+        },
+        select: { id: true },
+      }),
+      // Mismo RowiCommunity (ambos como RowiCommunityUser activos)
+      prisma.rowiCommunityUser.findFirst({
+        where: {
+          userId: user.id,
+          status: "active",
+          community: {
+            members: { some: { userId: otherUserId, status: "active" } },
+          },
+        },
+        select: { id: true },
+      }),
+      // Mismo tenant primario
+      (async () => {
+        const me = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { primaryTenantId: true },
+        });
+        if (!me?.primaryTenantId) return null;
+        const other = await prisma.user.findUnique({
+          where: { id: otherUserId },
+          select: { id: true, primaryTenantId: true },
+        });
+        return other?.primaryTenantId === me.primaryTenantId ? other : null;
+      })(),
+    ]);
+
+    if (!relation && !sharedCommunity && !sameTenant) {
       return NextResponse.json(
-        { ok: false, error: "Solo puedes enviar mensajes a tus conexiones" },
+        {
+          ok: false,
+          error:
+            "Solo puedes enviar mensajes a tus conexiones, miembros de tu comunidad o equipo",
+        },
         { status: 403 }
       );
     }

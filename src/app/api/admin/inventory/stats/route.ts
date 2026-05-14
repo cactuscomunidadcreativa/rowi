@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { resolveScopeTenantIds } from "@/core/admin/scopedList";
 
 export const preferredRegion = "iad1";
 
@@ -16,10 +17,37 @@ type Domain = {
 };
 
 export async function GET() {
-  const auth = await requireSuperAdmin();
+  const auth = await requireAdminWithScope();
   if (auth.error) return auth.error;
 
   try {
+    const isGlobal = auth.scope.type === "rowiverse";
+
+    // Resolve which tenants this caller can see.
+    const tenantIds = isGlobal ? null : await resolveScopeTenantIds(auth.scope);
+    if (!isGlobal && (!tenantIds || tenantIds.length === 0)) {
+      return NextResponse.json({
+        ok: true,
+        scope: { type: auth.scope.type, id: auth.scope.id },
+        totalRecords: 0,
+        domains: [],
+      });
+    }
+
+    // Build reusable where fragments.
+    const tw = isGlobal ? undefined : { tenantId: { in: tenantIds! } };
+    const memberTW = isGlobal ? undefined : { member: { tenantId: { in: tenantIds! } } };
+    const communityTW = isGlobal ? undefined : { community: { tenantId: { in: tenantIds! } } };
+    const employeeTW = isGlobal ? undefined : { employee: { tenantId: { in: tenantIds! } } };
+    const userPrimaryTW = isGlobal ? undefined : { user: { primaryTenantId: { in: tenantIds! } } };
+
+    const cnt = (
+      model: { count: (args?: object) => Promise<number> },
+      where?: unknown,
+    ): Promise<number> =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (model as any).count(where ? { where } : undefined);
+
     const [
       users,
       tenants,
@@ -122,107 +150,149 @@ export async function GET() {
       affinityInteractions,
       tokenUsage,
     ] = await Promise.all([
-      prisma.user.count(),
-      prisma.tenant.count(),
-      prisma.hub.count(),
-      prisma.superHub.count(),
-      prisma.organization.count(),
-      prisma.plan.count(),
-      prisma.inviteToken.count(),
-      prisma.userPermission.count(),
-      prisma.rowiCommunity.count(),
-      prisma.communityMember.count(),
-      prisma.rowiCommunityPost.count(),
-      prisma.communityBatch.count(),
-      prisma.messageThread.count(),
-      prisma.message.count(),
-      prisma.rowiRelation.count(),
-      prisma.rowiFeed.count(),
-      prisma.feedComment.count(),
-      prisma.feedReaction.count(),
-      prisma.nobleGoal.count(),
-      prisma.eqSnapshot.count(),
-      prisma.eqProgress.count(),
-      prisma.eqMoodSnapshot.count(),
-      prisma.seiRequest.count(),
-      prisma.sixSecondsImport.count(),
-      prisma.seiLink.count(),
-      prisma.benchmark.count(),
-      prisma.benchmarkDataPoint.count(),
-      prisma.benchmarkUploadJob.count(),
-      prisma.agentConfig.count(),
-      prisma.rowiChat.count(),
-      prisma.agentContext.count(),
-      prisma.rowiChatFeedback.count(),
-      prisma.weekFlowSession.count(),
-      prisma.weekFlowContribution.count(),
-      prisma.weekFlowMoodCheckin.count(),
-      prisma.weekFlowComment.count(),
-      prisma.rowiTask.count(),
-      prisma.taskReflection.count(),
-      prisma.course.count(),
-      prisma.lesson.count(),
-      prisma.enrollment.count(),
-      prisma.quiz.count(),
-      prisma.quizAttempt.count(),
-      prisma.certificate.count(),
-      prisma.microLearning.count(),
-      prisma.userMicroLearning.count(),
-      prisma.studyGroup.count(),
-      prisma.knowledgeResource.count(),
-      prisma.caseStudy.count(),
-      prisma.learningNote.count(),
-      prisma.achievement.count(),
-      prisma.userAchievement.count(),
-      prisma.userStreak.count(),
-      prisma.userLevel.count(),
-      prisma.userPoints.count(),
-      prisma.reward.count(),
-      prisma.userReward.count(),
-      prisma.coachNote.count(),
-      prisma.developmentPlan.count(),
-      prisma.assessmentCampaign.count(),
-      prisma.workspaceAlert.count(),
-      prisma.clientAccess.count(),
-      prisma.subscription.count(),
-      prisma.payment.count(),
-      prisma.coupon.count(),
-      prisma.couponRedemption.count(),
-      prisma.salesMetric.count(),
-      prisma.invoice.count(),
-      prisma.transaction.count(),
-      prisma.purchaseOrder.count(),
-      prisma.salesOrder.count(),
-      prisma.payout.count(),
-      prisma.payrollRun.count(),
-      prisma.product.count(),
-      prisma.employeeProfile.count(),
-      prisma.performanceReview.count(),
-      prisma.leaveRequest.count(),
-      prisma.timeEntry.count(),
-      prisma.productivityLog.count(),
-      prisma.emotionalEvent.count(),
-      prisma.emotionalROI.count(),
-      prisma.rowiVerse.count(),
-      prisma.rowiVerseUser.count(),
-      prisma.rowiVerseContribution.count(),
-      prisma.page.count(),
-      prisma.layout.count(),
-      prisma.component.count(),
-      prisma.translation.count(),
-      prisma.landingSection.count(),
-      prisma.cmsContent.count(),
-      prisma.notificationQueue.count(),
-      prisma.notificationLog.count(),
-      prisma.pushSubscription.count(),
-      prisma.integrationConnection.count(),
-      prisma.externalConnection.count(),
-      prisma.webhook.count(),
-      prisma.affinityProfile.count(),
-      prisma.affinitySnapshot.count(),
-      prisma.affinityInteraction.count(),
+      // Structure
+      cnt(prisma.user, isGlobal ? undefined : { primaryTenantId: { in: tenantIds! } }),
+      cnt(prisma.tenant, isGlobal ? undefined : { id: { in: tenantIds! } }),
+      cnt(prisma.hub, tw),
+      cnt(prisma.superHub, isGlobal ? undefined : { tenants: { some: { id: { in: tenantIds! } } } }),
+      cnt(prisma.organization, isGlobal ? undefined : { tenantLinks: { some: { tenantId: { in: tenantIds! } } } }),
+      cnt(prisma.plan, undefined),
+      cnt(prisma.inviteToken, tw),
+      cnt(prisma.userPermission, isGlobal ? undefined : { scopeType: "tenant", scopeId: { in: tenantIds! } }),
+
+      // Community
+      cnt(prisma.rowiCommunity, tw),
+      cnt(prisma.communityMember, tw),
+      cnt(prisma.rowiCommunityPost, communityTW),
+      cnt(prisma.communityBatch, communityTW),
+
+      // Social
+      cnt(prisma.messageThread, undefined),
+      cnt(prisma.message, undefined),
+      cnt(prisma.rowiRelation, undefined),
+      cnt(prisma.rowiFeed, isGlobal ? undefined : { tenantId: { in: tenantIds! } }),
+      cnt(prisma.feedComment, undefined),
+      cnt(prisma.feedReaction, undefined),
+      cnt(prisma.nobleGoal, undefined),
+
+      // EQ
+      cnt(prisma.eqSnapshot, memberTW),
+      cnt(prisma.eqProgress, memberTW),
+      cnt(prisma.eqMoodSnapshot, memberTW),
+      cnt(prisma.seiRequest, undefined),
+      cnt(prisma.sixSecondsImport, undefined),
+      cnt(prisma.seiLink, undefined),
+
+      // Benchmarks
+      cnt(prisma.benchmark, tw),
+      cnt(prisma.benchmarkDataPoint, tw),
+      cnt(prisma.benchmarkUploadJob, undefined),
+
+      // AI
+      cnt(prisma.agentConfig, tw),
+      cnt(prisma.rowiChat, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.agentContext, undefined),
+      cnt(prisma.rowiChatFeedback, undefined),
+
+      // WeekFlow
+      cnt(prisma.weekFlowSession, undefined),
+      cnt(prisma.weekFlowContribution, undefined),
+      cnt(prisma.weekFlowMoodCheckin, undefined),
+      cnt(prisma.weekFlowComment, undefined),
+      cnt(prisma.rowiTask, undefined),
+      cnt(prisma.taskReflection, undefined),
+
+      // Education
+      cnt(prisma.course, undefined),
+      cnt(prisma.lesson, undefined),
+      cnt(prisma.enrollment, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.quiz, undefined),
+      cnt(prisma.quizAttempt, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.certificate, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.microLearning, undefined),
+      cnt(prisma.userMicroLearning, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.studyGroup, undefined),
+
+      // Knowledge
+      cnt(prisma.knowledgeResource, undefined),
+      cnt(prisma.caseStudy, undefined),
+      cnt(prisma.learningNote, undefined),
+
+      // Gamification
+      cnt(prisma.achievement, undefined),
+      cnt(prisma.userAchievement, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.userStreak, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.userLevel, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.userPoints, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.reward, undefined),
+      cnt(prisma.userReward, isGlobal ? undefined : userPrimaryTW),
+
+      // Workspace
+      cnt(prisma.coachNote, communityTW),
+      cnt(prisma.developmentPlan, communityTW),
+      cnt(prisma.assessmentCampaign, communityTW),
+      cnt(prisma.workspaceAlert, communityTW),
+      cnt(prisma.clientAccess, communityTW),
+
+      // Sales
+      cnt(prisma.subscription, undefined),
+      cnt(prisma.payment, undefined),
+      cnt(prisma.coupon, undefined),
+      cnt(prisma.couponRedemption, undefined),
+      cnt(prisma.salesMetric, undefined),
+
+      // Accounting
+      cnt(prisma.invoice, tw),
+      cnt(prisma.transaction, tw),
+      cnt(prisma.purchaseOrder, tw),
+      cnt(prisma.salesOrder, tw),
+      cnt(prisma.payout, tw),
+      cnt(prisma.payrollRun, tw),
+      cnt(prisma.product, tw),
+
+      // HR
+      cnt(prisma.employeeProfile, tw),
+      cnt(prisma.performanceReview, employeeTW),
+      cnt(prisma.leaveRequest, employeeTW),
+      cnt(prisma.timeEntry, employeeTW),
+      cnt(prisma.productivityLog, employeeTW),
+
+      // ECO
+      cnt(prisma.emotionalEvent, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.emotionalROI, tw),
+
+      // Rowiverse — global by design
+      cnt(prisma.rowiVerse, undefined),
+      cnt(prisma.rowiVerseUser, undefined),
+      cnt(prisma.rowiVerseContribution, undefined),
+
+      // CMS — global content
+      cnt(prisma.page, undefined),
+      cnt(prisma.layout, undefined),
+      cnt(prisma.component, undefined),
+      cnt(prisma.translation, undefined),
+      cnt(prisma.landingSection, undefined),
+      cnt(prisma.cmsContent, undefined),
+
+      // Notifications
+      cnt(prisma.notificationQueue, undefined),
+      cnt(prisma.notificationLog, undefined),
+      cnt(prisma.pushSubscription, undefined),
+
+      // Integrations
+      cnt(prisma.integrationConnection, tw),
+      cnt(prisma.externalConnection, undefined),
+      cnt(prisma.webhook, undefined),
+
+      // Affinity
+      cnt(prisma.affinityProfile, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.affinitySnapshot, isGlobal ? undefined : userPrimaryTW),
+      cnt(prisma.affinityInteraction, isGlobal ? undefined : userPrimaryTW),
+
+      // Tokens
       prisma.usageDaily.aggregate({
         _sum: { tokensInput: true, tokensOutput: true },
+        where: isGlobal ? undefined : { tenantId: { in: tenantIds! } },
       }),
     ]);
 
@@ -342,10 +412,10 @@ export async function GET() {
         key: "workspace",
         entities: [
           { key: "coachNotes", count: coachNotes, href: "/hub/admin/coaching" },
-          { key: "developmentPlans", count: developmentPlans, href: "/hub/admin/coaching" },
-          { key: "assessmentCampaigns", count: assessmentCampaigns, href: "/hub/admin/coaching" },
-          { key: "workspaceAlerts", count: workspaceAlerts, href: "/hub/admin/coaching" },
-          { key: "clientAccesses", count: clientAccesses, href: "/hub/admin/coaching" },
+          { key: "developmentPlans", count: developmentPlans, href: "/hub/admin/coaching/plans" },
+          { key: "assessmentCampaigns", count: assessmentCampaigns, href: "/hub/admin/coaching/campaigns" },
+          { key: "workspaceAlerts", count: workspaceAlerts, href: "/hub/admin/coaching/alerts" },
+          { key: "clientAccesses", count: clientAccesses, href: "/hub/admin/coaching/clients" },
         ],
       },
       {
@@ -439,6 +509,8 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
+      scope: { type: auth.scope.type, id: auth.scope.id },
+      isGlobal,
       totalRecords,
       domains,
     });

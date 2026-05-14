@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/core/prisma";
-import { paginatedListHandler } from "@/core/admin/paginatedList";
+import { tenantScopedPaginatedListHandler } from "@/core/admin/scopedList";
 
 export const preferredRegion = "iad1";
 
 export async function GET(req: NextRequest) {
-  return paginatedListHandler(req, prisma.productivityLog, {
+  return tenantScopedPaginatedListHandler(req, prisma.productivityLog, {
     searchableFields: ["taskName", "notes"],
     orderBy: { date: "desc" },
+    relationTenantPath: "employee.tenantId",
     include: {
       employee: {
         select: { id: true, position: true, user: { select: { name: true, email: true } } },

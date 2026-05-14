@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
+import { sendInviteEmail } from "@/lib/email/sendInviteEmail";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -233,6 +234,25 @@ export async function POST(req: NextRequest) {
       links.sms = `sms:${normalizedContact}?body=${encodeURIComponent(finalMessage)}`;
     }
 
+    // 📨 Si el canal es email, enviar vía Resend (helper compartido)
+    let emailSent = false;
+    let emailSkipped = false;
+    let emailError: string | undefined;
+    if (channel === "email") {
+      const result = await sendInviteEmail({
+        to: normalizedContact,
+        inviteUrl,
+        inviterName,
+        workspaceName:
+          user.memberships?.[0]?.tenant?.name || null,
+        role: null,
+        locale: (user.language as any) || "es",
+      });
+      emailSent = result.ok && !result.skipped;
+      emailSkipped = !!result.skipped;
+      emailError = result.ok ? undefined : result.error;
+    }
+
     // Registrar en ActivityLog para hub admin
     try {
       await prisma.activityLog.create({
@@ -246,6 +266,7 @@ export async function POST(req: NextRequest) {
             contact: normalizedContact,
             inviteName: name || null,
             tenantId: user.primaryTenantId,
+            emailSent,
           },
         },
       });
@@ -266,6 +287,9 @@ export async function POST(req: NextRequest) {
       inviteUrl,
       message: finalMessage,
       links,
+      emailSent,
+      emailSkipped,
+      emailError,
       remainingInvites: maxInvites - existingInvites - 1,
     });
   } catch (e: any) {

@@ -3942,5 +3942,7 @@
   "social.messages.origin.community": "Comunidad",
   "social.messages.origin.team": "Equipo",
   "social.messages.noAccountBadge": "Sin cuenta",
-  "social.messages.noAccountTooltip": "Esta persona aún no se registró en Rowi. Invítala desde Workspace o Conexiones para poder enviarle mensajes."
+  "social.messages.noAccountTooltip": "Esta persona aún no se registró en Rowi. Invítala desde Workspace o Conexiones para poder enviarle mensajes.",
+  "social.messages.invite": "Invitar",
+  "social.messages.invited": "Invitado"
 }

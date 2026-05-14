@@ -86,6 +86,10 @@ export default function MessagesPage() {
   const [loadingConnections, setLoadingConnections] = useState(false);
   const [newThreadSearch, setNewThreadSearch] = useState("");
   const [startingThread, setStartingThread] = useState<string | null>(null);
+  /** email del invitado mientras se está mandando la invitación */
+  const [invitingEmail, setInvitingEmail] = useState<string | null>(null);
+  /** emails ya invitados en esta sesión (para feedback inline) */
+  const [invitedEmails, setInvitedEmails] = useState<Set<string>>(new Set());
 
   // Fetch threads
   const fetchThreads = useCallback(async () => {
@@ -255,6 +259,35 @@ export default function MessagesPage() {
       setConnections([]);
     } finally {
       setLoadingConnections(false);
+    }
+  };
+
+  /** Enviar invitación a una persona sin cuenta (community member CSV) */
+  const inviteToRowi = async (email: string) => {
+    if (!email) return;
+    setInvitingEmail(email);
+    try {
+      const res = await fetch("/api/community/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact: email, channel: "email" }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setInvitedEmails((prev) => new Set(prev).add(email.toLowerCase()));
+      } else {
+        // Si ya existía invitación pendiente, igual marcamos como enviado
+        if (data.existingInvite) {
+          setInvitedEmails((prev) => new Set(prev).add(email.toLowerCase()));
+        } else {
+          console.error("Invite failed:", data.error);
+          alert(data.error || t("common.unexpectedError"));
+        }
+      }
+    } catch (err) {
+      console.error("Error inviting:", err);
+    } finally {
+      setInvitingEmail(null);
     }
   };
 
@@ -622,25 +655,30 @@ export default function MessagesPage() {
                         : c.origin === "team"
                           ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400";
-                    const clickable = c.hasAccount && c.userId;
-                    return (
-                      <button
-                        key={c.key}
-                        onClick={() => clickable && startThread(c.userId!)}
-                        disabled={!clickable || startingThread === c.userId}
-                        title={
-                          clickable
-                            ? undefined
-                            : t(
-                                "social.messages.noAccountTooltip",
-                                "Esta persona aún no se registró en Rowi. Invítala desde Workspace o Conexiones para poder enviarle mensajes."
-                              )
+                    const clickable = !!(c.hasAccount && c.userId);
+                    const canInvite = !clickable && !!c.email;
+                    const isInviting = invitingEmail === c.email;
+                    const alreadyInvited = c.email
+                      ? invitedEmails.has(c.email.toLowerCase())
+                      : false;
+
+                    const Wrapper: any = clickable ? "button" : "div";
+                    const wrapperProps = clickable
+                      ? {
+                          onClick: () => startThread(c.userId!),
+                          disabled: startingThread === c.userId,
                         }
+                      : {};
+
+                    return (
+                      <Wrapper
+                        key={c.key}
+                        {...wrapperProps}
                         className={`w-full flex items-center gap-3 p-3 border-b border-gray-50 dark:border-zinc-800/50 transition-colors ${
                           clickable
                             ? "hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer"
-                            : "opacity-60 cursor-not-allowed"
-                        } disabled:opacity-50`}
+                            : ""
+                        }`}
                       >
                         {c.image ? (
                           <img
@@ -689,10 +727,38 @@ export default function MessagesPage() {
                             </p>
                           )}
                         </div>
-                        {startingThread === c.userId && (
-                          <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)]" />
-                        )}
-                      </button>
+
+                        {/* Action area */}
+                        {clickable ? (
+                          startingThread === c.userId ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)] flex-shrink-0" />
+                          ) : null
+                        ) : canInvite ? (
+                          alreadyInvited ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium flex-shrink-0">
+                              <Check className="w-3 h-3" />
+                              {t("social.messages.invited", "Invitado")}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (c.email) inviteToRowi(c.email);
+                              }}
+                              disabled={isInviting}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium hover:opacity-90 disabled:opacity-50 flex-shrink-0"
+                            >
+                              {isInviting ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Send className="w-3 h-3" />
+                              )}
+                              {t("social.messages.invite", "Invitar")}
+                            </button>
+                          )
+                        ) : null}
+                      </Wrapper>
                     );
                   })
                 )}

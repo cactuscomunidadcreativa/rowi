@@ -122,8 +122,8 @@ export async function GET() {
       eqAvgAgg,
       workspaces,
       activeWorkspaces,
-      brainStyleAgg,
-      countryAgg,
+      membersWithBrainStyle,
+      snapshotsForDiversity,
       openAlerts,
       criticalAlerts,
       recentSnapshots,
@@ -182,19 +182,30 @@ export async function GET() {
       prisma.rowiCommunity.count({
         where: { ...tenantFilter, projectStatus: "active" },
       }),
-      prisma.communityMember.groupBy({
-        by: ["brainStyle"],
+      // Brain style + country sources — CommunityMember has these fields
+      // directly, AND EqSnapshot does too. We fetch both and merge so a
+      // person whose member row has no brainStyle but whose snapshot does
+      // still contributes to the distribution.
+      prisma.communityMember.findMany({
         where: { ...tenantFilter, brainStyle: { not: null } },
-        _count: true,
-        orderBy: { _count: { brainStyle: "desc" } },
-        take: 6,
+        select: { id: true, brainStyle: true, country: true },
       }),
-      prisma.communityMember.groupBy({
-        by: ["country"],
-        where: { ...tenantFilter, country: { not: null } },
-        _count: true,
-        orderBy: { _count: { country: "desc" } },
-        take: 8,
+      prisma.eqSnapshot.findMany({
+        where: {
+          brainStyle: { not: null },
+          OR: [
+            { member: { tenantId: { in: tenantIds } } },
+            { user: { primaryTenantId: { in: tenantIds } } },
+          ],
+        },
+        select: {
+          brainStyle: true,
+          country: true,
+          memberId: true,
+          userId: true,
+          at: true,
+        },
+        orderBy: { at: "desc" },
       }),
       prisma.workspaceAlert.count({
         where: {
@@ -236,6 +247,51 @@ export async function GET() {
     for (const row of memberByCommunity) {
       if (row.communityId) memberCountByCommunity.set(row.communityId, row._count);
     }
+
+    // ── Merge brain style + country distributions from CommunityMember AND
+    // EqSnapshot. People are deduplicated by (memberId | userId) so we don't
+    // double-count someone who has both a member row and snapshots.
+    const brainStyleCounts: Record<string, number> = {};
+    const countryCounts: Record<string, number> = {};
+    const seenMemberKeys = new Set<string>();
+
+    for (const m of membersWithBrainStyle) {
+      seenMemberKeys.add(`m:${m.id}`);
+      if (m.brainStyle) {
+        brainStyleCounts[m.brainStyle] = (brainStyleCounts[m.brainStyle] || 0) + 1;
+      }
+      if (m.country) {
+        countryCounts[m.country] = (countryCounts[m.country] || 0) + 1;
+      }
+    }
+
+    // Snapshots are pre-ordered desc by `at` — take the first one per person.
+    const handledFromSnapshot = new Set<string>();
+    for (const s of snapshotsForDiversity) {
+      const key = s.memberId
+        ? `m:${s.memberId}`
+        : s.userId
+          ? `u:${s.userId}`
+          : null;
+      if (!key) continue;
+      if (seenMemberKeys.has(key) || handledFromSnapshot.has(key)) continue;
+      handledFromSnapshot.add(key);
+      if (s.brainStyle) {
+        brainStyleCounts[s.brainStyle] = (brainStyleCounts[s.brainStyle] || 0) + 1;
+      }
+      if (s.country) {
+        countryCounts[s.country] = (countryCounts[s.country] || 0) + 1;
+      }
+    }
+
+    const brainStyleAggMerged = Object.entries(brainStyleCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6)
+      .map(([style, count]) => ({ style, count }));
+    const countryAggMerged = Object.entries(countryCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([country, count]) => ({ country, count }));
 
     // ── Hubs + non-workspace communities + affinity surfaces.
     // The org hub is the place where all the pieces of the hierarchy should
@@ -320,12 +376,8 @@ export async function GET() {
           orphanMembers,
         },
         diversity: {
-          brainStyles: brainStyleAgg
-            .filter((b) => b.brainStyle)
-            .map((b) => ({ style: b.brainStyle as string, count: b._count })),
-          countries: countryAgg
-            .filter((c) => c.country)
-            .map((c) => ({ country: c.country as string, count: c._count })),
+          brainStyles: brainStyleAggMerged,
+          countries: countryAggMerged,
         },
         alerts: {
           open: openAlerts,

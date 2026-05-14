@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { FamilyRelationsSection } from "./_FamilyRelationsSection";
 
 const FAMILY_T = {
   es: {
@@ -177,16 +178,13 @@ export default function FamilySettingsPage() {
   if (!planInfo || planInfo.planName !== "ROWI Family") {
     return (
       <main className="space-y-4">
-        <header className="rowi-card">
-          <h1 className="text-2xl font-semibold">Plan Familiar</h1>
-          <p className="rowi-muted text-sm">Gestiona los miembros de tu plan familiar.</p>
-        </header>
+        <FamilyRelationsSection />
 
         <section className="rowi-card text-center py-8">
           <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
-          <h2 className="text-xl font-medium mb-2">No tienes un Plan Familiar</h2>
+          <h2 className="text-xl font-medium mb-2">Plan Familiar</h2>
           <p className="text-gray-500 mb-4">
-            El Plan ROWI Family te permite compartir la experiencia con hasta 6 miembros de tu familia.
+            Suma hasta 6 miembros con acceso compartido a Rowi y un pool de tokens mensual.
           </p>
           <a
             href="/pricing"
@@ -203,6 +201,8 @@ export default function FamilySettingsPage() {
 
   return (
     <main className="space-y-4">
+      <FamilyRelationsSection />
+
       <header className="rowi-card">
         <h1 className="text-2xl font-semibold">Plan Familiar</h1>
         <p className="rowi-muted text-sm">Gestiona los miembros de tu plan familiar.</p>

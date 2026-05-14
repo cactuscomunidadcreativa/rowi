@@ -148,15 +148,21 @@ export async function GET() {
       prisma.communityMember.count({
         where: {
           ...tenantFilter,
-          snapshots: { some: { dataset: "actual", overall4: { not: null } } },
+          snapshots: { some: { overall4: { not: null } } },
         },
       }),
+      // EQ average: include snapshots reachable from EITHER a CommunityMember
+      // in our tenants OR a User whose primaryTenantId is in our tenants. The
+      // dataset filter is intentionally loose — different import paths use
+      // "actual", "imported", "csv" etc.; we average across all of them.
       prisma.eqSnapshot.aggregate({
         _avg: { overall4: true, K: true, C: true, G: true },
         where: {
-          dataset: "actual",
-          member: tenantFilter,
           overall4: { not: null },
+          OR: [
+            { member: { tenantId: { in: tenantIds } } },
+            { user: { primaryTenantId: { in: tenantIds } } },
+          ],
         },
       }),
       prisma.rowiCommunity.findMany({
@@ -205,11 +211,14 @@ export async function GET() {
           dismissedAt: null,
         },
       }),
+      // Snapshots in the last 30 days — same OR-based reach as the EQ average.
       prisma.eqSnapshot.count({
         where: {
-          dataset: "actual",
-          member: memberTenantFilter,
           at: { gte: thirtyDaysAgo },
+          OR: [
+            { member: { tenantId: { in: tenantIds } } },
+            { user: { primaryTenantId: { in: tenantIds } } },
+          ],
         },
       }),
       prisma.communityMember.groupBy({

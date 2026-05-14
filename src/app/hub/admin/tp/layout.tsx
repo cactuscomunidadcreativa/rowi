@@ -1,94 +1,54 @@
-"use client";
-
-import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
-import { Shield, Lock } from "lucide-react";
 import Link from "next/link";
-import { useI18n } from "@/lib/i18n/I18nProvider";
+import { Shield, Lock } from "lucide-react";
+import { getServerAuthUser } from "@/core/auth";
 
-const translations = {
-  es: {
-    loading: "Cargando...",
-    restricted: "Acceso Restringido",
-    restrictedDesc: "El Demo de Benchmark de Teleperformance está disponible exclusivamente para socios autorizados de Six Seconds.",
-    currentEmail: "Email actual",
-    notSignedIn: "No autenticado",
-    required: "Requerido: email @6seconds.org",
-    backToAdmin: "Volver a Admin",
-  },
-  en: {
-    loading: "Loading...",
-    restricted: "Access Restricted",
-    restrictedDesc: "The Teleperformance Benchmark Demo is exclusively available to authorized Six Seconds partners.",
-    currentEmail: "Current email",
-    notSignedIn: "Not signed in",
-    required: "Required: @6seconds.org email",
-    backToAdmin: "Back to Admin",
-  },
-  pt: {
-    loading: "Carregando...",
-    restricted: "Acesso Restrito",
-    restrictedDesc: "O Demo de Benchmark da Teleperformance está disponível exclusivamente para parceiros autorizados da Six Seconds.",
-    currentEmail: "E-mail atual",
-    notSignedIn: "Não autenticado",
-    required: "Requerido: e-mail @6seconds.org",
-    backToAdmin: "Voltar ao Admin",
-  },
-  it: {
-    loading: "Caricamento...",
-    restricted: "Accesso Ristretto",
-    restrictedDesc: "Il Demo Benchmark di Teleperformance è disponibile esclusivamente per partner autorizzati di Six Seconds.",
-    currentEmail: "Email attuale",
-    notSignedIn: "Non autenticato",
-    required: "Richiesto: email @6seconds.org",
-    backToAdmin: "Torna a Admin",
-  },
-
-};
-
-export default function TPLayout({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full border-4 border-purple-500 border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const email = session?.user?.email || "";
+/**
+ * Server-side gate for the Teleperformance demo. The previous gate was a
+ * client component that checked `session.user.email` in JS — trivial to
+ * bypass by editing the bundle or stubbing useSession. This version reads
+ * the session on the server before the children ever render.
+ *
+ * Authorized callers:
+ *   - SuperAdmins (Eduardo and any other rowiverse-scoped superadmin)
+ *   - Anyone with @6seconds.org email
+ *   - Anyone with @cactuscomunidadcreativa.com email
+ */
+export default async function TPLayout({ children }: { children: ReactNode }) {
+  const user = await getServerAuthUser();
+  const email = (user?.email || "").toLowerCase();
   const isAuthorized =
+    !!user?.isSuperAdmin ||
     email.endsWith("@6seconds.org") ||
-    email.endsWith("@cactuscomunidadcreativa.com") ||
-    email === "eduardo@cactuscomunidadcreativa.com";
+    email.endsWith("@cactuscomunidadcreativa.com");
 
   if (!isAuthorized) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
             <Lock className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">{t.restricted}</h2>
-          <p className="text-[var(--rowi-muted)] mb-2">{t.restrictedDesc}</p>
+          <h2 className="text-2xl font-bold mb-3">Access Restricted</h2>
+          <p className="text-[var(--rowi-muted)] mb-2">
+            The Teleperformance Benchmark Demo is reserved for authorized Six
+            Seconds partners.
+          </p>
           <p className="text-sm text-[var(--rowi-muted)] mb-6">
-            {t.currentEmail}: <span className="font-mono text-xs bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">{email || t.notSignedIn}</span>
+            Current email:{" "}
+            <span className="font-mono text-xs bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">
+              {email || "not signed in"}
+            </span>
           </p>
           <div className="flex items-center justify-center gap-2 text-xs text-[var(--rowi-muted)] mb-6">
             <Shield className="w-4 h-4 text-purple-500" />
-            <span>{t.required}</span>
+            <span>Required: @6seconds.org email or SuperAdmin</span>
           </div>
           <Link
             href="/hub/admin"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
           >
-            {t.backToAdmin}
+            Back to Admin
           </Link>
         </div>
       </div>

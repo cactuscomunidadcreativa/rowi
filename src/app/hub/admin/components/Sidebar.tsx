@@ -39,6 +39,8 @@ interface NavItem {
   icon: LucideIcon;
   badge?: string;
   children?: NavItem[];
+  /** True if this item should only be shown to platform-level admins (rowiverse/superhub). */
+  superOnly?: boolean;
 }
 
 interface NavSection {
@@ -46,11 +48,16 @@ interface NavSection {
   icon: LucideIcon;
   items: NavItem[];
   priority?: number; // Mayor = más arriba
+  /** True if the whole section should only be shown to platform admins. */
+  superOnly?: boolean;
 }
+
+import { useAdminUser } from "./AdminUserContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const { isPlatformAdmin, loading: userLoading } = useAdminUser();
 
   const sections: NavSection[] = [
     // ═══════════════════════════════════════════════════════
@@ -96,6 +103,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.tpDemo",
       icon: Building2,
       priority: 96,
+      superOnly: true,
       items: [
         { href: "/hub/admin/tp", labelKey: "admin.nav.tpHub", icon: Building2, badge: "TP" },
         {
@@ -300,6 +308,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.rowiverse",
       icon: Earth,
       priority: 75,
+      superOnly: true,
       items: [
         { href: "/hub/admin/rowiverse", labelKey: "admin.nav.rowiverseMap", icon: Globe2 },
         { href: "/hub/admin/rowiverse/contributions", labelKey: "admin.nav.contributions", icon: Upload },
@@ -348,6 +357,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.structure",
       icon: Globe2,
       priority: 60,
+      superOnly: true,
       items: [
         { href: "/hub/admin/superhubs", labelKey: "admin.nav.superhubs", icon: Layers3 },
         { href: "/hub/admin/hubs", labelKey: "admin.nav.hubs", icon: Network },
@@ -385,6 +395,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.publicSite",
       icon: Globe2,
       priority: 50,
+      superOnly: true,
       items: [
         { href: "/hub/admin/landing-builder", labelKey: "admin.nav.landingBuilder", icon: Sparkles },
         { href: "/hub/admin/cms", labelKey: "admin.nav.cms", icon: FileText },
@@ -477,7 +488,22 @@ export default function Sidebar() {
   ];
 
   // Ordenar secciones por prioridad
-  const sortedSections = [...sections].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  // Filter platform-admin-only sections + items based on the caller's scope.
+  // While we're still loading the user we show everything (avoid layout flicker
+  // for SuperAdmins who would see items pop in mid-paint).
+  const visibleSections = sections
+    .filter((s) => userLoading || isPlatformAdmin || !s.superOnly)
+    .map((s) => ({
+      ...s,
+      items: s.items.filter(
+        (it) => userLoading || isPlatformAdmin || !it.superOnly,
+      ),
+    }))
+    .filter((s) => s.items.length > 0);
+
+  const sortedSections = visibleSections.sort(
+    (a, b) => (b.priority || 0) - (a.priority || 0),
+  );
 
   return (
     <aside className="h-full flex flex-col bg-white dark:bg-zinc-900">

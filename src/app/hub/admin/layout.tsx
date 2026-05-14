@@ -2,6 +2,7 @@
 import { ReactNode, useEffect, useState, useRef, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
 import AdminHeader from "./components/AdminHeader";
+import { AdminUserProvider } from "./components/AdminUserContext";
 import { defaultTokens, tokensToCSS } from "@/lib/theme/tokens";
 
 /**
@@ -75,6 +76,7 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
   }, [handleScroll]);
 
   return (
+    <AdminUserProvider>
     <div className="flex w-full bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
       {/* Sidebar lateral fijo - posición fixed, debajo del NavBar global + BetaBanner */}
       <aside className="fixed left-0 w-64 border-r border-gray-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm z-40 overflow-y-auto" style={{ top: "calc(4rem + var(--banner-height, 0px))", height: "calc(100vh - 4rem - var(--banner-height, 0px))" }}>
@@ -107,5 +109,6 @@ export default function HubAdminLayout({ children }: { children: ReactNode }) {
         </main>
       </section>
     </div>
+    </AdminUserProvider>
   );
 }

@@ -421,8 +421,15 @@ export default function NavBar() {
             <span className="font-bold text-lg rowi-gradient-text hidden sm:block">Rowi</span>
           </Link>
 
-          {/* Context Switcher - Solo en pantallas grandes para no consumir espacio del centro */}
-          {isLogged && hasMultipleContexts && (
+          {/* Context Switcher — OCULTO temporalmente.
+              La UI está construida (busca contextos, lista corporaciones,
+              regiones, empresas, quick access) pero el cambio de contexto
+              no propaga a las vistas (workspace, dashboard, etc.). Mientras
+              se termina la lógica, lo dejamos fuera del navbar para no
+              confundir al usuario. El componente sigue importado abajo
+              para que cuando se reactive solo haya que descomentar este
+              bloque. */}
+          {false && isLogged && hasMultipleContexts && (
             <div className="hidden xl:block">
               <ContextSwitcher />
             </div>

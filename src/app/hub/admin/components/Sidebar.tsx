@@ -11,7 +11,7 @@ import {
   Brain, LineChart, FileText, BarChart3, TrendingUp, Target, Activity,
   Coins, Scale, Receipt, FileSpreadsheet, ClipboardList, ShoppingCart, Wallet,
   CreditCard, Briefcase, Package, ChartPie, HardDrive,
-  Calendar, ClipboardCheck, Clock, CheckSquare, ListTodo, Ticket,
+  Calendar, CalendarCheck, ClipboardCheck, Clock, CheckSquare, ListTodo, Ticket,
   GraduationCap, BookOpen, Users2,
   Zap, Workflow,
   Settings2, Bell, Database, SlidersHorizontal,
@@ -136,6 +136,7 @@ export default function Sidebar() {
         { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
         { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
         { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
+        { href: "/hub/admin/eco", labelKey: "admin.nav.ecoEvents", icon: Heart, badge: "NEW" },
       ],
     },
 
@@ -277,6 +278,22 @@ export default function Sidebar() {
     },
 
     // ═══════════════════════════════════════════════════════
+    // 🎯 COACHING & MENTORING
+    // ═══════════════════════════════════════════════════════
+    {
+      titleKey: "admin.nav.coaching",
+      icon: Target,
+      priority: 78,
+      items: [
+        { href: "/hub/admin/coaching", labelKey: "admin.nav.coachNotes", icon: FileText, badge: "NEW" },
+        { href: "/hub/admin/coaching/plans", labelKey: "admin.nav.developmentPlans", icon: Target },
+        { href: "/hub/admin/coaching/campaigns", labelKey: "admin.nav.assessmentCampaigns", icon: CalendarCheck },
+        { href: "/hub/admin/coaching/alerts", labelKey: "admin.nav.smartAlerts", icon: Bell },
+        { href: "/hub/admin/coaching/clients", labelKey: "admin.nav.clientAccess", icon: KeyRound },
+      ],
+    },
+
+    // ═══════════════════════════════════════════════════════
     // 🌐 ROWIVERSE
     // ═══════════════════════════════════════════════════════
     {
@@ -299,6 +316,7 @@ export default function Sidebar() {
       priority: 70,
       items: [
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
+        { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle, badge: "NEW" },
         { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },
         { href: "/hub/admin/ai/learning", labelKey: "admin.nav.learning", icon: BookOpenCheck },
         { href: "/hub/admin/automation", labelKey: "admin.nav.automationPanel", icon: Workflow },
@@ -416,6 +434,7 @@ export default function Sidebar() {
         { href: "/hub/admin/accounting/sales-orders", labelKey: "admin.nav.salesOrders", icon: ShoppingCart },
         { href: "/hub/admin/accounting/payouts", labelKey: "admin.nav.payouts", icon: Wallet },
         { href: "/hub/admin/accounting/payroll", labelKey: "admin.nav.payroll", icon: Calendar },
+        { href: "/hub/admin/accounting/products", labelKey: "admin.nav.products", icon: Package, badge: "NEW" },
       ],
     },
 

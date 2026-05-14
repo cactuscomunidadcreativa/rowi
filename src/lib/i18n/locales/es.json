@@ -4006,5 +4006,13 @@
   "admin.elearning.certificates.search": "Buscar por título o credencial...",
   "admin.social.moderation.search": "Buscar publicaciones por contenido o emoción...",
   "admin.social.moderation.confirmDelete": "¿Eliminar esta publicación? Esta acción no se puede deshacer.",
-  "admin.social.moderation.deleted": "Publicación eliminada"
+  "admin.social.moderation.deleted": "Publicación eliminada",
+  "admin.nav.coaching": "Coaching",
+  "admin.nav.coachNotes": "Notas de coach",
+  "admin.nav.developmentPlans": "Planes de desarrollo",
+  "admin.nav.assessmentCampaigns": "Campañas de evaluación",
+  "admin.nav.smartAlerts": "Alertas inteligentes",
+  "admin.nav.clientAccess": "Accesos de cliente",
+  "admin.nav.ecoEvents": "Eventos ECO",
+  "admin.nav.aiConversations": "Conversaciones IA"
 }

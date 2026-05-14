@@ -4006,5 +4006,13 @@
   "admin.elearning.certificates.search": "Search by title or credential...",
   "admin.social.moderation.search": "Search posts by content or emotion...",
   "admin.social.moderation.confirmDelete": "Delete this post? This cannot be undone.",
-  "admin.social.moderation.deleted": "Post deleted"
+  "admin.social.moderation.deleted": "Post deleted",
+  "admin.nav.coaching": "Coaching",
+  "admin.nav.coachNotes": "Coach notes",
+  "admin.nav.developmentPlans": "Development plans",
+  "admin.nav.assessmentCampaigns": "Assessment campaigns",
+  "admin.nav.smartAlerts": "Smart alerts",
+  "admin.nav.clientAccess": "Client access",
+  "admin.nav.ecoEvents": "ECO events",
+  "admin.nav.aiConversations": "AI conversations"
 }

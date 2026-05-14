@@ -4006,5 +4006,13 @@
   "admin.elearning.certificates.search": "Cerca per titolo o credenziale...",
   "admin.social.moderation.search": "Cerca post per contenuto o emozione...",
   "admin.social.moderation.confirmDelete": "Eliminare questo post? Questa azione non può essere annullata.",
-  "admin.social.moderation.deleted": "Post eliminato"
+  "admin.social.moderation.deleted": "Post eliminato",
+  "admin.nav.coaching": "Coaching",
+  "admin.nav.coachNotes": "Note del coach",
+  "admin.nav.developmentPlans": "Piani di sviluppo",
+  "admin.nav.assessmentCampaigns": "Campagne di valutazione",
+  "admin.nav.smartAlerts": "Avvisi intelligenti",
+  "admin.nav.clientAccess": "Accessi cliente",
+  "admin.nav.ecoEvents": "Eventi ECO",
+  "admin.nav.aiConversations": "Conversazioni IA"
 }

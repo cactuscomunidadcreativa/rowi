@@ -20,6 +20,9 @@ import {
   Settings,
   ArrowLeft,
   Loader2,
+  Upload,
+  UserPlus,
+  ArrowRight,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { WORKSPACE_TEMPLATES, getTemplateByType } from "@/lib/workspace/templates";
@@ -194,9 +197,89 @@ export default function WorkspaceLandingPage({
         </div>
       </motion.div>
 
+      {/* Getting Started CTA — visible solo si el workspace está vacío */}
+      {totalMembers <= 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+            {t("workspace.empty.title", "Empieza tu proyecto")}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            {t(
+              "workspace.empty.description",
+              "Importa o invita miembros para activar todos los módulos del workspace."
+            )}
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Importar CSV */}
+            <Link
+              href={`/workspace/${communityId}/members/upload`}
+              className="group relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl p-6 hover:shadow-xl transition-all"
+            >
+              <div className="absolute -right-4 -bottom-4 opacity-10 text-white">
+                <Upload className="w-32 h-32" />
+              </div>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold mb-1">
+                  {t("workspace.empty.uploadTitle", "Importar desde CSV")}
+                </h3>
+                <p className="text-sm text-white/90 mb-4">
+                  {t(
+                    "workspace.empty.uploadDesc",
+                    "Sube un archivo con tu equipo y sus puntuaciones SEI. Con 20+ miembros se crea un benchmark automático."
+                  )}
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium group-hover:gap-3 transition-all">
+                  {t("workspace.empty.uploadCta", "Subir CSV")}
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </Link>
+
+            {/* Invitar uno por uno */}
+            <Link
+              href={`/workspace/${communityId}/members/invite`}
+              className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-2xl p-6 hover:shadow-xl transition-all"
+            >
+              <div className="absolute -right-4 -bottom-4 opacity-10 text-white">
+                <UserPlus className="w-32 h-32" />
+              </div>
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                  <UserPlus className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold mb-1">
+                  {t("workspace.empty.inviteTitle", "Invitar uno por uno")}
+                </h3>
+                <p className="text-sm text-white/90 mb-4">
+                  {t(
+                    "workspace.empty.inviteDesc",
+                    "Envía una invitación por email asignando rol (Member, Client, Coach o Mentor)."
+                  )}
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium group-hover:gap-3 transition-all">
+                  {t("workspace.empty.inviteCta", "Enviar invitación")}
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
       {/* Modules grid */}
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-        {t("workspace.landing.getStarted")}
+        {totalMembers <= 1
+          ? t("workspace.empty.exploreModules", "Explora los módulos disponibles")
+          : t("workspace.landing.getStarted")}
       </h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {modules.map((moduleKey, i) => {

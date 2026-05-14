@@ -3916,5 +3916,14 @@
   "admin.aiCoach.model": "Modello",
   "admin.aiCoach.description": "Descrizione",
   "admin.aiCoach.mainPrompt": "Prompt principale",
-  "public.coach.rowiCoach": "Rowi Coach"
+  "public.coach.rowiCoach": "Rowi Coach",
+  "workspace.empty.title": "Inizia il tuo progetto",
+  "workspace.empty.description": "Importa o invita membri per attivare tutti i moduli del workspace.",
+  "workspace.empty.uploadTitle": "Importa da CSV",
+  "workspace.empty.uploadDesc": "Carica un file con la tua squadra e i loro punteggi SEI. Con 20+ membri si crea un benchmark automaticamente.",
+  "workspace.empty.uploadCta": "Carica CSV",
+  "workspace.empty.inviteTitle": "Invita uno alla volta",
+  "workspace.empty.inviteDesc": "Invia un invito via email assegnando un ruolo (Member, Client, Coach o Mentor).",
+  "workspace.empty.inviteCta": "Invia invito",
+  "workspace.empty.exploreModules": "Esplora i moduli disponibili"
 }

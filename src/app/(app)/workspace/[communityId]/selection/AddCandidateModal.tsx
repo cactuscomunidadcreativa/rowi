@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, UserPlus, X } from "lucide-react";
+import { Loader2, UserPlus, X, Sparkles, History } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -58,6 +58,85 @@ export function AddCandidateModal({
     overall4: "",
   });
   const [saving, setSaving] = useState(false);
+  const [lookup, setLookup] = useState<{
+    found: boolean;
+    user: { id: string; name: string | null; email: string | null; sameTenant: boolean } | null;
+    members: Array<{
+      id: string;
+      name: string;
+      country: string | null;
+      brainStyle: string | null;
+      role: string | null;
+      community: { id: string; name: string; workspaceType: string | null } | null;
+      createdAt: string;
+    }>;
+    latestSnapshot: Record<string, number | string | null> | null;
+    affinitySnapshotsCount: number;
+  } | null>(null);
+  const [looking, setLooking] = useState(false);
+  const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce the email-based people lookup so we don't hammer the API on
+  // every keystroke.
+  useEffect(() => {
+    if (lookupTimer.current) clearTimeout(lookupTimer.current);
+    const e = email.trim().toLowerCase();
+    if (!e.includes("@")) {
+      setLookup(null);
+      setLooking(false);
+      return;
+    }
+    setLooking(true);
+    lookupTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/people/lookup?email=${encodeURIComponent(e)}`,
+        );
+        const data = await res.json();
+        setLookup(data.ok ? data : null);
+      } catch {
+        setLookup(null);
+      } finally {
+        setLooking(false);
+      }
+    }, 400);
+    return () => {
+      if (lookupTimer.current) clearTimeout(lookupTimer.current);
+    };
+  }, [email]);
+
+  function applyLookup() {
+    if (!lookup) return;
+    // Fill identity from user or latest community member
+    const firstMember = lookup.members[0];
+    if (lookup.user?.name && !firstName && !lastName) {
+      const parts = lookup.user.name.split(" ");
+      setFirstName(parts[0] || "");
+      setLastName(parts.slice(1).join(" "));
+    }
+    if (firstMember) {
+      if (!country && firstMember.country) setCountry(firstMember.country);
+      if (!brainStyle && firstMember.brainStyle)
+        setBrainStyle(firstMember.brainStyle);
+      if (!jobRole && firstMember.role) setJobRole(firstMember.role);
+    }
+    // Fill SEI from latest snapshot
+    if (lookup.latestSnapshot) {
+      const snap = lookup.latestSnapshot;
+      const next: Record<SEIKey, string> = { ...sei };
+      for (const k of Object.keys(next) as SEIKey[]) {
+        const v = snap[k];
+        if (v != null && v !== "") next[k] = String(v);
+      }
+      setSei(next);
+      if (!brainStyle && typeof snap.brainStyle === "string") {
+        setBrainStyle(snap.brainStyle);
+      }
+    }
+    toast.success(
+      t("selection.candidate.lookup.applied", "History applied to the form"),
+    );
+  }
 
   function reset() {
     setFirstName("");
@@ -208,8 +287,11 @@ export function AddCandidateModal({
               </div>
 
               <div>
-                <label className="block text-xs font-medium mb-1">
+                <label className="block text-xs font-medium mb-1 flex items-center gap-2">
                   {t("selection.candidate.email", "Email")}
+                  {looking && (
+                    <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                  )}
                 </label>
                 <input
                   type="email"
@@ -222,6 +304,85 @@ export function AddCandidateModal({
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[var(--rowi-g2)]"
                 />
               </div>
+
+              {/* History banner: surface existing records for this email */}
+              {lookup?.found && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-300/40 dark:border-violet-700/40 rounded-xl p-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center flex-shrink-0">
+                      <History className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-violet-900 dark:text-violet-200">
+                        {t(
+                          "selection.candidate.lookup.foundTitle",
+                          "We found history for this person",
+                        )}
+                      </p>
+                      <div className="text-xs text-violet-800 dark:text-violet-300 mt-1 space-y-0.5">
+                        {lookup.user && (
+                          <div>
+                            ·{" "}
+                            {t(
+                              "selection.candidate.lookup.hasAccount",
+                              "Has a Rowi account",
+                            )}
+                            {lookup.user.name && ` (${lookup.user.name})`}
+                          </div>
+                        )}
+                        {lookup.members.length > 0 && (
+                          <div>
+                            ·{" "}
+                            {lookup.members.length}{" "}
+                            {t(
+                              "selection.candidate.lookup.workspaceMatches",
+                              "workspace match(es)",
+                            )}
+                            : {lookup.members.slice(0, 2).map((m) => m.community?.name).filter(Boolean).join(", ")}
+                            {lookup.members.length > 2 && " …"}
+                          </div>
+                        )}
+                        {lookup.latestSnapshot && (
+                          <div>
+                            ·{" "}
+                            {t(
+                              "selection.candidate.lookup.hasSEI",
+                              "Has SEI snapshot",
+                            )}{" "}
+                            (Overall{" "}
+                            {lookup.latestSnapshot.overall4 ?? "—"})
+                          </div>
+                        )}
+                        {lookup.affinitySnapshotsCount > 0 && (
+                          <div>
+                            ·{" "}
+                            {lookup.affinitySnapshotsCount}{" "}
+                            {t(
+                              "selection.candidate.lookup.affinitySnapshots",
+                              "affinity snapshot(s)",
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={applyLookup}
+                        className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:opacity-90 transition-opacity"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        {t(
+                          "selection.candidate.lookup.useExisting",
+                          "Use existing data",
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <div className="grid grid-cols-3 gap-3">
                 <div>

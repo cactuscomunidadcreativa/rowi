@@ -4392,5 +4392,12 @@
   "org.countries.empty": "Ancora nessun dato geografico.",
   "org.superadminCta.title": "Sei SuperAdmin",
   "org.superadminCta.subtitle": "Questo è solo il tuo tenant. Vuoi vedere l'intera piattaforma?",
-  "org.superadminCta.cta": "Vai all'admin globale"
+  "org.superadminCta.cta": "Vai all'admin globale",
+  "selection.candidate.lookup.applied": "Cronologia applicata al modulo",
+  "selection.candidate.lookup.foundTitle": "Abbiamo trovato cronologia per questa persona",
+  "selection.candidate.lookup.hasAccount": "Ha un account Rowi",
+  "selection.candidate.lookup.workspaceMatches": "corrispondenza(e) in workspace",
+  "selection.candidate.lookup.hasSEI": "Ha snapshot SEI",
+  "selection.candidate.lookup.affinitySnapshots": "snapshot di affinità",
+  "selection.candidate.lookup.useExisting": "Usa dati esistenti"
 }

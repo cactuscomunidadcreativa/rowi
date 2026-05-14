@@ -4392,5 +4392,12 @@
   "org.countries.empty": "Sin datos geográficos todavía.",
   "org.superadminCta.title": "Eres SuperAdmin",
   "org.superadminCta.subtitle": "Esto es solo tu tenant. ¿Quieres ver toda la plataforma?",
-  "org.superadminCta.cta": "Ir al admin global"
+  "org.superadminCta.cta": "Ir al admin global",
+  "selection.candidate.lookup.applied": "Historial aplicado al formulario",
+  "selection.candidate.lookup.foundTitle": "Encontramos historial para esta persona",
+  "selection.candidate.lookup.hasAccount": "Tiene cuenta Rowi",
+  "selection.candidate.lookup.workspaceMatches": "coincidencia(s) en workspaces",
+  "selection.candidate.lookup.hasSEI": "Tiene snapshot SEI",
+  "selection.candidate.lookup.affinitySnapshots": "snapshot(s) de afinidad",
+  "selection.candidate.lookup.useExisting": "Usar datos existentes"
 }

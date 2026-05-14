@@ -4465,5 +4465,20 @@
   "family.relations.consent.pending": "In attesa",
   "family.relations.consent.not_required": "Senza account",
   "family.relations.confirmDeleteTitle": "Elimina legame",
-  "family.relations.confirmDeleteMessage": "Rimuove il legame. L'altra persona non lo vedrà più dal suo lato."
+  "family.relations.confirmDeleteMessage": "Rimuove il legame. L'altra persona non lo vedrà più dal suo lato.",
+  "team.title": "Il mio team",
+  "team.subtitle.manager": "Report diretti che salgono fino a te, raggruppati per tenant.",
+  "team.subtitle.empty": "Non hai ancora report diretti assegnati.",
+  "team.loadError": "Errore nel caricamento del team",
+  "team.noProfile.title": "Non sei ancora dipendente di nessuna organizzazione",
+  "team.noProfile.body": "Il modulo /team raggruppa le persone che riportano a te all'interno di un tenant. Perché qualcosa compaia, un admin deve prima impostarti come manager in HR.",
+  "team.empty.title": "Nessun report diretto al momento",
+  "team.empty.body": "Se ti aspetti dei report, chiedi all'admin HR di impostarti come loro manager.",
+  "team.empty.profilesLabel": "Sei dipendente in:",
+  "team.exploreWorkspaces": "Esplora workspace di team",
+  "team.noTenant": "Nessun tenant assegnato",
+  "team.unknownRole": "Ruolo non specificato",
+  "team.reportSingular": "report diretto",
+  "team.reportPlural": "report diretti",
+  "team.since": "Dal"
 }

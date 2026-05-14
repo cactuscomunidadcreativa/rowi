@@ -4465,5 +4465,20 @@
   "family.relations.consent.pending": "Pending",
   "family.relations.consent.not_required": "No account",
   "family.relations.confirmDeleteTitle": "Delete relation",
-  "family.relations.confirmDeleteMessage": "This removes the link. The other person will no longer see it on their side."
+  "family.relations.confirmDeleteMessage": "This removes the link. The other person will no longer see it on their side.",
+  "team.title": "My team",
+  "team.subtitle.manager": "Direct reports rolling up to you, grouped by tenant.",
+  "team.subtitle.empty": "You don't have any direct reports assigned yet.",
+  "team.loadError": "Could not load team",
+  "team.noProfile.title": "You're not yet an employee of any organization",
+  "team.noProfile.body": "The /team module groups people who report to you inside a tenant. For anything to show up, an admin must first assign you as manager in HR.",
+  "team.empty.title": "No direct reports yet",
+  "team.empty.body": "If you expect reports, ask your HR admin to set you as their manager.",
+  "team.empty.profilesLabel": "You're an employee at:",
+  "team.exploreWorkspaces": "Explore team workspaces",
+  "team.noTenant": "No tenant assigned",
+  "team.unknownRole": "Role not specified",
+  "team.reportSingular": "direct report",
+  "team.reportPlural": "direct reports",
+  "team.since": "Since"
 }

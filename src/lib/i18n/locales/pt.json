@@ -4465,5 +4465,20 @@
   "family.relations.consent.pending": "Pendente",
   "family.relations.consent.not_required": "Sem conta",
   "family.relations.confirmDeleteTitle": "Excluir vínculo",
-  "family.relations.confirmDeleteMessage": "Isso remove o vínculo. A outra pessoa deixará de vê-lo do lado dela."
+  "family.relations.confirmDeleteMessage": "Isso remove o vínculo. A outra pessoa deixará de vê-lo do lado dela.",
+  "team.title": "Minha equipe",
+  "team.subtitle.manager": "Reportes diretos que sobem até você, agrupados por tenant.",
+  "team.subtitle.empty": "Você ainda não tem reportes diretos atribuídos.",
+  "team.loadError": "Erro ao carregar equipe",
+  "team.noProfile.title": "Você ainda não é funcionário de nenhuma organização",
+  "team.noProfile.body": "O módulo /team agrupa pessoas que se reportam a você dentro de um tenant. Para algo aparecer, um admin precisa primeiro definir você como gestor em RH.",
+  "team.empty.title": "Sem reportes diretos por enquanto",
+  "team.empty.body": "Se você espera reportes, peça ao admin de RH para configurá-lo como gestor deles.",
+  "team.empty.profilesLabel": "Você é funcionário em:",
+  "team.exploreWorkspaces": "Explorar workspaces de equipe",
+  "team.noTenant": "Sem tenant atribuído",
+  "team.unknownRole": "Cargo não especificado",
+  "team.reportSingular": "reporte direto",
+  "team.reportPlural": "reportes diretos",
+  "team.since": "Desde"
 }

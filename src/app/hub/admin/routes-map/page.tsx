@@ -74,7 +74,7 @@ export default function RoutesMapPage() {
         { href: "/coaching", label: "/coaching", description: "→ /workspace?type=COACHING", icon: Bot },
         { href: "/clients", label: "/clients", description: "→ /workspace?type=CONSULTING", icon: Briefcase },
         { href: "/hr", label: "/hr", description: "→ /workspace?type=HR_COHORT", icon: Building2 },
-        { href: "/team", label: "/team", description: "→ /workspace?type=TEAM_UNIT", icon: Users },
+        { href: "/team", label: "/team", description: "Vista de manager con reportes directos", icon: Users },
         { href: "/reports", label: "/reports", description: "→ /hub/admin", icon: BarChart3 },
         { href: "/finance", label: "/finance", description: "→ /hub/admin/accounting/accounts", icon: BarChart3 },
       ],

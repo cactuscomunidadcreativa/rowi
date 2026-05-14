@@ -4407,5 +4407,13 @@
   "org.communities.title": "Comunidades",
   "org.affinity.title": "Afinidad cerebral",
   "org.affinity.profiles": "perfiles",
-  "org.affinity.snapshots": "snapshots"
+  "org.affinity.snapshots": "snapshots",
+  "account.type.free": "Free",
+  "account.type.pro": "Pro",
+  "account.type.admin": "Admin",
+  "account.type.superadmin": "SuperAdmin",
+  "account.type.description.free": "Cuenta personal — explora EQ, ECO y comunidad",
+  "account.type.description.pro": "Cuenta profesional — gestionas workspaces de coaching, consultoría, RRHH o mentoría",
+  "account.type.description.admin": "Admin de organización — gestionas un tenant / hub / superhub completo",
+  "account.type.description.superadmin": "SuperAdmin de la plataforma — acceso global a todo Rowi"
 }

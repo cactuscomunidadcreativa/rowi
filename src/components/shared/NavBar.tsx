@@ -684,6 +684,18 @@ export default function NavBar() {
                 <span className="hidden xl:inline text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
                   {userName}
                 </span>
+                {(() => {
+                  const meta = (data?.user as { accountTypeMeta?: { gradient: string; fallback: string } } | undefined)?.accountTypeMeta;
+                  if (!meta) return null;
+                  return (
+                    <span
+                      className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-gradient-to-r ${meta.gradient}`}
+                      title={t.currentContext}
+                    >
+                      {meta.fallback}
+                    </span>
+                  );
+                })()}
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
               </button>
 

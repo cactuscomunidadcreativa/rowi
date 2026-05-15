@@ -82,6 +82,21 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
+/**
+ * Write the shared account-context cookie so server-side filters
+ * (/api/org/summary, /api/team/summary) see the same active scope
+ * the user picked here. Mirrors AccountContextChip.writeActiveContextId.
+ */
+function writeCookieSafe(name: string, value: string) {
+  if (typeof document === "undefined") return;
+  const maxAge = 60 * 60 * 24 * 30;
+  const secure =
+    typeof window !== "undefined" && window.location?.protocol === "https:"
+      ? "; secure"
+      : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; samesite=lax${secure}`;
+}
+
 /* =========================================================
    🏠 PROVIDER
 ========================================================= */
@@ -128,6 +143,9 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
   const switchContext = useCallback((type: ContextType, id: string | null) => {
     if (type === "personal") {
       setCurrentContext(defaultContext);
+      // Personal clears the account-axis cookie so /org and /team
+      // fall back to the broader access set.
+      writeCookieSafe("rowi_active_context", "personal:self");
       return;
     }
 
@@ -142,6 +160,19 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
         name: context.name,
         role: context.role,
       });
+      // Bridge to the account-context cookie used by /api/org/summary
+      // and /api/team/summary. We translate the org-level kind into
+      // the matching account-context kind:
+      //   tenant       → tenant_primary:<tenantId>
+      //   community    → workspace_pro:<communityId>
+      //   organization → tenant_primary:<linked tenant if discoverable> (handled server-side)
+      // For superhub/hub picks there's no clean account-context equivalent
+      // (those are above-tenant), so we skip the cookie write and let the
+      // existing access set decide.
+      let cookieValue: string | null = null;
+      if (type === "tenant") cookieValue = `tenant_primary:${context.id}`;
+      else if (type === "community") cookieValue = `workspace_pro:${context.id}`;
+      if (cookieValue) writeCookieSafe("rowi_active_context", cookieValue);
     }
   }, [data]);
 

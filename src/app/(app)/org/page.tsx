@@ -281,6 +281,12 @@ export default function OrganizationHubPage() {
                 )}
               </p>
             </div>
+            <Link
+              href="/hub/admin/community-members/orphans"
+              className="text-xs font-medium text-amber-700 dark:text-amber-300 hover:underline whitespace-nowrap"
+            >
+              {t("org.workspaces.orphanAction", "Resolver →")}
+            </Link>
           </div>
         )}
         {s.workspaces.recent.length === 0 ? (

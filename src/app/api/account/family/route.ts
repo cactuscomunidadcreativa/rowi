@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
 
@@ -190,6 +191,25 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    // Best-effort notification to the related user (if any).
+    // Doesn't block the response — fire-and-forget after we already
+    // have a 200 ready.
+    const recipientEmail =
+      created.relatedUser?.email || created.relatedEmail || null;
+    if (recipientEmail && created.consentStatus === "pending") {
+      const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/family`;
+      sendContextNotification({
+        to: recipientEmail,
+        kind: "family.requested",
+        actorName: auth.name,
+        detail: created.relationship,
+        ctaUrl,
+        locale: "es",
+      }).catch((e) => {
+        console.warn("⚠️ Could not send family.requested notification:", e);
+      });
+    }
 
     return NextResponse.json({ ok: true, relation: created });
   } catch (err: any) {

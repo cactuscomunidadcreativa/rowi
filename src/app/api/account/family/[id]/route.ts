@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
 
@@ -153,6 +154,32 @@ export async function PATCH(
         updatedAt: true,
       },
     });
+
+    // When the related user accepts or declines, notify the owner.
+    if (
+      isRelated &&
+      (data.consentStatus === "accepted" || data.consentStatus === "declined") &&
+      relation.owner?.email
+    ) {
+      const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/family`;
+      sendContextNotification({
+        to: relation.owner.email,
+        kind:
+          data.consentStatus === "accepted"
+            ? "family.accepted"
+            : "family.declined",
+        actorName: auth.name,
+        detail: updated.relationship,
+        ctaUrl,
+        locale: "es",
+      }).catch((e) => {
+        console.warn(
+          "⚠️ Could not send family consent notification:",
+          e,
+        );
+      });
+    }
+
     return NextResponse.json({ ok: true, relation: updated });
   } catch (err: any) {
     console.error("❌ Error PATCH /api/account/family/[id]:", err);

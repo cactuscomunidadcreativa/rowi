@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
 
@@ -222,6 +223,26 @@ export async function POST(req: NextRequest) {
       },
       select: ENGAGEMENT_SELECT,
     });
+    // Notify the client side if the engagement starts as "proposed".
+    // Only the user-as-client kind gets an email here — tenant/community
+    // /org clients are notified through their own admin surfaces.
+    if (
+      created.status === "proposed" &&
+      created.clientUser?.email
+    ) {
+      const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/services`;
+      sendContextNotification({
+        to: created.clientUser.email,
+        kind: "service.proposed",
+        actorName: created.provider?.name,
+        detail: created.serviceRole,
+        ctaUrl,
+        locale: "es",
+      }).catch((e) => {
+        console.warn("⚠️ Could not send service.proposed notification:", e);
+      });
+    }
+
     return NextResponse.json({ ok: true, engagement: created });
   } catch (err: any) {
     console.error("❌ Error POST /api/account/services:", err);

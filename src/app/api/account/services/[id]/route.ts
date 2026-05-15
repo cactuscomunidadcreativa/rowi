@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
 
@@ -158,6 +159,56 @@ export async function PATCH(
       data,
       select: ENGAGEMENT_SELECT,
     });
+
+    // Notification policy:
+    //   - Client accepts (proposed→active)  → notify provider
+    //   - Client ends    (any→ended)        → notify provider
+    //   - Provider ends  (any→ended)        → notify client user (if 1:1)
+    if (data.status === "active" && isClientUser) {
+      const provider = await prisma.user.findUnique({
+        where: { id: engagement.providerId },
+        select: { email: true },
+      });
+      if (provider?.email) {
+        const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/services`;
+        sendContextNotification({
+          to: provider.email,
+          kind: "service.accepted",
+          actorName: auth.name,
+          detail: updated.serviceRole,
+          ctaUrl,
+          locale: "es",
+        }).catch((e) => {
+          console.warn("⚠️ Could not send service.accepted notification:", e);
+        });
+      }
+    }
+    if (data.status === "ended") {
+      const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/services`;
+      // Notify the other side.
+      const otherSideUserId = isProvider
+        ? engagement.clientUserId
+        : engagement.providerId;
+      if (otherSideUserId) {
+        const otherUser = await prisma.user.findUnique({
+          where: { id: otherSideUserId },
+          select: { email: true },
+        });
+        if (otherUser?.email) {
+          sendContextNotification({
+            to: otherUser.email,
+            kind: "service.ended",
+            actorName: auth.name,
+            detail: updated.serviceRole,
+            ctaUrl,
+            locale: "es",
+          }).catch((e) => {
+            console.warn("⚠️ Could not send service.ended notification:", e);
+          });
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true, engagement: updated });
   } catch (err: any) {
     console.error("❌ Error PATCH /api/account/services/[id]:", err);

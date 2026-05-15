@@ -1,7 +1,10 @@
 // src/app/api/admin/permissions/features/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import {
+  requireAdminWithScope,
+  requireSuperAdmin,
+} from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🎛️ API de Permisos de Features por Perfil
@@ -44,7 +47,10 @@ interface FeaturePermission {
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    // Reading the permission catalog is allowed at any admin scope.
+    // Mutating it (POST/PUT/DELETE) below stays SuperAdmin-only since
+    // role permissions are platform-level configuration.
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);

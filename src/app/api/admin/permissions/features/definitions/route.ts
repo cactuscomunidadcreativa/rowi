@@ -1,7 +1,10 @@
 // src/app/api/admin/permissions/features/definitions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import {
+  requireAdminWithScope,
+  requireSuperAdmin,
+} from "@/core/auth/requireAdmin";
 
 /* =========================================================
    📋 API de Definiciones de Features
@@ -15,7 +18,9 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    // Catalog read is open to all admin scopes — the catalog itself is
+    // platform-level reference data. Mutations stay SuperAdmin-only.
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);

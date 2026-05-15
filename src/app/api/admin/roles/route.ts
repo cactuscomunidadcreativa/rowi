@@ -1,20 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import {
+  requireAdminWithScope,
+  requireSuperAdmin,
+} from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const preferredRegion = "iad1";
 
 /* =========================================================
-   🔍 GET — Listar todos los roles
+   🔍 GET — Listar roles (scope-aware)
+   Tenant admins ven roles del propio tenant; hub/superhub admins
+   ven roles a su nivel y por debajo; rowiverse ve todo.
+   Mutaciones (POST/PUT/DELETE) siguen siendo SuperAdmin.
 ========================================================= */
 export async function GET() {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
+    const allowed = await tenantIdsForScope(auth.scope);
+    const where =
+      allowed === null
+        ? {}
+        : {
+            OR: [
+              { tenantId: { in: allowed } },
+              // Roles scoped at the hub level whose tenant is in our set.
+              { hub: { tenantId: { in: allowed } } },
+            ],
+          };
+
     const roles = await prisma.roleDynamic.findMany({
+      where,
       include: {
         hub: { select: { id: true, name: true } },
         tenant: { select: { id: true, name: true } },

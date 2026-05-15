@@ -282,17 +282,53 @@ export async function POST(req: NextRequest) {
     const basePrompt =
       agent.prompt ||
       `Eres Rowi, un coach emocional y cognitivo. Hablas principalmente en ${langName}. Responde de forma clara, empática y aplicada al contexto de la persona.`;
-    const systemPrompt = basePrompt + langInstruction;
+
+    // User identity + context go in the SYSTEM prompt — not in every user
+    // turn. Previously this lived inside the user message as
+    // "Usuario: Eduardo\n...", which made the model treat each turn as
+    // a fresh introduction and greet by name every reply.
+    const identityNote = auth?.id && auth.id !== "hub-control-user"
+      ? `\n\nUser context: name="${userName}", intent="${slug}", access="${accessLevel}", locale="${locale}". This is an ongoing conversation — do NOT greet the user with "Hola ${userName}" on every reply. Address them by name only when it's natural (rarely), not as a default opener.`
+      : "";
+    const systemPrompt = basePrompt + langInstruction + identityNote;
+
+    // Load recent conversation history so the model sees turn N+1, not a
+    // fresh greeting. Keep the window short (last 10 messages) to stay
+    // within token budgets and avoid amplifying old context drift.
+    let priorMessages: OpenAI.ChatCompletionMessageParam[] = [];
+    if (auth?.id && auth.id !== "hub-control-user") {
+      try {
+        const recent = await prisma.rowiChat.findMany({
+          where: {
+            userId: auth.id,
+            agentId: agent.id,
+            intent: slug,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: { role: true, content: true },
+        });
+        priorMessages = recent
+          .reverse()
+          .filter(
+            (m) =>
+              (m.role === "user" || m.role === "assistant") &&
+              typeof m.content === "string" &&
+              m.content.trim().length > 0,
+          )
+          .map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          }));
+      } catch (historyErr) {
+        console.warn("⚠️ Could not load prior rowi_chat history:", historyErr);
+      }
+    }
 
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      {
-        role: "user",
-        content: `Usuario: ${userName}\nContexto: intent=${slug}, nivel=${accessLevel}, locale=${locale}\n\nMensaje:\n${userContent}`,
-      },
+      { role: "system", content: systemPrompt },
+      ...priorMessages,
+      { role: "user", content: userContent },
     ];
 
     /* =========================================================

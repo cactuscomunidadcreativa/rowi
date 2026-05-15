@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Handshake, Plus, Loader2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Handshake, Plus, Loader2, X, Search, Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
@@ -69,6 +69,14 @@ export default function ServicesSettingsPage() {
   const [serviceRole, setServiceRole] = useState<string>("coach");
   const [clientKind, setClientKind] = useState<ClientKind>("user");
   const [clientRef, setClientRef] = useState("");
+  const [selectedClientLabel, setClientLabel] = useState("");
+  const [clientQuery, setClientQuery] = useState("");
+  const [candidates, setCandidates] = useState<
+    Array<{ id: string; label: string; hint?: string }>
+  >([]);
+  const [searching, setSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [scope, setScope] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -99,6 +107,67 @@ export default function ServicesSettingsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  // Debounced lookup: when the user types in the client search box, fire
+  // a request after a short pause and populate the suggestions list.
+  useEffect(() => {
+    if (!showForm) return;
+    if (clientQuery.trim().length < 2) {
+      setCandidates([]);
+      return;
+    }
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(
+          `/api/account/services/lookup?kind=${encodeURIComponent(clientKind)}&q=${encodeURIComponent(clientQuery.trim())}`,
+          { cache: "no-store" },
+        );
+        const json = await res.json();
+        if (!cancelled && json.ok) {
+          setCandidates(json.candidates || []);
+          setShowSuggestions(true);
+        }
+      } catch {
+        if (!cancelled) setCandidates([]);
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [clientQuery, clientKind, showForm]);
+
+  // Close suggestions on click outside.
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function pickCandidate(c: { id: string; label: string; hint?: string }) {
+    setClientRef(c.id);
+    setClientLabel(c.label);
+    setClientQuery(c.label);
+    setShowSuggestions(false);
+  }
+
+  function resetClientPicker() {
+    setClientRef("");
+    setClientLabel("");
+    setClientQuery("");
+    setCandidates([]);
+  }
 
   async function createEngagement() {
     if (!clientRef.trim()) {
@@ -131,7 +200,7 @@ export default function ServicesSettingsPage() {
         return;
       }
       setShowForm(false);
-      setClientRef("");
+      resetClientPicker();
       setScope("");
       setHourlyRate("");
       load();
@@ -180,7 +249,7 @@ export default function ServicesSettingsPage() {
     }
   }
 
-  function clientLabel(e: Engagement) {
+  function engagementClientLabel(e: Engagement) {
     return (
       e.clientUser?.name ||
       e.clientUser?.email ||
@@ -254,7 +323,10 @@ export default function ServicesSettingsPage() {
             </select>
             <select
               value={clientKind}
-              onChange={(e) => setClientKind(e.target.value as ClientKind)}
+              onChange={(e) => {
+                setClientKind(e.target.value as ClientKind);
+                resetClientPicker();
+              }}
               className="rounded-md border px-3 py-2 bg-transparent"
             >
               {CLIENT_KINDS.map((k) => (
@@ -264,13 +336,77 @@ export default function ServicesSettingsPage() {
               ))}
             </select>
           </div>
-          <input
-            type="text"
-            className="w-full rounded-md border px-3 py-2 bg-transparent text-sm"
-            placeholder={t("services.form.clientIdPlaceholder", "ID del cliente")}
-            value={clientRef}
-            onChange={(e) => setClientRef(e.target.value)}
-          />
+
+          {/* Client picker */}
+          <div className="relative" ref={searchRef}>
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                className="w-full rounded-md border pl-9 pr-9 py-2 bg-transparent text-sm"
+                placeholder={t(
+                  "services.form.clientSearchPlaceholder",
+                  "Busca por nombre o email...",
+                )}
+                value={clientQuery}
+                onChange={(e) => {
+                  setClientQuery(e.target.value);
+                  if (clientRef) {
+                    // Typing again clears the previous selection.
+                    setClientRef("");
+                    setClientLabel("");
+                  }
+                }}
+                onFocus={() => candidates.length > 0 && setShowSuggestions(true)}
+              />
+              {clientRef && (
+                <button
+                  type="button"
+                  onClick={resetClientPicker}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  title={t("services.form.clearPick", "Limpiar selección")}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {clientRef && (
+              <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                {t("services.form.selected", "Seleccionado:")} {selectedClientLabel}
+              </p>
+            )}
+            {showSuggestions && candidates.length > 0 && !clientRef && (
+              <div className="absolute z-10 mt-1 left-0 right-0 max-h-60 overflow-y-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-md shadow-lg">
+                {candidates.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => pickCandidate(c)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 border-b border-gray-100 dark:border-zinc-800 last:border-0"
+                  >
+                    <div className="font-medium truncate">{c.label}</div>
+                    {c.hint && (
+                      <div className="text-xs rowi-muted truncate">
+                        {c.hint}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            {searching && (
+              <p className="mt-1 text-xs rowi-muted flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                {t("services.form.searching", "Buscando...")}
+              </p>
+            )}
+            {!searching && clientQuery.length >= 2 && candidates.length === 0 && !clientRef && (
+              <p className="mt-1 text-xs rowi-muted">
+                {t("services.form.noResults", "Sin resultados — verifica permisos sobre el cliente")}
+              </p>
+            )}
+          </div>
           <textarea
             className="w-full rounded-md border px-3 py-2 bg-transparent text-sm"
             placeholder={t("services.form.scopePlaceholder", "Scope / descripción")}
@@ -348,7 +484,7 @@ export default function ServicesSettingsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium truncate">
-                          {clientLabel(e)}
+                          {engagementClientLabel(e)}
                         </span>
                         <span className="rowi-muted text-xs">
                           · {roleLabel(e.serviceRole)}

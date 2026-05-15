@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/core/prisma";
 import { requireAuth } from "@/core/auth/requireAdmin";
+import {
+  ACTIVE_CONTEXT_COOKIE,
+  resolveContextTenantId,
+} from "@/lib/account/contexts";
 
 export const preferredRegion = "iad1";
 
@@ -14,7 +19,21 @@ export async function GET() {
       where: { id: userId },
       select: { primaryTenantId: true },
     });
-    const tenantId = user?.primaryTenantId;
+    let tenantId = user?.primaryTenantId;
+
+    // Active-context cookie can narrow to a different tenant if the
+    // user picked one in the NavBar switcher. Falls back to primary
+    // tenant if the cookie doesn't resolve or isn't set.
+    const cookieStore = await cookies();
+    const cookieValue = cookieStore.get(ACTIVE_CONTEXT_COOKIE)?.value;
+    let activeContextFilter: { tenantId: string } | null = null;
+    if (cookieValue) {
+      const resolved = await resolveContextTenantId(cookieValue);
+      if (resolved) {
+        tenantId = resolved;
+        activeContextFilter = { tenantId: resolved };
+      }
+    }
 
     const tenantFilter = tenantId ? { tenantId } : {};
     const employeeTenantFilter = tenantId
@@ -89,6 +108,7 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
+      activeContextFilter,
       summary: {
         employees: { total: employeesTotal, active: employeesActive },
         leaves: { pending: pendingLeaves },

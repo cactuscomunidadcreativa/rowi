@@ -1,15 +1,22 @@
 // src/app/api/workspaces/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { listUserWorkspaces, PROFESSIONAL_ROLES } from "@/lib/workspace/permissions";
 import { getTemplate } from "@/lib/workspace/templates";
+import {
+  ACTIVE_CONTEXT_COOKIE,
+  resolveContextTenantId,
+} from "@/lib/account/contexts";
 
 export const runtime = "nodejs";
 
 /* =========================================================
    GET /api/workspaces
    Lista los workspaces del usuario (filtrables por type).
+   Respeta la cookie de contexto activo: si apunta a un tenant,
+   filtra los workspaces a sólo los de ese tenant.
 ========================================================= */
 export async function GET(req: NextRequest) {
   try {
@@ -22,12 +29,31 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get("type") || undefined;
     const includeArchived = searchParams.get("includeArchived") === "1";
 
-    const workspaces = await listUserWorkspaces(token.sub, {
+    let workspaces = await listUserWorkspaces(token.sub, {
       workspaceType: type,
       includeArchived,
     });
 
-    return NextResponse.json({ workspaces });
+    // Narrow by active context if the cookie resolves to a tenant.
+    const cookieStore = await cookies();
+    const cookieValue = cookieStore.get(ACTIVE_CONTEXT_COOKIE)?.value;
+    let activeContextFilter: { tenantId: string } | null = null;
+    if (cookieValue) {
+      const tenantId = await resolveContextTenantId(cookieValue);
+      if (tenantId) {
+        const before = workspaces.length;
+        workspaces = workspaces.filter(
+          (w: any) => w.tenantId === tenantId,
+        );
+        // Only flag the filter when it actually changed the result —
+        // hides the badge on personal/family contexts that don't narrow.
+        if (workspaces.length !== before) {
+          activeContextFilter = { tenantId };
+        }
+      }
+    }
+
+    return NextResponse.json({ workspaces, activeContextFilter });
   } catch (err: any) {
     console.error("GET /api/workspaces error:", err);
     return NextResponse.json(

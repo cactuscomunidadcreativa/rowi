@@ -235,3 +235,31 @@ export async function tenantScopedPaginatedListHandler(
     );
   }
 }
+
+/**
+ * Resolves an admin scope to the set of tenantIds it can administer.
+ * Returns null for rowiverse / SuperAdmin scope (no narrowing — they
+ * can see everything). Use the null sentinel to skip the where clause
+ * entirely instead of falling back to "no results".
+ */
+export async function tenantIdsForScope(
+  scope: AdminScope,
+): Promise<string[] | null> {
+  if (scope.type === "rowiverse") return null;
+  if (scope.type === "tenant") return scope.id ? [scope.id] : [];
+  if (scope.type === "hub") {
+    const hub = await prisma.hub.findUnique({
+      where: { id: scope.id! },
+      select: { tenantId: true },
+    });
+    return hub?.tenantId ? [hub.tenantId] : [];
+  }
+  if (scope.type === "superhub") {
+    const sh = await prisma.superHub.findUnique({
+      where: { id: scope.id! },
+      select: { tenants: { select: { id: true } } },
+    });
+    return (sh?.tenants || []).map((t) => t.id);
+  }
+  return [];
+}

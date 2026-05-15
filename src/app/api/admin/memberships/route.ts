@@ -1,19 +1,27 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { TenantRole } from "@prisma/client";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const runtime = "nodejs";
 
 /* =========================================================
-   🧩 GET — Listar todas las membresías
+   🧩 GET — Listar membresías (scope-aware: tenant admins ven sólo sus tenants)
 ========================================================= */
 export async function GET() {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
+    const allowed = await tenantIdsForScope(auth.scope);
+    const where =
+      allowed === null
+        ? undefined
+        : { tenantId: { in: allowed } };
+
     const memberships = await prisma.membership.findMany({
+      ...(where ? { where } : {}),
       include: {
         user: { select: { id: true, name: true, email: true } },
         tenant: { select: { id: true, name: true, slug: true } },
@@ -37,7 +45,7 @@ export async function GET() {
 ========================================================= */
 export async function POST(req: Request) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const data = await req.json();
@@ -46,6 +54,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { ok: false, error: "userId y tenantId son requeridos" },
         { status: 400 }
+      );
+    }
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (allowed !== null && !allowed.includes(data.tenantId)) {
+      return NextResponse.json(
+        { ok: false, error: "tenantId fuera de tu scope de admin" },
+        { status: 403 }
       );
     }
 
@@ -84,7 +100,7 @@ export async function POST(req: Request) {
 ========================================================= */
 export async function PUT(req: Request) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id, ...data } = await req.json();
@@ -94,6 +110,20 @@ export async function PUT(req: Request) {
         { ok: false, error: "Falta el ID de la membresía" },
         { status: 400 }
       );
+    }
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (allowed !== null) {
+      const existing = await prisma.membership.findUnique({
+        where: { id },
+        select: { tenantId: true },
+      });
+      if (!existing || !allowed.includes(existing.tenantId)) {
+        return NextResponse.json(
+          { ok: false, error: "Membership fuera de tu scope" },
+          { status: 403 }
+        );
+      }
     }
 
     const membership = await prisma.membership.update({
@@ -130,7 +160,7 @@ export async function PUT(req: Request) {
 ========================================================= */
 export async function DELETE(req: Request) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id } = await req.json();
@@ -140,6 +170,20 @@ export async function DELETE(req: Request) {
         { ok: false, error: "Falta el ID de la membresía" },
         { status: 400 }
       );
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (allowed !== null) {
+      const existing = await prisma.membership.findUnique({
+        where: { id },
+        select: { tenantId: true },
+      });
+      if (!existing || !allowed.includes(existing.tenantId)) {
+        return NextResponse.json(
+          { ok: false, error: "Membership fuera de tu scope" },
+          { status: 403 }
+        );
+      }
+    }
 
     await prisma.membership.delete({ where: { id } });
     return NextResponse.json({ ok: true, message: "Membresía eliminada" });

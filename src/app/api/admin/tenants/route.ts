@@ -2,24 +2,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope, requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 /* =========================================================
-   🔍 GET — Listar Tenants (con relaciones)
+   🔍 GET — Listar Tenants (scope-aware)
    ---------------------------------------------------------
-   🔐 SEGURIDAD: Requiere permisos de admin
-   - SuperAdmin: ve todos los tenants
-   - Admin: solo ve su tenant
+   - rowiverse/SuperAdmin: ve todos los tenants
+   - tenant admin: ve solo su tenant
+   - hub admin: ve el tenant del hub
+   - superhub admin: ve todos los tenants del superhub
 ========================================================= */
 export async function GET() {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
-    // Filtrar según nivel de acceso
-    const where = auth.user.isSuperAdmin
-      ? {}
-      : { id: auth.user.primaryTenantId || "none" };
+    const allowed = await tenantIdsForScope(auth.scope);
+    const where = allowed === null ? {} : { id: { in: allowed } };
 
     const tenants = await prisma.tenant.findMany({
       where,

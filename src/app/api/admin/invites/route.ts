@@ -6,22 +6,26 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const dynamic = "force-dynamic";
 
 // =========================================================
-// GET — Listar todas las Invitaciones
+// GET — Listar Invitaciones (scope-aware)
 // =========================================================
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
+
+    const allowed = await tenantIdsForScope(auth.scope);
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
 
     const where: any = {};
+    if (allowed !== null) where.tenantId = { in: allowed };
 
     if (status && status !== "all") {
       // Map status to date comparison
@@ -109,7 +113,7 @@ export async function GET(req: NextRequest) {
 // =========================================================
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id } = await req.json();
@@ -119,6 +123,24 @@ export async function DELETE(req: NextRequest) {
         { ok: false, error: "Falta el ID de la invitación" },
         { status: 400 }
       );
+    }
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (allowed !== null) {
+      const existing = await prisma.inviteToken.findUnique({
+        where: { id },
+        select: { tenantId: true },
+      });
+      if (
+        !existing ||
+        !existing.tenantId ||
+        !allowed.includes(existing.tenantId)
+      ) {
+        return NextResponse.json(
+          { ok: false, error: "Invitación fuera de tu scope" },
+          { status: 403 }
+        );
+      }
     }
 
     await prisma.inviteToken.delete({ where: { id } });

@@ -1,6 +1,6 @@
 // src/app/api/admin/hubs/route.ts
 import { NextResponse } from "next/server";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -11,7 +11,7 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
  * =========================================================
  */
 export async function GET() {
-  const auth = await requireSuperAdmin();
+  const auth = await requireAdminWithScope();
   if (auth.error) return auth.error;
 
   return NextResponse.json(

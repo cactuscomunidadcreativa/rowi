@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope, requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🔧 Helper — Normalizar slug
@@ -15,14 +15,36 @@ function normSlug(s: string) {
 }
 
 /* =========================================================
-   🧠 GET → Listar todos los SuperHubs
+   🧠 GET → Listar SuperHubs (scope-aware)
+   ---------------------------------------------------------
+   - rowiverse: todos
+   - superhub admin: solo el que administra
+   - hub/tenant admin: el superhub al que su tenant pertenece (si alguno)
 ========================================================= */
 export async function GET() {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
+    let where: Record<string, unknown> = {};
+    if (auth.scope.type === "superhub") {
+      where = { id: auth.scope.id ?? undefined };
+    } else if (auth.scope.type === "tenant" && auth.scope.id) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: auth.scope.id },
+        select: { superHubId: true },
+      });
+      where = tenant?.superHubId ? { id: tenant.superHubId } : { id: "none" };
+    } else if (auth.scope.type === "hub" && auth.scope.id) {
+      const hub = await prisma.hub.findUnique({
+        where: { id: auth.scope.id },
+        select: { superHubId: true },
+      });
+      where = hub?.superHubId ? { id: hub.superHubId } : { id: "none" };
+    }
+
     const superhubs = await prisma.superHub.findMany({
+      where,
       include: {
         hubs: { select: { id: true, name: true, slug: true } },
         tenants: { select: { id: true, name: true, slug: true } },

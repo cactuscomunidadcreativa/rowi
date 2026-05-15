@@ -32,65 +32,11 @@ interface DashboardStats {
   leaderboard: { topUsers: number; totalPoints: number };
 }
 
-const t = {
-  es: {
-    title: "Gamificación",
-    subtitle: "Gestiona logros, niveles, rachas y recompensas",
-    achievements: "Achievements",
-    achievementsDesc: "Crea y gestiona logros para motivar a los usuarios",
-    levels: "Niveles",
-    levelsDesc: "Define la progresión y títulos de cada nivel",
-    streaks: "Rachas",
-    streaksDesc: "Configura multiplicadores y bonificaciones por rachas",
-    leaderboards: "Leaderboards",
-    leaderboardsDesc: "Visualiza rankings y competencias",
-    rewards: "Recompensas",
-    rewardsDesc: "Crea recompensas canjeables con puntos",
-    stats: {
-      totalAchievements: "Logros Totales",
-      usersWithAchievements: "Usuarios con Logros",
-      avgLevel: "Nivel Promedio",
-      totalRewardsClaimed: "Recompensas Canjeadas",
-      totalPointsEarned: "Puntos Totales",
-      activeStreaks: "Rachas Activas",
-    },
-    viewAll: "Ver todos",
-    loading: "Cargando...",
-  },
-  en: {
-    title: "Gamification",
-    subtitle: "Manage achievements, levels, streaks and rewards",
-    achievements: "Achievements",
-    achievementsDesc: "Create and manage achievements to motivate users",
-    levels: "Levels",
-    levelsDesc: "Define progression and titles for each level",
-    streaks: "Streaks",
-    streaksDesc: "Configure multipliers and bonuses for streaks",
-    leaderboards: "Leaderboards",
-    leaderboardsDesc: "View rankings and competitions",
-    rewards: "Rewards",
-    rewardsDesc: "Create rewards redeemable with points",
-    stats: {
-      totalAchievements: "Total Achievements",
-      usersWithAchievements: "Users with Achievements",
-      avgLevel: "Average Level",
-      totalRewardsClaimed: "Rewards Claimed",
-      totalPointsEarned: "Total Points",
-      activeStreaks: "Active Streaks",
-    },
-    viewAll: "View all",
-    loading: "Loading...",
-  },
-};
-
 export default function GamificationDashboardPage() {
   const router = useRouter();
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
-
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
 
   useEffect(() => {
     loadStats();
@@ -120,87 +66,120 @@ export default function GamificationDashboardPage() {
   const modules = [
     {
       id: "achievements",
-      title: labels.achievements,
-      description: labels.achievementsDesc,
+      title: t("admin.gamification.achievements", "Achievements"),
+      description: t(
+        "admin.gamification.achievementsDesc",
+        "Crea y gestiona logros para motivar a los usuarios",
+      ),
       icon: Trophy,
       color: "from-yellow-500 to-orange-500",
       bgColor: "bg-yellow-500/10",
       iconColor: "text-yellow-500",
       href: "/hub/admin/gamification/achievements",
       stat: stats?.achievements?.totalAchievements || 0,
-      statLabel: labels.stats.totalAchievements,
+      statLabel: t(
+        "admin.gamification.stats.totalAchievements",
+        "Logros Totales",
+      ),
     },
     {
       id: "levels",
-      title: labels.levels,
-      description: labels.levelsDesc,
+      title: t("admin.gamification.levels", "Niveles"),
+      description: t(
+        "admin.gamification.levelsDesc",
+        "Define la progresión y títulos de cada nivel",
+      ),
       icon: Crown,
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
       iconColor: "text-purple-500",
       href: "/hub/admin/gamification/levels",
       stat: stats?.levels?.totalLevels || 0,
-      statLabel: "Niveles",
+      statLabel: t("admin.gamification.levels", "Niveles"),
     },
     {
       id: "streaks",
-      title: labels.streaks,
-      description: labels.streaksDesc,
+      title: t("admin.gamification.streaks", "Rachas"),
+      description: t(
+        "admin.gamification.streaksDesc",
+        "Configura multiplicadores y bonificaciones por rachas",
+      ),
       icon: Flame,
       color: "from-orange-500 to-red-500",
       bgColor: "bg-orange-500/10",
       iconColor: "text-orange-500",
       href: "/hub/admin/gamification/streaks",
       stat: stats?.levels?.totalUsers || 0,
-      statLabel: labels.stats.activeStreaks,
+      statLabel: t("admin.gamification.stats.activeStreaks", "Rachas Activas"),
     },
     {
       id: "leaderboards",
-      title: labels.leaderboards,
-      description: labels.leaderboardsDesc,
+      title: t("admin.gamification.leaderboards", "Leaderboards"),
+      description: t(
+        "admin.gamification.leaderboardsDesc",
+        "Visualiza rankings y competencias",
+      ),
       icon: BarChart3,
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-blue-500/10",
       iconColor: "text-blue-500",
       href: "/hub/admin/gamification/leaderboards",
       stat: stats?.achievements?.usersWithAchievements || 0,
-      statLabel: labels.stats.usersWithAchievements,
+      statLabel: t(
+        "admin.gamification.stats.usersWithAchievements",
+        "Usuarios con Logros",
+      ),
     },
     {
       id: "rewards",
-      title: labels.rewards,
-      description: labels.rewardsDesc,
+      title: t("admin.gamification.rewards", "Recompensas"),
+      description: t(
+        "admin.gamification.rewardsDesc",
+        "Crea recompensas canjeables con puntos",
+      ),
       icon: Gift,
       color: "from-green-500 to-emerald-500",
       bgColor: "bg-green-500/10",
       iconColor: "text-green-500",
       href: "/hub/admin/gamification/rewards",
-      stat: 8, // TODO: Fetch from API
-      statLabel: labels.stats.totalRewardsClaimed,
+      stat: 8,
+      statLabel: t(
+        "admin.gamification.stats.totalRewardsClaimed",
+        "Recompensas Canjeadas",
+      ),
     },
   ];
 
   const quickStats = [
     {
-      label: labels.stats.totalAchievements,
+      label: t(
+        "admin.gamification.stats.totalAchievements",
+        "Logros Totales",
+      ),
       value: stats?.achievements?.totalAchievements || 0,
       icon: Trophy,
       color: "text-yellow-500",
     },
     {
-      label: labels.stats.usersWithAchievements,
+      label: t(
+        "admin.gamification.stats.usersWithAchievements",
+        "Usuarios con Logros",
+      ),
       value: stats?.achievements?.usersWithAchievements || 0,
       icon: Users,
       color: "text-blue-500",
     },
     {
-      label: labels.stats.avgLevel,
+      label: t("admin.gamification.stats.avgLevel", "Nivel Promedio"),
       value: stats?.levels?.avgLevel || 1,
       icon: TrendingUp,
       color: "text-purple-500",
     },
     {
-      label: "Nivel Máximo Alcanzado",
+      label: t(
+        "admin.gamification.stats.maxReached",
+        "Nivel Máximo Alcanzado",
+      ),
       value: stats?.levels?.maxLevelReached || 1,
       icon: Crown,
       color: "text-amber-500",
@@ -212,7 +191,7 @@ export default function GamificationDashboardPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("common.loading", "Cargando...")}</span>
         </div>
       </div>
     );
@@ -226,8 +205,15 @@ export default function GamificationDashboardPage() {
           <Trophy className="w-8 h-8 text-yellow-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
-          <p className="text-gray-500 dark:text-gray-400">{labels.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t("admin.gamification.title", "Gamificación")}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            {t(
+              "admin.gamification.subtitle",
+              "Gestiona logros, niveles, rachas y recompensas",
+            )}
+          </p>
         </div>
       </div>
 
@@ -279,14 +265,14 @@ export default function GamificationDashboardPage() {
       <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-yellow-500" />
-          Actividad Reciente
+          {t("admin.gamification.recentActivity", "Actividad Reciente")}
         </h3>
         <div className="space-y-3">
           {[
-            { user: "María G.", action: "completó", achievement: "Primera Conversación", icon: Trophy, color: "text-yellow-500" },
-            { user: "Carlos R.", action: "alcanzó", achievement: "Nivel 3: Practicante EQ", icon: Crown, color: "text-purple-500" },
-            { user: "Ana L.", action: "racha de", achievement: "7 días consecutivos", icon: Flame, color: "text-orange-500" },
-            { user: "Pedro M.", action: "canjeó", achievement: "Badge: Explorador EQ", icon: Gift, color: "text-green-500" },
+            { user: "María G.", action: t("admin.gamification.action.completed", "completó"), achievement: t("admin.gamification.demo.firstChat", "Primera Conversación"), icon: Trophy, color: "text-yellow-500" },
+            { user: "Carlos R.", action: t("admin.gamification.action.reached", "alcanzó"), achievement: t("admin.gamification.demo.level3", "Nivel 3: Practicante EQ"), icon: Crown, color: "text-purple-500" },
+            { user: "Ana L.", action: t("admin.gamification.action.streakOf", "racha de"), achievement: t("admin.gamification.demo.sevenDays", "7 días consecutivos"), icon: Flame, color: "text-orange-500" },
+            { user: "Pedro M.", action: t("admin.gamification.action.claimed", "canjeó"), achievement: t("admin.gamification.demo.eqBadge", "Badge: Explorador EQ"), icon: Gift, color: "text-green-500" },
           ].map((activity, idx) => (
             <div
               key={idx}

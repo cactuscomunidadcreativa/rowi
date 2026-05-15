@@ -79,19 +79,19 @@ const INITIAL_EDITOR: Omit<EditorState, "mode"> = {
 };
 
 const CATEGORIES = [
-  { value: "", label: "Todas" },
-  { value: "onboarding", label: "Onboarding" },
-  { value: "landing", label: "Landing" },
-  { value: "pricing", label: "Pricing" },
-  { value: "email", label: "Emails" },
-  { value: "general", label: "General" },
+  { value: "", labelKey: "admin.cms.category.all", fallback: "Todas" },
+  { value: "onboarding", labelKey: "admin.cms.category.onboarding", fallback: "Onboarding" },
+  { value: "landing", labelKey: "admin.cms.category.landing", fallback: "Landing" },
+  { value: "pricing", labelKey: "admin.cms.category.pricing", fallback: "Pricing" },
+  { value: "email", labelKey: "admin.cms.category.email", fallback: "Emails" },
+  { value: "general", labelKey: "admin.cms.category.general", fallback: "General" },
 ];
 
 const VALUE_TYPES = [
-  { value: "TEXT", label: "Texto" },
-  { value: "HTML", label: "HTML" },
-  { value: "MARKDOWN", label: "Markdown" },
-  { value: "JSON", label: "JSON" },
+  { value: "TEXT", labelKey: "admin.cms.valueType.text", fallback: "Texto" },
+  { value: "HTML", labelKey: "admin.cms.valueType.html", fallback: "HTML" },
+  { value: "MARKDOWN", labelKey: "admin.cms.valueType.markdown", fallback: "Markdown" },
+  { value: "JSON", labelKey: "admin.cms.valueType.json", fallback: "JSON" },
 ];
 
 export default function CmsAdminPage() {
@@ -253,7 +253,7 @@ export default function CmsAdminPage() {
           >
             {CATEGORIES.map((cat) => (
               <option key={cat.value} value={cat.value}>
-                {cat.label}
+                {t(cat.labelKey, cat.fallback)}
               </option>
             ))}
           </select>
@@ -338,7 +338,7 @@ export default function CmsAdminPage() {
             >
               {VALUE_TYPES.map((vt) => (
                 <option key={vt.value} value={vt.value}>
-                  {vt.label}
+                  {t(vt.labelKey, vt.fallback)}
                 </option>
               ))}
             </select>

@@ -263,3 +263,39 @@ export async function tenantIdsForScope(
   }
   return [];
 }
+
+/**
+ * True if the admin's scope reaches at least one tenant the target
+ * user is associated with — via primaryTenant, any Membership, or any
+ * RowiCommunityUser membership whose community is in scope.
+ *
+ * Rowiverse scope always returns true. Used by per-user admin endpoints
+ * to gate /api/admin/users/[id]/* without escalating to SuperAdmin.
+ */
+export async function scopeCanSeeUser(
+  scope: AdminScope,
+  targetUserId: string,
+): Promise<boolean> {
+  const allowed = await tenantIdsForScope(scope);
+  if (allowed === null) return true;
+
+  const target = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    select: {
+      primaryTenantId: true,
+      memberships: { select: { tenantId: true } },
+      rowiCommunities: {
+        select: { community: { select: { tenantId: true } } },
+      },
+    },
+  });
+  if (!target) return false;
+
+  const set = new Set<string>();
+  if (target.primaryTenantId) set.add(target.primaryTenantId);
+  for (const m of target.memberships) if (m.tenantId) set.add(m.tenantId);
+  for (const c of target.rowiCommunities) {
+    if (c.community?.tenantId) set.add(c.community.tenantId);
+  }
+  return [...set].some((tid) => allowed.includes(tid));
+}

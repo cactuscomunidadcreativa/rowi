@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanAdminHub } from "@/core/admin/hubScope";
 
 /* =========================================================
-   👥 GET — Lista todos los miembros de un Hub
+   👥 GET — Lista todos los miembros de un Hub (scope-aware)
 ========================================================= */
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { hubId } = await context.params;
+
+    if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+      return NextResponse.json(
+        { ok: false, error: "Hub fuera de tu scope" },
+        { status: 403 },
+      );
+    }
 
     const hub = await prisma.hub.findUnique({ where: { id: hubId } });
     if (!hub) {
@@ -64,10 +72,18 @@ export async function POST(
   req: NextRequest,
   context: { params: Promise<{ hubId: string }> }
 ) {
-  const auth = await requireSuperAdmin();
+  const auth = await requireAdminWithScope();
   if (auth.error) return auth.error;
 
   const { hubId } = await context.params;
+
+  if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+    return NextResponse.json(
+      { ok: false, error: "Hub fuera de tu scope" },
+      { status: 403 },
+    );
+  }
+
   const body = await req.json();
   const { userId } = body;
 

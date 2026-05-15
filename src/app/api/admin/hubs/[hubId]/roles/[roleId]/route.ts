@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanAdminHub } from "@/core/admin/hubScope";
 
 /**
  * =========================================================
@@ -19,10 +20,16 @@ export async function PATCH(
   context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
-    const { roleId } = await context.params;
+    const { hubId, roleId } = await context.params;
+    if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+      return NextResponse.json(
+        { ok: false, error: "Hub fuera de tu scope" },
+        { status: 403 },
+      );
+    }
     const body = await req.json();
 
     const permissions =
@@ -60,10 +67,16 @@ export async function DELETE(
   context: { params: Promise<{ hubId: string; roleId: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
-    const { roleId } = await context.params;
+    const { hubId, roleId } = await context.params;
+    if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+      return NextResponse.json(
+        { ok: false, error: "Hub fuera de tu scope" },
+        { status: 403 },
+      );
+    }
 
     await prisma.hubRoleDynamic.delete({ where: { id: roleId } });
 

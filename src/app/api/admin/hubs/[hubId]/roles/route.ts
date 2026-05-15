@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanAdminHub } from "@/core/admin/hubScope";
 
 /**
  * =========================================================
@@ -19,10 +20,16 @@ export async function GET(
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
-    const { hubId } = await context.params; // ✅ await es clave en Next 15
+    const { hubId } = await context.params;
+    if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+      return NextResponse.json(
+        { ok: false, error: "Hub fuera de tu scope" },
+        { status: 403 },
+      );
+    } // ✅ await es clave en Next 15
 
     const roles = await prisma.hubRoleDynamic.findMany({
       where: { hubId },
@@ -51,10 +58,16 @@ export async function POST(
   context: { params: Promise<{ hubId: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { hubId } = await context.params;
+    if (!(await scopeCanAdminHub(auth.scope, hubId))) {
+      return NextResponse.json(
+        { ok: false, error: "Hub fuera de tu scope" },
+        { status: 403 },
+      );
+    }
     const body = await req.json();
 
     const permissions = (() => {

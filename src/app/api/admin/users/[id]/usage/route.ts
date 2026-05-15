@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanSeeUser } from "@/core/admin/scopedList";
 
 export const dynamic = "force-dynamic";
 
 /* =========================================================
-   📊 GET — Historial de uso de IA + métricas agregadas
+   📊 GET — Historial de uso de IA + métricas agregadas (scope-aware)
 ========================================================= */
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id } = await context.params;
+    if (!(await scopeCanSeeUser(auth.scope, id))) {
+      return NextResponse.json(
+        { ok: false, error: "Usuario fuera de tu scope" },
+        { status: 403 },
+      );
+    }
 
     // 🔹 1. Historial detallado (últimos 60 registros)
     const usage = await prisma.userUsage.findMany({

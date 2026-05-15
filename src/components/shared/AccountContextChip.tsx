@@ -137,6 +137,7 @@ export default function AccountContextChip() {
 
   return (
     <div ref={containerRef} className="relative">
+      {/* Desktop: full chip with label + chevron */}
       <button
         onClick={() => setOpen((s) => !s)}
         className="hidden md:inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 transition-colors max-w-[200px]"
@@ -154,6 +155,21 @@ export default function AccountContextChip() {
         />
       </button>
 
+      {/* Mobile: icon-only button next to avatar — keeps the chip
+          accessible without crowding the navbar on small screens. */}
+      <button
+        onClick={() => setOpen((s) => !s)}
+        className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 transition-colors"
+        style={{ backgroundColor: `${KIND_COLOR[active.kind]}10` }}
+        title={t("account.context.switchTitle", "Cambiar contexto activo")}
+        aria-label={t("account.context.switchTitle", "Cambiar contexto activo")}
+      >
+        <ActiveIcon
+          className="w-4 h-4"
+          style={{ color: KIND_COLOR[active.kind] }}
+        />
+      </button>
+
       <AnimatePresence>
         {open && (
           <motion.div
@@ -161,7 +177,7 @@ export default function AccountContextChip() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.12 }}
-            className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl overflow-hidden z-50"
+            className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl overflow-hidden z-50"
           >
             <div className="px-3 py-2 border-b border-gray-200 dark:border-zinc-800">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">

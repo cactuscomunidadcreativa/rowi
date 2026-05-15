@@ -35,7 +35,7 @@ interface CountryData {
 }
 
 export default function RowiVersePage() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [data, setData] = useState<{
     summary: Summary;
     mapData: CountryData[];
@@ -62,54 +62,31 @@ export default function RowiVersePage() {
     loadData();
   }, []);
 
-  const t = {
-    es: {
-      title: "RowiVerse Global",
-      subtitle: "Ecosistema emocional mundial — comunidades, usuarios y benchmarks activos",
-      contributions: "Ver Contribuciones",
-      refresh: "Actualizar",
-      loading: "Cargando datos...",
-      totalRowiers: "Total Rowiers",
-      benchmarkBase: "Base Benchmark",
-      newRowiers: "Nuevos Rowiers",
-      lastMonths: "Últimos 3 meses",
-      communities: "Comunidades",
-      eqSnapshots: "Evaluaciones SEI",
-      countries: "Países",
-      activeUsers: "Usuarios Activos",
-      legend: "Leyenda",
-      benchmarks: "Benchmarks (Six Seconds)",
-      users: "Usuarios Rowi",
-      newUsers: "Usuarios Nuevos",
-      orgs: "Organizaciones",
-      topCountries: "Top Países por Rowiers",
-      topEmotions: "Emociones Predominantes",
-    },
-    en: {
-      title: "RowiVerse Global",
-      subtitle: "Global emotional ecosystem — communities, users and active benchmarks",
-      contributions: "View Contributions",
-      refresh: "Refresh",
-      loading: "Loading data...",
-      totalRowiers: "Total Rowiers",
-      benchmarkBase: "Benchmark Base",
-      newRowiers: "New Rowiers",
-      lastMonths: "Last 3 months",
-      communities: "Communities",
-      eqSnapshots: "SEI Assessments",
-      countries: "Countries",
-      activeUsers: "Active Users",
-      legend: "Legend",
-      benchmarks: "Benchmarks (Six Seconds)",
-      users: "Rowi Users",
-      newUsers: "New Users",
-      orgs: "Organizations",
-      topCountries: "Top Countries by Rowiers",
-      topEmotions: "Top Emotions",
-    },
+  const text = {
+    title: t("admin.rowiverse.title", "RowiVerse Global"),
+    subtitle: t(
+      "admin.rowiverse.subtitle",
+      "Ecosistema emocional mundial — comunidades, usuarios y benchmarks activos",
+    ),
+    contributions: t("admin.rowiverse.contributions", "Ver Contribuciones"),
+    refresh: t("admin.rowiverse.refresh", "Actualizar"),
+    loading: t("admin.rowiverse.loading", "Cargando datos..."),
+    totalRowiers: t("admin.rowiverse.totalRowiers", "Total Rowiers"),
+    benchmarkBase: t("admin.rowiverse.benchmarkBase", "Base Benchmark"),
+    newRowiers: t("admin.rowiverse.newRowiers", "Nuevos Rowiers"),
+    lastMonths: t("admin.rowiverse.lastMonths", "Últimos 3 meses"),
+    communities: t("admin.rowiverse.communities", "Comunidades"),
+    eqSnapshots: t("admin.rowiverse.eqSnapshots", "Evaluaciones SEI"),
+    countries: t("admin.rowiverse.countries", "Países"),
+    activeUsers: t("admin.rowiverse.activeUsers", "Usuarios Activos"),
+    legend: t("admin.rowiverse.legend", "Leyenda"),
+    benchmarks: t("admin.rowiverse.benchmarks", "Benchmarks (Six Seconds)"),
+    users: t("admin.rowiverse.users", "Usuarios Rowi"),
+    newUsers: t("admin.rowiverse.newUsers", "Usuarios Nuevos"),
+    orgs: t("admin.rowiverse.orgs", "Organizaciones"),
+    topCountries: t("admin.rowiverse.topCountries", "Top Países por Rowiers"),
+    topEmotions: t("admin.rowiverse.topEmotions", "Emociones Predominantes"),
   };
-
-  const text = t[lang as keyof typeof t] || t.es;
 
   if (loading) {
     return (
@@ -270,7 +247,7 @@ export default function RowiVersePage() {
             ))}
             {(!summary?.topEmotions || summary.topEmotions.length === 0) && (
               <p className="text-sm text-[var(--rowi-muted)] text-center py-4">
-                {lang === "es" ? "Sin datos de emociones" : "No emotion data"}
+                {t("admin.rowiverse.noEmotionData", "Sin datos de emociones")}
               </p>
             )}
           </div>

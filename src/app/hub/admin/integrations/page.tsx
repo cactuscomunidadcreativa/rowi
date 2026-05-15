@@ -35,13 +35,15 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="text-xl font-semibold">{t("integrations")}</h1>
+      <h1 className="text-xl font-semibold">
+        {t("admin.integrations.title", "Integraciones")}
+      </h1>
 
       {/* Formulario */}
       <div className="p-4 rounded-xl border bg-white space-y-2">
         <input
           className="border rounded px-2 py-1 w-full"
-          placeholder="tenantId"
+          placeholder={t("admin.integrations.tenantPlaceholder", "tenantId")}
           value={tenantId}
           onChange={(e) => setTenantId(e.target.value)}
         />
@@ -60,6 +62,10 @@ export default function IntegrationsPage() {
         <textarea
           className="border rounded px-2 py-1 w-full"
           rows={5}
+          placeholder={t(
+            "admin.integrations.configPlaceholder",
+            "Config JSON",
+          )}
           value={config}
           onChange={(e) => setConfig(e.target.value)}
         />
@@ -69,7 +75,7 @@ export default function IntegrationsPage() {
             className="px-3 py-1 bg-indigo-600 text-white rounded"
             onClick={save}
           >
-            {t("save")}
+            {t("admin.integrations.save", "Guardar")}
           </button>
         </div>
       </div>

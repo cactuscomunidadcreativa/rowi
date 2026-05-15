@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   Loader2,
   RefreshCw,
@@ -31,19 +32,28 @@ type HealthReport = {
   error?: string;
 };
 
-const MODULE_META: Record<string, { name: string; icon: React.ElementType; description: string }> = {
-  prisma: { name: "Base de Datos", icon: Database, description: "Conexión Prisma y datos principales" },
-  i18n: { name: "Internacionalización", icon: Languages, description: "Traducciones y localización" },
-  auth: { name: "Autenticación", icon: Lock, description: "OAuth y configuración de sesiones" },
-  ai: { name: "Inteligencia Artificial", icon: Bot, description: "Conexión con API de OpenAI" },
-  data: { name: "Datos Base", icon: BarChart3, description: "RowiVerses, agentes y configuración" },
-  build: { name: "Compilación", icon: Rocket, description: "Estado del build de Next.js" },
+type ModuleMeta = {
+  nameKey: string;
+  nameFallback: string;
+  icon: React.ElementType;
+  descKey: string;
+  descFallback: string;
+};
+
+const MODULE_META: Record<string, ModuleMeta> = {
+  prisma: { nameKey: "admin.systemHealth.module.prisma", nameFallback: "Base de Datos", icon: Database, descKey: "admin.systemHealth.moduleDesc.prisma", descFallback: "Conexión Prisma y datos principales" },
+  i18n: { nameKey: "admin.systemHealth.module.i18n", nameFallback: "Internacionalización", icon: Languages, descKey: "admin.systemHealth.moduleDesc.i18n", descFallback: "Traducciones y localización" },
+  auth: { nameKey: "admin.systemHealth.module.auth", nameFallback: "Autenticación", icon: Lock, descKey: "admin.systemHealth.moduleDesc.auth", descFallback: "OAuth y configuración de sesiones" },
+  ai: { nameKey: "admin.systemHealth.module.ai", nameFallback: "Inteligencia Artificial", icon: Bot, descKey: "admin.systemHealth.moduleDesc.ai", descFallback: "Conexión con API de OpenAI" },
+  data: { nameKey: "admin.systemHealth.module.data", nameFallback: "Datos Base", icon: BarChart3, descKey: "admin.systemHealth.moduleDesc.data", descFallback: "RowiVerses, agentes y configuración" },
+  build: { nameKey: "admin.systemHealth.module.build", nameFallback: "Compilación", icon: Rocket, descKey: "admin.systemHealth.moduleDesc.build", descFallback: "Estado del build de Next.js" },
 };
 
 const STATUS_CONFIG = {
   ok: {
     icon: CheckCircle2,
-    label: "Operativo",
+    labelKey: "admin.systemHealth.status.ok",
+    fallback: "Operativo",
     cardBg: "bg-emerald-50 dark:bg-emerald-900/10",
     border: "border-emerald-200 dark:border-emerald-800",
     iconColor: "text-emerald-500",
@@ -52,7 +62,8 @@ const STATUS_CONFIG = {
   },
   warn: {
     icon: AlertCircle,
-    label: "Advertencia",
+    labelKey: "admin.systemHealth.status.warn",
+    fallback: "Advertencia",
     cardBg: "bg-amber-50 dark:bg-amber-900/10",
     border: "border-amber-200 dark:border-amber-800",
     iconColor: "text-amber-500",
@@ -61,7 +72,8 @@ const STATUS_CONFIG = {
   },
   fail: {
     icon: XCircle,
-    label: "Error",
+    labelKey: "admin.systemHealth.status.fail",
+    fallback: "Error",
     cardBg: "bg-red-50 dark:bg-red-900/10",
     border: "border-red-200 dark:border-red-800",
     iconColor: "text-red-500",
@@ -71,6 +83,7 @@ const STATUS_CONFIG = {
 };
 
 export default function SystemHealthPage() {
+  const { t, lang } = useI18n();
   const [data, setData] = useState<HealthReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
@@ -119,9 +132,14 @@ export default function SystemHealthPage() {
             <HeartPulse className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Estado del Sistema</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {t("admin.systemHealth.title", "Estado del Sistema")}
+            </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Diagnóstico en tiempo real de los módulos de Rowi
+              {t(
+                "admin.systemHealth.subtitle",
+                "Diagnóstico en tiempo real de los módulos de Rowi",
+              )}
             </p>
           </div>
         </div>
@@ -131,7 +149,7 @@ export default function SystemHealthPage() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          Re-evaluar
+          {t("admin.systemHealth.recheck", "Re-evaluar")}
         </button>
       </div>
 
@@ -140,13 +158,20 @@ export default function SystemHealthPage() {
         <div className="flex items-center justify-center py-16">
           <div className="text-center space-y-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">Escaneando módulos…</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t("admin.systemHealth.scanning", "Escaneando módulos…")}
+            </p>
           </div>
         </div>
       ) : !data ? (
         <div className="text-center py-16 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700">
           <AlertTriangle className="w-10 h-10 mx-auto text-red-400 mb-3" />
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No se pudo obtener el estado del sistema</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            {t(
+              "admin.systemHealth.fetchError",
+              "No se pudo obtener el estado del sistema",
+            )}
+          </p>
         </div>
       ) : (
         <>
@@ -170,14 +195,23 @@ export default function SystemHealthPage() {
             <div className="flex-1">
               <p className="font-semibold text-gray-900 dark:text-white">
                 {data.ok
-                  ? "Todos los sistemas operativos"
+                  ? t(
+                      "admin.systemHealth.banner.ok",
+                      "Todos los sistemas operativos",
+                    )
                   : data.status === "degraded"
-                  ? "Sistema funcionando con advertencias"
-                  : "Se detectaron problemas en el sistema"}
+                  ? t(
+                      "admin.systemHealth.banner.degraded",
+                      "Sistema funcionando con advertencias",
+                    )
+                  : t(
+                      "admin.systemHealth.banner.error",
+                      "Se detectaron problemas en el sistema",
+                    )}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                Última verificación:{" "}
-                {new Date(data.timestamp).toLocaleString("es", {
+                {t("admin.systemHealth.lastCheck", "Última verificación")}:{" "}
+                {new Date(data.timestamp).toLocaleString(lang || "es", {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -232,8 +266,12 @@ export default function SystemHealthPage() {
                         <ModIcon className={`w-5 h-5 ${config.iconColor}`} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white">{meta.name}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{meta.description}</p>
+                        <h3 className="font-semibold text-sm text-gray-900 dark:text-white">
+                          {t(meta.nameKey, meta.nameFallback)}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {t(meta.descKey, meta.descFallback)}
+                        </p>
                       </div>
                     </div>
                     <StatusIcon className={`w-5 h-5 ${config.iconColor} flex-shrink-0`} />
@@ -241,7 +279,9 @@ export default function SystemHealthPage() {
 
                   <div className="mt-3 flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${config.dotColor}`} />
-                    <span className={`text-xs font-medium ${config.textColor}`}>{config.label}</span>
+                    <span className={`text-xs font-medium ${config.textColor}`}>
+                      {t(config.labelKey, config.fallback)}
+                    </span>
                   </div>
 
                   {detail && (
@@ -262,7 +302,7 @@ export default function SystemHealthPage() {
             >
               <span className="flex items-center gap-2">
                 <Server className="w-4 h-4 text-gray-400" />
-                Detalles técnicos
+                {t("admin.systemHealth.technicalDetails", "Detalles técnicos")}
               </span>
               {showDetails ? (
                 <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -287,7 +327,7 @@ export default function SystemHealthPage() {
                 </div>
                 {data.error && (
                   <div className="mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-400 font-mono">
-                    Error: {data.error}
+                    {t("admin.systemHealth.errorLabel", "Error")}: {data.error}
                   </div>
                 )}
               </div>

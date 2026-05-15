@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireAdminWithScope, requireSuperAdmin } from "@/core/auth/requireAdmin";
-import { tenantIdsForScope } from "@/core/admin/scopedList";
+import { scopeCanSeeUser, tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const runtime = "nodejs";
 
@@ -76,19 +76,56 @@ export async function GET(req: NextRequest) {
 /**
  * PATCH /api/admin/user-roles
  *
- * Mutating organizationRole = SUPERADMIN remains a platform op (only
- * existing SuperAdmins can grant it). Other organizationRole flips
- * are also platform-level here — for tenant-scoped role flips, use
- * /api/admin/memberships.
+ * Scope-aware policy on organizationRole flips:
+ *   - SUPERADMIN  → SuperAdmin only (granting platform access).
+ *   - ADMIN       → any admin who can see the user.
+ *   - everything  → any admin who can see the user.
+ *     else
+ *
+ * Tenant admins can now flip ADMIN/VIEWER/etc on their own people
+ * without escalating; granting SUPERADMIN still requires SuperAdmin.
  */
 export async function PATCH(req: NextRequest) {
-  const auth = await requireSuperAdmin();
+  const auth = await requireAdminWithScope();
   if (auth.error) return auth.error;
 
   const body = await req.json();
   const { userId, organizationRole } = body;
   if (!userId || !organizationRole) {
     return NextResponse.json({ error: "userId and organizationRole required" }, { status: 400 });
+  }
+
+  // Granting SUPERADMIN is a platform op.
+  const targetRole = String(organizationRole).toUpperCase();
+  if (targetRole === "SUPERADMIN" && auth.scope.type !== "rowiverse") {
+    return NextResponse.json(
+      { error: "Solo SuperAdmin puede asignar el rol SUPERADMIN" },
+      { status: 403 },
+    );
+  }
+
+  // Otherwise: must be able to see the target user.
+  if (!(await scopeCanSeeUser(auth.scope, userId))) {
+    return NextResponse.json(
+      { error: "Usuario fuera de tu scope" },
+      { status: 403 },
+    );
+  }
+
+  // Prevent demoting an existing SuperAdmin unless caller is SuperAdmin.
+  if (auth.scope.type !== "rowiverse") {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { organizationRole: true },
+    });
+    if (
+      (target?.organizationRole || "").toUpperCase() === "SUPERADMIN"
+    ) {
+      return NextResponse.json(
+        { error: "No puedes modificar a un SuperAdmin" },
+        { status: 403 },
+      );
+    }
   }
 
   const updated = await prisma.user.update({

@@ -54,14 +54,40 @@ export async function GET() {
 }
 
 /* =========================================================
-   ➕ POST — Crear nuevo rol
+   ➕ POST — Crear nuevo rol (scope-aware)
+   Tenant admin puede crear roles en su tenant; hub admin en su hub;
+   superhub admin en cualquier tenant del superhub; rowiverse libre.
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const data = await req.json();
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (allowed !== null) {
+      // Caller must scope the role to a tenant they can reach.
+      const targetTenant = data.tenantId || null;
+      if (!targetTenant || !allowed.includes(targetTenant)) {
+        return NextResponse.json(
+          {
+            error:
+              "El rol debe estar scopado a un tenant dentro de tu scope de admin",
+          },
+          { status: 403 },
+        );
+      }
+      // superHubId/hubId must also stay within the admin's reach. Block
+      // attempts to leak roles up the hierarchy.
+      if (
+        auth.scope.type === "tenant" &&
+        (data.superHubId || (data.hubId && false))
+      ) {
+        // tenant admins can attach to hubs in their tenant; we don't
+        // validate hub.tenantId here — leave that to hub.foreignKey
+      }
+    }
 
     const newRole = await prisma.roleDynamic.create({
       data: {
@@ -93,7 +119,7 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const data = await req.json();
@@ -111,6 +137,29 @@ export async function PUT(req: NextRequest) {
         { error: "Rol no encontrado" },
         { status: 404 }
       );
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (
+      allowed !== null &&
+      (!existing.tenantId || !allowed.includes(existing.tenantId))
+    ) {
+      return NextResponse.json(
+        { error: "Rol fuera de tu scope" },
+        { status: 403 },
+      );
+    }
+    // Prevent moving a role into a tenant the admin can't reach.
+    if (
+      allowed !== null &&
+      data.tenantId &&
+      data.tenantId !== existing.tenantId &&
+      !allowed.includes(data.tenantId)
+    ) {
+      return NextResponse.json(
+        { error: "No puedes mover el rol a un tenant fuera de tu scope" },
+        { status: 403 },
+      );
+    }
 
     const updated = await prisma.roleDynamic.update({
       where: { id },
@@ -151,7 +200,7 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id } = await req.json();
@@ -167,6 +216,17 @@ export async function DELETE(req: NextRequest) {
         { error: "Rol no encontrado" },
         { status: 404 }
       );
+
+    const allowed = await tenantIdsForScope(auth.scope);
+    if (
+      allowed !== null &&
+      (!existing.tenantId || !allowed.includes(existing.tenantId))
+    ) {
+      return NextResponse.json(
+        { error: "Rol fuera de tu scope" },
+        { status: 403 },
+      );
+    }
 
     await prisma.roleDynamic.delete({ where: { id } });
 

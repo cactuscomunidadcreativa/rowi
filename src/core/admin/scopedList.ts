@@ -299,3 +299,46 @@ export async function scopeCanSeeUser(
   }
   return [...set].some((tid) => allowed.includes(tid));
 }
+
+/**
+ * Validates that the admin scope can administer a given ProfileFeature
+ * scopeType/scopeId pair. Used by POST/PUT/DELETE on
+ * /api/admin/permissions/features.
+ *
+ * Rules:
+ *   rowiverse → any scope (returns true).
+ *   tenant    → only scopeType="tenant" with scopeId in the admin's
+ *               tenant set; null scope means "global default", which
+ *               is platform-level and is rejected for non-rowiverse.
+ *   hub       → only scopeType="hub" with scopeId === scope.id.
+ *   superhub  → scopeType="superhub" same id, OR scopeType="tenant"
+ *               with tenant in the superhub.
+ */
+export async function scopeCanAdminProfileFeatureScope(
+  scope: AdminScope,
+  permScopeType: string | null,
+  permScopeId: string | null,
+): Promise<boolean> {
+  if (scope.type === "rowiverse") return true;
+  if (!permScopeType || !permScopeId) {
+    // Global defaults are platform-only.
+    return false;
+  }
+  if (scope.type === "tenant") {
+    if (permScopeType !== "tenant") return false;
+    return permScopeId === scope.id;
+  }
+  if (scope.type === "hub") {
+    if (permScopeType !== "hub") return false;
+    return permScopeId === scope.id;
+  }
+  if (scope.type === "superhub") {
+    if (permScopeType === "superhub") return permScopeId === scope.id;
+    if (permScopeType === "tenant") {
+      const allowed = await tenantIdsForScope(scope);
+      return allowed !== null && allowed.includes(permScopeId);
+    }
+    return false;
+  }
+  return false;
+}

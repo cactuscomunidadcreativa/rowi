@@ -1,10 +1,8 @@
 // src/app/api/admin/permissions/features/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import {
-  requireAdminWithScope,
-  requireSuperAdmin,
-} from "@/core/auth/requireAdmin";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanAdminProfileFeatureScope } from "@/core/admin/scopedList";
 
 /* =========================================================
    🎛️ API de Permisos de Features por Perfil
@@ -136,7 +134,7 @@ export async function GET(req: NextRequest) {
 ========================================================= */
 export async function POST(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const {
@@ -158,6 +156,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { ok: false, error: "Los campos 'role' y 'featureKey' son obligatorios" },
         { status: 400 }
+      );
+    }
+
+    if (
+      !(await scopeCanAdminProfileFeatureScope(
+        auth.scope,
+        scopeType || null,
+        scopeId || null,
+      ))
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "Scope del permiso fuera de tu alcance de admin" },
+        { status: 403 },
       );
     }
 
@@ -215,7 +226,7 @@ export async function POST(req: NextRequest) {
 ========================================================= */
 export async function PUT(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { permissions } = await req.json();
@@ -236,6 +247,20 @@ export async function PUT(req: NextRequest) {
 
         if (!role || !featureKey) {
           errors.push({ featureKey, error: "Faltan campos obligatorios" });
+          continue;
+        }
+
+        if (
+          !(await scopeCanAdminProfileFeatureScope(
+            auth.scope,
+            scopeType || null,
+            scopeId || null,
+          ))
+        ) {
+          errors.push({
+            featureKey,
+            error: "Scope del permiso fuera de tu alcance",
+          });
           continue;
         }
 
@@ -300,13 +325,35 @@ export async function PUT(req: NextRequest) {
 ========================================================= */
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = await requireSuperAdmin();
+    const auth = await requireAdminWithScope();
     if (auth.error) return auth.error;
 
     const { id, role, roleType, featureKey, scopeType, scopeId } = await req.json();
 
     // Por ID directo
     if (id) {
+      const existing = await prisma.profileFeature.findUnique({
+        where: { id },
+        select: { scopeType: true, scopeId: true },
+      });
+      if (!existing) {
+        return NextResponse.json(
+          { ok: false, error: "Permiso no encontrado" },
+          { status: 404 },
+        );
+      }
+      if (
+        !(await scopeCanAdminProfileFeatureScope(
+          auth.scope,
+          existing.scopeType,
+          existing.scopeId,
+        ))
+      ) {
+        return NextResponse.json(
+          { ok: false, error: "Permiso fuera de tu scope" },
+          { status: 403 },
+        );
+      }
       await prisma.profileFeature.delete({ where: { id } });
       return NextResponse.json({
         ok: true,
@@ -316,6 +363,18 @@ export async function DELETE(req: NextRequest) {
 
     // Por clave compuesta
     if (role && featureKey) {
+      if (
+        !(await scopeCanAdminProfileFeatureScope(
+          auth.scope,
+          scopeType || null,
+          scopeId || null,
+        ))
+      ) {
+        return NextResponse.json(
+          { ok: false, error: "Permiso fuera de tu scope" },
+          { status: 403 },
+        );
+      }
       await prisma.profileFeature.delete({
         where: {
           role_roleType_featureKey_scopeType_scopeId: {

@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -48,6 +49,7 @@ function getActionConfig(action: string) {
 }
 
 export default function LogsPage() {
+  const { t, lang } = useI18n();
   const { data, isLoading, mutate } = useSWR("/api/hub/logs/interactions", fetcher);
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
@@ -74,8 +76,12 @@ export default function LogsPage() {
             <Activity className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Logs de Actividad</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{logs.length} registros recientes</p>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {t("admin.logs.title", "Logs de Actividad")}
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {logs.length} {t("admin.logs.recentRecords", "registros recientes")}
+            </p>
           </div>
         </div>
         <button
@@ -83,7 +89,7 @@ export default function LogsPage() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          Actualizar
+          {t("admin.audit.refresh", "Actualizar")}
         </button>
       </div>
 
@@ -93,7 +99,10 @@ export default function LogsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar por acción, entidad, usuario..."
+            placeholder={t(
+              "admin.audit.searchPlaceholder",
+              "Buscar por acción, entidad, usuario...",
+            )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
@@ -106,7 +115,9 @@ export default function LogsPage() {
             onChange={(e) => setActionFilter(e.target.value)}
             className="pl-9 pr-8 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none min-w-[180px]"
           >
-            <option value="all">Todas las acciones</option>
+            <option value="all">
+              {t("admin.logs.allActions", "Todas las acciones")}
+            </option>
             {actions.map((a: string) => (
               <option key={a} value={a}>{a}</option>
             ))}
@@ -124,7 +135,12 @@ export default function LogsPage() {
         <div className="text-center py-16 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700">
           <Activity className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            {search || actionFilter !== "all" ? "Sin resultados con estos filtros" : "No hay logs de actividad"}
+            {search || actionFilter !== "all"
+              ? t(
+                  "admin.audit.empty.filtered",
+                  "Sin resultados con estos filtros",
+                )
+              : t("admin.logs.empty.none", "No hay logs de actividad")}
           </p>
         </div>
       ) : (
@@ -133,11 +149,21 @@ export default function LogsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acción</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Entidad</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Usuario</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t("admin.logs.col.action", "Acción")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t("admin.logs.col.entity", "Entidad")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t("admin.logs.col.user", "Usuario")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t("admin.logs.col.details", "Detalles")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t("admin.logs.col.date", "Fecha")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-700">
@@ -157,7 +183,9 @@ export default function LogsPage() {
                         <div className="flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5 text-gray-400" />
                           <span className="text-gray-600 dark:text-gray-400 truncate max-w-[120px]" title={log.userId || ""}>
-                            {log.userId ? log.userId.slice(0, 12) + "…" : "Sistema"}
+                            {log.userId
+                              ? log.userId.slice(0, 12) + "…"
+                              : t("admin.audit.system", "Sistema")}
                           </span>
                         </div>
                       </td>
@@ -176,7 +204,7 @@ export default function LogsPage() {
                         <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
                           <Clock className="w-3.5 h-3.5" />
                           <span className="text-xs whitespace-nowrap">
-                            {new Date(log.createdAt).toLocaleDateString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                            {new Date(log.createdAt).toLocaleDateString(lang || "es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
                       </td>
@@ -188,7 +216,8 @@ export default function LogsPage() {
           </div>
           {filtered.length > 100 && (
             <div className="px-4 py-3 text-center text-xs text-gray-500 border-t border-gray-100 dark:border-zinc-700">
-              Mostrando 100 de {filtered.length} registros
+              {t("admin.audit.showing", "Mostrando 100 de")} {filtered.length}{" "}
+              {t("admin.audit.records", "registros")}
             </div>
           )}
         </div>

@@ -11,10 +11,12 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function AnnouncementsPage() {
+  const { t, lang } = useI18n();
   const { data, mutate, isLoading } = useSWR("/api/hub/announcements", fetcher);
   const [tenantId, setTenantId] = useState("");
   const [title, setTitle] = useState("");
@@ -55,10 +57,13 @@ export default function AnnouncementsPage() {
     }
   }
 
-  const statusConfig: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-    PENDING: { icon: Clock, label: "Pendiente", color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800" },
-    SENT: { icon: CheckCircle2, label: "Enviado", color: "text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" },
-    FAILED: { icon: AlertCircle, label: "Error", color: "text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" },
+  const statusConfig: Record<
+    string,
+    { icon: React.ElementType; labelKey: string; fallback: string; color: string }
+  > = {
+    PENDING: { icon: Clock, labelKey: "admin.announcements.status.pending", fallback: "Pendiente", color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800" },
+    SENT: { icon: CheckCircle2, labelKey: "admin.announcements.status.sent", fallback: "Enviado", color: "text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" },
+    FAILED: { icon: AlertCircle, labelKey: "admin.announcements.status.failed", fallback: "Error", color: "text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" },
   };
 
   return (
@@ -69,9 +74,14 @@ export default function AnnouncementsPage() {
           <Megaphone className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Anuncios del Hub</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {t("admin.announcements.title", "Anuncios del Hub")}
+          </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Crea y gestiona anuncios para los usuarios del hub
+            {t(
+              "admin.announcements.subtitle",
+              "Crea y gestiona anuncios para los usuarios del hub",
+            )}
           </p>
         </div>
       </div>
@@ -81,16 +91,19 @@ export default function AnnouncementsPage() {
         <div className="bg-white dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 p-5 space-y-4 shadow-sm">
           <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Plus className="w-4 h-4 text-indigo-500" />
-            Nuevo Anuncio
+            {t("admin.announcements.newTitle", "Nuevo Anuncio")}
           </h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Tenant ID (opcional)
+              {t("admin.announcements.tenantLabel", "Tenant ID (opcional)")}
             </label>
             <input
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-              placeholder="Dejar vacío para todos"
+              placeholder={t(
+                "admin.announcements.tenantPlaceholder",
+                "Dejar vacío para todos",
+              )}
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
             />
@@ -98,11 +111,14 @@ export default function AnnouncementsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Título
+              {t("admin.announcements.titleLabel", "Título")}
             </label>
             <input
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-              placeholder="Título del anuncio"
+              placeholder={t(
+                "admin.announcements.titlePlaceholder",
+                "Título del anuncio",
+              )}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -110,12 +126,15 @@ export default function AnnouncementsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Contenido
+              {t("admin.announcements.contentLabel", "Contenido")}
             </label>
             <textarea
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
               rows={5}
-              placeholder="Escribe el contenido del anuncio..."
+              placeholder={t(
+                "admin.announcements.contentPlaceholder",
+                "Escribe el contenido del anuncio...",
+              )}
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
@@ -127,9 +146,15 @@ export default function AnnouncementsPage() {
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Creando...</>
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                {t("admin.announcements.creating", "Creando...")}
+              </>
             ) : (
-              <><Plus className="w-4 h-4" /> Crear Anuncio</>
+              <>
+                <Plus className="w-4 h-4" />{" "}
+                {t("admin.announcements.create", "Crear Anuncio")}
+              </>
             )}
           </button>
         </div>
@@ -137,7 +162,7 @@ export default function AnnouncementsPage() {
         {/* List */}
         <div className="space-y-3">
           <h2 className="font-semibold text-gray-900 dark:text-white">
-            Anuncios ({announcements.length})
+            {t("admin.announcements.listTitle", "Anuncios")} ({announcements.length})
           </h2>
 
           {isLoading ? (
@@ -148,7 +173,10 @@ export default function AnnouncementsPage() {
             <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-gray-300 dark:border-zinc-700">
               <Megaphone className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No hay anuncios creados todavía
+                {t(
+                  "admin.announcements.empty",
+                  "No hay anuncios creados todavía",
+                )}
               </p>
             </div>
           ) : (
@@ -171,13 +199,13 @@ export default function AnnouncementsPage() {
                     </div>
                     <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border font-medium flex-shrink-0 ${st.color}`}>
                       <StatusIcon className="w-3 h-3" />
-                      {st.label}
+                      {t(st.labelKey, st.fallback)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-zinc-700">
                     <span className="text-xs text-gray-400">
-                      {new Date(a.createdAt).toLocaleDateString("es", {
+                      {new Date(a.createdAt).toLocaleDateString(lang || "es", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
@@ -196,7 +224,7 @@ export default function AnnouncementsPage() {
                         ) : (
                           <Send className="w-3 h-3" />
                         )}
-                        Enviar
+                        {t("admin.announcements.send", "Enviar")}
                       </button>
                     )}
                   </div>

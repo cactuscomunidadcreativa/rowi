@@ -31,6 +31,7 @@ type Summary = {
   totalReports: number;
   profilesWithReports: Profile[];
   allProfiles: Profile[];
+  activeContextFilter?: { tenantId: string } | null;
 };
 
 export default function TeamPage() {
@@ -51,6 +52,7 @@ export default function TeamPage() {
           totalReports: json.totalReports,
           profilesWithReports: json.profilesWithReports,
           allProfiles: json.allProfiles,
+          activeContextFilter: json.activeContextFilter ?? null,
         });
       } catch (e: any) {
         setError(e?.message || "Error cargando equipo");
@@ -111,6 +113,14 @@ export default function TeamPage() {
                 "Aún no tienes reportes directos asignados.",
               )}
         </p>
+        {data.activeContextFilter && (
+          <p className="mt-2 text-xs inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300">
+            {t(
+              "org.activeContextFilter",
+              "Filtrado por contexto activo",
+            )}
+          </p>
+        )}
       </header>
 
       {!hasEmployeeProfile && (

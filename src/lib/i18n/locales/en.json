@@ -4715,5 +4715,14 @@
   "admin.orphans.col.tenant": "Tenant",
   "admin.orphans.col.role": "Role",
   "admin.orphans.col.joinedAt": "Imported",
-  "org.workspaces.orphanAction": "Resolve →"
+  "org.workspaces.orphanAction": "Resolve →",
+  "admin.orgChart.title": "Org chart",
+  "admin.orgChart.subtitle": "Manager → direct reports hierarchy in your accessible tenants.",
+  "admin.orgChart.error": "Could not load org chart",
+  "admin.orgChart.empty": "No employees in your accessible tenants.",
+  "admin.orgChart.noTenant": "No tenant",
+  "admin.orgChart.rootSingular": "root",
+  "admin.orgChart.rootPlural": "roots",
+  "admin.orgChart.orphansTitle": "Employees whose manager is out of your scope",
+  "admin.orgChart.total": "Total"
 }

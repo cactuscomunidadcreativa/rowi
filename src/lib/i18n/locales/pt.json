@@ -4715,5 +4715,14 @@
   "admin.orphans.col.tenant": "Tenant",
   "admin.orphans.col.role": "Papel",
   "admin.orphans.col.joinedAt": "Importado",
-  "org.workspaces.orphanAction": "Resolver →"
+  "org.workspaces.orphanAction": "Resolver →",
+  "admin.orgChart.title": "Organograma",
+  "admin.orgChart.subtitle": "Hierarquia gestor → reportes diretos nos seus tenants acessíveis.",
+  "admin.orgChart.error": "Erro ao carregar organograma",
+  "admin.orgChart.empty": "Sem funcionários nos seus tenants acessíveis.",
+  "admin.orgChart.noTenant": "Sem tenant",
+  "admin.orgChart.rootSingular": "raiz",
+  "admin.orgChart.rootPlural": "raízes",
+  "admin.orgChart.orphansTitle": "Funcionários com gestor fora do seu escopo",
+  "admin.orgChart.total": "Total"
 }

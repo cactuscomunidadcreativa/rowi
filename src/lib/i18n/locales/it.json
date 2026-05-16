@@ -4715,5 +4715,14 @@
   "admin.orphans.col.tenant": "Tenant",
   "admin.orphans.col.role": "Ruolo",
   "admin.orphans.col.joinedAt": "Importato",
-  "org.workspaces.orphanAction": "Risolvi →"
+  "org.workspaces.orphanAction": "Risolvi →",
+  "admin.orgChart.title": "Organigramma",
+  "admin.orgChart.subtitle": "Gerarchia manager → report diretti nei tuoi tenant accessibili.",
+  "admin.orgChart.error": "Errore nel caricamento dell'organigramma",
+  "admin.orgChart.empty": "Nessun dipendente nei tuoi tenant accessibili.",
+  "admin.orgChart.noTenant": "Nessun tenant",
+  "admin.orgChart.rootSingular": "radice",
+  "admin.orgChart.rootPlural": "radici",
+  "admin.orgChart.orphansTitle": "Dipendenti con manager fuori dal tuo ambito",
+  "admin.orgChart.total": "Totale"
 }

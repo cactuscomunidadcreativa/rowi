@@ -167,7 +167,7 @@ export async function PATCH(
     if (data.status === "active" && isClientUser) {
       const provider = await prisma.user.findUnique({
         where: { id: engagement.providerId },
-        select: { email: true },
+        select: { email: true, preferredLang: true, language: true },
       });
       if (provider?.email) {
         const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/services`;
@@ -177,7 +177,7 @@ export async function PATCH(
           actorName: auth.name,
           detail: updated.serviceRole,
           ctaUrl,
-          locale: "es",
+          locale: provider.preferredLang || provider.language || "es",
         }).catch((e) => {
           console.warn("⚠️ Could not send service.accepted notification:", e);
         });
@@ -192,7 +192,7 @@ export async function PATCH(
       if (otherSideUserId) {
         const otherUser = await prisma.user.findUnique({
           where: { id: otherSideUserId },
-          select: { email: true },
+          select: { email: true, preferredLang: true, language: true },
         });
         if (otherUser?.email) {
           sendContextNotification({
@@ -201,7 +201,8 @@ export async function PATCH(
             actorName: auth.name,
             detail: updated.serviceRole,
             ctaUrl,
-            locale: "es",
+            locale:
+              otherUser.preferredLang || otherUser.language || "es",
           }).catch((e) => {
             console.warn("⚠️ Could not send service.ended notification:", e);
           });

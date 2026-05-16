@@ -199,13 +199,24 @@ export async function POST(req: NextRequest) {
       created.relatedUser?.email || created.relatedEmail || null;
     if (recipientEmail && created.consentStatus === "pending") {
       const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/family`;
+      // Use the recipient's preferredLang when we know them, so the
+      // email lands in the right language. Fall back to "es" only when
+      // we have no idea who they are.
+      let recipientLocale = "es";
+      if (created.relatedUserId) {
+        const recipient = await prisma.user.findUnique({
+          where: { id: created.relatedUserId },
+          select: { preferredLang: true, language: true },
+        });
+        recipientLocale = recipient?.preferredLang || recipient?.language || "es";
+      }
       sendContextNotification({
         to: recipientEmail,
         kind: "family.requested",
         actorName: auth.name,
         detail: created.relationship,
         ctaUrl,
-        locale: "es",
+        locale: recipientLocale,
       }).catch((e) => {
         console.warn("⚠️ Could not send family.requested notification:", e);
       });

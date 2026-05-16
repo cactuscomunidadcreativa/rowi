@@ -162,6 +162,10 @@ export async function PATCH(
       relation.owner?.email
     ) {
       const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/family`;
+      const ownerPrefs = await prisma.user.findUnique({
+        where: { id: relation.ownerId },
+        select: { preferredLang: true, language: true },
+      });
       sendContextNotification({
         to: relation.owner.email,
         kind:
@@ -171,7 +175,7 @@ export async function PATCH(
         actorName: auth.name,
         detail: updated.relationship,
         ctaUrl,
-        locale: "es",
+        locale: ownerPrefs?.preferredLang || ownerPrefs?.language || "es",
       }).catch((e) => {
         console.warn(
           "⚠️ Could not send family consent notification:",

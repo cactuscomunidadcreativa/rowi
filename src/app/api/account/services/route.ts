@@ -228,16 +228,21 @@ export async function POST(req: NextRequest) {
     // /org clients are notified through their own admin surfaces.
     if (
       created.status === "proposed" &&
-      created.clientUser?.email
+      created.clientUser?.email &&
+      created.clientUser.id
     ) {
       const ctaUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/settings/services`;
+      const recipient = await prisma.user.findUnique({
+        where: { id: created.clientUser.id },
+        select: { preferredLang: true, language: true },
+      });
       sendContextNotification({
         to: created.clientUser.email,
         kind: "service.proposed",
         actorName: created.provider?.name,
         detail: created.serviceRole,
         ctaUrl,
-        locale: "es",
+        locale: recipient?.preferredLang || recipient?.language || "es",
       }).catch((e) => {
         console.warn("⚠️ Could not send service.proposed notification:", e);
       });

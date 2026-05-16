@@ -209,7 +209,7 @@ export async function GET(req: NextRequest) {
 
     /* 1️⃣1️⃣ Outcomes */
     const getOutcome = (label: string) =>
-      outs.find((o) => o.label.toLowerCase() === label.toLowerCase())?.score ??
+      outs.find((o) => o.label?.toLowerCase() === label.toLowerCase())?.score ??
       null;
 
     const getSF = (label: string) =>
@@ -250,7 +250,7 @@ export async function GET(req: NextRequest) {
     if (prevSnap) {
       const prevTotal = prevSnap.overall4 ?? avg([prevSnap.K, prevSnap.C, prevSnap.G]);
       const getPrevOutcome = (label: string) =>
-        prevOuts.find((o) => o.label.toLowerCase() === label.toLowerCase())?.score ?? null;
+        prevOuts.find((o) => o.label?.toLowerCase() === label.toLowerCase())?.score ?? null;
 
       previous = {
         date: prevSnap.at,

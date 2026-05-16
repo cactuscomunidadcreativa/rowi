@@ -59,6 +59,7 @@ function MemberSearch({
   onSelect: (user: UserOption | null) => void;
   selectedUser: UserOption | null;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -204,6 +205,7 @@ function MemberSearch({
 
 // Formulario de EQ individual
 function SingleMemberEqForm({ userId }: { userId: string }) {
+  const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");

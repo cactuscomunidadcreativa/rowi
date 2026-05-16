@@ -379,6 +379,7 @@ function StructureSection({ title, icon: Icon, items, all }: any) {
 }
 
 function ActivitySection({ icon: Icon, title, data }: any) {
+  const { t } = useI18n();
   return (
     <section>
       <h3 className="font-semibold text-sm flex items-center gap-1 mb-1">

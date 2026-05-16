@@ -109,6 +109,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar firma
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe not configured" },
+        { status: 500 }
+      );
+    }
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(

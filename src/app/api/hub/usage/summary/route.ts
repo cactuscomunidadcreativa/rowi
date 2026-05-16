@@ -44,7 +44,7 @@ export async function GET() {
       tokensIn: data.reduce((s, d) => s + d.tokensIn, 0),
       tokensOut: data.reduce((s, d) => s + d.tokensOut, 0),
       calls: data.reduce((s, d) => s + d.calls, 0),
-      cost: data.reduce((s, d) => s + d.cost, 0),
+      cost: data.reduce((s, d) => s + (d.cost ?? 0), 0),
     };
 
     return NextResponse.json({ ok: true, totals, data });

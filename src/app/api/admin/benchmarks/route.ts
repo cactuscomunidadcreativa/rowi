@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
         communityId,
         teamId,
         isLearning,
-        uploadedBy: session.user.email,
+        uploadedBy: auth.user?.email || "",
         status: "PROCESSING",
       },
     });

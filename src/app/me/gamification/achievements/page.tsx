@@ -292,7 +292,7 @@ export default function MyAchievementsPage() {
                       </div>
                     </div>
 
-                    {!ach.completed && ach.progress > 0 && (
+                    {!ach.completed && (ach.progress ?? 0) > 0 && (
                       <div className="mt-3">
                         <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
                           <div

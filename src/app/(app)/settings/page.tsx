@@ -15,6 +15,8 @@ import {
   Sparkles,
   Heart,
   Settings2,
+  Handshake,
+  HeartHandshake,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,6 +46,26 @@ const T: Record<string, Record<string, string>> = {
 
   privacy: { es: "Privacidad", en: "Privacy" },
   privacyDesc: { es: "Controla qué información compartes", en: "Control what information you share" },
+
+  family: { es: "Familia", en: "Family", pt: "Família", it: "Famiglia" },
+  familyDesc: {
+    es: "Declara pareja, hijos, padres y otros vínculos personales",
+    en: "Declare partner, children, parents and other personal ties",
+    pt: "Declare parceiro, filhos, pais e outros vínculos pessoais",
+    it: "Dichiara partner, figli, genitori e altri legami personali",
+  },
+  services: {
+    es: "Mis servicios",
+    en: "My services",
+    pt: "Meus serviços",
+    it: "I miei servizi",
+  },
+  servicesDesc: {
+    es: "Engagements de coaching, consultoría y mentoría (provider + cliente)",
+    en: "Coaching, consulting and mentoring engagements (provider + client)",
+    pt: "Engagements de coaching, consultoria e mentoria (provider + cliente)",
+    it: "Engagement di coaching, consulenza e mentoring (provider + cliente)",
+  },
 
   appearance: { es: "Apariencia", en: "Appearance" },
   appearanceDesc: { es: "Personaliza el tema y estilo visual", en: "Customize theme and visual style" },
@@ -119,6 +141,20 @@ const settingsCategories: { titleKey: string; items: SettingItem[] }[] = [
         color: COLORS.pink,
         labelKey: "communities",
         descKey: "communitiesDesc",
+      },
+      {
+        href: "/settings/family",
+        icon: HeartHandshake,
+        color: COLORS.pink,
+        labelKey: "family",
+        descKey: "familyDesc",
+      },
+      {
+        href: "/settings/services",
+        icon: Handshake,
+        color: COLORS.blue,
+        labelKey: "services",
+        descKey: "servicesDesc",
       },
       {
         href: "/settings/rowiverse",

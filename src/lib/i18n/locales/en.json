@@ -1324,6 +1324,8 @@
   "admin.nav.elearning": "E-Learning",
   "admin.nav.elearningDashboard": "E-Learning Dashboard",
   "admin.nav.employees": "Employees",
+  "admin.nav.orgChart": "Org chart",
+  "admin.nav.orphans": "Orphans",
   "admin.nav.enrollments": "Enrollments",
   "admin.nav.eq": "EQ",
   "admin.nav.eqDashboard": "EQ Dashboard",

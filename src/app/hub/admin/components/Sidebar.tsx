@@ -22,6 +22,7 @@ import {
   Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
   Shield, GitBranch, ToggleRight, KeyRound,
   Handshake, Rss, MessageCircle, Boxes,
+  AlertTriangle,
 } from "lucide-react";
 
 /* =========================================================
@@ -458,10 +459,12 @@ export default function Sidebar() {
       priority: 35,
       items: [
         { href: "/hub/admin/hr/employees", labelKey: "admin.nav.employees", icon: Users },
+        { href: "/hub/admin/hr/org-chart", labelKey: "admin.nav.orgChart", icon: Network },
         { href: "/hub/admin/hr/reviews", labelKey: "admin.nav.reviews", icon: ClipboardCheck },
         { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
         { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
         { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
+        { href: "/hub/admin/community-members/orphans", labelKey: "admin.nav.orphans", icon: AlertTriangle },
         { href: "/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow, badge: "NEW" },
       ],
     },

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { rateLimit, getUserIdentifier } from "@/lib/security/rateLimit";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
@@ -88,6 +89,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { ok: false, error: "No autenticado" },
       { status: 401 },
+    );
+  }
+
+  // Rate limit: 10 family relations per user per hour. This is generous
+  // for legitimate use (declaring partner + 4 kids takes 5 calls) but
+  // tight enough to stop a script from spamming 1000 rows.
+  const rl = await rateLimit(getUserIdentifier(req, auth.id), {
+    limit: 10,
+    window: 3600,
+    prefix: "family_create",
+  });
+  if (!rl.success) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Demasiados vínculos creados. Intenta de nuevo más tarde.",
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": String(rl.remaining),
+        },
+      },
     );
   }
 

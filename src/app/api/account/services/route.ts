@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { rateLimit, getUserIdentifier } from "@/lib/security/rateLimit";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
@@ -92,6 +93,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { ok: false, error: "No autenticado" },
       { status: 401 },
+    );
+  }
+
+  // Rate limit: 20 engagements per user per hour. A coach onboarding
+  // an entire cohort might legitimately create ~10-15 in a session, so
+  // 20 leaves headroom; bots fanning out engagements get stopped.
+  const rl = await rateLimit(getUserIdentifier(req, auth.id), {
+    limit: 20,
+    window: 3600,
+    prefix: "service_create",
+  });
+  if (!rl.success) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Demasiados engagements creados. Intenta de nuevo más tarde.",
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": String(rl.remaining),
+        },
+      },
     );
   }
 

@@ -38,6 +38,17 @@ jest.mock("@/lib/email/sendContextNotification", () => ({
   sendContextNotification: jest.fn().mockResolvedValue(undefined),
 }));
 
+const rateLimitMock = jest.fn().mockResolvedValue({
+  success: true,
+  remaining: 19,
+  resetAt: Date.now() + 3600 * 1000,
+  limit: 20,
+});
+jest.mock("@/lib/security/rateLimit", () => ({
+  rateLimit: (...args: any[]) => rateLimitMock(...args),
+  getUserIdentifier: (_req: any, userId: string) => `ip:user:${userId}`,
+}));
+
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
@@ -70,6 +81,26 @@ describe("POST /api/account/services", () => {
       name: "Provider",
       primaryTenantId: "tenant_home",
     });
+    rateLimitMock.mockResolvedValue({
+      success: true,
+      remaining: 19,
+      resetAt: Date.now() + 3600 * 1000,
+      limit: 20,
+    });
+  });
+
+  it("rate-limit hit → 429", async () => {
+    rateLimitMock.mockResolvedValueOnce({
+      success: false,
+      remaining: 0,
+      resetAt: Date.now() + 1000,
+      limit: 20,
+    });
+    const res: any = await servicePOST(
+      mockReq({ serviceRole: "coach", clientUserId: "u1" }),
+    );
+    expect(res.status).toBe(429);
+    expect(seCreate).not.toHaveBeenCalled();
   });
 
   it("rejects invalid serviceRole", async () => {

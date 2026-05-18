@@ -45,6 +45,19 @@ jest.mock("@/lib/email/sendContextNotification", () => ({
   sendContextNotification: jest.fn().mockResolvedValue(undefined),
 }));
 
+// Rate limiter — by default let everything through; one specific test
+// flips it to denied.
+const rateLimitMock = jest.fn().mockResolvedValue({
+  success: true,
+  remaining: 9,
+  resetAt: Date.now() + 3600 * 1000,
+  limit: 10,
+});
+jest.mock("@/lib/security/rateLimit", () => ({
+  rateLimit: (...args: any[]) => rateLimitMock(...args),
+  getUserIdentifier: (_req: any, userId: string) => `ip:user:${userId}`,
+}));
+
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
@@ -90,6 +103,28 @@ describe("GET /api/account/family", () => {
 describe("POST /api/account/family", () => {
   beforeEach(() => {
     authMock.mockResolvedValue({ id: "owner_id", name: "Owner" });
+    // Reset to "allowed" before each test; one case below flips it.
+    rateLimitMock.mockResolvedValue({
+      success: true,
+      remaining: 9,
+      resetAt: Date.now() + 3600 * 1000,
+      limit: 10,
+    });
+  });
+
+  it("rate-limit hit → 429 with Retry-After", async () => {
+    rateLimitMock.mockResolvedValueOnce({
+      success: false,
+      remaining: 0,
+      resetAt: Date.now() + 1000,
+      limit: 10,
+    });
+    const res: any = await familyPOST(
+      mockReq({ relationship: "partner", relatedEmail: "x@y.com" }),
+    );
+    expect(res.status).toBe(429);
+    // Should never even reach the create call.
+    expect(frCreate).not.toHaveBeenCalled();
   });
 
   it("rejects invalid relationship", async () => {

@@ -147,7 +147,8 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
     const snap = memberUser.eqSnapshots?.[0];
     return {
       name: memberUser.name || "Contacto",
-      brainStyle: memberUser.brainStyle || "Strategist",
+      // brainStyle lives on EqSnapshot, not User.
+      brainStyle: snap?.brainStyle || "Strategist",
       talents: snap?.talents?.map((t) => t.key) || [],
       competencies:
         snap?.competencies?.map((c) => ({ key: c.key, score: c.score || 0 })) || [],
@@ -216,7 +217,7 @@ export async function POST(req: NextRequest) {
 
     const body = (await req.json()) as ComposeInput;
     const userSnap = user.eqSnapshots?.[0];
-    const userBrainStyle = user.brainStyle || "Strategist";
+    const userBrainStyle = userSnap?.brainStyle || "Strategist";
     const userTalents = userSnap?.talents?.map((t) => t.key) || [];
 
     /* =========================================================

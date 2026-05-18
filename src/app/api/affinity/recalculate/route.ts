@@ -73,7 +73,8 @@ async function autoRecalcAffinity({
     });
     if (!user) throw new Error("Usuario no encontrado");
 
-    const isAdmin = user.plan === "admin" || user.plan === "super";
+    // user.plan is a Plan object (or null), not a string — read .slug.
+    const isAdmin = user.plan?.slug === "admin" || user.plan?.slug === "super";
 
     // For admin users: process ALL members in their tenant, not just their own
     let memberWhere: any = { ownerId: userId };

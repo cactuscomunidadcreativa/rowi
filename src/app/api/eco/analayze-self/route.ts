@@ -11,8 +11,9 @@ export async function GET() {
 
     if (!user) return NextResponse.json({ ok: false, error: "Usuario no encontrado" });
 
-    const brainStyle = user.brainStyle || "Strategist";
+    // brainStyle lives on EqSnapshot, not on User directly.
     const eq = user.eqSnapshots?.[0];
+    const brainStyle = eq?.brainStyle || "Strategist";
     const tone = brainStyle === "Guardian"
       ? "calmado y estructurado"
       : brainStyle === "Energizer"

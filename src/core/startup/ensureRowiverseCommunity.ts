@@ -17,21 +17,24 @@ export async function ensureRowiverseCommunity() {
   const translations = [
     { ns: "common", key: "hello", locale: "es", text: "Hola", tenantId: rowi.id },
     { ns: "common", key: "hello", locale: "en", text: "Hello", tenantId: rowi.id },
-    { ns: "dashboard", key: "welcome", locale: "es", text: "Bienvenido al Hub", tenantId: rowi.id },
-    { ns: "dashboard", key: "welcome", locale: "en", text: "Welcome to the Hub", tenantId: rowi.id },
+    { ns: "dashboard", key: "welcome", lang: "es", value: "Bienvenido al Hub", tenantId: rowi.id },
+    { ns: "dashboard", key: "welcome", lang: "en", value: "Welcome to the Hub", tenantId: rowi.id },
   ];
 
+  // Translation schema: unique [tenantId, ns, key, lang]. Compound unique
+  // name follows the order — tenantId_ns_key_lang. Field is `lang` (not
+  // locale) and `value` (not text).
   for (const t of translations) {
     await prisma.translation.upsert({
       where: {
-        ns_key_locale_tenantId: {
+        tenantId_ns_key_lang: {
+          tenantId: t.tenantId,
           ns: t.ns,
           key: t.key,
-          locale: t.locale,
-          tenantId: t.tenantId
-        }
+          lang: t.lang,
+        },
       },
-      update: { text: t.text },
+      update: { value: t.value },
       create: t,
     });
   }

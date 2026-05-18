@@ -53,10 +53,12 @@ export async function requireSuperAdmin(): Promise<AuthResult> {
 
   if (!user.isSuperAdmin) {
     // Log unauthorized access attempt
-    logUnauthorizedAccess(user.id, "ADMIN_API", {
-      email: user.email,
-      reason: "Attempted admin API access without SuperAdmin role",
-    }).catch(() => {}); // Non-blocking
+    // Signature: (path, reason, req?). Stuffing user info into a faux
+    // request object was wrong — the helper only reads IP + UA headers.
+    logUnauthorizedAccess(
+      "ADMIN_API",
+      `User ${user.email} attempted admin API access without SuperAdmin role`,
+    ).catch(() => {});
 
     return {
       user: null,
@@ -161,10 +163,10 @@ export async function requireAdminWithScope(): Promise<ScopedAuthResult> {
     return { user, scope: { type: "rowiverse", id: null }, error: null };
   }
 
-  logUnauthorizedAccess(user.id, "ADMIN_DASHBOARD", {
-    email: user.email,
-    reason: "No admin scope found",
-  }).catch(() => {});
+  logUnauthorizedAccess(
+    "ADMIN_DASHBOARD",
+    `User ${user.email} attempted admin dashboard access — no admin scope`,
+  ).catch(() => {});
 
   return {
     user: null,

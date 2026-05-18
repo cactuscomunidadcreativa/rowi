@@ -454,14 +454,17 @@ export async function recordActivity(
 
   const points = options?.points ?? basePoints[activityType] ?? 10;
 
-  // Mapear a PointReason del schema
+  // Mapear a PointsReason del schema. The activity → reason map was
+  // out of sync with the enum (CHAT_SESSION / MICROLEARNING /
+  // COMMUNITY_CONTRIBUTION / DAILY_CHECKIN don't exist) — use the
+  // actual enum members.
   const reasonMap: Record<string, PointReason> = {
-    CHAT: "CHAT_SESSION",
-    MICROLEARNING: "MICROLEARNING",
-    EQ_CHECKIN: "COMMUNITY_CONTRIBUTION",
-    DAILY_LOGIN: "DAILY_CHECKIN",
-    SOCIAL_POST: "POST" as PointReason,
-    SOCIAL_COMMENT: "COMMENT" as PointReason,
+    CHAT: "CHAT",
+    MICROLEARNING: "MICRO_LEARNING",
+    EQ_CHECKIN: "ACHIEVEMENT",
+    DAILY_LOGIN: "DAILY_LOGIN",
+    SOCIAL_POST: "POST",
+    SOCIAL_COMMENT: "COMMENT",
     SOCIAL_REACTION: "REACTION",
     SOCIAL_CONNECTION: "CONNECTION",
     NOBLE_GOAL: "NOBLE_GOAL",

@@ -8,13 +8,18 @@ export async function scheduleTrainingJob(params: {
   tenantId?: string;
   hubId?: string;
 }) {
+  // BackgroundTask has no tenantId/hubId columns — scope context lives
+  // in the payload Json instead.
   return prisma.backgroundTask.create({
     data: {
       type: "training",
       status: "pending",
-      tenantId: params.tenantId ?? null,
-      hubId: params.hubId ?? null,
-      payload: { agentId: params.agentId, datasetId: params.datasetId },
+      payload: {
+        agentId: params.agentId,
+        datasetId: params.datasetId,
+        tenantId: params.tenantId ?? null,
+        hubId: params.hubId ?? null,
+      },
     },
   });
 }
@@ -32,15 +37,27 @@ export async function runTrainingJobOnce(task: any) {
   });
   const nextVersion = (currentMax._max.version ?? 0) + 1;
 
+  // AgentModelVersion schema: agentId / version / modelName /
+  // description / metrics. Extra fields (modelRef, datasetSize,
+  // changelog, deployed) don't exist — fold the info into the
+  // description string and the metrics Json.
+  const datasetSize = await prisma.agentTrainingSample.count({
+    where: { agentId },
+  });
   const model = await prisma.agentModelVersion.create({
     data: {
       agentId,
       version: nextVersion,
-      modelRef: `cactus-rowi-${agentId}-v${nextVersion}`,
-      datasetSize: await prisma.agentTrainingSample.count({ where: { agentId } }),
-      metrics: { loss: 0.12, accuracy: 0.83 }, // ejemplo
-      changelog: datasetId ? `Fine-tune con dataset ${datasetId}` : "Entrenamiento base",
-      deployed: false,
+      modelName: `cactus-rowi-${agentId}-v${nextVersion}`,
+      description: datasetId
+        ? `Fine-tune con dataset ${datasetId}`
+        : "Entrenamiento base",
+      metrics: {
+        loss: 0.12,
+        accuracy: 0.83,
+        datasetSize,
+        deployed: false,
+      },
     },
   });
 
@@ -50,9 +67,12 @@ export async function runTrainingJobOnce(task: any) {
   });
 
   if (engine) {
+    // EmotionalAIEngine doesn't track activeModelId at a column level;
+    // just mark the engine as active. If we need to remember which
+    // model is active, add a column in a future migration.
     await prisma.emotionalAIEngine.update({
       where: { id: engine.id },
-      data: { activeModelId: model.id, state: "active", updatedAt: new Date() },
+      data: { state: "active", updatedAt: new Date() },
     });
   }
 

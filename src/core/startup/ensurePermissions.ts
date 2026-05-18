@@ -66,17 +66,29 @@ export async function ensurePermissions() {
     }] : []),
   ];
 
+  // scopeType is the PermissionScope enum, not a free string. The
+  // literal values match enum members (rowiverse / superhub / hub /
+  // tenant / organization / community) — assert them as the enum type.
   for (const perm of permDefs) {
+    const scopeType = perm.scopeType as
+      | "rowiverse"
+      | "superhub"
+      | "hub"
+      | "tenant"
+      | "organization"
+      | "community";
     const existing = await prisma.userPermission.findFirst({
       where: {
         userId: perm.userId,
         role: perm.role,
-        scopeType: perm.scopeType,
+        scopeType,
         scopeId: perm.scopeId,
       },
     });
     if (!existing) {
-      await prisma.userPermission.create({ data: perm });
+      await prisma.userPermission.create({
+        data: { ...perm, scopeType },
+      });
       console.log(`  ✅ Permiso creado: ${perm.scopeType} → ${perm.role}`);
     } else {
       console.log(`  ⏭️ Permiso ya existe: ${perm.scopeType} → ${perm.role}`);

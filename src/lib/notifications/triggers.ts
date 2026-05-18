@@ -293,12 +293,17 @@ export async function triggerMemberJoined(
   member: { name: string },
   excludeUserId?: string
 ): Promise<void> {
-  // Get all hub members (admins only for this notification)
+  // Get hub admins/owners for this notification. HubRoleDynamic has no
+  // `level` column — match by role name instead.
   const memberships = await prisma.hubMembership.findMany({
     where: {
       hubId,
       userId: excludeUserId ? { not: excludeUserId } : undefined,
-      role: { level: { gte: 50 } }, // Admin level or higher
+      role: {
+        name: {
+          in: ["admin", "owner", "Admin", "Owner", "ADMIN", "OWNER"],
+        },
+      },
     },
     include: { hub: { select: { name: true } } },
     take: 10, // Limit notifications

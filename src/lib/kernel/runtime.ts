@@ -13,7 +13,10 @@ import { detectPatternsForEngine } from "./patterns.service";
  */
 export class EmotionalKernel {
   private static isRunning = false;
-  private ticker?: NodeJS.Timeout;
+  // ticker needs to be static so the static start()/stop() methods can
+  // see it via `this`. Was an instance member which made TS rightfully
+  // complain (and meant the timer was never tracked correctly).
+  private static ticker?: NodeJS.Timeout;
 
   static start(pollMs = 5000) {
     if (this.isRunning) return;

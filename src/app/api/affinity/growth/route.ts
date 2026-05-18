@@ -33,8 +33,12 @@ export async function GET(req: NextRequest) {
 
     const diffs: number[] = [], aVals: number[] = [], bVals: number[] = [];
     Object.keys(weights).forEach((k) => {
-      const ak = N(meSnap[k as keyof typeof meSnap]);
-      const bk = N(memberSnap[k as keyof typeof memberSnap]);
+      // Subfactor fields can be string | number | Date | null at the
+      // type level — coerce to number for N().
+      const rawA = meSnap[k as keyof typeof meSnap];
+      const rawB = memberSnap[k as keyof typeof memberSnap];
+      const ak = typeof rawA === "number" ? N(rawA) : null;
+      const bk = typeof rawB === "number" ? N(rawB) : null;
       if (ak != null) aVals.push(ak);
       if (bk != null) bVals.push(bk);
       if (ak != null && bk != null) diffs.push(Math.abs(ak - bk) * (weights[k as keyof typeof weights] ?? 0.125));

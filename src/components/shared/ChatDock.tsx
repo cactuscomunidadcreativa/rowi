@@ -76,7 +76,10 @@ export default function ChatDock({
     if (j?.coach) {
       const lines = [j.coach.pause, ...(j.coach.questions || [])].filter(Boolean);
       if (lines.length)
-        setMsgs((m) => [...m, ...lines.map((t: string) => ({ role: "rowi", text: t }))]);
+        setMsgs((m) => [
+          ...m,
+          ...lines.map((t: string) => ({ role: "rowi" as const, text: t })),
+        ]);
     }
 
     if (j?.handoff) {
@@ -91,13 +94,16 @@ export default function ChatDock({
           ? t("chat.rowi.affinity") || "Rowi Afinidad"
           : t("chat.rowi.eco") || "Rowi Comunicación";
 
+      // t() takes a string fallback, not an interpolation object — do
+      // the substitution manually.
+      const handoffTemplate =
+        t("chat.handoff") ||
+        "Esto lo ve mejor {name}. Puedes abrir su módulo y seguimos allí ✨";
       setMsgs((m) => [
         ...m,
         {
-          role: "rowi",
-          text:
-            t("chat.handoff", { name }) ||
-            `Esto lo ve mejor ${name}. Puedes abrir su módulo y seguimos allí ✨`,
+          role: "rowi" as const,
+          text: handoffTemplate.replace("{name}", name),
         },
       ]);
     }

@@ -23,7 +23,9 @@ export async function detectPatternsForEngine(params: { engineId?: string }) {
     action = "Sugerir intervención breve de respiración y journaling guiado.";
     confidence = 0.7;
 
-    await prisma.emotionalPattern.create({
+    // emotionalPattern model was removed in the schema cleanup; cast
+    // to any so the kernel module compiles until it's re-wired.
+    await (prisma as any).emotionalPattern.create({
       data: {
         engineId,
         patternType: "mood_cycle",

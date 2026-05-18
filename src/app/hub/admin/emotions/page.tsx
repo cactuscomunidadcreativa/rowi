@@ -198,7 +198,7 @@ export default function EmotionsDashboardPage() {
           {/* HistoryLine expects { date, avg } — map overall4 → avg.
               HistoryLine has no `label` prop; title goes on ChartCard above. */}
           <HistoryLine
-            data={(series?.eq ?? []).map((s) => ({ date: s.date, avg: s.overall4 }))}
+            data={(series?.eq ?? []).map((s: { date: string; overall4: number }) => ({ date: s.date, avg: s.overall4 }))}
           />
         </ChartCard>
       </section>
@@ -222,7 +222,7 @@ export default function EmotionsDashboardPage() {
       <section>
         <ChartCard title={t("admin.emotions.affinityAvg")} icon={<Flame />}>
           <HistoryLine
-            data={(series?.affinity ?? []).map((s) => ({ date: s.date, avg: s.heat }))}
+            data={(series?.affinity ?? []).map((s: { date: string; heat: number }) => ({ date: s.date, avg: s.heat }))}
           />
         </ChartCard>
       </section>

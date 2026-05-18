@@ -79,7 +79,11 @@ export async function GET(req: NextRequest) {
             take: 1,
             select: {
               overall4: true,
-              pursuitAverages: true,
+              // K/C/G are the three pursuit axes; consumer below
+              // synthesizes pursuitAverages from them.
+              K: true,
+              C: true,
+              G: true,
             },
           },
         },
@@ -93,7 +97,11 @@ export async function GET(req: NextRequest) {
     // Formatear respuesta
     const profiles = users.map((u) => {
       const latestEQ = u.eqSnapshots?.[0];
-      const pursuits = latestEQ?.pursuitAverages as any;
+      // Synthesize pursuitAverages from K/C/G — the legacy `pursuitAverages`
+      // JSON column was removed; downstream code still expects this shape.
+      const pursuits = latestEQ
+        ? { K: latestEQ.K ?? 0, C: latestEQ.C ?? 0, G: latestEQ.G ?? 0 }
+        : null;
 
       return {
         id: u.id,
@@ -104,22 +112,26 @@ export async function GET(req: NextRequest) {
         country: u.country || null,
         city: u.city || null,
         language: u.language || "es",
-        eqLevel: latestEQ?.eqTotal
-          ? latestEQ.eqTotal >= 118
+        // EqSnapshot.overall4 is the headline score (legacy "eqTotal").
+        eqLevel: latestEQ?.overall4
+          ? latestEQ.overall4 >= 118
             ? "Expert"
-            : latestEQ.eqTotal >= 108
+            : latestEQ.overall4 >= 108
             ? "Skilled"
-            : latestEQ.eqTotal >= 92
+            : latestEQ.overall4 >= 92
             ? "Functional"
-            : latestEQ.eqTotal >= 82
+            : latestEQ.overall4 >= 82
             ? "Emerging"
             : "Challenge"
           : null,
+        // pursuits is the synthesized {K, C, G} object; map to legacy
+        // knowYourself / chooseYourself / giveYourself names the UI
+        // expects.
         pursuits: pursuits
           ? {
-              knowYourself: pursuits.knowYourself || null,
-              chooseYourself: pursuits.chooseYourself || null,
-              giveYourself: pursuits.giveYourself || null,
+              knowYourself: pursuits.K || null,
+              chooseYourself: pursuits.C || null,
+              giveYourself: pursuits.G || null,
             }
           : null,
         memberSince: u.createdAt?.toISOString(),

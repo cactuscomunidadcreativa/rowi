@@ -80,8 +80,8 @@ export async function GET() {
         minutes: 2,
       });
 
-    // 4️⃣ Análisis cognitivo del comunicador (Brain Style) - solo si el usuario lo tiene configurado
-    const brainStyle = user.brainStyle || null;
+    // 4️⃣ Análisis cognitivo del comunicador (Brain Style) — vive en EqSnapshot.
+    const brainStyle = snap?.brainStyle || null;
 
     const COMM_PREFS: Record<string, { pattern: string; risk: string }> = {
       Strategist: { pattern: "preciso y enfocado en lógica", risk: "puede sonar distante" },

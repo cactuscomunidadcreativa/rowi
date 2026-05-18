@@ -16,7 +16,9 @@ export async function syncUsers() {
     if (!member.userId || !member.user) {
       const snapshot = await prisma.eqSnapshot.findFirst({
         where: { memberId: member.id },
-        select: { name: true, email: true },
+        // EqSnapshot doesn't have a `name` column — `owner` is the
+        // free-text display name when one was imported.
+        select: { owner: true, email: true },
       });
 
       const email = snapshot?.email?.trim()?.toLowerCase();
@@ -27,7 +29,7 @@ export async function syncUsers() {
         user = await prisma.user.create({
           data: {
             email,
-            name: snapshot?.name || "Usuario Comunidad",
+            name: snapshot?.owner || "Usuario Comunidad",
             active: true,
           },
         });

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     const batches = await prisma.batch.findMany({
       where: { ownerId: owner.id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { startedAt: "desc" },
     });
 
     return NextResponse.json({ ok: true, batches });

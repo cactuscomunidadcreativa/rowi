@@ -7,12 +7,12 @@ export async function POST(req: Request) {
   const body = await req.json();
   // Aquí puedes validar firma/secret si usas Webhook.secret
   // y/o enrutar por tipo de evento a BackgroundTask.
+  // BackgroundTask has no tenantId / hubId columns — that scoping
+  // info lives inside payload Json instead.
   const created = await prisma.backgroundTask.create({
     data: {
       type: "analysis",
       status: "pending",
-      tenantId: body.tenantId ?? null,
-      hubId: body.hubId ?? null,
       payload: body,
     },
   });

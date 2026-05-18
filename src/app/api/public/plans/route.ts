@@ -25,7 +25,9 @@ export async function GET(req: NextRequest) {
         priceCents: true,
         durationDays: true,
         aiEnabled: true,
-        stripePriceId: true,
+        // Plan splits monthly + yearly into two columns; select both.
+        stripePriceIdMonthly: true,
+        stripePriceIdYearly: true,
         trialDays: true,
         seiIncluded: true,
         maxCommunities: true,

@@ -72,12 +72,13 @@ export async function GET(req: NextRequest) {
           city: true,
           language: true,
           createdAt: true,
-          // EQ Snapshots para mostrar nivel
+          // EQ Snapshots para mostrar nivel — EqSnapshot uses `at`
+          // for the timestamp and `overall4` as the headline score.
           eqSnapshots: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { at: "desc" },
             take: 1,
             select: {
-              eqTotal: true,
+              overall4: true,
               pursuitAverages: true,
             },
           },

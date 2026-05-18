@@ -34,10 +34,13 @@ export async function POST(req: Request) {
   try {
     const records = parse(text, { columns: true, skip_empty_lines: true });
     for (const rec of records) {
+      // UsageDaily groups by (tenant, feature, day, model) — no per-agent
+      // column. Default to OTHER when the CSV doesn't specify.
       await prisma.usageDaily.create({
         data: {
           tenantId: rec.tenantId,
-          agentId: rec.agentId || null,
+          feature: rec.feature || "OTHER",
+          model: rec.model || null,
           day: new Date(rec.day),
           tokensInput: Number(rec.tokensInput) || 0,
           tokensOutput: Number(rec.tokensOutput) || 0,

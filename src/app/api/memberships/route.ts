@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         role: data.role || "VIEWER",
         tokenQuota: data.tokenQuota ?? 0,
         tokenUsed: data.tokenUsed ?? 0,
-        status: data.status || "active",
+        // Membership model has no `status` column; legacy field dropped.
       },
       include: { user: true, tenant: true, plan: true },
     });
@@ -50,7 +50,7 @@ export async function PUT(req: Request) {
         planId: data.planId || null,
         tokenQuota: data.tokenQuota,
         tokenUsed: data.tokenUsed,
-        status: data.status,
+        // No `status` column on Membership.
       },
       include: { user: true, tenant: true, plan: true },
     });

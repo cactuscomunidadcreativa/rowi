@@ -58,8 +58,10 @@ export async function POST(req: Request) {
         type: "CUSTOM",
         model: model || "gpt-4o-mini",
         prompt: prompt || "",
-        temperature: temperature ?? 0.7,
-        maxTokens: maxTokens ?? 512,
+        // AgentConfig schema doesn't track temperature/maxTokens at
+        // the column level — they live in tools/customInstructions if
+        // needed. Drop them silently to keep the API compatible with
+        // older clients that send them.
         isActive: true,
       },
     });
@@ -82,14 +84,14 @@ export async function PATCH(req: Request) {
     const auth = await requireSuperAdmin();
     if (auth.error) return auth.error;
 
-    const { id, name, model, prompt, temperature, maxTokens, isActive } = await req.json();
+    const { id, name, model, prompt, isActive } = await req.json();
 
     if (!id)
       return NextResponse.json({ error: "id requerido" }, { status: 400 });
 
     const updated = await prisma.agentConfig.update({
       where: { id },
-      data: { name, model, prompt, temperature, maxTokens, isActive },
+      data: { name, model, prompt, isActive },
     });
 
     return NextResponse.json(updated);

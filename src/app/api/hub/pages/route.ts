@@ -53,15 +53,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Page columns: content (Json), seo (Json), published (Boolean).
+    // Legacy code spoke "blocks/meta/status/type" — translate to the
+    // current schema names.
     const page = await prisma.page.create({
       data: {
         tenantId,
         slug,
         title,
-        meta,
-        blocks,
-        status: "draft",
-        type: "page",
+        seo: meta,
+        content: blocks,
+        published: false,
       },
     });
 
@@ -92,7 +94,17 @@ export async function PATCH(req: NextRequest) {
 
     const page = await prisma.page.update({
       where: { id },
-      data: { title, slug, status, blocks, meta },
+      data: {
+        title,
+        slug,
+        content: blocks,
+        seo: meta,
+        // Accept the legacy "status" string but map to the boolean
+        // published column the schema actually has.
+        ...(typeof status === "string"
+          ? { published: status === "published" }
+          : {}),
+      },
     });
 
     return NextResponse.json(page);

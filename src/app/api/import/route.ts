@@ -278,15 +278,46 @@ async function ensureHierarchy(
 
   const org =
     (await prisma.organization.findUnique({ where: { slug: orgSlug } })) ||
-    (await prisma.organization.create({
-      data: {
-        slug: orgSlug,
-        name: orgSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        superHubId: superHub.id,
-        tenants: { connect: [{ id: tenant.id }] },
-        hubs: { connect: [{ id: hub.id }] },
-      },
-    }));
+    (async () => {
+      // Organization ↔ Tenant and Organization ↔ Hub are many-to-many
+      // via OrganizationToTenant / OrganizationToHub junction tables —
+      // not direct relations. Create the Organization first then upsert
+      // the link rows.
+      const created = await prisma.organization.create({
+        data: {
+          slug: orgSlug,
+          name: orgSlug
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase()),
+          superHubId: superHub.id,
+        },
+      });
+      await prisma.organizationToTenant
+        .upsert({
+          where: {
+            organizationId_tenantId: {
+              organizationId: created.id,
+              tenantId: tenant.id,
+            },
+          },
+          update: {},
+          create: { organizationId: created.id, tenantId: tenant.id },
+        })
+        .catch(() => {});
+      await prisma.organizationToHub
+        .upsert({
+          where: {
+            hubId_organizationId: {
+              hubId: hub.id,
+              organizationId: created.id,
+            },
+          },
+          update: {},
+          create: { organizationId: created.id, hubId: hub.id },
+        })
+        .catch(() => {});
+      return created;
+    })();
 
   return { superHub, tenant, hub, org };
 }

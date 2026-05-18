@@ -67,17 +67,14 @@ export async function POST(req: NextRequest) {
     // =====================================================
     // 💾 Guardar registro en la base de datos
     // =====================================================
+    // CsvUpload doesn't have a `meta` column — file metadata is
+    // dropped here. If we want to track filename/size/type, add a
+    // Json column to the model in a follow-up migration.
     const upload = await prisma.csvUpload.create({
       data: {
         userEmail: user.email,
         dataset,
         rowCount: totalRows,
-        meta: {
-          fileName: file.name,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date().toISOString(),
-        },
       },
     });
 

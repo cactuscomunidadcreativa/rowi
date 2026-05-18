@@ -393,7 +393,7 @@ function MicroLearningContent() {
 }
 
 export default function MicroLearningPage() {
-  const { lang } = useI18n();
+  const { locale: lang } = useI18n();
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[60vh]">

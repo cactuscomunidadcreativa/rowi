@@ -146,8 +146,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: err.message }, { status: 400 });
     }
 
-    // Verificar límites del plan
-    const planLimits = user.plan?.meta as any;
+    // Verificar límites del plan — Plan.limitations is the Json column;
+    // legacy code referenced .meta which doesn't exist on this model.
+    const planLimits = (user.plan?.limitations as Record<string, any> | null) || {};
     const maxInvites = planLimits?.maxInvites ?? 10; // Default: 10 invitaciones
 
     const existingInvites = await prisma.inviteToken.count({

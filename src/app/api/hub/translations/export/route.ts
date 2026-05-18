@@ -89,6 +89,7 @@ export async function GET() {
     }
 
     for (const t of dbTranslations) {
+      if (!t.lang) continue;
       const key = `${t.ns}:${t.key}`;
       if (!merged[key]) merged[key] = { source: "Hub Maestro", ns: t.ns, key: t.key };
       merged[key][t.lang] = t.value;

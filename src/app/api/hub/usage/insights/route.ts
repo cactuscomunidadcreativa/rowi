@@ -11,7 +11,9 @@ export async function GET() {
   });
   const data = rows.map(r => ({
     tenantId: r.tenantId,
-    agentId: r.agentId,
+    // UsageDaily doesn't track per-agent — feature is the closest grouping.
+    feature: r.feature,
+    model: r.model,
     day: r.day,
     tokensInput: r.tokensInput,
     tokensOutput: r.tokensOutput,

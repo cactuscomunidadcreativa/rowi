@@ -222,10 +222,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     // Crear mapeo país → región (para filtrado dinámico en frontend)
     const countryToRegion: Record<string, string> = {};
     for (const stat of countryRegionStats) {
-      if (stat.country && stat.region) {
+      // Hoist to consts so TS doesn't lose narrowing inside the nested
+      // .find() arrow callback below.
+      const country = stat.country;
+      const region = stat.region;
+      if (country && region) {
         // Si un país tiene múltiples regiones, usar la región con más registros
-        if (!countryToRegion[stat.country] || stat._count > (countryRegionStats.find(s => s.country === stat.country && s.region === countryToRegion[stat.country])?._count || 0)) {
-          countryToRegion[stat.country] = stat.region;
+        if (!countryToRegion[country] || stat._count > (countryRegionStats.find(s => s.country === country && s.region === countryToRegion[country])?._count || 0)) {
+          countryToRegion[country] = region;
         }
       }
     }

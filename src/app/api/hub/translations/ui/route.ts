@@ -40,13 +40,13 @@ export async function GET(req: Request) {
         item = { key: r.key, es: "", en: "", pt: "", it: "" };
         grouped[ns].push(item);
       }
-      item[r.lang] = r.value;
+      if (r.lang) item[r.lang] = r.value;
 
       // También generar lista plana para vistas tabulares
       const fullKey = `${ns}.${r.key}`;
       const flatEntry = flatList.find((f) => f.fullKey === fullKey);
       if (flatEntry) {
-        flatEntry[r.lang] = r.value;
+        if (r.lang) flatEntry[r.lang] = r.value;
       } else {
         flatList.push({
           fullKey,

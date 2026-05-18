@@ -36,6 +36,7 @@ export async function GET(req: Request) {
 
     const map = new Map<string, Record<string, string>>();
     for (const t of translations) {
+      if (!t.lang) continue; // Skip rows with no lang column populated
       const fullKey = `${t.ns}.${t.key}`;
       const entry = map.get(fullKey) || {};
       entry[t.lang] = t.value || "";

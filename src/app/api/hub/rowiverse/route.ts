@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const verse = await prisma.rowiVerse.findFirst({
       include: {
-        communities: true,
+        communitiesSet: true,
         createdBy: { select: { id: true, name: true, email: true } },
       },
     });
@@ -43,7 +43,7 @@ export async function GET() {
       createdBy: verse.createdById,
       createdAt: verse.createdAt,
       updatedAt: verse.updatedAt,
-      communitiesCount: verse.communities.length,
+      communitiesCount: verse.communitiesSet.length,
       usersCount,
       countriesCount: countries.length,
       affinitiesCount,

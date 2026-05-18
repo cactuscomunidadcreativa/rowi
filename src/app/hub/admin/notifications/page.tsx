@@ -51,7 +51,7 @@ interface NotificationItem {
 
 export default function NotificationsAdminPage() {
   const { data: session } = useSession();
-  const { t, locale } = useI18n();
+  const { t, lang: locale } = useI18n();
   const [activeTab, setActiveTab] = useState<"overview" | "queue" | "send" | "templates">("overview");
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);

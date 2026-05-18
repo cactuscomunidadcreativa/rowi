@@ -22,6 +22,15 @@ import {
   type SystemConfigKey,
 } from "@/lib/config/systemConfig";
 import { logConfigChange } from "@/lib/audit/auditLog";
+import { telemetry } from "@/lib/telemetry";
+
+const TELEMETRY_KEYS = new Set<SystemConfigKey>([
+  "TELEMETRY_PROVIDER",
+  "SENTRY_DSN",
+  "NEXT_PUBLIC_SENTRY_DSN",
+  "AXIOM_TOKEN",
+  "AXIOM_DATASET",
+]);
 
 /**
  * Verifica si el usuario es administrador del sistema
@@ -145,6 +154,13 @@ export async function POST(req: NextRequest) {
     // 📝 Log de auditoría
     await logConfigChange(session.user.id || null, key, "updated", req);
 
+    // 🔄 Si tocamos algo del bloque de observability, invalidar el cache
+    // del telemetry adapter para que la próxima captura use el nuevo
+    // valor sin esperar al TTL de 5 min.
+    if (TELEMETRY_KEYS.has(key as SystemConfigKey)) {
+      telemetry.refreshConfig();
+    }
+
     return NextResponse.json({
       ok: true,
       message: "Configuración guardada correctamente",
@@ -192,6 +208,11 @@ export async function DELETE(req: NextRequest) {
 
     // 📝 Log de auditoría
     await logConfigChange(session.user.id || null, key, "deleted", req);
+
+    // 🔄 Misma razón que en POST: invalida el cache si tocamos observability.
+    if (TELEMETRY_KEYS.has(key as SystemConfigKey)) {
+      telemetry.refreshConfig();
+    }
 
     return NextResponse.json({
       ok: true,

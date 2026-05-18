@@ -19,6 +19,13 @@ jest.mock("@/lib/logging", () => ({
   },
 }));
 
+// The telemetry adapter dynamically imports @/lib/config/systemConfig
+// inside loadConfig. In tests we don't want that to hit prisma — provide
+// a stub that returns empty config so the adapter falls through to env.
+jest.mock("@/lib/config/systemConfig", () => ({
+  getSystemConfigs: jest.fn(async () => ({})),
+}));
+
 import { telemetry } from "@/lib/telemetry";
 import { secureLog } from "@/lib/logging";
 

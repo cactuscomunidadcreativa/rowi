@@ -29,11 +29,77 @@ type TelemetryContext = Record<string, unknown>;
 
 type TelemetryProvider = "log_only" | "sentry" | "axiom";
 
-function getProvider(): TelemetryProvider {
+/**
+ * Cached resolved values from SystemConfig (DB) + env. The cache lives
+ * for the lifetime of the serverless function instance; admin changes
+ * propagate on next cold start (or you can hit /api/admin/settings to
+ * refresh nodes serving that route). This avoids a DB hit per
+ * captureException — which would be a perf disaster.
+ */
+let configCache: {
+  provider: TelemetryProvider;
+  sentryDsn?: string;
+  axiomToken?: string;
+  axiomDataset: string;
+  loadedAt: number;
+} | null = null;
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
+
+async function loadConfig(): Promise<typeof configCache> {
+  if (configCache && Date.now() - configCache.loadedAt < CACHE_TTL_MS) {
+    return configCache;
+  }
+  // Dynamic import to avoid pulling prisma into bundles that never call
+  // telemetry (and to avoid a circular import — telemetry is called
+  // from prisma's own middleware).
+  let providerRaw = "";
+  let sentryDsn = "";
+  let axiomToken = "";
+  let axiomDataset = "";
+  try {
+    const { getSystemConfigs } = await import("@/lib/config/systemConfig");
+    const cfg = await getSystemConfigs([
+      "TELEMETRY_PROVIDER",
+      "SENTRY_DSN",
+      "AXIOM_TOKEN",
+      "AXIOM_DATASET",
+    ]);
+    providerRaw = (cfg.TELEMETRY_PROVIDER || "").toLowerCase();
+    sentryDsn = cfg.SENTRY_DSN || "";
+    axiomToken = cfg.AXIOM_TOKEN || "";
+    axiomDataset = cfg.AXIOM_DATASET || "rowi_errors";
+  } catch {
+    // DB unreachable (e.g. during build, in tests) — fall back to env.
+    providerRaw = (process.env.TELEMETRY_PROVIDER || "").toLowerCase();
+    sentryDsn = process.env.SENTRY_DSN || "";
+    axiomToken = process.env.AXIOM_TOKEN || "";
+    axiomDataset = process.env.AXIOM_DATASET || "rowi_errors";
+  }
+
+  let provider: TelemetryProvider = "log_only";
+  if (providerRaw === "sentry" && sentryDsn) provider = "sentry";
+  else if (providerRaw === "axiom" && axiomToken) provider = "axiom";
+
+  configCache = {
+    provider,
+    sentryDsn,
+    axiomToken,
+    axiomDataset,
+    loadedAt: Date.now(),
+  };
+  return configCache;
+}
+
+/**
+ * Synchronous best-effort provider hint. Used by isEnabled() callers
+ * that don't want to await. Falls back to env only.
+ */
+function getProviderSync(): TelemetryProvider {
   const env = (process.env.TELEMETRY_PROVIDER || "").toLowerCase();
   if (env === "sentry" && process.env.SENTRY_DSN) return "sentry";
   if (env === "axiom" && process.env.AXIOM_TOKEN) return "axiom";
-  return "log_only";
+  return configCache?.provider || "log_only";
 }
 
 function envContext(): TelemetryContext {
@@ -60,16 +126,20 @@ function hashSignature(err: unknown): string {
 
 /**
  * Send to whatever backend is configured. Lazy imports so the SDK
- * isn't pulled into bundles unless the env var actually flips.
+ * isn't pulled into bundles unless the provider actually flips.
+ *
+ * Provider + credentials come from `loadConfig()` — which reads
+ * SystemConfig (DB) first and falls back to env. This means an admin
+ * can flip the DSN in /hub/admin/settings without redeploying.
  */
 async function forwardToBackend(
   kind: "exception" | "message",
   payload: TelemetryContext,
 ): Promise<void> {
-  const provider = getProvider();
-  if (provider === "log_only") return;
+  const cfg = await loadConfig();
+  if (!cfg || cfg.provider === "log_only") return;
 
-  if (provider === "sentry") {
+  if (cfg.provider === "sentry" && cfg.sentryDsn) {
     const Sentry = await import("@sentry/nextjs");
     if (kind === "exception") {
       Sentry.captureException(payload.error, { extra: payload });
@@ -79,14 +149,10 @@ async function forwardToBackend(
     return;
   }
 
-  if (provider === "axiom") {
+  if (cfg.provider === "axiom" && cfg.axiomToken) {
     const { Axiom } = await import("@axiomhq/js");
-    const client = new Axiom({ token: process.env.AXIOM_TOKEN! });
-    const dataset = process.env.AXIOM_DATASET || "rowi_errors";
-    // Axiom ingests are batched server-side; one event per call is fine
-    // for our volume but if it grows we should buffer in-memory and
-    // flush on a timer.
-    client.ingest(dataset, [
+    const client = new Axiom({ token: cfg.axiomToken });
+    client.ingest(cfg.axiomDataset, [
       {
         ...payload,
         _kind: kind,
@@ -126,7 +192,7 @@ export const telemetry = {
     forwardToBackend("exception", payload).catch((forwardErr) => {
       // Don't recurse — log once and move on.
       secureLog.warn("telemetry.forward_failed", {
-        provider: getProvider(),
+        provider: getProviderSync(),
         forwardErr: String(forwardErr),
       });
     });
@@ -151,8 +217,19 @@ export const telemetry = {
    * Lightweight "is anything configured?" check so call sites can
    * branch on whether to add expensive context that's only useful
    * when shipping to a backend (e.g. attach a heavy request payload).
+   * Sync — uses last cache + env. Best-effort.
    */
   isEnabled(): boolean {
-    return getProvider() !== "log_only";
+    return getProviderSync() !== "log_only";
+  },
+
+  /**
+   * Force a refresh of the resolved provider config. Useful right
+   * after an admin saves a new DSN via /hub/admin/settings — call
+   * this from the settings POST route so the change takes effect
+   * immediately on that node without waiting for the 5min TTL.
+   */
+  refreshConfig() {
+    configCache = null;
   },
 };

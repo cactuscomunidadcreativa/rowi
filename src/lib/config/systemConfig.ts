@@ -89,7 +89,14 @@ export function decryptValue(encryptedText: string): string {
 /**
  * Categorías de configuración
  */
-export type ConfigCategory = "ai" | "auth" | "email" | "payments" | "general" | "database";
+export type ConfigCategory =
+  | "ai"
+  | "auth"
+  | "email"
+  | "payments"
+  | "general"
+  | "database"
+  | "observability";
 
 /**
  * Definición de claves del sistema
@@ -117,6 +124,17 @@ export const SYSTEM_CONFIG_KEYS = {
   // General
   HUB_ACCESS_KEY: { category: "general" as ConfigCategory, description: "Clave de acceso del Hub", isSecret: true },
   HUB_ADMINS: { category: "general" as ConfigCategory, description: "Emails de administradores (separados por coma)", isSecret: false },
+
+  // Observability — Sentry / Axiom / slow-query tuning.
+  // Server-side captures via src/lib/telemetry pick these up from DB first,
+  // env vars as fallback. NEXT_PUBLIC_SENTRY_DSN must additionally be set
+  // in Vercel env for the browser bundle to see it.
+  TELEMETRY_PROVIDER: { category: "observability" as ConfigCategory, description: "Backend de telemetría: log_only | sentry | axiom", isSecret: false },
+  SENTRY_DSN: { category: "observability" as ConfigCategory, description: "Sentry DSN (server + edge runtime)", isSecret: true },
+  NEXT_PUBLIC_SENTRY_DSN: { category: "observability" as ConfigCategory, description: "Sentry DSN para el browser (también debe ir en Vercel env para que el bundle del cliente lo vea)", isSecret: true },
+  AXIOM_TOKEN: { category: "observability" as ConfigCategory, description: "Axiom Ingest Token", isSecret: true },
+  AXIOM_DATASET: { category: "observability" as ConfigCategory, description: "Axiom dataset name (default: rowi_errors)", isSecret: false },
+  PRISMA_SLOW_QUERY_MS: { category: "observability" as ConfigCategory, description: "Threshold en ms para logear queries lentas (default: 500)", isSecret: false },
 } as const;
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_KEYS;

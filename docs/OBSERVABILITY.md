@@ -1,23 +1,57 @@
 # Observability — Activation Guide
 
 The codebase ships with telemetry wiring for both Sentry and Axiom.
-Everything is **dormant by default**: no DSN/token in env → telemetry
-mirrors to `secureLog` only, nothing leaves the box.
+Everything is **dormant by default**: no DSN/token configured →
+telemetry mirrors to `secureLog` only, nothing leaves the box.
 
-To activate, pick one provider, create the account, paste two env
-vars in Vercel, and redeploy. No code changes required.
+You have **two ways to activate**, and you can mix them freely:
+
+1. **Vercel env vars** (canonical). Required for browser-side Sentry
+   init (the `NEXT_PUBLIC_SENTRY_DSN` must be in the build env so the
+   client bundle embeds it). Read at boot.
+2. **`/hub/admin/settings`** (UI, encrypted in DB). Reads from
+   `SystemConfig` table (AES-256-GCM at rest). Picked up by the
+   server-side telemetry adapter on the next request and cached for
+   5 minutes. The adapter cache is **auto-invalidated** when you save
+   an observability key from this UI, so changes take effect on the
+   serving node immediately.
+
+**Recommendation**: paste it in `/hub/admin/settings` first to try
+it out (no redeploy needed for server-side capture), then put the
+same values in Vercel env so browser-side and cold-start paths also
+see them.
 
 ## What's already wired
 
 | Piece | Status | Notes |
 | --- | --- | --- |
-| `src/lib/telemetry/index.ts` | ✅ shipped | `captureException`, `captureMessage`, lazy imports for both SDKs |
+| `src/lib/telemetry/index.ts` | ✅ shipped | `captureException`, `captureMessage`, lazy imports, DB-backed config cache |
 | `src/core/prisma.ts` middleware | ✅ shipped | Fans `prisma.query_failed` into `telemetry.captureException` |
-| `sentry.client.config.ts` | ✅ shipped | Browser SDK init — no-op without `NEXT_PUBLIC_SENTRY_DSN` |
-| `instrumentation.ts` | ✅ shipped | Server + edge SDK init — no-op without `SENTRY_DSN` |
+| `sentry.client.config.ts` | ✅ shipped | Browser SDK init — no-op without `NEXT_PUBLIC_SENTRY_DSN` env |
+| `instrumentation.ts` | ✅ shipped | Server + edge SDK init — no-op without `SENTRY_DSN` env |
 | `@sentry/nextjs` dep | ✅ installed | v10.x in `package.json` |
 | `@axiomhq/js` dep | ✅ installed | v1.x in `package.json` |
+| `SystemConfig` keys | ✅ shipped | `TELEMETRY_PROVIDER`, `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `AXIOM_TOKEN`, `AXIOM_DATASET`, `PRISMA_SLOW_QUERY_MS` |
+| `/hub/admin/settings` UI | ✅ exists | New "observability" category auto-appears, with encrypted-at-rest values |
+| Cache invalidation hook | ✅ shipped | `telemetry.refreshConfig()` called by `/api/admin/settings` POST/DELETE when an observability key changes |
 | Tests | ✅ 7 cases | `src/__tests__/telemetry/telemetry.test.ts` |
+
+---
+
+## Quickest path (Sentry, in-app)
+
+1. https://sentry.io/signup → Next.js project → copy DSN.
+2. Go to `/hub/admin/settings` → "observability" section.
+3. Paste:
+   - `TELEMETRY_PROVIDER` = `sentry`
+   - `SENTRY_DSN` = your DSN
+   - `NEXT_PUBLIC_SENTRY_DSN` = same DSN (still needs to go in Vercel env for browser)
+4. Click save. Server-side capture is now live.
+5. For browser-side captures, also paste the DSN in Vercel env as
+   `NEXT_PUBLIC_SENTRY_DSN`. Redeploy.
+
+That's it. No code changes, no install, no env-only redeploy required
+for the server path.
 
 ---
 

@@ -102,26 +102,28 @@ curl -X POST https://www.rowiia.com/api/admin/nonexistent
 Within ~30 seconds it should appear in https://sentry.io under the
 `rowi` project.
 
-### 5. (Optional) Source maps for stack traces
+### 5. Source maps for stack traces (already wired)
 
-To get readable stack traces in Sentry, install the source map
-uploader:
-
-```bash
-pnpm add -D @sentry/cli
-```
-
-Then in Vercel env vars:
+`next.config.ts` is already wrapped with `withSentryConfig`. The
+wrapper is **inert by default** — it only uploads source maps when
+all four of these env vars are present at build time:
 
 ```
-SENTRY_AUTH_TOKEN=<sentry-auth-token>
+SENTRY_AUTH_TOKEN=<auth-token-from-sentry>
 SENTRY_ORG=<your-org-slug>
 SENTRY_PROJECT=rowi
+SENTRY_DSN=<your-dsn>
 ```
 
-And wrap `next.config.ts` with `withSentryConfig`. Skipped here
-because it changes the build pipeline — do it once you're sure
-you want Sentry long-term.
+Get the auth token at https://sentry.io → Settings → Account →
+**Auth Tokens** → Create new token. Scope: `project:releases`.
+
+Set those in Vercel env (Production scope), redeploy, and the next
+build will upload source maps automatically. Stack traces in Sentry
+UI become readable file paths instead of `main-abc123.js:1:8451`.
+
+`hideSourceMaps: true` is set so the maps don't ship publicly — only
+Sentry receives them.
 
 ---
 

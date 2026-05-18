@@ -1,5 +1,6 @@
 // next.config.ts
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // TODO: Remove ignoreBuildErrors after migrating API routes to Next.js 16 async params
@@ -145,4 +146,35 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * Sentry source-maps upload wrapper.
+ *
+ * When all three env vars are present at build time:
+ *   SENTRY_DSN
+ *   SENTRY_ORG
+ *   SENTRY_PROJECT
+ *   SENTRY_AUTH_TOKEN
+ *
+ * the wrapper uploads source maps to Sentry so error stack traces in
+ * the Sentry UI are de-minified. Without those env vars,
+ * withSentryConfig is effectively a no-op — the build proceeds
+ * unchanged.
+ *
+ * silent: true keeps the build log clean. widenClientFileUpload covers
+ * the dynamic chunks Next.js emits.
+ */
+const sentryOptions = {
+  silent: !process.env.CI,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Only attempt to upload when an auth token is actually configured.
+  // Otherwise the plugin is inert and source maps stay local.
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  reactComponentAnnotation: { enabled: false },
+};
+
+export default withSentryConfig(nextConfig, sentryOptions);

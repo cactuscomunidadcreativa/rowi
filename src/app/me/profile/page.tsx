@@ -127,8 +127,8 @@ export default function MeProfilePage() {
         <Field label="Titular" value={user?.headline || ""} />
         <Textarea label="Biografía" value={user?.bio || ""} />
         <div className="flex gap-3">
-          <Input label="LinkedIn" value={prefs.linkedIn} onChange={(v) => setPrefs({ ...prefs, linkedIn: v })} />
-          <Input label="Sitio web" value={prefs.website} onChange={(v) => setPrefs({ ...prefs, website: v })} />
+          <Input label="LinkedIn" value={prefs.linkedIn} onChange={(v: string) => setPrefs({ ...prefs, linkedIn: v })} />
+          <Input label="Sitio web" value={prefs.website} onChange={(v: string) => setPrefs({ ...prefs, website: v })} />
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -146,7 +146,7 @@ export default function MeProfilePage() {
           <ChipGroup
             options={["Propósito", "Aprendizaje", "Creatividad", "Empatía", "Impacto", "Autonomía", "Justicia", "Colaboración"]}
             selected={prefs.values}
-            onToggle={(v) => toggle(prefs, setPrefs, "values", v, 5)}
+            onToggle={(v: string) => toggle(prefs, setPrefs, "values", v, 5)}
           />
         </Block>
 
@@ -154,7 +154,7 @@ export default function MeProfilePage() {
           <ChipGroup
             options={["Directo", "Empático", "Estructurado", "Spontáneo", "Analítico", "Inspirador"]}
             selected={prefs.commSelf}
-            onToggle={(v) => toggle(prefs, setPrefs, "commSelf", v, 3)}
+            onToggle={(v: string) => toggle(prefs, setPrefs, "commSelf", v, 3)}
           />
         </Block>
       </GridTwo>
@@ -202,7 +202,7 @@ export default function MeProfilePage() {
           <ChipGroup
             options={["Resolver problemas", "Aprender", "Mentorear", "Construir", "Organizar", "Inspirar"]}
             selected={prefs.activates}
-            onToggle={(v) => toggle(prefs, setPrefs, "activates", v, 6)}
+            onToggle={(v: string) => toggle(prefs, setPrefs, "activates", v, 6)}
           />
         </Block>
 
@@ -210,7 +210,7 @@ export default function MeProfilePage() {
           <ChipGroup
             options={["Microgestión", "Falta de propósito", "Reuniones largas", "Ambigüedad", "Trabajo solitario", "Caos"]}
             selected={prefs.drains}
-            onToggle={(v) => toggle(prefs, setPrefs, "drains", v, 6)}
+            onToggle={(v: string) => toggle(prefs, setPrefs, "drains", v, 6)}
           />
         </Block>
       </GridTwo>

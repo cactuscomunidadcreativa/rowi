@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         plan: true,
         primaryTenant: {
           include: {
-            memberships: true,
+            members: true,
           },
         },
       },
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Contar miembros actuales
-    const currentMembers = user.primaryTenant?.memberships?.length || 1;
+    const currentMembers = user.primaryTenant?.members?.length || 1;
     const pendingInvites = await prisma.inviteToken.count({
       where: {
         userId: user.id,

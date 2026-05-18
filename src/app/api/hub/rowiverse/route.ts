@@ -40,7 +40,7 @@ export async function GET() {
       id: verse.id,
       name: verse.name,
       description: verse.description,
-      createdBy: verse.createdBy,
+      createdBy: verse.createdById,
       createdAt: verse.createdAt,
       updatedAt: verse.updatedAt,
       communitiesCount: verse.communities.length,

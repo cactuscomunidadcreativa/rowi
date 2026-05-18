@@ -46,14 +46,14 @@ export async function POST(req: NextRequest) {
 
     const announcement = await prisma.notificationQueue.create({
       data: {
-        userId: auth.userId!,
+        userId: auth.user!.id,
         tenantId: tenantId || null,
         channel: "IN_APP",
         type: "HUB_ANNOUNCEMENT",
         title,
         message: content,
         status: "PENDING",
-        metadata: { createdBy: auth.userId },
+        metadata: { createdBy: auth.user!.id },
       },
     });
 

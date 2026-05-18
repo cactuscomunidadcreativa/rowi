@@ -40,8 +40,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, tenants });
     }
 
-    // 3️⃣ SUPERHUB ADMIN → ver tenants bajo su superhub (usando superHubIds)
-    const superHubIds = auth?.superHubIds || [];
+    // 3️⃣ SUPERHUB ADMIN → ver tenants bajo su superhub (usando superHubs)
+    const superHubIds = (auth?.superHubs || [])
+      .map((sh) => sh?.id)
+      .filter((id): id is string => Boolean(id));
     if (superHubIds.length > 0 && await canAccess(userId, "superhub", superHubIds[0])) {
       const tenants = await prisma.tenant.findMany({
         where: { superHubId: { in: superHubIds } },

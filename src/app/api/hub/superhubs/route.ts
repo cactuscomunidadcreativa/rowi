@@ -44,8 +44,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(superhubs); // 👈 ARRAY directo
     }
 
-    // 3️⃣ Si el usuario tiene SuperHubs asignados (via superHubIds) → ver solo esos
-    const superHubIds = auth?.superHubIds || [];
+    // 3️⃣ Si el usuario tiene SuperHubs asignados (via superHubs) → ver solo esos
+    const superHubIds = (auth?.superHubs || [])
+      .map((sh) => sh?.id)
+      .filter((id): id is string => Boolean(id));
     if (superHubIds.length > 0) {
       const superhubs = await prisma.superHub.findMany({
         where: { id: { in: superHubIds } },

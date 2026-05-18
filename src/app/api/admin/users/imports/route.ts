@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     for (let i = 0; i < records.length; i += chunkSize) {
       const chunk = records.slice(i, i + chunkSize);
       await prisma.importRow.createMany({
-        data: chunk.map((row) => ({
+        data: chunk.map((row: Record<string, any>) => ({
           batchId: batch.id,
           email: row["Email"]?.toLowerCase() || null,
           name: row["Test Taker Name"] || null,

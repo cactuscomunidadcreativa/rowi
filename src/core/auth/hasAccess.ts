@@ -33,8 +33,17 @@ export async function canAccess(
   // 1️⃣ SUPERADMIN = acceso total
   if (await isSuperAdmin(userId)) return true;
 
-  // 2️⃣ Rol administrativo sobre ese scope
-  if (await isAdmin(userId, scopeType, scopeId)) return true;
+  // 2️⃣ Rol administrativo sobre ese scope.
+  // isAdmin only knows rowiverse/superhub/tenant/hub. For
+  // organization/community we skip to the scope check below.
+  if (
+    scopeType === "rowiverse" ||
+    scopeType === "superhub" ||
+    scopeType === "tenant" ||
+    scopeType === "hub"
+  ) {
+    if (await isAdmin(userId, scopeType, scopeId)) return true;
+  }
 
   // 3️⃣ Permiso simple sobre ese scope
   if (await hasScope(userId, scopeType, scopeId)) return true;

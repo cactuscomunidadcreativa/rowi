@@ -41,7 +41,8 @@ export type AuditAction =
   | "TENANT_DELETED"
   | "HUB_CREATED"
   | "HUB_UPDATED"
-  | "HUB_DELETED";
+  | "HUB_DELETED"
+  | "ACCOUNT_LINKED";
 
 interface AuditLogParams {
   userId?: string | null;

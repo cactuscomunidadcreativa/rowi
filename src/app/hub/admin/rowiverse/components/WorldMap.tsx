@@ -171,7 +171,7 @@ export default function WorldMap({ data, mapData }: Props) {
             maxZoom={8}
           >
             <Geographies geography={geoUrl}>
-              {({ geographies }: any) =>
+              {((({ geographies }: any) =>
                 geographies.map((geo: any) => (
                   <Geography
                     key={geo.rsmKey}
@@ -195,8 +195,7 @@ export default function WorldMap({ data, mapData }: Props) {
                       },
                     }}
                   />
-                ))
-              }
+                ))) as any)}
             </Geographies>
 
             {/* Render markers for each country */}

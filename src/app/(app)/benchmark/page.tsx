@@ -88,7 +88,7 @@ const OUTCOMES: { value: Outcome; labelEs: string; labelEn: string; icon: React.
   { value: "health", labelEs: "Salud", labelEn: "Health", icon: Activity },
 ];
 
-const PURSUIT_COLORS = {
+const PURSUIT_COLORS: Record<string, string> = {
   K: "#1E88E5", // Know - Azul
   C: "#E53935", // Choose - Rojo
   G: "#43A047", // Give - Verde

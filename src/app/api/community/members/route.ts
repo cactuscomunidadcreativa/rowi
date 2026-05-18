@@ -414,6 +414,12 @@ export async function POST(req: NextRequest) {
     if (!data.name?.trim())
       return NextResponse.json({ ok: false, error: "Nombre requerido" }, { status: 400 });
 
+    if (!owner.primaryTenantId) {
+      return NextResponse.json(
+        { error: "owner_has_no_primary_tenant" },
+        { status: 400 },
+      );
+    }
     const newMember = await prisma.communityMember.create({
       data: {
         ownerId: owner.id,

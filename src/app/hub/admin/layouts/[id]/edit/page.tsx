@@ -270,7 +270,11 @@ export default function EditLayoutPage() {
                 )}
               </div>
               <div
-                ref={(el) => (dropRefs.current[zoneName] = el)}
+                // React 19 expects ref callbacks to return void; the
+                // assignment expression returns the value. Wrap in {}.
+                ref={(el) => {
+                  dropRefs.current[zoneName] = el;
+                }}
                 className="min-h-[60px] p-2 border border-gray-300 rounded flex flex-wrap gap-2 bg-gray-50 dark:bg-zinc-800"
               >
                 {(zoneData.components || []).map((c: string, i: number) => (

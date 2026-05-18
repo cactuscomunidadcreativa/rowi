@@ -3,10 +3,13 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  // TODO: Remove ignoreBuildErrors after migrating API routes to Next.js 16 async params
-  // See: https://nextjs.org/docs/app/building-your-application/upgrading/version-16
-  // 482 errors to fix - mostly related to params being Promise in route handlers
-  typescript: { ignoreBuildErrors: true },
+  // Strict TS gates the build. Was previously set to `true` with a
+  // backlog of 198 errors; that backlog was cleared across commits A,
+  // B, C of the May 2026 TS-strict push. If a new error sneaks in,
+  // the build now fails fast in CI/Vercel — that's the desired
+  // signal. Flip back to true ONLY as a temporary unblock while a
+  // fresh batch is investigated.
+  typescript: { ignoreBuildErrors: false },
 
   // 🛡️ Disable source maps in production to protect code
   productionBrowserSourceMaps: false,

@@ -79,7 +79,10 @@ export async function POST() {
             type: base.type,
             model: base.model,
             prompt: base.prompt,
-            tools: base.tools,
+            // base.tools is Prisma JsonValue; pass through as the
+            // input expects InputJsonValue. The ?? null normalizes
+            // JSON `null` to DB null.
+            tools: base.tools ?? undefined,
             tone: base.tone,
             accessLevel: base.accessLevel,
             visibility: base.visibility,

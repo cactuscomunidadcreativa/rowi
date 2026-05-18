@@ -184,7 +184,9 @@ export async function GET(req: NextRequest) {
             },
           },
         });
-        interpretation = aiRes?.answer || null;
+        // aiRes can be string OR { answer, ... } depending on agent path.
+        interpretation =
+          (typeof aiRes === "string" ? aiRes : (aiRes as any)?.answer) || null;
       } catch (err: any) {
         console.warn("⚠️ IA desactivada temporalmente:", err);
       }

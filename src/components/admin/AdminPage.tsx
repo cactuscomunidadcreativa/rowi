@@ -210,13 +210,23 @@ export function AdminList({ children }: AdminListProps) {
 }
 
 interface AdminListItemProps {
+  /** Optional stable key — used by some callers as `key={...}`. */
+  key?: string;
   icon?: LucideIcon;
+  /** Optional tint applied to the icon (CSS color). */
+  iconColor?: string;
   title: ReactNode;
   subtitle?: ReactNode;
   badge?: ReactNode;
   meta?: ReactNode;
   actions?: ReactNode;
   onClick?: () => void;
+  /** Optional expandable section rendered below the row when toggled. */
+  expandedContent?: ReactNode;
+  /** Whether the expandable section is enabled. */
+  expandable?: boolean;
+  /** Optional pre-formatted timestamp shown alongside meta. */
+  timestamp?: ReactNode;
 }
 
 export function AdminListItem({
@@ -324,11 +334,13 @@ type BadgeVariantInternal =
 export type BadgeVariant =
   | BadgeVariantInternal
   | "default" // alias → neutral
-  | "danger"; // alias → error
+  | "danger" // alias → error
+  | "secondary"; // alias → neutral
 
 const BADGE_ALIAS: Record<string, BadgeVariantInternal> = {
   default: "neutral",
   danger: "error",
+  secondary: "neutral",
 };
 
 interface AdminBadgeProps {
@@ -697,6 +709,8 @@ interface AdminEmptyProps {
   titleKey: string;
   descriptionKey?: string;
   action?: ReactNode;
+  /** Optional children rendered below the description — e.g. a custom CTA. */
+  children?: ReactNode;
 }
 
 export function AdminEmpty({

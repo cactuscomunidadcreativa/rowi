@@ -31,7 +31,10 @@ export async function getAncestorOrgIds(orgId: string): Promise<string[]> {
   let depth = 0;
 
   while (currentId && depth < MAX_DEPTH) {
-    const org = await prisma.organization.findUnique({
+    const org: {
+      parentId: string | null;
+      inheritPermissions: boolean;
+    } | null = await prisma.organization.findUnique({
       where: { id: currentId },
       select: { parentId: true, inheritPermissions: true },
     });

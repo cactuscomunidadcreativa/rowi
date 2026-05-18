@@ -235,8 +235,12 @@ export async function GET(req: NextRequest) {
           summary: { heat, affinity_level, band },
         },
       });
+      // Some agent paths return a raw string, others wrap as { answer, ... }.
+      // Normalize to string for the column.
       ai_summary =
-        result?.answer ||
+        (typeof result === "string"
+          ? result
+          : (result as any)?.answer) ||
         "Relación analizada con IA: conexión emocional, colaboración y entendimiento evaluados.";
     }
 

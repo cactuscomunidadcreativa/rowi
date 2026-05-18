@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
         insight,
         actionPlan,
         metrics,
-        context,
+        // EqProgress column is `contextId`, not `context`.
+        contextId: context,
       },
     });
 

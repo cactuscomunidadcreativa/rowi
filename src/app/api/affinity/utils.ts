@@ -129,7 +129,8 @@ const COLL_BBP: Record<string, Record<string, number>> = {
   Sage:       { Strategist:80, Scientist:75, Guardian:80, Deliverer:75, Inventor:75, Energizer:75, Sage:60, Visionary:78 },
   Visionary:  { Strategist:92, Scientist:82, Guardian:72, Deliverer:88, Inventor:78, Energizer:86, Sage:78, Visionary:60 },
 };
-export const collScoreBBP = (a?: string|null, b?: string|null) => (a && b && COLL_BBP[a]?.[b]) ?? 60;
+export const collScoreBBP = (a?: string|null, b?: string|null): number =>
+  Number((a && b && COLL_BBP[a]?.[b]) ?? 60);
 
 /* =========================================================
    📈 Funciones de cálculo central
@@ -178,7 +179,11 @@ export function collaboration135(aBrain:string|null|undefined,bBrain:string|null
   const bbp=collScoreBBP(aBrain,bBrain); const bbp135=(bbp/100)*135;
   const relKeys=["EMP","NE","IM","NG","RP","ACT"];
   const relMean=avg(relKeys.map(k=>{
-    const a=N(aComp[k]),b=N(bComp[k]); return a!=null&&b!=null?(a+b)/2:67.5;
+    const rawA = aComp?.[k];
+    const rawB = bComp?.[k];
+    const a = typeof rawA === "number" ? N(rawA) : null;
+    const b = typeof rawB === "number" ? N(rawB) : null;
+    return a!=null&&b!=null?(a+b)/2:67.5;
   }))??67.5;
   return clamp((0.55*bbp135+0.45*relMean)*tFactor,0,135);
 }

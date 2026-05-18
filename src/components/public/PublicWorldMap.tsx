@@ -230,7 +230,7 @@ export default function PublicWorldMap() {
               style={{ width: "100%", height: "100%" }}
             >
               <Geographies geography={GEO_URL}>
-                {({ geographies }: { geographies: any[] }) =>
+                {((({ geographies }: { geographies: any[] }) =>
                   geographies.map((geo) => (
                     <Geography
                       key={geo.rsmKey}
@@ -245,8 +245,7 @@ export default function PublicWorldMap() {
                         pressed: { outline: "none" },
                       }}
                     />
-                  ))
-                }
+                  ))) as any)}
               </Geographies>
 
               {/* Data Markers */}

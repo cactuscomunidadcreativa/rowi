@@ -140,7 +140,9 @@ export default function SuperHubsPage() {
     setSaving(true);
     try {
       const method = form.id ? "PUT" : "POST";
-      const body = form.id ? { id: form.id, ...form } : form;
+      // Spread `...form` first, then override id explicitly — otherwise
+      // form.id is in the spread and the explicit one is duplicate.
+      const body = form.id ? { ...form, id: form.id } : form;
 
       const res = await fetch("/api/hub/superhubs", {
         method,

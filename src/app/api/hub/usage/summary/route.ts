@@ -34,8 +34,11 @@ export async function GET() {
         tokensIn: u.tokensInput,
         tokensOut: u.tokensOutput,
         calls: u.calls,
-        cost: u.costUsd,
-        updatedAt: u.updatedAt,
+        // costUsd is Decimal; normalize to number for arithmetic below.
+        cost: Number(u.costUsd ?? 0),
+        // UsageDaily has no `updatedAt` column — use day as the
+        // last-touched proxy.
+        updatedAt: u.day,
         active: agent?.isActive ?? false,
       };
     });

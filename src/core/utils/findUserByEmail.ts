@@ -19,21 +19,32 @@ export async function findUserByEmail(
 ) {
   if (!email) return null;
 
-  const user = await prisma.user.findFirst({
-    where: {
-      emails: {
-        some: {
-          email: email.toLowerCase
-        }
-      }
+  // Prisma rejects passing both `include` and `select` — switch based
+  // on which the caller asked for, defaulting to a standard include.
+  const where = {
+    emails: {
+      some: {
+        // Was `email.toLowerCase` (method reference, not a call).
+        email: email.toLowerCase(),
+      },
     },
+  };
+
+  if (opts?.select) {
+    const user = await prisma.user.findFirst({
+      where,
+      select: opts.select,
+    });
+    return user;
+  }
+
+  const user = await prisma.user.findFirst({
+    where,
     include: opts?.include ?? {
       emails: true,
       primaryTenant: true,
-      plan: true
+      plan: true,
     },
-    select: opts?.select
   });
-
   return user;
 }

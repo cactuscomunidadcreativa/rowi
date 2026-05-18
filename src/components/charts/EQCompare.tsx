@@ -11,7 +11,7 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
-import { EQ_MAX, getSeiLevel } from "@/domains/eq/lib/eqLevels";
+import { EQ_MAX, getEqLevel as getSeiLevel } from "@/domains/eq/lib/eqLevels";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type Item = { key: string; actual: number; feedback: number };
@@ -78,7 +78,8 @@ export default function EQCompare({
               formatter={(value: number, name: string) => {
                 const lvl = getSeiLevel(value);
                 const label = name === "actual" ? actualLbl : feedbackLbl;
-                return [`${value} / ${EQ_MAX}`, `${label}: ${lvl.name}`];
+                // EqLevel uses `label` (ES) not `name`.
+                return [`${value} / ${EQ_MAX}`, `${label}: ${lvl.label}`];
               }}
             />
             <Legend

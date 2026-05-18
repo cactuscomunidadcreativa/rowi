@@ -54,16 +54,14 @@ export async function POST(req: NextRequest) {
     const token = crypto.randomBytes(24).toString("hex");
     const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-    await prisma.inviteToken.upsert({
-      where: { userId: user.id },
-      update: {
-        token,
-        expiresAt,
-        createdAt: new Date(),
-        tenantId: targetTenantId,
-        email: normalizedEmail,
-      },
-      create: {
+    // InviteToken has no unique on userId — only on token. Drop any
+    // existing unexpired invites for this user (so the new token is
+    // the only valid one), then create the new row.
+    await prisma.inviteToken.deleteMany({
+      where: { userId: user.id, expiresAt: { gt: new Date() } },
+    });
+    await prisma.inviteToken.create({
+      data: {
         userId: user.id,
         token,
         expiresAt,

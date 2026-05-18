@@ -197,7 +197,7 @@ export async function sendInviteEmail(input: SendInviteEmailInput): Promise<Send
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    secureLog("[invite-email] RESEND_API_KEY not set — invite link returned to caller without sending email");
+    secureLog.info("[invite-email] RESEND_API_KEY not set — invite link returned to caller without sending email");
     return { ok: true, skipped: true };
   }
 

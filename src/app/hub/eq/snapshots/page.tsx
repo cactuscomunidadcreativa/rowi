@@ -459,7 +459,7 @@ export default function EQSnapshotsRowiversePage() {
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
-                    data={brainStyles}
+                    data={brainStyles as any}
                     dataKey="count"
                     nameKey="style"
                     cx="50%"

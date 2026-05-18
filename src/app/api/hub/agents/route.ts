@@ -54,6 +54,13 @@ export async function POST(req: Request) {
     const agent = await prisma.agentConfig.create({
       data: {
         tenantId,
+        // slug is required on AgentConfig — derive from name.
+        slug:
+          (name as string)
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+            .slice(0, 60) || "agent",
         name,
         type: "CUSTOM",
         model: model || "gpt-4o-mini",

@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
 
     // Get hub/tenant context
     const hubId = auth.hubs?.[0]?.id;
-    const tenantId = auth.primaryTenantId;
+    // Coerce null → undefined so downstream Notification helpers
+    // accept it (their signature is `string | undefined`).
+    const tenantId = auth.primaryTenantId ?? undefined;
 
     let targetUsers: string[] = [];
     let notificationScope: NotificationScope = "PERSONAL";

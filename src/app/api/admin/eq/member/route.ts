@@ -108,11 +108,20 @@ export async function POST(req: NextRequest) {
     // Verificar que el usuario existe
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, primaryTenantId: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+    }
+
+    // CommunityMember requires tenantId — if the user doesn't have a
+    // primary tenant we can't auto-create the member here.
+    if (!user.primaryTenantId) {
+      return NextResponse.json(
+        { error: "user_has_no_primary_tenant" },
+        { status: 400 },
+      );
     }
 
     // Buscar o crear CommunityMember
@@ -123,6 +132,7 @@ export async function POST(req: NextRequest) {
     if (!member) {
       member = await prisma.communityMember.create({
         data: {
+          tenantId: user.primaryTenantId,
           email: user.email!,
           name: user.name || user.email!,
           userId: user.id,

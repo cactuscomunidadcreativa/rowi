@@ -44,7 +44,14 @@ export async function runAffinityRouter({
   }
 
   try {
-    const result = await agent.run({ locale, tenantId, payload });
+    // agent.run expects locale as the narrow "es"|"en"|"pt"|"it" union.
+    const result = await agent.run({
+      locale: (["es", "en", "pt", "it"].includes(locale as string)
+        ? locale
+        : "es") as "es" | "en" | "pt" | "it",
+      tenantId,
+      payload,
+    });
 
     // 🧾 Registrar uso IA
     if (result?.tokens && tenantId) {

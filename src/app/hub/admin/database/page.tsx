@@ -34,7 +34,7 @@ export default function DatabasePage() {
             className="p-4 bg-white dark:bg-gray-800 border border-rowi-blueDay/20 shadow-rowi hover:shadow-lg transition"
           >
             <h3 className="font-semibold text-rowi-blueDay">{table}</h3>
-            <p className="text-3xl font-bold">{count}</p>
+            <p className="text-3xl font-bold">{String(count)}</p>
           </Card>
         ))}
       </div>

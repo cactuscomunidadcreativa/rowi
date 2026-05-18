@@ -167,11 +167,14 @@ export async function GET() {
 
     // Get users by country
     try {
+      // Prisma groupBy types complain without an orderBy hint when the
+      // by[] has nullable columns. Add an explicit empty orderBy.
       usersByCountry = await prisma.user.groupBy({
         by: ["country"],
         _count: { id: true },
         where: { country: { not: null } },
-      });
+        orderBy: { country: "asc" },
+      } as any);
     } catch (e) {
       console.warn("Could not group users by country:", e);
     }
@@ -181,9 +184,10 @@ export async function GET() {
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
     try {
-      newUsersByCountry = await prisma.user.groupBy({
+      newUsersByCountry = await (prisma.user.groupBy as any)({
         by: ["country"],
         _count: { id: true },
+        orderBy: { country: "asc" },
         where: {
           country: { not: null },
           createdAt: { gte: threeMonthsAgo },

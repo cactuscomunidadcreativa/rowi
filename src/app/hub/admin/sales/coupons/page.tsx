@@ -153,7 +153,16 @@ export default function CouponsPage() {
   }
 
   async function deleteCoupon(coupon: Coupon) {
-    if (!confirm(t("admin.coupons.confirmDelete", { code: coupon.code }))) return;
+    // t() takes a string fallback, not an interpolation object.
+    if (
+      !confirm(
+        (t("admin.coupons.confirmDelete") || "¿Eliminar cupón {code}?").replace(
+          "{code}",
+          coupon.code,
+        ),
+      )
+    )
+      return;
 
     try {
       const res = await fetch("/api/admin/sales/coupons", {

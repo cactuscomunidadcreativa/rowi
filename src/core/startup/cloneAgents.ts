@@ -47,7 +47,7 @@ export async function cloneAgentsForContext({
             type: g.type,
             model: g.model,
             prompt: g.prompt,
-            tools: g.tools,
+            tools: (g.tools as any) ?? undefined,
             tone: g.tone,
             accessLevel: g.accessLevel,
             visibility: g.visibility,

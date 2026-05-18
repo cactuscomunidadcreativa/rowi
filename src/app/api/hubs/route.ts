@@ -16,10 +16,20 @@ export async function POST(req: Request) {
   if (!body?.tenantId || !body?.name) {
     return NextResponse.json({ error: "tenantId and name are required" }, { status: 400 });
   }
+  // Hub schema requires a unique slug; derive from name when missing.
+  const slug =
+    body.slug ||
+    String(body.name)
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .slice(0, 60) ||
+    `hub-${Date.now()}`;
   const hub = await prisma.hub.create({
     data: {
       tenantId: body.tenantId,
       name: body.name,
+      slug,
       description: body.description ?? null,
     },
   });

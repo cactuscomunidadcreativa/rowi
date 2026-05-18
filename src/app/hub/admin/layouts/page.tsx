@@ -346,7 +346,13 @@ function LayoutEditor({
                     {t("admin.layouts.addComponent")}
                   </AdminButton>
                 </div>
-                <div ref={(el) => (dropRefs.current[zone] = el)} data-zone={zone} className="min-h-[60px] p-2 space-y-1">
+                <div
+                  ref={(el) => {
+                    dropRefs.current[zone] = el;
+                  }}
+                  data-zone={zone}
+                  className="min-h-[60px] p-2 space-y-1"
+                >
                   {form.structure.zones[zone].components.map((comp, i) => (
                     <div key={i} className="flex items-center gap-2 px-2 py-1.5 bg-[var(--rowi-primary)]/5 border border-[var(--rowi-primary)]/10 rounded group">
                       <GripVertical className="w-3 h-3 text-[var(--rowi-muted)] cursor-move drag-handle" />

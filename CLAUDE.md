@@ -22,12 +22,13 @@ name and never gets translated.
   --accept-data-loss` on every deploy — schema changes propagate
   automatically, but back-relations + non-null columns on populated
   tables require care.
-- TS errors are silenced in production via `next.config.ts:
-  ignoreBuildErrors: true`. We track them down opportunistically;
-  the count is currently ~131. Before pushing run
-  `pnpm exec tsc --noEmit --skipLibCheck 2>&1 | grep "error TS1"` to
-  catch syntax errors (TS18xxx are mostly tolerated null-safety
-  issues; new TS1xxx is a real bug).
+- **TS strict is enabled** as of the May 2026 cleanup —
+  `next.config.ts: ignoreBuildErrors: false`. The codebase was
+  taken from 198 errors → 0 across three commits (A, B, C). The
+  Vercel build now fails fast on a new TS error. Run
+  `pnpm exec tsc --noEmit --skipLibCheck` locally before pushing.
+  Only flip the flag back to true as a TEMPORARY unblock while a
+  fresh batch is investigated — don't ship it.
 - Untracked files that NEVER get committed: `.claude/`, `pitch/`,
   `NVIDIA_PITCH_DECK.md`, `src/app/pitch/`, `.env`, `.env.local`.
 

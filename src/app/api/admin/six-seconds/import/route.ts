@@ -142,6 +142,7 @@ export async function POST(req: NextRequest) {
             id: true,
             email: true,
             name: true,
+            primaryTenantId: true,
             onboardingStatus: true,
             seiRequested: true,
             contributeToRowiverse: true,
@@ -165,9 +166,12 @@ export async function POST(req: NextRequest) {
           where: { email },
         });
 
-        if (!member) {
+        // CommunityMember requires tenantId — skip when the matched
+        // user has no primary tenant (an import edge case).
+        if (!member && user.primaryTenantId) {
           member = await prisma.communityMember.create({
             data: {
+              tenantId: user.primaryTenantId,
               email,
               name:
                 [data.firstName, data.lastName].filter(Boolean).join(" ") ||
@@ -180,11 +184,14 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // Crear EqSnapshot
+        // Crear EqSnapshot — member can still be null when the user
+        // had no primary tenant (we skip CommunityMember creation in
+        // that case); EqSnapshot.memberId is optional, so passing
+        // null is fine.
         const snapshot = await prisma.eqSnapshot.create({
           data: {
             userId: user.id,
-            memberId: member.id,
+            memberId: member?.id ?? null,
             dataset: "SEI",
             email,
             country: data.country || null,
@@ -259,7 +266,7 @@ export async function POST(req: NextRequest) {
 
           rowiverseContributions.push({
             userId: user.id,
-            memberId: member.id,
+            memberId: member?.id ?? undefined,
             sourceType: "eq_snapshot",
             sourceId: snapshot.id,
             eqData: {
@@ -333,7 +340,10 @@ export async function POST(req: NextRequest) {
         newSnapshots: stats.newSnapshots,
         activatedUsers: stats.activatedUsers,
         failedRows: stats.failedRows,
-        errors: stats.errors.length > 0 ? stats.errors : null,
+        errors:
+          stats.errors.length > 0
+            ? (stats.errors as any) // Prisma Json input expects InputJsonValue
+            : undefined,
         processedAt: new Date(),
       },
     });

@@ -46,7 +46,7 @@ export async function assignAgentsToEntity(
           model: agent.model,
           prompt: agent.prompt,
           tone: agent.tone,
-          tools: agent.tools,
+          tools: (agent.tools as any) ?? undefined,
           visibility: agent.visibility,
           accessLevel: agent.accessLevel,
           autoLearn: agent.autoLearn,

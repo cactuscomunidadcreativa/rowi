@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       data: {
         name: name.trim(),
         type: type as any,
-        scope: scope || null,
+        scope: (scope || undefined) as any,
         isLearning,
         status: "PROCESSING",
         totalRows: 0,

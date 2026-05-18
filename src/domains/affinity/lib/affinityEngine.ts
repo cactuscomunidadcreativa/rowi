@@ -72,7 +72,7 @@ const COLL_BBP: Record<string, Record<string, number>> = {
   Sage:      {   Strategist:80, Scientist:75, Guardian:80, Deliverer:75, Inventor:75, Energizer:75, Sage:60, Visionary:78 },
   Visionary: {  Strategist:92, Scientist:82, Guardian:72, Deliverer:88, Inventor:78, Energizer:86, Sage:78, Visionary:60 },
 };
-const collScore100 = (a?:string|null,b?:string|null)=> (a && b && COLL_BBP[a]?.[b]) ?? 60;
+const collScore100 = (a?:string|null,b?:string|null):number=> Number((a && b && COLL_BBP[a]?.[b]) ?? 60);
 
 /* Pesos competencias por contexto */
 const COMP_WEIGHTS: Record<Project, Record<CompKey, number>> = {

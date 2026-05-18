@@ -363,7 +363,8 @@ const OUTCOME_T_MAP: Record<OutcomeKey, string> = {
    Reference Benchmark Type — built dynamically from Rowiverse DB
 ========================================================= */
 interface ReferenceBenchmark {
-  name: { es: string; en: string };
+  // Expanded to PT/IT to match the locale set used throughout Rowi.
+  name: { es: string; en: string; pt?: string; it?: string };
   sampleSize: number;
   avgEQ: number;
   competencies: Record<string, number>;

@@ -29,7 +29,7 @@ export default function LangToggle() {
       <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
       <select
         value={lang}
-        onChange={(e) => setLang(e.target.value as SupportedLang)}
+        onChange={(e) => setLang(e.target.value as any)}
         title={lang === "es" ? "Cambiar idioma" : "Change language"}
         className="
           rounded-md border border-gray-300 dark:border-zinc-700

@@ -71,8 +71,15 @@ export async function POST(req: NextRequest) {
       EXPORT: "OTHER",
     };
 
-    const safeFeature =
-      featureMap[feature?.toUpperCase() as keyof typeof featureMap] || "OTHER";
+    // Cast to UsageFeature so Prisma accepts it on where/data (the
+    // enum is what it wants, not a free string).
+    const safeFeature = ((featureMap[
+      feature?.toUpperCase() as keyof typeof featureMap
+    ] || "OTHER") as unknown) as
+      | "ECO"
+      | "OTHER"
+      | "AFFINITY"
+      | "ROWI_CHAT";
 
     /* ======================================================
        📅 Normalizar fecha a las 00:00 (día actual UTC)
@@ -84,7 +91,7 @@ export async function POST(req: NextRequest) {
        🔹 Verificar si ya existe registro de hoy
     ====================================================== */
     const usageToday = await prisma.usageDaily.findFirst({
-      where: { tenantId: tenantRef, feature: safeFeature, day: today },
+      where: { tenantId: tenantRef, feature: safeFeature as any, day: today },
     });
 
     if (usageToday) {
@@ -114,7 +121,7 @@ export async function POST(req: NextRequest) {
     const created = await prisma.usageDaily.create({
       data: {
         tenantId: tenantRef,
-        feature: safeFeature,
+        feature: safeFeature as any,
         model: model || "gpt-4o-mini",
         tokensInput,
         tokensOutput,

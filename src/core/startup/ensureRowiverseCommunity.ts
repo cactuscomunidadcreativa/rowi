@@ -13,10 +13,11 @@ export async function ensureRowiverseCommunity() {
     }
   });
 
-  // Crear traducciones mínimas para arranque
+  // Crear traducciones mínimas para arranque. Schema renamed
+  // `locale` → `lang` and `text` → `value`.
   const translations = [
-    { ns: "common", key: "hello", locale: "es", text: "Hola", tenantId: rowi.id },
-    { ns: "common", key: "hello", locale: "en", text: "Hello", tenantId: rowi.id },
+    { ns: "common", key: "hello", lang: "es", value: "Hola", tenantId: rowi.id },
+    { ns: "common", key: "hello", lang: "en", value: "Hello", tenantId: rowi.id },
     { ns: "dashboard", key: "welcome", lang: "es", value: "Bienvenido al Hub", tenantId: rowi.id },
     { ns: "dashboard", key: "welcome", lang: "en", value: "Welcome to the Hub", tenantId: rowi.id },
   ];

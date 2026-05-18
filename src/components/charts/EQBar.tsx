@@ -125,10 +125,11 @@ export default function EQBar({
               strokeWidth={1.5}
               label={{
                 position: "top",
-                formatter: (value: number) => {
-                  const lvl = getEqLevel(value);
+                // Recharts formatter receives ReactNode; coerce numeric.
+                formatter: ((value: unknown) => {
+                  const lvl = getEqLevel(Number(value));
                   return `${lvl.emoji} ${lvl.label}`;
-                },
+                }) as any,
                 fill: "#E0E0E0",
                 fontSize: 12,
               }}

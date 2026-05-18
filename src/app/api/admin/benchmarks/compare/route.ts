@@ -132,10 +132,15 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Si no hay estadísticas pre-calculadas, calcular en tiempo real
+        // Si no hay estadísticas pre-calculadas, calcular en tiempo real.
+        // calculateStatsFromDataPoints returns a richer shape than the
+        // BenchmarkStatistic row — cast to satisfy the array type.
         if (stats.length === 0) {
           console.log(`📊 Calculating stats on-the-fly for benchmark ${benchmarkId}...`);
-          stats = await calculateStatsFromDataPoints(benchmarkId, metricsToCompare);
+          stats = (await calculateStatsFromDataPoints(
+            benchmarkId,
+            metricsToCompare,
+          )) as any;
         }
 
         return { benchmarkId, stats };

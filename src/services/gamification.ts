@@ -4,7 +4,7 @@
 // ============================================================
 
 import { prisma } from "@/core/prisma";
-import { PointReason, AchievementCategory } from "@prisma/client";
+import { PointsReason as PointReason, AchievementCategory } from "@prisma/client";
 import { checkAndEvolve, addAvatarExperience } from "@/services/avatar-evolution";
 
 interface AwardPointsOptions {
@@ -117,7 +117,8 @@ export async function awardPoints(options: AwardPointsOptions): Promise<{
 
   // Actualizar en transacción
   await prisma.$transaction([
-    // Registrar puntos
+    // Registrar puntos — UserPoints no tiene columna `multiplier`;
+    // si el multiplicador importa se aplica antes (en finalPoints).
     prisma.userPoints.create({
       data: {
         userId,
@@ -126,10 +127,10 @@ export async function awardPoints(options: AwardPointsOptions): Promise<{
         reason,
         reasonId,
         description: description || `${reason}: +${finalPoints} pts`,
-        multiplier: totalMultiplier,
       },
     }),
-    // Actualizar nivel
+    // Actualizar nivel — pointsToNextLevel es Int no-null en el schema,
+    // así que coerce a 0 cuando no hay siguiente nivel (max alcanzado).
     prisma.userLevel.update({
       where: { userId },
       data: {
@@ -139,7 +140,7 @@ export async function awardPoints(options: AwardPointsOptions): Promise<{
           ? {
               title: nextLevelDef.title,
               titleEN: nextLevelDef.titleEN,
-              pointsToNextLevel: nextLevelDef.maxPoints || null,
+              pointsToNextLevel: nextLevelDef.maxPoints ?? 0,
             }
           : {}),
       },
@@ -299,9 +300,21 @@ export async function checkAndAwardAchievements(
     if (completedIds.has(achievement.id)) continue;
 
     let shouldAward = false;
-    const conditions = achievement.conditions as any;
-
-    if (!conditions) continue;
+    // The Achievement schema doesn't have a free-form `conditions` JSON
+    // column — it has `requirement` (enum) + `threshold` (int). Build
+    // the conditions shape this switch expects from those two fields.
+    const t = achievement.threshold ?? 0;
+    const conditions: Record<string, number> = {
+      minChats: t,
+      minStreak: t,
+      minLongestStreak: t,
+      minMicrolearnings: t,
+      minLevel: t,
+      minPoints: t,
+      minConnections: t,
+      minFeedPosts: t,
+      minComments: t,
+    };
 
     // Verificar condiciones según tipo
     switch (achievement.category) {

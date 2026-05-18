@@ -308,13 +308,23 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     paused: "PAUSED",
   };
 
+  // Stripe SDK ≥17 moved current_period_start/end from the Subscription
+  // object onto each subscription item. The values still flow on the
+  // wire (Stripe's API didn't break), but the TS types don't expose
+  // them on Subscription anymore. Cast through `any` so we keep the
+  // legacy field access working until we migrate to reading from
+  // items.data[0]
+  const sub = subscription as any;
+  const periodStart = new Date(sub.current_period_start * 1000);
+  const periodEnd = new Date(sub.current_period_end * 1000);
+
   // Actualizar o crear suscripción
   await prisma.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
     update: {
       status: (statusMap[subscription.status] || "ACTIVE") as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       cancelledAt: subscription.canceled_at
         ? new Date(subscription.canceled_at * 1000)
@@ -327,8 +337,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       stripePriceId: subscription.items.data[0]?.price.id || "",
       stripeCustomerId: subscription.customer as string,
       status: (statusMap[subscription.status] || "ACTIVE") as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
       trialStart: subscription.trial_start
         ? new Date(subscription.trial_start * 1000)
         : null,
@@ -356,7 +366,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       where: { id: userId },
       data: {
         onboardingStatus: onboardingStatus as any,
-        planExpiresAt: new Date(subscription.current_period_end * 1000),
+        planExpiresAt: periodEnd,
       },
     });
   }

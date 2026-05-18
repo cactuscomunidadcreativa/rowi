@@ -20,6 +20,11 @@ interface AdminPageProps {
   descriptionKey?: string;
   icon?: LucideIcon;
   actions?: ReactNode;
+  /**
+   * Optional breadcrumb shown above the title. Pages that need a
+   * "back to X" trail render it themselves and pass the element here.
+   */
+  breadcrumb?: ReactNode;
   children: ReactNode;
   loading?: boolean;
 }
@@ -29,6 +34,7 @@ export function AdminPage({
   descriptionKey,
   icon: Icon,
   actions,
+  breadcrumb,
   children,
   loading = false,
 }: AdminPageProps) {
@@ -36,6 +42,9 @@ export function AdminPage({
 
   return (
     <div className="space-y-4">
+      {breadcrumb && (
+        <div className="text-xs text-[var(--rowi-muted)]">{breadcrumb}</div>
+      )}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           {Icon && (
@@ -301,16 +310,39 @@ export function AdminTableRow({
    🏷️ AdminBadge — Status badge
 ========================================================= */
 
-type BadgeVariant = "success" | "warning" | "error" | "info" | "neutral" | "primary";
+// Variants recognized in styling. The PUBLIC type below accepts a few
+// legacy aliases ("default" → "neutral", "danger" → "error") because
+// a lot of call sites grew up using those names.
+type BadgeVariantInternal =
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
+  | "neutral"
+  | "primary";
+
+export type BadgeVariant =
+  | BadgeVariantInternal
+  | "default" // alias → neutral
+  | "danger"; // alias → error
+
+const BADGE_ALIAS: Record<string, BadgeVariantInternal> = {
+  default: "neutral",
+  danger: "error",
+};
 
 interface AdminBadgeProps {
   variant?: BadgeVariant;
   children: ReactNode;
   size?: "sm" | "md";
+  className?: string;
 }
 
-export function AdminBadge({ variant = "neutral", children, size = "sm" }: AdminBadgeProps) {
-  const variants: Record<BadgeVariant, string> = {
+export function AdminBadge({ variant = "neutral", children, size = "sm", className = "" }: AdminBadgeProps) {
+  const resolvedVariant: BadgeVariantInternal =
+    (BADGE_ALIAS[variant as string] as BadgeVariantInternal) ||
+    (variant as BadgeVariantInternal);
+  const variants: Record<BadgeVariantInternal, string> = {
     success: "bg-[var(--rowi-success)]/10 text-[var(--rowi-success)]",
     warning: "bg-[var(--rowi-warning)]/10 text-[var(--rowi-warning)]",
     error: "bg-[var(--rowi-error)]/10 text-[var(--rowi-error)]",
@@ -325,7 +357,7 @@ export function AdminBadge({ variant = "neutral", children, size = "sm" }: Admin
   };
 
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${variants[variant]} ${sizes[size]}`}>
+    <span className={`inline-flex items-center rounded-full font-medium ${variants[resolvedVariant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );
@@ -415,6 +447,9 @@ interface AdminIconButtonProps {
   variant?: "ghost" | "danger";
   onClick?: () => void;
   title?: string;
+  /** Optional disabled-while-loading state — disables click + dims. */
+  loading?: boolean;
+  className?: string;
 }
 
 export function AdminIconButton({
@@ -422,6 +457,8 @@ export function AdminIconButton({
   variant = "ghost",
   onClick,
   title,
+  loading = false,
+  className = "",
 }: AdminIconButtonProps) {
   const variants = {
     ghost: "text-[var(--rowi-muted)] hover:text-[var(--rowi-foreground)] hover:bg-[var(--rowi-border)]",
@@ -432,12 +469,13 @@ export function AdminIconButton({
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onClick?.();
+        if (!loading) onClick?.();
       }}
+      disabled={loading}
       title={title}
-      className={`p-1.5 rounded-lg transition-all ${variants[variant]}`}
+      className={`p-1.5 rounded-lg transition-all ${variants[variant]} ${loading ? "opacity-50 cursor-wait" : ""} ${className}`}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className={`w-4 h-4 ${loading ? "animate-pulse" : ""}`} />
     </button>
   );
 }

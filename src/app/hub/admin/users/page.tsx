@@ -65,17 +65,17 @@ interface UserData {
   active?: boolean;
   allowAI?: boolean;
   primaryTenant?: { id: string; name: string };
-  primaryTenantId?: string;
+  primaryTenantId?: string | null;
   plan?: { id: string; name: string };
-  planId?: string;
+  planId?: string | null;
   memberships?: any[];
   orgMemberships?: any[];
   hubMemberships?: any[];
   hubs?: any[];
   // New hierarchy fields
-  organizationId?: string;
+  organizationId?: string | null;
   superHubId?: string;
-  hubId?: string;
+  hubId?: string | null;
   // Community memberships
   rowiCommunities?: {
     id: string;

@@ -180,7 +180,8 @@ async function createEqSnapshot(userId: string, row: Row) {
       G: num(vals.G),
       brainStyle: norm(vals.BRAIN),
       recentMood: norm(vals.MOOD) || null,
-      moodIntensity: num(vals.MOOD_INTENSITY),
+      // moodIntensity is a String? column (legacy free-text scale), not a number.
+      moodIntensity: vals.MOOD_INTENSITY ? String(vals.MOOD_INTENSITY) : null,
       // createdAt se mantiene en now() por simplicidad; puedes incluir un parse de fecha si la tienes
     },
   });
@@ -276,48 +277,47 @@ async function ensureHierarchy(
       },
     }));
 
-  const org =
-    (await prisma.organization.findUnique({ where: { slug: orgSlug } })) ||
-    (async () => {
-      // Organization ↔ Tenant and Organization ↔ Hub are many-to-many
-      // via OrganizationToTenant / OrganizationToHub junction tables —
-      // not direct relations. Create the Organization first then upsert
-      // the link rows.
-      const created = await prisma.organization.create({
-        data: {
-          slug: orgSlug,
-          name: orgSlug
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase()),
-          superHubId: superHub.id,
+  // Organization ↔ Tenant and Organization ↔ Hub are many-to-many via
+  // OrganizationToTenant / OrganizationToHub junction tables. Find or
+  // create the Organization, then upsert the link rows separately.
+  let org = await prisma.organization.findUnique({
+    where: { slug: orgSlug },
+  });
+  if (!org) {
+    org = await prisma.organization.create({
+      data: {
+        slug: orgSlug,
+        name: orgSlug
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+        superHubId: superHub.id,
+      },
+    });
+    await prisma.organizationToTenant
+      .upsert({
+        where: {
+          tenantId_organizationId: {
+            tenantId: tenant.id,
+            organizationId: org.id,
+          },
         },
-      });
-      await prisma.organizationToTenant
-        .upsert({
-          where: {
-            organizationId_tenantId: {
-              organizationId: created.id,
-              tenantId: tenant.id,
-            },
+        update: {},
+        create: { organizationId: org.id, tenantId: tenant.id },
+      })
+      .catch(() => {});
+    await prisma.organizationToHub
+      .upsert({
+        where: {
+          hubId_organizationId: {
+            hubId: hub.id,
+            organizationId: org.id,
           },
-          update: {},
-          create: { organizationId: created.id, tenantId: tenant.id },
-        })
-        .catch(() => {});
-      await prisma.organizationToHub
-        .upsert({
-          where: {
-            hubId_organizationId: {
-              hubId: hub.id,
-              organizationId: created.id,
-            },
-          },
-          update: {},
-          create: { organizationId: created.id, hubId: hub.id },
-        })
-        .catch(() => {});
-      return created;
-    })();
+        },
+        update: {},
+        create: { organizationId: org.id, hubId: hub.id },
+      })
+      .catch(() => {});
+  }
 
   return { superHub, tenant, hub, org };
 }

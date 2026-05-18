@@ -181,12 +181,12 @@ export default function EmotionsDashboardPage() {
       {/* 📊 K / C / G Promedio */}
       <section>
         <ChartCard title={t("admin.emotions.kcgAvg")} icon={<BarChart2 />}>
+          {/* EQBar expects { key, score } not { label, value } */}
           <EQBar
-            // @ts-ignore
             data={[
-              { label: "K", value: Math.round(kpi?.avgK ?? 0) },
-              { label: "C", value: Math.round(kpi?.avgC ?? 0) },
-              { label: "G", value: Math.round(kpi?.avgG ?? 0) },
+              { key: "K", score: Math.round(kpi?.avgK ?? 0) },
+              { key: "C", score: Math.round(kpi?.avgC ?? 0) },
+              { key: "G", score: Math.round(kpi?.avgG ?? 0) },
             ]}
           />
         </ChartCard>
@@ -195,10 +195,10 @@ export default function EmotionsDashboardPage() {
       {/* 📈 EQ Histórico */}
       <section>
         <ChartCard title={t("admin.emotions.eqHistorical")} icon={<TrendingUp />}>
+          {/* HistoryLine expects { date, avg } — map overall4 → avg.
+              HistoryLine has no `label` prop; title goes on ChartCard above. */}
           <HistoryLine
-            // @ts-ignore
-            data={(series?.eq ?? []).map((s) => ({ date: s.date, value: s.overall4 }))}
-            label="Overall EQ"
+            data={(series?.eq ?? []).map((s) => ({ date: s.date, avg: s.overall4 }))}
           />
         </ChartCard>
       </section>
@@ -222,9 +222,7 @@ export default function EmotionsDashboardPage() {
       <section>
         <ChartCard title={t("admin.emotions.affinityAvg")} icon={<Flame />}>
           <HistoryLine
-            // @ts-ignore
-            data={(series?.affinity ?? []).map((s) => ({ date: s.date, value: s.heat }))}
-            label="Affinity Heat"
+            data={(series?.affinity ?? []).map((s) => ({ date: s.date, avg: s.heat }))}
           />
         </ChartCard>
       </section>

@@ -72,9 +72,6 @@ function readActiveContextId(): string | null {
 
 function writeActiveContextId(id: string) {
   if (typeof document === "undefined") return;
-  // 30 days, path=/ so all server routes can read it.
-  // Secure flag only over HTTPS — leaving it off on http://localhost so
-  // dev still works. samesite=lax protects navigations from CSRF.
   const maxAge = 60 * 60 * 24 * 30;
   const secure =
     typeof window !== "undefined" && window.location?.protocol === "https:"
@@ -85,9 +82,13 @@ function writeActiveContextId(id: string) {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-export default function AccountContextChip() {
+/**
+ * Shared hook: fetches contexts, tracks the active selection (cookie-
+ * backed), and exposes a `pick(ctx)` action that updates state + cookie
+ * and navigates to the new context's home.
+ */
+function useAccountContexts() {
   const router = useRouter();
-  const { t } = useI18n();
   const { data, isLoading } = useSWR<{
     ok: boolean;
     contexts: AccountContext[];
@@ -95,14 +96,142 @@ export default function AccountContextChip() {
     revalidateOnFocus: false,
     dedupingInterval: 30000,
   });
-
-  const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setActiveId(readActiveContextId());
   }, []);
+
+  const contexts = data?.contexts || [];
+  const effectiveActiveId = activeId || contexts[0]?.id || null;
+  const active = contexts.find((c) => c.id === effectiveActiveId) || contexts[0] || null;
+
+  function pick(ctx: AccountContext) {
+    writeActiveContextId(ctx.id);
+    setActiveId(ctx.id);
+    router.push(ctx.home);
+    router.refresh();
+  }
+
+  return { contexts, active, effectiveActiveId, isLoading, pick };
+}
+
+/**
+ * Embeddable variant — renders the list directly without its own button
+ * or floating dropdown. Use this inside an existing menu (e.g. avatar
+ * dropdown in NavBar) so the chip doesn't consume horizontal space in
+ * the navbar header.
+ */
+export function AccountContextList({
+  onPicked,
+}: {
+  onPicked?: () => void;
+}) {
+  const { t } = useI18n();
+  const { contexts, effectiveActiveId, pick } = useAccountContexts();
+
+  if (contexts.length === 0) return null;
+
+  return (
+    <div>
+      <div className="px-4 py-2 border-b border-gray-200 dark:border-zinc-800">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          {t("account.context.dropdownTitle", "Contexto activo")}
+        </p>
+        <p className="text-[11px] text-gray-400 mt-0.5">
+          {t(
+            "account.context.dropdownHint",
+            "Cambia el sombrero que usas en Rowi.",
+          )}
+        </p>
+      </div>
+      <div className="max-h-72 overflow-y-auto py-1">
+        {contexts.map((ctx) => {
+          const Icon = KIND_ICON[ctx.kind] || User;
+          const isSelected = ctx.id === effectiveActiveId;
+          return (
+            <button
+              key={ctx.id}
+              onClick={() => {
+                pick(ctx);
+                onPicked?.();
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
+                isSelected
+                  ? "bg-[var(--rowi-g2)]/10"
+                  : "hover:bg-gray-50 dark:hover:bg-zinc-800"
+              }`}
+            >
+              <div
+                className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                style={{
+                  backgroundColor: `${KIND_COLOR[ctx.kind]}18`,
+                }}
+              >
+                <Icon
+                  className="w-3.5 h-3.5"
+                  style={{ color: KIND_COLOR[ctx.kind] }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {t(ctx.labelKey, ctx.fallback)}
+                </p>
+                {ctx.detail && (
+                  <p className="text-[11px] text-gray-500 truncate">
+                    {ctx.detail}
+                  </p>
+                )}
+              </div>
+              {isSelected && (
+                <Check className="w-4 h-4 text-[var(--rowi-g2)] flex-shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Compact summary — just the active context's icon + label, no chevron
+ * or interaction. Use this inside a menu header to show "you're acting
+ * as X" without the picker UI.
+ */
+export function AccountContextActiveBadge({ className }: { className?: string }) {
+  const { t } = useI18n();
+  const { active } = useAccountContexts();
+  if (!active) return null;
+  const ActiveIcon = KIND_ICON[active.kind] || User;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 ${className || ""}`}
+      title={t("account.context.switchTitle", "Cambiar contexto activo")}
+    >
+      <ActiveIcon
+        className="w-3.5 h-3.5 flex-shrink-0"
+        style={{ color: KIND_COLOR[active.kind] }}
+      />
+      <span className="text-xs font-medium truncate">
+        {t(active.labelKey, active.fallback)}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * Standalone floating chip — kept as the default export for legacy
+ * import sites. New NavBar uses the embedded AccountContextList inside
+ * the avatar dropdown instead.
+ */
+export default function AccountContextChip() {
+  const { t } = useI18n();
+  const { contexts, active, effectiveActiveId, isLoading, pick } =
+    useAccountContexts();
+
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -117,30 +246,15 @@ export default function AccountContextChip() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const contexts = data?.contexts || [];
-  if (isLoading || contexts.length === 0) return null;
-
-  // Default: if no cookie, pick the first (personal).
-  const effectiveActiveId = activeId || contexts[0]?.id || null;
-  const active = contexts.find((c) => c.id === effectiveActiveId) || contexts[0];
-  if (!active) return null;
+  if (isLoading || contexts.length === 0 || !active) return null;
 
   const ActiveIcon = KIND_ICON[active.kind] || User;
 
-  function pick(ctx: AccountContext) {
-    writeActiveContextId(ctx.id);
-    setActiveId(ctx.id);
-    setOpen(false);
-    router.push(ctx.home);
-    router.refresh();
-  }
-
   return (
     <div ref={containerRef} className="relative">
-      {/* Desktop: full chip with label + chevron */}
       <button
         onClick={() => setOpen((s) => !s)}
-        className="hidden md:inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 transition-colors max-w-[200px]"
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 transition-colors max-w-[200px]"
         title={t("account.context.switchTitle", "Cambiar contexto activo")}
       >
         <ActiveIcon
@@ -155,21 +269,6 @@ export default function AccountContextChip() {
         />
       </button>
 
-      {/* Mobile: icon-only button next to avatar — keeps the chip
-          accessible without crowding the navbar on small screens. */}
-      <button
-        onClick={() => setOpen((s) => !s)}
-        className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 transition-colors"
-        style={{ backgroundColor: `${KIND_COLOR[active.kind]}10` }}
-        title={t("account.context.switchTitle", "Cambiar contexto activo")}
-        aria-label={t("account.context.switchTitle", "Cambiar contexto activo")}
-      >
-        <ActiveIcon
-          className="w-4 h-4"
-          style={{ color: KIND_COLOR[active.kind] }}
-        />
-      </button>
-
       <AnimatePresence>
         {open && (
           <motion.div
@@ -179,59 +278,7 @@ export default function AccountContextChip() {
             transition={{ duration: 0.12 }}
             className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl overflow-hidden z-50"
           >
-            <div className="px-3 py-2 border-b border-gray-200 dark:border-zinc-800">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                {t("account.context.dropdownTitle", "Contexto activo")}
-              </p>
-              <p className="text-[11px] text-gray-400 mt-0.5">
-                {t(
-                  "account.context.dropdownHint",
-                  "Cambia el sombrero que usas en Rowi.",
-                )}
-              </p>
-            </div>
-            <div className="max-h-72 overflow-y-auto py-1">
-              {contexts.map((ctx) => {
-                const Icon = KIND_ICON[ctx.kind] || User;
-                const isSelected = ctx.id === effectiveActiveId;
-                return (
-                  <button
-                    key={ctx.id}
-                    onClick={() => pick(ctx)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
-                      isSelected
-                        ? "bg-[var(--rowi-g2)]/10"
-                        : "hover:bg-gray-50 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    <div
-                      className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{
-                        backgroundColor: `${KIND_COLOR[ctx.kind]}18`,
-                      }}
-                    >
-                      <Icon
-                        className="w-3.5 h-3.5"
-                        style={{ color: KIND_COLOR[ctx.kind] }}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {t(ctx.labelKey, ctx.fallback)}
-                      </p>
-                      {ctx.detail && (
-                        <p className="text-[11px] text-gray-500 truncate">
-                          {ctx.detail}
-                        </p>
-                      )}
-                    </div>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-[var(--rowi-g2)] flex-shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <AccountContextList onPicked={() => setOpen(false)} />
           </motion.div>
         )}
       </AnimatePresence>

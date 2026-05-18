@@ -12,7 +12,7 @@ import ThemeToggle from "./ThemeToggle";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import useSWR from "swr";
 import ContextSwitcher from "./ContextSwitcher";
-import AccountContextChip from "./AccountContextChip";
+import { AccountContextList } from "./AccountContextChip";
 import { useUserContext } from "@/contexts/UserContextProvider";
 
 // Fetcher para SWR
@@ -654,8 +654,6 @@ export default function NavBar() {
               {t.signin}
             </Link>
           ) : (
-            <>
-            <AccountContextChip />
             <div id="rowi-user-menu" className="relative">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
@@ -709,8 +707,14 @@ export default function NavBar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-64 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-2 overflow-hidden"
+                    className="absolute right-0 mt-2 w-72 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-2 overflow-hidden"
                   >
+                    {/* Account contexts — lets the user switch the "hat"
+                        they're wearing without leaving the avatar menu.
+                        Closes the menu on pick so the route change is
+                        the only visible side-effect. */}
+                    <AccountContextList onPicked={() => setMenuOpen(false)} />
+
                     {/* Seccion Avatar - Colapsable */}
                     <CollapsibleSection
                       id="avatar"
@@ -842,7 +846,6 @@ export default function NavBar() {
                 )}
               </AnimatePresence>
             </div>
-            </>
           )}
 
           {/* Mobile Menu Button */}

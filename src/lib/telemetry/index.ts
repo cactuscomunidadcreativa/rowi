@@ -59,10 +59,8 @@ function hashSignature(err: unknown): string {
 }
 
 /**
- * Send to whatever backend is configured. Right now log_only just
- * returns — the secureLog mirror in the caller has already handled it.
- * Replace these branches with the real Sentry / Axiom client calls
- * when the team is ready.
+ * Send to whatever backend is configured. Lazy imports so the SDK
+ * isn't pulled into bundles unless the env var actually flips.
  */
 async function forwardToBackend(
   kind: "exception" | "message",
@@ -71,25 +69,43 @@ async function forwardToBackend(
   const provider = getProvider();
   if (provider === "log_only") return;
 
-  // Placeholder branches — intentionally lazy so we don't pay the
-  // require cost until the env var flips. When you wire Sentry:
-  //
-  //   if (provider === "sentry") {
-  //     const Sentry = await import("@sentry/nextjs");
-  //     if (kind === "exception") Sentry.captureException(payload.error, { extra: payload });
-  //     else Sentry.captureMessage(String(payload.message), { extra: payload });
-  //     return;
-  //   }
-  //
-  // Same shape for Axiom:
-  //
-  //   if (provider === "axiom") {
-  //     const { Axiom } = await import("@axiomhq/js");
-  //     const client = new Axiom({ token: process.env.AXIOM_TOKEN! });
-  //     await client.ingest("rowi_errors", [payload]);
-  //   }
-  void kind;
-  void payload;
+  if (provider === "sentry") {
+    const Sentry = await import("@sentry/nextjs");
+    if (kind === "exception") {
+      Sentry.captureException(payload.error, { extra: payload });
+    } else {
+      Sentry.captureMessage(String(payload.message), { extra: payload });
+    }
+    return;
+  }
+
+  if (provider === "axiom") {
+    const { Axiom } = await import("@axiomhq/js");
+    const client = new Axiom({ token: process.env.AXIOM_TOKEN! });
+    const dataset = process.env.AXIOM_DATASET || "rowi_errors";
+    // Axiom ingests are batched server-side; one event per call is fine
+    // for our volume but if it grows we should buffer in-memory and
+    // flush on a timer.
+    client.ingest(dataset, [
+      {
+        ...payload,
+        _kind: kind,
+        // Stringify the Error so JSON serialization doesn't drop it.
+        ...(payload.error instanceof Error
+          ? {
+              error: {
+                name: payload.error.name,
+                message: payload.error.message,
+                stack: payload.error.stack,
+              },
+            }
+          : {}),
+      },
+    ]);
+    // Fire and forget — ingest returns a promise but we don't await
+    // because telemetry must not block the request.
+    return;
+  }
 }
 
 export const telemetry = {

@@ -63,7 +63,9 @@
     "src",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "instrumentation.ts",
+    "sentry.client.config.ts"
   ],
   "exclude": [
     "node_modules"

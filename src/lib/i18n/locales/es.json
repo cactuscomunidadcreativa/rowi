@@ -2018,6 +2018,7 @@
   "admin.settings.category.email": "Email",
   "admin.settings.category.general": "General",
   "admin.settings.category.payments": "Pagos",
+  "admin.settings.category.observability": "Observabilidad",
   "admin.settings.configure": "Configurar",
   "admin.settings.configured": "Configurado",
   "admin.settings.confirmDelete": "¿Estás seguro de eliminar esta configuración? El sistema usará la variable de entorno como respaldo.",

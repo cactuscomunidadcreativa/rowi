@@ -134,7 +134,7 @@ export const SYSTEM_CONFIG_KEYS = {
   NEXT_PUBLIC_SENTRY_DSN: { category: "observability" as ConfigCategory, description: "Sentry DSN para el browser (también debe ir en Vercel env para que el bundle del cliente lo vea)", isSecret: true },
   AXIOM_TOKEN: { category: "observability" as ConfigCategory, description: "Axiom Ingest Token", isSecret: true },
   AXIOM_DATASET: { category: "observability" as ConfigCategory, description: "Axiom dataset name (default: rowi_errors)", isSecret: false },
-  PRISMA_SLOW_QUERY_MS: { category: "observability" as ConfigCategory, description: "Threshold en ms para logear queries lentas (default: 500)", isSecret: false },
+  PRISMA_SLOW_QUERY_MS: { category: "observability" as ConfigCategory, description: "Threshold en ms para logear queries lentas (default: 500). NOTA: solo se lee al boot; cambios requieren redeploy.", isSecret: false },
 } as const;
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_KEYS;

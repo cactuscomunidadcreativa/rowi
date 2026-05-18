@@ -2018,6 +2018,7 @@
   "admin.settings.category.email": "Email",
   "admin.settings.category.general": "General",
   "admin.settings.category.payments": "Payments",
+  "admin.settings.category.observability": "Observability",
   "admin.settings.configure": "Configure",
   "admin.settings.configured": "Configured",
   "admin.settings.confirmDelete": "Are you sure you want to delete this configuration? The system will use the environment variable as fallback.",

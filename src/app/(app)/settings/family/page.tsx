@@ -177,14 +177,30 @@ export default function FamilySettingsPage() {
   // Si no tiene plan familiar
   if (!planInfo || planInfo.planName !== "ROWI Family") {
     return (
-      <main className="space-y-4">
+      <main className="space-y-6">
+        {/* SECCIÓN A — Vínculos personales (siempre visible) */}
         <FamilyRelationsSection />
 
+        {/* Separador conceptual para que no se confunda con lo de arriba */}
+        <div className="flex items-center gap-3 pt-2">
+          <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
+          <span className="text-xs uppercase tracking-wide rowi-muted">
+            ·
+          </span>
+          <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
+        </div>
+
+        {/* SECCIÓN B — Plan Familiar (subscription separada) */}
         <section className="rowi-card text-center py-8">
           <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
+          <span className="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wide mb-2">
+            Plan / Suscripción
+          </span>
           <h2 className="text-xl font-medium mb-2">Plan Familiar</h2>
-          <p className="text-gray-500 mb-4">
-            Suma hasta 6 miembros con acceso compartido a Rowi y un pool de tokens mensual.
+          <p className="text-gray-500 mb-4 max-w-md mx-auto">
+            <strong>Esto NO son los vínculos de arriba.</strong> El Plan Familiar es
+            una suscripción pagada que te permite compartir Rowi con hasta 6
+            personas con un pool de tokens compartido.
           </p>
           <a
             href="/pricing"
@@ -200,12 +216,26 @@ export default function FamilySettingsPage() {
   const spotsLeft = planInfo.maxMembers - planInfo.currentMembers;
 
   return (
-    <main className="space-y-4">
+    <main className="space-y-6">
+      {/* SECCIÓN A — Vínculos personales (siempre visible) */}
       <FamilyRelationsSection />
 
+      {/* Separador conceptual */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
+        <span className="text-xs uppercase tracking-wide rowi-muted">
+          ·
+        </span>
+        <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
+      </div>
+
+      {/* SECCIÓN B — Plan Familiar (suscripción) */}
       <header className="rowi-card">
+        <span className="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wide mb-2">
+          Plan / Suscripción
+        </span>
         <h1 className="text-2xl font-semibold">Plan Familiar</h1>
-        <p className="rowi-muted text-sm">Gestiona los miembros de tu plan familiar.</p>
+        <p className="rowi-muted text-sm">Suscripción compartida — gestiona los miembros con acceso a tu plan.</p>
       </header>
 
       {/* Resumen del plan */}

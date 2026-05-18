@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { secureLog } from "@/lib/logging";
+import { telemetry } from "@/lib/telemetry";
 
 /* =========================================================
    🔥 PrismaClient — Optimizado para Neon + Vercel Serverless
@@ -57,6 +58,14 @@ function buildClient() {
         } catch (err) {
           const elapsed = Date.now() - started;
           secureLog.error("prisma.query_failed", err, {
+            model: model || "raw",
+            action: operation,
+            durationMs: elapsed,
+          });
+          // Also fan out to the configured telemetry backend (no-op
+          // until SENTRY_DSN / AXIOM_TOKEN are set).
+          telemetry.captureException(err, {
+            kind: "prisma.query_failed",
             model: model || "raw",
             action: operation,
             durationMs: elapsed,

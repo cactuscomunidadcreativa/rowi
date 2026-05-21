@@ -18,6 +18,9 @@ import {
   Shield,
   Boxes,
   ChevronRight,
+  FlaskConical,
+  Upload,
+  BarChart3,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -146,6 +149,87 @@ export default function AdminDashboard() {
             </div>
           </AdminCard>
         </Link>
+
+        {/* Vital Signs admin entry points */}
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--rowi-muted)] mb-3">
+            {t("admin.vitalSigns.section", "Vital Signs")}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Link href="/hub/admin/vital-signs/lab" className="block">
+              <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow flex-shrink-0">
+                    <FlaskConical className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      {t("admin.vitalSigns.lab", "VS Lab")}
+                    </p>
+                    <p className="text-[10px] text-[var(--rowi-muted)] truncate">
+                      {t("admin.vitalSigns.labDesc", "Pesos del modelo BE2GROW")}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </div>
+              </AdminCard>
+            </Link>
+            <Link href="/hub/admin/vital-signs" className="block">
+              <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow flex-shrink-0">
+                    <Upload className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      {t("admin.vitalSigns.upload", "VS Upload")}
+                    </p>
+                    <p className="text-[10px] text-[var(--rowi-muted)] truncate">
+                      {t("admin.vitalSigns.uploadDesc", "Subir CSV OVS / TVS / LVS")}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </div>
+              </AdminCard>
+            </Link>
+            <Link href="/hub/admin/hr/vital-signs" className="block">
+              <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow flex-shrink-0">
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      {t("admin.vitalSigns.hr", "HR Vital Signs")}
+                    </p>
+                    <p className="text-[10px] text-[var(--rowi-muted)] truncate">
+                      {t("admin.vitalSigns.hrDesc", "Agregado HR · Engagement Index")}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </div>
+              </AdminCard>
+            </Link>
+            <Link href="/hub/exec/health" className="block">
+              <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow flex-shrink-0">
+                    <Activity className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                      {t("admin.vitalSigns.exec", "Exec Health")}
+                    </p>
+                    <p className="text-[10px] text-[var(--rowi-muted)] truncate">
+                      {t("admin.vitalSigns.execDesc", "Dashboard ejecutivo + ROE")}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </div>
+              </AdminCard>
+            </Link>
+          </div>
+        </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

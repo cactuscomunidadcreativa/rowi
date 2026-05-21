@@ -1,6 +1,7 @@
 "use client";
 
-import { KeyRound } from "lucide-react";
+import Link from "next/link";
+import { KeyRound, Activity } from "lucide-react";
 import { AdminPage, AdminBadge } from "@/components/admin/AdminPage";
 import { EntityTable, type Column } from "@/components/admin/EntityTable";
 
@@ -72,6 +73,20 @@ const columns: Column<ClientAccessRow>[] = [
     labelKey: "admin.coaching.col.grantedBy",
     fallback: "Granted by",
     render: (r) => r.createdBy?.name || "—",
+  },
+  {
+    key: "vitalSigns",
+    labelKey: "admin.coaching.col.vitalSigns",
+    fallback: "Vital Signs",
+    render: (r) => (
+      <Link
+        href={`/hub/admin/coaching/clients/${r.id}/vital-signs`}
+        className="inline-flex items-center gap-1 text-xs text-[var(--rowi-g2)] hover:underline"
+      >
+        <Activity className="w-3 h-3" />
+        VS
+      </Link>
+    ),
   },
 ];
 

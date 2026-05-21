@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2 } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -30,6 +30,12 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      vitalSigns: "Vital Signs",
+      vsHub: "Mis Vital Signs",
+      vsDebriefs: "Mis Debriefs",
+      vsFamily: "Familia",
+      vsPrivacy: "Mi Privacidad",
+      vsResearch: "Research",
       workspace: "Workspace",
       org: "Organización",
       weekflow: "WeekFlow",
@@ -75,6 +81,12 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      vitalSigns: "Vital Signs",
+      vsHub: "My Vital Signs",
+      vsDebriefs: "My Debriefs",
+      vsFamily: "Family",
+      vsPrivacy: "My Privacy",
+      vsResearch: "Research",
       workspace: "Workspace",
       org: "Organization",
       weekflow: "WeekFlow",
@@ -120,6 +132,12 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      vitalSigns: "Vital Signs",
+      vsHub: "Meus Vital Signs",
+      vsDebriefs: "Meus Debriefs",
+      vsFamily: "Família",
+      vsPrivacy: "Minha Privacidade",
+      vsResearch: "Pesquisa",
       workspace: "Workspace",
       org: "Organização",
       weekflow: "WeekFlow",
@@ -165,6 +183,12 @@ const translations = {
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
+      vitalSigns: "Vital Signs",
+      vsHub: "I miei Vital Signs",
+      vsDebriefs: "I miei Debrief",
+      vsFamily: "Famiglia",
+      vsPrivacy: "La mia Privacy",
+      vsResearch: "Ricerca",
       workspace: "Workspace",
       org: "Organizzazione",
       weekflow: "WeekFlow",
@@ -228,6 +252,7 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 ========================================================= */
 const BASE_LINKS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
+  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"] },
   { href: "/org", key: "org", icon: Building2, roles: ["*"] },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"] },
   { href: "/community", key: "community", icon: Users, roles: ["*"] },
@@ -811,6 +836,33 @@ export default function NavBar() {
                         </MenuLink>
                         <MenuLink href="/settings/invites" icon={UserPlus} onClick={() => setMenuOpen(false)}>
                           {t.invites}
+                        </MenuLink>
+                      </div>
+                    </CollapsibleSection>
+
+                    {/* Seccion Vital Signs - Colapsable */}
+                    <CollapsibleSection
+                      id="vitalSigns"
+                      title={t.vitalSigns}
+                      icon={<Activity className="w-4 h-4" />}
+                      isExpanded={expandedSection === "vitalSigns"}
+                      onToggle={() => setExpandedSection(expandedSection === "vitalSigns" ? null : "vitalSigns")}
+                    >
+                      <div className="py-1">
+                        <MenuLink href="/hub/vital-signs" icon={Activity} onClick={() => setMenuOpen(false)}>
+                          {t.vsHub}
+                        </MenuLink>
+                        <MenuLink href="/hub/debrief" icon={Sparkles} onClick={() => setMenuOpen(false)}>
+                          {t.vsDebriefs}
+                        </MenuLink>
+                        <MenuLink href="/hub/family/vital-signs" icon={Users} onClick={() => setMenuOpen(false)}>
+                          {t.vsFamily}
+                        </MenuLink>
+                        <MenuLink href="/hub/account/privacy" icon={Shield} onClick={() => setMenuOpen(false)}>
+                          {t.vsPrivacy}
+                        </MenuLink>
+                        <MenuLink href="/research/cases" icon={FlaskConical} onClick={() => setMenuOpen(false)}>
+                          {t.vsResearch}
                         </MenuLink>
                       </div>
                     </CollapsibleSection>

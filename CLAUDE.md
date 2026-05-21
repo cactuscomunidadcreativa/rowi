@@ -105,6 +105,36 @@ fans `prisma.query_failed` (error) through `telemetry.captureException`.
 
 Full activation guide: `docs/OBSERVABILITY.md`.
 
+### Emotional Budgeting / Vital Signs
+
+Rowi is also the operational platform for **Emotional Budgeting**,
+the Six Seconds framework. The book by Eduardo González names this
+project as **ROWIIA** explicitly (ch. 16). We host the five frameworks:
+Vital Signs (5 drivers · 15 pulse points · OVS/TVS/LVS/FVS), KCG
+(8 SEI competencies in `EqSnapshot`), Brain Talents (18 in
+`TalentSnapshot`), and the observability layer itself.
+
+Key principles:
+- The BE2GROW matrix (pulse point → SEI + brain talents) is a
+  **hypothesis v0**, not calibrated truth. Each debrief (3 highlighters
+  OWN/CONSIDER/REJECT) and each CSV upload contribute ground truth
+  that refines the model toward v1.
+- Five visibility levels: `self` / `team_aggregated` (N≥5) /
+  `org_aggregated` (N≥5) / `community_public` / `research_lens`.
+- Research lens is granted via `User.researchAccessLevel` enum:
+  `founder` (Eduardo only), `scientific_lead` (Joshua only),
+  `rowi_team` / `six_seconds_team` (anonymized for the respective
+  teams), `invited_personal` (user invites their own coach/mentor).
+  Every research access is logged in `ResearchAccessAudit`.
+- Privacy floor is **GDPR**. Adapted per jurisdiction. China (PIPL)
+  will need data residency when we enter.
+- All lenses (HR, team leader, GM, coach, mentor, consultant,
+  recruiter, family) materialize on existing models: `ServiceEngagement`,
+  `EmployeeProfile.managerId`, `FamilyRelation`, scope-aware admin.
+  We add the VS layer on top, not a parallel system.
+
+Full writeup: `docs/EMOTIONAL_BUDGETING.md`.
+
 ### Email locale chain
 
 Every transactional email picks recipient's `preferredLang` →

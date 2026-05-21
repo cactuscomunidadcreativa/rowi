@@ -16,8 +16,11 @@ import {
   Compass,
   Heart,
   Target,
+  ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { CONSENTS, type ConsentKey, titleFor, bodyFor } from "@/lib/privacy/consents";
 
 type Lang = "es" | "en" | "pt" | "it";
 
@@ -30,6 +33,7 @@ type Step = {
 
 const STEPS: Step[] = [
   { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-fuchsia-500" },
+  { key: "consent", icon: ShieldCheck, gradient: "from-amber-500 to-orange-600" },
   { key: "workspace", icon: Briefcase, gradient: "from-indigo-500 to-purple-600", href: "/workspace/new" },
   { key: "invite", icon: Users, gradient: "from-blue-500 to-cyan-600" },
   { key: "explore", icon: Brain, gradient: "from-emerald-500 to-green-600" },
@@ -50,6 +54,17 @@ export default function OnboardingPage() {
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
+  // Consent step state
+  const [consentMap, setConsentMap] = useState<Record<ConsentKey, boolean>>(() => {
+    const seed = {} as Record<ConsentKey, boolean>;
+    for (const c of CONSENTS) seed[c.key] = c.defaultGranted;
+    return seed;
+  });
+  const [consentInitial, setConsentInitial] = useState<Record<ConsentKey, boolean> | null>(null);
+  const [consentsLoading, setConsentsLoading] = useState(false);
+  const [consentsSaving, setConsentsSaving] = useState(false);
+  const [consentsError, setConsentsError] = useState<string | null>(null);
+
   useEffect(() => {
     async function checkState() {
       try {
@@ -63,7 +78,67 @@ export default function OnboardingPage() {
     checkState();
   }, []);
 
-  const next = () => setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  useEffect(() => {
+    if (STEPS[step]?.key !== "consent" || consentInitial !== null) return;
+    setConsentsLoading(true);
+    fetch("/api/account/consent")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.ok === false) {
+          setConsentsError(data.error ?? "load_failed");
+          return;
+        }
+        const current = {} as Record<ConsentKey, boolean>;
+        for (const c of CONSENTS) {
+          const found = (data.consents ?? []).find((x: { key: ConsentKey }) => x.key === c.key);
+          current[c.key] = found?.granted ?? c.defaultGranted;
+        }
+        setConsentMap(current);
+        setConsentInitial(current);
+      })
+      .catch((e) => setConsentsError(e instanceof Error ? e.message : "load_failed"))
+      .finally(() => setConsentsLoading(false));
+  }, [step, consentInitial]);
+
+  async function saveConsents(): Promise<boolean> {
+    if (!consentMap.basic_processing) {
+      setConsentsError(t("onboarding.consent.requiredError", "Necesitas aceptar el uso del producto para continuar."));
+      return false;
+    }
+    setConsentsSaving(true);
+    setConsentsError(null);
+    try {
+      const initial = consentInitial ?? ({} as Record<ConsentKey, boolean>);
+      const changes = CONSENTS.filter((c) => consentMap[c.key] !== (initial[c.key] ?? false));
+      for (const c of changes) {
+        const res = await fetch("/api/account/consent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ consentKey: c.key, granted: consentMap[c.key], locale: L }),
+        });
+        const j = await res.json();
+        if (j?.ok === false) {
+          setConsentsError(j.error ?? "save_failed");
+          return false;
+        }
+      }
+      setConsentInitial({ ...consentMap });
+      return true;
+    } catch (e) {
+      setConsentsError(e instanceof Error ? e.message : "save_failed");
+      return false;
+    } finally {
+      setConsentsSaving(false);
+    }
+  }
+
+  const next = async () => {
+    if (STEPS[step]?.key === "consent") {
+      const ok = await saveConsents();
+      if (!ok) return;
+    }
+    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  };
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   const StepIcon = STEPS[step].icon;
@@ -110,8 +185,8 @@ export default function OnboardingPage() {
               {t(`onboarding.${current.key}.description`)}
             </p>
 
-            {/* Step 0: Welcome — role selection */}
-            {step === 0 && (
+            {/* Step: Welcome — role selection */}
+            {current.key === "welcome" && (
               <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto mb-2">
                 {ROLE_PATHS.map((r) => {
                   const RoleIcon = r.icon;
@@ -142,8 +217,69 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 1: Create workspace */}
-            {step === 1 && (
+            {/* Step: Consent (GDPR floor) */}
+            {current.key === "consent" && (
+              <div className="max-w-xl mx-auto space-y-3 text-left">
+                {consentsLoading && (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--rowi-g2)]" />
+                  </div>
+                )}
+                {!consentsLoading && CONSENTS.map((c) => {
+                  const granted = consentMap[c.key];
+                  return (
+                    <label
+                      key={c.key}
+                      className={`block rowi-card cursor-pointer transition-all ${
+                        granted ? "border-[var(--rowi-g2)]/60" : ""
+                      } ${c.required ? "opacity-100" : ""}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={granted}
+                          disabled={c.required || consentsSaving}
+                          onChange={(e) =>
+                            setConsentMap((prev) => ({ ...prev, [c.key]: e.target.checked }))
+                          }
+                          className="mt-1 h-4 w-4 rounded border-[var(--rowi-card-border)] accent-[var(--rowi-g2)]"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <h3 className="text-[var(--rowi-foreground)] font-medium text-sm">
+                              {titleFor(c, L)}
+                            </h3>
+                            {c.required && (
+                              <span className="rowi-chip text-xs">
+                                {t("onboarding.consent.required", "Obligatorio")}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[var(--rowi-muted)] leading-relaxed">
+                            {bodyFor(c, L)}
+                          </p>
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
+                {consentsError && (
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{consentsError}</span>
+                  </div>
+                )}
+                <p className="text-xs text-[var(--rowi-muted-weak)] pt-2">
+                  {t(
+                    "onboarding.consent.footer",
+                    "Puedes revisar o revocar estos permisos en cualquier momento desde tu página de privacidad.",
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Step: Create workspace */}
+            {current.key === "workspace" && (
               <div className="space-y-3 max-w-md mx-auto">
                 {hasWorkspace === null && (
                   <Loader2 className="w-5 h-5 animate-spin mx-auto text-[var(--rowi-g2)]" />
@@ -174,8 +310,8 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 2: Invite members */}
-            {step === 2 && (
+            {/* Step: Invite members */}
+            {current.key === "invite" && (
               <div className="max-w-md mx-auto space-y-3">
                 <Link
                   href="/workspace"
@@ -190,8 +326,8 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* Step 3: Explore */}
-            {step === 3 && (
+            {/* Step: Explore */}
+            {current.key === "explore" && (
               <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto">
                 <Link
                   href="/dashboard"
@@ -239,7 +375,13 @@ export default function OnboardingPage() {
 
           <button
             onClick={() => router.push("/dashboard")}
-            className="text-sm text-gray-500 hover:text-[var(--rowi-g2)] transition-colors"
+            disabled={current.key === "consent" && !consentMap.basic_processing}
+            className="text-sm text-gray-500 hover:text-[var(--rowi-g2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-500"
+            title={
+              current.key === "consent" && !consentMap.basic_processing
+                ? t("onboarding.consent.requiredError", "Necesitas aceptar el uso del producto para continuar.")
+                : undefined
+            }
           >
             {t("onboarding.skip")}
           </button>
@@ -247,11 +389,20 @@ export default function OnboardingPage() {
           {step < STEPS.length - 1 ? (
             <button
               onClick={next}
-              disabled={step === 0 && !selectedRole}
+              disabled={
+                (current.key === "welcome" && !selectedRole) ||
+                (current.key === "consent" && (consentsLoading || consentsSaving || !consentMap.basic_processing))
+              }
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             >
-              {t("onboarding.next")}
-              <ArrowRight className="w-4 h-4" />
+              {consentsSaving && current.key === "consent" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  {t("onboarding.next")}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           ) : (
             <button

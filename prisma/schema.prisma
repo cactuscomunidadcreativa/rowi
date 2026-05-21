@@ -8,43 +8,43 @@ datasource db {
 }
 
 model User {
-  id               String      @id @default(cuid())
-  name             String?
-  email            String      @unique
-  emails           UserEmail[]
-  emailVerified    DateTime?
-  image            String?
-  bio              String?
-  headline         String?
-  planExpiresAt    DateTime?
-  active           Boolean     @default(true)
-  allowAI          Boolean     @default(true)
-  contributeToRowiverse Boolean @default(true)  // Auto-contribuir data EQ al RowiVerse global
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  planId           String?
-  primaryTenantId  String?
-  organizationRole String?     @default("VIEWER")
+  id                    String      @id @default(cuid())
+  name                  String?
+  email                 String      @unique
+  emails                UserEmail[]
+  emailVerified         DateTime?
+  image                 String?
+  bio                   String?
+  headline              String?
+  planExpiresAt         DateTime?
+  active                Boolean     @default(true)
+  allowAI               Boolean     @default(true)
+  contributeToRowiverse Boolean     @default(true) // Auto-contribuir data EQ al RowiVerse global
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  planId                String?
+  primaryTenantId       String?
+  organizationRole      String?     @default("VIEWER")
 
   // 🚀 Onboarding y estado del usuario
   onboardingStatus OnboardingStatus @default(REGISTERED)
-  onboardingStep   Int              @default(0)        // Paso actual del onboarding
-  onboardingData   Json?                               // Datos temporales del onboarding
-  seiRequested     Boolean          @default(false)    // ¿Solicitó tomar el SEI?
-  seiRequestedAt   DateTime?                           // Fecha de solicitud del SEI
-  seiCompletedAt   DateTime?                           // Fecha de completado del SEI
-  seiExternalId    String?                             // ID externo en Six Seconds
-  trialStartedAt   DateTime?                           // Inicio del trial
-  trialEndsAt      DateTime?                           // Fin del trial
+  onboardingStep   Int              @default(0) // Paso actual del onboarding
+  onboardingData   Json? // Datos temporales del onboarding
+  seiRequested     Boolean          @default(false) // ¿Solicitó tomar el SEI?
+  seiRequestedAt   DateTime? // Fecha de solicitud del SEI
+  seiCompletedAt   DateTime? // Fecha de completado del SEI
+  seiExternalId    String? // ID externo en Six Seconds
+  trialStartedAt   DateTime? // Inicio del trial
+  trialEndsAt      DateTime? // Fin del trial
 
   // 🔐 SSO Six Seconds Integration
-  ssoProvider      String?                             // "six-seconds" | null
-  ssoProviderId    String?                             // ID único del usuario en el SSO
-  preferredLang    String?          @default("es")     // Idioma preferido del SSO
+  ssoProvider   String? // "six-seconds" | null
+  ssoProviderId String? // ID único del usuario en el SSO
+  preferredLang String? @default("es") // Idioma preferido del SSO
 
   // 💳 Stripe
-  stripeCustomerId     String?   @unique              // ID del cliente en Stripe
-  stripeSubscriptionId String?                        // ID de la suscripción activa
+  stripeCustomerId     String? @unique // ID del cliente en Stripe
+  stripeSubscriptionId String? // ID de la suscripción activa
 
   // 🌍 Identidad Global para RowiVerse (idioma, país, etc.)
   country  String? @default("Unknown") // país del usuario
@@ -113,15 +113,15 @@ model User {
   EcosystemLink         EcosystemLink[]
 
   // 🦉 ROWI 100% - Nuevas relaciones
-  avatar                AvatarEvolution?
-  topPerformerMetrics   TopPerformerMetric[]
-  emotionalROI          EmotionalROI[]
-  decisionTracking      DecisionTracking[]
+  avatar                 AvatarEvolution?
+  topPerformerMetrics    TopPerformerMetric[]
+  emotionalROI           EmotionalROI[]
+  decisionTracking       DecisionTracking[]
   integrationConnections IntegrationConnection[]
-  calendarEvents        CalendarEvent[]
-  notificationQueue     NotificationQueue[]
+  calendarEvents         CalendarEvent[]
+  notificationQueue      NotificationQueue[]
   notificationPreference NotificationPreference?
-  pushSubscriptions     PushSubscription[]
+  pushSubscriptions      PushSubscription[]
 
   // 🎮 Gamificación
   achievements          UserAchievement[]
@@ -135,39 +135,72 @@ model User {
   weekFlowContributions WeekFlowContribution[]
   weekFlowMoodCheckins  WeekFlowMoodCheckin[]
   weekFlowComments      WeekFlowComment[]
-  rowiTasksOwned        RowiTask[]           @relation("TaskOwner")
-  rowiTasksAssigned     RowiTask[]           @relation("TaskAssignee")
+  rowiTasksOwned        RowiTask[]             @relation("TaskOwner")
+  rowiTasksAssigned     RowiTask[]             @relation("TaskAssignee")
   taskCollaborations    TaskCollaborator[]
   taskReflections       TaskReflection[]
   emotionVocabulary     EmotionVocabulary?
 
   // 🌐 Social
-  profileVisibility     String               @default("public") // public | connections | private
-  socialLinks           Json?                // { linkedin, twitter, instagram, website }
-  feedComments          FeedComment[]
-  feedReactions         FeedReaction[]
-  nobleGoals            NobleGoal[]          @relation("NobleGoalAuthor")
-  goalParticipations    NobleGoalParticipant[]
-  goalUpdates           NobleGoalUpdate[]
-  messageParticipants   MessageParticipant[]
-  sentMessages          Message[]
+  profileVisibility   String                 @default("public") // public | connections | private
+  socialLinks         Json? // { linkedin, twitter, instagram, website }
+  feedComments        FeedComment[]
+  feedReactions       FeedReaction[]
+  nobleGoals          NobleGoal[]            @relation("NobleGoalAuthor")
+  goalParticipations  NobleGoalParticipant[]
+  goalUpdates         NobleGoalUpdate[]
+  messageParticipants MessageParticipant[]
+  sentMessages        Message[]
 
   // 🏢 Workspace professional roles
-  authoredCoachNotes    CoachNote[]          @relation("CoachNoteAuthor")
-  createdDevPlans       DevelopmentPlan[]    @relation("DevPlanCreator")
-  createdCampaigns      AssessmentCampaign[] @relation("CampaignCreator")
-  resolvedAlerts        WorkspaceAlert[]     @relation("AlertResolver")
-  createdClientAccess   ClientAccess[]       @relation("ClientAccessCreator")
+  authoredCoachNotes  CoachNote[]          @relation("CoachNoteAuthor")
+  createdDevPlans     DevelopmentPlan[]    @relation("DevPlanCreator")
+  createdCampaigns    AssessmentCampaign[] @relation("CampaignCreator")
+  resolvedAlerts      WorkspaceAlert[]     @relation("AlertResolver")
+  createdClientAccess ClientAccess[]       @relation("ClientAccessCreator")
 
   // 👨‍👩‍👧 Family contexts
-  familyOwned       FamilyRelation[] @relation("FamilyRelationOwner")
-  familyRelatedTo   FamilyRelation[] @relation("FamilyRelationRelated")
+  familyOwned     FamilyRelation[] @relation("FamilyRelationOwner")
+  familyRelatedTo FamilyRelation[] @relation("FamilyRelationRelated")
 
   // 🤝 Service contexts (provider o cliente individual)
-  servicesProvided  ServiceEngagement[] @relation("ServiceEngagementProvider")
-  servicesReceived  ServiceEngagement[] @relation("ServiceEngagementUserClient")
+  servicesProvided ServiceEngagement[] @relation("ServiceEngagementProvider")
+  servicesReceived ServiceEngagement[] @relation("ServiceEngagementUserClient")
+
+  // 📊 Vital Signs (Emotional Budgeting)
+  vsResponses         VitalSignsResponse[]  @relation("VsResponseRespondent")
+  vsInferences        PulsePointInference[] @relation("VsInferenceSubject")
+  vsFeedbacks         HypothesisFeedback[]  @relation("VsFeedbackRespondent")
+  vsSignals           PulsePointSignal[]    @relation("VsSignalUser")
+  vsWeightsCreated    PulsePointWeights[]   @relation("PulsePointWeightsCreator")
+  debriefsFacilitated DebriefSession[]      @relation("DebriefFacilitator")
+  debriefsAsSubject   DebriefSession[]      @relation("DebriefSubject")
+  actionCommitments   ActionCommitment[]    @relation("ActionCommitmentOwner")
+
+  // 🔒 Privacy / Consent / Research lens
+  researchAccessLevel  ResearchAccessLevel      @default(none)
+  consents             UserConsent[]            @relation("UserConsentOwner")
+  researchViewsMade    ResearchAccessAudit[]    @relation("ResearchViewer")
+  researchViewsOnMe    ResearchAccessAudit[]    @relation("ResearchSubject")
+  personalInvitesSent  PersonalResearchInvite[] @relation("InviteSubject")
+  personalInvitesRecv  PersonalResearchInvite[] @relation("InviteInvitee")
+  coachProfile         CoachProfile?
 
   @@map("user")
+}
+
+/// 🔒 Niveles de acceso del research lens.
+/// `founder` y `scientific_lead` ven PII; `rowi_team` y `six_seconds_team`
+/// ven datos pseudonimizados (códigos `Case-XXX` en lugar de nombres).
+/// `invited_personal` es para coaches/mentores invitados por el propio usuario.
+enum ResearchAccessLevel {
+  none
+  founder
+  scientific_lead
+  rowi_team
+  six_seconds_team
+  invited_personal
+  invited_observer
 }
 
 /// 📧 Correos secundarios del usuario
@@ -243,33 +276,33 @@ model UserPermission {
 /// Define qué features/secciones puede ver cada rol.
 /// Permite configurar visibilidad granular en el UI.
 model ProfileFeature {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // 🎯 A qué perfil aplica
-  role        String   // OrgRole o TenantRole como string
-  roleType    String   @default("org") // "org" | "tenant" | "custom"
+  role     String // OrgRole o TenantRole como string
+  roleType String @default("org") // "org" | "tenant" | "custom"
 
   // 📦 Feature específica
-  featureKey  String   // ej: "benchmarks", "admin.users", "dashboard.roi"
-  category    String   @default("general") // Categoría para agrupar features
+  featureKey String // ej: "benchmarks", "admin.users", "dashboard.roi"
+  category   String @default("general") // Categoría para agrupar features
 
   // 🔒 Configuración de acceso
-  canView     Boolean  @default(false)
-  canCreate   Boolean  @default(false)
-  canEdit     Boolean  @default(false)
-  canDelete   Boolean  @default(false)
+  canView   Boolean @default(false)
+  canCreate Boolean @default(false)
+  canEdit   Boolean @default(false)
+  canDelete Boolean @default(false)
 
   // 📝 Metadata
   description String?
-  priority    Int      @default(0) // Para ordenamiento
+  priority    Int     @default(0) // Para ordenamiento
 
   // 🕐 Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // 🔗 Opcional: scope específico (tenant, org, etc.)
-  scopeType   String?  // "tenant" | "organization" | "global"
-  scopeId     String?  // ID del scope si no es global
+  scopeType String? // "tenant" | "organization" | "global"
+  scopeId   String? // ID del scope si no es global
 
   @@unique([role, roleType, featureKey, scopeType, scopeId])
   @@index([role, roleType])
@@ -284,22 +317,22 @@ model ProfileFeature {
 /// Define todas las features posibles del sistema.
 /// Sirve como catálogo para configurar ProfileFeature.
 model FeatureDefinition {
-  id           String   @id @default(cuid())
-  key          String   @unique // ej: "benchmarks.stats", "admin.users.create"
-  name         String   // Nombre legible
-  description  String?
-  category     String   @default("general")
-  parentKey    String?  // Para jerarquía de features
+  id          String  @id @default(cuid())
+  key         String  @unique // ej: "benchmarks.stats", "admin.users.create"
+  name        String // Nombre legible
+  description String?
+  category    String  @default("general")
+  parentKey   String? // Para jerarquía de features
 
   // 🔧 Configuración
-  icon         String?  // Nombre de icono lucide
-  route        String?  // Ruta asociada en la app
-  isAdmin      Boolean  @default(false) // Solo para admins
-  isDefault    Boolean  @default(true)  // Visible por defecto para nuevos roles
+  icon      String? // Nombre de icono lucide
+  route     String? // Ruta asociada en la app
+  isAdmin   Boolean @default(false) // Solo para admins
+  isDefault Boolean @default(true) // Visible por defecto para nuevos roles
 
   // 🕐 Timestamps
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([parentKey])
@@ -635,106 +668,106 @@ model Tenant {
 }
 
 model Plan {
-  id           String   @id @default(cuid())
-  name         String   @unique
-  slug         String?  @unique          // "free", "plus", "family", "pro", "business", "enterprise"
-  description  String?
-  descriptionEN String?                   // Descripción en inglés
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String?  @unique // "free", "plus", "family", "pro", "business", "enterprise"
+  description   String?
+  descriptionEN String? // Descripción en inglés
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // 💰 Precios
-  priceUsd          Float    @default(0)      // Precio mensual USD
-  priceCents        Int      @default(0)      // Precio mensual en centavos para Stripe
-  priceYearlyUsd    Float    @default(0)      // Precio anual USD
-  priceYearlyCents  Int      @default(0)      // Precio anual en centavos para Stripe
-  currency          String   @default("USD")  // Moneda principal
-  billingPeriod     String   @default("monthly") // "monthly" | "yearly" | "custom"
+  priceUsd         Float  @default(0) // Precio mensual USD
+  priceCents       Int    @default(0) // Precio mensual en centavos para Stripe
+  priceYearlyUsd   Float  @default(0) // Precio anual USD
+  priceYearlyCents Int    @default(0) // Precio anual en centavos para Stripe
+  currency         String @default("USD") // Moneda principal
+  billingPeriod    String @default("monthly") // "monthly" | "yearly" | "custom"
 
   // 💳 Stripe
-  stripePriceIdMonthly String?           // ID precio mensual Stripe
-  stripePriceIdYearly  String?           // ID precio anual Stripe
-  stripeProductId      String?           // ID del producto en Stripe
+  stripePriceIdMonthly String? // ID precio mensual Stripe
+  stripePriceIdYearly  String? // ID precio anual Stripe
+  stripeProductId      String? // ID del producto en Stripe
 
   // 🎁 Trial
-  trialDays           Int      @default(0)   // Días de trial (0 = sin trial)
-  durationDays        Int      @default(30)  // Duración del plan
+  trialDays    Int @default(0) // Días de trial (0 = sin trial)
+  durationDays Int @default(30) // Duración del plan
 
   // 🤖 Tokens IA
-  tokensMonthly       Int      @default(0)    // Tokens IA mensuales incluidos
-  tokensShared        Boolean  @default(false) // Tokens compartidos entre usuarios
-  tokensPerUser       Boolean  @default(true)  // Tokens por usuario individual
-  tokensOrganization  Int      @default(0)    // Tokens para la organización (Business/Enterprise)
+  tokensMonthly      Int     @default(0) // Tokens IA mensuales incluidos
+  tokensShared       Boolean @default(false) // Tokens compartidos entre usuarios
+  tokensPerUser      Boolean @default(true) // Tokens por usuario individual
+  tokensOrganization Int     @default(0) // Tokens para la organización (Business/Enterprise)
 
   // 👥 Usuarios y miembros
-  maxUsers            Int      @default(1)      // Usuarios máximos (individual: 1, family: 6, etc.)
-  minUsers            Int      @default(1)      // Usuarios mínimos (Business: 20)
-  pricePerUserMonthly Float    @default(0)      // Precio por usuario adicional/mes
-  pricePerUserYearly  Float    @default(0)      // Precio por usuario adicional/año
-  allowFamilyMembers  Boolean  @default(false)  // Permite agregar familiares
+  maxUsers            Int     @default(1) // Usuarios máximos (individual: 1, family: 6, etc.)
+  minUsers            Int     @default(1) // Usuarios mínimos (Business: 20)
+  pricePerUserMonthly Float   @default(0) // Precio por usuario adicional/mes
+  pricePerUserYearly  Float   @default(0) // Precio por usuario adicional/año
+  allowFamilyMembers  Boolean @default(false) // Permite agregar familiares
 
   // 🏢 Tipo de plan
-  planType            String   @default("individual") // "individual" | "family" | "team" | "business" | "enterprise"
-  targetAudience      String?                         // "B2C" | "B2B" | "B2C/B2B"
+  planType       String  @default("individual") // "individual" | "family" | "team" | "business" | "enterprise"
+  targetAudience String? // "B2C" | "B2B" | "B2C/B2B"
 
   // 🧠 Features - IA y Asistentes
-  aiEnabled           Boolean  @default(true)
-  superRowiAccess     Boolean  @default(false)  // Acceso a Super Rowi
-  rowiEQAccess        Boolean  @default(false)  // Acceso a Rowi EQ
-  rowiAffinityAccess  Boolean  @default(false)  // Acceso a Rowi Affinity
-  rowiECOAccess       Boolean  @default(false)  // Acceso a Rowi ECO
-  rowiTrainerAccess   Boolean  @default(false)  // Acceso a Rowi Trainer
-  rowiSalesAccess     Boolean  @default(false)  // Acceso a Rowi Sales
+  aiEnabled          Boolean @default(true)
+  superRowiAccess    Boolean @default(false) // Acceso a Super Rowi
+  rowiEQAccess       Boolean @default(false) // Acceso a Rowi EQ
+  rowiAffinityAccess Boolean @default(false) // Acceso a Rowi Affinity
+  rowiECOAccess      Boolean @default(false) // Acceso a Rowi ECO
+  rowiTrainerAccess  Boolean @default(false) // Acceso a Rowi Trainer
+  rowiSalesAccess    Boolean @default(false) // Acceso a Rowi Sales
 
   // 🧠 Features - SEI y Assessment
-  seiIncluded         Boolean  @default(false)  // SEI incluido en el precio
-  seiAnnual           Boolean  @default(false)  // SEI anual incluido
-  brainBriefIncluded  Boolean  @default(false)  // Brain Brief Profile incluido
-  seiDiscountPercent  Int      @default(0)      // % descuento en SEI
+  seiIncluded        Boolean @default(false) // SEI incluido en el precio
+  seiAnnual          Boolean @default(false) // SEI anual incluido
+  brainBriefIncluded Boolean @default(false) // Brain Brief Profile incluido
+  seiDiscountPercent Int     @default(0) // % descuento en SEI
 
   // 🧠 Features - Comunidades y grupos
-  maxCommunities      Int      @default(1)      // Comunidades máximas
-  maxMembers          Int      @default(10)     // Miembros por comunidad
-  privateGroups       Boolean  @default(false)  // Grupos privados
+  maxCommunities Int     @default(1) // Comunidades máximas
+  maxMembers     Int     @default(10) // Miembros por comunidad
+  privateGroups  Boolean @default(false) // Grupos privados
 
   // 🧠 Features - Reportes y Analytics
-  benchmarkAccess     Boolean  @default(false)  // Acceso a benchmarks
-  advancedReports     Boolean  @default(false)  // Reportes avanzados
-  executiveDashboard  Boolean  @default(false)  // Dashboard ejecutivo
+  benchmarkAccess       Boolean @default(false) // Acceso a benchmarks
+  advancedReports       Boolean @default(false) // Reportes avanzados
+  executiveDashboard    Boolean @default(false) // Dashboard ejecutivo
   benchmarkingSectorial Boolean @default(false) // Benchmarking sectorial
 
   // 🧠 Features - Integraciones
-  apiAccess           Boolean  @default(false)  // Acceso a API
-  slackIntegration    Boolean  @default(false)  // Integración Slack
-  teamsIntegration    Boolean  @default(false)  // Integración MS Teams
-  gmailIntegration    Boolean  @default(false)  // Integración Gmail/Google
+  apiAccess        Boolean @default(false) // Acceso a API
+  slackIntegration Boolean @default(false) // Integración Slack
+  teamsIntegration Boolean @default(false) // Integración MS Teams
+  gmailIntegration Boolean @default(false) // Integración Gmail/Google
 
   // 🧠 Features - Soporte
-  supportLevel        String   @default("community") // "community" | "email" | "chat" | "priority" | "dedicated"
-  customOnboarding    Boolean  @default(false)  // Onboarding personalizado
-  workshopIncludes    Boolean  @default(false)  // Workshops de adopción
+  supportLevel     String  @default("community") // "community" | "email" | "chat" | "priority" | "dedicated"
+  customOnboarding Boolean @default(false) // Onboarding personalizado
+  workshopIncludes Boolean @default(false) // Workshops de adopción
 
   // 📅 Features - WeekFlow
-  weekflowAccess      Boolean  @default(false)  // Acceso a WeekFlow
-  maxWeekflows        Int      @default(0)      // Máximo de WeekFlows (0 = ilimitado)
-  weekflowInsights    Boolean  @default(false)  // Insights emocionales avanzados
+  weekflowAccess   Boolean @default(false) // Acceso a WeekFlow
+  maxWeekflows     Int     @default(0) // Máximo de WeekFlows (0 = ilimitado)
+  weekflowInsights Boolean @default(false) // Insights emocionales avanzados
 
   // 🏷️ Display
-  badge               String?           // "Popular", "Best Value", "Recomendado", etc.
-  badgeEN             String?           // Badge en inglés
-  emoji               String?           // Emoji del plan
-  color               String?           // Color del plan (hex)
-  icon                String?           // Icono (lucide icon name)
-  sortOrder           Int      @default(0)
-  isPublic            Boolean  @default(true)   // Visible en pricing page
-  isActive            Boolean  @default(true)
-  isCustomPricing     Boolean  @default(false)  // Precio personalizado (Enterprise)
+  badge           String? // "Popular", "Best Value", "Recomendado", etc.
+  badgeEN         String? // Badge en inglés
+  emoji           String? // Emoji del plan
+  color           String? // Color del plan (hex)
+  icon            String? // Icono (lucide icon name)
+  sortOrder       Int     @default(0)
+  isPublic        Boolean @default(true) // Visible en pricing page
+  isActive        Boolean @default(true)
+  isCustomPricing Boolean @default(false) // Precio personalizado (Enterprise)
 
   // 📝 Features JSON (para características adicionales)
-  features            Json?             // Lista de features adicionales
-  featuresEN          Json?             // Features en inglés
-  limitations         Json?             // Limitaciones del plan
-  limitationsEN       Json?             // Limitaciones en inglés
+  features      Json? // Lista de features adicionales
+  featuresEN    Json? // Features en inglés
+  limitations   Json? // Limitaciones del plan
+  limitationsEN Json? // Limitaciones en inglés
 
   // Relaciones
   memberships Membership[]
@@ -764,9 +797,9 @@ model Organization {
   // 🏢 NUEVO: Jerarquía de organizaciones
   // Six Seconds → LATAM/EMEA/APAC → Coaches/Staff → Clients
   parentId           String?
-  unitType           OrgUnitType     @default(TEAM)
-  inheritPermissions Boolean         @default(true)  // Heredar permisos del padre
-  level              Int             @default(0)     // Nivel en árbol (0=raíz)
+  unitType           OrgUnitType @default(TEAM)
+  inheritPermissions Boolean     @default(true) // Heredar permisos del padre
+  level              Int         @default(0) // Nivel en árbol (0=raíz)
 
   // 🧭 Relaciones jerárquicas (todas con nombres explícitos)
   rowiVerse RowiVerse? @relation("RowiVerseToOrganization", fields: [rowiVerseId], references: [id], onDelete: Cascade)
@@ -932,12 +965,12 @@ model CommunityMember {
   taskCollaborations   TaskCollaborator[]
 
   // 🏢 Link opcional a Workspace (RowiCommunity con workspaceType)
-  communityId    String?
-  community      RowiCommunity? @relation("CommunityToMembers", fields: [communityId], references: [id])
+  communityId String?
+  community   RowiCommunity? @relation("CommunityToMembers", fields: [communityId], references: [id])
 
   // 🔐 Consent GDPR
-  consentGiven   Boolean  @default(false)
-  consentAt      DateTime?
+  consentGiven Boolean   @default(false)
+  consentAt    DateTime?
 
   @@index([tenantId])
   @@index([hubId])
@@ -978,30 +1011,30 @@ model RowiRelation {
 }
 
 model RowiFeed {
-  id          String   @id @default(cuid())
-  authorId    String
-  content     String
-  mood        String?
-  visibility  String   @default("public") // public | connections | community | private
-  likes       Int      @default(0)
-  comments    Int      @default(0)
-  tags        String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  authorId   String
+  content    String
+  mood       String?
+  visibility String   @default("public") // public | connections | community | private
+  likes      Int      @default(0)
+  comments   Int      @default(0)
+  tags       String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // 🌐 Social Feed Extensions
-  type        String   @default("post")  // post | achievement | level_up | streak | noble_goal | connection
-  sourceType  String?                     // achievement | level | streak | goal | relation
-  sourceId    String?                     // ID del recurso origen
-  communityId String?                     // Si es post de comunidad
-  mediaUrls   String[]                    // URLs de imágenes/media
-  sharedGoalId String?                    // Si comparte un Noble Goal
-  metadata    Json?                       // Datos extra según type (ej: achievement name, level number)
+  type         String   @default("post") // post | achievement | level_up | streak | noble_goal | connection
+  sourceType   String? // achievement | level | streak | goal | relation
+  sourceId     String? // ID del recurso origen
+  communityId  String? // Si es post de comunidad
+  mediaUrls    String[] // URLs de imágenes/media
+  sharedGoalId String? // Si comparte un Noble Goal
+  metadata     Json? // Datos extra según type (ej: achievement name, level number)
 
   // Relations
-  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  community   RowiCommunity? @relation("FeedCommunity", fields: [communityId], references: [id], onDelete: SetNull)
-  sharedGoal  NobleGoal?     @relation("FeedSharedGoal", fields: [sharedGoalId], references: [id], onDelete: SetNull)
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  community     RowiCommunity? @relation("FeedCommunity", fields: [communityId], references: [id], onDelete: SetNull)
+  sharedGoal    NobleGoal?     @relation("FeedSharedGoal", fields: [sharedGoalId], references: [id], onDelete: SetNull)
   feedComments  FeedComment[]
   feedReactions FeedReaction[]
 
@@ -1495,46 +1528,46 @@ model Certificate {
 }
 
 model AgentConfig {
-  id                 String                @id @default(cuid())
-  slug               String
-  name               String
-  description        String?
-  avatar             String?
-  type               String                @default("CUSTOM")
-  model              String?
-  prompt             String?
-  tools              Json?
-  tone               String?
-  accessLevel        String?
-  visibility         String?
-  autoLearn          Boolean               @default(false)
-  isActive           Boolean               @default(true)
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
-  tenantId           String?
-  superHubId         String?
-  organizationId     String?
-  hubId              String?
-  systemId           String?
+  id             String   @id @default(cuid())
+  slug           String
+  name           String
+  description    String?
+  avatar         String?
+  type           String   @default("CUSTOM")
+  model          String?
+  prompt         String?
+  tools          Json?
+  tone           String?
+  accessLevel    String?
+  visibility     String?
+  autoLearn      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenantId       String?
+  superHubId     String?
+  organizationId String?
+  hubId          String?
+  systemId       String?
 
   // Personalización Cultural del Tenant/Org
-  culturePrompt      String?               // Prompt adicional con cultura/valores de la empresa
-  companyValues      String[]              @default([]) // Lista de valores corporativos
-  companyMission     String?               // Misión de la empresa
-  companyTone        String?               // Tono de comunicación preferido
-  industryContext    String?               // Contexto de la industria
-  customInstructions String?               // Instrucciones personalizadas del admin
-  brandVoice         Json?                 // Guía de voz de marca (formalidad, emojis, etc.)
-  hub                Hub?                  @relation(fields: [hubId], references: [id])
-  organization       Organization?         @relation(fields: [organizationId], references: [id])
-  superHub           SuperHub?             @relation(fields: [superHubId], references: [id])
-  system             System?               @relation(fields: [systemId], references: [id], onDelete: Cascade)
-  tenant             Tenant?               @relation(fields: [tenantId], references: [id])
-  contexts           AgentContext[]
-  performanceReviews PerformanceReview[]
-  knowledge          KnowledgeResource[]   @relation("AgentKnowledge")
-  modelVersions      AgentModelVersion[]   @relation("AgentConfigToModelVersion")
-  trainingSamples    AgentTrainingSample[] @relation("AgentConfigToTrainingSample")
+  culturePrompt        String? // Prompt adicional con cultura/valores de la empresa
+  companyValues        String[]                   @default([]) // Lista de valores corporativos
+  companyMission       String? // Misión de la empresa
+  companyTone          String? // Tono de comunicación preferido
+  industryContext      String? // Contexto de la industria
+  customInstructions   String? // Instrucciones personalizadas del admin
+  brandVoice           Json? // Guía de voz de marca (formalidad, emojis, etc.)
+  hub                  Hub?                       @relation(fields: [hubId], references: [id])
+  organization         Organization?              @relation(fields: [organizationId], references: [id])
+  superHub             SuperHub?                  @relation(fields: [superHubId], references: [id])
+  system               System?                    @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  tenant               Tenant?                    @relation(fields: [tenantId], references: [id])
+  contexts             AgentContext[]
+  performanceReviews   PerformanceReview[]
+  knowledge            KnowledgeResource[]        @relation("AgentKnowledge")
+  modelVersions        AgentModelVersion[]        @relation("AgentConfigToModelVersion")
+  trainingSamples      AgentTrainingSample[]      @relation("AgentConfigToTrainingSample")
   knowledgeDeployments AgentKnowledgeDeployment[]
 
   @@unique([slug, tenantId, superHubId, organizationId, hubId])
@@ -2111,26 +2144,26 @@ model PayrollItem {
 }
 
 model EmployeeProfile {
-  id           String              @id @default(cuid())
+  id           String           @id @default(cuid())
   userId       String
   tenantId     String?
   position     String?
   department   String?
   hireDate     DateTime?
-  salaryUsd    Decimal?            @db.Decimal(10, 2)
+  salaryUsd    Decimal?         @db.Decimal(10, 2)
   contractType ContractType?
-  status       EmploymentStatus    @default(ACTIVE)
+  status       EmploymentStatus @default(ACTIVE)
   skills       String[]
   notes        String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   projectId    String?
 
   // 🌲 Reporting line — self-FK so an employee can have a manager
   // and a manager can have multiple direct reports.
-  managerId    String?
-  manager      EmployeeProfile?    @relation("EmployeeManagerHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
-  reports      EmployeeProfile[]   @relation("EmployeeManagerHierarchy")
+  managerId String?
+  manager   EmployeeProfile?  @relation("EmployeeManagerHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  reports   EmployeeProfile[] @relation("EmployeeManagerHierarchy")
 
   Project      Project?            @relation(fields: [projectId], references: [id])
   tenant       Tenant?             @relation(fields: [tenantId], references: [id])
@@ -2153,17 +2186,17 @@ model EmployeeProfile {
 /// Consent: el owner declara, pero la otra persona (si tiene cuenta)
 /// debe aceptar antes de que aparezcan en su lado.
 model FamilyRelation {
-  id            String   @id @default(cuid())
-  ownerId       String                  // El usuario que declara el vínculo
-  relatedUserId String?                 // Si la otra persona ya tiene cuenta
-  relatedEmail  String?                 // Si no, email para auto-vincular en signup
-  relatedName   String?                 // Nombre de display (útil para hijos sin email)
-  relationship  String                  // partner | spouse | child | parent | sibling | other
-  consentStatus String   @default("pending") // pending | accepted | declined | not_required
+  id            String    @id @default(cuid())
+  ownerId       String // El usuario que declara el vínculo
+  relatedUserId String? // Si la otra persona ya tiene cuenta
+  relatedEmail  String? // Si no, email para auto-vincular en signup
+  relatedName   String? // Nombre de display (útil para hijos sin email)
+  relationship  String // partner | spouse | child | parent | sibling | other
+  consentStatus String    @default("pending") // pending | accepted | declined | not_required
   consentAt     DateTime?
   notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   owner       User  @relation("FamilyRelationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   relatedUser User? @relation("FamilyRelationRelated", fields: [relatedUserId], references: [id], onDelete: SetNull)
@@ -2184,18 +2217,18 @@ model FamilyRelation {
 /// una Organization o un User individual (coaching 1:1).
 model ServiceEngagement {
   id                   String    @id @default(cuid())
-  providerId           String                          // El User que presta el servicio
-  serviceRole          String                          // coach | consultant | mentor | facilitator | trainer | advisor
+  providerId           String // El User que presta el servicio
+  serviceRole          String // coach | consultant | mentor | facilitator | trainer | advisor
   clientTenantId       String?
   clientCommunityId    String?
   clientOrganizationId String?
   clientUserId         String?
-  status               String    @default("active")    // active | paused | ended | proposed
+  status               String    @default("active") // active | paused | ended | proposed
   startDate            DateTime?
   endDate              DateTime?
   hourlyRate           Decimal?  @db.Decimal(10, 2)
   currency             String?   @default("USD")
-  scope                String?                         // Breve descripción del scope
+  scope                String? // Breve descripción del scope
   notes                String?
   meta                 Json?
   createdAt            DateTime  @default(now())
@@ -2560,9 +2593,9 @@ model AffinityProfile {
 /// global → tenant → hub → organization → team
 /// La configuración más específica tiene prioridad (cascada inversa)
 model AffinityConfig {
-  id        String   @id @default(cuid())
-  scope     String   // "global" | "tenant" | "hub" | "organization" | "team"
-  scopeId   String?  // ID del scope (null si es global)
+  id      String  @id @default(cuid())
+  scope   String // "global" | "tenant" | "hub" | "organization" | "team"
+  scopeId String? // ID del scope (null si es global)
 
   // Pesos por contexto (JSON con growth, collab, understand para cada contexto)
   contextWeights Json @default("{}")
@@ -2584,11 +2617,11 @@ model AffinityConfig {
   createdBy   String?
 
   // Relaciones opcionales para integridad referencial
-  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId     String?
-  hub          Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  hubId        String?
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenant         Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId       String?
+  hub            Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId          String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String?
 
   @@unique([scope, scopeId])
@@ -2606,37 +2639,37 @@ model AffinityConfig {
 /// agentes IA usarán para adaptar su comunicación.
 /// Herencia: team → organization → hub → tenant → global
 model AiCultureConfig {
-  id        String   @id @default(cuid())
-  scope     String   // "global" | "tenant" | "hub" | "organization" | "team"
-  scopeId   String?  // ID del scope (null si es global)
+  id      String  @id @default(cuid())
+  scope   String // "global" | "tenant" | "hub" | "organization" | "team"
+  scopeId String? // ID del scope (null si es global)
 
   // Identidad organizacional
-  mission   String?  // Misión de la organización
-  vision    String?  // Visión de la organización
-  values    Json     @default("[]") // Array de valores corporativos
-  industry  String?  // Industria/sector
+  mission  String? // Misión de la organización
+  vision   String? // Visión de la organización
+  values   Json    @default("[]") // Array de valores corporativos
+  industry String? // Industria/sector
 
   // Comunicación
-  tone      String   @default("professional") // Tono: professional, friendly, casual, formal, inspirational
-  language  String   @default("es") // Idioma preferido
-  keywords  Json     @default("[]") // Palabras clave/terminología específica
+  tone     String @default("professional") // Tono: professional, friendly, casual, formal, inspirational
+  language String @default("es") // Idioma preferido
+  keywords Json   @default("[]") // Palabras clave/terminología específica
 
   // Directrices para agentes
   guidelines   String? // Lo que los agentes DEBEN hacer
   restrictions String? // Lo que los agentes NO deben hacer
 
   // Metadata
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
   // Relaciones opcionales
-  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId     String?
-  hub          Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  hubId        String?
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenant         Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId       String?
+  hub            Hub?          @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  hubId          String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String?
 
   @@unique([scope, scopeId])
@@ -2715,19 +2748,19 @@ model InviteToken {
 /// - targetUserId: usuario afectado por la acción (opcional)
 model ActivityLog {
   id           String   @id @default(cuid())
-  userId       String?                      // Actor (opcional para acciones del sistema)
-  targetUserId String?                      // Usuario objetivo (migrado de AuditLog.targetId)
-  action       String                       // Tipo de acción
-  entity       String?                      // Entidad afectada (User, Tenant, etc.)
-  targetId     String?                      // ID de la entidad afectada
-  details      Json?                        // Detalles adicionales (antes: meta en AuditLog)
-  ipAddress    String?                      // IP del actor (para auditoría)
-  userAgent    String?                      // User agent (para auditoría)
+  userId       String? // Actor (opcional para acciones del sistema)
+  targetUserId String? // Usuario objetivo (migrado de AuditLog.targetId)
+  action       String // Tipo de acción
+  entity       String? // Entidad afectada (User, Tenant, etc.)
+  targetId     String? // ID de la entidad afectada
+  details      Json? // Detalles adicionales (antes: meta en AuditLog)
+  ipAddress    String? // IP del actor (para auditoría)
+  userAgent    String? // User agent (para auditoría)
   createdAt    DateTime @default(now())
 
   // Relaciones
-  user         User?    @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
-  targetUser   User?    @relation("ActivityLogTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  user       User? @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+  targetUser User? @relation("ActivityLogTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([targetUserId])
@@ -2968,7 +3001,7 @@ model RowiCommunity {
   hubId          String?
   tenantId       String?
   organizationId String?
-  teamType       String?  // biz, impact, coaching, education, research, ops, tech, marketing
+  teamType       String? // biz, impact, coaching, education, research, ops, tech, marketing
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -2980,7 +3013,7 @@ model RowiCommunity {
   // 🏢 Workspace fields (HR/Coaching/Consulting/TeamUnit/Mentoring)
   workspaceType    WorkspaceType?
   clientOrgId      String?
-  clientOrg        Organization? @relation("ClientWorkspaces", fields: [clientOrgId], references: [id], onDelete: SetNull)
+  clientOrg        Organization?  @relation("ClientWorkspaces", fields: [clientOrgId], references: [id], onDelete: SetNull)
   targetRole       String? // Para SELECTION: rol objetivo (ej. "Gerente Comercial")
   projectStartDate DateTime?
   projectEndDate   DateTime?
@@ -3002,7 +3035,7 @@ model RowiCommunity {
   members        RowiCommunityUser[]
   posts          RowiCommunityPost[]
   CommunityBatch CommunityBatch[]
-  feedPosts      RowiFeed[]           @relation("FeedCommunity")
+  feedPosts      RowiFeed[]          @relation("FeedCommunity")
 
   // 🏢 Workspace features
   communityMembers CommunityMember[]    @relation("CommunityToMembers")
@@ -3035,10 +3068,10 @@ model RowiCommunityUser {
   communityId     String
 
   // 👤 Datos del miembro (copiados para búsqueda rápida)
-  name           String?               // Nombre del miembro
-  email          String?               // Email del miembro
-  phone          String?               // Teléfono del miembro
-  language       String?   @default("es")
+  name     String? // Nombre del miembro
+  email    String? // Email del miembro
+  phone    String? // Teléfono del miembro
+  language String? @default("es")
 
   role           String?   @default("member") // owner | admin | coach | mentor | member | friend | client
   relationToMe   String? // cómo percibo a esta persona: "mi coach", "mi amigo", "mi pareja", etc.
@@ -3066,29 +3099,29 @@ model RowiCommunityUser {
 
 /// 💬 Publicaciones dentro de una comunidad
 model RowiCommunityPost {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   communityId String
   authorId    String
   content     String
   mediaUrl    String?
   tags        String[]
   emotionTag  String?
-  visibility  String?       @default("community")
+  visibility  String?  @default("community")
   reactions   Json?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // 💬 Threading / Foros
-  parentId    String?                    // Para respuestas (null = post raíz)
-  depth       Int            @default(0) // Nivel de anidamiento (0=raíz, max 5)
-  isPinned    Boolean        @default(false) // Solo admin/owner puede pinear
-  replyCount  Int            @default(0) // Cache de cantidad de respuestas
+  parentId   String? // Para respuestas (null = post raíz)
+  depth      Int     @default(0) // Nivel de anidamiento (0=raíz, max 5)
+  isPinned   Boolean @default(false) // Solo admin/owner puede pinear
+  replyCount Int     @default(0) // Cache de cantidad de respuestas
 
   // Relations
-  community   RowiCommunity     @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  author      User              @relation(fields: [authorId], references: [id])
-  parent      RowiCommunityPost?  @relation("PostThread", fields: [parentId], references: [id], onDelete: Cascade)
-  replies     RowiCommunityPost[] @relation("PostThread")
+  community RowiCommunity       @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User                @relation(fields: [authorId], references: [id])
+  parent    RowiCommunityPost?  @relation("PostThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   RowiCommunityPost[] @relation("PostThread")
 
   @@index([communityId, parentId])
   @@index([communityId, isPinned])
@@ -3149,14 +3182,14 @@ enum TenantRole {
 
 /// 🚀 Estado del usuario en el proceso de onboarding
 enum OnboardingStatus {
-  REGISTERED        // Cuenta creada
-  PAYMENT_PENDING   // Esperando pago (plan pago)
-  ONBOARDING        // Completando datos básicos
-  PENDING_SEI       // Esperando resultados del SEI
-  ACTIVE            // Usuario completamente activo
-  SUSPENDED         // Cuenta suspendida
-  TRIAL_EXPIRED     // Trial expiró sin suscripción
-  CANCELLED         // Usuario canceló suscripción
+  REGISTERED // Cuenta creada
+  PAYMENT_PENDING // Esperando pago (plan pago)
+  ONBOARDING // Completando datos básicos
+  PENDING_SEI // Esperando resultados del SEI
+  ACTIVE // Usuario completamente activo
+  SUSPENDED // Cuenta suspendida
+  TRIAL_EXPIRED // Trial expiró sin suscripción
+  CANCELLED // Usuario canceló suscripción
 }
 
 enum OrgRole {
@@ -3307,37 +3340,37 @@ enum PermissionScope {
 /// Cada usuario tiene su propio Rowi que evoluciona con su desarrollo
 /// emocional. Desde Huevo → Bebé → Joven → Adulto → Sabio.
 model AvatarEvolution {
-  id            String            @id @default(cuid())
-  userId        String            @unique
-  stage         AvatarStage       @default(EGG)
-  experience    Int               @default(0)
-  accessories   Json              @default("[]")
-  colors        Json              @default("{}")
-  hatched       Boolean           @default(false)
-  hatchProgress Int               @default(0)
+  id            String      @id @default(cuid())
+  userId        String      @unique
+  stage         AvatarStage @default(EGG)
+  experience    Int         @default(0)
+  accessories   Json        @default("[]")
+  colors        Json        @default("{}")
+  hatched       Boolean     @default(false)
+  hatchProgress Int         @default(0)
   brainStyle    String?
   personality   Json?
-  unlockedAt    DateTime          @default(now())
+  unlockedAt    DateTime    @default(now())
   lastEvolution DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   // Sistema Dual de Niveles
-  sixSecondsLevel Int             @default(1)       // 1-5, calculado de EqSnapshot overall4
-  lastSeiSync     DateTime?                         // Ultima sincronizacion con SEI
-  evolutionScore  Float           @default(0)       // Score combinado: (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
-  daysActive      Int             @default(0)       // Dias desde registro (para hatch progress)
+  sixSecondsLevel Int       @default(1) // 1-5, calculado de EqSnapshot overall4
+  lastSeiSync     DateTime? // Ultima sincronizacion con SEI
+  evolutionScore  Float     @default(0) // Score combinado: (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
+  daysActive      Int       @default(0) // Dias desde registro (para hatch progress)
 
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Logros del avatar (unificado con Achievement system)
   achievements UserAchievement[] @relation("AvatarAchievements")
 
   // Rachas del avatar
-  streaks      AvatarStreak[]
+  streaks AvatarStreak[]
 
   // Hitos del avatar
-  milestones   AvatarMilestone[]
+  milestones AvatarMilestone[]
 
   @@index([stage])
   @@index([sixSecondsLevel])
@@ -3388,26 +3421,26 @@ model AvatarMilestone {
 /// 📊 TOP PERFORMER METRIC — Rankings de desempeño emocional
 /// =========================================================
 model TopPerformerMetric {
-  id               String   @id @default(cuid())
-  tenantId         String
-  userId           String
-  period           String
-  periodType       String   @default("monthly")
+  id         String @id @default(cuid())
+  tenantId   String
+  userId     String
+  period     String
+  periodType String @default("monthly")
 
-  consistencyScore Float    @default(0)
-  growthScore      Float    @default(0)
-  impactScore      Float    @default(0)
-  engagementScore  Float    @default(0)
-  collaborationScore Float  @default(0)
+  consistencyScore   Float @default(0)
+  growthScore        Float @default(0)
+  impactScore        Float @default(0)
+  engagementScore    Float @default(0)
+  collaborationScore Float @default(0)
 
-  overallScore     Float    @default(0)
-  overallRank      Int?
-  previousRank     Int?
-  rankChange       Int?
+  overallScore Float @default(0)
+  overallRank  Int?
+  previousRank Int?
+  rankChange   Int?
 
-  breakdown        Json?
-  calculatedAt     DateTime @default(now())
-  createdAt        DateTime @default(now())
+  breakdown    Json?
+  calculatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -3422,21 +3455,21 @@ model TopPerformerMetric {
 /// 🧠 COLLECTIVE PATTERN — Patrones detectados en grupos
 /// =========================================================
 model CollectivePattern {
-  id          String   @id @default(cuid())
-  tenantId    String
-  hubId       String?
-  patternType String
-  title       String
-  description String?
-  severity    String?  @default("info")
-  data        Json
-  confidence  Float    @default(0.5)
-  affectedUsers Int    @default(0)
+  id              String    @id @default(cuid())
+  tenantId        String
+  hubId           String?
+  patternType     String
+  title           String
+  description     String?
+  severity        String?   @default("info")
+  data            Json
+  confidence      Float     @default(0.5)
+  affectedUsers   Int       @default(0)
   recommendations Json?
-  status      String   @default("active")
-  detectedAt  DateTime @default(now())
-  resolvedAt  DateTime?
-  createdAt   DateTime @default(now())
+  status          String    @default("active")
+  detectedAt      DateTime  @default(now())
+  resolvedAt      DateTime?
+  createdAt       DateTime  @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   hub    Hub?   @relation(fields: [hubId], references: [id])
@@ -3451,32 +3484,32 @@ model CollectivePattern {
 /// 💰 EMOTIONAL ROI — Retorno de inversión emocional
 /// =========================================================
 model EmotionalROI {
-  id              String   @id @default(cuid())
-  tenantId        String
-  userId          String?
-  hubId           String?
-  period          String
-  periodType      String   @default("monthly")
+  id         String  @id @default(cuid())
+  tenantId   String
+  userId     String?
+  hubId      String?
+  period     String
+  periodType String  @default("monthly")
 
-  timeInvestedMinutes Int     @default(0)
-  sessionsCount       Int     @default(0)
-  reflectionsCount    Int     @default(0)
-  practicesCompleted  Int     @default(0)
+  timeInvestedMinutes Int @default(0)
+  sessionsCount       Int @default(0)
+  reflectionsCount    Int @default(0)
+  practicesCompleted  Int @default(0)
 
   eqImprovement       Float?
   affinityImprovement Float?
   productivityGain    Float?
   wellbeingScore      Float?
-  decisionsTracked    Int     @default(0)
-  positiveOutcomes    Int     @default(0)
+  decisionsTracked    Int    @default(0)
+  positiveOutcomes    Int    @default(0)
 
-  roiScore            Float?
-  roiTrend            String?
-  benchmark           Float?
+  roiScore  Float?
+  roiTrend  String?
+  benchmark Float?
 
-  calculatedAt        DateTime @default(now())
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  calculatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User?  @relation(fields: [userId], references: [id])
@@ -3492,30 +3525,30 @@ model EmotionalROI {
 /// 🎯 DECISION TRACKING — Seguimiento de decisiones
 /// =========================================================
 model DecisionTracking {
-  id            String   @id @default(cuid())
-  userId        String
-  tenantId      String?
-  title         String
-  description   String?
-  category      String?
-  context       String?
-  emotionBefore String?
-  emotionAfter  String?
-  eqInfluence   Json?
+  id             String  @id @default(cuid())
+  userId         String
+  tenantId       String?
+  title          String
+  description    String?
+  category       String?
+  context        String?
+  emotionBefore  String?
+  emotionAfter   String?
+  eqInfluence    Json?
   affinityImpact Json?
 
-  outcome       String?  @default("pending")
-  outcomeNotes  String?
+  outcome        String?   @default("pending")
+  outcomeNotes   String?
   lessonsLearned String?
-  followUpDate  DateTime?
+  followUpDate   DateTime?
 
-  aiAnalysis    Json?
-  aiScore       Float?
+  aiAnalysis Json?
+  aiScore    Float?
 
-  decidedAt     DateTime @default(now())
-  reviewedAt    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  decidedAt  DateTime  @default(now())
+  reviewedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenant Tenant? @relation(fields: [tenantId], references: [id])
@@ -3531,12 +3564,12 @@ model DecisionTracking {
 /// 🔌 INTEGRATION CONNECTION — Conexiones con servicios externos
 /// =========================================================
 model IntegrationConnection {
-  id            String   @id @default(cuid())
-  tenantId      String
-  userId        String?
-  platform      IntegrationPlatform
-  name          String
-  status        String   @default("pending")
+  id       String              @id @default(cuid())
+  tenantId String
+  userId   String?
+  platform IntegrationPlatform
+  name     String
+  status   String              @default("pending")
 
   accessToken   String?
   refreshToken  String?
@@ -3545,17 +3578,17 @@ model IntegrationConnection {
   webhookUrl    String?
   webhookSecret String?
 
-  config        Json?
-  channelId     String?
-  channelName   String?
+  config      Json?
+  channelId   String?
+  channelName String?
 
-  lastSyncAt    DateTime?
-  messagesSent  Int      @default(0)
-  errorsCount   Int      @default(0)
-  lastError     String?
+  lastSyncAt   DateTime?
+  messagesSent Int       @default(0)
+  errorsCount  Int       @default(0)
+  lastError    String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User?  @relation(fields: [userId], references: [id])
@@ -3571,37 +3604,37 @@ model IntegrationConnection {
 /// 🎨 TENANT BRANDING — Theming corporativo por tenant
 /// =========================================================
 model TenantBranding {
-  id              String   @id @default(cuid())
-  tenantId        String   @unique
+  id       String @id @default(cuid())
+  tenantId String @unique
 
-  primaryColor    String   @default("#31a2e3")
-  secondaryColor  String   @default("#f378a5")
+  primaryColor    String  @default("#31a2e3")
+  secondaryColor  String  @default("#f378a5")
   accentColor     String?
   backgroundColor String?
   textColor       String?
 
-  colorK          String   @default("#1E88E5")
-  colorC          String   @default("#7A59C9")
-  colorG          String   @default("#43A047")
+  colorK String @default("#1E88E5")
+  colorC String @default("#7A59C9")
+  colorG String @default("#43A047")
 
   logoUrl         String?
   logoLightUrl    String?
   faviconUrl      String?
   backgroundImage String?
 
-  fontHeading     String?  @default("Varela Round")
-  fontBody        String?  @default("Poppins")
+  fontHeading String? @default("Varela Round")
+  fontBody    String? @default("Poppins")
 
-  defaultTheme    String   @default("light")
+  defaultTheme String @default("light")
 
-  customCss       String?
-  cssVariables    Json?
+  customCss    String?
+  cssVariables Json?
 
-  isActive        Boolean  @default(true)
-  previewMode     Boolean  @default(false)
+  isActive    Boolean @default(true)
+  previewMode Boolean @default(false)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -3612,7 +3645,7 @@ model TenantBranding {
 /// 📅 CALENDAR EVENT — Eventos de calendario sincronizados
 /// =========================================================
 model CalendarEvent {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   userId        String
   integrationId String
   externalId    String
@@ -3622,7 +3655,7 @@ model CalendarEvent {
   endTime       DateTime?
   location      String?
   attendees     Json?
-  isAllDay      Boolean  @default(false)
+  isAllDay      Boolean   @default(false)
   eventType     String?
 
   emotionalPrep Json?
@@ -3630,11 +3663,11 @@ model CalendarEvent {
   moodBefore    String?
   moodAfter     String?
 
-  lastSyncAt    DateTime @default(now())
-  syncStatus    String   @default("synced")
+  lastSyncAt DateTime @default(now())
+  syncStatus String   @default("synced")
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -3648,29 +3681,29 @@ model CalendarEvent {
 /// 💬 NOTIFICATION QUEUE — Cola de notificaciones/mensajes
 /// =========================================================
 model NotificationQueue {
-  id            String   @id @default(cuid())
-  userId        String
-  tenantId      String?
-  hubId         String?
-  channel       NotificationChannel
-  type          NotificationType
-  title         String?
-  message       String
-  metadata      Json?
-  priority      Int      @default(5)
-  scheduledFor  DateTime?
-  sentAt        DateTime?
-  status        NotificationStatus @default(PENDING)
-  attempts      Int      @default(0)
-  lastError     String?
-  externalId    String?  // ID from external provider (Twilio SID, etc.)
-  deliveredAt   DateTime?
-  readAt        DateTime?
-  actionUrl     String?  // Deep link to action in app
-  scope         NotificationScope @default(PERSONAL)
+  id           String              @id @default(cuid())
+  userId       String
+  tenantId     String?
+  hubId        String?
+  channel      NotificationChannel
+  type         NotificationType
+  title        String?
+  message      String
+  metadata     Json?
+  priority     Int                 @default(5)
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  status       NotificationStatus  @default(PENDING)
+  attempts     Int                 @default(0)
+  lastError    String?
+  externalId   String? // ID from external provider (Twilio SID, etc.)
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  actionUrl    String? // Deep link to action in app
+  scope        NotificationScope   @default(PERSONAL)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenant Tenant? @relation(fields: [tenantId], references: [id])
@@ -3689,43 +3722,43 @@ model NotificationQueue {
 /// 📱 NOTIFICATION PREFERENCES — User notification settings
 /// =========================================================
 model NotificationPreference {
-  id                String   @id @default(cuid())
-  userId            String   @unique
+  id     String @id @default(cuid())
+  userId String @unique
 
   // Channel toggles
-  emailEnabled      Boolean  @default(true)
-  pushEnabled       Boolean  @default(true)
-  smsEnabled        Boolean  @default(false)
-  whatsappEnabled   Boolean  @default(false)
-  slackEnabled      Boolean  @default(false)
-  teamsEnabled      Boolean  @default(false)
+  emailEnabled    Boolean @default(true)
+  pushEnabled     Boolean @default(true)
+  smsEnabled      Boolean @default(false)
+  whatsappEnabled Boolean @default(false)
+  slackEnabled    Boolean @default(false)
+  teamsEnabled    Boolean @default(false)
 
   // Type preferences (JSON for flexibility)
-  typePreferences   Json     @default("{}")  // { "ACHIEVEMENT": ["email", "push"], "TASK": ["push"] }
+  typePreferences Json @default("{}") // { "ACHIEVEMENT": ["email", "push"], "TASK": ["push"] }
 
   // Quiet hours
-  quietHoursEnabled Boolean  @default(false)
-  quietHoursStart   String?  // "22:00"
-  quietHoursEnd     String?  // "08:00"
-  timezone          String   @default("America/Mexico_City")
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String? // "22:00"
+  quietHoursEnd     String? // "08:00"
+  timezone          String  @default("America/Mexico_City")
 
   // Frequency limits
-  digestEnabled     Boolean  @default(false)
-  digestFrequency   String   @default("daily")  // daily, weekly
-  digestTime        String   @default("09:00")
+  digestEnabled   Boolean @default(false)
+  digestFrequency String  @default("daily") // daily, weekly
+  digestTime      String  @default("09:00")
 
   // Contact info for SMS/WhatsApp
-  phoneNumber       String?
-  phoneVerified     Boolean  @default(false)
-  whatsappNumber    String?
-  whatsappVerified  Boolean  @default(false)
+  phoneNumber      String?
+  phoneVerified    Boolean @default(false)
+  whatsappNumber   String?
+  whatsappVerified Boolean @default(false)
 
   // Integration tokens
-  slackWebhookUrl   String?
-  teamsWebhookUrl   String?
+  slackWebhookUrl String?
+  teamsWebhookUrl String?
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -3736,18 +3769,18 @@ model NotificationPreference {
 /// 📲 PUSH SUBSCRIPTION — Web push subscriptions
 /// =========================================================
 model PushSubscription {
-  id            String   @id @default(cuid())
-  userId        String
-  endpoint      String   @unique
-  p256dh        String   // Public key for encryption
-  auth          String   // Auth secret
-  userAgent     String?  // Device info
-  deviceName    String?
-  active        Boolean  @default(true)
+  id         String  @id @default(cuid())
+  userId     String
+  endpoint   String  @unique
+  p256dh     String // Public key for encryption
+  auth       String // Auth secret
+  userAgent  String? // Device info
+  deviceName String?
+  active     Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  lastUsedAt    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -3759,14 +3792,14 @@ model PushSubscription {
 /// 📊 NOTIFICATION LOG — Delivery tracking and analytics
 /// =========================================================
 model NotificationLog {
-  id              String   @id @default(cuid())
-  notificationId  String
-  event           String   // sent, delivered, opened, clicked, bounced, failed
-  channel         NotificationChannel
-  externalId      String?
-  metadata        Json?
+  id             String              @id @default(cuid())
+  notificationId String
+  event          String // sent, delivered, opened, clicked, bounced, failed
+  channel        NotificationChannel
+  externalId     String?
+  metadata       Json?
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([notificationId])
   @@index([channel, event])
@@ -3854,10 +3887,10 @@ enum NotificationStatus {
 }
 
 enum NotificationScope {
-  PERSONAL      // Solo para ti
-  HUB           // Para tu equipo/hub
-  TENANT        // Para toda la organización
-  ROWIVERSE     // Para todo el Rowiverse
+  PERSONAL // Solo para ti
+  HUB // Para tu equipo/hub
+  TENANT // Para toda la organización
+  ROWIVERSE // Para todo el Rowiverse
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -3918,14 +3951,14 @@ enum IntegrationPlatform {
 
 /// Benchmark principal que contiene toda la data agregada para comparaciones
 model Benchmark {
-  id             String          @id @default(cuid())
-  name           String
-  description    String?
-  type           BenchmarkType
-  status         BenchmarkStatus @default(PROCESSING)
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  type        BenchmarkType
+  status      BenchmarkStatus @default(PROCESSING)
 
   // Ámbito jerárquico (multinivel)
-  scope          BenchmarkScope  @default(GLOBAL)
+  scope          BenchmarkScope @default(GLOBAL)
   tenantId       String?
   hubId          String?
   organizationId String?
@@ -3934,35 +3967,35 @@ model Benchmark {
 
   // Metadata
   sourceFile     String?
-  totalRows      Int             @default(0)
-  processedRows  Int             @default(0)
+  totalRows      Int       @default(0)
+  processedRows  Int       @default(0)
   dateRangeStart DateTime?
   dateRangeEnd   DateTime?
 
   uploadedBy     String
-  uploadedAt     DateTime        @default(now())
+  uploadedAt     DateTime  @default(now())
   processedAt    DateTime?
-  lastEnrichedAt DateTime?       // Última vez que se enriqueció con nueva data
+  lastEnrichedAt DateTime? // Última vez que se enriqueció con nueva data
 
-  version        Int             @default(1)
-  isActive       Boolean         @default(true)
-  isLearning     Boolean         @default(true)  // Sigue aprendiendo de nueva data
+  version    Int     @default(1)
+  isActive   Boolean @default(true)
+  isLearning Boolean @default(true) // Sigue aprendiendo de nueva data
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  tenant       Tenant?       @relation("TenantToBenchmark", fields: [tenantId], references: [id])
-  hub          Hub?          @relation("HubToBenchmark", fields: [hubId], references: [id])
-  organization Organization? @relation("OrganizationToBenchmark", fields: [organizationId], references: [id])
+  tenant       Tenant?        @relation("TenantToBenchmark", fields: [tenantId], references: [id])
+  hub          Hub?           @relation("HubToBenchmark", fields: [hubId], references: [id])
+  organization Organization?  @relation("OrganizationToBenchmark", fields: [organizationId], references: [id])
   community    RowiCommunity? @relation("CommunityToBenchmarks", fields: [communityId], references: [id])
 
-  dataPoints       BenchmarkDataPoint[]
-  statistics       BenchmarkStatistic[]
-  correlations     BenchmarkCorrelation[]
-  topPerformers    BenchmarkTopPerformer[]
-  outcomePatterns  BenchmarkOutcomePattern[]
-  userComparisons  BenchmarkUserComparison[]
+  dataPoints      BenchmarkDataPoint[]
+  statistics      BenchmarkStatistic[]
+  correlations    BenchmarkCorrelation[]
+  topPerformers   BenchmarkTopPerformer[]
+  outcomePatterns BenchmarkOutcomePattern[]
+  userComparisons BenchmarkUserComparison[]
 
   @@index([type, scope, isActive])
   @@index([tenantId])
@@ -3972,40 +4005,40 @@ model Benchmark {
 }
 
 enum BenchmarkType {
-  ROWIVERSE      // Data global SOH
-  EXTERNAL       // Benchmarks de mercado/industria
-  INTERNAL       // Benchmarks organizacionales
+  ROWIVERSE // Data global SOH
+  EXTERNAL // Benchmarks de mercado/industria
+  INTERNAL // Benchmarks organizacionales
 }
 
 enum BenchmarkScope {
-  GLOBAL         // Todo el ecosistema
-  REGION         // Por región geográfica
-  COUNTRY        // Por país
-  SECTOR         // Por industria
-  TENANT         // Por organización
-  HUB            // Por hub/división
-  TEAM           // Por equipo
-  COMMUNITY      // Por comunidad
-  COHORT         // Por cohorte (edad, rol, etc.)
+  GLOBAL // Todo el ecosistema
+  REGION // Por región geográfica
+  COUNTRY // Por país
+  SECTOR // Por industria
+  TENANT // Por organización
+  HUB // Por hub/división
+  TEAM // Por equipo
+  COMMUNITY // Por comunidad
+  COHORT // Por cohorte (edad, rol, etc.)
 }
 
 enum BenchmarkStatus {
   PROCESSING
   COMPLETED
-  ENRICHING      // Incorporando nueva data
+  ENRICHING // Incorporando nueva data
   FAILED
   ARCHIVED
 }
 
 /// Data point individual del benchmark (cada registro de la fuente)
 model BenchmarkDataPoint {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   benchmarkId String
 
   // Origen (para learning feedback loop)
-  sourceType  String?  // "soh", "rowiverse_user", "tenant_user"
-  sourceId    String?  // ID del registro original
-  sourceDate  DateTime?
+  sourceType String? // "soh", "rowiverse_user", "tenant_user"
+  sourceId   String? // ID del registro original
+  sourceDate DateTime?
 
   // Segmentación demográfica
   country     String?
@@ -4016,10 +4049,10 @@ model BenchmarkDataPoint {
   ageRange    String?
   gender      String?
   education   String?
-  generation  String?  // Millennials, Gen Z, etc.
-  year        Int?     // Año del assessment (extraído de Date/Year)
-  month       Int?     // Mes del assessment (1-12, extraído de Date)
-  quarter     Int?     // Trimestre (1-4, calculado desde month)
+  generation  String? // Millennials, Gen Z, etc.
+  year        Int? // Año del assessment (extraído de Date/Year)
+  month       Int? // Mes del assessment (1-12, extraído de Date)
+  quarter     Int? // Trimestre (1-4, calculado desde month)
 
   // Segmentación organizacional
   tenantId    String?
@@ -4028,34 +4061,34 @@ model BenchmarkDataPoint {
   communityId String?
 
   // Core EQ (Know/Choose/Give)
-  K           Float?
-  C           Float?
-  G           Float?
-  eqTotal     Float?
+  K       Float?
+  C       Float?
+  G       Float?
+  eqTotal Float?
 
   // 8 Competencias Six Seconds
-  EL          Float?   // Emotional Literacy
-  RP          Float?   // Recognize Patterns
-  ACT         Float?   // Consequential Thinking
-  NE          Float?   // Navigate Emotions
-  IM          Float?   // Intrinsic Motivation
-  OP          Float?   // Exercise Optimism
-  EMP         Float?   // Empathy
-  NG          Float?   // Noble Goals
+  EL  Float? // Emotional Literacy
+  RP  Float? // Recognize Patterns
+  ACT Float? // Consequential Thinking
+  NE  Float? // Navigate Emotions
+  IM  Float? // Intrinsic Motivation
+  OP  Float? // Exercise Optimism
+  EMP Float? // Empathy
+  NG  Float? // Noble Goals
 
   // Outcomes (lo que buscamos predecir)
-  effectiveness    Float?
-  relationships    Float?
-  qualityOfLife    Float?
-  wellbeing        Float?
-  influence        Float?
-  decisionMaking   Float?
-  community        Float?
-  network          Float?
-  achievement      Float?
-  satisfaction     Float?
-  balance          Float?
-  health           Float?
+  effectiveness  Float?
+  relationships  Float?
+  qualityOfLife  Float?
+  wellbeing      Float?
+  influence      Float?
+  decisionMaking Float?
+  community      Float?
+  network        Float?
+  achievement    Float?
+  satisfaction   Float?
+  balance        Float?
+  health         Float?
 
   // Brain Talents (18 talentos del modelo Six Seconds)
   dataMining       Float?
@@ -4076,11 +4109,11 @@ model BenchmarkDataPoint {
   vision           Float?
   designing        Float?
   entrepreneurship Float?
-  brainAgility     Float?  // Score agregado de agilidad cerebral
+  brainAgility     Float? // Score agregado de agilidad cerebral
 
   // Profile y otros
-  brainStyle       String?
-  profile          String?
+  brainStyle String?
+  profile    String?
 
   // Quality indicators
   reliabilityIndex Float?
@@ -4098,50 +4131,50 @@ model BenchmarkDataPoint {
 
 /// Top Performer — Patrones de los mejores en cada outcome
 model BenchmarkTopPerformer {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   benchmarkId String
 
   // Filtros de contexto
-  country     String?
-  region      String?
-  sector      String?
-  jobRole     String?
-  ageRange    String?
-  tenantId    String?
+  country  String?
+  region   String?
+  sector   String?
+  jobRole  String?
+  ageRange String?
+  tenantId String?
 
   // Outcome objetivo (qué queremos lograr)
-  outcomeKey  String   // effectiveness, health, relationships, etc.
+  outcomeKey String // effectiveness, health, relationships, etc.
 
   // Definición de "top performer"
-  percentileThreshold Int @default(90)  // Top 10%
-  sampleSize  Int      @default(0)
+  percentileThreshold Int @default(90) // Top 10%
+  sampleSize          Int @default(0)
 
   // Perfil promedio de los top performers
-  avgK        Float?
-  avgC        Float?
-  avgG        Float?
-  avgEL       Float?
-  avgRP       Float?
-  avgACT      Float?
-  avgNE       Float?
-  avgIM       Float?
-  avgOP       Float?
-  avgEMP      Float?
-  avgNG       Float?
+  avgK   Float?
+  avgC   Float?
+  avgG   Float?
+  avgEL  Float?
+  avgRP  Float?
+  avgACT Float?
+  avgNE  Float?
+  avgIM  Float?
+  avgOP  Float?
+  avgEMP Float?
+  avgNG  Float?
 
   // Competencias distintivas (ordenadas por importancia)
-  topCompetencies     Json?   // [{key: "OP", avgScore, importance, diffFromAvg}]
-  topTalents          Json?   // [{key: "proactivity", avgScore, importance}] - 18 en orden cluster
-  topTalentsSummary   Json?   // Top 5 talentos más distintivos
+  topCompetencies   Json? // [{key: "OP", avgScore, importance, diffFromAvg}]
+  topTalents        Json? // [{key: "proactivity", avgScore, importance}] - 18 en orden cluster
+  topTalentsSummary Json? // Top 5 talentos más distintivos
 
   // Patrones recurrentes
-  commonPatterns      Json?   // Combinaciones de competencias que se repiten
-  talentPatterns      Json?   // Combinaciones de talentos que se repiten
+  commonPatterns Json? // Combinaciones de competencias que se repiten
+  talentPatterns Json? // Combinaciones de talentos que se repiten
 
   // Métricas estadísticas adicionales
-  statistics          Json?   // {significantCompetencies, significantTalents, avgEffectSize, globalMeans}
-  thresholdValue      Float?  // Valor del umbral P90
-  totalPopulation     Int?    // Total de registros
+  statistics          Json? // {significantCompetencies, significantTalents, avgEffectSize, globalMeans}
+  thresholdValue      Float? // Valor del umbral P90
+  totalPopulation     Int? // Total de registros
   confidenceLevel     String? // high, medium, low
   lowConfidenceSample Boolean @default(false)
   insufficientReason  String?
@@ -4157,30 +4190,30 @@ model BenchmarkTopPerformer {
 
 /// Correlación — Relación entre competencia y outcome
 model BenchmarkCorrelation {
-  id            String   @id @default(cuid())
-  benchmarkId   String
+  id          String @id @default(cuid())
+  benchmarkId String
 
   // Contexto
-  country       String?
-  region        String?
-  sector        String?
-  tenantId      String?
-  year          Int?     // Año para comparar evolución temporal
+  country  String?
+  region   String?
+  sector   String?
+  tenantId String?
+  year     Int? // Año para comparar evolución temporal
 
   // Relación
-  competencyKey String   // K, C, G, EL, RP, etc.
-  outcomeKey    String   // effectiveness, health, etc.
+  competencyKey String // K, C, G, EL, RP, etc.
+  outcomeKey    String // effectiveness, health, etc.
 
   // Estadísticas
-  correlation   Float    // Pearson r (-1 a 1)
-  pValue        Float?   // Significancia estadística
-  n             Int      @default(0)
+  correlation Float // Pearson r (-1 a 1)
+  pValue      Float? // Significancia estadística
+  n           Int    @default(0)
 
   // Interpretación
-  strength      String?  // strong, moderate, weak
-  direction     String?  // positive, negative
+  strength  String? // strong, moderate, weak
+  direction String? // positive, negative
 
-  calculatedAt  DateTime @default(now())
+  calculatedAt DateTime @default(now())
 
   benchmark Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
 
@@ -4192,31 +4225,31 @@ model BenchmarkCorrelation {
 
 /// Outcome Pattern — Mapas de éxito emocional
 model BenchmarkOutcomePattern {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   benchmarkId String
 
-  outcomeKey  String   // El outcome que queremos lograr
+  outcomeKey String // El outcome que queremos lograr
 
   // Contexto
-  country     String?
-  region      String?
-  sector      String?
-  tenantId    String?
+  country  String?
+  region   String?
+  sector   String?
+  tenantId String?
 
   // El patrón descubierto
-  patternName        String?   // "El Optimista Empático", etc.
+  patternName        String? // "El Optimista Empático", etc.
   patternDescription String?
 
   // Competencias clave (en orden de importancia)
-  keyCompetencies    Json      // [{key, weight, minThreshold}]
-  keyTalents         Json?     // [{key, weight}]
+  keyCompetencies Json // [{key, weight, minThreshold}]
+  keyTalents      Json? // [{key, weight}]
 
   // Métricas
-  sampleSize         Int       @default(0)
-  avgOutcomeScore    Float?
-  successRate        Float?    // % que logran alto outcome con este patrón
+  sampleSize      Int    @default(0)
+  avgOutcomeScore Float?
+  successRate     Float? // % que logran alto outcome con este patrón
 
-  confidence         Float?    // Confianza estadística
+  confidence Float? // Confianza estadística
 
   calculatedAt DateTime @default(now())
 
@@ -4228,35 +4261,35 @@ model BenchmarkOutcomePattern {
 
 /// Estadísticas — Pre-calculadas por filtros
 model BenchmarkStatistic {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   benchmarkId String
 
   // Filtros
-  country     String?
-  region      String?
-  sector      String?
-  jobRole     String?
-  ageRange    String?
-  gender      String?
-  education   String?
-  tenantId    String?
+  country   String?
+  region    String?
+  sector    String?
+  jobRole   String?
+  ageRange  String?
+  gender    String?
+  education String?
+  tenantId  String?
 
   // Métrica
-  metricKey   String
+  metricKey String
 
   // Estadísticas
-  n           Int      @default(0)
-  mean        Float?
-  median      Float?
-  stdDev      Float?
-  min         Float?
-  max         Float?
-  p10         Float?
-  p25         Float?
-  p50         Float?
-  p75         Float?
-  p90         Float?
-  p95         Float?
+  n      Int    @default(0)
+  mean   Float?
+  median Float?
+  stdDev Float?
+  min    Float?
+  max    Float?
+  p10    Float?
+  p25    Float?
+  p50    Float?
+  p75    Float?
+  p90    Float?
+  p95    Float?
 
   calculatedAt DateTime @default(now())
 
@@ -4269,34 +4302,34 @@ model BenchmarkStatistic {
 
 /// User Comparison — Comparación individual guardada
 model BenchmarkUserComparison {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   benchmarkId String
   userId      String?
   memberId    String?
 
   // Outcome buscado
-  targetOutcome String  // effectiveness, health, etc.
+  targetOutcome String // effectiveness, health, etc.
 
   // Contexto usado para comparar
-  comparisonContext Json  // {country, region, sector, etc.}
+  comparisonContext Json // {country, region, sector, etc.}
   fallbackUsed      String? // null, "region", "global"
 
   // Fortalezas del usuario (lo que YA tiene)
-  userStrengths     Json    // [{competency, score, percentile, vsTopPerformer}]
+  userStrengths Json // [{competency, score, percentile, vsTopPerformer}]
 
   // Cómo los top performers usan fortalezas similares
-  topPerformerInsights Json  // [{strength, howTheyUseIt, resultTheyGet}]
+  topPerformerInsights Json // [{strength, howTheyUseIt, resultTheyGet}]
 
   // Qué desarrollar (apalancado en fortalezas)
-  developmentAreas  Json    // [{area, priority, leveragedBy, actionSuggestion}]
+  developmentAreas Json // [{area, priority, leveragedBy, actionSuggestion}]
 
   // Puntajes comparativos
-  userScores        Json
-  benchmarkScores   Json
-  percentiles       Json
+  userScores      Json
+  benchmarkScores Json
+  percentiles     Json
 
   // Resumen generado
-  summaryInsight    String?
+  summaryInsight String?
 
   createdAt DateTime @default(now())
 
@@ -4309,27 +4342,27 @@ model BenchmarkUserComparison {
 
 /// Upload Job — Procesamiento de archivos (con soporte para Cron)
 model BenchmarkUploadJob {
-  id           String    @id @default(cuid())
-  benchmarkId  String?
+  id          String  @id @default(cuid())
+  benchmarkId String?
 
-  status       String    @default("pending")  // pending, processing, completed, failed
-  progress     Int       @default(0)
+  status       String  @default("pending") // pending, processing, completed, failed
+  progress     Int     @default(0)
   currentPhase String?
 
   // Para procesamiento con Cron
-  blobUrl      String?                        // URL del archivo en Vercel Blob
-  currentRow   Int       @default(0)          // Fila actual para continuar procesamiento
+  blobUrl    String? // URL del archivo en Vercel Blob
+  currentRow Int     @default(0) // Fila actual para continuar procesamiento
 
-  totalRows     Int      @default(0)
-  processedRows Int      @default(0)
-  failedRows    Int      @default(0)
+  totalRows     Int @default(0)
+  processedRows Int @default(0)
+  failedRows    Int @default(0)
 
   errorMessage String?
   errorDetails Json?
 
-  startedAt    DateTime?
-  completedAt  DateTime?
-  createdAt    DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@index([status])
   @@map("benchmark_upload_job")
@@ -4337,26 +4370,26 @@ model BenchmarkUploadJob {
 
 /// 🌐 RowiVerse Contribution — Registro de cada contribución de data EQ al benchmark global
 model RowiVerseContribution {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Quién contribuyó
-  userId      String?  // Usuario de Rowi (si aplica)
-  memberId    String?  // CommunityMember (si es data de CSV)
-  tenantId    String?  // Tenant de origen
+  userId   String? // Usuario de Rowi (si aplica)
+  memberId String? // CommunityMember (si es data de CSV)
+  tenantId String? // Tenant de origen
 
   // A qué benchmark se contribuyó
-  benchmarkId String   // El benchmark ROWIVERSE global
-  dataPointId String?  // El BenchmarkDataPoint creado
+  benchmarkId String // El benchmark ROWIVERSE global
+  dataPointId String? // El BenchmarkDataPoint creado
 
   // Tipo de contribución
-  sourceType  String   // "registration", "csv_upload", "eq_snapshot", "manual"
-  sourceId    String?  // ID del registro fuente (EqSnapshot, CsvUpload, etc.)
+  sourceType String // "registration", "csv_upload", "eq_snapshot", "manual"
+  sourceId   String? // ID del registro fuente (EqSnapshot, CsvUpload, etc.)
 
   // Datos contribuidos (anonimizados)
-  eqTotal     Float?
-  K           Float?
-  C           Float?
-  G           Float?
+  eqTotal Float?
+  K       Float?
+  C       Float?
+  G       Float?
 
   // Demographics (anonimizados)
   country     String?
@@ -4367,10 +4400,10 @@ model RowiVerseContribution {
   gender      String?
 
   // Estado
-  status      String   @default("pending")  // pending, processed, rejected
+  status      String    @default("pending") // pending, processed, rejected
   processedAt DateTime?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([benchmarkId])
   @@index([userId])
@@ -4386,20 +4419,20 @@ model RowiVerseContribution {
 
 /// 💳 Suscripción de usuario con Stripe
 model Subscription {
-  id          String   @id @default(cuid())
-  userId      String
-  planId      String
+  id     String @id @default(cuid())
+  userId String
+  planId String
 
   // Stripe IDs
-  stripeSubscriptionId String  @unique
+  stripeSubscriptionId String @unique
   stripePriceId        String
   stripeCustomerId     String
 
   // Estado
-  status       SubscriptionStatus @default(ACTIVE)
+  status             SubscriptionStatus @default(ACTIVE)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean @default(false)
+  cancelAtPeriodEnd  Boolean            @default(false)
   cancelledAt        DateTime?
 
   // Trial
@@ -4428,8 +4461,8 @@ enum SubscriptionStatus {
 
 /// 💰 Historial de pagos
 model Payment {
-  id          String   @id @default(cuid())
-  userId      String
+  id     String @id @default(cuid())
+  userId String
 
   // Stripe IDs
   stripePaymentIntentId String? @unique
@@ -4437,18 +4470,18 @@ model Payment {
   stripeChargeId        String?
 
   // Detalles
-  amountCents  Int
-  currency     String   @default("usd")
-  status       PaymentStatus @default(PENDING)
-  description  String?
+  amountCents Int
+  currency    String        @default("usd")
+  status      PaymentStatus @default(PENDING)
+  description String?
 
   // Metadata
-  metadata     Json?
-  receiptUrl   String?
-  invoiceUrl   String?
+  metadata   Json?
+  receiptUrl String?
+  invoiceUrl String?
 
-  paidAt       DateTime?
-  createdAt    DateTime @default(now())
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([status])
@@ -4467,50 +4500,50 @@ enum PaymentStatus {
 
 /// 🎁 Cupones y descuentos
 model Coupon {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String?  // Nombre descriptivo del cupón
+  id   String  @id @default(cuid())
+  code String  @unique
+  name String? // Nombre descriptivo del cupón
 
   // Tipo de descuento
-  discountType    CouponType @default(PERCENTAGE)
-  discountValue   Float      // Porcentaje o monto fijo
+  discountType  CouponType @default(PERCENTAGE)
+  discountValue Float // Porcentaje o monto fijo
 
   // Categoría de cupón
-  category        CouponCategory @default(GENERAL)
+  category CouponCategory @default(GENERAL)
 
   // Restricciones
-  maxUses         Int?       // Usos máximos totales
-  usedCount       Int        @default(0)
-  maxUsesPerUser  Int        @default(1)
-  minAmountCents  Int?       // Monto mínimo para aplicar
+  maxUses        Int? // Usos máximos totales
+  usedCount      Int  @default(0)
+  maxUsesPerUser Int  @default(1)
+  minAmountCents Int? // Monto mínimo para aplicar
 
   // Planes válidos (null = todos)
-  validPlanIds    String[]   @default([])
+  validPlanIds String[] @default([])
 
   // Vigencia
-  startsAt        DateTime   @default(now())
-  expiresAt       DateTime?
+  startsAt  DateTime  @default(now())
+  expiresAt DateTime?
 
   // Estado
-  active          Boolean    @default(true)
+  active Boolean @default(true)
 
   // Código personalizado para usuarios específicos
-  targetUserId    String?    // Si es personalizado para un usuario
-  targetEmail     String?    // Email del destinatario (para envío)
-  sentAt          DateTime?  // Cuándo se envió el código
+  targetUserId String? // Si es personalizado para un usuario
+  targetEmail  String? // Email del destinatario (para envío)
+  sentAt       DateTime? // Cuándo se envió el código
 
   // Gamificación
-  achievementId   String?    // ID del logro que desbloquea este cupón
+  achievementId        String? // ID del logro que desbloquea este cupón
   isGamificationReward Boolean @default(false)
 
   // Notas internas
-  notes           String?
+  notes String?
 
   // Stripe
-  stripeCouponId  String?    @unique
+  stripeCouponId String? @unique
 
   // Creador del cupón
-  createdBy       String?
+  createdBy String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4524,21 +4557,21 @@ enum CouponType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_TRIAL_DAYS
-  FREE_ACCESS      // Acceso gratuito completo
+  FREE_ACCESS // Acceso gratuito completo
 }
 
 enum CouponCategory {
-  GENERAL          // Cupón general
-  PROMOTIONAL      // Promoción de marketing
-  PERSONAL         // Código personalizado para un usuario
-  GAMIFICATION     // Premio por logro/gamificación
-  REFERRAL         // Código de referido
-  PARTNER          // Código de partner/aliado
+  GENERAL // Cupón general
+  PROMOTIONAL // Promoción de marketing
+  PERSONAL // Código personalizado para un usuario
+  GAMIFICATION // Premio por logro/gamificación
+  REFERRAL // Código de referido
+  PARTNER // Código de partner/aliado
 }
 
 /// 🎟️ Redención de cupones
 model CouponRedemption {
-  id       String   @id @default(cuid())
+  id       String @id @default(cuid())
   couponId String
   userId   String
 
@@ -4563,38 +4596,38 @@ model CouponRedemption {
 
 /// 📤 Cola de solicitudes SEI pendientes
 model SeiRequest {
-  id          String   @id @default(cuid())
-  userId      String
+  id     String @id @default(cuid())
+  userId String
 
   // Datos del usuario para Six Seconds
-  email       String
-  name        String
-  country     String?
-  language    String   @default("es")
+  email    String
+  name     String
+  country  String?
+  language String  @default("es")
 
   // Link directo al SEI (proporcionado por Six Seconds)
-  seiLink     String?              // Link para tomar el SEI directamente
+  seiLink String? // Link para tomar el SEI directamente
 
   // Estado
-  status      SeiRequestStatus @default(PENDING)
+  status SeiRequestStatus @default(PENDING)
 
   // Six Seconds
-  sixSecondsProjectId String?     // Proyecto en Six Seconds donde se envió
-  sixSecondsEmail     String?     // Email enviado por Six Seconds
+  sixSecondsProjectId String? // Proyecto en Six Seconds donde se envió
+  sixSecondsEmail     String? // Email enviado por Six Seconds
 
   // Tracking
-  requestedAt  DateTime @default(now())
-  sentAt       DateTime?           // Cuando se envió a Six Seconds (manual)
-  startedAt    DateTime?           // Cuando el usuario empezó el SEI
-  completedAt  DateTime?           // Cuando se recibió el resultado
-  expiresAt    DateTime?           // Fecha límite para completar
+  requestedAt DateTime  @default(now())
+  sentAt      DateTime? // Cuando se envió a Six Seconds (manual)
+  startedAt   DateTime? // Cuando el usuario empezó el SEI
+  completedAt DateTime? // Cuando se recibió el resultado
+  expiresAt   DateTime? // Fecha límite para completar
 
   // Resultado (cuando se importa)
-  resultSnapshotId String?         // EqSnapshot creado con el resultado
+  resultSnapshotId String? // EqSnapshot creado con el resultado
 
   // Notas admin
-  adminNotes   String?
-  processedBy  String?             // Email del admin que procesó
+  adminNotes  String?
+  processedBy String? // Email del admin que procesó
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4606,36 +4639,36 @@ model SeiRequest {
 }
 
 enum SeiRequestStatus {
-  PENDING          // Esperando envío a Six Seconds
-  SENT             // Enviado a Six Seconds (link enviado al usuario)
-  IN_PROGRESS      // Usuario está completando el SEI
-  COMPLETED        // SEI completado, resultados recibidos
-  EXPIRED          // Expiró sin completar
-  CANCELLED        // Cancelado por el usuario o admin
+  PENDING // Esperando envío a Six Seconds
+  SENT // Enviado a Six Seconds (link enviado al usuario)
+  IN_PROGRESS // Usuario está completando el SEI
+  COMPLETED // SEI completado, resultados recibidos
+  EXPIRED // Expiró sin completar
+  CANCELLED // Cancelado por el usuario o admin
 }
 
 /// 📥 Importación de CSV de Six Seconds
 model SixSecondsImport {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Archivo
-  filename    String
-  fileSize    Int
+  filename String
+  fileSize Int
 
   // Procesamiento
-  status      SixSecondsImportStatus @default(PENDING)
-  totalRows   Int      @default(0)
-  processedRows Int    @default(0)
-  matchedUsers  Int    @default(0)   // Usuarios encontrados en Rowi
-  newSnapshots  Int    @default(0)   // EqSnapshots creados
-  activatedUsers Int   @default(0)   // Usuarios activados (PENDING_SEI -> ACTIVE)
+  status         SixSecondsImportStatus @default(PENDING)
+  totalRows      Int                    @default(0)
+  processedRows  Int                    @default(0)
+  matchedUsers   Int                    @default(0) // Usuarios encontrados en Rowi
+  newSnapshots   Int                    @default(0) // EqSnapshots creados
+  activatedUsers Int                    @default(0) // Usuarios activados (PENDING_SEI -> ACTIVE)
 
   // Errores
-  failedRows  Int      @default(0)
-  errors      Json?                   // Array de errores detallados
+  failedRows Int   @default(0)
+  errors     Json? // Array de errores detallados
 
   // Admin
-  uploadedBy  String                  // Email del admin
+  uploadedBy  String // Email del admin
   processedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -4649,34 +4682,34 @@ enum SixSecondsImportStatus {
   PROCESSING
   COMPLETED
   FAILED
-  PARTIAL       // Completado con algunos errores
+  PARTIAL // Completado con algunos errores
 }
 
 /// 🔗 Links SEI por idioma (configurables desde CMS)
 model SeiLink {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Identificador único para el link
-  code        String   @unique    // "default", "es-basic", "en-pro", etc.
-  name        String              // Nombre descriptivo para el CMS
+  code String @unique // "default", "es-basic", "en-pro", etc.
+  name String // Nombre descriptivo para el CMS
 
   // Link al SEI
-  url         String              // URL completa del SEI en Six Seconds
+  url String // URL completa del SEI en Six Seconds
 
   // Configuración
-  language    String   @default("es")  // Idioma del SEI
-  planSlug    String?                   // Plan asociado (null = todos)
-  isDefault   Boolean  @default(false) // Link por defecto para el idioma
+  language  String  @default("es") // Idioma del SEI
+  planSlug  String? // Plan asociado (null = todos)
+  isDefault Boolean @default(false) // Link por defecto para el idioma
 
   // Tracking Six Seconds
-  sixSecondsProjectId String?     // ID del proyecto en Six Seconds
+  sixSecondsProjectId String? // ID del proyecto en Six Seconds
 
   // Estado
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
   // Meta
-  description String?             // Descripción interna
-  notes       String?             // Notas para admins
+  description String? // Descripción interna
+  notes       String? // Notas para admins
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4688,26 +4721,26 @@ model SeiLink {
 
 /// 📝 Contenido CMS editable (textos de onboarding, páginas, etc.)
 model CmsContent {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Identificador único del contenido
-  key         String              // "onboarding.welcome.title", "onboarding.step1.description"
-  language    String   @default("es")
+  key      String // "onboarding.welcome.title", "onboarding.step1.description"
+  language String @default("es")
 
   // Contenido
-  value       String   @db.Text    // El texto/HTML
-  valueType   CmsValueType @default(TEXT)  // TEXT, HTML, MARKDOWN, JSON
+  value     String       @db.Text // El texto/HTML
+  valueType CmsValueType @default(TEXT) // TEXT, HTML, MARKDOWN, JSON
 
   // Categoría para organizar
-  category    String?             // "onboarding", "pricing", "landing", etc.
-  subcategory String?             // "step1", "step2", etc.
+  category    String? // "onboarding", "pricing", "landing", etc.
+  subcategory String? // "step1", "step2", etc.
 
   // Metadata
-  description String?             // Descripción para el admin
-  placeholder String?             // Valor por defecto si está vacío
+  description String? // Descripción para el admin
+  placeholder String? // Valor por defecto si está vacío
 
   // Estado
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4727,14 +4760,14 @@ enum CmsValueType {
 
 /// 🎨 Configuración de onboarding (pasos, colores, etc.)
 model OnboardingConfig {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Configuración general
-  key         String   @unique     // "general", "steps", "features", etc.
-  config      Json                 // Configuración JSON
+  key    String @unique // "general", "steps", "features", etc.
+  config Json // Configuración JSON
 
   // Estado
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4748,21 +4781,21 @@ model OnboardingConfig {
 
 /// 📈 Registro de conversiones y fuentes de adquisición
 model UserAcquisition {
-  id          String   @id @default(cuid())
-  userId      String   @unique
+  id     String @id @default(cuid())
+  userId String @unique
 
   // Fuente de adquisición
-  source      AcquisitionSource @default(ORGANIC)
-  channel     String?           // "google", "facebook", "referral", etc.
-  campaign    String?           // Campaña específica
-  medium      String?           // "cpc", "email", "social", etc.
+  source   AcquisitionSource @default(ORGANIC)
+  channel  String? // "google", "facebook", "referral", etc.
+  campaign String? // Campaña específica
+  medium   String? // "cpc", "email", "social", etc.
 
   // Referido
-  referredBy  String?           // userId del referente
-  referralCode String?          // Código de referido usado
+  referredBy   String? // userId del referente
+  referralCode String? // Código de referido usado
 
   // Cupón usado en registro
-  couponCode  String?
+  couponCode String?
 
   // UTM params
   utmSource   String?
@@ -4775,8 +4808,8 @@ model UserAcquisition {
   landingPage String?
 
   // Conversiones
-  registeredAt DateTime @default(now())
-  convertedAt  DateTime?          // Cuando se convirtió a pago
+  registeredAt DateTime  @default(now())
+  convertedAt  DateTime? // Cuando se convirtió a pago
 
   // Valor
   lifetimeValueCents Int @default(0)
@@ -4804,27 +4837,27 @@ enum AcquisitionSource {
 
 /// 💵 Comisiones de referidos
 model ReferralCommission {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Quién refirió
-  referrerId  String
+  referrerId String
 
   // Quién fue referido
   referredUserId String
 
   // Pago que generó la comisión
-  paymentId   String?
+  paymentId String?
 
   // Comisión
   commissionCents Int
-  commissionRate  Float           // Porcentaje de comisión (ej: 0.20 = 20%)
+  commissionRate  Float // Porcentaje de comisión (ej: 0.20 = 20%)
 
   // Estado
-  status      CommissionStatus @default(PENDING)
+  status CommissionStatus @default(PENDING)
 
   // Pago de la comisión
-  paidAt      DateTime?
-  payoutId    String?           // Referencia al pago
+  paidAt   DateTime?
+  payoutId String? // Referencia al pago
 
   createdAt DateTime @default(now())
 
@@ -4834,40 +4867,40 @@ model ReferralCommission {
 }
 
 enum CommissionStatus {
-  PENDING     // Esperando que pase el período de reembolso
-  APPROVED    // Aprobada, lista para pago
-  PAID        // Pagada
-  CANCELLED   // Cancelada (ej: reembolso del referido)
+  PENDING // Esperando que pase el período de reembolso
+  APPROVED // Aprobada, lista para pago
+  PAID // Pagada
+  CANCELLED // Cancelada (ej: reembolso del referido)
 }
 
 /// 📊 Métricas de ventas agregadas (por día/mes)
 model SalesMetric {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Período
-  date        DateTime @db.Date
-  period      MetricPeriod @default(DAILY)
+  date   DateTime     @db.Date
+  period MetricPeriod @default(DAILY)
 
   // Métricas de usuarios
-  newUsers           Int @default(0)
-  newTrials          Int @default(0)
-  trialConversions   Int @default(0)
-  churned            Int @default(0)
+  newUsers         Int @default(0)
+  newTrials        Int @default(0)
+  trialConversions Int @default(0)
+  churned          Int @default(0)
 
   // Métricas de ingresos (en centavos)
-  mrrCents           Int @default(0)   // Monthly Recurring Revenue
-  newMrrCents        Int @default(0)   // MRR de nuevos clientes
-  expansionMrrCents  Int @default(0)   // MRR de upgrades
-  churnedMrrCents    Int @default(0)   // MRR perdido por churn
+  mrrCents          Int @default(0) // Monthly Recurring Revenue
+  newMrrCents       Int @default(0) // MRR de nuevos clientes
+  expansionMrrCents Int @default(0) // MRR de upgrades
+  churnedMrrCents   Int @default(0) // MRR perdido por churn
 
   // Métricas de pagos
-  totalPayments      Int @default(0)
-  totalRevenueCents  Int @default(0)
-  refundsCents       Int @default(0)
+  totalPayments     Int @default(0)
+  totalRevenueCents Int @default(0)
+  refundsCents      Int @default(0)
 
   // SEI
-  seiRequests        Int @default(0)
-  seiCompleted       Int @default(0)
+  seiRequests  Int @default(0)
+  seiCompleted Int @default(0)
 
   createdAt DateTime @default(now())
 
@@ -4891,30 +4924,30 @@ enum MetricPeriod {
 /// Cada sección tiene un tipo, orden, configuración visual y contenido traducible.
 
 model LandingSection {
-  id          String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Tipo de sección (hero, features, testimonials, pricing, etc.)
-  type        LandingSectionType
-  
+  type LandingSectionType
+
   // Orden en la página (0, 1, 2...)
-  order       Int      @default(0)
-  
+  order Int @default(0)
+
   // Visibilidad
-  isVisible   Boolean  @default(true)
-  
+  isVisible Boolean @default(true)
+
   // Configuración visual (colores, espaciado, animaciones, etc.)
-  config      Json?    // { bgColor, padding, animation, columns, etc. }
-  
+  config Json? // { bgColor, padding, animation, columns, etc. }
+
   // Contenido por idioma { es: {...}, en: {...} }
-  content     Json     // Estructura depende del tipo
-  
+  content Json // Estructura depende del tipo
+
   // Metadatos
-  name        String?  // Nombre interno para el admin
-  description String?  // Descripción interna
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  name        String? // Nombre interno para el admin
+  description String? // Descripción interna
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([order])
   @@index([type])
   @@map("landing_section")
@@ -4939,25 +4972,25 @@ enum LandingSectionType {
 
 /// 🖼️ Media Library para el Landing Builder
 model LandingMedia {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // URL del archivo (puede ser local o CDN)
-  url         String
+  url String
 
   // Tipo de media
-  type        String   @default("image") // image, video, icon
+  type String @default("image") // image, video, icon
 
   // Metadatos
-  name        String
-  alt         String?
-  width       Int?
-  height      Int?
-  size        Int?     // bytes
+  name   String
+  alt    String?
+  width  Int?
+  height Int?
+  size   Int? // bytes
 
   // Etiquetas para organizar
-  tags        String[] @default([])
+  tags String[] @default([])
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("landing_media")
 }
@@ -4968,42 +5001,42 @@ model LandingMedia {
 
 /// 🏆 Definición de logros/achievements disponibles
 model Achievement {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Identificador único del logro (ej: "first_chat", "eq_master")
-  slug        String   @unique
+  slug String @unique
 
   // Información del logro
-  name        String                    // Nombre en español
-  nameEN      String?                   // Nombre en inglés
-  description String                    // Descripción en español
-  descriptionEN String?                 // Descripción en inglés
+  name          String // Nombre en español
+  nameEN        String? // Nombre en inglés
+  description   String // Descripción en español
+  descriptionEN String? // Descripción en inglés
 
   // Visual
-  icon        String?                   // Nombre del icono (lucide) o URL
-  color       String   @default("#8B5CF6") // Color del badge
+  icon  String? // Nombre del icono (lucide) o URL
+  color String  @default("#8B5CF6") // Color del badge
 
   // Categoría
-  category    AchievementCategory @default(GENERAL)
+  category AchievementCategory @default(GENERAL)
 
   // Requisitos
-  requirement AchievementRequirement    // Tipo de requisito
-  threshold   Int      @default(1)      // Cantidad requerida
+  requirement AchievementRequirement // Tipo de requisito
+  threshold   Int                    @default(1) // Cantidad requerida
 
   // Puntos que otorga
-  points      Int      @default(10)
+  points Int @default(10)
 
   // Nivel de dificultad/rareza
-  rarity      AchievementRarity @default(COMMON)
+  rarity AchievementRarity @default(COMMON)
 
   // Estado
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
   // Orden de display
-  order       Int      @default(0)
+  order Int @default(0)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
   userAchievements UserAchievement[]
@@ -5013,31 +5046,31 @@ model Achievement {
 
 /// 🎖️ Logros obtenidos por usuarios (unificado con AvatarMilestone)
 model UserAchievement {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
   userId        String
   achievementId String
-  avatarId      String?                   // 🔗 Opcional: vinculo con avatar (antes AvatarMilestone)
+  avatarId      String? // 🔗 Opcional: vinculo con avatar (antes AvatarMilestone)
 
   // Progreso (para logros graduales)
-  progress      Int      @default(0)      // Progreso actual
-  completed     Boolean  @default(false)  // ¿Completado?
-  completedAt   DateTime?                 // Fecha de completado
+  progress    Int       @default(0) // Progreso actual
+  completed   Boolean   @default(false) // ¿Completado?
+  completedAt DateTime? // Fecha de completado
 
   // Campos migrados de AvatarMilestone
-  xpReward      Int      @default(0)      // XP otorgado (para logros de avatar)
-  metadata      Json?                     // Metadata adicional
+  xpReward Int   @default(0) // XP otorgado (para logros de avatar)
+  metadata Json? // Metadata adicional
 
   // Notificación
-  notified      Boolean  @default(false)  // ¿Ya se notificó al usuario?
+  notified Boolean @default(false) // ¿Ya se notificó al usuario?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement   Achievement      @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  avatar        AvatarEvolution? @relation("AvatarAchievements", fields: [avatarId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement      @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  avatar      AvatarEvolution? @relation("AvatarAchievements", fields: [avatarId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
   @@index([avatarId])
@@ -5046,23 +5079,23 @@ model UserAchievement {
 
 /// 💰 Puntos del usuario (historial)
 model UserPoints {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String
+  userId String
 
   // Puntos
-  amount      Int                        // Cantidad de puntos (+/-)
-  balance     Int                        // Balance después de esta transacción
+  amount  Int // Cantidad de puntos (+/-)
+  balance Int // Balance después de esta transacción
 
   // Razón
-  reason      PointsReason               // Tipo de transacción
-  reasonId    String?                    // ID relacionado (achievementId, etc.)
-  description String?                    // Descripción adicional
+  reason      PointsReason // Tipo de transacción
+  reasonId    String? // ID relacionado (achievementId, etc.)
+  description String? // Descripción adicional
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // Relaciones
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@map("user_points")
@@ -5070,124 +5103,124 @@ model UserPoints {
 
 /// 🔥 Rachas de actividad (streaks)
 model UserStreak {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String   @unique
+  userId String @unique
 
   // Racha actual
-  currentStreak Int    @default(0)       // Días consecutivos actuales
-  longestStreak Int    @default(0)       // Racha más larga histórica
+  currentStreak Int @default(0) // Días consecutivos actuales
+  longestStreak Int @default(0) // Racha más larga histórica
 
   // Control de racha
-  lastActivityDate DateTime?             // Última fecha de actividad
-  streakStartDate  DateTime?             // Inicio de la racha actual
+  lastActivityDate DateTime? // Última fecha de actividad
+  streakStartDate  DateTime? // Inicio de la racha actual
 
   // Bonus por racha
-  multiplier    Float  @default(1.0)     // Multiplicador de puntos por racha
+  multiplier Float @default(1.0) // Multiplicador de puntos por racha
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_streaks")
 }
 
 /// 📊 Nivel del usuario
 model UserLevel {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String   @unique
+  userId String @unique
 
   // Nivel actual
-  level       Int      @default(1)
+  level Int @default(1)
 
   // Puntos totales acumulados
-  totalPoints Int      @default(0)
+  totalPoints Int @default(0)
 
   // Puntos para el siguiente nivel
   pointsToNextLevel Int @default(100)
 
   // Título del nivel
-  title       String?                    // Ej: "Explorador Emocional"
-  titleEN     String?
+  title   String? // Ej: "Explorador Emocional"
+  titleEN String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_levels")
 }
 
 // Enums de gamificación
 enum AchievementCategory {
-  GENERAL           // Logros generales
-  CHAT              // Logros de conversaciones con Rowi
-  EQ                // Logros relacionados con EQ
-  COMMUNITY         // Logros de comunidad
-  LEARNING          // Logros de aprendizaje
-  SOCIAL            // Logros sociales
-  STREAK            // Logros de rachas
-  SPECIAL           // Logros especiales/eventos
-  AVATAR            // Logros de evolución del avatar (migrado de AvatarMilestone)
+  GENERAL // Logros generales
+  CHAT // Logros de conversaciones con Rowi
+  EQ // Logros relacionados con EQ
+  COMMUNITY // Logros de comunidad
+  LEARNING // Logros de aprendizaje
+  SOCIAL // Logros sociales
+  STREAK // Logros de rachas
+  SPECIAL // Logros especiales/eventos
+  AVATAR // Logros de evolución del avatar (migrado de AvatarMilestone)
 }
 
 enum AchievementRequirement {
-  CHAT_COUNT        // Número de chats
-  CHAT_STREAK       // Días consecutivos chateando
-  EQ_SCORE          // Puntuación EQ mínima
-  EQ_IMPROVEMENT    // Mejora en EQ
-  PROFILE_COMPLETE  // Perfil completado
-  COMMUNITY_JOIN    // Unirse a comunidad
-  COMMUNITY_POST    // Publicar en comunidad
-  INVITE_ACCEPTED   // Invitaciones aceptadas
-  COURSE_COMPLETE   // Cursos completados
-  DAYS_ACTIVE       // Días activo
-  FIRST_ACTION      // Primera acción de algo
-  CUSTOM            // Requisito personalizado
+  CHAT_COUNT // Número de chats
+  CHAT_STREAK // Días consecutivos chateando
+  EQ_SCORE // Puntuación EQ mínima
+  EQ_IMPROVEMENT // Mejora en EQ
+  PROFILE_COMPLETE // Perfil completado
+  COMMUNITY_JOIN // Unirse a comunidad
+  COMMUNITY_POST // Publicar en comunidad
+  INVITE_ACCEPTED // Invitaciones aceptadas
+  COURSE_COMPLETE // Cursos completados
+  DAYS_ACTIVE // Días activo
+  FIRST_ACTION // Primera acción de algo
+  CUSTOM // Requisito personalizado
 
   // Migrados de MilestoneType (avatar evolution)
-  SEI_COMPLETE          // Completar SEI
-  FIRST_COACH_SESSION   // Primera sesión de coach
-  SEVEN_DAY_STREAK      // Racha de 7 días
-  THIRTY_DAY_STREAK     // Racha de 30 días
-  AFFINITY_ANALYSIS     // Análisis de afinidad
-  FIRST_REFLECTION      // Primera reflexión
-  FIRST_DECISION        // Primera decisión
-  TOP_PERFORMER         // Top performer
-  MENTOR                // Ser mentor
-  INTEGRATIONS_SETUP    // Configurar integraciones
-  AVATAR_HATCHED        // Avatar eclosionado
-  AVATAR_EVOLUTION      // Evolución del avatar
+  SEI_COMPLETE // Completar SEI
+  FIRST_COACH_SESSION // Primera sesión de coach
+  SEVEN_DAY_STREAK // Racha de 7 días
+  THIRTY_DAY_STREAK // Racha de 30 días
+  AFFINITY_ANALYSIS // Análisis de afinidad
+  FIRST_REFLECTION // Primera reflexión
+  FIRST_DECISION // Primera decisión
+  TOP_PERFORMER // Top performer
+  MENTOR // Ser mentor
+  INTEGRATIONS_SETUP // Configurar integraciones
+  AVATAR_HATCHED // Avatar eclosionado
+  AVATAR_EVOLUTION // Evolución del avatar
 }
 
 enum AchievementRarity {
-  COMMON            // Común (fácil de obtener)
-  UNCOMMON          // Poco común
-  RARE              // Raro
-  EPIC              // Épico
-  LEGENDARY         // Legendario
+  COMMON // Común (fácil de obtener)
+  UNCOMMON // Poco común
+  RARE // Raro
+  EPIC // Épico
+  LEGENDARY // Legendario
 }
 
 enum PointsReason {
-  ACHIEVEMENT       // Logro completado
-  DAILY_LOGIN       // Login diario
-  CHAT              // Conversación con Rowi
-  POST              // Publicación
-  COMMENT           // Comentario
-  STREAK_BONUS      // Bonus por racha
-  REFERRAL          // Referido
-  COURSE            // Completar curso
-  ADMIN_GRANT       // Otorgado por admin
-  ADMIN_DEDUCT      // Deducido por admin
-  MICRO_LEARNING    // Completar micro-learning
-  CONNECTION        // Conexión social aceptada
-  REACTION          // Reacción en feed
-  NOBLE_GOAL        // Crear/unirse a noble goal
-  FORUM_REPLY       // Responder en foro
+  ACHIEVEMENT // Logro completado
+  DAILY_LOGIN // Login diario
+  CHAT // Conversación con Rowi
+  POST // Publicación
+  COMMENT // Comentario
+  STREAK_BONUS // Bonus por racha
+  REFERRAL // Referido
+  COURSE // Completar curso
+  ADMIN_GRANT // Otorgado por admin
+  ADMIN_DEDUCT // Deducido por admin
+  MICRO_LEARNING // Completar micro-learning
+  CONNECTION // Conexión social aceptada
+  REACTION // Reacción en feed
+  NOBLE_GOAL // Crear/unirse a noble goal
+  FORUM_REPLY // Responder en foro
 }
 
 /// =========================================================
@@ -5196,32 +5229,32 @@ enum PointsReason {
 /// Contenido de microlearning basado en competencias EQ,
 /// outcomes, brain talents y el modelo Six Seconds.
 model MicroLearning {
-  id          String   @id @default(cuid())
-  slug        String   @unique              // "EEL_action_1", "INFLUENCE_action_2"
+  id   String @id @default(cuid())
+  slug String @unique // "EEL_action_1", "INFLUENCE_action_2"
 
   // Categorización
-  category    MicroLearningCategory         // competency | outcome | brain_talent | core_outcome
-  parentKey   String                        // "EEL" | "INFLUENCE" | "BBE" | "EFFECTIVENESS"
+  category  MicroLearningCategory // competency | outcome | brain_talent | core_outcome
+  parentKey String // "EEL" | "INFLUENCE" | "BBE" | "EFFECTIVENESS"
 
   // Contenido
-  title       String                        // Título en español
-  titleEN     String?                       // Título en inglés
-  description String?                       // Descripción detallada
-  descriptionEN String?                     // Descripción en inglés
-  content     Json?                         // Contenido estructurado adicional
+  title         String // Título en español
+  titleEN       String? // Título en inglés
+  description   String? // Descripción detallada
+  descriptionEN String? // Descripción en inglés
+  content       Json? // Contenido estructurado adicional
 
   // Metadata
-  duration    Int      @default(2)          // Duración estimada en minutos
-  difficulty  MicroLearningDifficulty @default(BEGINNER)
-  order       Int      @default(0)          // Orden dentro de su categoría
-  points      Int      @default(10)         // Puntos que otorga al completar
+  duration   Int                     @default(2) // Duración estimada en minutos
+  difficulty MicroLearningDifficulty @default(BEGINNER)
+  order      Int                     @default(0) // Orden dentro de su categoría
+  points     Int                     @default(10) // Puntos que otorga al completar
 
   // Estado
-  isActive    Boolean  @default(true)
-  isFeatured  Boolean  @default(false)      // Destacado
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false) // Destacado
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
   userProgress UserMicroLearning[]
@@ -5233,35 +5266,35 @@ model MicroLearning {
 
 /// 📊 Progreso de MicroLearning por usuario
 model UserMicroLearning {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
   userId          String
   microLearningId String
 
   // Progreso
-  status          MicroLearningStatus @default(NOT_STARTED)
-  progress        Int      @default(0)        // 0-100
-  completedAt     DateTime?
+  status      MicroLearningStatus @default(NOT_STARTED)
+  progress    Int                 @default(0) // 0-100
+  completedAt DateTime?
 
   // Feedback
-  rating          Int?                         // 1-5 estrellas
-  notes           String?                      // Notas del usuario
-  reflection      String?                      // Reflexión personal
+  rating     Int? // 1-5 estrellas
+  notes      String? // Notas del usuario
+  reflection String? // Reflexión personal
 
   // Gamificación
-  pointsEarned    Int      @default(0)
+  pointsEarned Int @default(0)
 
   // Tracking
-  startedAt       DateTime?
-  lastAccessAt    DateTime?
-  timeSpentSecs   Int      @default(0)        // Tiempo total invertido
+  startedAt     DateTime?
+  lastAccessAt  DateTime?
+  timeSpentSecs Int       @default(0) // Tiempo total invertido
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  microLearning   MicroLearning @relation(fields: [microLearningId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  microLearning MicroLearning @relation(fields: [microLearningId], references: [id], onDelete: Cascade)
 
   @@unique([userId, microLearningId])
   @@index([userId, status])
@@ -5271,41 +5304,41 @@ model UserMicroLearning {
 
 /// 🎁 Recompensas canjeables
 model Reward {
-  id          String   @id @default(cuid())
-  slug        String   @unique              // "premium_badge", "discount_10"
+  id   String @id @default(cuid())
+  slug String @unique // "premium_badge", "discount_10"
 
   // Información
-  name        String                        // Nombre en español
-  nameEN      String?                       // Nombre en inglés
-  description String?                       // Descripción
+  name          String // Nombre en español
+  nameEN        String? // Nombre en inglés
+  description   String? // Descripción
   descriptionEN String?
 
   // Visual
-  icon        String?                       // Icono (lucide o URL)
-  image       String?                       // Imagen de la recompensa
-  color       String   @default("#10B981")  // Color del reward
+  icon  String? // Icono (lucide o URL)
+  image String? // Imagen de la recompensa
+  color String  @default("#10B981") // Color del reward
 
   // Costo y tipo
-  cost        Int                           // Puntos necesarios para canjear
-  type        RewardType                    // badge | feature | discount | physical | certificate
+  cost Int // Puntos necesarios para canjear
+  type RewardType // badge | feature | discount | physical | certificate
 
   // Disponibilidad
-  stock       Int?                          // null = ilimitado
-  maxPerUser  Int      @default(1)          // Máximo por usuario
-  expiresAt   DateTime?                     // Fecha de expiración
+  stock      Int? // null = ilimitado
+  maxPerUser Int       @default(1) // Máximo por usuario
+  expiresAt  DateTime? // Fecha de expiración
 
   // Estado
-  isActive    Boolean  @default(true)
-  isFeatured  Boolean  @default(false)
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
 
   // Metadata adicional
-  metadata    Json?                         // Datos específicos del tipo de reward
+  metadata Json? // Datos específicos del tipo de reward
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  claims      UserReward[]
+  claims UserReward[]
 
   @@index([type, isActive])
   @@map("reward")
@@ -5313,23 +5346,23 @@ model Reward {
 
 /// 🏆 Recompensas reclamadas por usuarios
 model UserReward {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId      String
-  rewardId    String
+  userId   String
+  rewardId String
 
   // Estado
-  status      RewardClaimStatus @default(CLAIMED)
-  claimedAt   DateTime @default(now())
-  redeemedAt  DateTime?                     // Cuando se usó (si aplica)
-  expiresAt   DateTime?                     // Expiración individual
+  status     RewardClaimStatus @default(CLAIMED)
+  claimedAt  DateTime          @default(now())
+  redeemedAt DateTime? // Cuando se usó (si aplica)
+  expiresAt  DateTime? // Expiración individual
 
   // Tracking
-  metadata    Json?                         // Datos adicionales (código de descuento, etc.)
+  metadata Json? // Datos adicionales (código de descuento, etc.)
 
   // Relaciones
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reward      Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward Reward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([rewardId])
@@ -5338,39 +5371,39 @@ model UserReward {
 
 /// 🧠 Knowledge Deployment — Despliegue de conocimiento a agentes IA
 model AgentKnowledgeDeployment {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  agentId     String
+  agentId String
 
   // Fuente y tipo
-  source      KnowledgeSource               // manual | auto_learned | six_seconds | conversation
-  contentType KnowledgeContentType          // outcome | competency | brain_talent | micro_action | pattern | custom
-  contentKey  String                        // "INFLUENCE" | "EEL" | "BBE" | etc.
+  source      KnowledgeSource // manual | auto_learned | six_seconds | conversation
+  contentType KnowledgeContentType // outcome | competency | brain_talent | micro_action | pattern | custom
+  contentKey  String // "INFLUENCE" | "EEL" | "BBE" | etc.
 
   // Contenido
-  title       String?                       // Título descriptivo
-  content     Json                          // El contenido completo (JSON)
-  summary     String?                       // Resumen para quick reference
+  title   String? // Título descriptivo
+  content Json // El contenido completo (JSON)
+  summary String? // Resumen para quick reference
 
   // Estado de deployment
-  status      KnowledgeDeploymentStatus @default(PENDING)
-  deployedAt  DateTime?
-  deployedBy  String?                       // userId del admin que aprobó
+  status     KnowledgeDeploymentStatus @default(PENDING)
+  deployedAt DateTime?
+  deployedBy String? // userId del admin que aprobó
 
   // Métricas de uso
-  usageCount  Int      @default(0)          // Veces que se ha usado
-  lastUsedAt  DateTime?
-  effectiveness Float?                      // 0-1 basado en feedback
+  usageCount    Int       @default(0) // Veces que se ha usado
+  lastUsedAt    DateTime?
+  effectiveness Float? // 0-1 basado en feedback
 
   // Metadata
-  tags        String[] @default([])
-  metadata    Json?                         // Datos adicionales
+  tags     String[] @default([])
+  metadata Json? // Datos adicionales
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  agent       AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@unique([agentId, contentType, contentKey])
   @@index([agentId, status])
@@ -5380,31 +5413,31 @@ model AgentKnowledgeDeployment {
 
 /// 📈 Definición de Niveles del sistema de gamificación
 model LevelDefinition {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  level           Int      @unique           // 1, 2, 3...
+  level Int @unique // 1, 2, 3...
 
   // Requisitos
-  minPoints       Int                        // Puntos mínimos para este nivel
-  maxPoints       Int?                       // Puntos máximos (null para el último nivel)
+  minPoints Int // Puntos mínimos para este nivel
+  maxPoints Int? // Puntos máximos (null para el último nivel)
 
   // Títulos
-  title           String                     // "Explorador Emocional"
-  titleEN         String?                    // "Emotional Explorer"
-  description     String?
-  descriptionEN   String?
+  title         String // "Explorador Emocional"
+  titleEN       String? // "Emotional Explorer"
+  description   String?
+  descriptionEN String?
 
   // Visual
-  icon            String?                    // Icono del nivel
-  color           String   @default("#8B5CF6")
-  badge           String?                    // Badge/imagen del nivel
+  icon  String? // Icono del nivel
+  color String  @default("#8B5CF6")
+  badge String? // Badge/imagen del nivel
 
   // Beneficios
-  benefits        Json?                      // Lista de beneficios desbloqueados
-  multiplier      Float    @default(1.0)     // Multiplicador de puntos
+  benefits   Json? // Lista de beneficios desbloqueados
+  multiplier Float @default(1.0) // Multiplicador de puntos
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("level_definition")
 }
@@ -5414,10 +5447,10 @@ model LevelDefinition {
 // =========================================================
 
 enum MicroLearningCategory {
-  COMPETENCY      // Competencias EQ (EEL, RP, ACT, etc.)
-  OUTCOME         // Outcomes (Influence, Decision Making, etc.)
-  BRAIN_TALENT    // Brain Talents (BBE, BBI, etc.)
-  CORE_OUTCOME    // Core Outcomes (Effectiveness, Wellbeing, etc.)
+  COMPETENCY // Competencias EQ (EEL, RP, ACT, etc.)
+  OUTCOME // Outcomes (Influence, Decision Making, etc.)
+  BRAIN_TALENT // Brain Talents (BBE, BBI, etc.)
+  CORE_OUTCOME // Core Outcomes (Effectiveness, Wellbeing, etc.)
 }
 
 enum MicroLearningDifficulty {
@@ -5434,45 +5467,45 @@ enum MicroLearningStatus {
 }
 
 enum RewardType {
-  BADGE           // Badge visual
-  FEATURE         // Acceso a feature premium
-  DISCOUNT        // Descuento
-  PHYSICAL        // Producto físico
-  CERTIFICATE     // Certificado digital
-  TOKENS          // Tokens de IA adicionales
+  BADGE // Badge visual
+  FEATURE // Acceso a feature premium
+  DISCOUNT // Descuento
+  PHYSICAL // Producto físico
+  CERTIFICATE // Certificado digital
+  TOKENS // Tokens de IA adicionales
 }
 
 enum RewardClaimStatus {
-  CLAIMED         // Reclamado
-  REDEEMED        // Usado/canjeado
-  EXPIRED         // Expirado
-  REVOKED         // Revocado
+  CLAIMED // Reclamado
+  REDEEMED // Usado/canjeado
+  EXPIRED // Expirado
+  REVOKED // Revocado
 }
 
 enum KnowledgeSource {
-  MANUAL          // Subido manualmente por admin
-  AUTO_LEARNED    // Aprendido de conversaciones
-  SIX_SECONDS     // Contenido de Six Seconds
-  CONVERSATION    // Extraído de chat específico
-  IMPORT          // Importado de archivo
+  MANUAL // Subido manualmente por admin
+  AUTO_LEARNED // Aprendido de conversaciones
+  SIX_SECONDS // Contenido de Six Seconds
+  CONVERSATION // Extraído de chat específico
+  IMPORT // Importado de archivo
 }
 
 enum KnowledgeContentType {
-  OUTCOME         // Outcomes de Six Seconds
-  COMPETENCY      // Competencias EQ
-  BRAIN_TALENT    // Brain Talents
-  CORE_OUTCOME    // Core Outcomes
-  MICRO_ACTION    // Micro-acciones específicas
-  PATTERN         // Patrón aprendido
-  CUSTOM          // Contenido personalizado
+  OUTCOME // Outcomes de Six Seconds
+  COMPETENCY // Competencias EQ
+  BRAIN_TALENT // Brain Talents
+  CORE_OUTCOME // Core Outcomes
+  MICRO_ACTION // Micro-acciones específicas
+  PATTERN // Patrón aprendido
+  CUSTOM // Contenido personalizado
 }
 
 enum KnowledgeDeploymentStatus {
-  PENDING         // Pendiente de aprobación
-  APPROVED        // Aprobado, listo para deploy
-  DEPLOYED        // Desplegado y activo
-  REJECTED        // Rechazado
-  ARCHIVED        // Archivado (ya no activo)
+  PENDING // Pendiente de aprobación
+  APPROVED // Aprobado, listo para deploy
+  DEPLOYED // Desplegado y activo
+  REJECTED // Rechazado
+  ARCHIVED // Archivado (ya no activo)
 }
 
 // =========================================================
@@ -5480,15 +5513,15 @@ enum KnowledgeDeploymentStatus {
 // =========================================================
 
 model WeekFlowConfig {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Scope (puede ser a nivel tenant, hub, o global)
-  tenantId  String?
-  hubId     String?
+  tenantId String?
+  hubId    String?
 
   // Configuración
-  name      String   @default("WeekFlow")
-  isActive  Boolean  @default(true)
+  name     String  @default("WeekFlow")
+  isActive Boolean @default(true)
 
   // Secciones habilitadas
   enableShowTell    Boolean @default(true)
@@ -5499,7 +5532,7 @@ model WeekFlowConfig {
 
   // Configuración de check-in
   requireMoodCheckin Boolean @default(true)
-  moodReminderDay    Int     @default(1)     // 1=Lunes
+  moodReminderDay    Int     @default(1) // 1=Lunes
   moodReminderTime   String  @default("09:00")
 
   // Gamificación
@@ -5513,17 +5546,17 @@ model WeekFlowConfig {
   daysBeforeTaskReflection Int @default(7)
 
   // Integraciones
-  slackWebhook    String?
-  googleDocsId    String?
-  emailReminders  Boolean @default(false)
+  slackWebhook   String?
+  googleDocsId   String?
+  emailReminders Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  tenant    Tenant?            @relation(fields: [tenantId], references: [id])
-  hub       Hub?               @relation(fields: [hubId], references: [id])
-  sessions  WeekFlowSession[]
+  tenant   Tenant?           @relation(fields: [tenantId], references: [id])
+  hub      Hub?              @relation(fields: [hubId], references: [id])
+  sessions WeekFlowSession[]
 
   @@unique([tenantId, hubId])
   @@index([tenantId])
@@ -5532,20 +5565,20 @@ model WeekFlowConfig {
 }
 
 model WeekFlowSession {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  configId  String
-  tenantId  String?
-  hubId     String?
+  configId String
+  tenantId String?
+  hubId    String?
 
   // Identificación de semana
-  weekNumber Int      // ISO week number (1-53)
+  weekNumber Int // ISO week number (1-53)
   year       Int
   weekStart  DateTime
   weekEnd    DateTime
 
-  status    WeekFlowSessionStatus @default(ACTIVE)
-  summary   String?   @db.Text
+  status  WeekFlowSessionStatus @default(ACTIVE)
+  summary String?               @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -5570,35 +5603,35 @@ enum WeekFlowSessionStatus {
 }
 
 model WeekFlowContribution {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   sessionId String
   userId    String
 
-  type      WeekFlowContributionType
-  content   String   @db.Text
+  type    WeekFlowContributionType
+  content String                   @db.Text
 
-  order     Int      @default(0)
-  status    WeekFlowContributionStatus @default(ACTIVE)
+  order  Int                        @default(0)
+  status WeekFlowContributionStatus @default(ACTIVE)
 
   // Para Focus items que son tareas
-  isTask      Boolean   @default(false)
-  isCompleted Boolean   @default(false)
+  isTask      Boolean      @default(false)
+  isCompleted Boolean      @default(false)
   completedAt DateTime?
   dueDate     DateTime?
   priority    TaskPriority @default(MEDIUM)
 
   // Menciones a otros usuarios (@tags)
-  mentions    String[]  @default([])  // Array de userIds mencionados
+  mentions String[] @default([]) // Array de userIds mencionados
 
-  reactions   Json?     // { "👍": ["userId1"], "🎉": ["userId2"] }
+  reactions Json? // { "👍": ["userId1"], "🎉": ["userId2"] }
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  session   WeekFlowSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user      User              @relation(fields: [userId], references: [id])
-  comments  WeekFlowComment[]
+  session  WeekFlowSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id])
+  comments WeekFlowComment[]
 
   @@index([sessionId, type])
   @@index([userId])
@@ -5626,21 +5659,21 @@ enum TaskPriority {
 }
 
 model WeekFlowMoodCheckin {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   sessionId String
   userId    String
 
   // Emoción seleccionada (slug de la rueda progresiva)
-  emotion   String      // Ej: "joy", "overwhelmed", "anxious"
-  intensity Int         @default(5)  // 1-10
+  emotion   String // Ej: "joy", "overwhelmed", "anxious"
+  intensity Int    @default(5) // 1-10
 
-  note      String?     @db.Text
+  note String? @db.Text
 
   createdAt DateTime @default(now())
 
-  session   WeekFlowSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user      User            @relation(fields: [userId], references: [id])
+  session WeekFlowSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id])
 
   @@unique([sessionId, userId])
   @@index([userId])
@@ -5653,7 +5686,7 @@ model WeekFlowComment {
   contributionId String
   userId         String
   content        String   @db.Text
-  mentions       String[] @default([])  // Array de userIds mencionados
+  mentions       String[] @default([]) // Array de userIds mencionados
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -5671,53 +5704,53 @@ model WeekFlowComment {
 // =========================================================
 
 model RowiTask {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId    String
-  tenantId  String?
-  hubId     String?
+  userId   String
+  tenantId String?
+  hubId    String?
 
   title       String
   description String? @db.Text
 
-  status    RowiTaskStatus @default(TODO)
-  priority  TaskPriority   @default(MEDIUM)
+  status   RowiTaskStatus @default(TODO)
+  priority TaskPriority   @default(MEDIUM)
 
   dueDate     DateTime?
   completedAt DateTime?
 
   // Origen
-  sourceType    String?   // "weekflow", "manual", "imported"
-  sourceId      String?
+  sourceType String? // "weekflow", "manual", "imported"
+  sourceId   String?
 
   // Organización
-  tags      String[]  @default([])
-  category  String?
+  tags     String[] @default([])
+  category String?
 
   // Recurrencia
   isRecurring   Boolean @default(false)
   recurringRule String?
 
   // Visibilidad
-  visibility    TaskVisibility @default(PRIVATE)
+  visibility TaskVisibility @default(PRIVATE)
 
   // Emotional insights (todo opcional)
   weekFlowSessionId   String?
-  emotionAtCreation   String?   // Slug de emoción
+  emotionAtCreation   String? // Slug de emoción
   emotionAtCompletion String?
   incompletionReason  TaskIncompletionReason?
-  incompletionNote    String? @db.Text
+  incompletionNote    String?                 @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Colaboradores
-  assigneeId    String?         // Usuario asignado (puede ser diferente del creador)
+  assigneeId String? // Usuario asignado (puede ser diferente del creador)
 
-  user          User             @relation("TaskOwner", fields: [userId], references: [id])
-  assignee      User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  tenant        Tenant?          @relation(fields: [tenantId], references: [id])
-  hub           Hub?             @relation(fields: [hubId], references: [id])
+  user          User               @relation("TaskOwner", fields: [userId], references: [id])
+  assignee      User?              @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  tenant        Tenant?            @relation(fields: [tenantId], references: [id])
+  hub           Hub?               @relation(fields: [hubId], references: [id])
   reflections   TaskReflection[]
   collaborators TaskCollaborator[]
 
@@ -5733,22 +5766,22 @@ model RowiTask {
 // ✅ TASK COLLABORATORS - Colaboradores de Tareas
 // =========================================================
 model TaskCollaborator {
-  id        String   @id @default(cuid())
-  taskId    String
-  userId    String?               // Usuario de la plataforma (si existe)
-  memberId  String?               // Miembro de comunidad (si no es usuario)
-  role      CollaboratorRole      @default(VIEWER)
+  id       String           @id @default(cuid())
+  taskId   String
+  userId   String? // Usuario de la plataforma (si existe)
+  memberId String? // Miembro de comunidad (si no es usuario)
+  role     CollaboratorRole @default(VIEWER)
 
   // Notificaciones
-  notifyOnUpdate    Boolean @default(true)
-  notifyOnComplete  Boolean @default(true)
+  notifyOnUpdate   Boolean @default(true)
+  notifyOnComplete Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task    RowiTask         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user    User?            @relation(fields: [userId], references: [id])
-  member  CommunityMember? @relation(fields: [memberId], references: [id])
+  task   RowiTask         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User?            @relation(fields: [userId], references: [id])
+  member CommunityMember? @relation(fields: [memberId], references: [id])
 
   @@unique([taskId, userId])
   @@unique([taskId, memberId])
@@ -5759,9 +5792,9 @@ model TaskCollaborator {
 }
 
 enum CollaboratorRole {
-  VIEWER      // Solo puede ver la tarea
+  VIEWER // Solo puede ver la tarea
   CONTRIBUTOR // Puede comentar y agregar notas
-  EDITOR      // Puede editar la tarea
+  EDITOR // Puede editar la tarea
 }
 
 enum RowiTaskStatus {
@@ -5800,23 +5833,23 @@ enum TaskIncompletionReason {
 }
 
 model TaskReflection {
-  id        String   @id @default(cuid())
-  taskId    String
-  userId    String
+  id     String @id @default(cuid())
+  taskId String
+  userId String
 
-  type      ReflectionType
+  type ReflectionType
 
-  emotion   String?   // Slug de emoción
-  intensity Int?      @default(5)
-  note      String?   @db.Text
+  emotion   String? // Slug de emoción
+  intensity Int?    @default(5)
+  note      String? @db.Text
 
   blockerType     String?
   suggestedAction String?
 
   createdAt DateTime @default(now())
 
-  task      RowiTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  task RowiTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id])
 
   @@index([taskId])
   @@index([userId])
@@ -5836,15 +5869,15 @@ enum ReflectionType {
 // =========================================================
 
 model EmotionVocabulary {
-  id        String   @id @default(cuid())
-  userId    String   @unique
+  id     String @id @default(cuid())
+  userId String @unique
 
-  level     EmotionLevel @default(DESAFIO)
+  level EmotionLevel @default(DESAFIO)
 
-  unlockedEmotions   String[] @default([])
-  totalCheckins      Int @default(0)
-  uniqueEmotionsUsed Int @default(0)
-  progressToNextLevel Float @default(0)
+  unlockedEmotions    String[] @default([])
+  totalCheckins       Int      @default(0)
+  uniqueEmotionsUsed  Int      @default(0)
+  progressToNextLevel Float    @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -5856,11 +5889,11 @@ model EmotionVocabulary {
 }
 
 enum EmotionLevel {
-  DESAFIO     // 8 emociones
-  EMERGENTE   // 24 emociones
-  FUNCIONAL   // 48 emociones
-  DIESTRO     // 80 emociones
-  EXPERTO     // 130+ emociones
+  DESAFIO // 8 emociones
+  EMERGENTE // 24 emociones
+  FUNCIONAL // 48 emociones
+  DIESTRO // 80 emociones
+  EXPERTO // 130+ emociones
 }
 
 // =========================================================
@@ -5868,31 +5901,31 @@ enum EmotionLevel {
 // =========================================================
 
 model WeekFlowMetrics {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  tenantId  String?
-  hubId     String?
-  userId    String?
+  tenantId String?
+  hubId    String?
+  userId   String?
 
   periodType  MetricPeriod
   periodStart DateTime
   periodEnd   DateTime
 
-  totalCheckins       Int @default(0)
-  totalContributions  Int @default(0)
-  totalTasks          Int @default(0)
-  completedTasks      Int @default(0)
+  totalCheckins      Int @default(0)
+  totalContributions Int @default(0)
+  totalTasks         Int @default(0)
+  completedTasks     Int @default(0)
 
-  avgMoodIntensity    Float?
-  dominantEmotion     String?
-  moodVariance        Float?
+  avgMoodIntensity Float?
+  dominantEmotion  String?
+  moodVariance     Float?
 
-  commentCount        Int @default(0)
-  reactionCount       Int @default(0)
-  consecutiveWeeks    Int @default(0)
+  commentCount     Int @default(0)
+  reactionCount    Int @default(0)
+  consecutiveWeeks Int @default(0)
 
-  taskCompletionRate  Float?
-  participationRate   Float?
+  taskCompletionRate Float?
+  participationRate  Float?
 
   createdAt DateTime @default(now())
 
@@ -5913,15 +5946,15 @@ model WeekFlowMetrics {
 /// Las claves se almacenan encriptadas en la base de datos
 model SystemConfig {
   id          String   @id @default(cuid())
-  key         String   @unique          // Nombre de la clave (ej: "OPENAI_API_KEY")
-  value       String                    // Valor encriptado
+  key         String   @unique // Nombre de la clave (ej: "OPENAI_API_KEY")
+  value       String // Valor encriptado
   category    String   @default("general") // Categoría: "ai", "auth", "email", "payments", "general"
-  description String?                   // Descripción de la clave
-  isSecret    Boolean  @default(true)   // Si debe mostrarse oculta en UI
-  isActive    Boolean  @default(true)   // Si está activa
+  description String? // Descripción de la clave
+  isSecret    Boolean  @default(true) // Si debe mostrarse oculta en UI
+  isActive    Boolean  @default(true) // Si está activa
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  updatedBy   String?                   // ID del usuario que la actualizó
+  updatedBy   String? // ID del usuario que la actualizó
 
   @@index([category])
   @@index([isActive])
@@ -5934,28 +5967,28 @@ model SystemConfig {
 
 /// 🎯 Noble Goal — Causa / propósito noble compartido (8va competencia EQ - Six Seconds)
 model NobleGoal {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   authorId         String
   title            String
-  description      String?  @db.Text
-  category         String   @default("bienestar") // bienestar | educacion | comunidad | medio_ambiente | liderazgo | relaciones | salud | creatividad
+  description      String?   @db.Text
+  category         String    @default("bienestar") // bienestar | educacion | comunidad | medio_ambiente | liderazgo | relaciones | salud | creatividad
   icon             String?
   color            String?
-  visibility       String   @default("public")    // public | community | private
-  status           String   @default("active")    // active | completed | paused
+  visibility       String    @default("public") // public | community | private
+  status           String    @default("active") // active | completed | paused
   targetDate       DateTime?
-  progress         Int      @default(0)           // 0–100
-  participantCount Int      @default(0)
+  progress         Int       @default(0) // 0–100
+  participantCount Int       @default(0)
   tenantId         String?
   communityId      String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   // Relations
-  author           User                   @relation("NobleGoalAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  participants     NobleGoalParticipant[]
-  updates          NobleGoalUpdate[]
-  sharedInFeed     RowiFeed[]             @relation("FeedSharedGoal")
+  author       User                   @relation("NobleGoalAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  participants NobleGoalParticipant[]
+  updates      NobleGoalUpdate[]
+  sharedInFeed RowiFeed[]             @relation("FeedSharedGoal")
 
   @@index([authorId])
   @@index([tenantId])
@@ -5973,11 +6006,11 @@ model NobleGoalParticipant {
   userId   String
   role     String   @default("supporter") // creator | supporter | contributor
   joinedAt DateTime @default(now())
-  message  String?  @db.Text              // Mensaje al unirse
+  message  String?  @db.Text // Mensaje al unirse
 
   // Relations
-  goal     NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([goalId, userId])
   @@index([userId])
@@ -5990,12 +6023,12 @@ model NobleGoalUpdate {
   goalId    String
   authorId  String
   content   String   @db.Text
-  progress  Int?                           // Nuevo progreso (0–100) al momento del update
+  progress  Int? // Nuevo progreso (0–100) al momento del update
   createdAt DateTime @default(now())
 
   // Relations
-  goal      NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  goal   NobleGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  author User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([goalId])
   @@index([authorId])
@@ -6006,14 +6039,14 @@ model NobleGoalUpdate {
 model MessageThread {
   id            String   @id @default(cuid())
   type          String   @default("direct") // direct | group
-  name          String?                     // Nombre del grupo (solo para group)
+  name          String? // Nombre del grupo (solo para group)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lastMessageAt DateTime @default(now())
 
   // Relations
-  participants  MessageParticipant[]
-  messages      Message[]
+  participants MessageParticipant[]
+  messages     Message[]
 
   @@index([lastMessageAt])
   @@map("message_threads")
@@ -6026,14 +6059,14 @@ model Message {
   senderId  String
   content   String    @db.Text
   type      String    @default("text") // text | system | achievement_share
-  metadata  Json?                      // Datos extra (achievement info, etc.)
-  readBy    String[]                   // IDs de usuarios que leyeron el mensaje
+  metadata  Json? // Datos extra (achievement info, etc.)
+  readBy    String[] // IDs de usuarios que leyeron el mensaje
   createdAt DateTime  @default(now())
   editedAt  DateTime?
 
   // Relations
-  thread    MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  sender    User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([threadId, createdAt])
   @@index([senderId])
@@ -6051,8 +6084,8 @@ model MessageParticipant {
   mutedUntil DateTime?
 
   // Relations
-  thread     MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([threadId, userId])
   @@index([userId])
@@ -6061,19 +6094,19 @@ model MessageParticipant {
 
 /// 💬 Comentario en feed
 model FeedComment {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   feedId    String
   authorId  String
-  content   String    @db.Text
-  parentId  String?                        // Para threading de comentarios
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  content   String   @db.Text
+  parentId  String? // Para threading de comentarios
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  feed      RowiFeed       @relation(fields: [feedId], references: [id], onDelete: Cascade)
-  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent    FeedComment?   @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   FeedComment[]  @relation("CommentThread")
+  feed    RowiFeed      @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  FeedComment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies FeedComment[] @relation("CommentThread")
 
   @@index([feedId, createdAt])
   @@index([authorId])
@@ -6090,8 +6123,8 @@ model FeedReaction {
   createdAt DateTime @default(now())
 
   // Relations
-  feed      RowiFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feed RowiFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([feedId, userId])
   @@index([feedId, type])
@@ -6103,10 +6136,10 @@ model RowiChatFeedback {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        String   // "like" | "dislike" | "bug"
-  messageId   String?  // client-side message id
-  messageText String?  // truncated assistant message text
-  comment     String?  // user comment (required for bugs)
+  type        String // "like" | "dislike" | "bug"
+  messageId   String? // client-side message id
+  messageText String? // truncated assistant message text
+  comment     String? // user comment (required for bugs)
   locale      String?
   metadata    Json?
   createdAt   DateTime @default(now())
@@ -6116,38 +6149,40 @@ model RowiChatFeedback {
   @@map("rowi_chat_feedback")
 }
 
-/* =========================================================
-   🏢 WORKSPACE MODULE (HR, Coaching, Consulting, Team Leader)
-   ---------------------------------------------------------
-   Extension de RowiCommunity para uso profesional.
-   Un workspace = RowiCommunity con workspaceType set.
-========================================================= */
+/**
+ * =========================================================
+ * 🏢 WORKSPACE MODULE (HR, Coaching, Consulting, Team Leader)
+ * ---------------------------------------------------------
+ * Extension de RowiCommunity para uso profesional.
+ * Un workspace = RowiCommunity con workspaceType set.
+ * =========================================================
+ */
 
 enum WorkspaceType {
-  COACHING      // Coach 1:1 o grupal
-  CONSULTING    // Consultor con proyectos para clientes externos
-  HR_COHORT     // HR Manager gestionando cohortes internos
-  TEAM_UNIT     // Team Leader con reportes directos
-  MENTORING     // Programa de mentoria
-  SELECTION     // Seleccion/reclutamiento de personal
+  COACHING // Coach 1:1 o grupal
+  CONSULTING // Consultor con proyectos para clientes externos
+  HR_COHORT // HR Manager gestionando cohortes internos
+  TEAM_UNIT // Team Leader con reportes directos
+  MENTORING // Programa de mentoria
+  SELECTION // Seleccion/reclutamiento de personal
 }
 
 /// 📝 Notas privadas del coach sobre miembros/sesiones
 model CoachNote {
-  id           String         @id @default(cuid())
-  communityId  String
-  memberId     String?        // Nota sobre miembro especifico (opcional)
-  authorId     String         // User que escribio
-  title        String?
-  content      String         @db.Text
-  category     String?        // session | observation | goal | concern
-  tags         String[]
-  isPrivate    Boolean        @default(true)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id          String   @id @default(cuid())
+  communityId String
+  memberId    String? // Nota sobre miembro especifico (opcional)
+  authorId    String // User que escribio
+  title       String?
+  content     String   @db.Text
+  category    String? // session | observation | goal | concern
+  tags        String[]
+  isPrivate   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  author       User           @relation("CoachNoteAuthor", fields: [authorId], references: [id])
+  community RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User          @relation("CoachNoteAuthor", fields: [authorId], references: [id])
 
   @@index([communityId, memberId])
   @@index([authorId])
@@ -6156,26 +6191,26 @@ model CoachNote {
 
 /// 🎯 Plan de desarrollo por miembro (auto-generable por IA)
 model DevelopmentPlan {
-  id           String         @id @default(cuid())
-  communityId  String
-  memberId     String         // CommunityMember.id o User.id
-  memberType   String         @default("community_member") // community_member | user
-  title        String
-  description  String?        @db.Text
-  goals        Json           // Array de SMART goals [{ title, description, targetDate, status, progress }]
-  strengths    String[]       // Competencias fortaleza detectadas
-  gaps         String[]       // Areas de mejora
-  resources    Json?          // [{ type, title, url, description }]
-  status       String         @default("active") // active | completed | paused | archived
-  targetDate   DateTime?
-  createdById  String         // Coach
-  aiGenerated  Boolean        @default(false)
-  aiPrompt     String?        @db.Text
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id          String    @id @default(cuid())
+  communityId String
+  memberId    String // CommunityMember.id o User.id
+  memberType  String    @default("community_member") // community_member | user
+  title       String
+  description String?   @db.Text
+  goals       Json // Array de SMART goals [{ title, description, targetDate, status, progress }]
+  strengths   String[] // Competencias fortaleza detectadas
+  gaps        String[] // Areas de mejora
+  resources   Json? // [{ type, title, url, description }]
+  status      String    @default("active") // active | completed | paused | archived
+  targetDate  DateTime?
+  createdById String // Coach
+  aiGenerated Boolean   @default(false)
+  aiPrompt    String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  createdBy    User           @relation("DevPlanCreator", fields: [createdById], references: [id])
+  community RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("DevPlanCreator", fields: [createdById], references: [id])
 
   @@index([communityId, memberId])
   @@index([status])
@@ -6184,26 +6219,26 @@ model DevelopmentPlan {
 
 /// 📅 Campaigns de evaluacion (SEI re-assessments periodicos, mood pulse, etc.)
 model AssessmentCampaign {
-  id              String         @id @default(cuid())
+  id              String    @id @default(cuid())
   communityId     String
   name            String
-  description     String?        @db.Text
-  assessmentType  String         // SEI | MoodPulse | Custom
-  targetMemberIds String[]       // Vacio = todos los miembros
+  description     String?   @db.Text
+  assessmentType  String // SEI | MoodPulse | Custom
+  targetMemberIds String[] // Vacio = todos los miembros
   scheduledAt     DateTime
   dueAt           DateTime?
-  cycleId         String?        // Para agrupar re-assessments (Q1 2026, etc.)
-  status          String         @default("scheduled") // scheduled | active | completed | cancelled
-  sentCount       Int            @default(0)
-  responseCount   Int            @default(0)
-  reminderDays    Int[]          @default([3, 7])
+  cycleId         String? // Para agrupar re-assessments (Q1 2026, etc.)
+  status          String    @default("scheduled") // scheduled | active | completed | cancelled
+  sentCount       Int       @default(0)
+  responseCount   Int       @default(0)
+  reminderDays    Int[]     @default([3, 7])
   lastReminderAt  DateTime?
   createdById     String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  community       RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  createdBy       User           @relation("CampaignCreator", fields: [createdById], references: [id])
+  community RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("CampaignCreator", fields: [createdById], references: [id])
 
   @@index([communityId, status])
   @@index([scheduledAt])
@@ -6212,22 +6247,22 @@ model AssessmentCampaign {
 
 /// 🚨 Alertas inteligentes detectadas por IA (EQ drops, mood bajo, anomalias)
 model WorkspaceAlert {
-  id           String         @id @default(cuid())
-  communityId  String
-  memberId     String?        // Alerta sobre miembro especifico (opcional)
-  severity     String         // info | warning | critical
-  type         String         // eq_drop | mood_low | anomaly | inactive | goal_overdue | benchmark_ready
-  title        String
-  message      String         @db.Text
-  actionSuggestion String?    @db.Text
-  metadata     Json?
-  resolvedAt   DateTime?
-  resolvedById String?
-  dismissedAt  DateTime?
-  createdAt    DateTime       @default(now())
+  id               String    @id @default(cuid())
+  communityId      String
+  memberId         String? // Alerta sobre miembro especifico (opcional)
+  severity         String // info | warning | critical
+  type             String // eq_drop | mood_low | anomaly | inactive | goal_overdue | benchmark_ready
+  title            String
+  message          String    @db.Text
+  actionSuggestion String?   @db.Text
+  metadata         Json?
+  resolvedAt       DateTime?
+  resolvedById     String?
+  dismissedAt      DateTime?
+  createdAt        DateTime  @default(now())
 
-  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  resolvedBy   User?          @relation("AlertResolver", fields: [resolvedById], references: [id])
+  community  RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  resolvedBy User?         @relation("AlertResolver", fields: [resolvedById], references: [id])
 
   @@index([communityId, resolvedAt])
   @@index([severity, type])
@@ -6236,22 +6271,22 @@ model WorkspaceAlert {
 
 /// 🔑 Acceso del cliente externo al workspace (readonly portal)
 model ClientAccess {
-  id           String         @id @default(cuid())
+  id           String    @id @default(cuid())
   communityId  String
   clientEmail  String
   clientName   String?
-  accessToken  String         @unique @default(cuid())
-  permissions  Json           @default("{}")
+  accessToken  String    @unique @default(cuid())
+  permissions  Json      @default("{}")
   // permissions: { viewDashboard, viewBenchmark, viewIndividuals, viewNotes, exportPdf }
   expiresAt    DateTime?
   lastAccessAt DateTime?
-  accessCount  Int            @default(0)
+  accessCount  Int       @default(0)
   revokedAt    DateTime?
   createdById  String
-  createdAt    DateTime       @default(now())
+  createdAt    DateTime  @default(now())
 
-  community    RowiCommunity  @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  createdBy    User           @relation("ClientAccessCreator", fields: [createdById], references: [id])
+  community RowiCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("ClientAccessCreator", fields: [createdById], references: [id])
 
   @@index([communityId])
   @@index([accessToken])
@@ -6260,3 +6295,360 @@ model ClientAccess {
 
 // Audit log usa ActivityLog existente - no se duplica
 // Ver linea ~2615 model ActivityLog
+
+// =============================================================================
+// 📊 VITAL SIGNS (Emotional Budgeting) — Six Seconds framework
+// =============================================================================
+// See docs/EMOTIONAL_BUDGETING.md for full context.
+// Five frameworks hosted: Vital Signs, Pulse Points, KCG (via EqSnapshot),
+// Brain Talents (via TalentSnapshot), ROWIIA (the observability layer itself).
+
+/// 🩺 VitalSignsAssessment — one measurement instance (OVS/TVS/LVS/FVS/native/continuous).
+model VitalSignsAssessment {
+  id             String   @id @default(cuid())
+  communityId    String?
+  scope          String // OVS | TVS | LVS | FVS | NATIVE_SURVEY | CONTINUOUS
+  subjectType    String // org | team | leader | family | individual
+  subjectId      String // organizationId | teamId | userId | familyOwnerId
+  source         String // csv_upload | native | inferred | hybrid
+  csvUploadId    String?
+  periodStart    DateTime
+  periodEnd      DateTime
+  sampleSize     Int      @default(0)
+  weightsVersion String   @default("v0-hypothesis")
+  dataset        String? // "production" | "sample" | "test"
+  status         String   @default("draft") // draft | active | completed | archived
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  responses VitalSignsResponse[]
+  scores    VitalSignsScore[]
+  debriefs  DebriefSession[]
+
+  @@index([subjectType, subjectId])
+  @@index([scope, status])
+  @@index([communityId])
+  @@map("vital_signs_assessment")
+}
+
+/// 📝 VitalSignsResponse — one respondent's raw answers.
+model VitalSignsResponse {
+  id              String   @id @default(cuid())
+  assessmentId    String
+  respondentId    String? // null if anonymous external respondent
+  respondentRole  String // self | manager | peer | report | external | anonymous
+  rawItems        Json // q1..q36 raw answers
+  itemScoresST    Json? // standardized
+  outcomesRaw     Json? // outcome scores if collected
+  consentSnapshot Json? // copy of consents at response time
+  createdAt       DateTime @default(now())
+
+  assessment VitalSignsAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  respondent User?                @relation("VsResponseRespondent", fields: [respondentId], references: [id], onDelete: SetNull)
+
+  @@index([assessmentId])
+  @@index([respondentId])
+  @@map("vital_signs_response")
+}
+
+/// 📈 VitalSignsScore — aggregated score per dimension.
+model VitalSignsScore {
+  id              String   @id @default(cuid())
+  assessmentId    String
+  dimension       String // driver code | pulse point code | outcome code
+  level           String // driver | pulse_point | outcome | engagement_index
+  scoreMean       Float
+  scoreSD         Float?
+  scorePercentile Float?
+  benchmarkDelta  Float? // delta vs Six Seconds Network norm
+  cohesionBand    String? // low | mid | high (derived from SD)
+  strengthBand    String? // bottom_quartile | mid | top_quartile
+  n               Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  assessment VitalSignsAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId, level])
+  @@index([dimension])
+  @@map("vital_signs_score")
+}
+
+/// 🔮 PulsePointInference — what BE2GROW predicted for this subject.
+model PulsePointInference {
+  id             String   @id @default(cuid())
+  subjectUserId  String?
+  subjectTeamId  String?
+  subjectOrgId   String?
+  pulsePointCode String
+  inferredScore  Float
+  competencyComp Float?
+  talentComp     Float?
+  signalComp     Float?
+  weightsVersion String   @default("v0-hypothesis")
+  snapshotRef    String? // eqSnapshot.id reference for traceability
+  inferredAt     DateTime @default(now())
+
+  subject      User?                   @relation("VsInferenceSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  groundTruths PulsePointGroundTruth[]
+
+  @@index([subjectUserId, pulsePointCode])
+  @@index([subjectTeamId, pulsePointCode])
+  @@index([subjectOrgId, pulsePointCode])
+  @@index([weightsVersion])
+  @@map("pulse_point_inference")
+}
+
+/// 🎯 PulsePointGroundTruth — measured value paired with inference for calibration.
+model PulsePointGroundTruth {
+  id            String   @id @default(cuid())
+  inferenceId   String
+  source        String // OVS_CSV | TVS_CSV | LVS_CSV | NATIVE_SURVEY
+  measuredScore Float
+  measuredAt    DateTime
+  delta         Float // measured - inferred
+  createdAt     DateTime @default(now())
+
+  inference PulsePointInference @relation(fields: [inferenceId], references: [id], onDelete: Cascade)
+
+  @@index([inferenceId])
+  @@index([source])
+  @@map("pulse_point_ground_truth")
+}
+
+/// ⚖️ PulsePointWeights — versioned predictor weights for each pulse point.
+/// v0 = BE2GROW hypothesis (hardcoded in catalog.ts, used as fallback).
+/// v1+ = empirical calibration from a benchmark dataset (Pearson correlations
+///        between predictor and the pulse point's outcome family, normalized).
+/// `active=true` is the model used by the inference engine.
+model PulsePointWeights {
+  id              String   @id @default(cuid())
+  pulsePointCode  String   // e.g. "BELONGING" | "RECOGNITION" | "PURPOSE" | ...
+  version         Int      // monotonic per pulsePointCode (v0 reserved for hardcoded)
+  predictor       String   // SEI competency key | Brain Talent key | group key (e.g. "grp:focus_data")
+  weight          Float    // typically normalized correlation (-1..1)
+  sampleSize      Int?     // n of the benchmark cohort used
+  rSquared        Float?   // explanatory power if available
+  active          Boolean  @default(false)
+  notes           String?  @db.Text
+  benchmarkId     String?  // source benchmark when calibrated
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy User @relation("PulsePointWeightsCreator", fields: [createdById], references: [id])
+
+  @@unique([pulsePointCode, version, predictor])
+  @@index([pulsePointCode, version, active])
+  @@index([active])
+  @@map("pulse_point_weights")
+}
+
+/// ✅ HypothesisFeedback — human validation (the 3 highlighters: OWN / CONSIDER / REJECT).
+model HypothesisFeedback {
+  id             String   @id @default(cuid())
+  inferenceId    String?
+  assessmentId   String?
+  respondentId   String?
+  pulsePointCode String
+  verdict        String // OWN | CONSIDER | REJECT
+  comment        String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  respondent User? @relation("VsFeedbackRespondent", fields: [respondentId], references: [id], onDelete: SetNull)
+
+  @@index([pulsePointCode, verdict])
+  @@index([assessmentId])
+  @@index([respondentId])
+  @@map("hypothesis_feedback")
+}
+
+/// 🎬 DebriefSession — 7-step debrief wizard instance (OVS/TVS/LVS_M1/LVS_M2/FVS).
+model DebriefSession {
+  id            String    @id @default(cuid())
+  assessmentId  String
+  facilitatorId String? // consultant, coach, manager, or self
+  subjectUserId String?
+  scope         String // OVS | TVS | LVS_M1 | LVS_M2 | FVS
+  step          Int       @default(0) // 0..7
+  status        String    @default("scheduled") // scheduled | in_progress | completed | abandoned
+  scheduledAt   DateTime
+  completedAt   DateTime?
+  notes         String?   @db.Text
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  assessment  VitalSignsAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  facilitator User?                @relation("DebriefFacilitator", fields: [facilitatorId], references: [id], onDelete: SetNull)
+  subject     User?                @relation("DebriefSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  commitments ActionCommitment[]
+
+  @@index([assessmentId])
+  @@index([facilitatorId])
+  @@index([subjectUserId])
+  @@map("debrief_session")
+}
+
+/// 🎯 ActionCommitment — post-debrief commitment with Expectancy Theory scores.
+model ActionCommitment {
+  id             String    @id @default(cuid())
+  debriefId      String
+  ownerUserId    String
+  pulsePointCode String?
+  description    String    @db.Text
+  // Expectancy theory scores 0-100 (importance · clarity of path · believability)
+  importance     Int?
+  clarity        Int?
+  believability  Int?
+  dueDate        DateTime?
+  status         String    @default("planned") // planned | in_progress | done | abandoned
+  reviewedAt     DateTime?
+  outcome        String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  debrief DebriefSession @relation(fields: [debriefId], references: [id], onDelete: Cascade)
+  owner   User           @relation("ActionCommitmentOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@index([debriefId])
+  @@index([ownerUserId, status])
+  @@map("action_commitment")
+}
+
+/// 📡 PulsePointSignal — microsignal from app interactions, tagged with a pulse point.
+model PulsePointSignal {
+  id             String   @id @default(cuid())
+  pulsePointCode String
+  userId         String? // null for fully anonymous aggregate
+  teamId         String?
+  orgId          String?
+  source         String // challenge | self_check | micro_survey | ai_inferred | conversation | ritual | event
+  value          Float // typically 1-5 or normalized
+  evidenceRef    String? // postId, challengeId, eventId, chatId
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  user User? @relation("VsSignalUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([pulsePointCode, createdAt])
+  @@index([userId, pulsePointCode])
+  @@index([teamId])
+  @@index([orgId])
+  @@map("pulse_point_signal")
+}
+
+// =============================================================================
+// 🔒 PRIVACY · CONSENT · RESEARCH LENS · COACH MARKETPLACE
+// =============================================================================
+// GDPR floor + global compliance (PIPL, LGPD, LFPDPPP, etc).
+// See docs/EMOTIONAL_BUDGETING.md section 5 for full context.
+
+/// ✅ UserConsent — granular versioned consent.
+/// Five keys: basic_processing, analytics, research_lens, benchmarking_contribution, marketing_communications.
+/// Default opt-in is false for everything except basic_processing (required to use the product).
+model UserConsent {
+  id          String   @id @default(cuid())
+  userId      String
+  consentKey  String   // basic_processing | analytics | research_lens | benchmarking_contribution | marketing_communications
+  version     Int      @default(1)
+  granted     Boolean
+  textHash    String?  // hash of the consent text shown at grant time, so we can prove which version they accepted
+  locale      String?  // language shown at grant time
+  grantedAt   DateTime @default(now())
+  revokedAt   DateTime?
+  ipAddress   String?
+  userAgent   String?  @db.Text
+
+  user        User     @relation("UserConsentOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consentKey])
+  @@index([consentKey, granted])
+  @@map("user_consent")
+}
+
+/// 🕵️ ResearchAccessAudit — immutable log of every research-lens access.
+/// Visible to the affected user on demand (GDPR Art. 15).
+/// Append-only; no DELETE permitted at the application layer.
+model ResearchAccessAudit {
+  id            String   @id @default(cuid())
+  viewerUserId  String
+  subjectUserId String?
+  subjectTeamId String?
+  subjectOrgId  String?
+  action        String   // view_inference | view_csv | view_comments | export_case_study | run_calibration
+  contextPath   String   // e.g., "/research/cases/case-001"
+  reason        String?  @db.Text
+  metadata      Json?
+  at            DateTime @default(now())
+
+  viewer        User     @relation("ResearchViewer", fields: [viewerUserId], references: [id])
+  subject       User?    @relation("ResearchSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+
+  @@index([viewerUserId, at])
+  @@index([subjectUserId, at])
+  @@map("research_access_audit")
+}
+
+/// 🤝 PersonalResearchInvite — user invites their coach/mentor (or accepts an inbound invite).
+/// Direction tracks who initiated: user→coach (user shares with provider) or coach→user (provider requests access).
+/// Both directions require dual confirmation before access activates.
+model PersonalResearchInvite {
+  id            String   @id @default(cuid())
+  subjectUserId String   // the data subject (the person whose VS will be shared)
+  inviteeUserId String?  // the invited coach/mentor, if already on Rowi
+  inviteeEmail  String?  // if not yet on Rowi
+  direction     String   // user_to_coach | coach_to_user
+  serviceRole   String   // coach | mentor | facilitator | trainer | advisor
+  scope         String   // vital_signs | kcg | brain_talents | full
+  status        String   @default("pending") // pending | accepted | revoked | expired
+  invitedAt     DateTime @default(now())
+  acceptedAt    DateTime?
+  revokedAt     DateTime?
+  expiresAt     DateTime?
+  message       String?  @db.Text
+
+  subject       User     @relation("InviteSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  invitee       User?    @relation("InviteInvitee", fields: [inviteeUserId], references: [id], onDelete: SetNull)
+
+  @@index([subjectUserId, status])
+  @@index([inviteeUserId, status])
+  @@index([inviteeEmail])
+  @@map("personal_research_invite")
+}
+
+/// 🌟 CoachProfile — public marketplace listing for coaches/mentors offering services.
+/// A user becomes a marketplace coach by opting in here.
+/// Visibility is controlled by `published`; admin can verify Six Seconds certification.
+model CoachProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  displayName        String
+  headline           String?  @db.Text   // one-liner shown in directory
+  bio                String?  @db.Text
+  specialties        String[] @default([])   // e.g., ["leadership", "family", "executive"]
+  languages          String[] @default([])   // ISO codes
+  countries          String[] @default([])   // ISO country codes served
+  serviceRoles       String[] @default([])   // coach | mentor | facilitator | trainer | advisor
+  certifications     Json?    // [{type: "six_seconds_eqac", verifiedAt, expiresAt}, ...]
+  hourlyRateMin      Decimal? @db.Decimal(10, 2)
+  hourlyRateMax      Decimal? @db.Decimal(10, 2)
+  currency           String?  @default("USD")
+  photoUrl           String?
+  linkedinUrl        String?
+  websiteUrl         String?
+  acceptingClients   Boolean  @default(true)
+  published          Boolean  @default(false)
+  verifiedBySixSeconds Boolean @default(false)
+  verifiedByRowi     Boolean  @default(false)
+  ratingAvg          Float?   // average client rating
+  ratingCount        Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([published, acceptingClients])
+  @@index([verifiedBySixSeconds])
+  @@map("coach_profile")
+}

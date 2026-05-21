@@ -1,0 +1,386 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n/react";
+import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner";
+import {
+  Activity,
+  Brain,
+  Compass,
+  Loader2,
+  Sparkles,
+  Heart,
+  Target,
+  Zap,
+  TrendingUp,
+} from "lucide-react";
+
+type Band = "low" | "mid" | "high" | "unknown";
+type Quadrant = "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS" | "BALANCED";
+
+interface PulsePoint {
+  code: string;
+  driver: "TRUST" | "MOTIVATION" | "CHANGE" | "TEAMWORK" | "EXECUTION";
+  esName: string;
+  enName: string;
+  esFunction: string;
+  enFunction: string;
+  score: number | null;
+  competencyComponent: number | null;
+  talentComponent: number | null;
+  band: Band;
+  delta: number | null;
+}
+
+interface Driver {
+  code: PulsePoint["driver"];
+  esName: string;
+  enName: string;
+  esNeed: string;
+  enNeed: string;
+  score: number | null;
+  band: Band;
+  pulsePoints: PulsePoint[];
+}
+
+interface VSData {
+  ok: boolean;
+  source: "inferred" | "no-snapshot";
+  user: { name: string; email: string };
+  snapshotDate: string | null;
+  snapshotProject: string | null;
+  drivers: Driver[];
+  pulsePoints: PulsePoint[];
+  quadrant: {
+    code: Quadrant;
+    esName: string;
+    enName: string;
+    scores: Record<Exclude<Quadrant, "BALANCED">, number | null>;
+  };
+  benchmark: { mean: number; source: string };
+  coverage: { hasSei: boolean; hasTalents: boolean; seiCount: number; talentCount: number };
+}
+
+const DRIVER_STYLE: Record<Driver["code"], { accent: string; icon: typeof Heart }> = {
+  TRUST:      { accent: "text-sky-600 dark:text-sky-300",       icon: Heart },
+  MOTIVATION: { accent: "text-amber-600 dark:text-amber-300",    icon: Sparkles },
+  CHANGE:     { accent: "text-violet-600 dark:text-violet-300",  icon: TrendingUp },
+  TEAMWORK:   { accent: "text-emerald-600 dark:text-emerald-300", icon: Brain },
+  EXECUTION:  { accent: "text-rose-600 dark:text-rose-300",      icon: Target },
+};
+
+const BAND_DOT: Record<Band, string> = {
+  low: "bg-rose-500",
+  mid: "bg-amber-500",
+  high: "bg-emerald-500",
+  unknown: "bg-[var(--rowi-muted-weak)]",
+};
+
+const BAND_RING: Record<Band, string> = {
+  low: "ring-rose-300/60",
+  mid: "ring-amber-300/60",
+  high: "ring-emerald-300/60",
+  unknown: "ring-transparent",
+};
+
+interface CheckIn {
+  ok: boolean;
+  pulsePointCode?: string;
+  driver?: string;
+  ageDays?: number | null;
+  question?: string | null;
+}
+
+export default function VitalSignsPage() {
+  const router = useRouter();
+  const { t, locale } = useI18n();
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<VSData | null>(null);
+  const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
+  const [checkInValue, setCheckInValue] = useState(3);
+  const [checkInSaving, setCheckInSaving] = useState(false);
+  const [checkInDone, setCheckInDone] = useState(false);
+
+  const lang = locale === "en" ? "en" : "es";
+
+  useEffect(() => {
+    fetch("/api/vital-signs/me")
+      .then((r) => r.json())
+      .then((json) => setData(json))
+      .catch((e) => console.error("vital-signs load error:", e))
+      .finally(() => setLoading(false));
+
+    fetch(`/api/vital-signs/check-in?locale=${locale}`)
+      .then((r) => r.json())
+      .then(setCheckIn)
+      .catch(() => {});
+  }, [locale]);
+
+  async function submitCheckIn() {
+    if (!checkIn?.pulsePointCode) return;
+    setCheckInSaving(true);
+    try {
+      await fetch("/api/vital-signs/signal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pulsePointCode: checkIn.pulsePointCode,
+          source: "self_check",
+          value: checkInValue,
+        }),
+      });
+      setCheckInDone(true);
+    } finally {
+      setCheckInSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center gap-3 text-[var(--rowi-muted)]">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>{t("vs.loading", "Calculando tus Vital Signs...")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const noData =
+    !data ||
+    data.ok === false ||
+    !data.coverage ||
+    data.source === "no-snapshot" ||
+    !data.coverage.hasSei;
+
+  return (
+    <div className="space-y-6 p-6">
+      <ConsentRefreshBanner />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] flex items-center justify-center shadow-md">
+            <Activity className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-[var(--rowi-foreground)] tracking-tight">
+              {t("vs.title", "Mis Vital Signs")}
+            </h1>
+            <p className="text-xs text-[var(--rowi-muted)]">
+              {t("vs.subtitle", "Tu perfil de los 5 drivers y 15 pulse points del modelo Six Seconds")}
+            </p>
+          </div>
+        </div>
+        {data?.snapshotProject && (
+          <span className="rowi-chip">{data.snapshotProject}</span>
+        )}
+      </div>
+
+      {noData ? (
+        <div className="rowi-card text-center py-12">
+          <Compass className="w-12 h-12 mx-auto mb-4 text-[var(--rowi-muted-weak)]" />
+          <h2 className="text-base font-semibold text-[var(--rowi-foreground)] mb-2">
+            {t("vs.noData", "Aún no podemos calcular tus Vital Signs")}
+          </h2>
+          <p className="text-sm text-[var(--rowi-muted)] mb-6 max-w-md mx-auto">
+            {t("vs.noDataDesc", "Para inferir tus 15 pulse points necesitamos primero un SEI Assessment de Six Seconds.")}
+          </p>
+          <button onClick={() => router.push("/hub/settings")} className="rowi-btn-primary">
+            {t("vs.linkSEI", "Vincular SEI Assessment")}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Intelligent check-in */}
+          {checkIn?.question && !checkInDone && (
+            <div className="rowi-card bg-gradient-to-br from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5 border-[var(--rowi-primary)]/20">
+              <div className="text-xs text-[var(--rowi-muted)] uppercase tracking-wide mb-2">
+                {t("vs.checkIn.title", "Check-in semanal · 1 pregunta")}
+              </div>
+              <p className="text-base font-medium text-[var(--rowi-foreground)] mb-4">
+                {checkIn.question}
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setCheckInValue(v)}
+                      className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                        checkInValue === v
+                          ? "bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] text-white"
+                          : "bg-[var(--rowi-card-elev)] text-[var(--rowi-foreground)] hover:opacity-80"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-[var(--rowi-muted-weak)]">
+                  {t("vs.checkIn.scale", "1 = nada · 5 = mucho")}
+                </span>
+                <button
+                  onClick={submitCheckIn}
+                  disabled={checkInSaving}
+                  className="rowi-btn-primary ml-auto disabled:opacity-50"
+                >
+                  {checkInSaving ? "..." : t("vs.checkIn.send", "Enviar")}
+                </button>
+              </div>
+            </div>
+          )}
+          {checkInDone && (
+            <div className="rowi-card bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30">
+              <p className="text-sm text-emerald-900 dark:text-emerald-100">
+                {t("vs.checkIn.thanks", "Gracias. Tu lectura quedó registrada como microsignal.")}
+              </p>
+            </div>
+          )}
+
+          {/* Coverage notice */}
+          <div className="rowi-card bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30">
+            <div className="flex items-start gap-3">
+              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-300 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-amber-900 dark:text-amber-100">
+                <p>{t("vs.coverage.notice", "Estos scores son una inferencia v0 desde tu perfil SEI y Brain Talents.")}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-amber-700 dark:text-amber-200/80">
+                  <span>{t("vs.coverage.seiCount", "Competencias SEI")}: {data!.coverage.seiCount}/8</span>
+                  <span>{t("vs.coverage.talentCount", "Brain Talents")}: {data!.coverage.talentCount}/18</span>
+                  <span>{t("vs.benchmark.mean", "Norma = 100")} · {t("vs.benchmark.network", "Six Seconds Network")}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quadrant */}
+          <div className="rowi-card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                {t("vs.section.quadrant", "Tu cuadrante dominante")}
+              </h3>
+              <Compass className="w-5 h-5 text-[var(--rowi-muted)]" />
+            </div>
+            <div className="text-3xl font-bold rowi-gradient-text mb-2">
+              {lang === "en" ? data!.quadrant.enName : data!.quadrant.esName}
+            </div>
+            <p className="text-sm text-[var(--rowi-muted)] mb-4">
+              {t("vs.quadrant.notice", "El cuadrante es un arquetipo dominante, no una etiqueta fija.")}
+            </p>
+            <div className="grid grid-cols-4 gap-3">
+              {(["LINTERNA", "MAPA", "BOTIQUIN", "BOTAS"] as const).map((q) => {
+                const score = data!.quadrant.scores[q];
+                const active = data!.quadrant.code === q;
+                const qLabelKey = `vs.quadrant.${q.toLowerCase()}`;
+                return (
+                  <div
+                    key={q}
+                    className={`rounded-xl p-3 border transition-colors ${
+                      active
+                        ? "bg-gradient-to-br from-[var(--rowi-primary)]/10 to-[var(--rowi-secondary)]/10 border-[var(--rowi-primary)]/40"
+                        : "bg-[var(--rowi-card-elev)] border-[var(--rowi-card-border)]"
+                    }`}
+                  >
+                    <div className="text-xs text-[var(--rowi-muted)] mb-1">{t(qLabelKey, q)}</div>
+                    <div className="text-base font-semibold text-[var(--rowi-foreground)]">
+                      {score?.toFixed(1) ?? "—"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Drivers */}
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-3">
+              {t("vs.section.drivers", "Los 5 drivers")}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+              {data!.drivers.map((d) => {
+                const style = DRIVER_STYLE[d.code];
+                const Icon = style.icon;
+                return (
+                  <div key={d.code} className={`rowi-card ring-1 ${BAND_RING[d.band]}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <Icon className={`w-5 h-5 ${style.accent}`} />
+                      <span className={`w-2 h-2 rounded-full ${BAND_DOT[d.band]}`} />
+                    </div>
+                    <div className="text-2xl font-bold text-[var(--rowi-foreground)] mb-1">
+                      {d.score?.toFixed(1) ?? "—"}
+                    </div>
+                    <div className="text-sm font-medium text-[var(--rowi-foreground)]">
+                      {lang === "en" ? d.enName : d.esName}
+                    </div>
+                    <div className="text-xs text-[var(--rowi-muted)] mt-1 line-clamp-2">
+                      {lang === "en" ? d.enNeed : d.esNeed}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Pulse Points grouped by driver */}
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--rowi-foreground)] mb-3">
+              {t("vs.section.pulsePoints", "Los 15 pulse points")}
+            </h3>
+            <div className="space-y-3">
+              {data!.drivers.map((d) => {
+                const style = DRIVER_STYLE[d.code];
+                return (
+                  <div key={d.code} className="rowi-card">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`w-2 h-2 rounded-full ${BAND_DOT[d.band]}`} />
+                      <span className={`text-sm font-medium ${style.accent}`}>
+                        {lang === "en" ? d.enName : d.esName}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {d.pulsePoints.map((pp) => {
+                        const ppKey = `vs.pp.${pp.code.split("_").slice(1).join("_").toLowerCase()}`;
+                        const fallback = lang === "en" ? pp.enName : pp.esName;
+                        return (
+                          <div
+                            key={pp.code}
+                            className={`rounded-xl p-3 border bg-[var(--rowi-card-elev)] border-[var(--rowi-card-border)] ring-1 ${BAND_RING[pp.band]}`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium text-[var(--rowi-foreground)]">
+                                {t(ppKey, fallback)}
+                              </span>
+                              <span className="text-base font-semibold text-[var(--rowi-foreground)]">
+                                {pp.score?.toFixed(1) ?? "—"}
+                              </span>
+                            </div>
+                            <div className="text-xs text-[var(--rowi-muted)] line-clamp-1 mb-2">
+                              {lang === "en" ? pp.enFunction : pp.esFunction}
+                            </div>
+                            {pp.delta !== null && (
+                              <div className="text-xs text-[var(--rowi-muted)]">
+                                {pp.delta > 0 ? "+" : ""}
+                                {pp.delta.toFixed(1)}{" "}
+                                <span className="text-[var(--rowi-muted-weak)]">
+                                  {pp.delta > 1
+                                    ? t("vs.delta.above", "Por encima")
+                                    : pp.delta < -1
+                                    ? t("vs.delta.below", "Por debajo")
+                                    : t("vs.delta.aligned", "En la norma")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

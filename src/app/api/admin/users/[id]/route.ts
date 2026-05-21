@@ -86,6 +86,39 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       if (body.planId) data.planId = body.planId;
       if (body.planExpiresAt) data.planExpiresAt = new Date(body.planExpiresAt);
       if (body.primaryTenantId) data.primaryTenantId = body.primaryTenantId;
+      if (body.researchAccessLevel !== undefined) {
+        const allowed = [
+          "none",
+          "founder",
+          "scientific_lead",
+          "rowi_team",
+          "six_seconds_team",
+          "invited_personal",
+          "invited_observer",
+        ];
+        if (!allowed.includes(body.researchAccessLevel)) {
+          return NextResponse.json(
+            { ok: false, error: "Invalid researchAccessLevel" },
+            { status: 400 },
+          );
+        }
+        if (user.researchAccessLevel !== body.researchAccessLevel) {
+          await prisma.researchAccessAudit.create({
+            data: {
+              viewerUserId: actor.id,
+              subjectUserId: user.id,
+              action: "grant_role",
+              contextPath: `/hub/admin/users/${user.id}`,
+              reason: `researchAccessLevel changed via admin UI`,
+              metadata: {
+                previousLevel: user.researchAccessLevel,
+                newLevel: body.researchAccessLevel,
+              },
+            },
+          });
+        }
+        data.researchAccessLevel = body.researchAccessLevel;
+      }
     }
 
     Object.keys(data).forEach((k) => data[k] === undefined && delete data[k]);

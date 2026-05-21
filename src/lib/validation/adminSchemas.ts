@@ -75,6 +75,17 @@ export const userUpdateSchema = z.object({
   planId: idSchema.optional().nullable(),
   allowAI: z.boolean().optional(),
   active: z.boolean().optional(),
+  researchAccessLevel: z
+    .enum([
+      "none",
+      "founder",
+      "scientific_lead",
+      "rowi_team",
+      "six_seconds_team",
+      "invited_personal",
+      "invited_observer",
+    ])
+    .optional(),
   organizationId: idSchema.optional().nullable(),
   hubId: idSchema.optional().nullable(),
   orgRole: z.enum(["MEMBER", "ADMIN", "OWNER"]).optional(),

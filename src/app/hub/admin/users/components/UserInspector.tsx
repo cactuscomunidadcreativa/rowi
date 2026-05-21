@@ -201,6 +201,38 @@ export default function UserInspector({
                   )}
                 </select>
               </div>
+              <div className="col-span-2">
+                <label className="text-xs text-gray-500">
+                  {t("admin.users.inspector.researchAccess", "Acceso a research lens")}
+                </label>
+                <select
+                  value={user.researchAccessLevel || "none"}
+                  onChange={(e) =>
+                    setUser({ ...user, researchAccessLevel: e.target.value })
+                  }
+                  className="w-full border rounded-md h-8"
+                >
+                  {[
+                    "none",
+                    "founder",
+                    "scientific_lead",
+                    "rowi_team",
+                    "six_seconds_team",
+                    "invited_personal",
+                    "invited_observer",
+                  ].map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  {t(
+                    "admin.users.inspector.researchAccessHint",
+                    "Define qué datos de research puede ver este usuario. Cada cambio queda registrado en ResearchAccessAudit.",
+                  )}
+                </p>
+              </div>
             </div>
             <div className="flex justify-between text-sm pt-2">
               <label className="flex items-center gap-2">

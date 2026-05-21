@@ -237,6 +237,7 @@ export async function PATCH(req: NextRequest) {
       planId,
       allowAI,
       active,
+      researchAccessLevel,
       organizationId,
       hubId,
       orgRole,
@@ -250,6 +251,7 @@ export async function PATCH(req: NextRequest) {
         id: true,
         primaryTenantId: true,
         organizationRole: true,
+        researchAccessLevel: true,
       },
     });
 
@@ -288,6 +290,12 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // 🔬 researchAccessLevel: solo SuperAdmin puede cambiarlo, y se audita
+    const researchAccessChange =
+      researchAccessLevel !== undefined &&
+      adminUser.isSuperAdmin &&
+      researchAccessLevel !== targetUser.researchAccessLevel;
+
     // 1️⃣ Actualizar datos básicos del usuario (email ya validado por Zod)
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -299,12 +307,29 @@ export async function PATCH(req: NextRequest) {
         ...(planId !== undefined && { planId: planId || null }),
         ...(allowAI !== undefined && { allowAI }),
         ...(active !== undefined && { active }),
+        ...(researchAccessLevel !== undefined && adminUser.isSuperAdmin && { researchAccessLevel }),
       },
       include: {
         plan: { select: { id: true, name: true, priceUsd: true } },
         primaryTenant: { select: { id: true, name: true } },
       },
     });
+
+    if (researchAccessChange) {
+      await prisma.researchAccessAudit.create({
+        data: {
+          viewerUserId: adminUser.id,
+          subjectUserId: id,
+          action: "grant_role",
+          contextPath: "/api/admin/users",
+          reason: "researchAccessLevel changed via admin UI",
+          metadata: {
+            previousLevel: targetUser.researchAccessLevel,
+            newLevel: researchAccessLevel,
+          },
+        },
+      });
+    }
 
     // 2️⃣ Manejar membresía de organización
     if (organizationId !== undefined) {

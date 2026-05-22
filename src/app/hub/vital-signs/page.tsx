@@ -120,6 +120,7 @@ interface ContextCard {
     enTagline: string;
     emoji: string;
   } | null;
+  outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
 interface MultiContextData {
@@ -667,6 +668,25 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
                   </span>
                 </div>
               )}
+            </div>
+          )}
+          {(card.scope === "org" || card.scope === "world") && card.outcomes.length > 0 && (
+            <div className="pt-2 border-t border-[var(--rowi-card-border)]">
+              <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)] mb-1.5">
+                {t("vs.multiCtx.outcomes.title", "4 outcomes del OVS")}
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {card.outcomes.map((o) => (
+                  <div key={o.code} className="text-xs">
+                    <div className="text-[var(--rowi-muted)] truncate">
+                      {lang === "en" ? o.enName : o.esName}
+                    </div>
+                    <div className="font-semibold text-[var(--rowi-foreground)]">
+                      {o.scoreMean?.toFixed(1) ?? "—"}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </>

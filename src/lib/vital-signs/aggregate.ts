@@ -23,9 +23,11 @@ import {
 } from "./calculate";
 import {
   DRIVERS,
+  OVS_OUTCOMES,
   PULSE_POINTS,
   type BrainTalentKey,
   type DriverCode,
+  type OvsOutcomeCode,
   type PulsePointCode,
   type Quadrant,
 } from "./catalog";
@@ -80,6 +82,13 @@ export interface AggregatedDriver {
   n: number;
 }
 
+export interface AggregatedOutcome {
+  code: OvsOutcomeCode;
+  esName: string;
+  enName: string;
+  scoreMean: number | null;
+}
+
 export interface AggregateResult {
   ok: true;
   scope: AggregateScope;
@@ -96,6 +105,12 @@ export interface AggregateResult {
   overallMean: number | null;
   /** Cuadrante dominante del agregado (Map / Lantern / First Aid / Boots). */
   dominantQuadrant: Quadrant | null;
+  /**
+   * Proyección de los 4 OVS outcomes (Future Success / Customer Focus /
+   * Productivity / Retention) calculados como media de los drivers
+   * relacionados según el modelo Six Seconds.
+   */
+  outcomes: AggregatedOutcome[];
 }
 
 const N_MIN = 5;
@@ -173,7 +188,28 @@ function suppressed(
     engagementIndex: null,
     overallMean: null,
     dominantQuadrant: null,
+    outcomes: [],
   };
+}
+
+function computeOutcomes(drivers: AggregatedDriver[]): AggregatedOutcome[] {
+  const driverMean = new Map<DriverCode, number>();
+  for (const d of drivers) {
+    if (d.scoreMean !== null) driverMean.set(d.code, d.scoreMean);
+  }
+  return OVS_OUTCOMES.map((o) => {
+    const xs: number[] = [];
+    for (const dc of o.relatedDrivers) {
+      const v = driverMean.get(dc);
+      if (typeof v === "number") xs.push(v);
+    }
+    return {
+      code: o.code,
+      esName: o.esName,
+      enName: o.enName,
+      scoreMean: xs.length > 0 ? round1(mean(xs)) : null,
+    };
+  });
 }
 
 /**
@@ -343,5 +379,6 @@ export async function aggregateInferredVitalSigns(args: {
     engagementIndex,
     overallMean: round1(overallMean),
     dominantQuadrant: dominantQuadrantOf(drivers),
+    outcomes: computeOutcomes(drivers),
   };
 }

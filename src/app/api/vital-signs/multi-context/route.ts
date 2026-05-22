@@ -45,6 +45,7 @@ interface ContextCard {
     enTagline: string;
     emoji: string;
   } | null;
+  outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
 function toCard(r: AggregateResult, slug?: string): ContextCard {
@@ -86,6 +87,7 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
           emoji: arch.emoji,
         }
       : null,
+    outcomes: r.outcomes,
   };
 }
 

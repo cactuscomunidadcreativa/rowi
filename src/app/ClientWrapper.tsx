@@ -17,9 +17,14 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
         <ThemeToggle />
       </div>
 
-      {/* 🔹 Contenido principal */}
+      {/* 🔹 Contenido principal — padding-top compensa banner pre-launch + navbar fixed */}
       <div className="min-h-screen transition-colors bg-[var(--rowi-bg)] text-[var(--rowi-fg)]">
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <main
+          className="mx-auto max-w-6xl px-4 pb-6"
+          style={{ paddingTop: "calc(4rem + var(--banner-height, 0px) + 1.5rem)" }}
+        >
+          {children}
+        </main>
       </div>
 
       {/* 💬 Chat flotante Rowi Coach (disponible globalmente) */}

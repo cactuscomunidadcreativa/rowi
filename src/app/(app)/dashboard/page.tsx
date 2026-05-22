@@ -27,6 +27,8 @@ import { EqTotalBar } from "@/components/metrics/EqTotalBar";
 import { PursuitsBars } from "@/components/metrics/PursuitsBars";
 import { MoodChip } from "@/components/dashboard/MoodChip";
 import { TalentCluster } from "@/components/talents/TalentCluster";
+import { BRAIN_TALENTS } from "@/domains/eq/lib/dictionary";
+import type { BrainTalentKey } from "@/domains/eq/lib/dictionary";
 import OutcomesPanel from "@/components/outcomes/OutcomesPanel";
 import OverallSummary from "@/components/outcomes/OverallSummary";
 import CoachPanel from "@/components/coach/CoachPanel";
@@ -235,6 +237,13 @@ const translations = {
     previous: "Precedente",
   },
 };
+
+/** Resuelve el label localizado de un Brain Talent (lookup en BRAIN_TALENTS). */
+function talentLabel(k: string, lang: string): string {
+  const found = BRAIN_TALENTS[k as BrainTalentKey];
+  if (!found) return k;
+  return lang === "en" ? found.labelEN : found.labelES;
+}
 
 export default function ClientDashboard() {
   const { lang } = useI18n();
@@ -534,7 +543,7 @@ export default function ClientDashboard() {
             talents={Object.entries(base.eq?.talents?.focus || {})
               .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
-                label: k,
+                label: talentLabel(k, lang),
                 value: toPercentOf135(typeof v === "number" ? v : 0),
                 raw: typeof v === "number" ? v : null,
               }))}
@@ -546,7 +555,7 @@ export default function ClientDashboard() {
             talents={Object.entries(base.eq?.talents?.decisions || {})
               .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
-                label: k,
+                label: talentLabel(k, lang),
                 value: toPercentOf135(typeof v === "number" ? v : 0),
                 raw: typeof v === "number" ? v : null,
               }))}
@@ -558,7 +567,7 @@ export default function ClientDashboard() {
             talents={Object.entries(base.eq?.talents?.drive || {})
               .filter(([k]) => k.replace(/[\s_]/g, "").toLowerCase() !== "brainagility")
               .map(([k, v]) => ({
-                label: k,
+                label: talentLabel(k, lang),
                 value: toPercentOf135(typeof v === "number" ? v : 0),
                 raw: typeof v === "number" ? v : null,
               }))}

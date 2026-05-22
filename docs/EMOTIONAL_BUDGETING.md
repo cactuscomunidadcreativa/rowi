@@ -1,6 +1,12 @@
 # Emotional Budgeting on Rowi — Project Context
 
-**Version:** v0.2 (planning) · **Date:** 2026-05-20 · **Owner:** Eduardo González (eduardo@cactuscomunidadcreativa.com) · **Scientific lead:** Joshua Freedman (Six Seconds)
+**Version:** v0.3 (planning) · **Date:** 2026-05-21 · **Owner:** Eduardo González (eduardo@cactuscomunidadcreativa.com) · **Scientific lead:** Joshua Freedman (Six Seconds)
+
+> **ROWIIA opera dos productos sobre el mismo stack:**
+> 1. **Emotional Budgeting** (este documento) — sistema personal / equipo / organización.
+> 2. **EmoPower Schools** ([`EMOPOWER_SCHOOLS.md`](./EMOPOWER_SCHOOLS.md)) — sistema escolar / sistémico, en alianza Six Seconds + Brain Up Ecuador.
+>
+> El mapa de integración entre ambos vive en [`ROWIIA_INTEGRATED_SCOPE.md`](./ROWIIA_INTEGRATED_SCOPE.md). Lectura obligatoria antes de tomar decisiones que afecten a los dos productos (multi-tenancy, lentes, calibración, models compartidos).
 
 This document is the single source of truth for the Emotional Budgeting product line on Rowi. It exists so any new contributor (engineer, designer, lawyer, scientific advisor, investor) can pick up the project in six months without losing context. Update the version and date when meaningful changes happen.
 

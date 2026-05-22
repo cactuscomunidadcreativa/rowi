@@ -135,6 +135,35 @@ Key principles:
 
 Full writeup: `docs/EMOTIONAL_BUDGETING.md`.
 
+### EmoPower Schools (segundo producto sobre el mismo stack)
+
+ROWIIA opera también **EmoPower Schools** en alianza Six Seconds + Brain
+Up Ecuador. Es un programa SEL de 12 meses para sistemas educativos —
+mismo stack, mismo modelo Six Seconds, distinto objeto medido
+(institución educativa en vez de persona/empresa).
+
+Componentes nuevos respecto a Emotional Budgeting:
+- **EVS (Education Vital Signs)** — clima escolar institucional (4 dim:
+  seguridad, conexión, pertenencia, propósito). Es agregado, no
+  individual. Se aplica en 3 olas durante el año.
+- **Ciclo mensual del Quality Coach** — semana 1 observación de aula,
+  semana 2 devolución 1:1, semana 3 comunidad de práctica, semana 4
+  supervisión Brain Up. Es el corazón operativo del programa.
+- **Rúbrica de aula** — 3 dimensiones (apertura emocional, conexión,
+  transferencia) × escala 1-4 con anclajes conductuales.
+- **Journal del estudiante** — privado del estudiante. El colegio NO lo
+  ve. Crisis keyword detection escala al DECE + línea de ayuda.
+- **Roles nuevos:** Quality Coach (especialización del lente coach),
+  Director, Coord SEL, Brain Up team, MINEDUC / autoridades.
+- **Tenancy:** colegio = `Tenant`. Distrito / MINEDUC se modela vía
+  `SuperHub` o nuevo `EducationalSystem` que agrupa Tenants.
+
+Plan MVP/v2/v3 detallado en `docs/EMOPOWER_SCHOOLS.md` y mapa de
+integración con Emotional Budgeting en `docs/ROWIIA_INTEGRATED_SCOPE.md`.
+**Status:** scope documentado, implementación no iniciada — pendiente de
+aprobación de las 5 decisiones de arquitectura en sección 5 del scope
+integrado.
+
 ### Email locale chain
 
 Every transactional email picks recipient's `preferredLang` →

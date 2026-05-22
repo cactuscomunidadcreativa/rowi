@@ -4984,6 +4984,7 @@
   "vs.checkIn.thanks": "Thank you. Your reading was recorded as a microsignal.",
   "vs.multiCtx.inferenceNotice": "The following aggregates are a v0 inference from member SEI + Brain Talents, not measured official OVS / TVS. The N ≥ 5 privacy rule hides any context with fewer than 5 profiles.",
   "vs.multiCtx.outcomes.title": "4 OVS outcomes",
+  "vs.multiCtx.viewCapital": "View full emotional capital",
   "vs.multiCtx.disclaimer": "v0 inference — not an official OVS / TVS",
   "vs.multiCtx.world.title": "Rowi humanity (Rowiverse OVS)",
   "vs.multiCtx.world.subtitle": "How the whole Rowi base looks today: the 'world' context you belong to even without an org of your own.",

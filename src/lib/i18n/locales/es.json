@@ -4984,6 +4984,7 @@
   "vs.checkIn.thanks": "Gracias. Tu lectura quedó registrada como microsignal.",
   "vs.multiCtx.inferenceNotice": "Los siguientes agregados son una inferencia v0 desde los SEI + Brain Talents de los miembros, no son OVS / TVS oficiales medidos. La regla de privacidad N ≥ 5 oculta cualquier contexto con menos de 5 perfiles.",
   "vs.multiCtx.outcomes.title": "4 outcomes del OVS",
+  "vs.multiCtx.viewCapital": "Ver capital emocional completo",
   "vs.multiCtx.disclaimer": "Inferencia v0 — no es OVS / TVS oficial",
   "vs.multiCtx.world.title": "La humanidad Rowi (OVS Rowiverse)",
   "vs.multiCtx.world.subtitle": "Cómo se ve hoy toda la base Rowi: el contexto 'mundo' al que perteneces aunque no tengas org propia.",

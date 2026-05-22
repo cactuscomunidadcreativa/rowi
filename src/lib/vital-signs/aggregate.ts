@@ -25,11 +25,13 @@ import {
   DRIVERS,
   OVS_OUTCOMES,
   PULSE_POINTS,
+  SEI_COMPETENCIES,
   type BrainTalentKey,
   type DriverCode,
   type OvsOutcomeCode,
   type PulsePointCode,
   type Quadrant,
+  type SeiKey,
 } from "./catalog";
 import { cohesionBand, engagementIndexFromDriverMean } from "./engagement";
 
@@ -89,6 +91,15 @@ export interface AggregatedOutcome {
   scoreMean: number | null;
 }
 
+export interface AggregatedSei {
+  key: SeiKey;
+  esName: string;
+  enName: string;
+  pursuit: "know" | "choose" | "give";
+  scoreMean: number | null;
+  n: number;
+}
+
 export interface AggregateResult {
   ok: true;
   scope: AggregateScope;
@@ -126,6 +137,12 @@ export interface AggregateResult {
   orientationSecondary: Quadrant | null;
   orientationCombined: boolean;
   orientationDelta: number | null;
+  /**
+   * Media de las 8 competencias SEI (EL/RP/ACT/NE/IM/OP/EMP/NG) de los
+   * miembros del scope. Forma parte del "capital emocional" inventariable
+   * que el contexto tiene disponible.
+   */
+  seiCompetencies: AggregatedSei[];
 }
 
 const N_MIN = 5;
@@ -209,7 +226,37 @@ function suppressed(
     orientationSecondary: null,
     orientationCombined: false,
     orientationDelta: null,
+    seiCompetencies: [],
   };
+}
+
+/** Media por SEI competency a partir de los EqSnapshots crudos. */
+function computeSeiCompetencies(
+  snapshots: Array<{
+    EL: number | null;
+    RP: number | null;
+    ACT: number | null;
+    NE: number | null;
+    IM: number | null;
+    OP: number | null;
+    EMP: number | null;
+    NG: number | null;
+  }>,
+): AggregatedSei[] {
+  return SEI_COMPETENCIES.map((c) => {
+    const xs = snapshots
+      .map((s) => s[c.key])
+      .filter((v): v is number => typeof v === "number");
+    const m = xs.length > 0 ? mean(xs) : null;
+    return {
+      key: c.key,
+      esName: c.esName,
+      enName: c.enName,
+      pursuit: c.pursuit,
+      scoreMean: round1(m),
+      n: xs.length,
+    };
+  });
 }
 
 function computeOutcomes(drivers: AggregatedDriver[]): AggregatedOutcome[] {
@@ -441,5 +488,6 @@ export async function aggregateInferredVitalSigns(args: {
         orientationDelta: p.delta,
       };
     })(),
+    seiCompetencies: computeSeiCompetencies(Array.from(latestByUser.values())),
   };
 }

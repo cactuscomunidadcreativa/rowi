@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/react";
 import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner";
 import Link from "next/link";
 import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
+import ContextDetailDrawer from "@/components/vital-signs/ContextDetailDrawer";
 import {
   Activity,
   Brain,
@@ -159,6 +160,10 @@ export default function VitalSignsPage() {
   const [checkInSaving, setCheckInSaving] = useState(false);
   const [checkInDone, setCheckInDone] = useState(false);
   const [multiCtx, setMultiCtx] = useState<MultiContextData | null>(null);
+  const [detailOpen, setDetailOpen] = useState<{
+    scope: "team" | "org" | "family" | "world";
+    subjectId: string;
+  } | null>(null);
 
   const lang = locale === "en" ? "en" : "es";
 
@@ -485,6 +490,7 @@ export default function VitalSignsPage() {
                 t={t}
                 Icon={Users}
                 accent="text-emerald-600 dark:text-emerald-300"
+                onOpenDetail={(scope, subjectId) => setDetailOpen({ scope, subjectId })}
               />
               <ContextSection
                 title={t("vs.multiCtx.orgs.title", "Mis organizaciones (OVS proxy)")}
@@ -501,6 +507,7 @@ export default function VitalSignsPage() {
                 t={t}
                 Icon={Building2}
                 accent="text-violet-600 dark:text-violet-300"
+                onOpenDetail={(scope, subjectId) => setDetailOpen({ scope, subjectId })}
               />
               <ContextSection
                 title={t("vs.multiCtx.families.title", "Mi familia (FVS proxy)")}
@@ -517,6 +524,7 @@ export default function VitalSignsPage() {
                 t={t}
                 Icon={Home}
                 accent="text-rose-600 dark:text-rose-300"
+                onOpenDetail={(scope, subjectId) => setDetailOpen({ scope, subjectId })}
               />
               <ContextSection
                 title={t("vs.multiCtx.world.title", "La humanidad Rowi (OVS Rowiverse)")}
@@ -533,10 +541,20 @@ export default function VitalSignsPage() {
                 t={t}
                 Icon={Globe2}
                 accent="text-sky-600 dark:text-sky-300"
+                onOpenDetail={(scope, subjectId) => setDetailOpen({ scope, subjectId })}
               />
             </>
           )}
         </>
+      )}
+
+      {detailOpen && (
+        <ContextDetailDrawer
+          scope={detailOpen.scope}
+          subjectId={detailOpen.subjectId}
+          open={!!detailOpen}
+          onClose={() => setDetailOpen(null)}
+        />
       )}
     </div>
   );
@@ -551,6 +569,7 @@ interface ContextSectionProps {
   t: (key: string, fallback: string) => string;
   Icon: typeof Users;
   accent: string;
+  onOpenDetail: (scope: ContextCard["scope"], subjectId: string) => void;
 }
 
 function ContextSection({
@@ -562,6 +581,7 @@ function ContextSection({
   t,
   Icon,
   accent,
+  onOpenDetail,
 }: ContextSectionProps) {
   return (
     <div>
@@ -577,7 +597,14 @@ function ContextSection({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {cards.map((c) => (
-            <ContextCardItem key={`${c.scope}-${c.subjectId}`} card={c} lang={lang} t={t} accent={accent} />
+            <ContextCardItem
+              key={`${c.scope}-${c.subjectId}`}
+              card={c}
+              lang={lang}
+              t={t}
+              accent={accent}
+              onOpenDetail={onOpenDetail}
+            />
           ))}
         </div>
       )}
@@ -590,9 +617,10 @@ interface ContextCardItemProps {
   lang: "es" | "en";
   t: (key: string, fallback: string) => string;
   accent: string;
+  onOpenDetail: (scope: ContextCard["scope"], subjectId: string) => void;
 }
 
-function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
+function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardItemProps) {
   const hintKey = `vs.multiCtx.improvementHint.${card.scope}`;
   const hintFallback =
     card.scope === "team"
@@ -746,6 +774,18 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
       )}
 
       <div className="border-t border-[var(--rowi-card-border)] pt-2 mt-auto space-y-2">
+        {!card.suppressed && (
+          <button
+            onClick={() => onOpenDetail(card.scope, card.subjectId)}
+            className="flex items-center gap-2 text-xs font-medium text-[var(--rowi-primary)] hover:opacity-80 w-full"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="truncate">
+              {t("vs.multiCtx.viewCapital", "Ver capital emocional completo")}
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+          </button>
+        )}
         <Link
           href={`/hub/vital-signs/ask?scope=${card.scope}&subjectId=${card.subjectId}`}
           className="flex items-center gap-2 text-xs text-[var(--rowi-foreground)] hover:opacity-80"

@@ -111,6 +111,12 @@ export interface AggregateResult {
    * relacionados según el modelo Six Seconds.
    */
   outcomes: AggregatedOutcome[];
+  /**
+   * Orientación organizacional (Trailblazing / Expedition / Base Camp /
+   * Logistics) derivada del dominantQuadrant. Útil para describir CÓMO
+   * opera la organización agregada (no qué rol aporta una persona).
+   */
+  orientation: Quadrant | null;
 }
 
 const N_MIN = 5;
@@ -189,6 +195,7 @@ function suppressed(
     overallMean: null,
     dominantQuadrant: null,
     outcomes: [],
+    orientation: null,
   };
 }
 
@@ -380,5 +387,6 @@ export async function aggregateInferredVitalSigns(args: {
     overallMean: round1(overallMean),
     dominantQuadrant: dominantQuadrantOf(drivers),
     outcomes: computeOutcomes(drivers),
+    orientation: dominantQuadrantOf(drivers),
   };
 }

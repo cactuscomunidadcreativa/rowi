@@ -23,7 +23,7 @@ import {
   aggregateInferredVitalSigns,
   type AggregateResult,
 } from "@/lib/vital-signs/aggregate";
-import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
+import { OVS_ORIENTATIONS, ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 
 interface ContextCard {
   scope: "team" | "org" | "family" | "world";
@@ -45,6 +45,14 @@ interface ContextCard {
     enTagline: string;
     emoji: string;
   } | null;
+  orientation: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esIdentity: string;
+    enIdentity: string;
+    emoji: string;
+  } | null;
   outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
@@ -55,6 +63,7 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
   const top = ranked[0];
   const bottom = ranked[ranked.length - 1];
   const arch = r.dominantQuadrant ? ROWI_ARCHETYPES[r.dominantQuadrant] : null;
+  const orient = r.orientation ? OVS_ORIENTATIONS[r.orientation] : null;
   return {
     scope: r.scope,
     subjectId: r.subjectId,
@@ -85,6 +94,16 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
           esTagline: arch.esTagline,
           enTagline: arch.enTagline,
           emoji: arch.emoji,
+        }
+      : null,
+    orientation: orient && r.orientation
+      ? {
+          quadrant: r.orientation,
+          esName: orient.esName,
+          enName: orient.enName,
+          esIdentity: orient.esIdentity,
+          enIdentity: orient.enIdentity,
+          emoji: orient.emoji,
         }
       : null,
     outcomes: r.outcomes,

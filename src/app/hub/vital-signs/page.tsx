@@ -120,6 +120,14 @@ interface ContextCard {
     enTagline: string;
     emoji: string;
   } | null;
+  orientation: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esIdentity: string;
+    enIdentity: string;
+    emoji: string;
+  } | null;
   outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
@@ -612,7 +620,20 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
         </div>
       ) : (
         <>
-          {card.archetype && (
+          {(card.scope === "org" || card.scope === "world") && card.orientation && (
+            <div className="flex items-center gap-2 text-xs bg-[var(--rowi-card-elev)] rounded-lg p-2">
+              <span className="text-base">{card.orientation.emoji}</span>
+              <div className="min-w-0">
+                <div className="font-medium text-[var(--rowi-foreground)] truncate">
+                  {lang === "en" ? card.orientation.enName : card.orientation.esName}
+                </div>
+                <div className="text-[10px] text-[var(--rowi-muted)] truncate">
+                  {lang === "en" ? card.orientation.enIdentity : card.orientation.esIdentity}
+                </div>
+              </div>
+            </div>
+          )}
+          {(card.scope === "team" || card.scope === "family") && card.archetype && (
             <div className="flex items-center gap-2 text-xs bg-[var(--rowi-card-elev)] rounded-lg p-2">
               <span className="text-base">{card.archetype.emoji}</span>
               <div className="min-w-0">

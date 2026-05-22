@@ -41,14 +41,14 @@ export type DriverCode = "TRUST" | "MOTIVATION" | "CHANGE" | "TEAMWORK" | "EXECU
 export type Quadrant = "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
 
 /**
- * Rowi archetypes — un personaje propio para cada cuadrante del modelo
- * Six Seconds. Aterriza el arquetipo a lenguaje Rowi y abre la pregunta
- * "¿qué Rowi aportas tú en este contexto?".
+ * Rowi archetypes — el equipo de expedición. Cada cuadrante del modelo
+ * Six Seconds tiene un rol que aporta a la salida. Aterriza el arquetipo
+ * a lenguaje Rowi y abre la pregunta "¿qué Rowi aportas tú aquí?".
  *
- *   LINTERNA (Strategy + Organization, Change)   → Rowi Vigía       🔭
- *   MAPA     (Strategy + People, Motivation)     → Rowi Planeador   🗺️
+ *   LINTERNA (Strategy + Organization, Change)   → Rowi Explorador  🔭
+ *   MAPA     (Strategy + People, Motivation)     → Rowi Cartografía 🧭
  *   BOTIQUIN (Operations + People, Teamwork)     → Rowi Paramédico  🚑
- *   BOTAS    (Operations + Organization, Exec)   → Rowi Constructor 🔨
+ *   BOTAS    (Operations + Organization, Exec)   → Rowi Sherpa      🥾
  */
 export const ROWI_ARCHETYPES: Record<
   Quadrant,
@@ -62,19 +62,19 @@ export const ROWI_ARCHETYPES: Record<
   }
 > = {
   LINTERNA: {
-    esName: "Rowi Vigía",
-    enName: "Rowi Lookout",
-    esTagline: "Ve riesgos y oportunidades antes que nadie",
-    enTagline: "Spots risks and opportunities before anyone else",
+    esName: "Rowi Explorador",
+    enName: "Rowi Scout",
+    esTagline: "Va adelante, ve riesgos y oportunidades antes que nadie",
+    enTagline: "Walks ahead, spots risks and opportunities before anyone else",
     emoji: "🔭",
     i18nKey: "vs.archetype.linterna",
   },
   MAPA: {
-    esName: "Rowi Planeador",
-    enName: "Rowi Planner",
+    esName: "Rowi Cartografía",
+    enName: "Rowi Cartographer",
     esTagline: "Traza el rumbo y da sentido a dónde vamos",
     enTagline: "Charts the path and gives meaning to where we go",
-    emoji: "🗺️",
+    emoji: "🧭",
     i18nKey: "vs.archetype.mapa",
   },
   BOTIQUIN: {
@@ -86,12 +86,71 @@ export const ROWI_ARCHETYPES: Record<
     i18nKey: "vs.archetype.botiquin",
   },
   BOTAS: {
-    esName: "Rowi Constructor",
-    enName: "Rowi Builder",
-    esTagline: "Aterriza ideas y construye lo planeado",
-    enTagline: "Lands ideas and builds what was planned",
-    emoji: "🔨",
+    esName: "Rowi Sherpa",
+    enName: "Rowi Sherpa",
+    esTagline: "Conoce el terreno, carga la logística y abre el sendero",
+    enTagline: "Knows the terrain, carries logistics and opens the trail",
+    emoji: "🥾",
     i18nKey: "vs.archetype.botas",
+  },
+};
+
+/**
+ * OVS Orientations — las 4 orientaciones organizacionales del modelo Six
+ * Seconds. Mapean 1:1 con los 4 cuadrantes pero describen el modo
+ * dominante de OPERAR de una organización (no el rol individual).
+ *
+ *   LINTERNA → Trailblazing — Visionaries / disruptors
+ *   MAPA     → Expedition   — Explorers / innovators
+ *   BOTIQUIN → Base Camp    — People-centered stabilizers
+ *   BOTAS    → Logistics    — Systems / execution builders
+ *
+ * En la UI: las cards de scope org / world muestran la orientation
+ * (cómo opera la organización). Las cards de scope team / family
+ * muestran el archetype (qué rol aportas tú).
+ */
+export const OVS_ORIENTATIONS: Record<
+  Quadrant,
+  {
+    esName: string;
+    enName: string;
+    esIdentity: string;
+    enIdentity: string;
+    emoji: string;
+    i18nKey: string;
+  }
+> = {
+  LINTERNA: {
+    esName: "Apertura de Camino",
+    enName: "Trailblazing",
+    esIdentity: "Visionarios · disruptores",
+    enIdentity: "Visionaries · disruptors",
+    emoji: "🔭",
+    i18nKey: "vs.orientation.linterna",
+  },
+  MAPA: {
+    esName: "Expedición",
+    enName: "Expedition",
+    esIdentity: "Exploradores · innovadores",
+    enIdentity: "Explorers · innovators",
+    emoji: "🧭",
+    i18nKey: "vs.orientation.mapa",
+  },
+  BOTIQUIN: {
+    esName: "Campamento Base",
+    enName: "Base Camp",
+    esIdentity: "Estabilizadores centrados en las personas",
+    enIdentity: "People-centered stabilizers",
+    emoji: "🏕️",
+    i18nKey: "vs.orientation.botiquin",
+  },
+  BOTAS: {
+    esName: "Logística",
+    enName: "Logistics",
+    esIdentity: "Constructores de sistemas y ejecución",
+    enIdentity: "Systems and execution builders",
+    emoji: "🥾",
+    i18nKey: "vs.orientation.botas",
   },
 };
 

@@ -237,6 +237,59 @@ export default function LearningPage() {
         </div>
       </div>
 
+      {/* Mini-games strip */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+              {safeLang === "es" ? "Mini-games para ganar puntos" : "Mini-games to earn points"}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <Link
+              href="/learning/play/pulse-pause"
+              className="group bg-gradient-to-br from-violet-500 to-indigo-600 text-white rounded-2xl p-5 shadow-lg shadow-violet-500/20 hover:scale-[1.02] transition-transform"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <Heart className="w-6 h-6" />
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                  {safeLang === "es" ? "Six Seconds" : "Six Seconds"}
+                </span>
+              </div>
+              <h3 className="font-bold text-lg mb-1">
+                {safeLang === "es" ? "Pausa de Pulso" : "Pulse Pause"}
+              </h3>
+              <p className="text-xs text-white/80 mb-3">
+                {safeLang === "es"
+                  ? "Practica la pausa de 6 segundos antes de reaccionar. 5 escenarios · hasta 100 pts."
+                  : "Practice the 6-second pause before reacting. 5 scenarios · up to 100 pts."}
+              </p>
+              <div className="inline-flex items-center gap-1 text-xs font-semibold">
+                {safeLang === "es" ? "Jugar ahora" : "Play now"}
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </Link>
+            <div className="bg-white dark:bg-zinc-800/80 rounded-2xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 flex flex-col justify-center items-center text-center">
+              <Lock className="w-5 h-5 text-gray-400 mb-2" />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {safeLang === "es" ? "Más juegos próximamente" : "More games coming soon"}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-zinc-800/80 rounded-2xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 flex flex-col justify-center items-center text-center">
+              <Lock className="w-5 h-5 text-gray-400 mb-2" />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {safeLang === "es" ? "Más juegos próximamente" : "More games coming soon"}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         {/* Categories Filter */}

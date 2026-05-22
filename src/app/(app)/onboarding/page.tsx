@@ -18,6 +18,10 @@ import {
   Target,
   ShieldCheck,
   AlertCircle,
+  GraduationCap,
+  UserRound,
+  Building2,
+  TrendingUp,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CONSENTS, type ConsentKey, titleFor, bodyFor } from "@/lib/privacy/consents";
@@ -39,10 +43,18 @@ const STEPS: Step[] = [
   { key: "explore", icon: Brain, gradient: "from-emerald-500 to-green-600" },
 ];
 
+// Roles a usuario puede declarar al onboarding. Multi-select — un humano
+// suele tener varios sombreros (coach + mentor + consultor + persona).
+// El primer rol marcado decide el template del primer workspace que se
+// crea en el step siguiente; los demás quedan como atributos del perfil.
 const ROLE_PATHS = [
   { key: "coach", labelKey: "onboarding.role.coach", icon: Target, href: "/workspace/new?template=coaching" },
-  { key: "hr", labelKey: "onboarding.role.hr", icon: Briefcase, href: "/hr" },
+  { key: "mentor", labelKey: "onboarding.role.mentor", icon: GraduationCap, href: "/workspace/new?template=mentoring" },
   { key: "consultant", labelKey: "onboarding.role.consultant", icon: Compass, href: "/workspace/new?template=consulting" },
+  { key: "hr", labelKey: "onboarding.role.hr", icon: Briefcase, href: "/hr" },
+  { key: "teamLeader", labelKey: "onboarding.role.teamLeader", icon: Users, href: "/workspace/new?template=team" },
+  { key: "exec", labelKey: "onboarding.role.exec", icon: TrendingUp, href: "/hub/exec/health" },
+  { key: "family", labelKey: "onboarding.role.family", icon: Building2, href: "/hub/family/vital-signs" },
   { key: "individual", labelKey: "onboarding.role.individual", icon: Heart, href: "/dashboard" },
 ];
 
@@ -52,7 +64,10 @@ export default function OnboardingPage() {
   const L = lang as Lang;
   const [step, setStep] = useState(0);
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  // Multi-select: un humano suele llevar varios sombreros (coach + mentor
+  // + consultor + persona). El primer rol seleccionado define el template
+  // del primer workspace en el step siguiente; los demás quedan declarados.
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   // Consent step state. Required consents start ON; user can toggle ON
   // but the checkbox onChange refuses to flip them back to OFF.
@@ -192,35 +207,60 @@ export default function OnboardingPage() {
               {t(`onboarding.${current.key}.description`)}
             </p>
 
-            {/* Step: Welcome — role selection */}
+            {/* Step: Welcome — role selection (multi-select) */}
             {current.key === "welcome" && (
-              <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto mb-2">
-                {ROLE_PATHS.map((r) => {
-                  const RoleIcon = r.icon;
-                  const isSelected = selectedRole === r.key;
-                  return (
-                    <button
-                      key={r.key}
-                      onClick={() => setSelectedRole(r.key)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                        isSelected
-                          ? "border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5"
-                          : "border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)]/40"
-                      }`}
-                    >
-                      <RoleIcon
-                        className={`w-7 h-7 ${
+              <div>
+                <p className="text-xs text-[var(--rowi-muted)] mb-3 max-w-xl mx-auto">
+                  {t(
+                    "onboarding.welcome.multiHint",
+                    "Marca todos los sombreros que llevas. Puedes elegir varios.",
+                  )}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mb-2">
+                  {ROLE_PATHS.map((r) => {
+                    const RoleIcon = r.icon;
+                    const isSelected = selectedRoles.includes(r.key);
+                    return (
+                      <button
+                        key={r.key}
+                        onClick={() =>
+                          setSelectedRoles((prev) =>
+                            prev.includes(r.key)
+                              ? prev.filter((k) => k !== r.key)
+                              : [...prev, r.key],
+                          )
+                        }
+                        className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
                           isSelected
-                            ? "text-[var(--rowi-g2)]"
-                            : "text-gray-500"
+                            ? "border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5"
+                            : "border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)]/40"
                         }`}
-                      />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white text-center">
-                        {t(r.labelKey)}
-                      </span>
-                    </button>
-                  );
-                })}
+                      >
+                        {isSelected && (
+                          <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--rowi-g2)] text-white flex items-center justify-center">
+                            <Check className="w-3 h-3" />
+                          </span>
+                        )}
+                        <RoleIcon
+                          className={`w-7 h-7 ${
+                            isSelected ? "text-[var(--rowi-g2)]" : "text-gray-500"
+                          }`}
+                        />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white text-center">
+                          {t(r.labelKey)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedRoles.length > 1 && (
+                  <p className="text-xs text-[var(--rowi-muted-weak)] mt-3 text-center">
+                    {t(
+                      "onboarding.welcome.multiCount",
+                      "{{n}} sombreros seleccionados",
+                    ).replace("{{n}}", String(selectedRoles.length))}
+                  </p>
+                )}
               </div>
             )}
 
@@ -295,7 +335,12 @@ export default function OnboardingPage() {
                 )}
                 {hasWorkspace === false && (
                   <Link
-                    href={selectedRole ? ROLE_PATHS.find((r) => r.key === selectedRole)?.href || "/workspace/new" : "/workspace/new"}
+                    href={
+                      selectedRoles.length > 0
+                        ? ROLE_PATHS.find((r) => r.key === selectedRoles[0])?.href ||
+                          "/workspace/new"
+                        : "/workspace/new"
+                    }
                     className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-lg"
                   >
                     {t("onboarding.workspace.cta")}
@@ -399,7 +444,7 @@ export default function OnboardingPage() {
             <button
               onClick={next}
               disabled={
-                (current.key === "welcome" && !selectedRole) ||
+                (current.key === "welcome" && selectedRoles.length === 0) ||
                 (current.key === "consent" && (consentsLoading || consentsSaving || !consentMap.basic_processing))
               }
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"

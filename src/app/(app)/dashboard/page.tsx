@@ -26,6 +26,7 @@ import CompetenciesSpider from "@/components/charts/CompetenciesSpider";
 import { EqTotalBar } from "@/components/metrics/EqTotalBar";
 import { PursuitsBars } from "@/components/metrics/PursuitsBars";
 import { MoodChip } from "@/components/dashboard/MoodChip";
+import DailyPulseCard from "@/components/dashboard/DailyPulseCard";
 import { TalentCluster } from "@/components/talents/TalentCluster";
 import { BRAIN_TALENTS } from "@/domains/eq/lib/dictionary";
 import type { BrainTalentKey } from "@/domains/eq/lib/dictionary";
@@ -321,6 +322,9 @@ export default function ClientDashboard() {
           emoji={base.mood?.recentEmoji ?? "🙂"}
         />
       </motion.div>
+
+      {/* DAILY PULSE — 1 pregunta SEI por día */}
+      <DailyPulseCard />
 
       {/* QUICK ACTIONS */}
       <motion.div

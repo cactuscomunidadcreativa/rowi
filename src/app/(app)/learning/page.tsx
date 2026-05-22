@@ -274,18 +274,52 @@ export default function LearningPage() {
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </Link>
-            <div className="bg-white dark:bg-zinc-800/80 rounded-2xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 flex flex-col justify-center items-center text-center">
-              <Lock className="w-5 h-5 text-gray-400 mb-2" />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {safeLang === "es" ? "Más juegos próximamente" : "More games coming soon"}
+            <Link
+              href="/learning/play/emotion-match"
+              className="group bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-5 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-transform"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <Sparkles className="w-6 h-6" />
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                  EL · SEI
+                </span>
+              </div>
+              <h3 className="font-bold text-lg mb-1">
+                {safeLang === "es" ? "Empareja la Emoción" : "Emotion Match"}
+              </h3>
+              <p className="text-xs text-white/80 mb-3">
+                {safeLang === "es"
+                  ? "Practica alfabetización emocional. 5 escenarios + justifica · hasta 75 pts."
+                  : "Practice emotional literacy. 5 scenarios + justify · up to 75 pts."}
               </p>
-            </div>
-            <div className="bg-white dark:bg-zinc-800/80 rounded-2xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 flex flex-col justify-center items-center text-center">
-              <Lock className="w-5 h-5 text-gray-400 mb-2" />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {safeLang === "es" ? "Más juegos próximamente" : "More games coming soon"}
+              <div className="inline-flex items-center gap-1 text-xs font-semibold">
+                {safeLang === "es" ? "Jugar ahora" : "Play now"}
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </Link>
+            <Link
+              href="/learning/play/empathy-mirror"
+              className="group bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-2xl p-5 shadow-lg shadow-rose-500/20 hover:scale-[1.02] transition-transform"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <Heart className="w-6 h-6" />
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                  EMP · SEI
+                </span>
+              </div>
+              <h3 className="font-bold text-lg mb-1">
+                {safeLang === "es" ? "Espejo de Empatía" : "Empathy Mirror"}
+              </h3>
+              <p className="text-xs text-white/80 mb-3">
+                {safeLang === "es"
+                  ? "Mira lo que siente el otro. 5 escenarios · hasta 75 pts."
+                  : "See what the other feels. 5 scenarios · up to 75 pts."}
               </p>
-            </div>
+              <div className="inline-flex items-center gap-1 text-xs font-semibold">
+                {safeLang === "es" ? "Jugar ahora" : "Play now"}
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </Link>
           </div>
         </motion.div>
       </div>

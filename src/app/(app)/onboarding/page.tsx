@@ -54,10 +54,11 @@ export default function OnboardingPage() {
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  // Consent step state
+  // Consent step state. Required consents start ON; user can toggle ON
+  // but the checkbox onChange refuses to flip them back to OFF.
   const [consentMap, setConsentMap] = useState<Record<ConsentKey, boolean>>(() => {
     const seed = {} as Record<ConsentKey, boolean>;
-    for (const c of CONSENTS) seed[c.key] = c.defaultGranted;
+    for (const c of CONSENTS) seed[c.key] = c.required ? true : c.defaultGranted;
     return seed;
   });
   const [consentInitial, setConsentInitial] = useState<Record<ConsentKey, boolean> | null>(null);
@@ -91,7 +92,13 @@ export default function OnboardingPage() {
         const current = {} as Record<ConsentKey, boolean>;
         for (const c of CONSENTS) {
           const found = (data.consents ?? []).find((x: { key: ConsentKey }) => x.key === c.key);
-          current[c.key] = found?.granted ?? c.defaultGranted;
+          // Required consents always start ON in the UI; without them the
+          // product can't run, so revoking would just block re-entry.
+          if (c.required) {
+            current[c.key] = true;
+          } else {
+            current[c.key] = found?.granted ?? c.defaultGranted;
+          }
         }
         setConsentMap(current);
         setConsentInitial(current);
@@ -238,10 +245,12 @@ export default function OnboardingPage() {
                         <input
                           type="checkbox"
                           checked={granted}
-                          disabled={c.required || consentsSaving}
-                          onChange={(e) =>
-                            setConsentMap((prev) => ({ ...prev, [c.key]: e.target.checked }))
-                          }
+                          disabled={consentsSaving}
+                          onChange={(e) => {
+                            // Required consents can be toggled ON but never OFF.
+                            if (c.required && !e.target.checked) return;
+                            setConsentMap((prev) => ({ ...prev, [c.key]: e.target.checked }));
+                          }}
                           className="mt-1 h-4 w-4 rounded border-[var(--rowi-card-border)] accent-[var(--rowi-g2)]"
                         />
                         <div className="flex-1">

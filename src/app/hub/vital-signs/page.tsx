@@ -128,6 +128,16 @@ interface ContextCard {
     enIdentity: string;
     emoji: string;
   } | null;
+  orientationSecondary: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esIdentity: string;
+    enIdentity: string;
+    emoji: string;
+  } | null;
+  orientationCombined: boolean;
+  orientationDelta: number | null;
   outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
@@ -622,13 +632,35 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
         <>
           {(card.scope === "org" || card.scope === "world") && card.orientation && (
             <div className="flex items-center gap-2 text-xs bg-[var(--rowi-card-elev)] rounded-lg p-2">
-              <span className="text-base">{card.orientation.emoji}</span>
+              <span className="text-base whitespace-nowrap">
+                {card.orientation.emoji}
+                {card.orientationCombined && card.orientationSecondary && (
+                  <>
+                    <span className="text-[var(--rowi-muted)] mx-0.5">+</span>
+                    {card.orientationSecondary.emoji}
+                  </>
+                )}
+              </span>
               <div className="min-w-0">
                 <div className="font-medium text-[var(--rowi-foreground)] truncate">
                   {lang === "en" ? card.orientation.enName : card.orientation.esName}
+                  {card.orientationCombined && card.orientationSecondary && (
+                    <span className="text-[var(--rowi-muted)]">
+                      {" + "}
+                      {lang === "en"
+                        ? card.orientationSecondary.enName
+                        : card.orientationSecondary.esName}
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] text-[var(--rowi-muted)] truncate">
-                  {lang === "en" ? card.orientation.enIdentity : card.orientation.esIdentity}
+                  {card.orientationCombined && card.orientationSecondary
+                    ? lang === "en"
+                      ? `Combines ${card.orientation.enIdentity.toLowerCase()} with ${card.orientationSecondary.enIdentity.toLowerCase()}`
+                      : `Combina ${card.orientation.esIdentity.toLowerCase()} con ${card.orientationSecondary.esIdentity.toLowerCase()}`
+                    : lang === "en"
+                      ? card.orientation.enIdentity
+                      : card.orientation.esIdentity}
                 </div>
               </div>
             </div>

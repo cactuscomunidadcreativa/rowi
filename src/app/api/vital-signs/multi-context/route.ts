@@ -53,6 +53,16 @@ interface ContextCard {
     enIdentity: string;
     emoji: string;
   } | null;
+  orientationSecondary: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esIdentity: string;
+    enIdentity: string;
+    emoji: string;
+  } | null;
+  orientationCombined: boolean;
+  orientationDelta: number | null;
   outcomes: Array<{ code: string; esName: string; enName: string; scoreMean: number | null }>;
 }
 
@@ -64,6 +74,7 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
   const bottom = ranked[ranked.length - 1];
   const arch = r.dominantQuadrant ? ROWI_ARCHETYPES[r.dominantQuadrant] : null;
   const orient = r.orientation ? OVS_ORIENTATIONS[r.orientation] : null;
+  const orient2 = r.orientationSecondary ? OVS_ORIENTATIONS[r.orientationSecondary] : null;
   return {
     scope: r.scope,
     subjectId: r.subjectId,
@@ -106,6 +117,18 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
           emoji: orient.emoji,
         }
       : null,
+    orientationSecondary: orient2 && r.orientationSecondary
+      ? {
+          quadrant: r.orientationSecondary,
+          esName: orient2.esName,
+          enName: orient2.enName,
+          esIdentity: orient2.esIdentity,
+          enIdentity: orient2.enIdentity,
+          emoji: orient2.emoji,
+        }
+      : null,
+    orientationCombined: r.orientationCombined,
+    orientationDelta: r.orientationDelta,
     outcomes: r.outcomes,
   };
 }

@@ -117,6 +117,15 @@ export interface AggregateResult {
    * opera la organización agregada (no qué rol aporta una persona).
    */
   orientation: Quadrant | null;
+  /**
+   * Perfil completo de orientación: primaria + secundaria + si están
+   * combinadas (delta ≤ 3 puntos). Cuando hay dominancia clara, solo
+   * primaria. Real-world orgs raramente son puro un cuadrante.
+   */
+  orientationPrimary: Quadrant | null;
+  orientationSecondary: Quadrant | null;
+  orientationCombined: boolean;
+  orientationDelta: number | null;
 }
 
 const N_MIN = 5;
@@ -196,6 +205,10 @@ function suppressed(
     dominantQuadrant: null,
     outcomes: [],
     orientation: null,
+    orientationPrimary: null,
+    orientationSecondary: null,
+    orientationCombined: false,
+    orientationDelta: null,
   };
 }
 
@@ -220,11 +233,11 @@ function computeOutcomes(drivers: AggregatedDriver[]): AggregatedOutcome[] {
 }
 
 /**
- * El cuadrante dominante de un agregado se determina por el driver
- * (Motivation / Change / Teamwork / Execution) con la media más alta.
- * Trust es el pivote del modelo (no genera cuadrante).
+ * Ranking de los 4 cuadrantes (Motivation→MAPA, Change→LINTERNA,
+ * Teamwork→BOTIQUIN, Execution→BOTAS) ordenados por media descendente.
+ * Trust es el pivote del modelo y no genera cuadrante.
  */
-function dominantQuadrantOf(drivers: AggregatedDriver[]): Quadrant | null {
+function rankQuadrants(drivers: AggregatedDriver[]): Array<{ q: Quadrant; v: number }> {
   const candidates: Array<{ q: Quadrant; v: number }> = [];
   for (const d of drivers) {
     if (d.scoreMean === null) continue;
@@ -233,9 +246,40 @@ function dominantQuadrantOf(drivers: AggregatedDriver[]): Quadrant | null {
     else if (d.code === "TEAMWORK") candidates.push({ q: "BOTIQUIN", v: d.scoreMean });
     else if (d.code === "EXECUTION") candidates.push({ q: "BOTAS", v: d.scoreMean });
   }
-  if (candidates.length === 0) return null;
   candidates.sort((a, b) => b.v - a.v);
-  return candidates[0].q;
+  return candidates;
+}
+
+function dominantQuadrantOf(drivers: AggregatedDriver[]): Quadrant | null {
+  const ranked = rankQuadrants(drivers);
+  return ranked[0]?.q ?? null;
+}
+
+const COMBINED_DELTA_THRESHOLD = 3;
+
+/**
+ * Computa el perfil de orientación: primaria, secundaria y si están lo
+ * suficientemente cerca para mostrarse como combinada (delta ≤ 3 puntos).
+ * Cuando hay dominancia clara (delta > 3) solo se reporta la primaria.
+ */
+function orientationProfileOf(drivers: AggregatedDriver[]): {
+  primary: Quadrant | null;
+  secondary: Quadrant | null;
+  combined: boolean;
+  delta: number | null;
+} {
+  const ranked = rankQuadrants(drivers);
+  if (ranked.length === 0) return { primary: null, secondary: null, combined: false, delta: null };
+  const primary = ranked[0].q;
+  if (ranked.length < 2) return { primary, secondary: null, combined: false, delta: null };
+  const delta = Math.round((ranked[0].v - ranked[1].v) * 10) / 10;
+  const combined = delta <= COMBINED_DELTA_THRESHOLD;
+  return {
+    primary,
+    secondary: combined ? ranked[1].q : null,
+    combined,
+    delta,
+  };
 }
 
 export async function aggregateInferredVitalSigns(args: {
@@ -388,5 +432,14 @@ export async function aggregateInferredVitalSigns(args: {
     dominantQuadrant: dominantQuadrantOf(drivers),
     outcomes: computeOutcomes(drivers),
     orientation: dominantQuadrantOf(drivers),
+    ...(() => {
+      const p = orientationProfileOf(drivers);
+      return {
+        orientationPrimary: p.primary,
+        orientationSecondary: p.secondary,
+        orientationCombined: p.combined,
+        orientationDelta: p.delta,
+      };
+    })(),
   };
 }

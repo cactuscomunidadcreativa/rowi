@@ -22,8 +22,8 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import OpenAI from "openai";
 import { prisma } from "@/core/prisma";
+import { getOpenAIClient } from "@/lib/openai/client";
 import {
   aggregateInferredVitalSigns,
   type AggregateScope,
@@ -32,8 +32,12 @@ import { OVS_ORIENTATIONS, ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 
 const MAX_HISTORY = 10;
 const MAX_MESSAGE_LEN = 1000;
+const FEATURE_KEY = "VITAL_SIGNS_ASK";
+const MODEL = "gpt-4o-mini";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Pricing gpt-4o-mini (Dec 2024): $0.15 / 1M input · $0.60 / 1M output.
+const PRICE_INPUT_PER_TOKEN = 0.15 / 1_000_000;
+const PRICE_OUTPUT_PER_TOKEN = 0.60 / 1_000_000;
 
 async function userBelongsToScope(
   userId: string,
@@ -95,13 +99,6 @@ async function resolveSubjectName(
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { ok: false, error: "OPENAI_API_KEY no configurada en el server." },
-        { status: 500 },
-      );
-    }
-
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const email = token?.email?.toLowerCase();
     if (!email) {
@@ -109,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, name: true },
+      select: { id: true, name: true, primaryTenantId: true },
     });
     if (!user) {
       return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
@@ -201,8 +198,16 @@ Snapshot inferido actual (NO es un OVS/TVS oficial, es una inferencia desde los 
 
 Tu tarea: responder con insights útiles y accionables, anclados en los datos. Sé conciso (3-6 oraciones), referenciá la data cuando sea relevante, sugerí 1-2 pasos concretos. No inventes datos que no te dieron. Si la pregunta es sobre qué puede APORTAR el usuario, enfocate en el gap entre su perfil personal y el agregado. Usá el vocabulario Six Seconds (KCG, drivers, pulse points) naturalmente sin sonar a clase.`;
 
+    let openai;
+    try {
+      openai = await getOpenAIClient();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "OpenAI not configured";
+      return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    }
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,
@@ -212,7 +217,81 @@ Tu tarea: responder con insights útiles y accionables, anclados en los datos. S
     });
 
     const reply = completion.choices[0]?.message?.content?.trim() ?? "";
-    return NextResponse.json({ ok: true, reply, suppressed: false });
+
+    // 📊 Tracking de consumo (patrón canónico del repo).
+    const tokensIn = completion.usage?.prompt_tokens ?? 0;
+    const tokensOut = completion.usage?.completion_tokens ?? 0;
+    const costUsd = tokensIn * PRICE_INPUT_PER_TOKEN + tokensOut * PRICE_OUTPUT_PER_TOKEN;
+
+    if (tokensIn > 0 || tokensOut > 0) {
+      const day = new Date();
+      day.setHours(0, 0, 0, 0);
+      try {
+        await prisma.userUsage.upsert({
+          where: {
+            userId_day_feature: {
+              userId: user.id,
+              day,
+              feature: FEATURE_KEY,
+            },
+          },
+          create: {
+            userId: user.id,
+            tenantId: user.primaryTenantId ?? null,
+            day,
+            feature: FEATURE_KEY,
+            tokensInput: tokensIn,
+            tokensOutput: tokensOut,
+          },
+          update: {
+            tokensInput: { increment: tokensIn },
+            tokensOutput: { increment: tokensOut },
+          },
+        });
+
+        // Agregado por tenant (cuando el user tiene tenant primario).
+        // Usamos feature EQ del enum UsageFeature ya que Rowi Vital opera
+        // sobre el modelo de Emotional Quotient (Six Seconds).
+        if (user.primaryTenantId) {
+          await prisma.usageDaily.upsert({
+            where: {
+              tenantId_feature_day_model: {
+                tenantId: user.primaryTenantId,
+                feature: "EQ",
+                day,
+                model: MODEL,
+              },
+            },
+            create: {
+              tenantId: user.primaryTenantId,
+              feature: "EQ",
+              day,
+              model: MODEL,
+              calls: 1,
+              tokensInput: tokensIn,
+              tokensOutput: tokensOut,
+              costUsd,
+            },
+            update: {
+              calls: { increment: 1 },
+              tokensInput: { increment: tokensIn },
+              tokensOutput: { increment: tokensOut },
+              costUsd: { increment: costUsd },
+            },
+          });
+        }
+      } catch (trackErr) {
+        // No bloquear la respuesta si falla el tracking; loguear.
+        console.error("/api/vital-signs/ask tracking error:", trackErr);
+      }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      reply,
+      suppressed: false,
+      usage: { tokensInput: tokensIn, tokensOutput: tokensOut, costUsd },
+    });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/ask error:", e);

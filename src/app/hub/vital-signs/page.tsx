@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/react";
 import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner";
+import Link from "next/link";
 import {
   Activity,
   Brain,
@@ -14,6 +15,11 @@ import {
   Target,
   Zap,
   TrendingUp,
+  Users,
+  Building2,
+  Home,
+  MessageCircleQuestion,
+  ChevronRight,
 } from "lucide-react";
 
 type Band = "low" | "mid" | "high" | "unknown";
@@ -92,6 +98,28 @@ interface CheckIn {
   question?: string | null;
 }
 
+interface ContextCard {
+  scope: "team" | "org" | "family";
+  subjectId: string;
+  subjectName: string;
+  subjectSlug?: string;
+  suppressed: boolean;
+  n: number;
+  nTotal: number;
+  overallMean: number | null;
+  engagementIndex: number | null;
+  topDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
+  bottomDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
+}
+
+interface MultiContextData {
+  ok: boolean;
+  beta?: boolean;
+  teams: ContextCard[];
+  orgs: ContextCard[];
+  families: ContextCard[];
+}
+
 export default function VitalSignsPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
@@ -101,6 +129,7 @@ export default function VitalSignsPage() {
   const [checkInValue, setCheckInValue] = useState(3);
   const [checkInSaving, setCheckInSaving] = useState(false);
   const [checkInDone, setCheckInDone] = useState(false);
+  const [multiCtx, setMultiCtx] = useState<MultiContextData | null>(null);
 
   const lang = locale === "en" ? "en" : "es";
 
@@ -114,6 +143,11 @@ export default function VitalSignsPage() {
     fetch(`/api/vital-signs/check-in?locale=${locale}`)
       .then((r) => r.json())
       .then(setCheckIn)
+      .catch(() => {});
+
+    fetch("/api/vital-signs/multi-context")
+      .then((r) => r.json())
+      .then((json: MultiContextData) => setMultiCtx(json))
       .catch(() => {});
   }, [locale]);
 
@@ -157,6 +191,21 @@ export default function VitalSignsPage() {
   return (
     <div className="space-y-6 p-6">
       <ConsentRefreshBanner />
+      {multiCtx?.beta && (
+        <div className="rowi-card bg-gradient-to-r from-[var(--rowi-primary)]/10 to-[var(--rowi-secondary)]/10 border-[var(--rowi-primary)]/30">
+          <div className="flex items-start gap-3">
+            <span className="rowi-chip bg-[var(--rowi-primary)] text-white text-[10px] font-bold tracking-wider">
+              {t("vs.multiCtx.betaBadge", "BETA")}
+            </span>
+            <p className="text-sm text-[var(--rowi-foreground)] flex-1">
+              {t(
+                "vs.multiCtx.betaNotice",
+                "Vista beta para miembros de Six Seconds. Los agregados son una inferencia v0 desde los SEI + Brain Talents de los miembros, no son OVS / TVS oficiales medidos.",
+              )}
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -379,8 +428,212 @@ export default function VitalSignsPage() {
               })}
             </div>
           </div>
+
+          {multiCtx?.beta && (
+            <>
+              <ContextSection
+                title={t("vs.multiCtx.teams.title", "Mis equipos (TVS proxy)")}
+                subtitle={t(
+                  "vs.multiCtx.teams.subtitle",
+                  "Cómo se ven los equipos a los que perteneces, inferidos desde los perfiles de sus miembros.",
+                )}
+                empty={t(
+                  "vs.multiCtx.teams.empty",
+                  "Aún no perteneces a ninguna comunidad con suficientes miembros.",
+                )}
+                cards={multiCtx.teams}
+                lang={lang}
+                t={t}
+                Icon={Users}
+                accent="text-emerald-600 dark:text-emerald-300"
+              />
+              <ContextSection
+                title={t("vs.multiCtx.orgs.title", "Mis organizaciones (OVS proxy)")}
+                subtitle={t(
+                  "vs.multiCtx.orgs.subtitle",
+                  "Cómo se ve cada organización a la que perteneces, inferida desde los perfiles de sus miembros.",
+                )}
+                empty={t(
+                  "vs.multiCtx.orgs.empty",
+                  "Aún no eres miembro de ninguna organización.",
+                )}
+                cards={multiCtx.orgs}
+                lang={lang}
+                t={t}
+                Icon={Building2}
+                accent="text-violet-600 dark:text-violet-300"
+              />
+              <ContextSection
+                title={t("vs.multiCtx.families.title", "Mi familia (FVS proxy)")}
+                subtitle={t(
+                  "vs.multiCtx.families.subtitle",
+                  "FVS inferido desde los perfiles de los miembros con consentimiento aceptado.",
+                )}
+                empty={t(
+                  "vs.multiCtx.families.empty",
+                  "Aún no declaraste vínculos familiares aceptados.",
+                )}
+                cards={multiCtx.families}
+                lang={lang}
+                t={t}
+                Icon={Home}
+                accent="text-rose-600 dark:text-rose-300"
+              />
+            </>
+          )}
         </>
       )}
+    </div>
+  );
+}
+
+interface ContextSectionProps {
+  title: string;
+  subtitle: string;
+  empty: string;
+  cards: ContextCard[];
+  lang: "es" | "en";
+  t: (key: string, fallback: string) => string;
+  Icon: typeof Users;
+  accent: string;
+}
+
+function ContextSection({
+  title,
+  subtitle,
+  empty,
+  cards,
+  lang,
+  t,
+  Icon,
+  accent,
+}: ContextSectionProps) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className={`w-4 h-4 ${accent}`} />
+        <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">{title}</h3>
+      </div>
+      <p className="text-xs text-[var(--rowi-muted)] mb-3">{subtitle}</p>
+      {cards.length === 0 ? (
+        <div className="rowi-card text-center py-6 text-sm text-[var(--rowi-muted)]">
+          {empty}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {cards.map((c) => (
+            <ContextCardItem key={`${c.scope}-${c.subjectId}`} card={c} lang={lang} t={t} accent={accent} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ContextCardItemProps {
+  card: ContextCard;
+  lang: "es" | "en";
+  t: (key: string, fallback: string) => string;
+  accent: string;
+}
+
+function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
+  const hintKey = `vs.multiCtx.improvementHint.${card.scope}`;
+  const hintFallback =
+    card.scope === "team"
+      ? "¿Cómo puedo aportar más a este equipo?"
+      : card.scope === "org"
+      ? "¿Qué quiero aportar a esta organización?"
+      : "¿Cómo puedo cuidar mejor a mi familia?";
+
+  return (
+    <div className="rowi-card flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-[var(--rowi-foreground)] truncate">
+            {card.subjectName}
+          </div>
+          {card.subjectSlug && (
+            <div className="text-[10px] text-[var(--rowi-muted-weak)] truncate">
+              {card.subjectSlug}
+            </div>
+          )}
+        </div>
+        <span className="text-[10px] text-[var(--rowi-muted)] whitespace-nowrap">
+          {card.n} / {card.nTotal} {t("vs.multiCtx.respondents", "respondentes")}
+        </span>
+      </div>
+
+      {card.suppressed ? (
+        <div className="text-xs text-[var(--rowi-muted)] py-4">
+          {t(
+            "vs.multiCtx.suppressed",
+            "Sin suficientes datos para mostrar (mínimo 5 miembros con perfil completo).",
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)]">
+                {t("vs.multiCtx.engagementIndex", "Índice de Engagement")}
+              </div>
+              <div className="text-2xl font-bold rowi-gradient-text">
+                {card.engagementIndex ?? "—"}
+                <span className="text-xs text-[var(--rowi-muted)] font-normal">/100</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)]">
+                {t("vs.benchmark.mean", "Norma = 100")}
+              </div>
+              <div className="text-2xl font-bold text-[var(--rowi-foreground)]">
+                {card.overallMean?.toFixed(1) ?? "—"}
+              </div>
+            </div>
+          </div>
+          {(card.topDriver || card.bottomDriver) && (
+            <div className="text-xs space-y-1">
+              {card.topDriver && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--rowi-muted)]">
+                    {t("vs.multiCtx.topDriver", "Más fuerte")}
+                  </span>
+                  <span className={`font-medium ${accent}`}>
+                    {lang === "en" ? card.topDriver.enName : card.topDriver.esName}{" "}
+                    {card.topDriver.scoreMean.toFixed(1)}
+                  </span>
+                </div>
+              )}
+              {card.bottomDriver && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--rowi-muted)]">
+                    {t("vs.multiCtx.bottomDriver", "Más débil")}
+                  </span>
+                  <span className="font-medium text-[var(--rowi-foreground)]">
+                    {lang === "en" ? card.bottomDriver.enName : card.bottomDriver.esName}{" "}
+                    {card.bottomDriver.scoreMean.toFixed(1)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="border-t border-[var(--rowi-card-border)] pt-2 mt-auto space-y-2">
+        <Link
+          href={`/hub/vital-signs/ask?scope=${card.scope}&subjectId=${card.subjectId}`}
+          className="flex items-center gap-2 text-xs text-[var(--rowi-foreground)] hover:opacity-80"
+        >
+          <MessageCircleQuestion className="w-3.5 h-3.5" />
+          <span className="truncate">{t(hintKey, hintFallback)}</span>
+          <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+        </Link>
+        <div className="text-[10px] text-[var(--rowi-muted-weak)]">
+          {t("vs.multiCtx.disclaimer", "Inferencia v0 — no es OVS / TVS oficial")}
+        </div>
+      </div>
     </div>
   );
 }

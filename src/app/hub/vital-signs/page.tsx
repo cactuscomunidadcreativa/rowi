@@ -790,10 +790,14 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
             <ChevronRight className="w-3.5 h-3.5 ml-auto" />
           </button>
         )}
-        <div className="flex items-center gap-2 text-xs text-[var(--rowi-muted)] italic">
+        <Link
+          href={`/hub/vital-signs/ask?scope=${card.scope}&subjectId=${card.subjectId}`}
+          className="flex items-center gap-2 text-xs text-[var(--rowi-foreground)] hover:text-[var(--rowi-primary)] transition-colors"
+        >
           <MessageCircleQuestion className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{t(hintKey, hintFallback)}</span>
-        </div>
+          <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+        </Link>
         <div className="text-[10px] text-[var(--rowi-muted-weak)]">
           {t("vs.multiCtx.disclaimer", "Inferencia v0 — no es OVS / TVS oficial")}
         </div>

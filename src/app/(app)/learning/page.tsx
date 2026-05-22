@@ -23,6 +23,7 @@ import {
   Users,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
+import EqeLessonsSection from "@/components/learning/EqeLessonsSection";
 
 /* =========================================================
    📚 Learning Hub — Centro de Aprendizaje Rowi
@@ -323,6 +324,9 @@ export default function LearningPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* EQE micro-lessons (Six Seconds adapted) */}
+      <EqeLessonsSection />
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">

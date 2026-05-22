@@ -100,6 +100,15 @@ export interface AggregatedSei {
   n: number;
 }
 
+export interface AggregatedTalent {
+  key: BrainTalentKey;
+  esName: string;
+  enName: string;
+  category: "focus" | "decisions" | "drive";
+  scoreMean: number | null;
+  n: number;
+}
+
 export interface AggregateResult {
   ok: true;
   scope: AggregateScope;
@@ -143,6 +152,12 @@ export interface AggregateResult {
    * que el contexto tiene disponible.
    */
   seiCompetencies: AggregatedSei[];
+  /**
+   * Media de los 18 Brain Talents agrupados en 3 categorías:
+   * focus (Data Mining / Modeling / ...), decisions (Reflecting /
+   * Resilience / ...), drive (Proactivity / Vision / ...).
+   */
+  brainTalents: AggregatedTalent[];
 }
 
 const N_MIN = 5;
@@ -227,7 +242,69 @@ function suppressed(
     orientationCombined: false,
     orientationDelta: null,
     seiCompetencies: [],
+    brainTalents: [],
   };
+}
+
+/**
+ * Metadata mínima de los 18 Brain Talents para agregación. El key
+ * es la forma normalizada (lowercase, sin espacios) que el TALENT_KEY_MAP
+ * usa en este módulo. Mantener en sync con catalog.BrainTalentKey.
+ */
+const BRAIN_TALENT_META: Array<{
+  key: BrainTalentKey;
+  category: "focus" | "decisions" | "drive";
+  esName: string;
+  enName: string;
+}> = [
+  // Focus
+  { key: "datamining", category: "focus", esName: "Minería de Datos", enName: "Data Mining" },
+  { key: "modeling", category: "focus", esName: "Modelado", enName: "Modeling" },
+  { key: "prioritizing", category: "focus", esName: "Priorizar", enName: "Prioritizing" },
+  { key: "connection", category: "focus", esName: "Conexión", enName: "Connection" },
+  { key: "emotionalinsight", category: "focus", esName: "Insight Emocional", enName: "Emotional Insight" },
+  { key: "collaboration", category: "focus", esName: "Colaboración", enName: "Collaboration" },
+  // Decisions
+  { key: "reflecting", category: "decisions", esName: "Reflexionar", enName: "Reflecting" },
+  { key: "adaptability", category: "decisions", esName: "Adaptabilidad", enName: "Adaptability" },
+  { key: "criticalthinking", category: "decisions", esName: "Pensamiento Crítico", enName: "Critical Thinking" },
+  { key: "resilience", category: "decisions", esName: "Resiliencia", enName: "Resilience" },
+  { key: "risktolerance", category: "decisions", esName: "Tolerancia al Riesgo", enName: "Risk Tolerance" },
+  { key: "imagination", category: "decisions", esName: "Imaginación", enName: "Imagination" },
+  // Drive
+  { key: "proactivity", category: "drive", esName: "Proactividad", enName: "Proactivity" },
+  { key: "commitment", category: "drive", esName: "Compromiso", enName: "Commitment" },
+  { key: "problemsolving", category: "drive", esName: "Resolución de Problemas", enName: "Problem Solving" },
+  { key: "vision", category: "drive", esName: "Visión", enName: "Vision" },
+  { key: "designing", category: "drive", esName: "Diseño", enName: "Designing" },
+  { key: "entrepreneurship", category: "drive", esName: "Emprendimiento", enName: "Entrepreneurship" },
+];
+
+/** Media por Brain Talent a partir de los TalentSnapshots por scope. */
+function computeBrainTalents(
+  talentRows: Array<{ key: string; score: number | null; snapshotId: string }>,
+): AggregatedTalent[] {
+  const byTalent = new Map<BrainTalentKey, number[]>();
+  for (const t of talentRows) {
+    if (typeof t.score !== "number") continue;
+    const normalized = t.key.replace(/\s+/g, "").toLowerCase();
+    const mapped = TALENT_KEY_MAP[normalized];
+    if (!mapped) continue;
+    const arr = byTalent.get(mapped) ?? [];
+    arr.push(t.score);
+    byTalent.set(mapped, arr);
+  }
+  return BRAIN_TALENT_META.map((meta) => {
+    const xs = byTalent.get(meta.key) ?? [];
+    return {
+      key: meta.key,
+      esName: meta.esName,
+      enName: meta.enName,
+      category: meta.category,
+      scoreMean: xs.length > 0 ? round1(mean(xs)) : null,
+      n: xs.length,
+    };
+  });
 }
 
 /** Media por SEI competency a partir de los EqSnapshots crudos. */
@@ -489,5 +566,6 @@ export async function aggregateInferredVitalSigns(args: {
       };
     })(),
     seiCompetencies: computeSeiCompetencies(Array.from(latestByUser.values())),
+    brainTalents: computeBrainTalents(talentRows),
   };
 }

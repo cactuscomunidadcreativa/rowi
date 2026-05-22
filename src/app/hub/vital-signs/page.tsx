@@ -7,6 +7,7 @@ import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner"
 import Link from "next/link";
 import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 import ContextDetailDrawer from "@/components/vital-signs/ContextDetailDrawer";
+import DailyPulseWeek from "@/components/dashboard/DailyPulseWeek";
 import {
   Activity,
   Brain,
@@ -260,6 +261,9 @@ export default function VitalSignsPage() {
         </div>
       ) : (
         <>
+          {/* Daily pulse 7-day sparkline */}
+          <DailyPulseWeek />
+
           {/* Intelligent check-in */}
           {checkIn?.question && !checkInDone && (
             <div className="rowi-card bg-gradient-to-br from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5 border-[var(--rowi-primary)]/20">

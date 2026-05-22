@@ -21,12 +21,9 @@ import {
   feedbackForValue,
   questionForToday,
 } from "@/lib/daily-pulse/questions";
+import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 
 const DAILY_POINTS = 5;
-
-function startOfDayUTC(d: Date = new Date()): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-}
 
 function diffInDays(a: Date, b: Date): number {
   return Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
@@ -43,12 +40,14 @@ export async function POST(req: NextRequest) {
     const body = (await req.json().catch(() => ({}))) as {
       value?: number;
       lang?: string;
+      tzOffsetMinutes?: number;
     };
     const value = Number(body.value);
     if (!Number.isFinite(value) || value < 1 || value > 5) {
       return NextResponse.json({ ok: false, error: "Value must be 1..5" }, { status: 400 });
     }
     const lang: "es" | "en" = body.lang === "en" ? "en" : "es";
+    const tz = parseTz(body.tzOffsetMinutes);
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -58,8 +57,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
     }
 
-    const q = questionForToday();
-    const today = startOfDayUTC();
+    const now = new Date();
+    const q = questionForToday(now, tz);
+    const today = startOfLocalDay(now, tz);
 
     // Idempotencia: si ya respondió hoy, no duplicar señal ni puntos.
     const existing = await prisma.pulsePointSignal.findFirst({
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     let currentStreak = 1;
     let streakStartDate: Date | null = today;
     if (existingStreak?.lastActivityDate) {
-      const last = startOfDayUTC(existingStreak.lastActivityDate);
+      const last = startOfLocalDay(existingStreak.lastActivityDate, tz);
       const days = diffInDays(today, last);
       if (days === 0) {
         // Imposible llegar acá si pasó el check de idempotencia, pero por

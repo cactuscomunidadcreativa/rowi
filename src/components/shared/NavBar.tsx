@@ -253,13 +253,13 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 const BASE_LINKS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"] },
-  { href: "/org", key: "org", icon: Building2, roles: ["*"] },
+  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"] },
   { href: "/community", key: "community", icon: Users, roles: ["*"] },
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },
   { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"] },
+  { href: "/org", key: "org", icon: Building2, roles: ["*"] },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"] },
-  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
   { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
 ];
 
@@ -469,7 +469,7 @@ export default function NavBar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0">
-          {visibleLinks.slice(0, 7).map((l) => {
+          {visibleLinks.slice(0, 8).map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
             const label = t[l.key as keyof typeof t] || l.key;

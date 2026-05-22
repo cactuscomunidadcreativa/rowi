@@ -52,7 +52,8 @@ export default function DailyPulseCard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/daily-pulse/today")
+    const tz = new Date().getTimezoneOffset();
+    fetch(`/api/daily-pulse/today?tz=${tz}`)
       .then((r) => r.json())
       .then((json: TodayResponse) => {
         setData(json);
@@ -70,7 +71,11 @@ export default function DailyPulseCard() {
       const res = await fetch("/api/daily-pulse/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value, lang: isEN ? "en" : "es" }),
+        body: JSON.stringify({
+          value,
+          lang: isEN ? "en" : "es",
+          tzOffsetMinutes: new Date().getTimezoneOffset(),
+        }),
       });
       const json = (await res.json()) as AnswerResponse;
       if (!json.ok) {

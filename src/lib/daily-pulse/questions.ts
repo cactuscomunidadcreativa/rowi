@@ -166,11 +166,17 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
   },
 };
 
-/** Devuelve la pregunta del día de hoy, rotando por dayOfYear % 8. */
-export function questionForToday(now: Date = new Date()): DailyPulseQuestion {
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now.getTime() - start.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+import { localDayOfYear } from "./timezone";
+
+/**
+ * Devuelve la pregunta del día rotando por (dayOfYear LOCAL del usuario) % 8.
+ * Si no se pasa tzOffsetMinutes, asume UTC (offset 0).
+ */
+export function questionForToday(
+  now: Date = new Date(),
+  tzOffsetMinutes: number = 0,
+): DailyPulseQuestion {
+  const dayOfYear = localDayOfYear(now, tzOffsetMinutes);
   const sei = SEI_ORDER[dayOfYear % SEI_ORDER.length];
   return DAILY_PULSE_QUESTIONS[sei];
 }

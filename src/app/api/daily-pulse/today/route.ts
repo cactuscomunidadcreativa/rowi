@@ -11,10 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
 import { questionForToday } from "@/lib/daily-pulse/questions";
-
-function startOfDayUTC(d: Date = new Date()): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-}
+import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 
 export async function GET(req: NextRequest) {
   try {
@@ -31,8 +28,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
     }
 
-    const q = questionForToday();
-    const today = startOfDayUTC();
+    const tz = parseTz(new URL(req.url).searchParams.get("tz"));
+    const now = new Date();
+    const q = questionForToday(now, tz);
+    const today = startOfLocalDay(now, tz);
 
     const [answeredToday, streak] = await Promise.all([
       prisma.pulsePointSignal.findFirst({

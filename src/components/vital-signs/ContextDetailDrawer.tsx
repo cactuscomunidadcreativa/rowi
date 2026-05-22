@@ -67,6 +67,15 @@ interface AggSei {
   n: number;
 }
 
+interface AggTalent {
+  key: string;
+  esName: string;
+  enName: string;
+  category: "focus" | "decisions" | "drive";
+  scoreMean: number | null;
+  n: number;
+}
+
 interface DetailResponse {
   ok: boolean;
   error?: string;
@@ -81,6 +90,7 @@ interface DetailResponse {
   pulsePoints: AggPp[];
   outcomes: AggOutcome[];
   seiCompetencies: AggSei[];
+  brainTalents: AggTalent[];
   orientation: {
     quadrant: Quadrant;
     esName: string;
@@ -278,6 +288,42 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                           </div>
                         ))}
                       </div>
+                    </Section>
+                  )}
+
+                  {/* 18 Brain Talents */}
+                  {data.brainTalents.some((t) => t.scoreMean !== null) && (
+                    <Section
+                      Icon={Zap}
+                      title={isEN ? "18 Brain Talents" : "18 Brain Talents"}
+                    >
+                      {(["focus", "decisions", "drive"] as const).map((cat) => {
+                        const talents = data.brainTalents.filter((t) => t.category === cat);
+                        const catLabelES = cat === "focus" ? "Foco" : cat === "decisions" ? "Decisiones" : "Impulso";
+                        const catLabelEN = cat === "focus" ? "Focus" : cat === "decisions" ? "Decisions" : "Drive";
+                        return (
+                          <div key={cat} className="mb-3 last:mb-0">
+                            <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)] mb-1.5">
+                              {isEN ? catLabelEN : catLabelES}
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+                              {talents.map((t) => (
+                                <div
+                                  key={t.key}
+                                  className="rounded-lg p-2 bg-[var(--rowi-card-elev)] border border-[var(--rowi-card-border)] flex items-center justify-between"
+                                >
+                                  <span className="text-xs text-[var(--rowi-foreground)] truncate">
+                                    {isEN ? t.enName : t.esName}
+                                  </span>
+                                  <span className="text-sm font-semibold text-[var(--rowi-foreground)]">
+                                    {t.scoreMean?.toFixed(1) ?? "—"}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </Section>
                   )}
 

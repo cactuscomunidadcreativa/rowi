@@ -301,20 +301,50 @@ export async function PUT(req: NextRequest) {
 
         results.push(result);
       } catch (err: any) {
-        errors.push({ featureKey: perm.featureKey, error: err.message });
+        // Log detallado al server para debugging (Prisma codes,
+        // unique violations, etc.) sin perder la info al cliente.
+        console.error(
+          "❌ profileFeature.upsert error",
+          {
+            featureKey: perm.featureKey,
+            role: perm.role,
+            roleType: perm.roleType,
+            scopeType: perm.scopeType,
+            scopeId: perm.scopeId,
+            code: err?.code,
+            meta: err?.meta,
+            message: err?.message,
+          },
+        );
+        errors.push({
+          featureKey: perm.featureKey,
+          role: perm.role,
+          error: err?.message ?? "Error desconocido",
+          code: err?.code,
+        });
       }
     }
 
     console.log(`✏️ Permisos actualizados: ${results.length} OK, ${errors.length} errores`);
+    // Si hay errores, devolver el primero como `error` top-level para
+    // que el cliente lo muestre. La lista completa va en `errors`.
+    const firstErr = errors[0];
     return NextResponse.json({
       ok: errors.length === 0,
       updated: results.length,
+      error: firstErr
+        ? `${firstErr.error}${firstErr.featureKey ? ` (${firstErr.featureKey})` : ""}`
+        : undefined,
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error: any) {
     console.error("❌ Error PUT /api/admin/permissions/features:", error);
     return NextResponse.json(
-      { ok: false, error: "Error al actualizar permisos" },
+      {
+        ok: false,
+        error: error?.message ?? "Error al actualizar permisos",
+        code: error?.code,
+      },
       { status: 500 }
     );
   }

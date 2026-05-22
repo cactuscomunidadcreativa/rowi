@@ -247,10 +247,21 @@ export default function PermissionsPage() {
         toast.success(t("admin.permissions.saved"));
         setPendingChanges(new Map());
       } else {
-        toast.error(data.error || t("common.error"));
+        // Mostrar el error específico del server. Si hay múltiples,
+        // muestra el primero + cuántos fallaron.
+        const detail = data.error || t("common.error");
+        const count = Array.isArray(data.errors) ? data.errors.length : 0;
+        const msg = count > 1 ? `${detail} (+${count - 1} más)` : detail;
+        toast.error(msg);
+        // Logear todos los errores en consola para que Eduardo pueda
+        // pegarlos al reportar el bug.
+        if (Array.isArray(data.errors)) {
+          console.error("Detalles de errores al guardar permisos:", data.errors);
+        }
       }
-    } catch (error) {
-      toast.error(t("common.error"));
+    } catch (error: any) {
+      console.error("Network error saving permissions:", error);
+      toast.error(error?.message ?? t("common.error"));
     } finally {
       setSaving(false);
     }

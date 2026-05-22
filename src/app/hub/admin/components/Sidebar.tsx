@@ -161,7 +161,7 @@ export default function Sidebar() {
         { href: "/hub/admin/social/connections", labelKey: "admin.nav.socialConnections", icon: Handshake },
         { href: "/hub/admin/social/feed", labelKey: "admin.nav.socialFeed", icon: Rss },
         { href: "/hub/admin/social/goals", labelKey: "admin.nav.socialGoals", icon: Target },
-        { href: "/hub/admin/social/messages", labelKey: "admin.nav.socialMessages", icon: MessageCircle },
+        { href: "/social/messages", labelKey: "admin.nav.socialMessages", icon: MessageCircle },
         { href: "/hub/admin/social/forums", labelKey: "admin.nav.socialForums", icon: MessageSquareCode },
         { href: "/hub/admin/social/moderation", labelKey: "admin.nav.socialModeration", icon: ShieldCheck },
       ],

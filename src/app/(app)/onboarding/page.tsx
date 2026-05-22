@@ -104,19 +104,24 @@ export default function OnboardingPage() {
           setConsentsError(data.error ?? "load_failed");
           return;
         }
-        const current = {} as Record<ConsentKey, boolean>;
+        // Two separate states:
+        //  - uiState (consentMap): what we show in the UI. Required consents
+        //    are forced to true so the product can run.
+        //  - dbState (consentInitial): the *real* state from DB. Used to
+        //    detect what needs to be POSTed. Crucial: if required is true in
+        //    UI but missing/false in DB, that counts as a change and gets
+        //    persisted on Next. Without this split the diff is empty and
+        //    basic_processing is never written, causing the ConsentGate to
+        //    redirect-loop after onboarding.
+        const dbState = {} as Record<ConsentKey, boolean>;
+        const uiState = {} as Record<ConsentKey, boolean>;
         for (const c of CONSENTS) {
           const found = (data.consents ?? []).find((x: { key: ConsentKey }) => x.key === c.key);
-          // Required consents always start ON in the UI; without them the
-          // product can't run, so revoking would just block re-entry.
-          if (c.required) {
-            current[c.key] = true;
-          } else {
-            current[c.key] = found?.granted ?? c.defaultGranted;
-          }
+          dbState[c.key] = found?.granted === true;
+          uiState[c.key] = c.required ? true : (found?.granted ?? c.defaultGranted);
         }
-        setConsentMap(current);
-        setConsentInitial(current);
+        setConsentMap(uiState);
+        setConsentInitial(dbState);
       })
       .catch((e) => setConsentsError(e instanceof Error ? e.message : "load_failed"))
       .finally(() => setConsentsLoading(false));

@@ -164,6 +164,33 @@ integración con Emotional Budgeting en `docs/ROWIIA_INTEGRATED_SCOPE.md`.
 aprobación de las 5 decisiones de arquitectura en sección 5 del scope
 integrado.
 
+### Rowi Education (Higher Ed) + Rowi Student
+
+Dos frentes adicionales del producto educativo (secciones 9 y 10 del
+scope integrado):
+
+- **Rowi Education** — universidades pre-grado / post-grado / técnica.
+  Foco: preparación para inserción laboral. Instrumento principal: LVS
+  (Leadership Vital Signs). Roles: Coordinador de Carrera (espejo del
+  QC), profesor titular (espejo del docente). EmployabilityProfile del
+  estudiante con consent explícito.
+- **Rowi Student** — sub-hub `/hub/student/*` paralelo a `/hub/*`. Vive
+  en el mismo Rowiverse (multi-hub). Journal privado encriptado, control
+  granular de sharing con familia. La familia accede vía
+  `/hub/family/vital-signs` y solo ve lo que el estudiante comparte
+  explícitamente. Crisis protocol escala señal sin romper privacidad.
+
+### Convención i18n (decisión Eduardo, 2026-05-21)
+
+**Español NO se regionaliza.** Un único `es.json` para todo el
+ecosistema hispanohablante (Ecuador, Colombia, México, España, etc.).
+Diferencias regionales se resuelven con vocabulario neutro. Términos
+regionales específicos del programa (e.g. "DECE" en Ecuador) se
+documentan como términos del programa, no como variantes de idioma.
+
+Locales soportados: `es` / `en` / `pt` / `it`. Roadmap futuro sin
+urgencia: zh (China + PIPL), ar (RTL), fr, de, ja.
+
 ### Email locale chain
 
 Every transactional email picks recipient's `preferredLang` →

@@ -1,14 +1,18 @@
 # ROWIIA — Scope integrado
 
-> **Status:** v0.1 — mapa de integración entre los dos productos
+> **Status:** v0.2 — mapa de integración entre los tres frentes del producto
 > **Última revisión:** 2026-05-21
 
-ROWIIA opera **dos productos integrados** sobre el mismo stack y la misma metodología Six Seconds:
+ROWIIA opera **tres frentes integrados** sobre el mismo stack y la misma metodología Six Seconds:
 
 1. **Emotional Budgeting** — sistema personal/empresarial. Documento maestro: [`EMOTIONAL_BUDGETING.md`](./EMOTIONAL_BUDGETING.md).
-2. **EmoPower Schools** — sistema escolar/sistémico. Documento maestro: [`EMOPOWER_SCHOOLS.md`](./EMOPOWER_SCHOOLS.md).
+2. **EmoPower Schools (K-12)** — sistema escolar para educación primaria y secundaria. Documento maestro: [`EMOPOWER_SCHOOLS.md`](./EMOPOWER_SCHOOLS.md).
+3. **Rowi Education / Higher Ed** — universidades (pre-grado, post-grado, formación técnica). Foco: preparar al estudiante para inserción laboral con LVS, BBP, SEI. Capítulo dedicado en este documento (sección 9).
 
-Este documento describe **cómo se conectan** y **qué se construye una vez para servir a ambos**.
+Adicional, todo el frente de educación tiene un **sub-hub paralelo**:
+- **Rowi Student** — espacio del estudiante (todas las edades, K-12 + Higher Ed) con journal privado, herramientas SEL por banda, contacto con adultos de confianza. Comparte data con familias vía multi-hubs (mismo Rowiverse, distintos espacios).
+
+Este documento describe **cómo se conectan los tres frentes** y **qué se construye una vez para servir a todos**.
 
 ---
 
@@ -348,3 +352,167 @@ Para entrar al MVP del módulo Schools, ROWIIA necesita:
 5. **Compromiso de tiempo** del equipo de desarrollo: el MVP requiere 6-8 semanas con foco. Si se hace en paralelo con Emotional Budgeting, sumar 50%.
 
 Hasta que esas 5 piezas estén resueltas, el trabajo de implementación queda en pausa pero el documento queda como source of truth para que cualquier conversación de stakeholders (Six Seconds, Brain Up, colegios piloto, MINEDUC, equipo dev) hable el mismo lenguaje.
+
+---
+
+## 9. Rowi Education — Educación Superior (universidades, pre/post grado)
+
+EmoPower Schools cubre K-12 (inicial → bachillerato). El frente de Higher
+Ed es una extensión natural con foco distinto: ya no formar al niño, sino
+**preparar al joven adulto para su inserción laboral** y al profesional en
+formación para los desafíos emocionales de su carrera.
+
+### Diferencias clave vs K-12
+
+| Eje | K-12 (EmoPower Schools) | Higher Ed (Rowi Education) |
+|---|---|---|
+| Edad | 3-18 años | 18-35+ años |
+| Instrumento Vital Signs | EVS institucional + SEI-YV | **LVS** (Leadership Vital Signs) + SEI + BBP |
+| Foco | desarrollo emocional, clima escolar | inserción laboral, employability, liderazgo |
+| Modelo familiar | familia activa + consent parental | familia con visibilidad opcional (mayores de edad) |
+| Quality Coach | DECE de la institución | Coordinador de Carrera + Bienestar Universitario |
+| Certificaciones | EQE1/2/3 docentes | EQE1/2/3 + UEQ profesores; **employability certificate** estudiantes |
+| Output del estudiante | journal + check-in semanal | journal + portafolio profesional + perfil empleabilidad |
+
+### Casos de uso específicos
+
+- **Pre-grado**: usar LVS para mapear las competencias de liderazgo del
+  estudiante a lo largo de la carrera. Comparativos Año 1 vs Año Final.
+  Plan de desarrollo individual conectado con el syllabus de cada
+  programa.
+- **Post-grado (MBA, maestrías profesionales)**: SEI + BBP en cohortes
+  ejecutivas. Debriefs grupales con LVS aplicado a casos reales del
+  estudiante. Integración con bolsas de empleo del programa.
+- **Vinculación con empresas**: el estudiante puede compartir su perfil
+  LVS/SEI (con consent explícito) con empresas que buscan talento. ROWIIA
+  se convierte en infraestructura del proceso de contratación con
+  evidencia emocional, no solo CV.
+- **Formación técnica y tecnológica**: focos específicos en autonomía,
+  resiliencia y trabajo en equipo — competencias críticas en oficios y
+  carreras técnicas.
+
+### Reutilización con K-12
+
+Todo el ciclo del Quality Coach (observación → devolución → comunidad →
+supervisión) aplica con adaptación: en Higher Ed el "QC" es Coordinador
+de Carrera, los "docentes" son profesores titulares, las "clases" son
+seminarios o ateneos. La rúbrica de aula necesita ajustes (apertura
+emocional + conexión + transferencia siguen siendo válidas, pero los
+indicadores conductuales se calibran para adultos).
+
+### Modelos Prisma adicionales para Higher Ed
+
+```
+EducationalProgram             // carrera / programa
+  id, institutionId, name, level (preGrade/postGrade/technical),
+  durationYears, language
+
+StudentEnrollment              // matrícula del estudiante en un programa
+  id, studentUserId, programId, cohortYear, status (active/graduated/dropped),
+  expectedGraduation
+
+EmployabilityProfile           // perfil de empleabilidad del estudiante
+  id, studentUserId, lvsScore (json), seiScore (json), bbpScore (json),
+  portfolioItems (json), preferredSectors[], visibleToEmployers (bool)
+
+EmployerEngagement             // empresa vinculada al programa
+  id, programId, companyName, contactEmail, contactName,
+  rolesPosted (json), accessLevel (browse/contact/full)
+```
+
+### MVP de Higher Ed (sumar al MVP de Schools)
+
+Si Higher Ed entra como módulo paralelo al MVP K-12, el incremento es:
+- LVS digital adaptado a contexto universitario.
+- Dashboards de Coordinador de Carrera (espejo del QC).
+- EmployabilityProfile básico (sin marketplace de empresas todavía).
+- Comparativos Año 1 vs Año Final.
+
+**Costo extra estimado:** 3-4 semanas si se hace en paralelo con K-12.
+
+---
+
+## 10. Rowi Student — sub-hub del estudiante (todas las edades)
+
+Rowi Student es un **hub diferenciado** dentro del mismo Rowiverse para
+todo lo que toca al estudiante directamente, sin importar si está en
+K-12 o Higher Ed. Es donde el estudiante vive su experiencia personal y
+donde su familia puede acompañarlo (con consent del estudiante).
+
+### Principios
+
+- **Multi-hub con un solo Rowiverse**: el estudiante puede estar a la vez
+  en /hub/student (su espacio) y en /hub (espacio adulto si tiene rol
+  laboral). Su data no se duplica. Modelos compartidos.
+- **Privacidad absoluta del journal**: el colegio / la universidad NO ven
+  el journal. Solo el estudiante. La familia ve **lo que el estudiante
+  decida compartir** (no acceso por default, ni siquiera para menores —
+  el colegio sí puede notificar a familia pero el contenido es del
+  estudiante).
+- **Crisis protocol con escalación**: keyword detection → DECE/Bienestar
+  Universitario → línea de ayuda nacional (1800-XXXXXX en EC). Esto NO
+  rompe privacidad; solo escala la señal, no el contenido.
+- **Padres en multi-hub**: la familia tiene su propio espacio en /hub
+  (que ya existe — `/hub/family/vital-signs`) y desde ahí puede
+  ver lo que el estudiante le comparte. Si el estudiante decide
+  compartir su evolución SEI-YV con su madre, esa data aparece en el
+  dashboard de la madre. Si no, no aparece. Estudiante decide.
+
+### Páginas del sub-hub /hub/student
+
+```
+/hub/student                          # home del estudiante
+/hub/student/journal                  # diario privado (encriptado)
+/hub/student/tools                    # herramientas SEL según banda
+/hub/student/vital-signs              # SEI-YV / SEI propio Ola 1 vs 3
+/hub/student/contact                  # contactar DECE / Bienestar
+/hub/student/popup-festival           # eventos globales
+/hub/student/sharing                  # control granular de qué comparte
+                                      # con familia, tutor, etc.
+```
+
+### Cómo conviven con los hubs existentes
+
+| Estudiante | Estudiante adulto trabajando |
+|---|---|
+| /hub/student/* | /hub/* (todo lo de ROWIIA adulto disponible) |
+| Familia ve solo lo compartido | Empresa ve solo lo de su tenant |
+
+El usuario alterna contextos con el mismo `AccountContextChip` que ya
+existe (cookie `rowi_active_context`). Esto está soportado por el modelo
+multi-hat (ver `docs/CONTEXTS_MODEL.md`).
+
+---
+
+## 11. Convención i18n: ES no se regionaliza
+
+**Decisión Eduardo, 2026-05-21**: el español en ROWIIA es **uno solo**.
+No hay `es-EC`, `es-CO`, `es-MX`, `es-ES`. Un único `es.json` que sirve
+a todo el ecosistema hispanohablante.
+
+Razones:
+- Mantener 4 locales (es / en / pt / it) es manejable. Multiplicar el
+  español por 20+ variantes regionales sería inmanejable.
+- Las diferencias regionales son léxicas (computadora vs ordenador) y se
+  resuelven con elección de vocabulario neutro.
+- Cuando un término regional es necesario (ej. "DECE" en Ecuador), se
+  documenta como término del programa, no como variante de idioma.
+
+Si en el futuro Ecuador, México o Colombia requieren versiones legales
+distintas (consentimientos según LOPD local), se maneja **dentro del
+mismo `es.json`** con keys condicionadas por `Tenant.country`, no con
+locales separados.
+
+Catálogo final de idiomas:
+- `es` — español (todas las regiones)
+- `en` — inglés (todas las regiones)
+- `pt` — portugués (Brasil + Portugal)
+- `it` — italiano
+
+Roadmap futuro (sin urgencia):
+- `zh` — chino (entrada a China, requiere PIPL compliance)
+- `ar` — árabe (Medio Oriente, RTL)
+- `fr` — francés (Europa + África francófona)
+- `de` — alemán (DACH)
+- `ja` — japonés
+

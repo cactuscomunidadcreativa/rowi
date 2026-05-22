@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/react";
 import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner";
 import Link from "next/link";
+import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 import {
   Activity,
   Brain,
@@ -18,6 +19,7 @@ import {
   Users,
   Building2,
   Home,
+  Globe2,
   MessageCircleQuestion,
   ChevronRight,
 } from "lucide-react";
@@ -99,7 +101,7 @@ interface CheckIn {
 }
 
 interface ContextCard {
-  scope: "team" | "org" | "family";
+  scope: "team" | "org" | "family" | "world";
   subjectId: string;
   subjectName: string;
   subjectSlug?: string;
@@ -110,14 +112,22 @@ interface ContextCard {
   engagementIndex: number | null;
   topDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
   bottomDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
+  archetype: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esTagline: string;
+    enTagline: string;
+    emoji: string;
+  } | null;
 }
 
 interface MultiContextData {
   ok: boolean;
-  beta?: boolean;
   teams: ContextCard[];
   orgs: ContextCard[];
   families: ContextCard[];
+  world: ContextCard;
 }
 
 export default function VitalSignsPage() {
@@ -191,21 +201,6 @@ export default function VitalSignsPage() {
   return (
     <div className="space-y-6 p-6">
       <ConsentRefreshBanner />
-      {multiCtx?.beta && (
-        <div className="rowi-card bg-gradient-to-r from-[var(--rowi-primary)]/10 to-[var(--rowi-secondary)]/10 border-[var(--rowi-primary)]/30">
-          <div className="flex items-start gap-3">
-            <span className="rowi-chip bg-[var(--rowi-primary)] text-white text-[10px] font-bold tracking-wider">
-              {t("vs.multiCtx.betaBadge", "BETA")}
-            </span>
-            <p className="text-sm text-[var(--rowi-foreground)] flex-1">
-              {t(
-                "vs.multiCtx.betaNotice",
-                "Vista beta para miembros de Six Seconds. Los agregados son una inferencia v0 desde los SEI + Brain Talents de los miembros, no son OVS / TVS oficiales medidos.",
-              )}
-            </p>
-          </div>
-        </div>
-      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -313,6 +308,23 @@ export default function VitalSignsPage() {
             <div className="text-3xl font-bold rowi-gradient-text mb-2">
               {lang === "en" ? data!.quadrant.enName : data!.quadrant.esName}
             </div>
+            {data!.quadrant.code !== "BALANCED" && ROWI_ARCHETYPES[data!.quadrant.code] && (
+              <div className="mb-3 flex items-center gap-2 text-sm">
+                <span className="text-xl">{ROWI_ARCHETYPES[data!.quadrant.code].emoji}</span>
+                <div>
+                  <div className="font-semibold text-[var(--rowi-foreground)]">
+                    {lang === "en"
+                      ? ROWI_ARCHETYPES[data!.quadrant.code].enName
+                      : ROWI_ARCHETYPES[data!.quadrant.code].esName}
+                  </div>
+                  <div className="text-xs text-[var(--rowi-muted)]">
+                    {lang === "en"
+                      ? ROWI_ARCHETYPES[data!.quadrant.code].enTagline
+                      : ROWI_ARCHETYPES[data!.quadrant.code].esTagline}
+                  </div>
+                </div>
+              </div>
+            )}
             <p className="text-sm text-[var(--rowi-muted)] mb-4">
               {t("vs.quadrant.notice", "El cuadrante es un arquetipo dominante, no una etiqueta fija.")}
             </p>
@@ -429,8 +441,16 @@ export default function VitalSignsPage() {
             </div>
           </div>
 
-          {multiCtx?.beta && (
+          {multiCtx?.ok && (
             <>
+              <div className="rowi-card bg-gradient-to-r from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5 border-[var(--rowi-primary)]/20">
+                <p className="text-sm text-[var(--rowi-foreground)]">
+                  {t(
+                    "vs.multiCtx.inferenceNotice",
+                    "Los siguientes agregados son una inferencia v0 desde los SEI + Brain Talents de los miembros, no son OVS / TVS oficiales medidos. La regla de privacidad N ≥ 5 oculta cualquier contexto con menos de 5 perfiles.",
+                  )}
+                </p>
+              </div>
               <ContextSection
                 title={t("vs.multiCtx.teams.title", "Mis equipos (TVS proxy)")}
                 subtitle={t(
@@ -478,6 +498,22 @@ export default function VitalSignsPage() {
                 t={t}
                 Icon={Home}
                 accent="text-rose-600 dark:text-rose-300"
+              />
+              <ContextSection
+                title={t("vs.multiCtx.world.title", "La humanidad Rowi (OVS Rowiverse)")}
+                subtitle={t(
+                  "vs.multiCtx.world.subtitle",
+                  "Cómo se ve hoy toda la base Rowi: el contexto 'mundo' al que perteneces aunque no tengas org propia.",
+                )}
+                empty={t(
+                  "vs.multiCtx.world.empty",
+                  "Aún no hay suficientes usuarios con perfil para mostrar el agregado mundial.",
+                )}
+                cards={[multiCtx.world]}
+                lang={lang}
+                t={t}
+                Icon={Globe2}
+                accent="text-sky-600 dark:text-sky-300"
               />
             </>
           )}
@@ -544,7 +580,9 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
       ? "¿Cómo puedo aportar más a este equipo?"
       : card.scope === "org"
       ? "¿Qué quiero aportar a esta organización?"
-      : "¿Cómo puedo cuidar mejor a mi familia?";
+      : card.scope === "family"
+      ? "¿Cómo puedo cuidar mejor a mi familia?"
+      : "¿Qué Rowi puedo aportar al mundo?";
 
   return (
     <div className="rowi-card flex flex-col gap-3">
@@ -573,6 +611,19 @@ function ContextCardItem({ card, lang, t, accent }: ContextCardItemProps) {
         </div>
       ) : (
         <>
+          {card.archetype && (
+            <div className="flex items-center gap-2 text-xs bg-[var(--rowi-card-elev)] rounded-lg p-2">
+              <span className="text-base">{card.archetype.emoji}</span>
+              <div className="min-w-0">
+                <div className="font-medium text-[var(--rowi-foreground)] truncate">
+                  {lang === "en" ? card.archetype.enName : card.archetype.esName}
+                </div>
+                <div className="text-[10px] text-[var(--rowi-muted)] truncate">
+                  {lang === "en" ? card.archetype.enTagline : card.archetype.esTagline}
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)]">

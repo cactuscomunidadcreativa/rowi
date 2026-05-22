@@ -5,11 +5,13 @@
  *  - sus equipos (RowiCommunity → TVS proxy)
  *  - sus organizaciones (Tenant → OVS proxy)
  *  - sus familias (FamilyRelation → FVS proxy)
+ *  - la humanidad Rowi (toda la base con consent analytics → OVS Rowiverse)
  *
- * Beta-gated: solo accesible a miembros de tenants en
- * BETA_MULTI_CTX_TENANT_SLUGS. Para los demás devuelve { ok: true, beta: false }.
+ * Sin beta gate: la vista aplica a todos. Cuando el agregado no es ground
+ * truth oficial (es decir, casi siempre hoy), la UI muestra "Inferencia v0
+ * — no es OVS / TVS oficial".
  *
- * Privacy floor N≥5 aplicado en el agregador. Las cards con N<5 vienen con
+ * Privacy floor N≥5 aplicado en el agregador. Cards con N<5 vienen con
  * `suppressed: true` para que la UI muestre placeholder, no scores.
  */
 export const runtime = "nodejs";
@@ -17,14 +19,14 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
-import { userHasBetaMultiContext } from "@/lib/vital-signs/beta";
 import {
   aggregateInferredVitalSigns,
   type AggregateResult,
 } from "@/lib/vital-signs/aggregate";
+import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 
 interface ContextCard {
-  scope: "team" | "org" | "family";
+  scope: "team" | "org" | "family" | "world";
   subjectId: string;
   subjectName: string;
   subjectSlug?: string;
@@ -35,6 +37,14 @@ interface ContextCard {
   engagementIndex: number | null;
   topDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
   bottomDriver: { code: string; esName: string; enName: string; scoreMean: number } | null;
+  archetype: {
+    quadrant: "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
+    esName: string;
+    enName: string;
+    esTagline: string;
+    enTagline: string;
+    emoji: string;
+  } | null;
 }
 
 function toCard(r: AggregateResult, slug?: string): ContextCard {
@@ -43,6 +53,7 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
     .sort((a, b) => b.scoreMean - a.scoreMean);
   const top = ranked[0];
   const bottom = ranked[ranked.length - 1];
+  const arch = r.dominantQuadrant ? ROWI_ARCHETYPES[r.dominantQuadrant] : null;
   return {
     scope: r.scope,
     subjectId: r.subjectId,
@@ -65,6 +76,16 @@ function toCard(r: AggregateResult, slug?: string): ContextCard {
             scoreMean: bottom.scoreMean,
           }
         : null,
+    archetype: arch && r.dominantQuadrant
+      ? {
+          quadrant: r.dominantQuadrant,
+          esName: arch.esName,
+          enName: arch.enName,
+          esTagline: arch.esTagline,
+          enTagline: arch.enTagline,
+          emoji: arch.emoji,
+        }
+      : null,
   };
 }
 
@@ -82,11 +103,6 @@ export async function GET(req: NextRequest) {
     });
     if (!user) {
       return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
-    }
-
-    const beta = await userHasBetaMultiContext(user.id);
-    if (!beta) {
-      return NextResponse.json({ ok: true, beta: false, teams: [], orgs: [], families: [] });
     }
 
     const [memberships, communityMemberships, familyRelations] = await Promise.all([
@@ -128,9 +144,6 @@ export async function GET(req: NextRequest) {
       }).then((r) => toCard(r, c.community.slug)),
     );
 
-    // For family scope, the subjectId is the family owner — we anchor on the
-    // current user when they own relations, or on the owner when they are the
-    // related side. Deduplicate by owner.
     const familyOwners = new Map<string, string>();
     for (const r of familyRelations) {
       if (r.ownerId === user.id) {
@@ -147,13 +160,20 @@ export async function GET(req: NextRequest) {
       }).then((r) => toCard(r)),
     );
 
-    const [orgs, teams, families] = await Promise.all([
+    const worldPromise = aggregateInferredVitalSigns({
+      scope: "world",
+      subjectId: "rowiverse",
+      subjectName: "Rowiverse",
+    }).then((r) => toCard(r));
+
+    const [orgs, teams, families, world] = await Promise.all([
       Promise.all(orgPromises),
       Promise.all(teamPromises),
       Promise.all(familyPromises),
+      worldPromise,
     ]);
 
-    return NextResponse.json({ ok: true, beta: true, teams, orgs, families });
+    return NextResponse.json({ ok: true, teams, orgs, families, world });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/multi-context error:", e);

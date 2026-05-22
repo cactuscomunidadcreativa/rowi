@@ -27,10 +27,11 @@ import {
   type BrainTalentKey,
   type DriverCode,
   type PulsePointCode,
+  type Quadrant,
 } from "./catalog";
 import { cohesionBand, engagementIndexFromDriverMean } from "./engagement";
 
-export type AggregateScope = "team" | "org" | "family";
+export type AggregateScope = "team" | "org" | "family" | "world";
 
 const TALENT_KEY_MAP: Record<string, BrainTalentKey> = {
   datamining: "datamining",
@@ -93,6 +94,8 @@ export interface AggregateResult {
   pulsePoints: AggregatedPulsePoint[];
   engagementIndex: number | null;
   overallMean: number | null;
+  /** Cuadrante dominante del agregado (Map / Lantern / First Aid / Boots). */
+  dominantQuadrant: Quadrant | null;
 }
 
 const N_MIN = 5;
@@ -129,6 +132,11 @@ async function userIdsForScope(scope: AggregateScope, subjectId: string): Promis
     });
     return rows.map((r) => r.userId);
   }
+  if (scope === "world") {
+    // Toda la base Rowi (consent analytics se aplica después).
+    const rows = await prisma.user.findMany({ select: { id: true } });
+    return rows.map((r) => r.id);
+  }
   // family
   const rows = await prisma.familyRelation.findMany({
     where: {
@@ -164,7 +172,27 @@ function suppressed(
     pulsePoints: [],
     engagementIndex: null,
     overallMean: null,
+    dominantQuadrant: null,
   };
+}
+
+/**
+ * El cuadrante dominante de un agregado se determina por el driver
+ * (Motivation / Change / Teamwork / Execution) con la media más alta.
+ * Trust es el pivote del modelo (no genera cuadrante).
+ */
+function dominantQuadrantOf(drivers: AggregatedDriver[]): Quadrant | null {
+  const candidates: Array<{ q: Quadrant; v: number }> = [];
+  for (const d of drivers) {
+    if (d.scoreMean === null) continue;
+    if (d.code === "MOTIVATION") candidates.push({ q: "MAPA", v: d.scoreMean });
+    else if (d.code === "CHANGE") candidates.push({ q: "LINTERNA", v: d.scoreMean });
+    else if (d.code === "TEAMWORK") candidates.push({ q: "BOTIQUIN", v: d.scoreMean });
+    else if (d.code === "EXECUTION") candidates.push({ q: "BOTAS", v: d.scoreMean });
+  }
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => b.v - a.v);
+  return candidates[0].q;
 }
 
 export async function aggregateInferredVitalSigns(args: {
@@ -314,5 +342,6 @@ export async function aggregateInferredVitalSigns(args: {
     pulsePoints,
     engagementIndex,
     overallMean: round1(overallMean),
+    dominantQuadrant: dominantQuadrantOf(drivers),
   };
 }

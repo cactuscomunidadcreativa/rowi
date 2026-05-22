@@ -40,6 +40,61 @@ export type DriverCode = "TRUST" | "MOTIVATION" | "CHANGE" | "TEAMWORK" | "EXECU
 
 export type Quadrant = "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
 
+/**
+ * Rowi archetypes — un personaje propio para cada cuadrante del modelo
+ * Six Seconds. Aterriza el arquetipo a lenguaje Rowi y abre la pregunta
+ * "¿qué Rowi aportas tú en este contexto?".
+ *
+ *   LINTERNA (Strategy + Organization, Change)   → Rowi Vigía       🔭
+ *   MAPA     (Strategy + People, Motivation)     → Rowi Planeador   🗺️
+ *   BOTIQUIN (Operations + People, Teamwork)     → Rowi Paramédico  🚑
+ *   BOTAS    (Operations + Organization, Exec)   → Rowi Constructor 🔨
+ */
+export const ROWI_ARCHETYPES: Record<
+  Quadrant,
+  {
+    esName: string;
+    enName: string;
+    esTagline: string;
+    enTagline: string;
+    emoji: string;
+    i18nKey: string;
+  }
+> = {
+  LINTERNA: {
+    esName: "Rowi Vigía",
+    enName: "Rowi Lookout",
+    esTagline: "Ve riesgos y oportunidades antes que nadie",
+    enTagline: "Spots risks and opportunities before anyone else",
+    emoji: "🔭",
+    i18nKey: "vs.archetype.linterna",
+  },
+  MAPA: {
+    esName: "Rowi Planeador",
+    enName: "Rowi Planner",
+    esTagline: "Traza el rumbo y da sentido a dónde vamos",
+    enTagline: "Charts the path and gives meaning to where we go",
+    emoji: "🗺️",
+    i18nKey: "vs.archetype.mapa",
+  },
+  BOTIQUIN: {
+    esName: "Rowi Paramédico",
+    enName: "Rowi Medic",
+    esTagline: "Cuida al equipo y repara los vínculos",
+    enTagline: "Cares for the team and repairs bonds",
+    emoji: "🚑",
+    i18nKey: "vs.archetype.botiquin",
+  },
+  BOTAS: {
+    esName: "Rowi Constructor",
+    enName: "Rowi Builder",
+    esTagline: "Aterriza ideas y construye lo planeado",
+    enTagline: "Lands ideas and builds what was planned",
+    emoji: "🔨",
+    i18nKey: "vs.archetype.botas",
+  },
+};
+
 export const DRIVERS: ReadonlyArray<{
   code: DriverCode;
   i18nKey: string;

@@ -485,7 +485,7 @@ export default function NavBar() {
                 }`}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xl:inline whitespace-nowrap">{label}</span>
+                <span className="hidden 2xl:inline whitespace-nowrap">{label}</span>
               </Link>
             );
           })}
@@ -503,7 +503,7 @@ export default function NavBar() {
                 }`}
               >
                 <Users2 className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xl:inline whitespace-nowrap">{t.social}</span>
+                <span className="hidden 2xl:inline whitespace-nowrap">{t.social}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${socialDropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
@@ -707,7 +707,7 @@ export default function NavBar() {
                     </span>
                   )}
                 </div>
-                <span className="hidden xl:inline text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
+                <span className="hidden 2xl:inline text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
                   {userName}
                 </span>
                 {(() => {

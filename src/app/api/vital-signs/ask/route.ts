@@ -126,10 +126,15 @@ export async function POST(req: NextRequest) {
     if (!subjectId) {
       return NextResponse.json({ ok: false, error: "Missing subjectId" }, { status: 400 });
     }
-    const messages = (body.messages ?? []).slice(-MAX_HISTORY).map((m) => ({
-      role: m.role,
-      content: String(m.content ?? "").slice(0, MAX_MESSAGE_LEN),
-    }));
+    // Solo aceptar roles user/assistant: evita que el cliente inyecte un
+    // mensaje role:"system" con instrucciones arbitrarias al modelo.
+    const messages = (body.messages ?? [])
+      .filter((m) => m && (m.role === "user" || m.role === "assistant"))
+      .slice(-MAX_HISTORY)
+      .map((m) => ({
+        role: m.role,
+        content: String(m.content ?? "").slice(0, MAX_MESSAGE_LEN),
+      }));
     if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
       return NextResponse.json({ ok: false, error: "Last message must be from user" }, { status: 400 });
     }

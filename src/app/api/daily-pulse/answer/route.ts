@@ -20,8 +20,10 @@ import { prisma } from "@/core/prisma";
 import {
   feedbackForValue,
   questionForToday,
+  type PulseLang,
 } from "@/lib/daily-pulse/questions";
 import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
+import { awardPoints } from "@/services/gamification";
 
 const DAILY_POINTS = 5;
 
@@ -46,7 +48,9 @@ export async function POST(req: NextRequest) {
     if (!Number.isFinite(value) || value < 1 || value > 5) {
       return NextResponse.json({ ok: false, error: "Value must be 1..5" }, { status: 400 });
     }
-    const lang: "es" | "en" = body.lang === "en" ? "en" : "es";
+    const lang: PulseLang = ["en", "pt", "it"].includes(body.lang ?? "")
+      ? (body.lang as PulseLang)
+      : "es";
     const tz = parseTz(body.tzOffsetMinutes);
 
     const user = await prisma.user.findUnique({
@@ -90,24 +94,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 2. Sumar puntos. Balance arrastrado desde el último registro.
-    const lastPoints = await prisma.userPoints.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      select: { balance: true },
-    });
-    const newBalance = (lastPoints?.balance ?? 0) + DAILY_POINTS;
-    await prisma.userPoints.create({
-      data: {
-        userId: user.id,
-        amount: DAILY_POINTS,
-        balance: newBalance,
-        reason: "MICRO_LEARNING",
-        description: `daily-pulse · ${q.sei} · ${value}`,
-      },
-    });
-
-    // 3. Actualizar streak.
+    // 2. Actualizar streak (antes de los puntos para que el multiplicador
+    //    de awardPoints refleje la racha de hoy).
     const existingStreak = await prisma.userStreak.findUnique({
       where: { userId: user.id },
       select: {
@@ -154,12 +142,22 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // 3. Sumar puntos por el camino canónico: actualiza UserLevel.totalPoints
+    //    (el total que leen nivel, leaderboard, perfil y canje de rewards) y
+    //    aplica multiplicadores de racha/nivel.
+    const award = await awardPoints({
+      userId: user.id,
+      amount: DAILY_POINTS,
+      reason: "MICRO_LEARNING",
+      description: `daily-pulse · ${q.sei} · ${value}`,
+    });
+
     return NextResponse.json({
       ok: true,
       already: false,
       value,
-      pointsAdded: DAILY_POINTS,
-      balance: newBalance,
+      pointsAdded: award.pointsAwarded,
+      balance: award.totalPoints,
       streak: { current: currentStreak, longest: longestStreak },
       feedback: feedbackForValue(q, value, lang),
     });

@@ -23,6 +23,16 @@ import {
   Compass,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import {
+  vsDriverName,
+  vsDriverNeed,
+  vsPpName,
+  vsSeiName,
+  vsOutcomeName,
+  vsOrientationName,
+  vsTalentName,
+  type VsLang,
+} from "@/lib/vital-signs/vsLocale";
 
 type Scope = "team" | "org" | "family" | "world";
 type Quadrant = "LINTERNA" | "MAPA" | "BOTIQUIN" | "BOTAS";
@@ -117,17 +127,24 @@ interface Props {
   onClose: () => void;
 }
 
-const COHESION_LABEL: Record<AggDriver["cohesion"], { es: string; en: string; cls: string }> = {
-  high: { es: "Alta", en: "High", cls: "text-emerald-600 dark:text-emerald-300" },
-  consistent: { es: "Consistente", en: "Consistent", cls: "text-emerald-500" },
-  mid: { es: "Media", en: "Mid", cls: "text-amber-500" },
-  low: { es: "Baja", en: "Low", cls: "text-rose-500" },
-  unknown: { es: "—", en: "—", cls: "text-[var(--rowi-muted-weak)]" },
+const COHESION_LABEL: Record<
+  AggDriver["cohesion"],
+  { es: string; en: string; pt: string; it: string; cls: string }
+> = {
+  high: { es: "Alta", en: "High", pt: "Alta", it: "Alta", cls: "text-emerald-600 dark:text-emerald-300" },
+  consistent: { es: "Consistente", en: "Consistent", pt: "Consistente", it: "Coerente", cls: "text-emerald-500" },
+  mid: { es: "Media", en: "Mid", pt: "Média", it: "Media", cls: "text-amber-500" },
+  low: { es: "Baja", en: "Low", pt: "Baixa", it: "Bassa", cls: "text-rose-500" },
+  unknown: { es: "—", en: "—", pt: "—", it: "—", cls: "text-[var(--rowi-muted-weak)]" },
 };
 
 export default function ContextDetailDrawer({ scope, subjectId, open, onClose }: Props) {
   const { lang } = useI18n();
+  const vsLang = lang as VsLang;
   const isEN = lang === "en";
+  // Helper para textos de chrome (no catalogados): es/en/pt/it.
+  const L = (es: string, en: string, pt: string, it: string) =>
+    lang === "en" ? en : lang === "pt" ? pt : lang === "it" ? it : es;
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DetailResponse | null>(null);
@@ -182,12 +199,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)]">
                   {scope === "world"
-                    ? isEN ? "Rowiverse" : "Rowiverse"
+                    ? "Rowiverse"
                     : scope === "org"
-                      ? isEN ? "Organization" : "Organización"
+                      ? L("Organización", "Organization", "Organização", "Organizzazione")
                       : scope === "team"
-                        ? isEN ? "Team" : "Equipo"
-                        : isEN ? "Family" : "Familia"}
+                        ? L("Equipo", "Team", "Equipe", "Team")
+                        : L("Familia", "Family", "Família", "Famiglia")}
                 </div>
                 <h2 className="text-base font-semibold text-[var(--rowi-foreground)] truncate">
                   {data?.subjectName ?? "—"}
@@ -206,7 +223,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
               {loading && (
                 <div className="flex items-center gap-3 text-[var(--rowi-muted)] py-12 justify-center">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {isEN ? "Loading..." : "Cargando..."}
+                  {L("Cargando...", "Loading...", "Carregando...", "Caricamento...")}
                 </div>
               )}
 
@@ -216,9 +233,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
 
               {data && data.suppressed && (
                 <div className="rowi-card text-sm text-[var(--rowi-muted)] text-center py-8">
-                  {isEN
-                    ? `Not enough data: ${data.n} of ${data.nTotal} members with a complete profile (need 5).`
-                    : `No hay datos suficientes: ${data.n} de ${data.nTotal} miembros con perfil completo (mínimo 5).`}
+                  {L(
+                    `No hay datos suficientes: ${data.n} de ${data.nTotal} miembros con perfil completo (mínimo 5).`,
+                    `Not enough data: ${data.n} of ${data.nTotal} members with a complete profile (need 5).`,
+                    `Dados insuficientes: ${data.n} de ${data.nTotal} membros com perfil completo (mínimo 5).`,
+                    `Dati insufficienti: ${data.n} di ${data.nTotal} membri con profilo completo (minimo 5).`,
+                  )}
                 </div>
               )}
 
@@ -229,7 +249,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-[var(--rowi-primary)]" />
                       <span className="text-[10px] uppercase tracking-wider text-[var(--rowi-primary)] font-bold">
-                        {isEN ? "Available emotional capital" : "Capital emocional disponible"}
+                        {L("Capital emocional disponible", "Available emotional capital", "Capital emocional disponível", "Capitale emotivo disponibile")}
                       </span>
                     </div>
                     <div className="flex items-end gap-4 mb-2">
@@ -238,25 +258,31 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                         <span className="text-2xl text-[var(--rowi-muted)] font-normal">/100</span>
                       </div>
                       <div className="text-sm text-[var(--rowi-muted)] pb-2">
-                        {isEN ? "Engagement Index" : "Índice de Engagement"}
+                        {L("Índice de Engagement", "Engagement Index", "Índice de Engagement", "Indice di Engagement")}
                       </div>
                     </div>
                     <p className="text-xs text-[var(--rowi-muted)] mt-2">
-                      {isEN
-                        ? `Inventory of ${data.n} member profiles aggregating SEI + Vital Signs + Brain Talents.`
-                        : `Inventario de ${data.n} perfiles agregando SEI + Vital Signs + Brain Talents.`}
+                      {L(
+                        `Inventario de ${data.n} perfiles agregando SEI + Vital Signs + Brain Talents.`,
+                        `Inventory of ${data.n} member profiles aggregating SEI + Vital Signs + Brain Talents.`,
+                        `Inventário de ${data.n} perfis agregando SEI + Vital Signs + Brain Talents.`,
+                        `Inventario di ${data.n} profili che aggregano SEI + Vital Signs + Brain Talents.`,
+                      )}
                     </p>
                     {data.orientation && (
                       <div className="mt-4 flex items-center gap-2 text-sm">
                         <span className="text-lg">{data.orientation.emoji}</span>
                         <span className="font-semibold text-[var(--rowi-foreground)]">
-                          {isEN ? data.orientation.enName : data.orientation.esName}
+                          {vsOrientationName(data.orientation.quadrant, vsLang, data.orientation.esName, data.orientation.enName)}
                           {data.orientationCombined && data.orientationSecondary && (
                             <span className="text-[var(--rowi-muted)] font-normal">
                               {" + "}
-                              {isEN
-                                ? data.orientationSecondary.enName
-                                : data.orientationSecondary.esName}
+                              {vsOrientationName(
+                                data.orientationSecondary.quadrant,
+                                vsLang,
+                                data.orientationSecondary.esName,
+                                data.orientationSecondary.enName,
+                              )}
                             </span>
                           )}
                         </span>
@@ -268,7 +294,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {data.seiCompetencies.length > 0 && (
                     <Section
                       Icon={Brain}
-                      title={isEN ? "8 SEI competencies (Know · Choose · Give)" : "8 competencias SEI (Conocer · Elegir · Dar)"}
+                      title={L(
+                        "8 competencias SEI (Conocer · Elegir · Dar)",
+                        "8 SEI competencies (Know · Choose · Give)",
+                        "8 competências SEI (Conhecer · Escolher · Dar)",
+                        "8 competenze SEI (Conoscere · Scegliere · Dare)",
+                      )}
                     >
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {data.seiCompetencies.map((c) => (
@@ -280,7 +311,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                               {c.pursuit}
                             </div>
                             <div className="text-xs text-[var(--rowi-foreground)] truncate">
-                              {isEN ? c.enName : c.esName}
+                              {vsSeiName(c.key, vsLang, c.esName, c.enName)}
                             </div>
                             <div className="text-base font-bold text-[var(--rowi-foreground)]">
                               {c.scoreMean?.toFixed(1) ?? "—"}
@@ -295,16 +326,20 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {data.brainTalents.some((t) => t.scoreMean !== null) && (
                     <Section
                       Icon={Zap}
-                      title={isEN ? "18 Brain Talents" : "18 Brain Talents"}
+                      title="18 Brain Talents"
                     >
                       {(["focus", "decisions", "drive"] as const).map((cat) => {
                         const talents = data.brainTalents.filter((t) => t.category === cat);
-                        const catLabelES = cat === "focus" ? "Foco" : cat === "decisions" ? "Decisiones" : "Impulso";
-                        const catLabelEN = cat === "focus" ? "Focus" : cat === "decisions" ? "Decisions" : "Drive";
+                        const catLabel =
+                          cat === "focus"
+                            ? L("Foco", "Focus", "Foco", "Focus")
+                            : cat === "decisions"
+                              ? L("Decisiones", "Decisions", "Decisões", "Decisioni")
+                              : L("Impulso", "Drive", "Impulso", "Slancio");
                         return (
                           <div key={cat} className="mb-3 last:mb-0">
                             <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)] mb-1.5">
-                              {isEN ? catLabelEN : catLabelES}
+                              {catLabel}
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
                               {talents.map((t) => (
@@ -313,7 +348,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                                   className="rounded-lg p-2 bg-[var(--rowi-card-elev)] border border-[var(--rowi-card-border)] flex items-center justify-between"
                                 >
                                   <span className="text-xs text-[var(--rowi-foreground)] truncate">
-                                    {isEN ? t.enName : t.esName}
+                                    {vsTalentName(t.key, vsLang, t.esName, t.enName)}
                                   </span>
                                   <span className="text-sm font-semibold text-[var(--rowi-foreground)]">
                                     {t.scoreMean?.toFixed(1) ?? "—"}
@@ -330,7 +365,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {/* 5 drivers + cohesión */}
                   <Section
                     Icon={Heart}
-                    title={isEN ? "5 drivers + cohesion" : "5 drivers + cohesión"}
+                    title={L("5 drivers + cohesión", "5 drivers + cohesion", "5 drivers + coesão", "5 driver + coesione")}
                   >
                     <div className="space-y-2">
                       {data.drivers.map((d) => (
@@ -340,10 +375,10 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                         >
                           <div className="min-w-0">
                             <div className="text-sm font-medium text-[var(--rowi-foreground)] truncate">
-                              {isEN ? d.enName : d.esName}
+                              {vsDriverName(d.code, vsLang, d.esName, d.enName)}
                             </div>
                             <div className="text-[10px] text-[var(--rowi-muted)] truncate">
-                              {isEN ? d.enNeed : d.esNeed}
+                              {vsDriverNeed(d.code, vsLang, d.esNeed, d.enNeed)}
                             </div>
                           </div>
                           <div className="text-right whitespace-nowrap">
@@ -352,7 +387,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                             </div>
                             <div className={`text-[10px] ${COHESION_LABEL[d.cohesion].cls}`}>
                               SD {d.scoreSD?.toFixed(1) ?? "—"} ·{" "}
-                              {isEN ? COHESION_LABEL[d.cohesion].en : COHESION_LABEL[d.cohesion].es}
+                              {L(
+                                COHESION_LABEL[d.cohesion].es,
+                                COHESION_LABEL[d.cohesion].en,
+                                COHESION_LABEL[d.cohesion].pt,
+                                COHESION_LABEL[d.cohesion].it,
+                              )}
                             </div>
                           </div>
                         </div>
@@ -363,7 +403,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {/* 15 pulse points */}
                   <Section
                     Icon={TrendingUp}
-                    title={isEN ? "15 pulse points" : "15 pulse points"}
+                    title="15 pulse points"
                   >
                     <div className="space-y-3">
                       {data.drivers.map((d) => {
@@ -372,7 +412,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                         return (
                           <div key={d.code}>
                             <div className="text-xs font-semibold text-[var(--rowi-muted)] mb-1">
-                              {isEN ? d.enName : d.esName}
+                              {vsDriverName(d.code, vsLang, d.esName, d.enName)}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
                               {pps.map((pp) => (
@@ -381,7 +421,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                                   className="rounded-lg p-2 bg-[var(--rowi-card-elev)] border border-[var(--rowi-card-border)] flex items-center justify-between"
                                 >
                                   <span className="text-xs text-[var(--rowi-foreground)] truncate">
-                                    {isEN ? pp.enName : pp.esName}
+                                    {vsPpName(pp.code, vsLang, pp.esName, pp.enName)}
                                   </span>
                                   <span className="text-sm font-semibold text-[var(--rowi-foreground)]">
                                     {pp.scoreMean?.toFixed(1) ?? "—"}
@@ -399,7 +439,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {(scope === "org" || scope === "world") && data.outcomes.length > 0 && (
                     <Section
                       Icon={Target}
-                      title={isEN ? "4 OVS outcomes" : "4 outcomes del OVS"}
+                      title={L("4 outcomes del OVS", "4 OVS outcomes", "4 outcomes do OVS", "4 outcome dell'OVS")}
                     >
                       <div className="grid grid-cols-2 gap-2">
                         {data.outcomes.map((o) => (
@@ -408,7 +448,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                             className="rounded-lg p-3 bg-[var(--rowi-card-elev)] border border-[var(--rowi-card-border)]"
                           >
                             <div className="text-xs text-[var(--rowi-muted)] truncate">
-                              {isEN ? o.enName : o.esName}
+                              {vsOutcomeName(o.code, vsLang, o.esName, o.enName)}
                             </div>
                             <div className="text-base font-bold text-[var(--rowi-foreground)]">
                               {o.scoreMean?.toFixed(1) ?? "—"}
@@ -420,9 +460,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   )}
 
                   <div className="text-[10px] text-[var(--rowi-muted-weak)] text-center pt-4">
-                    {isEN
-                      ? "v0 inference — not an official OVS / TVS. Norm = 100 · Source: Six Seconds Network."
-                      : "Inferencia v0 — no es OVS / TVS oficial. Norma = 100 · Fuente: Six Seconds Network."}
+                    {L(
+                      "Inferencia v0 — no es OVS / TVS oficial. Norma = 100 · Fuente: Six Seconds Network.",
+                      "v0 inference — not an official OVS / TVS. Norm = 100 · Source: Six Seconds Network.",
+                      "Inferência v0 — não é um OVS / TVS oficial. Norma = 100 · Fonte: Six Seconds Network.",
+                      "Inferenza v0 — non è un OVS / TVS ufficiale. Norma = 100 · Fonte: Six Seconds Network.",
+                    )}
                   </div>
                 </>
               )}

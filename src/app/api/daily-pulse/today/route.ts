@@ -55,6 +55,8 @@ export async function GET(req: NextRequest) {
         pulsePointCode: q.pulsePointCode,
         esQuestion: q.esQuestion,
         enQuestion: q.enQuestion,
+        ptQuestion: q.ptQuestion,
+        itQuestion: q.itQuestion,
       },
       answeredToday: answeredToday
         ? { value: answeredToday.value, at: answeredToday.createdAt }

@@ -7,13 +7,22 @@
  *
  * Cada respuesta:
  *  - Se graba como PulsePointSignal (source: "daily_pulse", value: 1-5).
- *  - Suma +5 puntos a UserPoints con reason MICRO_LEARNING.
+ *  - Suma puntos vía awardPoints (UserLevel.totalPoints + multiplicadores).
  *  - Actualiza UserStreak (consecutive days).
  *
  * El mapeo SeiKey → PulsePointCode usa el BE2GROW canónico para que las
  * señales del Daily Pulse alimenten el motor de inferencia de Vital Signs.
  */
 import type { SeiKey, PulsePointCode } from "@/lib/vital-signs/catalog";
+import { localDayOfYear } from "./timezone";
+
+export type PulseLang = "es" | "en" | "pt" | "it";
+
+interface FeedbackByBucket {
+  low: string; // 1-2
+  mid: string; // 3
+  high: string; // 4-5
+}
 
 export interface DailyPulseQuestion {
   sei: SeiKey;
@@ -21,16 +30,12 @@ export interface DailyPulseQuestion {
   pulsePointCode: PulsePointCode;
   esQuestion: string;
   enQuestion: string;
-  esFeedback: {
-    low: string; // 1-2
-    mid: string; // 3
-    high: string; // 4-5
-  };
-  enFeedback: {
-    low: string;
-    mid: string;
-    high: string;
-  };
+  ptQuestion: string;
+  itQuestion: string;
+  esFeedback: FeedbackByBucket;
+  enFeedback: FeedbackByBucket;
+  ptFeedback: FeedbackByBucket;
+  itFeedback: FeedbackByBucket;
 }
 
 export const SEI_ORDER: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
@@ -41,6 +46,8 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
     pulsePointCode: "EXECUTION_FEEDBACK",
     esQuestion: "Hoy, ¿con qué precisión puedes nombrar lo que sientes?",
     enQuestion: "Today, how precisely can you name what you're feeling?",
+    ptQuestion: "Hoje, com que precisão você consegue nomear o que sente?",
+    itQuestion: "Oggi, con quanta precisione riesci a dare un nome a ciò che senti?",
     esFeedback: {
       low: "Las emociones aún están borrosas. Intenta darles un nombre concreto antes de actuar.",
       mid: "Las reconoces pero todavía cuesta separar matices. La alfabetización emocional se entrena.",
@@ -51,12 +58,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "You recognize them but separating nuances is still hard. Emotional literacy is trainable.",
       high: "Your emotional vocabulary is sharp today. That precision is the foundation of self-care.",
     },
+    ptFeedback: {
+      low: "As emoções ainda estão difusas. Tente dar a elas um nome concreto antes de agir.",
+      mid: "Você as reconhece, mas ainda custa separar nuances. A alfabetização emocional se treina.",
+      high: "Seu vocabulário emocional está afiado hoje. Essa precisão é a base do autocuidado.",
+    },
+    itFeedback: {
+      low: "Le emozioni sono ancora sfocate. Prova a dare loro un nome concreto prima di agire.",
+      mid: "Le riconosci ma separare le sfumature è ancora difficile. L'alfabetizzazione emotiva si allena.",
+      high: "Il tuo vocabolario emotivo è affilato oggi. Quella precisione è la base della cura di sé.",
+    },
   },
   RP: {
     sei: "RP",
     pulsePointCode: "MOTIVATION_MASTERY",
     esQuestion: "¿Notas algún patrón emocional repitiéndose en tu semana?",
     enQuestion: "Do you notice an emotional pattern repeating in your week?",
+    ptQuestion: "Você nota algum padrão emocional se repetindo na sua semana?",
+    itQuestion: "Noti qualche schema emotivo che si ripete nella tua settimana?",
     esFeedback: {
       low: "Los patrones se esconden cuando no miras. Mañana intenta notar la repetición.",
       mid: "Algo se está revelando. Anótalo: lo que se ve, se puede cambiar.",
@@ -67,12 +86,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "Something is showing up. Write it down: what's seen can be changed.",
       high: "Seeing the pattern is half the work. The other half is deciding what to do with it.",
     },
+    ptFeedback: {
+      low: "Os padrões se escondem quando você não olha. Amanhã tente notar a repetição.",
+      mid: "Algo está se revelando. Anote: o que se vê, pode-se mudar.",
+      high: "Ver o padrão é metade do trabalho. A outra metade é decidir o que fazer com ele.",
+    },
+    itFeedback: {
+      low: "Gli schemi si nascondono quando non guardi. Domani prova a notare la ripetizione.",
+      mid: "Qualcosa si sta rivelando. Annotalo: ciò che si vede, si può cambiare.",
+      high: "Vedere lo schema è metà del lavoro. L'altra metà è decidere cosa farne.",
+    },
   },
   ACT: {
     sei: "ACT",
     pulsePointCode: "EXECUTION_ACCOUNTABILITY",
     esQuestion: "Antes de tu próxima decisión hoy, ¿cuánto pesan las consecuencias?",
     enQuestion: "Before your next decision today, how much do consequences weigh?",
+    ptQuestion: "Antes da sua próxima decisão hoje, quanto pesam as consequências?",
+    itQuestion: "Prima della tua prossima decisione oggi, quanto pesano le conseguenze?",
     esFeedback: {
       low: "El impulso manda. Una pausa breve cambia el resultado.",
       mid: "Estás midiendo, pero el corto plazo todavía gana. Estira el horizonte.",
@@ -83,12 +114,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "You're weighing, but short-term still wins. Stretch the horizon.",
       high: "Consequential thinking active. That's the difference between reacting and responding.",
     },
+    ptFeedback: {
+      low: "O impulso manda. Uma pausa breve muda o resultado.",
+      mid: "Você está medindo, mas o curto prazo ainda vence. Estique o horizonte.",
+      high: "Pensamento consequente ativo. Essa é a diferença entre reagir e responder.",
+    },
+    itFeedback: {
+      low: "L'impulso comanda. Una breve pausa cambia il risultato.",
+      mid: "Stai valutando, ma il breve termine vince ancora. Allarga l'orizzonte.",
+      high: "Pensiero consequenziale attivo. È la differenza tra reagire e rispondere.",
+    },
   },
   NE: {
     sei: "NE",
     pulsePointCode: "TEAMWORK_JOY",
     esQuestion: "Hoy, ¿qué tan bien navegas una emoción incómoda sin reprimirla?",
     enQuestion: "Today, how well do you navigate an uncomfortable emotion without suppressing it?",
+    ptQuestion: "Hoje, quão bem você navega uma emoção incômoda sem reprimi-la?",
+    itQuestion: "Oggi, quanto bene navighi un'emozione scomoda senza reprimerla?",
     esFeedback: {
       low: "Reprimir cuesta caro. Las emociones reprimidas no desaparecen, se reagrupan.",
       mid: "Empiezas a quedarte con la sensación. Esa tolerancia es músculo emocional.",
@@ -99,12 +142,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "You're starting to stay with the sensation. That tolerance is emotional muscle.",
       high: "You're with the emotion without being swept away. That's the space where you choose.",
     },
+    ptFeedback: {
+      low: "Reprimir custa caro. As emoções reprimidas não desaparecem, se reagrupam.",
+      mid: "Você começa a permanecer com a sensação. Essa tolerância é músculo emocional.",
+      high: "Você está com a emoção sem que ela te arraste. Esse é o espaço onde se escolhe.",
+    },
+    itFeedback: {
+      low: "Reprimere costa caro. Le emozioni represse non spariscono, si riorganizzano.",
+      mid: "Inizi a restare con la sensazione. Quella tolleranza è muscolo emotivo.",
+      high: "Sei con l'emozione senza che ti travolga. È lo spazio in cui si sceglie.",
+    },
   },
   IM: {
     sei: "IM",
     pulsePointCode: "MOTIVATION_AUTONOMY",
     esQuestion: "¿Cuánta de tu energía hoy viene de adentro vs. de la presión externa?",
     enQuestion: "How much of today's energy comes from within vs. external pressure?",
+    ptQuestion: "Quanta da sua energia hoje vem de dentro vs. da pressão externa?",
+    itQuestion: "Quanta della tua energia oggi viene da dentro vs. dalla pressione esterna?",
     esFeedback: {
       low: "La motivación externa quema rápido. Conéctate con un por qué propio.",
       mid: "Mezclada. Identifica qué parte es tuya y dale prioridad.",
@@ -115,12 +170,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "Mixed. Identify which part is yours and prioritize it.",
       high: "High intrinsic motivation. That energy is sustainable and you feel it differently.",
     },
+    ptFeedback: {
+      low: "A motivação externa queima rápido. Conecte-se com um porquê próprio.",
+      mid: "Misturada. Identifique qual parte é sua e dê prioridade a ela.",
+      high: "Motivação intrínseca alta. Essa energia é sustentável e você a sente diferente.",
+    },
+    itFeedback: {
+      low: "La motivazione esterna si esaurisce in fretta. Connettiti con un perché tuo.",
+      mid: "Mista. Identifica quale parte è tua e dalle priorità.",
+      high: "Motivazione intrinseca alta. Quell'energia è sostenibile e la senti diversa.",
+    },
   },
   OP: {
     sei: "OP",
     pulsePointCode: "CHANGE_IMAGINATION",
     esQuestion: "¿Qué tan posible te parece hoy un mejor resultado en algo que te preocupa?",
     enQuestion: "How possible does a better outcome seem today for something worrying you?",
+    ptQuestion: "Quão possível lhe parece hoje um resultado melhor em algo que lhe preocupa?",
+    itQuestion: "Quanto ti sembra possibile oggi un risultato migliore in qualcosa che ti preoccupa?",
     esFeedback: {
       low: "El pesimismo cierra opciones. Una sola alternativa que veas reabre el camino.",
       mid: "Hay luz pero también nubes. Lista 3 escenarios posibles, no solo el peor.",
@@ -131,12 +198,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "There's light but also clouds. List 3 possible scenarios, not just the worst.",
       high: "Exercised optimism, not naive. You see possibility without denying reality.",
     },
+    ptFeedback: {
+      low: "O pessimismo fecha opções. Uma única alternativa que você veja reabre o caminho.",
+      mid: "Há luz, mas também nuvens. Liste 3 cenários possíveis, não só o pior.",
+      high: "Otimismo exercitado, não ingênuo. Você vê possibilidade sem negar a realidade.",
+    },
+    itFeedback: {
+      low: "Il pessimismo chiude le opzioni. Una sola alternativa che vedi riapre la strada.",
+      mid: "C'è luce ma anche nuvole. Elenca 3 scenari possibili, non solo il peggiore.",
+      high: "Ottimismo allenato, non ingenuo. Vedi la possibilità senza negare la realtà.",
+    },
   },
   EMP: {
     sei: "EMP",
     pulsePointCode: "TRUST_CARE",
     esQuestion: "¿Cuándo te detuviste hoy a sentir lo que otra persona está sintiendo?",
     enQuestion: "When did you pause today to feel what another person is feeling?",
+    ptQuestion: "Quando você parou hoje para sentir o que outra pessoa está sentindo?",
+    itQuestion: "Quando ti sei fermato oggi a sentire ciò che un'altra persona sta provando?",
     esFeedback: {
       low: "La empatía requiere parar. Tu próximo encuentro hoy puede ser ese momento.",
       mid: "Hubo un destello. Quédate más tiempo la próxima vez, sin solucionar.",
@@ -147,12 +226,24 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "There was a flash. Stay longer next time, without fixing.",
       high: "Active empathy. You were with someone without trying to fix it, and that connects.",
     },
+    ptFeedback: {
+      low: "A empatia exige parar. Seu próximo encontro hoje pode ser esse momento.",
+      mid: "Houve um lampejo. Fique mais tempo da próxima vez, sem resolver.",
+      high: "Empatia ativa. Você esteve com alguém sem querer consertar, e isso conecta.",
+    },
+    itFeedback: {
+      low: "L'empatia richiede di fermarsi. Il tuo prossimo incontro oggi può essere quel momento.",
+      mid: "C'è stato un lampo. Resta più a lungo la prossima volta, senza risolvere.",
+      high: "Empatia attiva. Sei stato con qualcuno senza volerlo aggiustare, e questo connette.",
+    },
   },
   NG: {
     sei: "NG",
     pulsePointCode: "MOTIVATION_MEANING",
     esQuestion: "Lo que hiciste hoy, ¿conecta con algo más grande que vos?",
     enQuestion: "Does what you did today connect with something bigger than you?",
+    ptQuestion: "O que você fez hoje conecta com algo maior que você?",
+    itQuestion: "Ciò che hai fatto oggi è collegato a qualcosa di più grande di te?",
     esFeedback: {
       low: "Sin un propósito que trascienda, todo cansa más. ¿Cuál es el tuyo?",
       mid: "El hilo está pero a veces se afloja. Hazlo visible esta semana.",
@@ -163,10 +254,18 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
       mid: "The thread is there but sometimes loose. Make it visible this week.",
       high: "Operating from a noble goal. That orientation changes the quality of every hour.",
     },
+    ptFeedback: {
+      low: "Sem um propósito que transcenda, tudo cansa mais. Qual é o seu?",
+      mid: "O fio está lá, mas às vezes afrouxa. Torne-o visível esta semana.",
+      high: "Operando a partir de uma causa nobre. Essa orientação muda a qualidade de cada hora.",
+    },
+    itFeedback: {
+      low: "Senza uno scopo che trascende, tutto stanca di più. Qual è il tuo?",
+      mid: "Il filo c'è ma a volte si allenta. Rendilo visibile questa settimana.",
+      high: "Operi a partire da una causa nobile. Quell'orientamento cambia la qualità di ogni ora.",
+    },
   },
 };
-
-import { localDayOfYear } from "./timezone";
 
 /**
  * Devuelve la pregunta del día rotando por (dayOfYear LOCAL del usuario) % 8.
@@ -184,8 +283,13 @@ export function questionForToday(
 export function feedbackForValue(
   q: DailyPulseQuestion,
   value: number,
-  lang: "es" | "en",
+  lang: PulseLang,
 ): string {
   const bucket = value <= 2 ? "low" : value === 3 ? "mid" : "high";
-  return lang === "en" ? q.enFeedback[bucket] : q.esFeedback[bucket];
+  const set =
+    lang === "en" ? q.enFeedback
+    : lang === "pt" ? q.ptFeedback
+    : lang === "it" ? q.itFeedback
+    : q.esFeedback;
+  return set[bucket];
 }

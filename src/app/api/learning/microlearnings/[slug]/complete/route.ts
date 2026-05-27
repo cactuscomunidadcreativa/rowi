@@ -12,6 +12,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
+import { awardPoints } from "@/services/gamification";
 
 export async function POST(
   req: NextRequest,
@@ -79,27 +80,19 @@ export async function POST(
       });
     }
 
-    const balanceLast = await prisma.userPoints.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      select: { balance: true },
-    });
-    const newBalance = (balanceLast?.balance ?? 0) + ml.points;
-    await prisma.userPoints.create({
-      data: {
-        userId: user.id,
-        amount: ml.points,
-        balance: newBalance,
-        reason: "MICRO_LEARNING",
-        description: `lesson · ${slug}`,
-      },
+    const award = await awardPoints({
+      userId: user.id,
+      amount: ml.points,
+      reason: "MICRO_LEARNING",
+      reasonId: ml.id,
+      description: `lesson · ${slug}`,
     });
 
     return NextResponse.json({
       ok: true,
       already: false,
-      pointsEarned: ml.points,
-      balance: newBalance,
+      pointsEarned: award.pointsAwarded,
+      balance: award.totalPoints,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";

@@ -6,6 +6,15 @@ import { useI18n } from "@/lib/i18n/react";
 import ConsentRefreshBanner from "@/components/vital-signs/ConsentRefreshBanner";
 import Link from "next/link";
 import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
+import {
+  vsDriverName,
+  vsOutcomeName,
+  vsOrientationName,
+  vsOrientationIdentity,
+  vsArchetypeName,
+  vsArchetypeTagline,
+  type VsLang,
+} from "@/lib/vital-signs/vsLocale";
 import ContextDetailDrawer from "@/components/vital-signs/ContextDetailDrawer";
 import DailyPulseWeek from "@/components/dashboard/DailyPulseWeek";
 import {
@@ -166,7 +175,9 @@ export default function VitalSignsPage() {
     subjectId: string;
   } | null>(null);
 
-  const lang = locale === "en" ? "en" : "es";
+  // Cards/drawer resuelven pt/it vía vsLocale; la sección personal de
+  // abajo sigue cayendo a es para pt/it (su i18n vive aparte).
+  const lang = locale as VsLang;
 
   useEffect(() => {
     fetch("/api/vital-signs/me")
@@ -569,7 +580,7 @@ interface ContextSectionProps {
   subtitle: string;
   empty: string;
   cards: ContextCard[];
-  lang: "es" | "en";
+  lang: VsLang;
   t: (key: string, fallback: string) => string;
   Icon: typeof Users;
   accent: string;
@@ -618,10 +629,19 @@ function ContextSection({
 
 interface ContextCardItemProps {
   card: ContextCard;
-  lang: "es" | "en";
+  lang: VsLang;
   t: (key: string, fallback: string) => string;
   accent: string;
   onOpenDetail: (scope: ContextCard["scope"], subjectId: string) => void;
+}
+
+function combineIdentities(lang: VsLang, a: string, b: string): string {
+  const x = a.toLowerCase();
+  const y = b.toLowerCase();
+  if (lang === "en") return `Combines ${x} with ${y}`;
+  if (lang === "pt") return `Combina ${x} com ${y}`;
+  if (lang === "it") return `Combina ${x} con ${y}`;
+  return `Combina ${x} con ${y}`;
 }
 
 function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardItemProps) {
@@ -675,24 +695,27 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
               </span>
               <div className="min-w-0">
                 <div className="font-medium text-[var(--rowi-foreground)] truncate">
-                  {lang === "en" ? card.orientation.enName : card.orientation.esName}
+                  {vsOrientationName(card.orientation.quadrant, lang, card.orientation.esName, card.orientation.enName)}
                   {card.orientationCombined && card.orientationSecondary && (
                     <span className="text-[var(--rowi-muted)]">
                       {" + "}
-                      {lang === "en"
-                        ? card.orientationSecondary.enName
-                        : card.orientationSecondary.esName}
+                      {vsOrientationName(
+                        card.orientationSecondary.quadrant,
+                        lang,
+                        card.orientationSecondary.esName,
+                        card.orientationSecondary.enName,
+                      )}
                     </span>
                   )}
                 </div>
                 <div className="text-[10px] text-[var(--rowi-muted)] truncate">
                   {card.orientationCombined && card.orientationSecondary
-                    ? lang === "en"
-                      ? `Combines ${card.orientation.enIdentity.toLowerCase()} with ${card.orientationSecondary.enIdentity.toLowerCase()}`
-                      : `Combina ${card.orientation.esIdentity.toLowerCase()} con ${card.orientationSecondary.esIdentity.toLowerCase()}`
-                    : lang === "en"
-                      ? card.orientation.enIdentity
-                      : card.orientation.esIdentity}
+                    ? combineIdentities(
+                        lang,
+                        vsOrientationIdentity(card.orientation.quadrant, lang, card.orientation.esIdentity, card.orientation.enIdentity),
+                        vsOrientationIdentity(card.orientationSecondary.quadrant, lang, card.orientationSecondary.esIdentity, card.orientationSecondary.enIdentity),
+                      )
+                    : vsOrientationIdentity(card.orientation.quadrant, lang, card.orientation.esIdentity, card.orientation.enIdentity)}
                 </div>
               </div>
             </div>
@@ -702,10 +725,10 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
               <span className="text-base">{card.archetype.emoji}</span>
               <div className="min-w-0">
                 <div className="font-medium text-[var(--rowi-foreground)] truncate">
-                  {lang === "en" ? card.archetype.enName : card.archetype.esName}
+                  {vsArchetypeName(card.archetype.quadrant, lang, card.archetype.esName, card.archetype.enName)}
                 </div>
                 <div className="text-[10px] text-[var(--rowi-muted)] truncate">
-                  {lang === "en" ? card.archetype.enTagline : card.archetype.esTagline}
+                  {vsArchetypeTagline(card.archetype.quadrant, lang, card.archetype.esTagline, card.archetype.enTagline)}
                 </div>
               </div>
             </div>
@@ -737,7 +760,7 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
                     {t("vs.multiCtx.topDriver", "Más fuerte")}
                   </span>
                   <span className={`font-medium ${accent}`}>
-                    {lang === "en" ? card.topDriver.enName : card.topDriver.esName}{" "}
+                    {vsDriverName(card.topDriver.code, lang, card.topDriver.esName, card.topDriver.enName)}{" "}
                     {card.topDriver.scoreMean.toFixed(1)}
                   </span>
                 </div>
@@ -748,7 +771,7 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
                     {t("vs.multiCtx.bottomDriver", "Más débil")}
                   </span>
                   <span className="font-medium text-[var(--rowi-foreground)]">
-                    {lang === "en" ? card.bottomDriver.enName : card.bottomDriver.esName}{" "}
+                    {vsDriverName(card.bottomDriver.code, lang, card.bottomDriver.esName, card.bottomDriver.enName)}{" "}
                     {card.bottomDriver.scoreMean.toFixed(1)}
                   </span>
                 </div>
@@ -764,7 +787,7 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
                 {card.outcomes.map((o) => (
                   <div key={o.code} className="text-xs">
                     <div className="text-[var(--rowi-muted)] truncate">
-                      {lang === "en" ? o.enName : o.esName}
+                      {vsOutcomeName(o.code, lang, o.esName, o.enName)}
                     </div>
                     <div className="font-semibold text-[var(--rowi-foreground)]">
                       {o.scoreMean?.toFixed(1) ?? "—"}

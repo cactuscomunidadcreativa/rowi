@@ -148,7 +148,7 @@ interface MultiContextData {
   teams: ContextCard[];
   orgs: ContextCard[];
   families: ContextCard[];
-  world: ContextCard;
+  world: ContextCard | null;
 }
 
 export default function VitalSignsPage() {
@@ -540,7 +540,7 @@ export default function VitalSignsPage() {
                   "vs.multiCtx.world.empty",
                   "Aún no hay suficientes usuarios con perfil para mostrar el agregado mundial.",
                 )}
-                cards={[multiCtx.world]}
+                cards={multiCtx.world ? [multiCtx.world] : []}
                 lang={lang}
                 t={t}
                 Icon={Globe2}

@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 
 interface HistoryItem {
   date: string;
+  dow: number;
   value: number | null;
   sei: string | null;
   pulsePointCode: string | null;
@@ -43,7 +44,8 @@ export default function DailyPulseWeek() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/daily-pulse/history?days=7")
+    const tz = new Date().getTimezoneOffset();
+    fetch(`/api/daily-pulse/history?days=7&tz=${tz}`)
       .then((r) => r.json())
       .then((json: HistoryResponse) => setData(json))
       .catch(() => {})
@@ -68,7 +70,7 @@ export default function DailyPulseWeek() {
       <div className="flex items-end justify-between gap-1.5 h-24">
         {data.items.map((it) => {
           const heightPct = it.value === null ? 8 : (it.value / 5) * 100;
-          const dow = new Date(it.date).getUTCDay();
+          const dow = it.dow;
           const tooltip = it.value === null
             ? isEN ? "No answer" : "Sin respuesta"
             : `${it.sei ?? "—"} · ${it.value}/5`;

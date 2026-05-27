@@ -18,6 +18,8 @@ interface PulseQuestion {
   pulsePointCode: string;
   esQuestion: string;
   enQuestion: string;
+  ptQuestion: string;
+  itQuestion: string;
 }
 
 interface TodayResponse {
@@ -73,7 +75,7 @@ export default function DailyPulseCard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           value,
-          lang: isEN ? "en" : "es",
+          lang,
           tzOffsetMinutes: new Date().getTimezoneOffset(),
         }),
       });
@@ -108,7 +110,11 @@ export default function DailyPulseCard() {
   }
 
   const q = data.question;
-  const questionText = isEN ? q.enQuestion : q.esQuestion;
+  const questionText =
+    lang === "en" ? q.enQuestion
+    : lang === "pt" ? q.ptQuestion
+    : lang === "it" ? q.itQuestion
+    : q.esQuestion;
   const answered = !!data.answeredToday;
 
   return (

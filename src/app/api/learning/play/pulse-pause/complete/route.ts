@@ -17,6 +17,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
+import { awardPoints } from "@/services/gamification";
 
 const POINTS_FULL_HOLD = 20;
 const POINTS_REACTED = 5;
@@ -65,23 +66,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const currentBalance = last?.balance ?? 0;
-    const newBalance = currentBalance + pointsAdded;
-
-    await prisma.userPoints.create({
-      data: {
-        userId: user.id,
-        amount: pointsAdded,
-        balance: newBalance,
-        reason: "MICRO_LEARNING",
-        description: `pulse-pause · ${pauseCount}/${rounds} paused`,
-      },
+    const award = await awardPoints({
+      userId: user.id,
+      amount: pointsAdded,
+      reason: "MICRO_LEARNING",
+      description: `pulse-pause · ${pauseCount}/${rounds} paused`,
     });
 
     return NextResponse.json({
       ok: true,
-      pointsAdded,
-      balance: newBalance,
+      pointsAdded: award.pointsAwarded,
+      balance: award.totalPoints,
       pauseCount,
       rounds,
     });

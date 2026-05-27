@@ -1,9 +1,11 @@
 /**
- * GET /api/daily-pulse/history?days=7
+ * GET /api/daily-pulse/history?days=7&tz=300
  *
  * Devuelve las respuestas del Daily Pulse del usuario para los últimos N
- * días (default 7). Cada día tiene a lo sumo una respuesta (idempotencia
- * del endpoint /answer). Días sin respuesta se devuelven con value=null.
+ * días (default 7), agrupadas por el día LOCAL del usuario (mismo criterio
+ * que /today y /answer). Cada día tiene a lo sumo una respuesta. Días sin
+ * respuesta se devuelven con value=null. Cada item incluye `dow` (0-6, día
+ * de semana local) para que el cliente etiquete sin recalcular el tz.
  *
  * Útil para el sparkline de "tu semana" en /hub/vital-signs.
  */
@@ -12,11 +14,18 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
+import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 
 const MAX_DAYS = 30;
 
-function startOfDayUTC(d: Date): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+/** Partes del día LOCAL del usuario para un instante dado. */
+function localParts(d: Date, tz: number): { key: string; dow: number; iso: string } {
+  const local = new Date(d.getTime() - tz * 60_000);
+  return {
+    key: `${local.getUTCFullYear()}-${local.getUTCMonth()}-${local.getUTCDate()}`,
+    dow: local.getUTCDay(),
+    iso: startOfLocalDay(d, tz).toISOString(),
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -37,9 +46,11 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const daysParam = Number(url.searchParams.get("days") ?? 7);
     const days = Math.max(1, Math.min(MAX_DAYS, Number.isFinite(daysParam) ? daysParam : 7));
+    const tz = parseTz(url.searchParams.get("tz"));
 
     const now = new Date();
-    const startDay = startOfDayUTC(new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000));
+    const dayMs = 24 * 60 * 60 * 1000;
+    const startDay = startOfLocalDay(new Date(now.getTime() - (days - 1) * dayMs), tz);
 
     const signals = await prisma.pulsePointSignal.findMany({
       where: {
@@ -56,10 +67,10 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "asc" },
     });
 
-    // Agrupar por día UTC.
+    // Agrupar por día LOCAL del usuario (primer signal del día gana).
     const byDay = new Map<string, { value: number; sei?: string; pulsePointCode: string }>();
     for (const s of signals) {
-      const k = startOfDayUTC(s.createdAt).toISOString();
+      const k = localParts(s.createdAt, tz).key;
       if (!byDay.has(k)) {
         const sei = (s.metadata as { sei?: string } | null)?.sei;
         byDay.set(k, { value: s.value, sei, pulsePointCode: s.pulsePointCode });
@@ -68,16 +79,18 @@ export async function GET(req: NextRequest) {
 
     const items: Array<{
       date: string;
+      dow: number;
       value: number | null;
       sei: string | null;
       pulsePointCode: string | null;
     }> = [];
     for (let i = 0; i < days; i++) {
-      const d = startOfDayUTC(new Date(now.getTime() - (days - 1 - i) * 24 * 60 * 60 * 1000));
-      const k = d.toISOString();
-      const hit = byDay.get(k);
+      const ref = new Date(now.getTime() - (days - 1 - i) * dayMs);
+      const p = localParts(ref, tz);
+      const hit = byDay.get(p.key);
       items.push({
-        date: k,
+        date: p.iso,
+        dow: p.dow,
         value: hit?.value ?? null,
         sei: hit?.sei ?? null,
         pulsePointCode: hit?.pulsePointCode ?? null,

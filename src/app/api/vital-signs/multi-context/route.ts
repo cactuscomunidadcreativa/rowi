@@ -172,20 +172,34 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    // Cada agregado se aísla: si uno falla (datos corruptos de un tenant,
+    // etc.) devuelve null y se omite, en vez de tumbar toda la página con 500.
+    const safe = (p: Promise<ContextCard>, label: string): Promise<ContextCard | null> =>
+      p.catch((err) => {
+        console.error(`/api/vital-signs/multi-context aggregate failed (${label}):`, err);
+        return null;
+      });
+
     const orgPromises = memberships.map((m) =>
-      aggregateInferredVitalSigns({
-        scope: "org",
-        subjectId: m.tenantId,
-        subjectName: m.tenant.name,
-      }).then((r) => toCard(r, m.tenant.slug)),
+      safe(
+        aggregateInferredVitalSigns({
+          scope: "org",
+          subjectId: m.tenantId,
+          subjectName: m.tenant.name,
+        }).then((r) => toCard(r, m.tenant.slug)),
+        `org:${m.tenantId}`,
+      ),
     );
 
     const teamPromises = communityMemberships.map((c) =>
-      aggregateInferredVitalSigns({
-        scope: "team",
-        subjectId: c.communityId,
-        subjectName: c.community.name,
-      }).then((r) => toCard(r, c.community.slug)),
+      safe(
+        aggregateInferredVitalSigns({
+          scope: "team",
+          subjectId: c.communityId,
+          subjectName: c.community.name,
+        }).then((r) => toCard(r, c.community.slug)),
+        `team:${c.communityId}`,
+      ),
     );
 
     const familyOwners = new Map<string, string>();
@@ -197,27 +211,40 @@ export async function GET(req: NextRequest) {
       }
     }
     const familyPromises = Array.from(familyOwners.entries()).map(([ownerId, name]) =>
-      aggregateInferredVitalSigns({
-        scope: "family",
-        subjectId: ownerId,
-        subjectName: name,
-      }).then((r) => toCard(r)),
+      safe(
+        aggregateInferredVitalSigns({
+          scope: "family",
+          subjectId: ownerId,
+          subjectName: name,
+        }).then((r) => toCard(r)),
+        `family:${ownerId}`,
+      ),
     );
 
-    const worldPromise = aggregateInferredVitalSigns({
-      scope: "world",
-      subjectId: "rowiverse",
-      subjectName: "Rowiverse",
-    }).then((r) => toCard(r));
+    const worldPromise = safe(
+      aggregateInferredVitalSigns({
+        scope: "world",
+        subjectId: "rowiverse",
+        subjectName: "Rowiverse",
+      }).then((r) => toCard(r)),
+      "world",
+    );
 
-    const [orgs, teams, families, world] = await Promise.all([
+    const [orgsRaw, teamsRaw, familiesRaw, world] = await Promise.all([
       Promise.all(orgPromises),
       Promise.all(teamPromises),
       Promise.all(familyPromises),
       worldPromise,
     ]);
 
-    return NextResponse.json({ ok: true, teams, orgs, families, world });
+    const notNull = (c: ContextCard | null): c is ContextCard => c !== null;
+    return NextResponse.json({
+      ok: true,
+      teams: teamsRaw.filter(notNull),
+      orgs: orgsRaw.filter(notNull),
+      families: familiesRaw.filter(notNull),
+      world,
+    });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/multi-context error:", e);

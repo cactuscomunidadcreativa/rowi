@@ -36,7 +36,7 @@ export async function PATCH(
 
     const existing = await prisma.rowiCommunity.findUnique({
       where: { id },
-      select: { id: true, tenantId: true, workspaceType: true },
+      select: { id: true, tenantId: true, workspaceType: true, slug: true },
     });
     if (!existing) {
       return NextResponse.json({ ok: false, error: "Workspace not found" }, { status: 404 });
@@ -56,7 +56,19 @@ export async function PATCH(
     if (typeof body.name === "string" && body.name.trim()) data.name = body.name.trim();
     if (typeof body.slug === "string" && body.slug.trim()) {
       const s = body.slug.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-      if (s) data.slug = s;
+      if (s && s !== existing.slug) {
+        const dup = await prisma.rowiCommunity.findFirst({
+          where: { slug: s, id: { not: id } },
+          select: { id: true },
+        });
+        if (dup) {
+          return NextResponse.json(
+            { ok: false, error: "Ya existe un workspace con ese slug" },
+            { status: 409 },
+          );
+        }
+        data.slug = s;
+      }
     }
     if (body.description !== undefined) data.description = body.description ?? null;
     if (body.projectStatus !== undefined) data.projectStatus = body.projectStatus ?? null;

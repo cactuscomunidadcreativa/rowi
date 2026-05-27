@@ -8,6 +8,9 @@ import Link from "next/link";
 import { ROWI_ARCHETYPES } from "@/lib/vital-signs/catalog";
 import {
   vsDriverName,
+  vsDriverNeed,
+  vsPpName,
+  vsPpFunction,
   vsOutcomeName,
   vsOrientationName,
   vsOrientationIdentity,
@@ -345,21 +348,30 @@ export default function VitalSignsPage() {
               <Compass className="w-5 h-5 text-[var(--rowi-muted)]" />
             </div>
             <div className="text-3xl font-bold rowi-gradient-text mb-2">
-              {lang === "en" ? data!.quadrant.enName : data!.quadrant.esName}
+              {t(
+                `vs.quadrant.${data!.quadrant.code.toLowerCase()}`,
+                lang === "en" ? data!.quadrant.enName : data!.quadrant.esName,
+              )}
             </div>
             {data!.quadrant.code !== "BALANCED" && ROWI_ARCHETYPES[data!.quadrant.code] && (
               <div className="mb-3 flex items-center gap-2 text-sm">
                 <span className="text-xl">{ROWI_ARCHETYPES[data!.quadrant.code].emoji}</span>
                 <div>
                   <div className="font-semibold text-[var(--rowi-foreground)]">
-                    {lang === "en"
-                      ? ROWI_ARCHETYPES[data!.quadrant.code].enName
-                      : ROWI_ARCHETYPES[data!.quadrant.code].esName}
+                    {vsArchetypeName(
+                      data!.quadrant.code,
+                      lang,
+                      ROWI_ARCHETYPES[data!.quadrant.code].esName,
+                      ROWI_ARCHETYPES[data!.quadrant.code].enName,
+                    )}
                   </div>
                   <div className="text-xs text-[var(--rowi-muted)]">
-                    {lang === "en"
-                      ? ROWI_ARCHETYPES[data!.quadrant.code].enTagline
-                      : ROWI_ARCHETYPES[data!.quadrant.code].esTagline}
+                    {vsArchetypeTagline(
+                      data!.quadrant.code,
+                      lang,
+                      ROWI_ARCHETYPES[data!.quadrant.code].esTagline,
+                      ROWI_ARCHETYPES[data!.quadrant.code].enTagline,
+                    )}
                   </div>
                 </div>
               </div>
@@ -410,10 +422,10 @@ export default function VitalSignsPage() {
                       {d.score?.toFixed(1) ?? "—"}
                     </div>
                     <div className="text-sm font-medium text-[var(--rowi-foreground)]">
-                      {lang === "en" ? d.enName : d.esName}
+                      {vsDriverName(d.code, lang, d.esName, d.enName)}
                     </div>
                     <div className="text-xs text-[var(--rowi-muted)] mt-1 line-clamp-2">
-                      {lang === "en" ? d.enNeed : d.esNeed}
+                      {vsDriverNeed(d.code, lang, d.esNeed, d.enNeed)}
                     </div>
                   </div>
                 );
@@ -434,13 +446,13 @@ export default function VitalSignsPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <span className={`w-2 h-2 rounded-full ${BAND_DOT[d.band]}`} />
                       <span className={`text-sm font-medium ${style.accent}`}>
-                        {lang === "en" ? d.enName : d.esName}
+                        {vsDriverName(d.code, lang, d.esName, d.enName)}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {d.pulsePoints.map((pp) => {
                         const ppKey = `vs.pp.${pp.code.split("_").slice(1).join("_").toLowerCase()}`;
-                        const fallback = lang === "en" ? pp.enName : pp.esName;
+                        const fallback = vsPpName(pp.code, lang, pp.esName, pp.enName);
                         return (
                           <div
                             key={pp.code}
@@ -455,7 +467,7 @@ export default function VitalSignsPage() {
                               </span>
                             </div>
                             <div className="text-xs text-[var(--rowi-muted)] line-clamp-1 mb-2">
-                              {lang === "en" ? pp.enFunction : pp.esFunction}
+                              {vsPpFunction(pp.code, lang, pp.esFunction, pp.enFunction)}
                             </div>
                             {pp.delta !== null && (
                               <div className="text-xs text-[var(--rowi-muted)]">

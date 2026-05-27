@@ -54,6 +54,24 @@ const PP_NAME: Record<string, PtIt> = {
   EXECUTION_FOCUS: { pt: "Foco", it: "Focus" },
 };
 
+const PP_FUNCTION: Record<string, PtIt> = {
+  TRUST_TRANSPARENCY: { pt: "Compartilhar a verdade", it: "Condividere la verità" },
+  TRUST_COHERENCE: { pt: "Alinhar discurso e ação", it: "Allineare discorso e azione" },
+  TRUST_CARE: { pt: "Gerar conexão humana", it: "Generare connessione umana" },
+  MOTIVATION_MEANING: { pt: "Criar propósito", it: "Creare uno scopo" },
+  MOTIVATION_MASTERY: { pt: "Construir forças", it: "Costruire punti di forza" },
+  MOTIVATION_AUTONOMY: { pt: "Gerar ownership", it: "Generare ownership" },
+  CHANGE_IMAGINATION: { pt: "Criar emoção para inovar", it: "Creare emozione per innovare" },
+  CHANGE_EXPLORATION: { pt: "Prototipar e aprender", it: "Prototipare e imparare" },
+  CHANGE_CELEBRATION: { pt: "Integrar o aprendizado", it: "Integrare l'apprendimento" },
+  TEAMWORK_DIVERGENCE: { pt: "Buscar perspectivas diferentes", it: "Cercare prospettive diverse" },
+  TEAMWORK_CONNECTION: { pt: "Criar terreno comum", it: "Creare un terreno comune" },
+  TEAMWORK_JOY: { pt: "Amplificar a energia emocional", it: "Amplificare l'energia emotiva" },
+  EXECUTION_ACCOUNTABILITY: { pt: "Tornar os resultados visíveis", it: "Rendere visibili i risultati" },
+  EXECUTION_FEEDBACK: { pt: "Consciência contínua", it: "Consapevolezza continua" },
+  EXECUTION_FOCUS: { pt: "Concentrar no essencial", it: "Concentrarsi sull'essenziale" },
+};
+
 const SEI_NAME: Record<string, PtIt> = {
   EL: { pt: "Alfabetização Emocional", it: "Alfabetizzazione Emotiva" },
   RP: { pt: "Reconhecer Padrões", it: "Riconoscere Schemi" },
@@ -139,6 +157,8 @@ export const vsDriverNeed = (code: string, lang: VsLang, es: string, en: string)
   pick(lang, es, en, DRIVER_NEED[code]);
 export const vsPpName = (code: string, lang: VsLang, es: string, en: string) =>
   pick(lang, es, en, PP_NAME[code]);
+export const vsPpFunction = (code: string, lang: VsLang, es: string, en: string) =>
+  pick(lang, es, en, PP_FUNCTION[code]);
 export const vsSeiName = (key: string, lang: VsLang, es: string, en: string) =>
   pick(lang, es, en, SEI_NAME[key]);
 export const vsOutcomeName = (code: string, lang: VsLang, es: string, en: string) =>

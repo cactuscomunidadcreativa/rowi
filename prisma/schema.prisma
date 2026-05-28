@@ -589,6 +589,14 @@ model Tenant {
   orgTeamsWebhookUrl String?
   orgNotifyEnabled   Boolean @default(false)
 
+  // 🎫 Licencias por asiento (seats). licenseCount = asientos comprados,
+  // sincronizado desde la cantidad (quantity) de la suscripción Stripe
+  // de la empresa. Cada miembro activo consume un asiento; cuando se
+  // llenan, no se puede activar/invitar a más gente. Ver lib/licensing.
+  licenseCount         Int     @default(0)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+
   // 🔗 Jerarquía superior
   rowiVerseId String?
   superHubId  String?
@@ -4449,6 +4457,12 @@ model Subscription {
   id     String @id @default(cuid())
   userId String
   planId String
+
+  // Para suscripciones B2B por asiento: la sub pertenece a un tenant y
+  // `quantity` son los asientos comprados (se sincroniza a
+  // Tenant.licenseCount). En subs B2C tenantId es null y quantity = 1.
+  tenantId String?
+  quantity Int     @default(1)
 
   // Stripe IDs
   stripeSubscriptionId String @unique

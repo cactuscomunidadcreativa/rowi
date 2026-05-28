@@ -374,12 +374,19 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     subscription.metadata?.planId ??
     null;
 
+  // 🎫 Licencias por asiento: cantidad comprada + tenant dueño de la sub.
+  // En subs B2B la metadata trae tenantId y el item trae quantity.
+  const quantity = subscription.items.data[0]?.quantity ?? 1;
+  const tenantId = subscription.metadata?.tenantId ?? null;
+
   // Actualizar o crear suscripción
   await prisma.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
     update: {
       status: (statusMap[subscription.status] || "ACTIVE") as any,
       stripePriceId: currentPriceId || "",
+      quantity,
+      ...(tenantId ? { tenantId } : {}),
       ...(resolvedPlanId ? { planId: resolvedPlanId } : {}),
       ...(periodStart ? { currentPeriodStart: periodStart } : {}),
       ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
@@ -390,6 +397,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     },
     create: {
       userId,
+      tenantId,
+      quantity,
       planId: resolvedPlanId ?? "",
       stripeSubscriptionId: subscription.id,
       stripePriceId: currentPriceId || "",
@@ -405,6 +414,25 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         : null,
     },
   });
+
+  // 🎫 Sincronizar asientos al tenant: la cantidad de la suscripción
+  // define cuántas personas pueden usar Rowi (incl. tener el bot en Slack).
+  // Solo activa/trialing otorgan asientos; cancelada/impaga → 0.
+  if (tenantId) {
+    const grantsSeats =
+      subscription.status === "active" || subscription.status === "trialing";
+    await prisma.tenant.update({
+      where: { id: tenantId },
+      data: {
+        licenseCount: grantsSeats ? quantity : 0,
+        stripeCustomerId: subscription.customer as string,
+        stripeSubscriptionId: subscription.id,
+      },
+    });
+    secureLog.info(
+      `[stripe] seats synced tenant=${tenantId} licenses=${grantsSeats ? quantity : 0} (status=${subscription.status})`,
+    );
+  }
 
   // Actualizar estado del usuario según suscripción + sincronizar planId
   // (crítico cuando el user cambia plan en customer portal).

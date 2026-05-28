@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 import { sendInviteEmail } from "@/lib/email/sendInviteEmail";
+import { assertSeatAvailable } from "@/lib/licensing/seats";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -61,6 +62,24 @@ export async function POST(req: NextRequest) {
         { error: "Ya existe un usuario con este email" },
         { status: 400 }
       );
+
+    // 🎫 Licencias por asiento: si el invite es a una org con plan de
+    // asientos (licenseCount > 0), no permitir invitar si ya están todos
+    // ocupados. licenseCount = 0 → sin límite (B2C / legacy).
+    if (tenantId) {
+      const seat = await assertSeatAvailable(tenantId);
+      if (!seat.ok) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "no_seats",
+            message: `No hay licencias disponibles (${seat.summary?.used}/${seat.summary?.purchased}). Compra más asientos para invitar a más personas.`,
+            seats: seat.summary,
+          },
+          { status: 402 },
+        );
+      }
+    }
 
     // 🔄 Re-invite: si ya hay tokens pendientes (mismo email + tenantId,
     // no revocados, no aceptados, no expirados), márcalos como revocados

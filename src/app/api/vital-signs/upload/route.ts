@@ -9,6 +9,7 @@ import {
   type OvsTvsScope,
 } from "@/lib/vital-signs/parsers/ovs";
 import { parseLvsXlsx, aggregateLvs } from "@/lib/vital-signs/parsers/lvs";
+import { buildOvsScoreSources, buildLvsScoreSources } from "@/lib/vital-signs/score-source";
 
 /**
  * Upload a Six Seconds OVS / TVS / LVS export and persist as a VitalSignsAssessment.
@@ -121,6 +122,24 @@ export async function POST(req: NextRequest) {
         })),
       ];
       await prisma.vitalSignsScore.createMany({ data: scoreRows });
+
+      // Feed the rowiverse benchmark: denormalized per-respondent source rows.
+      // Only "production" datasets contribute to the aggregate; sample/test rows
+      // are stored with contributesToBenchmark=false. Best-effort — a benchmark
+      // population failure must never block the user's upload.
+      try {
+        const sourceRows = buildOvsScoreSources(parsed.respondents, {
+          assessmentId: assessment.id,
+          scope: scope as OvsTvsScope,
+          tenantId: null,
+          contributesToBenchmark: dataset === "production",
+        });
+        for (let i = 0; i < sourceRows.length; i += 1000) {
+          await prisma.vitalSignsScoreSource.createMany({ data: sourceRows.slice(i, i + 1000) });
+        }
+      } catch (srcErr) {
+        console.error("/api/vital-signs/upload OVS/TVS scoreSource population failed:", srcErr);
+      }
     } else {
       const arrayBuffer = await file.arrayBuffer();
       const parsed = parseLvsXlsx(arrayBuffer);
@@ -163,6 +182,21 @@ export async function POST(req: NextRequest) {
         })),
       ];
       await prisma.vitalSignsScore.createMany({ data: scoreRows });
+
+      // Feed the rowiverse benchmark (best-effort, same gate as OVS/TVS above).
+      try {
+        const sourceRows = buildLvsScoreSources(parsed.respondents, {
+          assessmentId: assessment.id,
+          scope: "LVS",
+          tenantId: null,
+          contributesToBenchmark: dataset === "production",
+        });
+        for (let i = 0; i < sourceRows.length; i += 1000) {
+          await prisma.vitalSignsScoreSource.createMany({ data: sourceRows.slice(i, i + 1000) });
+        }
+      } catch (srcErr) {
+        console.error("/api/vital-signs/upload LVS scoreSource population failed:", srcErr);
+      }
     }
 
     await prisma.vitalSignsAssessment.update({

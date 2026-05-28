@@ -6415,6 +6415,93 @@ model VitalSignsScore {
   @@map("vital_signs_score")
 }
 
+/// 🧬 VitalSignsScoreSource — denormalized per-(respondent, dimension) row that
+/// feeds the rowiverse benchmark aggregator. Demographics are denormalized so
+/// the recompute job can slice without joining VitalSignsResponse. assessmentId
+/// is a plain reference (no FK relation) to keep this table purely additive.
+model VitalSignsScoreSource {
+  id                     String    @id @default(cuid())
+  scope                  String // OVS | TVS | LVS | FVS
+  dimension              String // driver/outcome code
+  level                  String // driver | outcome
+  sourceKind             String    @default("measured") // measured | inferred
+  value                  Float
+  n                      Int       @default(1)
+  assessmentId           String? // VitalSignsAssessment.id (no FK relation by design)
+  tenantId               String?
+  country                String?
+  region                 String?
+  sector                 String?
+  industry               String?
+  ageRange               String?
+  gender                 String?
+  positionType           String?
+  businessUnit           String?
+  jobFunction            String?
+  contributesToBenchmark Boolean   @default(false)
+  contributedAt          DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([scope, contributesToBenchmark])
+  @@index([scope, dimension, level, sourceKind])
+  @@index([assessmentId])
+  @@map("vital_signs_score_source")
+}
+
+/// 📊 VitalSignsBenchmarkStat — materialized mean/sd/percentiles per demographic
+/// slice (global + single-axis country/gender/ageRange/sector). Upserted via
+/// findFirst + update/create (compound-unique on nullable slice fields is
+/// awkward in Prisma), so no @@unique — the recompute cron is single-writer.
+model VitalSignsBenchmarkStat {
+  id           String   @id @default(cuid())
+  scope        String
+  dimension    String
+  level        String
+  sourceKind   String   @default("measured")
+  country      String?
+  region       String?
+  sector       String?
+  ageRange     String?
+  gender       String?
+  n            Int
+  mean         Float
+  sd           Float?
+  p10          Float
+  p25          Float
+  p50          Float
+  p75          Float
+  p90          Float
+  version      Int      @default(1)
+  calculatedAt DateTime @default(now())
+
+  @@index([scope])
+  @@index([scope, level, dimension])
+  @@index([scope, dimension, level, sourceKind, country, region, sector, ageRange, gender])
+  @@map("vital_signs_benchmark_stat")
+}
+
+/// 🔗 VitalSignsBenchmarkCorrelation — Pearson r between two dimensions within a
+/// scope/slice. Upserted via findFirst + update/create like the stats above.
+model VitalSignsBenchmarkCorrelation {
+  id           String   @id @default(cuid())
+  scope        String
+  xKey         String
+  xLevel       String
+  yKey         String
+  yLevel       String
+  correlation  Float
+  n            Int
+  country      String?
+  region       String?
+  sector       String?
+  calculatedAt DateTime @default(now())
+
+  @@index([scope, country, region, sector])
+  @@index([scope, correlation])
+  @@map("vital_signs_benchmark_correlation")
+}
+
 /// 🔮 PulsePointInference — what BE2GROW predicted for this subject.
 model PulsePointInference {
   id             String   @id @default(cuid())

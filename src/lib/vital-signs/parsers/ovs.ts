@@ -40,6 +40,18 @@ export interface OvsRespondent {
     sustainability: number | null;
     engagement: number | null;
   };
+  /**
+   * Integer-coded demographics (Six Seconds codes them per project, e.g.
+   * gender=1/2/3, ageGroup=1..7). Absent from many exports → null. Consumed by
+   * buildOvsScoreSources to denormalize benchmark slices.
+   */
+  demographics: {
+    ageGroup: number | null;
+    gender: number | null;
+    positionType: number | null;
+    businessUnit: number | null;
+    jobFunction: number | null;
+  };
 }
 
 export interface OvsTvsParseResult {
@@ -58,6 +70,21 @@ function toNumber(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   const n = typeof v === "number" ? v : parseFloat(String(v));
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Read the first present demographic column from a list of candidate headers.
+ * Six Seconds exports vary in column naming and many omit demographics entirely,
+ * so this is best-effort and returns null when none match.
+ */
+function pickDemo(row: Record<string, string>, candidates: string[]): number | null {
+  for (const c of candidates) {
+    if (c in row) {
+      const n = toNumber(row[c]);
+      if (n !== null) return n;
+    }
+  }
+  return null;
 }
 
 export function parseOvsTvsCsv(csv: string, scope: OvsTvsScope): OvsTvsParseResult {
@@ -131,6 +158,13 @@ export function parseOvsTvsCsv(csv: string, scope: OvsTvsScope): OvsTvsParseResu
         agility: toNumber(row["Agility"]),
         sustainability: toNumber(row["Sustainability"]),
         engagement: toNumber(row["Engagement"]),
+      },
+      demographics: {
+        ageGroup: pickDemo(row, ["Age Group", "AgeGroup", "ageGroup", "Age"]),
+        gender: pickDemo(row, ["Gender", "gender", "Sex"]),
+        positionType: pickDemo(row, ["Position Type", "PositionType", "Position"]),
+        businessUnit: pickDemo(row, ["Business Unit", "BusinessUnit"]),
+        jobFunction: pickDemo(row, ["Job Function", "JobFunction", "Function", "Department"]),
       },
     };
 

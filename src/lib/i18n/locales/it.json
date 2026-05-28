@@ -1875,6 +1875,7 @@
   "admin.nav.eq": "EQ",
   "admin.nav.eqDashboard": "Dashboard EQ",
   "admin.nav.eqInsights": "Insights EQ",
+  "admin.nav.vsBenchmark": "Benchmark Vital Signs",
   "admin.nav.eqProgress": "Progresso EQ",
   "admin.nav.eqSnapshots": "Snapshot EQ",
   "admin.nav.eqUpload": "Carica EQ",

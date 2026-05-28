@@ -17,8 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { requireAuth } from "@/core/auth/requireAdmin";
-import { getSlackConfig } from "@/lib/slack/config";
-import { getServerAppBaseUrl } from "@/core/utils/base-url";
+import { getSlackConfig, getSlackRedirectUri } from "@/lib/slack/config";
 import { secureLog } from "@/lib/logging";
 
 export const runtime = "nodejs";
@@ -61,12 +60,10 @@ export async function GET(req: NextRequest) {
   // 3) State anti-CSRF — cookie httpOnly 10 min.
   const state = crypto.randomBytes(32).toString("hex");
 
-  // OAuth redirect_uri DEBE ser canónico y estable — Slack exige que
-  // coincida exactamente con el configurado en la app, y que sea idéntico
-  // entre /authorize y /oauth.v2.access. NO usamos el host de la request
-  // (puede ser rowi.vercel.app o no-www); forzamos la URL canónica.
-  const baseUrl = getServerAppBaseUrl(); // sin req → NEXT_PUBLIC_APP_URL o www.rowiia.com
-  const redirectUri = `${baseUrl}/api/integrations/slack/callback`;
+  // redirect_uri canónico y estable (hardcodeado en getSlackRedirectUri).
+  // NO derivado del host ni de NEXT_PUBLIC_* (que aquí resuelven a la URL
+  // interna rowi.vercel.app, que Slack rechaza).
+  const redirectUri = getSlackRedirectUri();
 
   const authorizeUrl = new URL("https://slack.com/oauth/v2/authorize");
   authorizeUrl.searchParams.set("client_id", clientId);

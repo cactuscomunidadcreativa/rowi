@@ -159,3 +159,20 @@ export async function getBotTokenForTeam(
     return null;
   }
 }
+
+/**
+ * Redirect URI canónico del OAuth de Slack.
+ *
+ * DEBE ser estable y EXACTAMENTE igual entre /install (authorize) y
+ * /callback (oauth.v2.access), y coincidir con el configurado en la
+ * Slack App. NO derivamos del host de la request ni de NEXT_PUBLIC_*
+ * porque en este entorno pueden resolver a la URL interna de Vercel
+ * (rowi.vercel.app), que Slack rechaza. Hardcodeamos la URL de
+ * producción; override solo vía SLACK_REDIRECT_URI si algún día hace
+ * falta (e.g. staging con su propia Slack App).
+ */
+export function getSlackRedirectUri(): string {
+  const override = process.env.SLACK_REDIRECT_URI;
+  if (override) return override.replace(/\/$/, "");
+  return "https://www.rowiia.com/api/integrations/slack/callback";
+}

@@ -20,8 +20,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/core/auth/requireAdmin";
-import { getSlackConfig } from "@/lib/slack/config";
-import { getServerAppBaseUrl } from "@/core/utils/base-url";
+import { getSlackConfig, getSlackRedirectUri } from "@/lib/slack/config";
 import { encryptValue } from "@/lib/config/systemConfig";
 import { prisma } from "@/core/prisma";
 import { secureLog } from "@/lib/logging";
@@ -105,10 +104,9 @@ export async function GET(req: NextRequest) {
     return redirectToIntegrations(req, "misconfigured");
   }
 
-  // Mismo redirect_uri canónico que usó /install — Slack exige que
-  // coincida exactamente en el intercambio del code.
-  const baseUrl = getServerAppBaseUrl(); // sin req → URL canónica estable
-  const redirectUri = `${baseUrl}/api/integrations/slack/callback`;
+  // Mismo redirect_uri canónico que usó /install (getSlackRedirectUri) —
+  // Slack exige que coincida exactamente en el intercambio del code.
+  const redirectUri = getSlackRedirectUri();
 
   let data: SlackOAuthResponse;
   try {

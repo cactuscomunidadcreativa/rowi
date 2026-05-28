@@ -76,6 +76,7 @@ model User {
   csvUploads              CsvUpload[]              @relation("UserCsvUploads")
   emailVerificationTokens EmailVerificationToken[] @relation("EmailVerificationTokens")
   passwordResetTokens     PasswordResetToken[]     @relation("PasswordResetTokens")
+  slackUserLinks          SlackUserLink[]          @relation("SlackUserLinks")
   emotionalEvents         EmotionalEvent[]
   employeeProfiles        EmployeeProfile[]
   enrollments             Enrollment[]
@@ -6734,4 +6735,53 @@ model StripeWebhookEvent {
 
   @@index([type, processedAt])
   @@map("stripe_webhook_event")
+}
+
+/// =========================================================
+/// 💬 SLACK — instalación de workspace (OAuth)
+/// Una fila por workspace que instala la Rowi Slack App. El bot
+/// token se guarda encriptado (AES-256-GCM, mismo esquema que
+/// SystemConfig). Opcionalmente atada a un Tenant de Rowi.
+/// =========================================================
+model SlackInstallation {
+  id                String   @id @default(cuid())
+  /// Slack team/workspace id (`T...`) — único.
+  teamId            String   @unique
+  teamName          String?
+  /// Bot token (`xoxb-...`) encriptado en reposo.
+  botTokenEnc       String
+  botUserId         String?
+  scopes            String?
+  /// Tenant de Rowi al que pertenece esta instalación (si aplica).
+  tenantId          String?
+  installedByUserId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userLinks SlackUserLink[]
+
+  @@index([tenantId])
+  @@map("slack_installation")
+}
+
+/// =========================================================
+/// 💬 SLACK — vínculo identidad Slack ↔ usuario Rowi
+/// Permite que un check-in / mensaje desde Slack se atribuya al
+/// usuario correcto de Rowi. Se crea vía OAuth de identidad o
+/// matcheo por email.
+/// =========================================================
+model SlackUserLink {
+  id          String   @id @default(cuid())
+  slackTeamId String
+  slackUserId String
+  /// Usuario de Rowi vinculado.
+  userId      String
+  createdAt   DateTime @default(now())
+
+  installation SlackInstallation @relation(fields: [slackTeamId], references: [teamId], onDelete: Cascade)
+  user         User              @relation("SlackUserLinks", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([slackTeamId, slackUserId])
+  @@index([userId])
+  @@map("slack_user_link")
 }

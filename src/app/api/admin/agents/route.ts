@@ -13,18 +13,15 @@ export async function GET() {
     const auth = await requireSuperAdmin();
     if (auth.error) return auth.error;
     const agents = await prisma.agentConfig.findMany({
+      // Solo el agente BASE global = el que no está atado a ninguna entidad
+      // (todos los *Id null). NO filtrar por accessLevel: las copias clonadas a
+      // cada entidad heredan accessLevel "global" del base y aparecerían como
+      // tarjetas duplicadas (p.ej. research × N entidades).
       where: {
-        OR: [
-          // Agentes globales (base del sistema)
-          {
-            tenantId: null,
-            superHubId: null,
-            organizationId: null,
-            hubId: null,
-          },
-          // O agentes con accessLevel global
-          { accessLevel: "global" },
-        ],
+        tenantId: null,
+        superHubId: null,
+        organizationId: null,
+        hubId: null,
       },
       select: {
         id: true,

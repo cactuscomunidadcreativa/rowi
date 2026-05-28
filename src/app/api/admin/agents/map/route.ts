@@ -27,7 +27,6 @@ export async function GET(req: Request) {
       select: {
         id: true,
         isActive: true,
-        accessLevel: true,
         tenantId: true,
         superHubId: true,
         organizationId: true,
@@ -42,9 +41,11 @@ export async function GET(req: Request) {
     // Agrupar por contexto
     const instances: { type: string; name: string; activeCount: number }[] = [];
 
-    // Contar instancias globales
+    // Contar instancias globales = el agente base sin entidad (todos los *Id
+    // null). NO usar accessLevel: las copias clonadas a cada entidad heredan
+    // accessLevel "global" y se contarían erróneamente como globales.
     const globalAgents = agents.filter(
-      (a) => a.accessLevel === "global" || (!a.tenantId && !a.superHubId && !a.organizationId && !a.hubId)
+      (a) => !a.tenantId && !a.superHubId && !a.organizationId && !a.hubId
     );
     if (globalAgents.length > 0) {
       instances.push({

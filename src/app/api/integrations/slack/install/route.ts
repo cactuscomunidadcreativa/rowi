@@ -61,7 +61,11 @@ export async function GET(req: NextRequest) {
   // 3) State anti-CSRF — cookie httpOnly 10 min.
   const state = crypto.randomBytes(32).toString("hex");
 
-  const baseUrl = getServerAppBaseUrl(req);
+  // OAuth redirect_uri DEBE ser canónico y estable — Slack exige que
+  // coincida exactamente con el configurado en la app, y que sea idéntico
+  // entre /authorize y /oauth.v2.access. NO usamos el host de la request
+  // (puede ser rowi.vercel.app o no-www); forzamos la URL canónica.
+  const baseUrl = getServerAppBaseUrl(); // sin req → NEXT_PUBLIC_APP_URL o www.rowiia.com
   const redirectUri = `${baseUrl}/api/integrations/slack/callback`;
 
   const authorizeUrl = new URL("https://slack.com/oauth/v2/authorize");

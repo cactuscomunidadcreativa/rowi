@@ -105,7 +105,9 @@ export async function GET(req: NextRequest) {
     return redirectToIntegrations(req, "misconfigured");
   }
 
-  const baseUrl = getServerAppBaseUrl(req);
+  // Mismo redirect_uri canónico que usó /install — Slack exige que
+  // coincida exactamente en el intercambio del code.
+  const baseUrl = getServerAppBaseUrl(); // sin req → URL canónica estable
   const redirectUri = `${baseUrl}/api/integrations/slack/callback`;
 
   let data: SlackOAuthResponse;

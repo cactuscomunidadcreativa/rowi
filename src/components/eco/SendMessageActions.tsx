@@ -9,6 +9,8 @@ import {
   Slack,
   Send,
   User,
+  Inbox,
+  MessageCircle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -56,6 +58,17 @@ export default function SendMessageActions({
     `?subject=${encodeURIComponent(subj)}` +
     `&body=${encodeURIComponent(body)}`;
 
+  const outlookUrl =
+    `https://outlook.office.com/mail/deeplink/compose` +
+    `?to=${encodeURIComponent(trimmedEmail)}` +
+    `&subject=${encodeURIComponent(subj)}` +
+    `&body=${encodeURIComponent(body)}`;
+
+  // WhatsApp no admite asunto ni destinatario por email: prefijamos el asunto
+  // al texto y dejamos que el usuario elija el contacto en WhatsApp.
+  const whatsappText = (subj ? `${subj}\n\n` : "") + body;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+
   const canSend = trimmedEmail.length > 0;
 
   const openGmail = () => {
@@ -66,6 +79,15 @@ export default function SendMessageActions({
   const openMailto = () => {
     if (!canSend) return;
     window.location.href = mailtoUrl;
+  };
+
+  const openOutlook = () => {
+    if (!canSend) return;
+    window.open(outlookUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const openWhatsApp = () => {
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   const copyMessage = () => {
@@ -142,6 +164,26 @@ export default function SendMessageActions({
             {t("eco.send.gmail", "Enviar por Gmail")}
           </button>
 
+          {/* Enviar por Outlook (deep-link compose) */}
+          <button
+            type="button"
+            onClick={openOutlook}
+            disabled={!canSend}
+            title={
+              canSend
+                ? t("eco.send.outlookTip", "Abre Outlook con el mensaje listo para enviar")
+                : t("eco.send.needEmail", "Escribe un correo primero")
+            }
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              canSend
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-md hover:shadow-blue-500/25"
+                : "bg-gray-200 dark:bg-zinc-700 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            <Inbox className="w-4 h-4" />
+            {t("eco.send.outlook", "Enviar por Outlook")}
+          </button>
+
           {/* Abrir en mi correo (mailto) */}
           <button
             type="button"
@@ -160,6 +202,17 @@ export default function SendMessageActions({
           >
             <ExternalLink className="w-4 h-4" />
             {t("eco.send.mailto", "Abrir en mi correo")}
+          </button>
+
+          {/* Enviar por WhatsApp (wa.me — el usuario elige el contacto) */}
+          <button
+            type="button"
+            onClick={openWhatsApp}
+            title={t("eco.send.whatsappTip", "Abre WhatsApp con el mensaje listo; eliges el contacto")}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:shadow-md hover:shadow-green-500/25 transition-all"
+          >
+            <MessageCircle className="w-4 h-4" />
+            {t("eco.send.whatsapp", "Enviar por WhatsApp")}
           </button>
 
           {/* Copiar mensaje */}

@@ -127,15 +127,24 @@ function IntegrationsInner() {
           <p className="text-sm text-gray-500 flex-1">
             {t(
               "admin.integrations.whatsappDesc",
-              "Recordatorios y check-ins por WhatsApp (vía Twilio).",
+              "Coach bidireccional por WhatsApp (vía Twilio): los usuarios escriben y Rowi responde con IA.",
             )}
           </p>
           <p className="text-xs text-gray-400">
             {t(
               "admin.integrations.whatsappHint",
-              "Requiere configurar las credenciales de Twilio en variables de entorno.",
+              "Configura las credenciales de Twilio en Ajustes → Integraciones y el webhook entrante en la consola de Twilio.",
             )}
           </p>
+          <a
+            href="/api/admin/whatsapp/debug?test=1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400 hover:underline"
+          >
+            {t("admin.integrations.whatsappDiagnose", "Probar conexión")}
+            <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
 
         {/* Teams */}

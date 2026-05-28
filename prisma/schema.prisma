@@ -76,6 +76,7 @@ model User {
   csvUploads              CsvUpload[]              @relation("UserCsvUploads")
   emailVerificationTokens EmailVerificationToken[] @relation("EmailVerificationTokens")
   passwordResetTokens     PasswordResetToken[]     @relation("PasswordResetTokens")
+  phoneVerificationTokens PhoneVerificationToken[] @relation("PhoneVerificationTokens")
   slackUserLinks          SlackUserLink[]          @relation("SlackUserLinks")
   emotionalEvents         EmotionalEvent[]
   employeeProfiles        EmployeeProfile[]
@@ -6910,6 +6911,27 @@ model PasswordResetToken {
   @@index([userId])
   @@index([email])
   @@map("password_reset_token")
+}
+
+/// 📱 PhoneVerificationToken — OTP para verificar un número de WhatsApp/SMS.
+/// Espejo de EmailVerificationToken. El código es de 6 dígitos con TTL corto;
+/// se marca usedAt al consumirlo. `channel` distingue whatsapp vs sms.
+model PhoneVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  phone     String // número en verificación (E.164)
+  code      String // OTP de 6 dígitos (no único: puede repetirse entre usuarios)
+  channel   String    @default("whatsapp") // whatsapp | sms
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  user User @relation("PhoneVerificationTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([phone])
+  @@map("phone_verification_token")
 }
 
 /// =========================================================

@@ -300,8 +300,8 @@ const ROLE_LINKS = [
   { href: "/finance", key: "finance", icon: DollarSign, roles: ["FINANCIAL", "BILLING", "ADMIN", "OWNER"] },
 
   // Sales / consulting agents (Six Seconds practitioners)
-  { href: "/ventas", key: "ventas", icon: Briefcase, roles: ["CONSULTANT", "COACH", "ADMIN", "OWNER", "SUPERADMIN"] },
-  { href: "/asesor", key: "asesor", icon: Handshake, roles: ["CONSULTANT", "COACH", "ADMIN", "OWNER", "SUPERADMIN"] },
+  { href: "/ventas", key: "ventas", icon: Briefcase, roles: ["CONSULTANT", "COACH", "MENTOR", "HR", "ADMIN", "OWNER", "SUPERADMIN"] },
+  { href: "/asesor", key: "asesor", icon: Handshake, roles: ["CONSULTANT", "COACH", "MENTOR", "HR", "ADMIN", "OWNER", "SUPERADMIN"] },
 
   // Research views (Academic Researcher)
   { href: "/research", key: "research", icon: FlaskConical, roles: ["RESEARCHER", "ACADEMIC", "ADMIN", "SUPERADMIN"] },

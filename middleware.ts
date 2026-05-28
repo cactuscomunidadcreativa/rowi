@@ -14,6 +14,14 @@ const PUBLIC_PAGES = [
   "/register",
   "/invite",
   "/auth",
+  // Recuperación de cuenta — el usuario NO está logueado en estos flujos,
+  // así que tienen que ser públicos o el reset de contraseña / verificación
+  // de email rebota a /signin.
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  // Documentos legales — públicos por diseño (accesibles e indexables).
+  "/legal",
   "/contact",
   "/pricing",
   "/how-it-works",

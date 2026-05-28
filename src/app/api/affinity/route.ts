@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 export const runtime = "nodejs";
 
@@ -17,10 +18,7 @@ export async function GET(req: NextRequest) {
 
   // Si tenemos project y memberId, redirigimos internamente a la subruta
   if (project && memberId) {
-    // Build the base URL from the request
-    const host = req.headers.get("host") || "localhost:3000";
-    const protocol = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+    const baseUrl = getServerAppBaseUrl(req);
 
     const targetUrl = `${baseUrl}/api/affinity/${project}?memberId=${memberId}${force ? "&force=1" : ""}`;
     console.log("[Affinity Gateway] Proxying to:", targetUrl);
@@ -121,7 +119,7 @@ export async function POST(req: Request) {
     }
 
     // Redirigir dinámicamente a la subruta correspondiente
-    const target = `${process.env.BASE_URL || ""}/api/affinity/${project}?memberId=${memberId}${
+    const target = `${getServerAppBaseUrl(req)}/api/affinity/${project}?memberId=${memberId}${
       force ? "&force=1" : ""
     }`;
 

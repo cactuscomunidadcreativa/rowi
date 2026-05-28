@@ -1,13 +1,25 @@
 // src/lib/base-url.ts
+
+const PROD_FALLBACK = "https://www.rowiia.com";
+
+/**
+ * Vercel's internal deploy hostnames (e.g. rowi.vercel.app) must never be used
+ * for outbound links or internal self-fetches: emails would point users at a
+ * host they can't reach, auth cookies scoped to www.rowiia.com wouldn't match,
+ * and services like Slack/Resend reject them. Reject everywhere so a dirty env
+ * var or proxy header can't poison the canonical URL.
+ */
+function isVercelHost(value: string): boolean {
+  return value.toLowerCase().includes("vercel.app");
+}
+
 export function getBaseUrl() {
   // Prefer env var (útil en Vercel), si no: en server usa localhost, en client usa origin
   const env = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL;
-  if (env) return env;
+  if (env && !isVercelHost(env)) return env;
   if (typeof window === "undefined") return "http://localhost:3000";
   return window.location.origin;
 }
-
-const PROD_FALLBACK = "https://www.rowiia.com";
 
 type HeadersLike = { get(name: string): string | null };
 type RequestLike = { headers: HeadersLike; nextUrl?: { origin?: string } };
@@ -28,17 +40,21 @@ export function getServerAppBaseUrl(req?: RequestLike): string {
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_BASE_URL ||
     process.env.BASE_URL;
-  if (env) return env.replace(/\/$/, "");
+  if (env && !isVercelHost(env)) return env.replace(/\/$/, "");
 
   if (req?.headers) {
     const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
     const proto = req.headers.get("x-forwarded-proto") || "https";
-    if (host && !host.startsWith("localhost")) {
+    if (host && !host.startsWith("localhost") && !isVercelHost(host)) {
       return `${proto}://${host}`;
     }
   }
 
-  if (req?.nextUrl?.origin && !req.nextUrl.origin.startsWith("http://localhost")) {
+  if (
+    req?.nextUrl?.origin &&
+    !req.nextUrl.origin.startsWith("http://localhost") &&
+    !isVercelHost(req.nextUrl.origin)
+  ) {
     return req.nextUrl.origin;
   }
 

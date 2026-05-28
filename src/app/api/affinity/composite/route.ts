@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { normalizeProject } from "../utils";
 import { to100, clamp, seiLevel135 } from "../utils"; // 🧠 usamos utils del motor central
 import { prisma } from "@/core/prisma";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
     // ===============================================
     // 🔹 Llamadas internas a los submódulos
     // ===============================================
-    const baseURL = process.env.BASE_URL || "http://localhost:3000";
+    const baseURL = getServerAppBaseUrl(req);
 
     const [growthRes, collabRes, understandRes] = await Promise.all([
       fetch(

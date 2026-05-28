@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parse } from "csv-parse";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -266,7 +267,7 @@ export async function POST(req: NextRequest) {
     // 🚀 Recalcular afinidad SOLO para nuevos miembros (best-effort)
     if (newMembers.length > 0) {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+        const baseUrl = getServerAppBaseUrl(req);
         await Promise.all(
           newMembers.map((id) =>
             fetch(`${baseUrl}/api/affinity?memberId=${id}`, { method: "GET" })

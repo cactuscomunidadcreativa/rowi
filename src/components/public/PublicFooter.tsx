@@ -19,9 +19,11 @@ const footerLinks = {
     { labelKey: "footer.contact", href: "/contact" },
   ],
   legal: [
-    { labelKey: "footer.privacy", href: "/privacy" },
-    { labelKey: "footer.terms", href: "/terms" },
-    { labelKey: "footer.cookies", href: "/cookies" },
+    { labelKey: "footer.privacy", href: "/legal/privacy" },
+    { labelKey: "footer.terms", href: "/legal/terms" },
+    { labelKey: "footer.cookies", href: "/legal/cookies" },
+    { labelKey: "footer.research", href: "/legal/research" },
+    { labelKey: "footer.sixSeconds", href: "/legal/six-seconds" },
   ],
 };
 

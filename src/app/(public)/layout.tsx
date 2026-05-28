@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+import CookieConsent from "@/components/legal/CookieConsent";
 
 export const metadata: Metadata = {
   title: "Rowi - Tu compañero de Inteligencia Emocional",
@@ -13,6 +14,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <PublicNavbar />
       <main className="flex-1 bg-gray-50 dark:bg-zinc-900">{children}</main>
       <PublicFooter />
+      <CookieConsent />
     </div>
   );
 }

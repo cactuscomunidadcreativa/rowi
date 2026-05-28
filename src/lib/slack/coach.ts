@@ -187,8 +187,9 @@ export async function askRowiCoach(
       locale !== "es"
         ? `\n\nIMPORTANT: You MUST respond entirely in ${langName}. The user has selected "${locale}" as their language. All your responses must be in ${langName}.`
         : "";
-    const identityNote = `\n\nUser context: name="${userName}", channel="slack", locale="${locale}". This is an ongoing conversation — do NOT greet the user by name on every reply. Keep answers concise and chat-friendly for Slack.`;
-    const systemPrompt = basePrompt + langInstruction + identityNote;
+    const identityNote = `\n\nUser context: name="${userName}", channel="slack", locale="${locale}".`;
+    const styleNote = `\n\nSlack chat style (IMPORTANT): Keep replies short — 2-4 sentences or a few short "- " bullets, ~120 words max unless the user explicitly asks for more detail. Lead with the answer; skip preambles, recaps of the question, and filler. Use short paragraphs or bullets, never headings or long numbered lists. This is an ongoing conversation — do NOT greet the user by name on every reply.`;
+    const systemPrompt = basePrompt + langInstruction + identityNote + styleNote;
 
     // 4) Historial reciente (mismo patrón que /api/rowi: últimas 10
     //    entradas del mismo usuario + agente + intent).
@@ -225,7 +226,7 @@ export async function askRowiCoach(
 
     // 5) Llamada NO-streaming → respuesta completa para Slack.
     const openai = await getOpenAIClient();
-    const completion = await openai.chat.completions.create({ model, messages });
+    const completion = await openai.chat.completions.create({ model, messages, max_tokens: 500 });
     const replyText =
       completion.choices[0]?.message?.content?.trim() ||
       "No pude generar una respuesta en este momento. Intenta de nuevo.";

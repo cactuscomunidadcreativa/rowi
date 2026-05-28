@@ -68,3 +68,6 @@ src/data/seeds/*.json
 *.bak
 *.old
 *.backup
+
+# Documentos internos sensibles (no publicar)
+REVISION_LEGAL.md

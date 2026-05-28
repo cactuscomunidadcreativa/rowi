@@ -1,22 +1,7 @@
 // src/lib/legal/es.ts
 // ============================================================
 // CONTENIDO LEGAL — ESPAÑOL (MASTER / fuente de verdad)
-//
-// El texto público se lee como documento final (sin marcas internas).
 // Las traducciones EN/PT/IT derivan de este archivo.
-//
-// ⚠️ NOTA INTERNA (no se renderiza — solo para el equipo):
-// Estos puntos requieren validación de un abogado antes de considerarse
-// definitivos, aunque el texto se presente como final al usuario:
-//   1. Estructura de responsabilidad Rowi ↔ Six Seconds dado que Six
-//      Seconds tendría ~60% de Rowi (riesgo de joint-controller /
-//      levantamiento del velo societario). Coordinar con acuerdo de
-//      accionistas + contrato de licencia de datos separado del control.
-//   2. Cláusula arbitral: confirmar centro oficial (ref. caardpe.com),
-//      número de árbitros, idioma y sede exacta en Perú.
-//   3. Entidad operadora en formación: confirmar razón social registrada
-//      y reemplazar los correos de contacto si difieren.
-// Contactos usados por defecto: privacidad@rowiia.com / legal@rowiia.com
 // ============================================================
 
 import type { LegalDocSet } from "./types";

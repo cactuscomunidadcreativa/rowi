@@ -74,6 +74,18 @@ interface CreateCheckoutParams {
   cancelUrl: string;
   couponCode?: string;
   locale?: string;
+  /**
+   * 🎫 B2B por asientos: nº de licencias a comprar. Default 1 (B2C).
+   * Se aplica a `line_items[0].quantity` y queda en metadata para que
+   * el webhook lo lea y sincronice `Tenant.licenseCount`.
+   */
+  quantity?: number;
+  /**
+   * 🎫 B2B: id del tenant dueño de la suscripción. Si se pasa, va en
+   * `subscription_data.metadata.tenantId`; el webhook lo usa para atar
+   * la sub al tenant y sincronizar asientos.
+   */
+  tenantId?: string;
 }
 
 interface CreateCustomerParams {
@@ -135,7 +147,13 @@ export async function createCheckoutSession(
     cancelUrl,
     couponCode,
     locale = "es",
+    quantity,
+    tenantId,
   } = params;
+
+  // 🎫 Cantidad de asientos: al menos 1. Entero positivo. En B2C no se
+  // pasa quantity y queda en 1 (retro-compat con los llamados existentes).
+  const seatQuantity = Math.max(1, Math.floor(quantity ?? 1));
 
   // Obtener el plan
   const plan = await prisma.plan.findUnique({
@@ -164,7 +182,7 @@ export async function createCheckoutSession(
     line_items: [
       {
         price: plan.stripePriceIdMonthly,
-        quantity: 1,
+        quantity: seatQuantity,
       },
     ],
     success_url: successUrl,
@@ -173,11 +191,15 @@ export async function createCheckoutSession(
     metadata: {
       userId,
       planId,
+      ...(tenantId ? { tenantId } : {}),
     },
     subscription_data: {
       metadata: {
         userId,
         planId,
+        // El webhook (handleSubscriptionUpdated) lee tenantId de aquí
+        // para sincronizar Tenant.licenseCount desde la quantity.
+        ...(tenantId ? { tenantId } : {}),
       },
       // Trial si el plan lo tiene
       ...(plan.trialDays > 0 && {

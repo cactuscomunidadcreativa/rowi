@@ -29,6 +29,7 @@ import {
   Radio,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
+import SendMessageActions from "@/components/eco/SendMessageActions";
 
 /* =========================================================
    📡 ECO - Emotional Communication Optimizer
@@ -946,6 +947,17 @@ export default function EcoPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Acciones de envío */}
+                  <SendMessageActions
+                    subject={out.refined?.subject || out.base?.subject || undefined}
+                    body={out.refined?.text || out.base?.text || ""}
+                    recipientName={
+                      out.analysis && !out.analysis.isGroup
+                        ? out.analysis.recipients?.[0]?.name
+                        : undefined
+                    }
+                  />
                 </motion.section>
               )}
             </AnimatePresence>

@@ -38,7 +38,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { planId, couponCode, locale } = body;
+    // quantity + tenantId son opcionales (B2B por asientos). Si no vienen,
+    // el checkout se comporta igual que antes (retro-compat B2C).
+    const { planId, couponCode, locale, quantity, tenantId } = body;
 
     if (!planId) {
       return NextResponse.json(
@@ -46,6 +48,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Normaliza quantity → entero ≥ 1 si vino. undefined si no.
+    const seatQuantity =
+      quantity != null && Number.isFinite(Number(quantity))
+        ? Math.max(1, Math.floor(Number(quantity)))
+        : undefined;
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -57,6 +65,8 @@ export async function POST(req: NextRequest) {
       cancelUrl: `${baseUrl}/pricing?cancelled=true`,
       couponCode,
       locale: locale || "es",
+      quantity: seatQuantity,
+      tenantId: typeof tenantId === "string" && tenantId ? tenantId : undefined,
     });
 
     return NextResponse.json({

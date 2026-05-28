@@ -157,3 +157,38 @@ export async function recomputeVsSeiCorrelations() {
   }
   return { cohorts: cohorts.length, written };
 }
+
+/**
+ * Render the strongest VS↔SEI correlations (by |r|) as a compact text block to
+ * ground the research agent. Returns null when there is nothing to inject (no
+ * cohorts have reached MIN_COHORTS yet) so the caller can skip the block
+ * instead of feeding the model an empty table. Capped at `limit` rows to keep
+ * the system prompt within the research token budget.
+ */
+export async function buildVsSeiCorrelationContext(limit = 20): Promise<string | null> {
+  const cohortCount = await prisma.vsSeiCohort.count();
+  const correlations = await prisma.vsSeiCorrelation.findMany({
+    orderBy: { correlation: "desc" },
+  });
+  if (correlations.length === 0) {
+    return cohortCount > 0
+      ? `DATOS VS↔SEI (vivos): hay ${cohortCount} cohorte(s) cargada(s) pero ninguna correlación supera el mínimo de ${MIN_COHORTS} cohortes con datos pareados. No reportes correlaciones todavía; recomienda cargar más cohortes.`
+      : null;
+  }
+
+  const top = [...correlations]
+    .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation))
+    .slice(0, limit);
+
+  const lines = top.map(
+    (c) =>
+      `- [${c.vsScope}] ${c.vsKey} ↔ ${c.seiKey}: r=${c.correlation.toFixed(2)} (n=${c.n} cohortes)`,
+  );
+
+  return [
+    `DATOS VS↔SEI (vivos, nivel cohorte, anónimos) — ${cohortCount} cohorte(s), ${correlations.length} correlaciones calculadas.`,
+    `Estas son CORRELACIONES REALES del rowiverse (Pearson entre medias de cohorte; cada cohorte = 1 punto). Cítalas con su r y n; NO inventes valores fuera de esta lista. r alto con n bajo es frágil.`,
+    `Top ${top.length} por |r|:`,
+    ...lines,
+  ].join("\n");
+}

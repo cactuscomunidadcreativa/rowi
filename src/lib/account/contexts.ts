@@ -404,3 +404,33 @@ export async function resolveContextTenantId(
       return null;
   }
 }
+
+/**
+ * Given the active-context cookie value, resolve which Organization — if any —
+ * the caller is acting toward. Today the only context that binds to an org is
+ * `service_provider`: a coach/consultant serving a ServiceEngagement whose
+ * client is an organization. Returns null for every other context (the chip
+ * has no standalone "organization" hat), so callers keep their existing
+ * non-org behavior unchanged.
+ *
+ * Same contract as resolveContextTenantId: this only RESOLVES the id; it does
+ * NOT grant access — the caller still owns the permission check.
+ */
+export async function resolveContextOrganizationId(
+  cookieValue: string | null | undefined,
+): Promise<string | null> {
+  if (!cookieValue || typeof cookieValue !== "string") return null;
+  const sepIdx = cookieValue.indexOf(":");
+  if (sepIdx < 0) return null;
+  const kind = cookieValue.slice(0, sepIdx);
+  const ref = cookieValue.slice(sepIdx + 1);
+  if (!ref) return null;
+
+  if (kind !== "service_provider") return null;
+
+  const eng = await prisma.serviceEngagement.findUnique({
+    where: { id: ref },
+    select: { clientOrganizationId: true },
+  });
+  return eng?.clientOrganizationId || null;
+}

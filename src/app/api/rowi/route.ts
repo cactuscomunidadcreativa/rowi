@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import type OpenAI from "openai";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
@@ -6,6 +7,10 @@ import { getServerAuthUser } from "@/core/auth";
 import { getOpenAIClient } from "@/lib/openai/client";
 import { recordActivity } from "@/services/gamification";
 import { secureLog } from "@/lib/logging";
+import {
+  ACTIVE_CONTEXT_COOKIE,
+  resolveContextOrganizationId,
+} from "@/lib/account/contexts";
 
 export const runtime = "nodejs";
 
@@ -73,10 +78,13 @@ function estimateTokens(text: string): number {
 }
 
 /* =========================================================
-   🔎 Resolver agente por contexto (hub → tenant → superhub → global)
+   🔎 Resolver agente por contexto (org → hub → tenant → superhub → global)
    ---------------------------------------------------------
-   Prioridad: hubId → tenantId → superHubId → global
-   SIEMPRE hace fallback a global si no encuentra en niveles específicos
+   Prioridad: organizationId → hubId → tenantId → superHubId → global
+   El nivel org solo aplica cuando el usuario actúa como proveedor de servicio
+   hacia una org-cliente (cookie de contexto activo `service_provider`). En
+   cualquier otro contexto orgId es null y la cadena se comporta como antes.
+   SIEMPRE hace fallback a global si no encuentra en niveles específicos.
    Si no encuentra con el slug principal, intenta aliases (ej: super → super-rowi)
 ========================================================= */
 async function resolveAgent(slug: string, auth: any) {
@@ -102,11 +110,30 @@ async function resolveAgent(slug: string, auth: any) {
     }
   }
 
+  // Org activa: solo se resuelve desde el contexto service_provider (la cookie
+  // narrow-ea, nunca otorga acceso — el engagement ya prueba la relación).
+  let organizationId: string | null = null;
+  try {
+    const cookieStore = await cookies();
+    const activeContext = cookieStore.get(ACTIVE_CONTEXT_COOKIE)?.value;
+    organizationId = await resolveContextOrganizationId(activeContext);
+  } catch {
+    organizationId = null;
+  }
+
   // Intentar resolver con el slug principal y luego con aliases
   const slugsToTry = [slug, ...(SLUG_ALIASES[slug] || [])];
 
   for (const trySlug of slugsToTry) {
-    // 1️⃣ Intentar agente por Hub (más específico)
+    // 0️⃣ Intentar agente por Organización (más específico cuando hay org activa)
+    if (organizationId) {
+      const orgAgent = await prisma.agentConfig.findFirst({
+        where: { slug: trySlug, organizationId, isActive: true },
+      });
+      if (orgAgent) return orgAgent;
+    }
+
+    // 1️⃣ Intentar agente por Hub
     if (hubId) {
       const hubAgent = await prisma.agentConfig.findFirst({
         where: { slug: trySlug, hubId, isActive: true },
@@ -373,8 +400,27 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 🔬 RAG para Investigación: inyectar las correlaciones VS↔SEI reales del
+    // rowiverse (nivel cohorte, anónimas) para que el agente razone con datos y
+    // no solo con el marco. Best-effort: si falla la consulta o no hay datos
+    // suficientes, el bloque se omite y el agente sigue con el prompt base.
+    let systemPromptWithData = systemPrompt;
+    if (slug === "research") {
+      try {
+        const { buildVsSeiCorrelationContext } = await import(
+          "@/lib/vital-signs/vs-sei"
+        );
+        const dataBlock = await buildVsSeiCorrelationContext();
+        if (dataBlock) {
+          systemPromptWithData = `${systemPrompt}\n\n---\n${dataBlock}`;
+        }
+      } catch (ragErr) {
+        console.warn("⚠️ No se pudo inyectar contexto VS↔SEI:", ragErr);
+      }
+    }
+
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: systemPromptWithData },
       ...priorMessages,
       { role: "user", content: userContent },
     ];

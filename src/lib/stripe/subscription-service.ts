@@ -3,7 +3,7 @@
  * Maneja suscripciones, checkouts y pagos
  */
 
-import { stripe, isStripeConfigured } from "./client";
+import { getStripeClient } from "./client";
 import { prisma } from "@/core/prisma";
 import { sendBillingNotification } from "@/lib/email/sendBillingNotification";
 import { getServerAppBaseUrl } from "@/core/utils/base-url";
@@ -50,12 +50,16 @@ async function resolvePlanIdFromPriceId(priceId: string | null | undefined): Pro
   return plan?.id ?? null;
 }
 
-// Helper to ensure Stripe is configured
-function requireStripe() {
-  if (!stripe) {
+/**
+ * Carga el cliente Stripe (lee SystemConfig + env). Throwea si no
+ * está configurado en ningún lado.
+ */
+async function requireStripe() {
+  const client = await getStripeClient();
+  if (!client) {
     throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY.");
   }
-  return stripe;
+  return client;
 }
 
 // =========================================================
@@ -98,7 +102,7 @@ export async function getOrCreateStripeCustomer(
   }
 
   // Crear nuevo customer en Stripe
-  const stripeClient = requireStripe();
+  const stripeClient = await requireStripe();
   const customer = await stripeClient.customers.create({
     email,
     name: name || undefined,
@@ -195,7 +199,7 @@ export async function createCheckoutSession(
     }
   }
 
-  const stripeClient = requireStripe();
+  const stripeClient = await requireStripe();
   const session = await stripeClient.checkout.sessions.create(sessionParams);
 
   return {
@@ -221,7 +225,7 @@ export async function createCustomerPortalSession(
     throw new Error("User does not have a Stripe customer");
   }
 
-  const stripeClient = requireStripe();
+  const stripeClient = await requireStripe();
   const session = await stripeClient.billingPortal.sessions.create({
     customer: user.stripeCustomerId,
     return_url: returnUrl,
@@ -641,7 +645,7 @@ export async function cancelSubscription(userId: string): Promise<void> {
     throw new Error("No active subscription found");
   }
 
-  const stripeClient = requireStripe();
+  const stripeClient = await requireStripe();
   await stripeClient.subscriptions.update(user.stripeSubscriptionId, {
     cancel_at_period_end: true,
   });
@@ -657,7 +661,7 @@ export async function resumeSubscription(userId: string): Promise<void> {
     throw new Error("No subscription found");
   }
 
-  const stripeClient = requireStripe();
+  const stripeClient = await requireStripe();
   await stripeClient.subscriptions.update(user.stripeSubscriptionId, {
     cancel_at_period_end: false,
   });

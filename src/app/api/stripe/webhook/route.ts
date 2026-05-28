@@ -12,7 +12,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/client";
+import {
+  getStripeClient,
+  getStripeWebhookSecret,
+} from "@/lib/stripe/client";
 import { handleStripeWebhook } from "@/lib/stripe/subscription-service";
 import { prisma } from "@/core/prisma";
 import { secureLog } from "@/lib/logging";
@@ -33,20 +36,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Cliente + secret se leen lazy de SystemConfig (DB) con fallback a env.
+    // Admin puede rotar en /hub/admin/settings sin redeploy.
+    const stripe = await getStripeClient();
+    const webhookSecret = await getStripeWebhookSecret();
+
     if (!stripe) {
       return NextResponse.json(
         { error: "Stripe not configured" },
         { status: 500 },
       );
     }
+    if (!webhookSecret) {
+      return NextResponse.json(
+        { error: "Stripe webhook secret not configured" },
+        { status: 500 },
+      );
+    }
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        STRIPE_WEBHOOK_SECRET,
-      );
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Webhook signature verification failed:", message);

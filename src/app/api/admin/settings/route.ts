@@ -23,6 +23,7 @@ import {
 } from "@/lib/config/systemConfig";
 import { logConfigChange } from "@/lib/audit/auditLog";
 import { telemetry } from "@/lib/telemetry";
+import { refreshStripeConfig } from "@/lib/stripe/client";
 
 const TELEMETRY_KEYS = new Set<SystemConfigKey>([
   "TELEMETRY_PROVIDER",
@@ -30,6 +31,12 @@ const TELEMETRY_KEYS = new Set<SystemConfigKey>([
   "NEXT_PUBLIC_SENTRY_DSN",
   "AXIOM_TOKEN",
   "AXIOM_DATASET",
+]);
+
+const STRIPE_KEYS = new Set<SystemConfigKey>([
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "STRIPE_PUBLISHABLE_KEY",
 ]);
 
 /**
@@ -160,6 +167,11 @@ export async function POST(req: NextRequest) {
     if (TELEMETRY_KEYS.has(key as SystemConfigKey)) {
       telemetry.refreshConfig();
     }
+    // Mismo principio para Stripe: si se actualiza una credencial,
+    // el próximo webhook/checkout usa el valor nuevo sin esperar TTL.
+    if (STRIPE_KEYS.has(key as SystemConfigKey)) {
+      refreshStripeConfig();
+    }
 
     return NextResponse.json({
       ok: true,
@@ -212,6 +224,9 @@ export async function DELETE(req: NextRequest) {
     // 🔄 Misma razón que en POST: invalida el cache si tocamos observability.
     if (TELEMETRY_KEYS.has(key as SystemConfigKey)) {
       telemetry.refreshConfig();
+    }
+    if (STRIPE_KEYS.has(key as SystemConfigKey)) {
+      refreshStripeConfig();
     }
 
     return NextResponse.json({

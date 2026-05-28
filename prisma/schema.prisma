@@ -60,59 +60,59 @@ model User {
   rowiverse   RowiVerseUser? @relation("UserRowiVerseLink")
 
   // 🔹 Relaciones existentes
-  accounts              Account[]
-  activityLogs          ActivityLog[]         @relation("UserActivityLogs")
-  activityLogsTargeted  ActivityLog[]         @relation("ActivityLogTarget")
-  affinityInteractions  AffinityInteraction[]
-  affinitySnapshots     AffinitySnapshot[]
-  affinityProfile       AffinityProfile?
-  batches               Batch[]               @relation("UserBatches")
-  caseStudyAuthor       CaseStudy[]           @relation("CaseStudyAuthor")
-  issuedCertificates    Certificate[]         @relation("CertificateIssuedBy")
-  earnedCertificates    Certificate[]         @relation("CertificateUser")
-  claimedMembers        CommunityMember[]     @relation("ClaimedMembers")
-  ownedMembers          CommunityMember[]     @relation("OwnerMember")
-  communityMemberships  CommunityMember[]
-  csvUploads            CsvUpload[]           @relation("UserCsvUploads")
+  accounts                Account[]
+  activityLogs            ActivityLog[]            @relation("UserActivityLogs")
+  activityLogsTargeted    ActivityLog[]            @relation("ActivityLogTarget")
+  affinityInteractions    AffinityInteraction[]
+  affinitySnapshots       AffinitySnapshot[]
+  affinityProfile         AffinityProfile?
+  batches                 Batch[]                  @relation("UserBatches")
+  caseStudyAuthor         CaseStudy[]              @relation("CaseStudyAuthor")
+  issuedCertificates      Certificate[]            @relation("CertificateIssuedBy")
+  earnedCertificates      Certificate[]            @relation("CertificateUser")
+  claimedMembers          CommunityMember[]        @relation("ClaimedMembers")
+  ownedMembers            CommunityMember[]        @relation("OwnerMember")
+  communityMemberships    CommunityMember[]
+  csvUploads              CsvUpload[]              @relation("UserCsvUploads")
   emailVerificationTokens EmailVerificationToken[] @relation("EmailVerificationTokens")
-  passwordResetTokens   PasswordResetToken[]  @relation("PasswordResetTokens")
-  emotionalEvents       EmotionalEvent[]
-  employeeProfiles      EmployeeProfile[]
-  enrollments           Enrollment[]
-  eqProgress            EqProgress[]
-  eqSnapshots           EqSnapshot[]
-  hubMemberships        HubMembership[]
-  hubPosts              HubPost[]             @relation("HubPostsByUser")
-  invitesSent           InviteToken[]         @relation("UserInvites")
-  learningNotes         LearningNote[]
-  approvals             LeaveRequest[]        @relation("LeaveApprover")
-  memberships           Membership[]
-  orgMemberships        OrgMembership[]
-  pagesAuthored         Page[]                @relation("PagesByAuthor")
-  payouts               Payout[]
-  feedbacksGiven        PeerFeedback[]        @relation("PeerFeedbackGiver")
-  peerFeedbacks         PeerFeedback[]        @relation("PeerFeedbackReceiver")
-  reviewsAuthored       PerformanceReview[]   @relation("UserAsReviewer")
-  quizAttempts          QuizAttempt[]
-  peerChats             RowiChat[]            @relation("ChatPeerRelation")
-  userChats             RowiChat[]            @relation("UserChats")
-  rowiChatFeedback      RowiChatFeedback[]
-  authoredPosts         RowiFeed[]
-  initiatedRelations    RowiRelation[]        @relation("InitiatorRelation")
-  receivedRelations     RowiRelation[]        @relation("ReceiverRelation")
-  sessions              Session[]
-  studyGroupMemberships StudyGroupMember[]
-  plan                  Plan?                 @relation(fields: [planId], references: [id])
-  primaryTenant         Tenant?               @relation("UserPrimaryTenant", fields: [primaryTenantId], references: [id])
-  aiControls            UserAIControl[]
-  permissions           UserPermission[]
-  usage                 UserUsage[]
-  createdCommunities    RowiCommunity[]
-  rowiCommunities       RowiCommunityUser[]
-  invitedRowiUsers      RowiCommunityUser[]   @relation("RowiCommunityInviter")
-  rowiCommunityPosts    RowiCommunityPost[]
-  createdVerses         RowiVerse[]           @relation("UserCreatedVerses")
-  EcosystemLink         EcosystemLink[]
+  passwordResetTokens     PasswordResetToken[]     @relation("PasswordResetTokens")
+  emotionalEvents         EmotionalEvent[]
+  employeeProfiles        EmployeeProfile[]
+  enrollments             Enrollment[]
+  eqProgress              EqProgress[]
+  eqSnapshots             EqSnapshot[]
+  hubMemberships          HubMembership[]
+  hubPosts                HubPost[]                @relation("HubPostsByUser")
+  invitesSent             InviteToken[]            @relation("UserInvites")
+  learningNotes           LearningNote[]
+  approvals               LeaveRequest[]           @relation("LeaveApprover")
+  memberships             Membership[]
+  orgMemberships          OrgMembership[]
+  pagesAuthored           Page[]                   @relation("PagesByAuthor")
+  payouts                 Payout[]
+  feedbacksGiven          PeerFeedback[]           @relation("PeerFeedbackGiver")
+  peerFeedbacks           PeerFeedback[]           @relation("PeerFeedbackReceiver")
+  reviewsAuthored         PerformanceReview[]      @relation("UserAsReviewer")
+  quizAttempts            QuizAttempt[]
+  peerChats               RowiChat[]               @relation("ChatPeerRelation")
+  userChats               RowiChat[]               @relation("UserChats")
+  rowiChatFeedback        RowiChatFeedback[]
+  authoredPosts           RowiFeed[]
+  initiatedRelations      RowiRelation[]           @relation("InitiatorRelation")
+  receivedRelations       RowiRelation[]           @relation("ReceiverRelation")
+  sessions                Session[]
+  studyGroupMemberships   StudyGroupMember[]
+  plan                    Plan?                    @relation(fields: [planId], references: [id])
+  primaryTenant           Tenant?                  @relation("UserPrimaryTenant", fields: [primaryTenantId], references: [id])
+  aiControls              UserAIControl[]
+  permissions             UserPermission[]
+  usage                   UserUsage[]
+  createdCommunities      RowiCommunity[]
+  rowiCommunities         RowiCommunityUser[]
+  invitedRowiUsers        RowiCommunityUser[]      @relation("RowiCommunityInviter")
+  rowiCommunityPosts      RowiCommunityPost[]
+  createdVerses           RowiVerse[]              @relation("UserCreatedVerses")
+  EcosystemLink           EcosystemLink[]
 
   // 🦉 ROWI 100% - Nuevas relaciones
   avatar                 AvatarEvolution?
@@ -6705,4 +6705,25 @@ model PasswordResetToken {
   @@index([userId])
   @@index([email])
   @@map("password_reset_token")
+}
+
+/// =========================================================
+/// 💳 STRIPE WEBHOOK EVENT — dedupe persistente
+/// Stripe retransmite eventos hasta 3 días si no recibe 2xx. El
+/// Map<> en memoria del webhook handler se pierde cross-cold-start
+/// en serverless. Esta tabla garantiza idempotency cross-instance.
+/// =========================================================
+model StripeWebhookEvent {
+  /// Stripe event id (`evt_...`) — único globalmente.
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+  success     Boolean
+  /// Mensaje de error del handler si success=false. null si OK.
+  error       String?
+  /// API version del evento Stripe (para diagnóstico).
+  apiVersion  String?
+
+  @@index([type, processedAt])
+  @@map("stripe_webhook_event")
 }

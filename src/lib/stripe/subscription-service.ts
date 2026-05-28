@@ -5,7 +5,50 @@
 
 import { stripe, isStripeConfigured } from "./client";
 import { prisma } from "@/core/prisma";
+import { sendBillingNotification } from "@/lib/email/sendBillingNotification";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
+import { secureLog } from "@/lib/logging";
 import type Stripe from "stripe";
+
+/**
+ * Stripe SDK ≥17 movió `current_period_start/end` desde Subscription
+ * a cada subscription item. Los datos siguen llegando en el wire
+ * (la API no cambió), pero los types ya no los exponen en Subscription.
+ * Este helper lee del item primero, con fallback al campo legacy.
+ */
+function readSubscriptionPeriod(subscription: Stripe.Subscription): {
+  start: Date | null;
+  end: Date | null;
+} {
+  const item = subscription.items.data[0] as any;
+  const sub = subscription as any;
+  const startSec = item?.current_period_start ?? sub.current_period_start;
+  const endSec = item?.current_period_end ?? sub.current_period_end;
+  return {
+    start: startSec ? new Date(startSec * 1000) : null,
+    end: endSec ? new Date(endSec * 1000) : null,
+  };
+}
+
+/**
+ * Resuelve el `planId` interno desde el `stripePriceId` que viene en el
+ * subscription item. Cubre tanto pricing mensual como anual. Devuelve
+ * null si no hay match (raro — significa price huérfano en Stripe que
+ * no está mapeado en la tabla Plan).
+ */
+async function resolvePlanIdFromPriceId(priceId: string | null | undefined): Promise<string | null> {
+  if (!priceId) return null;
+  const plan = await prisma.plan.findFirst({
+    where: {
+      OR: [
+        { stripePriceIdMonthly: priceId },
+        { stripePriceIdYearly: priceId },
+      ],
+    },
+    select: { id: true },
+  });
+  return plan?.id ?? null;
+}
 
 // Helper to ensure Stripe is configured
 function requireStripe() {
@@ -215,6 +258,10 @@ export async function handleStripeWebhook(
         );
         break;
 
+      case "customer.subscription.trial_will_end":
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription);
+        break;
+
       case "invoice.paid":
         await handleInvoicePaid(event.data.object as Stripe.Invoice);
         break;
@@ -223,8 +270,12 @@ export async function handleStripeWebhook(
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
 
+      case "invoice.payment_action_required":
+        await handlePaymentActionRequired(event.data.object as Stripe.Invoice);
+        break;
+
       default:
-        console.log(`⚠️ Unhandled Stripe event: ${event.type}`);
+        secureLog.info(`[stripe] unhandled event type=${event.type}`);
     }
 
     return { success: true, message: `Processed ${event.type}` };
@@ -308,23 +359,26 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     paused: "PAUSED",
   };
 
-  // Stripe SDK ≥17 moved current_period_start/end from the Subscription
-  // object onto each subscription item. The values still flow on the
-  // wire (Stripe's API didn't break), but the TS types don't expose
-  // them on Subscription anymore. Cast through `any` so we keep the
-  // legacy field access working until we migrate to reading from
-  // items.data[0]
-  const sub = subscription as any;
-  const periodStart = new Date(sub.current_period_start * 1000);
-  const periodEnd = new Date(sub.current_period_end * 1000);
+  const { start: periodStart, end: periodEnd } = readSubscriptionPeriod(subscription);
+
+  // Resolver planId desde el price actual de la suscripción. Si el user
+  // cambia de plan vía customer portal, el price.id viene distinto
+  // del que guardamos al crear la sub. Necesitamos sincronizar.
+  const currentPriceId = subscription.items.data[0]?.price.id ?? null;
+  const resolvedPlanId =
+    (await resolvePlanIdFromPriceId(currentPriceId)) ??
+    subscription.metadata?.planId ??
+    null;
 
   // Actualizar o crear suscripción
   await prisma.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
     update: {
       status: (statusMap[subscription.status] || "ACTIVE") as any,
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      stripePriceId: currentPriceId || "",
+      ...(resolvedPlanId ? { planId: resolvedPlanId } : {}),
+      ...(periodStart ? { currentPeriodStart: periodStart } : {}),
+      ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       cancelledAt: subscription.canceled_at
         ? new Date(subscription.canceled_at * 1000)
@@ -332,13 +386,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     },
     create: {
       userId,
-      planId: subscription.metadata?.planId || "",
+      planId: resolvedPlanId ?? "",
       stripeSubscriptionId: subscription.id,
-      stripePriceId: subscription.items.data[0]?.price.id || "",
+      stripePriceId: currentPriceId || "",
       stripeCustomerId: subscription.customer as string,
       status: (statusMap[subscription.status] || "ACTIVE") as any,
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      currentPeriodStart: periodStart ?? new Date(),
+      currentPeriodEnd: periodEnd ?? new Date(),
       trialStart: subscription.trial_start
         ? new Date(subscription.trial_start * 1000)
         : null,
@@ -348,7 +402,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     },
   });
 
-  // Actualizar estado del usuario según suscripción
+  // Actualizar estado del usuario según suscripción + sincronizar planId
+  // (crítico cuando el user cambia plan en customer portal).
   let onboardingStatus: string | undefined;
   if (subscription.status === "active") {
     onboardingStatus = "ACTIVE";
@@ -361,17 +416,93 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     onboardingStatus = "CANCELLED";
   }
 
+  const userUpdate: Record<string, unknown> = {};
   if (onboardingStatus) {
+    userUpdate.onboardingStatus = onboardingStatus;
+    if (periodEnd) userUpdate.planExpiresAt = periodEnd;
+  }
+  if (resolvedPlanId) {
+    userUpdate.planId = resolvedPlanId;
+  }
+
+  if (Object.keys(userUpdate).length > 0) {
     await prisma.user.update({
       where: { id: userId },
-      data: {
-        onboardingStatus: onboardingStatus as any,
-        planExpiresAt: periodEnd,
-      },
+      data: userUpdate as any,
     });
   }
 
-  console.log(`✅ Subscription ${subscription.id} updated: ${subscription.status}`);
+  secureLog.info(
+    `[stripe] subscription updated id=${subscription.id} status=${subscription.status} planId=${resolvedPlanId ?? "unchanged"}`,
+  );
+}
+
+// =========================================================
+// Trial will end (Stripe avisa 3 días antes del fin del trial)
+// =========================================================
+async function handleTrialWillEnd(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata?.userId;
+  if (!userId) return;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true, language: true, preferredLang: true },
+  });
+  if (!user?.email) return;
+
+  const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000) : null;
+  const daysLeft = trialEnd
+    ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : 3;
+
+  const baseUrl = getServerAppBaseUrl();
+  try {
+    await sendBillingNotification({
+      to: user.email,
+      kind: "trial_will_end",
+      name: user.name,
+      ctaUrl: `${baseUrl}/settings/billing`,
+      trialDaysLeft: daysLeft,
+      locale: (user.preferredLang || user.language || "es") as any,
+    });
+  } catch (err) {
+    console.warn("⚠️ trial_will_end email failed (no crítico):", err);
+  }
+
+  secureLog.info(
+    `[stripe] trial_will_end sent userId=${userId} daysLeft=${daysLeft}`,
+  );
+}
+
+// =========================================================
+// Payment action required (3D Secure / SCA)
+// =========================================================
+async function handlePaymentActionRequired(invoice: Stripe.Invoice) {
+  const customerId = invoice.customer as string;
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true, email: true, name: true, language: true, preferredLang: true },
+  });
+  if (!user?.email) return;
+
+  const baseUrl = getServerAppBaseUrl();
+  try {
+    await sendBillingNotification({
+      to: user.email,
+      kind: "payment_action_required",
+      name: user.name,
+      // Llevamos al usuario al customer portal donde puede confirmar
+      // el pago / refrescar autenticación 3DS.
+      ctaUrl: `${baseUrl}/settings/billing`,
+      locale: (user.preferredLang || user.language || "es") as any,
+    });
+  } catch (err) {
+    console.warn("⚠️ payment_action_required email failed (no crítico):", err);
+  }
+
+  secureLog.info(
+    `[stripe] payment_action_required notified userId=${user.id} invoice=${invoice.id}`,
+  );
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -442,6 +573,13 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   const user = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      language: true,
+      preferredLang: true,
+    },
   });
 
   if (!user) return;
@@ -465,7 +603,28 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     },
   });
 
-  console.log(`⚠️ Invoice ${invoice.id} payment failed for user ${user.id}`);
+  // Avisar al user para que actualice método de pago. Sin esto el
+  // cliente ve su app cortada sin entender por qué.
+  if (user.email) {
+    const baseUrl = getServerAppBaseUrl();
+    try {
+      await sendBillingNotification({
+        to: user.email,
+        kind: "payment_failed",
+        name: user.name,
+        ctaUrl: `${baseUrl}/settings/billing`,
+        amountCents: invoice.amount_due,
+        currency: invoice.currency,
+        locale: (user.preferredLang || user.language || "es") as any,
+      });
+    } catch (err) {
+      console.warn("⚠️ payment_failed email failed (no crítico):", err);
+    }
+  }
+
+  secureLog.info(
+    `[stripe] payment failed userId=${user.id} invoice=${invoice.id} amount=${invoice.amount_due}`,
+  );
 }
 
 // =========================================================

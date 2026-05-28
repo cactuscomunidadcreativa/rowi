@@ -1,99 +1,24 @@
 /**
  * 💳 API: Stripe Webhook
- * POST /api/stripe/webhook - Recibir eventos de Stripe
+ * POST /api/stripe/webhook
  *
- * 🔐 SEGURIDAD:
- * - Verifica firma de Stripe
- * - Implementa idempotency para evitar procesamiento duplicado
- * - Rate limiting aplicado por middleware
+ * 🔐 Seguridad:
+ * - Verifica firma de Stripe (constructEvent)
+ * - Idempotency persistente en `StripeWebhookEvent` (tabla DB).
+ *   Stripe retransmite hasta 3 días si no recibe 2xx; el Map<>
+ *   en memoria se perdía cross cold-start de Vercel y permitía
+ *   reprocesar pagos duplicados.
+ * - Rate limiting aplicado por middleware.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/client";
 import { handleStripeWebhook } from "@/lib/stripe/subscription-service";
+import { prisma } from "@/core/prisma";
+import { secureLog } from "@/lib/logging";
 import type Stripe from "stripe";
 
-// =========================================================
-// Idempotency Store
-// ---------------------------------------------------------
-// En producción, esto debería usar Redis o una tabla en BD
-// para persistir entre reinicios y múltiples instancias.
-// =========================================================
-
-interface ProcessedEvent {
-  eventId: string;
-  eventType: string;
-  processedAt: number;
-  success: boolean;
-}
-
-const processedEvents = new Map<string, ProcessedEvent>();
-const MAX_EVENTS = 1000; // Máximo de eventos en memoria
-const EVENT_TTL = 24 * 60 * 60 * 1000; // 24 horas
-
-/**
- * Limpia eventos expirados del store
- */
-function cleanupProcessedEvents(): void {
-  const now = Date.now();
-  const entries = Array.from(processedEvents.entries());
-
-  for (const [eventId, event] of entries) {
-    if (now - event.processedAt > EVENT_TTL) {
-      processedEvents.delete(eventId);
-    }
-  }
-
-  // Si aún hay demasiados, eliminar los más antiguos
-  if (processedEvents.size > MAX_EVENTS) {
-    const sorted = entries.sort((a, b) => a[1].processedAt - b[1].processedAt);
-    const toRemove = sorted.slice(0, processedEvents.size - MAX_EVENTS + 100);
-    for (const [eventId] of toRemove) {
-      processedEvents.delete(eventId);
-    }
-  }
-}
-
-/**
- * Verifica si un evento ya fue procesado
- */
-function isEventProcessed(eventId: string): ProcessedEvent | null {
-  const event = processedEvents.get(eventId);
-  if (!event) return null;
-
-  // Verificar si expiró
-  if (Date.now() - event.processedAt > EVENT_TTL) {
-    processedEvents.delete(eventId);
-    return null;
-  }
-
-  return event;
-}
-
-/**
- * Marca un evento como procesado
- */
-function markEventProcessed(
-  eventId: string,
-  eventType: string,
-  success: boolean
-): void {
-  processedEvents.set(eventId, {
-    eventId,
-    eventType,
-    processedAt: Date.now(),
-    success,
-  });
-
-  // Limpiar periódicamente (cada 100 eventos)
-  if (processedEvents.size % 100 === 0) {
-    cleanupProcessedEvents();
-  }
-}
-
-// =========================================================
-// Webhook Handler
-// =========================================================
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -101,70 +26,113 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("stripe-signature");
 
     if (!signature) {
-      console.warn("⚠️ Stripe webhook: Missing signature header");
+      console.warn("⚠️ Stripe webhook: missing signature header");
       return NextResponse.json(
         { error: "Missing stripe-signature header" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Verificar firma
     if (!stripe) {
       return NextResponse.json(
         { error: "Stripe not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
+
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        STRIPE_WEBHOOK_SECRET
+        STRIPE_WEBHOOK_SECRET,
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Webhook signature verification failed:", message);
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    // 🔐 Idempotency check - evitar procesar eventos duplicados
-    const existingEvent = isEventProcessed(event.id);
-    if (existingEvent) {
-      console.log(
-        `⏭️ Stripe webhook: Event ${event.id} already processed at ${new Date(existingEvent.processedAt).toISOString()}`
+    // 🔐 Idempotency persistente — single source of truth en DB.
+    // Si el evento ya tiene fila, Stripe lo está reintentando; respondemos
+    // 200 con el resultado original para que pare de reintentar.
+    const existing = await prisma.stripeWebhookEvent.findUnique({
+      where: { id: event.id },
+      select: { type: true, processedAt: true, success: true, error: true },
+    });
+    if (existing) {
+      secureLog.info(
+        `[stripe-webhook] dup event=${event.id} type=${event.type} original_success=${existing.success}`,
       );
       return NextResponse.json({
         received: true,
         idempotent: true,
         message: "Event already processed",
-        originalSuccess: existingEvent.success,
+        originalSuccess: existing.success,
       });
     }
 
-    console.log(`📨 Stripe webhook received: ${event.type} (${event.id})`);
+    secureLog.info(`[stripe-webhook] received event=${event.id} type=${event.type}`);
 
-    // Procesar el evento
+    // Procesar
     let result: { success: boolean; message?: string };
     try {
       result = await handleStripeWebhook(event);
     } catch (handlerError) {
-      const message = handlerError instanceof Error ? handlerError.message : "Handler error";
-      console.error(`❌ Webhook handler exception for ${event.id}:`, message);
+      const message =
+        handlerError instanceof Error ? handlerError.message : "Handler error";
+      console.error(
+        `❌ Stripe webhook handler exception event=${event.id}:`,
+        message,
+      );
       result = { success: false, message };
     }
 
-    // Marcar como procesado
-    markEventProcessed(event.id, event.type, result.success);
+    // Registrar el procesamiento. Usamos create (no upsert) porque ya
+    // chequeamos arriba que la fila no existe; si por race otra instancia
+    // insertó primero, el unique constraint nos protege con P2002 y
+    // tratamos eso como dup.
+    try {
+      await prisma.stripeWebhookEvent.create({
+        data: {
+          id: event.id,
+          type: event.type,
+          success: result.success,
+          error: result.success ? null : (result.message ?? "Unknown error"),
+          apiVersion: event.api_version ?? null,
+        },
+      });
+    } catch (writeErr: any) {
+      if (writeErr?.code === "P2002") {
+        // Race condition con otra instancia — ya procesado.
+        secureLog.info(
+          `[stripe-webhook] race-condition dup event=${event.id}, treating as processed`,
+        );
+      } else {
+        // Si no podemos persistir el ledger, devolvemos 500 para que
+        // Stripe reintente. Sin ledger no podemos garantizar idempotency.
+        console.error(
+          `❌ Stripe webhook: failed to persist ledger event=${event.id}`,
+          writeErr,
+        );
+        return NextResponse.json(
+          { error: "Failed to persist webhook event" },
+          { status: 500 },
+        );
+      }
+    }
 
-    if (!result.success) {
-      console.error(`❌ Webhook handler error for ${event.id}: ${result.message}`);
-      // Retornar 200 para evitar reintentos de Stripe (el evento ya se registró)
+    if (result.success) {
+      secureLog.info(
+        `[stripe-webhook] processed event=${event.id} type=${event.type}`,
+      );
     } else {
-      console.log(`✅ Webhook processed successfully: ${event.type} (${event.id})`);
+      console.error(
+        `❌ Stripe webhook handler error event=${event.id}: ${result.message}`,
+      );
+      // 200 igual: el evento queda como FAILED en ledger; reintentar no
+      // ayuda si el error es determinístico. Re-procesamiento manual
+      // posible vía /hub/admin si fuera necesario.
     }
 
     return NextResponse.json({
@@ -176,13 +144,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("❌ Error processing Stripe webhook:", message);
-
-    // Retornar 500 para que Stripe reintente
     return NextResponse.json(
       { error: "Webhook processing failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
-// Note: Body parsing is automatically disabled in App Router when using req.text()

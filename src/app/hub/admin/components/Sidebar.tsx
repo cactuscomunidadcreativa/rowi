@@ -146,6 +146,7 @@ export default function Sidebar() {
         { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
         { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
         { href: "/hub/admin/vital-signs/benchmarks", labelKey: "admin.nav.vsBenchmark", icon: BarChart3, badge: "NEW", superOnly: true },
+        { href: "/hub/admin/vital-signs/cross-instrument", labelKey: "admin.nav.vsSeiCross", icon: GitCompareArrows, badge: "NEW", superOnly: true },
         { href: "/hub/admin/eco", labelKey: "admin.nav.ecoEvents", icon: Heart, badge: "NEW" },
       ],
     },

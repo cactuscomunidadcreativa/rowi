@@ -6502,6 +6502,60 @@ model VitalSignsBenchmarkCorrelation {
   @@map("vital_signs_benchmark_correlation")
 }
 
+/// 🔀 VsSeiCohort — one cohort/organization measured on BOTH a Vital Signs
+/// instrument (OVS/TVS/LVS) and SEI. Cross-instrument correlations are computed
+/// across cohorts (each cohort is one data point). Data is aggregated/anonymous.
+model VsSeiCohort {
+  id            String              @id @default(cuid())
+  label         String // org/team/study name
+  vsScope       String // OVS | TVS | LVS
+  source        String              @default("study") // study | live
+  country       String?
+  sector        String?
+  vsSampleSize  Int                 @default(0)
+  seiSampleSize Int                 @default(0)
+  createdById   String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  metrics       VsSeiCohortMetric[]
+
+  @@index([vsScope])
+  @@map("vs_sei_cohort")
+}
+
+/// 📐 VsSeiCohortMetric — one aggregate value (mean) for a cohort, per
+/// instrument (VS | SEI) and key (VS dimension code or SEI competency code).
+model VsSeiCohortMetric {
+  id         String      @id @default(cuid())
+  cohortId   String
+  instrument String // VS | SEI
+  key        String // VS dim (TRUST…) or SEI competency (EL, RP…)
+  level      String? // driver | outcome (VS) | competency | core (SEI)
+  mean       Float
+  n          Int         @default(0)
+  cohort     VsSeiCohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@index([cohortId])
+  @@index([instrument, key])
+  @@map("vs_sei_cohort_metric")
+}
+
+/// 🔗 VsSeiCorrelation — Pearson r between a VS dimension and an SEI competency,
+/// computed across cohorts. Materialized by the cross-instrument recompute.
+model VsSeiCorrelation {
+  id           String   @id @default(cuid())
+  vsScope      String // OVS | TVS | LVS | ALL
+  vsKey        String
+  seiKey       String
+  correlation  Float
+  n            Int // number of cohorts in the pair
+  calculatedAt DateTime @default(now())
+
+  @@index([vsScope])
+  @@index([vsScope, correlation])
+  @@map("vs_sei_correlation")
+}
+
 /// 🔮 PulsePointInference — what BE2GROW predicted for this subject.
 model PulsePointInference {
   id             String   @id @default(cuid())

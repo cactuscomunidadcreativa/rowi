@@ -31,9 +31,30 @@ const INTENT_TO_SLUG: Record<string, string> = {
   relationship: "relationship",
   community: "community",
   sales: "sales",
+  asesor: "asesor",
+  research: "research",
   trainer: "trainer",
   router: "router",
 };
+
+// Tope de tokens de salida por agente (cost-control). Todo Rowi que pasa por
+// el router queda acotado; los agentes que escriben propuestas/análisis tienen
+// algo más de margen. Un agente puede sobreescribir esto vía AgentConfig si en
+// el futuro se expone el campo; por ahora el default por slug es la fuente.
+const MAX_TOKENS_BY_SLUG: Record<string, number> = {
+  super: 900,
+  sales: 800,
+  asesor: 800,
+  research: 700,
+  eq: 500,
+  affinity: 450,
+  eco: 500,
+  relationship: 500,
+  community: 500,
+  trainer: 450,
+  router: 600,
+};
+const DEFAULT_MAX_TOKENS = 600;
 
 // Alias legacy: si el slug principal no existe, probar estos
 const SLUG_ALIASES: Record<string, string[]> = {
@@ -338,6 +359,7 @@ export async function POST(req: NextRequest) {
     const completion = await openai.chat.completions.create({
       model,
       messages,
+      max_tokens: MAX_TOKENS_BY_SLUG[slug] ?? DEFAULT_MAX_TOKENS,
     });
 
     const replyText =

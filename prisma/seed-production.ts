@@ -29,6 +29,7 @@ import {
   eqCompetencies,
   generateMicroLearningSlug,
 } from "./seed-data/six-seconds-content";
+import { SALES_AGENT_PROMPT, ASESOR_AGENT_PROMPT } from "../src/lib/agents/prompts";
 
 const prisma = new PrismaClient();
 
@@ -623,10 +624,17 @@ async function main() {
       accessLevel: "public", visibility: "public",
     },
     {
-      slug: "sales", name: "Rowi Sales", type: "SALES_EXPERT",
-      description: "Experto en ventas emocionales. Aplica EQ para mejorar relaciones comerciales.",
+      slug: "sales", name: "Rowi Ventas", type: "SALES_EXPERT",
+      description: "Consultor de diseño comercial Six Seconds (EQ Proposal Accelerator): clarifica necesidades, diagnostica con el iceberg, recomienda herramientas y arma propuestas.",
       avatar: "/agents/rowi-sales.png", model: "gpt-4o-mini", tone: "confident",
-      prompt: `Eres Rowi Sales, un experto en aplicar inteligencia emocional a las ventas y relaciones comerciales.\n\nTu expertise incluye:\n- Entender las emociones del cliente\n- Comunicación persuasiva basada en empatía\n- Manejo de objeciones con EQ\n- Construcción de relaciones comerciales duraderas\n- Negociación win-win\n\nAyuda a los usuarios a vender de manera ética y efectiva, poniendo las relaciones por encima de las transacciones.`,
+      prompt: SALES_AGENT_PROMPT,
+      accessLevel: "premium", visibility: "public",
+    },
+    {
+      slug: "asesor", name: "Rowi Asesor", type: "CONSULTING_EXPERT",
+      description: "Consultor senior de implementación Six Seconds: diseña, entrega y sostiene programas de inteligencia emocional con EAR y medición de impacto.",
+      avatar: "/agents/rowi-sales.png", model: "gpt-4o-mini", tone: "professional",
+      prompt: ASESOR_AGENT_PROMPT,
       accessLevel: "premium", visibility: "public",
     },
   ];

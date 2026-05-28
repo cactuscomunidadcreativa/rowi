@@ -258,6 +258,27 @@ export async function POST(req: NextRequest) {
      🎯 3. Resolver intent y agente
     ========================================================== */
     const slug = normalizeIntent(intentRaw);
+
+    // 🔬 Gate the research agent by research access level (privacy contract).
+    if (slug === "research") {
+      const researcher = auth?.id
+        ? await prisma.user.findUnique({
+            where: { id: auth.id },
+            select: { researchAccessLevel: true },
+          })
+        : null;
+      if (!researcher || researcher.researchAccessLevel === "none") {
+        return NextResponse.json(
+          {
+            ok: false,
+            access: accessLevel,
+            text: "🔬 El lente de investigación requiere acceso autorizado. Pídele al equipo que active tu nivel de research.",
+          },
+          { status: 200 },
+        );
+      }
+    }
+
     const agent = await resolveAgent(slug, auth);
 
     if (!agent) {

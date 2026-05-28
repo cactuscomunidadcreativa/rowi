@@ -12,7 +12,11 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { SALES_AGENT_PROMPT, ASESOR_AGENT_PROMPT } from "../src/lib/agents/prompts";
+import {
+  SALES_AGENT_PROMPT,
+  ASESOR_AGENT_PROMPT,
+  RESEARCH_AGENT_PROMPT,
+} from "../src/lib/agents/prompts";
 
 const prisma = new PrismaClient();
 
@@ -123,6 +127,44 @@ async function main() {
     asesorCount++;
   }
   console.log(`asesor upserted: ${asesorCount}`);
+
+  // Ensure a GLOBAL research agent (access is gated at the API level by
+  // researchAccessLevel, so a single global agent is enough).
+  const research = await prisma.agentConfig.findFirst({
+    where: { slug: "research", tenantId: null, superHubId: null, organizationId: null, hubId: null },
+  });
+  if (research) {
+    await prisma.agentConfig.update({
+      where: { id: research.id },
+      data: {
+        name: "Rowi Investigación",
+        description:
+          "Asistente de análisis del lente de investigación: explora correlaciones VS/SEI y calibración BE2GROW con rigor estadístico.",
+        prompt: RESEARCH_AGENT_PROMPT,
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.agentConfig.create({
+      data: {
+        slug: "research",
+        name: "Rowi Investigación",
+        type: "RESEARCH_EXPERT",
+        description:
+          "Asistente de análisis del lente de investigación: explora correlaciones VS/SEI y calibración BE2GROW con rigor estadístico.",
+        avatar: "/agents/rowi-eq.png",
+        model: "gpt-4o-mini",
+        tone: "professional",
+        prompt: RESEARCH_AGENT_PROMPT,
+        accessLevel: "global",
+        visibility: "global",
+        isActive: true,
+        autoLearn: true,
+        tools: { web_search: true, code_interpreter: false },
+      },
+    });
+  }
+  console.log("research agent ensured (global)");
 }
 
 main()

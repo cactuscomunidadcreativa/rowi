@@ -4,42 +4,39 @@ import { prisma } from "@/core/prisma";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
- * POST /api/admin/agents/sync — RECONCILE (limpieza), no clonado.
+ * POST /api/admin/agents/sync
  * ---------------------------------------------------------
- * Versiones previas clonaban cada agente GLOBAL a cada tenant/superhub/hub/org.
- * Eso es redundante (resolveAgent ya hace fallback a global) y ensuciaba la
- * lista (p.ej. un agente global-only acababa con una copia por entidad).
+ * Distribuye los agentes GLOBAL base a cada entidad (tenant / superhub / hub /
+ * org) como copias INDEPENDIENTES, para que cada una pueda personalizar su
+ * prompt y su cultura. Idempotente: solo crea los que faltan (dedup slug+scope).
  *
- * Ahora "Sincronizar" LIMPIA esos clones redundantes:
- *  - Canónicos que se conservan: agentes GLOBAL + agentes con scope que llevan
- *    `culturePrompt` (los sembrados con cultura Six Seconds, customizados).
- *  - Se eliminan: agentes con scope SIN `culturePrompt` cuyo slug existe como
- *    agente global (clones puros creados por el sync antiguo).
+ * - PLATFORM_SLUGS (p.ej. "research") NO se distribuyen: son agentes de
+ *   plataforma y viven solo en global (evita la explosión de copias).
+ * - Limpia copias con scope de los PLATFORM_SLUGS dejadas por versiones previas.
+ *
+ * Nota: el resolver del chat usa hub → tenant → superhub → global (no org), así
+ * que los agentes de org hoy se personalizan/ven en admin pero no se sirven en
+ * el chat hasta cablear la resolución por organización.
  */
+const PLATFORM_SLUGS = new Set(["research"]);
+
 export async function POST() {
   try {
     const auth = await requireSuperAdmin();
     if (auth.error) return auth.error;
 
-    const globals = await prisma.agentConfig.findMany({
+    const globalAgents = await prisma.agentConfig.findMany({
       where: { tenantId: null, superHubId: null, hubId: null, organizationId: null },
-      select: { slug: true },
     });
-    const globalSlugs = [...new Set(globals.map((g) => g.slug))];
-
-    if (globalSlugs.length === 0) {
-      return NextResponse.json({
-        ok: false,
-        message: "⚠️ No hay agentes globales base.",
-      });
+    if (globalAgents.length === 0) {
+      return NextResponse.json({ ok: false, message: "⚠️ No hay agentes globales base." });
     }
 
-    // Borra clones redundantes: con scope, sin culturePrompt, y con un global
-    // del mismo slug que los cubre vía fallback.
-    const removed = await prisma.agentConfig.deleteMany({
+    // 🧹 Limpieza: los agentes de plataforma (research) solo deben existir como
+    // global. Borra cualquier copia con scope creada por syncs antiguos.
+    const cleaned = await prisma.agentConfig.deleteMany({
       where: {
-        slug: { in: globalSlugs },
-        culturePrompt: null,
+        slug: { in: [...PLATFORM_SLUGS] },
         OR: [
           { tenantId: { not: null } },
           { superHubId: { not: null } },
@@ -49,16 +46,73 @@ export async function POST() {
       },
     });
 
-    const remaining = await prisma.agentConfig.count();
+    // Agentes distribuibles = globales que NO son de plataforma.
+    const distributable = globalAgents.filter((a) => !PLATFORM_SLUGS.has(a.slug));
 
-    console.log(`🧹 Sync/reconcile: ${removed.count} clones eliminados, ${remaining} agentes restantes.`);
+    const [tenants, superHubs, hubs, orgs] = await Promise.all([
+      prisma.tenant.findMany({ select: { id: true } }),
+      prisma.superHub.findMany({ select: { id: true } }),
+      prisma.hub.findMany({ select: { id: true } }),
+      prisma.organization.findMany({ select: { id: true } }),
+    ]);
+
+    let created = 0;
+    let skipped = 0;
+
+    const targets: { scope: "tenant" | "superhub" | "hub" | "organization"; id: string }[] = [
+      ...tenants.map((t) => ({ scope: "tenant" as const, id: t.id })),
+      ...superHubs.map((s) => ({ scope: "superhub" as const, id: s.id })),
+      ...hubs.map((h) => ({ scope: "hub" as const, id: h.id })),
+      ...orgs.map((o) => ({ scope: "organization" as const, id: o.id })),
+    ];
+
+    for (const { scope, id } of targets) {
+      for (const base of distributable) {
+        const exists = await prisma.agentConfig.findFirst({
+          where: {
+            slug: base.slug,
+            tenantId: scope === "tenant" ? id : undefined,
+            superHubId: scope === "superhub" ? id : undefined,
+            hubId: scope === "hub" ? id : undefined,
+            organizationId: scope === "organization" ? id : undefined,
+          },
+        });
+        if (exists) {
+          skipped++;
+          continue;
+        }
+        await prisma.agentConfig.create({
+          data: {
+            slug: base.slug,
+            name: base.name,
+            description: base.description,
+            type: base.type,
+            model: base.model,
+            prompt: base.prompt,
+            tone: base.tone,
+            tools: base.tools ?? undefined,
+            accessLevel: base.accessLevel,
+            visibility: base.visibility,
+            autoLearn: base.autoLearn,
+            isActive: true,
+            tenantId: scope === "tenant" ? id : null,
+            superHubId: scope === "superhub" ? id : null,
+            hubId: scope === "hub" ? id : null,
+            organizationId: scope === "organization" ? id : null,
+          },
+        });
+        created++;
+      }
+    }
 
     return NextResponse.json({
       ok: true,
-      message: `🧹 Limpieza completada: ${removed.count} clones redundantes eliminados.`,
-      cleaned: removed.count,
-      remaining,
-      globals: globalSlugs.length,
+      message: `🤖 Sincronización completada: ${created} agentes distribuidos, ${skipped} ya existían, ${cleaned.count} copias de plataforma limpiadas.`,
+      created,
+      skipped,
+      cleaned: cleaned.count,
+      distributable: distributable.length,
+      targets: targets.length,
     });
   } catch (error: any) {
     console.error("❌ Error en /api/admin/agents/sync:", error);

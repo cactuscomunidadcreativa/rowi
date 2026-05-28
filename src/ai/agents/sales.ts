@@ -3,6 +3,7 @@ import { buildMessagesSales } from "../prompts/modules/sales";
 import { registerUsage } from "../client/registerUsage";
 import { getAgentConfig, buildCultureEnrichedPrompt } from "./getAgentConfig";
 import { getOpenAIClient } from "@/lib/openai/client";
+import { SALES_AGENT_PROMPT } from "@/lib/agents/prompts";
 
 export const SalesAgent = {
   id: "sales",
@@ -32,11 +33,9 @@ export const SalesAgent = {
          🧠 1. Contexto del sistema
          ⚠️ Este prompt se mantiene aquí para seguir editándolo
       ========================================================= */
-      const basePrompt = `
-Eres Rowi Sales, un coach de ventas y negociación emocional.
-Responde siempre en ${language}.
-Usa técnicas de inteligencia emocional y persuasión ética.
-Ofrece ejemplos de frases y maneras de superar objeciones.`;
+      // Fuente única del prompt de Ventas (EQ Proposal Accelerator), compartida
+      // con /api/rowi y el seed para que ambos sistemas queden consistentes.
+      const basePrompt = SALES_AGENT_PROMPT;
 
       // Agregar cultura corporativa SIN modificar el prompt base
       const system = buildCultureEnrichedPrompt(basePrompt, agentConfig, language);

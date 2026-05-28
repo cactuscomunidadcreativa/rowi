@@ -15,6 +15,13 @@ export default function VentasPage() {
         "agents.ventas.subtitle",
         "Consultor comercial Six Seconds — del problema del cliente a la propuesta",
       )}
+      intro={[
+        t("agents.ventas.m1", "Clarificar"),
+        t("agents.ventas.m2", "Iceberg"),
+        t("agents.ventas.m3", "Diseño EAR"),
+        t("agents.ventas.m4", "3 opciones"),
+        t("agents.ventas.m5", "Propuesta"),
+      ]}
       starters={[
         t(
           "agents.ventas.s1",

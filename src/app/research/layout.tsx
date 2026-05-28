@@ -3,11 +3,13 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Microscope, FileSearch, Activity } from "lucide-react";
+import { Microscope, FileSearch, Activity, LayoutGrid, MessageCircle } from "lucide-react";
 import { useI18n } from "@/lib/i18n/react";
 import ConsentGate from "@/components/shared/ConsentGate";
 
 const NAV = [
+  { href: "/research", labelKey: "research.nav.overview", icon: LayoutGrid },
+  { href: "/research/chat", labelKey: "research.nav.chat", icon: MessageCircle },
   { href: "/research/cases", labelKey: "research.nav.cases", icon: FileSearch },
   { href: "/research/calibration", labelKey: "research.nav.calibration", icon: Activity },
 ];
@@ -35,7 +37,10 @@ export default function ResearchLayout({ children }: { children: ReactNode }) {
           </div>
           <nav className="flex gap-2">
             {NAV.map((n) => {
-              const active = pathname === n.href || pathname?.startsWith(n.href);
+              const active =
+                n.href === "/research"
+                  ? pathname === "/research"
+                  : pathname === n.href || pathname?.startsWith(n.href);
               const Icon = n.icon;
               return (
                 <Link

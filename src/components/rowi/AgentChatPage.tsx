@@ -21,10 +21,12 @@ interface AgentChatPageProps {
   subtitle: string;
   /** Suggested opening prompts shown on the empty state. */
   starters?: string[];
+  /** Short method/how-it-works steps shown on the empty state. */
+  intro?: string[];
   Icon?: LucideIcon;
 }
 
-export default function AgentChatPage({ intent, title, subtitle, starters = [], Icon = Sparkles }: AgentChatPageProps) {
+export default function AgentChatPage({ intent, title, subtitle, starters = [], intro = [], Icon = Sparkles }: AgentChatPageProps) {
   const { t, lang } = useI18n();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
@@ -82,6 +84,19 @@ export default function AgentChatPage({ intent, title, subtitle, starters = [], 
             <p className="text-sm text-[var(--rowi-muted)]">
               {t("rowi.agentChat.empty", "Cuéntame sobre tu cliente y empezamos.")}
             </p>
+            {intro.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
+                {intro.map((step, i) => (
+                  <span
+                    key={step}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-[var(--rowi-muted)]/10 text-[var(--rowi-muted)]"
+                  >
+                    <span className="font-semibold text-[var(--rowi-foreground)]">{i + 1}</span>
+                    {step}
+                  </span>
+                ))}
+              </div>
+            )}
             {starters.length > 0 && (
               <div className="flex flex-col gap-2 max-w-md mx-auto">
                 {starters.map((s) => (

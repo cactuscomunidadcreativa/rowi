@@ -15,6 +15,13 @@ export default function AsesorPage() {
         "agents.asesor.subtitle",
         "Consultor de implementación Six Seconds — diseña, entrega y sostiene programas",
       )}
+      intro={[
+        t("agents.asesor.m1", "Contexto"),
+        t("agents.asesor.m2", "Iceberg sistémico"),
+        t("agents.asesor.m3", "Diseño EAR"),
+        t("agents.asesor.m4", "Medición"),
+        t("agents.asesor.m5", "Plan y sostenibilidad"),
+      ]}
       starters={[
         t(
           "agents.asesor.s1",

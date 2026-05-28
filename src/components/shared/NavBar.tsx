@@ -62,6 +62,8 @@ const translations = {
       finance: "Finanzas",
       admin: "Admin",
       research: "Investigación",
+      ventas: "Ventas",
+      asesor: "Asesor",
       general: "General",
       viewDetails: "Ver detalles",
       notifications: "Notificaciones",
@@ -113,6 +115,8 @@ const translations = {
       finance: "Finance",
       admin: "Admin",
       research: "Research",
+      ventas: "Sales",
+      asesor: "Advisor",
       general: "General",
       viewDetails: "View details",
       notifications: "Notifications",
@@ -164,6 +168,8 @@ const translations = {
       finance: "Finanças",
       admin: "Admin",
       research: "Pesquisa",
+      ventas: "Vendas",
+      asesor: "Consultor",
       general: "Geral",
       viewDetails: "Ver detalhes",
       notifications: "Notificações",
@@ -215,6 +221,8 @@ const translations = {
       finance: "Finanza",
       admin: "Admin",
       research: "Ricerca",
+      ventas: "Vendite",
+      asesor: "Consulente",
       general: "Generale",
       viewDetails: "Vedi dettagli",
       notifications: "Notifiche",
@@ -290,6 +298,10 @@ const ROLE_LINKS = [
 
   // Finance views
   { href: "/finance", key: "finance", icon: DollarSign, roles: ["FINANCIAL", "BILLING", "ADMIN", "OWNER"] },
+
+  // Sales / consulting agents (Six Seconds practitioners)
+  { href: "/ventas", key: "ventas", icon: Briefcase, roles: ["CONSULTANT", "COACH", "ADMIN", "OWNER", "SUPERADMIN"] },
+  { href: "/asesor", key: "asesor", icon: Handshake, roles: ["CONSULTANT", "COACH", "ADMIN", "OWNER", "SUPERADMIN"] },
 
   // Research views (Academic Researcher)
   { href: "/research", key: "research", icon: FlaskConical, roles: ["RESEARCHER", "ACADEMIC", "ADMIN", "SUPERADMIN"] },

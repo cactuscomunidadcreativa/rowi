@@ -279,7 +279,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const agent = await resolveAgent(slug, auth);
+    let agent = await resolveAgent(slug, auth);
+
+    // Fallback: intents sin agente propio (relationship/community/router o
+    // cualquier intent desconocido) caen al agente general en vez de fallar.
+    if (!agent && slug !== "super" && slug !== "super-rowi") {
+      agent = await resolveAgent("super", auth);
+    }
 
     if (!agent) {
       return NextResponse.json(

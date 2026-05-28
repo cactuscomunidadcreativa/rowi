@@ -43,6 +43,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   payments: "from-orange-500 to-yellow-500",
   database: "from-red-500 to-rose-500",
   general: "from-gray-500 to-slate-500",
+  integrations: "from-indigo-500 to-violet-500",
+  observability: "from-teal-500 to-cyan-500",
 };
 
 export default function SettingsPage() {

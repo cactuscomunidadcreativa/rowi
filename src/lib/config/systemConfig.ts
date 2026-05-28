@@ -96,7 +96,8 @@ export type ConfigCategory =
   | "payments"
   | "general"
   | "database"
-  | "observability";
+  | "observability"
+  | "integrations";
 
 /**
  * Definición de claves del sistema
@@ -135,6 +136,13 @@ export const SYSTEM_CONFIG_KEYS = {
   AXIOM_TOKEN: { category: "observability" as ConfigCategory, description: "Axiom Ingest Token", isSecret: true },
   AXIOM_DATASET: { category: "observability" as ConfigCategory, description: "Axiom dataset name (default: rowi_errors)", isSecret: false },
   PRISMA_SLOW_QUERY_MS: { category: "observability" as ConfigCategory, description: "Threshold en ms para logear queries lentas (default: 500). NOTA: solo se lee al boot; cambios requieren redeploy.", isSecret: false },
+
+  // Integrations — Slack App (OAuth + Events). El backend de Slack lee
+  // estas claves desde SystemConfig primero, env vars como fallback
+  // (mismo patrón que Stripe).
+  SLACK_CLIENT_ID: { category: "integrations" as ConfigCategory, description: "Slack App Client ID", isSecret: false },
+  SLACK_CLIENT_SECRET: { category: "integrations" as ConfigCategory, description: "Slack App Client Secret", isSecret: true },
+  SLACK_SIGNING_SECRET: { category: "integrations" as ConfigCategory, description: "Slack App Signing Secret (verifica eventos entrantes)", isSecret: true },
 } as const;
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_KEYS;

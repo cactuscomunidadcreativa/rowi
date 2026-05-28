@@ -20,7 +20,7 @@ export const LEGAL_ES: LegalDocSet = {
         heading: "1. Quién es responsable de tus datos",
         body: [
           "Rowi, con operaciones gestionadas desde Perú, es el responsable del tratamiento de los datos personales que recolecta a través de esta plataforma para usuarios individuales.",
-          "Cuando usás Rowi como parte de tu empresa, institución educativa u organización (cuenta B2B), esa organización es el responsable del tratamiento (controlador) de tus datos, y Rowi actúa como encargado del tratamiento (procesador) siguiendo sus instrucciones. En ese caso, las políticas de privacidad de tu organización también aplican.",
+          "Cuando usas Rowi como parte de tu empresa, institución educativa u organización (cuenta B2B), esa organización es el responsable del tratamiento (controlador) de tus datos, y Rowi actúa como encargado del tratamiento (procesador) siguiendo sus instrucciones. En ese caso, las políticas de privacidad de tu organización también aplican.",
           "Six Seconds es una entidad independiente que provee la metodología científica (SEI, Brain Talents, Vital Signs) y datos de referencia (benchmark). Six Seconds no es responsable de la operación de esta plataforma. Ver el 'Aviso sobre Six Seconds' para más detalle.",
         ],
       },
@@ -47,7 +47,7 @@ export const LEGAL_ES: LegalDocSet = {
         heading: "4. Uso de datos para investigación",
         body: [
           "Rowi es también una plataforma de investigación sobre inteligencia emocional. Tus datos pueden contribuir a refinar nuestros modelos, SIEMPRE bajo salvaguardas:",
-          "- Consentimiento explícito y separado del uso básico del producto. Podés revocarlo en cualquier momento.",
+          "- Consentimiento explícito y separado del uso básico del producto. Puedes revocarlo en cualquier momento.",
           "- Anonimización o seudonimización antes de cualquier análisis agregado.",
           "- Regla de N≥5: ningún dato agregado de equipo u organización se muestra si hay menos de 5 personas, para evitar reidentificación.",
           "- Cinco niveles de visibilidad: personal, agregado de equipo, agregado de organización, comunidad pública, y lente de investigación.",
@@ -60,7 +60,7 @@ export const LEGAL_ES: LegalDocSet = {
         body: [
           "- Proveedores de servicio (encargados): Stripe (pagos), Resend (correo), proveedores de infraestructura (Vercel, Neon), bajo contratos de tratamiento de datos.",
           "- Six Seconds: en su rol de socio metodológico y científico, puede acceder a datos anonimizados/agregados para fines de investigación, conforme al nivel de visibilidad 'six_seconds_team' y siempre bajo auditoría.",
-          "- Tu organización: si usás una cuenta B2B, los datos agregados (N≥5) pueden ser visibles para administradores de tu organización según el rol.",
+          "- Tu organización: si usas una cuenta B2B, los datos agregados (N≥5) pueden ser visibles para administradores de tu organización según el rol.",
           "- Nunca vendemos tus datos personales.",
         ],
       },
@@ -73,9 +73,9 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "7. Tus derechos",
         body: [
-          "Tenés derecho a: acceder a tus datos, rectificarlos, suprimirlos, oponerte a su tratamiento, solicitar la portabilidad y revocar consentimientos.",
-          "Podés ejercer la mayoría de estos derechos directamente desde la sección de Privacidad de tu cuenta, incluyendo la exportación de tus datos.",
-          "Para solicitudes adicionales, escribí a privacidad@rowiia.com.",
+          "Tienes derecho a: acceder a tus datos, rectificarlos, suprimirlos, oponerte a su tratamiento, solicitar la portabilidad y revocar consentimientos.",
+          "Puedes ejercer la mayoría de estos derechos directamente desde la sección de Privacidad de tu cuenta, incluyendo la exportación de tus datos.",
+          "Para solicitudes adicionales, escribe a privacidad@rowiia.com.",
         ],
       },
       {
@@ -104,7 +104,7 @@ export const LEGAL_ES: LegalDocSet = {
     lastUpdated: LAST_UPDATED,
     draft: false,
     intro:
-      "Estos Términos rigen el uso de la plataforma Rowi. Al crear una cuenta o usar el servicio, aceptás estos Términos.",
+      "Estos Términos rigen el uso de la plataforma Rowi. Al crear una cuenta o usar el servicio, aceptas estos Términos.",
     sections: [
       {
         heading: "1. Quiénes somos",
@@ -115,27 +115,27 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "2. Uso del servicio",
         body: [
-          "Debés ser mayor de edad o contar con autorización de tu representante legal. Sos responsable de la veracidad de los datos que ingresás y de mantener la confidencialidad de tus credenciales.",
-          "No podés usar Rowi para fines ilícitos, para vulnerar la privacidad de terceros, ni para extraer datos de forma automatizada sin autorización.",
+          "Debes ser mayor de edad o contar con autorización de tu representante legal. Eres responsable de la veracidad de los datos que ingresas y de mantener la confidencialidad de tus credenciales.",
+          "No puedes usar Rowi para fines ilícitos, para vulnerar la privacidad de terceros, ni para extraer datos de forma automatizada sin autorización.",
         ],
       },
       {
         heading: "3. Propiedad intelectual",
         body: [
           "La metodología Six Seconds (SEI, Brain Talents, Vital Signs y marcas asociadas) es propiedad de Six Seconds y se usa bajo licencia/alianza. 'Six Seconds' es una marca registrada de su titular y no se traduce ni se usa fuera de los términos de dicha licencia.",
-          "El software, diseño e implementación de la plataforma Rowi son propiedad de Rowi. No adquirís ningún derecho sobre ellos más allá del uso del servicio.",
+          "El software, diseño e implementación de la plataforma Rowi son propiedad de Rowi. No adquieres ningún derecho sobre ellos más allá del uso del servicio.",
         ],
       },
       {
         heading: "4. No es asesoría profesional",
         body: [
-          "Rowi es una herramienta de desarrollo y medición de inteligencia emocional. NO sustituye asesoría médica, psicológica, psiquiátrica ni terapéutica. Si estás atravesando una crisis, contactá a un profesional de salud o a una línea de ayuda. Las funciones de detección de crisis escalan señales pero no constituyen atención clínica.",
+          "Rowi es una herramienta de desarrollo y medición de inteligencia emocional. NO sustituye asesoría médica, psicológica, psiquiátrica ni terapéutica. Si estás atravesando una crisis, contacta a un profesional de salud o a una línea de ayuda. Las funciones de detección de crisis escalan señales pero no constituyen atención clínica.",
         ],
       },
       {
         heading: "5. Pagos y suscripciones",
         body: [
-          "Los planes pagos se gestionan a través de Stripe. Las suscripciones se renuevan automáticamente salvo cancelación. Podés gestionar o cancelar tu suscripción desde tu cuenta. Los reembolsos se rigen por la política vigente al momento de la compra.",
+          "Los planes pagos se gestionan a través de Stripe. Las suscripciones se renuevan automáticamente salvo cancelación. Puedes gestionar o cancelar tu suscripción desde tu cuenta. Los reembolsos se rigen por la política vigente al momento de la compra.",
         ],
       },
       {
@@ -148,7 +148,7 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "7. Suspensión y terminación",
         body: [
-          "Podemos suspender o terminar cuentas que violen estos Términos. Podés cerrar tu cuenta en cualquier momento desde la configuración.",
+          "Podemos suspender o terminar cuentas que violen estos Términos. Puedes cerrar tu cuenta en cualquier momento desde la configuración.",
         ],
       },
       {
@@ -228,7 +228,7 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "3. Tu control",
         body: [
-          "Al ingresar te mostramos un banner para aceptar, rechazar o configurar las cookies no esenciales. Podés cambiar tu elección en cualquier momento. Si rechazás las analíticas, no cargamos esos scripts.",
+          "Al ingresar te mostramos un banner para aceptar, rechazar o configurar las cookies no esenciales. Puedes cambiar tu elección en cualquier momento. Si rechazas las analíticas, no cargamos esos scripts.",
         ],
       },
     ],
@@ -239,12 +239,12 @@ export const LEGAL_ES: LegalDocSet = {
     lastUpdated: LAST_UPDATED,
     draft: false,
     intro:
-      "Rowi es también una plataforma de investigación sobre inteligencia emocional, en colaboración con Six Seconds. Este aviso explica cómo se usan los datos para investigación y cómo controlás tu participación.",
+      "Rowi es también una plataforma de investigación sobre inteligencia emocional, en colaboración con Six Seconds. Este aviso explica cómo se usan los datos para investigación y cómo controlas tu participación.",
     sections: [
       {
         heading: "1. Participación voluntaria y revocable",
         body: [
-          "El uso de tus datos para investigación es opcional y requiere tu consentimiento explícito, separado del uso básico del producto. Podés otorgarlo o revocarlo en cualquier momento desde la configuración de privacidad, sin afectar tu acceso al servicio.",
+          "El uso de tus datos para investigación es opcional y requiere tu consentimiento explícito, separado del uso básico del producto. Puedes otorgarlo o revocarlo en cualquier momento desde la configuración de privacidad, sin afectar tu acceso al servicio.",
         ],
       },
       {
@@ -258,7 +258,7 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "3. Niveles de visibilidad",
         body: [
-          "- Personal: solo vos ves tus datos individuales.",
+          "- Personal: solo tú ves tus datos individuales.",
           "- Agregado de equipo (N≥5): visible para tu equipo, sin identificar individuos.",
           "- Agregado de organización (N≥5): visible a nivel organizacional, sin identificar individuos.",
           "- Comunidad pública: estadísticas anónimas de la comunidad.",
@@ -268,13 +268,13 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "4. Quién accede al lente de investigación",
         body: [
-          "El acceso de investigación se otorga por niveles definidos y se registra siempre en una auditoría (ResearchAccessAudit): equipo fundador de Rowi, liderazgo científico, equipos de Rowi y de Six Seconds (sobre datos anonimizados), y personas que vos invites explícitamente (tu coach o mentor).",
+          "El acceso de investigación se otorga por niveles definidos y se registra siempre en una auditoría (ResearchAccessAudit): equipo fundador de Rowi, liderazgo científico, equipos de Rowi y de Six Seconds (sobre datos anonimizados), y personas que invites explícitamente (tu coach o mentor).",
         ],
       },
       {
         heading: "5. Tus derechos sobre la investigación",
         body: [
-          "Podés revocar tu consentimiento, solicitar que tus datos dejen de usarse en futuros análisis, y consultar el registro de quién accedió a tus datos. La revocación no afecta análisis ya anonimizados e irreversibles.",
+          "Puedes revocar tu consentimiento, solicitar que tus datos dejen de usarse en futuros análisis, y consultar el registro de quién accedió a tus datos. La revocación no afecta análisis ya anonimizados e irreversibles.",
         ],
       },
     ],

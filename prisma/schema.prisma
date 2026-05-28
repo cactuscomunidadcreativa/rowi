@@ -6556,6 +6556,47 @@ model VsSeiCorrelation {
   @@map("vs_sei_correlation")
 }
 
+/// 🔗 VsSeiIndividualLink — explicit, consented link between ONE person's Vital
+/// Signs response and their SEI snapshot. Special-category data (GDPR): a row
+/// only exists if the subject granted `vs_sei_individual_linking`. References
+/// are plain ids (no FK relations) to keep the table purely additive, mirroring
+/// VitalSignsScoreSource. `consentVersion` snapshots the consent version at link
+/// time so a later consent-text bump invalidates stale links.
+model VsSeiIndividualLink {
+  id                   String   @id @default(cuid())
+  userId               String // the consented subject (User.id)
+  vitalSignsResponseId String // VitalSignsResponse.id (no FK by design)
+  eqSnapshotId         String // EqSnapshot.id (no FK by design)
+  method               String   @default("email_match") // email_match | self_claim | native
+  confidence           Float    @default(1)
+  consentVersion       Int      @default(1)
+  linkedAt             DateTime @default(now())
+
+  @@unique([vitalSignsResponseId, eqSnapshotId])
+  @@index([userId])
+  @@map("vs_sei_individual_link")
+}
+
+/// 🧬 VsSeiIndividualCorrelation — per-subject Pearson r between a VS dimension
+/// and an SEI competency, computed across that person's own paired assessments.
+/// Gated: only exposed to the subject themselves (`self`) or to research_lens
+/// viewers WITH consent, and every exposure writes a ResearchAccessAudit row.
+/// `n` is the number of the subject's own paired assessments (NOT cohorts).
+model VsSeiIndividualCorrelation {
+  id           String   @id @default(cuid())
+  userId       String
+  vsScope      String // OVS | TVS | LVS | ALL
+  vsKey        String
+  seiKey       String
+  correlation  Float
+  n            Int // number of this subject's paired assessments
+  calculatedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, vsScope])
+  @@map("vs_sei_individual_correlation")
+}
+
 /// 🔮 PulsePointInference — what BE2GROW predicted for this subject.
 model PulsePointInference {
   id             String   @id @default(cuid())

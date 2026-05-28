@@ -11,7 +11,8 @@ export type ConsentKey =
   | "analytics"
   | "research_lens"
   | "benchmarking_contribution"
-  | "marketing_communications";
+  | "marketing_communications"
+  | "vs_sei_individual_linking";
 
 export interface ConsentDescriptor {
   key: ConsentKey;
@@ -146,6 +147,24 @@ export const CONSENTS: ReadonlyArray<ConsentDescriptor> = [
       "Enviamos novidades do produto, casos de uso, convites para eventos e conteúdo educacional sobre Emotional Budgeting. Você pode cancelar a inscrição a qualquer momento.",
     itBody:
       "Ti inviamo novità del prodotto, casi d'uso, inviti a eventi e contenuti educativi su Emotional Budgeting. Puoi annullare l'iscrizione in qualsiasi momento.",
+  },
+  {
+    key: "vs_sei_individual_linking",
+    required: false,
+    defaultGranted: false,
+    version: 1,
+    esTitle: "Análisis individual cruzado (Vital Signs ↔ SEI)",
+    enTitle: "Individual cross-instrument analysis (Vital Signs ↔ SEI)",
+    ptTitle: "Análise individual cruzada (Vital Signs ↔ SEI)",
+    itTitle: "Analisi individuale incrociata (Vital Signs ↔ SEI)",
+    esBody:
+      "Autorizas a enlazar tus respuestas de Vital Signs con tu resultado SEI como una misma persona, para análisis individual de cómo se relacionan tus impulsores y tus competencias emocionales. Estos datos son de categoría especial: solo tú y, si lo activas, el equipo de investigación con consentimiento, pueden verlos. Cada acceso queda registrado y puedes revocar este permiso en cualquier momento.",
+    enBody:
+      "You authorize linking your Vital Signs responses with your SEI result as the same person, for individual analysis of how your drivers and your emotional competencies relate. This data is a special category: only you and, if you enable it, the research team with consent, can see it. Every access is logged and you can revoke this permission at any time.",
+    ptBody:
+      "Você autoriza vincular suas respostas de Vital Signs com seu resultado SEI como a mesma pessoa, para análise individual de como seus impulsionadores e suas competências emocionais se relacionam. Estes dados são de categoria especial: apenas você e, se você ativar, a equipe de pesquisa com consentimento, podem vê-los. Cada acesso fica registrado e você pode revogar esta permissão a qualquer momento.",
+    itBody:
+      "Autorizzi a collegare le tue risposte di Vital Signs con il tuo risultato SEI come la stessa persona, per un'analisi individuale di come si relazionano i tuoi driver e le tue competenze emotive. Questi dati sono di categoria speciale: solo tu e, se lo attivi, il team di ricerca con consenso, possono vederli. Ogni accesso viene registrato e puoi revocare questo permesso in qualsiasi momento.",
   },
 ];
 

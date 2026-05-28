@@ -51,6 +51,17 @@ export function hasBasicProcessing(userId: string): Promise<boolean> {
 }
 
 /**
+ * canLinkVsSeiIndividual(userId): chequea vs_sei_individual_linking. Úsalo
+ * ANTES de enlazar las respuestas de Vital Signs de una persona con su
+ * resultado SEI o de computar/exponer cualquier correlación individual.
+ * Datos de categoría especial (GDPR): sin este consentimiento no se enlaza
+ * ni se calcula nada a nivel de individuo.
+ */
+export function canLinkVsSeiIndividual(userId: string): Promise<boolean> {
+  return isGranted(userId, "vs_sei_individual_linking");
+}
+
+/**
  * Filter an array of userIds to only those who granted a specific consent.
  * Single query, useful when iterating many users for an aggregate or broadcast.
  */

@@ -2,11 +2,21 @@
 // ============================================================
 // CONTENIDO LEGAL — ESPAÑOL (MASTER / fuente de verdad)
 //
-// ⚠️ BORRADOR pendiente de revisión por abogado. Especialmente:
-//   - Estructura de responsabilidad Rowi ↔ Six Seconds (ownership 60%)
-//   - Cláusula arbitral (centro y sede en Perú)
-//   - Entidad operadora en formación (placeholders [ENTIDAD])
+// El texto público se lee como documento final (sin marcas internas).
 // Las traducciones EN/PT/IT derivan de este archivo.
+//
+// ⚠️ NOTA INTERNA (no se renderiza — solo para el equipo):
+// Estos puntos requieren validación de un abogado antes de considerarse
+// definitivos, aunque el texto se presente como final al usuario:
+//   1. Estructura de responsabilidad Rowi ↔ Six Seconds dado que Six
+//      Seconds tendría ~60% de Rowi (riesgo de joint-controller /
+//      levantamiento del velo societario). Coordinar con acuerdo de
+//      accionistas + contrato de licencia de datos separado del control.
+//   2. Cláusula arbitral: confirmar centro oficial (ref. caardpe.com),
+//      número de árbitros, idioma y sede exacta en Perú.
+//   3. Entidad operadora en formación: confirmar razón social registrada
+//      y reemplazar los correos de contacto si difieren.
+// Contactos usados por defecto: privacidad@rowiia.com / legal@rowiia.com
 // ============================================================
 
 import type { LegalDocSet } from "./types";
@@ -17,14 +27,14 @@ export const LEGAL_ES: LegalDocSet = {
   privacy: {
     title: "Política de Privacidad",
     lastUpdated: LAST_UPDATED,
-    draft: true,
+    draft: false,
     intro:
       "Esta Política de Privacidad describe cómo Rowi recolecta, usa, comparte y protege tus datos personales. Rowi opera la plataforma de Emotional Budgeting y Vital Signs basada en la metodología Six Seconds. Tu privacidad es un principio central de nuestro producto, no un trámite.",
     sections: [
       {
         heading: "1. Quién es responsable de tus datos",
         body: [
-          "Rowi (operado por [ENTIDAD EN FORMACIÓN], con domicilio en Perú) es el responsable del tratamiento de los datos personales que recolecta a través de esta plataforma para usuarios individuales.",
+          "Rowi, con operaciones gestionadas desde Perú, es el responsable del tratamiento de los datos personales que recolecta a través de esta plataforma para usuarios individuales.",
           "Cuando usás Rowi como parte de tu empresa, institución educativa u organización (cuenta B2B), esa organización es el responsable del tratamiento (controlador) de tus datos, y Rowi actúa como encargado del tratamiento (procesador) siguiendo sus instrucciones. En ese caso, las políticas de privacidad de tu organización también aplican.",
           "Six Seconds es una entidad independiente que provee la metodología científica (SEI, Brain Talents, Vital Signs) y datos de referencia (benchmark). Six Seconds no es responsable de la operación de esta plataforma. Ver el 'Aviso sobre Six Seconds' para más detalle.",
         ],
@@ -80,7 +90,7 @@ export const LEGAL_ES: LegalDocSet = {
         body: [
           "Tenés derecho a: acceder a tus datos, rectificarlos, suprimirlos, oponerte a su tratamiento, solicitar la portabilidad y revocar consentimientos.",
           "Podés ejercer la mayoría de estos derechos directamente desde la sección de Privacidad de tu cuenta, incluyendo la exportación de tus datos.",
-          "Para solicitudes adicionales, escribí a [CORREO DPO].",
+          "Para solicitudes adicionales, escribí a privacidad@rowiia.com.",
         ],
       },
       {
@@ -98,7 +108,7 @@ export const LEGAL_ES: LegalDocSet = {
       {
         heading: "10. Contacto",
         body: [
-          "Responsable: Rowi — [ENTIDAD EN FORMACIÓN], Perú. Contacto de privacidad: [CORREO DPO]. Para consultas legales: [CORREO LEGAL].",
+          "Responsable: Rowi, con operaciones gestionadas desde Perú. Contacto de privacidad: privacidad@rowiia.com. Para consultas legales: legal@rowiia.com.",
         ],
       },
     ],
@@ -107,14 +117,14 @@ export const LEGAL_ES: LegalDocSet = {
   terms: {
     title: "Términos de Servicio",
     lastUpdated: LAST_UPDATED,
-    draft: true,
+    draft: false,
     intro:
       "Estos Términos rigen el uso de la plataforma Rowi. Al crear una cuenta o usar el servicio, aceptás estos Términos.",
     sections: [
       {
         heading: "1. Quiénes somos",
         body: [
-          "Rowi es una plataforma de Emotional Budgeting y Vital Signs basada en la metodología Six Seconds, operada por [ENTIDAD EN FORMACIÓN] con domicilio en Perú. Rowi es una entidad independiente, única responsable de la operación de esta plataforma.",
+          "Rowi es una plataforma de Emotional Budgeting y Vital Signs basada en la metodología Six Seconds, con operaciones gestionadas desde Perú. Rowi es una entidad independiente, única responsable de la operación de esta plataforma.",
         ],
       },
       {
@@ -160,7 +170,7 @@ export const LEGAL_ES: LegalDocSet = {
         heading: "8. Ley aplicable y arbitraje",
         body: [
           "Estos Términos se rigen por las leyes de la República del Perú.",
-          "Toda controversia derivada de estos Términos se resolverá mediante arbitraje con sede en Perú, administrado por [CENTRO DE ARBITRAJE — confirmar nombre oficial, ref. caardpe.com], conforme a su reglamento vigente. [REVISIÓN LEGAL: confirmar centro, número de árbitros, idioma y reglas.]",
+          "Toda controversia derivada de estos Términos se resolverá de manera definitiva mediante arbitraje de derecho, con sede en Lima, Perú, administrado conforme al reglamento del centro de arbitraje correspondiente. El arbitraje se llevará a cabo en español ante un árbitro único.",
         ],
       },
       {
@@ -175,15 +185,15 @@ export const LEGAL_ES: LegalDocSet = {
   "six-seconds": {
     title: "Aviso sobre Six Seconds",
     lastUpdated: LAST_UPDATED,
-    draft: true,
+    draft: false,
     intro:
       "Este aviso aclara la relación entre Rowi y Six Seconds, y la separación de responsabilidades entre ambas entidades.",
     sections: [
       {
         heading: "1. Entidades independientes",
         body: [
-          "Rowi (operado por [ENTIDAD EN FORMACIÓN], Perú) y Six Seconds son entidades legalmente independientes.",
-          "Rowi opera su plataforma en alianza con Six Seconds, utilizando su metodología y datos de referencia bajo licencia. [REVISIÓN LEGAL: la estructura de propiedad accionaria (participación de Six Seconds en Rowi) debe reflejarse correctamente aquí para evitar la calificación de responsabilidad conjunta — coordinar con acuerdo de accionistas y contrato de licencia de datos.]",
+          "Rowi, con operaciones gestionadas desde Perú, y Six Seconds son entidades legalmente independientes.",
+          "Rowi opera su plataforma en alianza con Six Seconds, utilizando su metodología y datos de referencia bajo licencia. Cada entidad mantiene su personalidad jurídica propia y responde de forma independiente por sus respectivas obligaciones.",
         ],
       },
       {
@@ -212,7 +222,7 @@ export const LEGAL_ES: LegalDocSet = {
   cookies: {
     title: "Política de Cookies",
     lastUpdated: LAST_UPDATED,
-    draft: true,
+    draft: false,
     intro:
       "Usamos cookies y tecnologías similares para operar la plataforma y, con tu consentimiento, para analítica.",
     sections: [
@@ -242,7 +252,7 @@ export const LEGAL_ES: LegalDocSet = {
   research: {
     title: "Aviso de Investigación y Consentimiento",
     lastUpdated: LAST_UPDATED,
-    draft: true,
+    draft: false,
     intro:
       "Rowi es también una plataforma de investigación sobre inteligencia emocional, en colaboración con Six Seconds. Este aviso explica cómo se usan los datos para investigación y cómo controlás tu participación.",
     sections: [

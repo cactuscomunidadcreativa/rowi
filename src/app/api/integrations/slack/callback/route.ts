@@ -61,12 +61,30 @@ export async function GET(req: NextRequest) {
     return redirectToIntegrations(req, "denied");
   }
 
-  // 1) Validar state contra la cookie (CSRF).
+  // 1) Validar state contra la cookie (CSRF). Diagnóstico granular para
+  // distinguir el caso (config de Slack vs cookie perdida).
   const cookieState = req.cookies.get(STATE_COOKIE)?.value;
   if (!code || !state || !cookieState || state !== cookieState) {
-    secureLog.warn("slack.callback.state_mismatch");
+    const detail = !code
+      ? "missing_code" // Slack no devolvió code → revisar Redirect URL / config de la app
+      : !state
+        ? "missing_state_param"
+        : !cookieState
+          ? "missing_state_cookie" // cookie no llegó → empezaste el flujo en /install? www vs no-www?
+          : "state_mismatch"; // cookie no coincide → reintento viejo o doble flujo
+    secureLog.warn("slack.callback.invalid", { detail });
     return new NextResponse(
-      JSON.stringify({ ok: false, error: "Invalid state or code" }),
+      JSON.stringify({
+        ok: false,
+        error: "Invalid state or code",
+        detail,
+        hint:
+          detail === "missing_code"
+            ? "Slack no envió un código. Verifica que la Redirect URL en la Slack App sea exactamente https://www.rowiia.com/api/integrations/slack/callback y que las claves estén configuradas."
+            : detail === "missing_state_cookie"
+              ? "La cookie de seguridad no llegó. Empieza el flujo abriendo /api/integrations/slack/install (no el callback directo), en el mismo navegador, con www."
+              : "El state no coincide. Probablemente reabriste un enlace viejo. Reinicia desde /api/integrations/slack/install.",
+      }),
       { status: 400, headers: { "content-type": "application/json" } }
     );
   }

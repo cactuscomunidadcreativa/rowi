@@ -24,6 +24,7 @@ import {
 import { logConfigChange } from "@/lib/audit/auditLog";
 import { telemetry } from "@/lib/telemetry";
 import { refreshStripeConfig } from "@/lib/stripe/client";
+import { refreshSlackConfig } from "@/lib/slack/config";
 
 const TELEMETRY_KEYS = new Set<SystemConfigKey>([
   "TELEMETRY_PROVIDER",
@@ -37,6 +38,12 @@ const STRIPE_KEYS = new Set<SystemConfigKey>([
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_PUBLISHABLE_KEY",
+]);
+
+const SLACK_KEYS = new Set<SystemConfigKey>([
+  "SLACK_CLIENT_ID",
+  "SLACK_CLIENT_SECRET",
+  "SLACK_SIGNING_SECRET",
 ]);
 
 /**
@@ -172,6 +179,11 @@ export async function POST(req: NextRequest) {
     if (STRIPE_KEYS.has(key as SystemConfigKey)) {
       refreshStripeConfig();
     }
+    // Mismo principio para Slack: rotar una credencial invalida el cache
+    // para que el próximo OAuth/evento use el valor nuevo sin esperar TTL.
+    if (SLACK_KEYS.has(key as SystemConfigKey)) {
+      refreshSlackConfig();
+    }
 
     return NextResponse.json({
       ok: true,
@@ -227,6 +239,9 @@ export async function DELETE(req: NextRequest) {
     }
     if (STRIPE_KEYS.has(key as SystemConfigKey)) {
       refreshStripeConfig();
+    }
+    if (SLACK_KEYS.has(key as SystemConfigKey)) {
+      refreshSlackConfig();
     }
 
     return NextResponse.json({

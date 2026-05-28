@@ -47,6 +47,12 @@ const PUBLIC_API_PATHS = [
   // checkout y /portal siguen requiriendo sesión.
   "/api/stripe/webhook",
   "/api/webhooks",
+  // Slack — events/commands se autentican por firma HMAC; callback por
+  // state anti-CSRF. Slack las llama sin sesión NextAuth, así que sin
+  // esto el middleware devuelve 401. /install NO va aquí: requiere sesión.
+  "/api/integrations/slack/events",
+  "/api/integrations/slack/commands",
+  "/api/integrations/slack/callback",
 ];
 
 /* =========================================================
@@ -70,6 +76,8 @@ const CSRF_EXEMPT_PATHS = [
   "/api/auth", // NextAuth maneja su propia seguridad
   "/api/admin/benchmarks/blob-token", // Vercel Blob multipart upload callbacks
   "/api/admin/benchmarks/process-blob", // Internal service-to-service processing
+  "/api/integrations/slack/events", // Slack server-to-server (signature-verified)
+  "/api/integrations/slack/commands", // Slack slash commands (signature-verified)
 ];
 
 // Hosts permitidos para CSRF (configurar según entorno)

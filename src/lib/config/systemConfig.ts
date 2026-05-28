@@ -143,6 +143,12 @@ export const SYSTEM_CONFIG_KEYS = {
   SLACK_CLIENT_ID: { category: "integrations" as ConfigCategory, description: "Slack App Client ID", isSecret: false },
   SLACK_CLIENT_SECRET: { category: "integrations" as ConfigCategory, description: "Slack App Client Secret", isSecret: true },
   SLACK_SIGNING_SECRET: { category: "integrations" as ConfigCategory, description: "Slack App Signing Secret (verifica eventos entrantes)", isSecret: true },
+
+  // Integrations — WhatsApp (Twilio). Bidireccional como Slack: el backend
+  // lee estas claves desde SystemConfig primero, env vars como fallback.
+  TWILIO_ACCOUNT_SID: { category: "integrations" as ConfigCategory, description: "Twilio Account SID (WhatsApp)", isSecret: false },
+  TWILIO_AUTH_TOKEN: { category: "integrations" as ConfigCategory, description: "Twilio Auth Token (firma webhooks entrantes + envío)", isSecret: true },
+  TWILIO_WHATSAPP_NUMBER: { category: "integrations" as ConfigCategory, description: "Número WhatsApp de Twilio (formato +14155238886, sin prefijo whatsapp:)", isSecret: false },
 } as const;
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_KEYS;

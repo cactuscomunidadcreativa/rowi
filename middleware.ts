@@ -53,6 +53,9 @@ const PUBLIC_API_PATHS = [
   "/api/integrations/slack/events",
   "/api/integrations/slack/commands",
   "/api/integrations/slack/callback",
+  // WhatsApp — webhook entrante de Twilio, autenticado por firma
+  // X-Twilio-Signature. Twilio lo llama sin sesión NextAuth.
+  "/api/integrations/whatsapp/webhook",
 ];
 
 /* =========================================================
@@ -78,6 +81,7 @@ const CSRF_EXEMPT_PATHS = [
   "/api/admin/benchmarks/process-blob", // Internal service-to-service processing
   "/api/integrations/slack/events", // Slack server-to-server (signature-verified)
   "/api/integrations/slack/commands", // Slack slash commands (signature-verified)
+  "/api/integrations/whatsapp/webhook", // Twilio WhatsApp inbound (signature-verified)
 ];
 
 // Hosts permitidos para CSRF (configurar según entorno)

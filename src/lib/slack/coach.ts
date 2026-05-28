@@ -119,8 +119,9 @@ export type AskRowiCoachResult =
 export async function askRowiCoach(
   userId: string,
   text: string,
-  opts?: { locale?: string }
+  opts?: { locale?: string; channel?: "slack" | "whatsapp" }
 ): Promise<AskRowiCoachResult> {
+  const channel = opts?.channel || "slack";
   const ask = (text || "").trim();
   if (!ask) {
     return {
@@ -187,8 +188,9 @@ export async function askRowiCoach(
       locale !== "es"
         ? `\n\nIMPORTANT: You MUST respond entirely in ${langName}. The user has selected "${locale}" as their language. All your responses must be in ${langName}.`
         : "";
-    const identityNote = `\n\nUser context: name="${userName}", channel="slack", locale="${locale}".`;
-    const styleNote = `\n\nSlack chat style (IMPORTANT): Keep replies short — 2-4 sentences or a few short "- " bullets, ~120 words max unless the user explicitly asks for more detail. Lead with the answer; skip preambles, recaps of the question, and filler. Use short paragraphs or bullets, never headings or long numbered lists. This is an ongoing conversation — do NOT greet the user by name on every reply.`;
+    const channelLabel = channel === "whatsapp" ? "WhatsApp" : "Slack";
+    const identityNote = `\n\nUser context: name="${userName}", channel="${channel}", locale="${locale}".`;
+    const styleNote = `\n\n${channelLabel} chat style (IMPORTANT): Keep replies short — 2-4 sentences or a few short "- " bullets, ~120 words max unless the user explicitly asks for more detail. Lead with the answer; skip preambles, recaps of the question, and filler. Use short paragraphs or bullets, never headings or long numbered lists. This is an ongoing conversation — do NOT greet the user by name on every reply.`;
     const systemPrompt = basePrompt + langInstruction + identityNote + styleNote;
 
     // 4) Historial reciente (mismo patrón que /api/rowi: últimas 10
@@ -243,7 +245,7 @@ export async function askRowiCoach(
             content: ask.slice(0, 2000),
             intent: DEFAULT_SLUG,
             locale,
-            contextType: "slack",
+            contextType: channel,
           },
           {
             userId,
@@ -252,7 +254,7 @@ export async function askRowiCoach(
             content: replyText.slice(0, 5000),
             intent: DEFAULT_SLUG,
             locale,
-            contextType: "slack",
+            contextType: channel,
           },
         ],
       });

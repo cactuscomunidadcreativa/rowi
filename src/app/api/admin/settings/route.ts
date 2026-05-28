@@ -25,6 +25,7 @@ import { logConfigChange } from "@/lib/audit/auditLog";
 import { telemetry } from "@/lib/telemetry";
 import { refreshStripeConfig } from "@/lib/stripe/client";
 import { refreshSlackConfig } from "@/lib/slack/config";
+import { refreshWhatsAppConfig } from "@/lib/whatsapp/config";
 
 const TELEMETRY_KEYS = new Set<SystemConfigKey>([
   "TELEMETRY_PROVIDER",
@@ -44,6 +45,12 @@ const SLACK_KEYS = new Set<SystemConfigKey>([
   "SLACK_CLIENT_ID",
   "SLACK_CLIENT_SECRET",
   "SLACK_SIGNING_SECRET",
+]);
+
+const WHATSAPP_KEYS = new Set<SystemConfigKey>([
+  "TWILIO_ACCOUNT_SID",
+  "TWILIO_AUTH_TOKEN",
+  "TWILIO_WHATSAPP_NUMBER",
 ]);
 
 /**
@@ -184,6 +191,11 @@ export async function POST(req: NextRequest) {
     if (SLACK_KEYS.has(key as SystemConfigKey)) {
       refreshSlackConfig();
     }
+    // Mismo principio para WhatsApp/Twilio: rotar una credencial invalida el
+    // cache para que el próximo webhook/envío use el valor nuevo sin TTL.
+    if (WHATSAPP_KEYS.has(key as SystemConfigKey)) {
+      refreshWhatsAppConfig();
+    }
 
     return NextResponse.json({
       ok: true,
@@ -242,6 +254,11 @@ export async function DELETE(req: NextRequest) {
     }
     if (SLACK_KEYS.has(key as SystemConfigKey)) {
       refreshSlackConfig();
+    }
+    // Mismo principio para WhatsApp/Twilio: rotar una credencial invalida el
+    // cache para que el próximo webhook/envío use el valor nuevo sin TTL.
+    if (WHATSAPP_KEYS.has(key as SystemConfigKey)) {
+      refreshWhatsAppConfig();
     }
 
     return NextResponse.json({

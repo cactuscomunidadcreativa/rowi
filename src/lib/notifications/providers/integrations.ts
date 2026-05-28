@@ -5,6 +5,7 @@
 
 import { NotificationResult } from "../types";
 import { NotificationType } from "@prisma/client";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 interface IntegrationNotification {
   id: string;
@@ -38,7 +39,7 @@ export async function sendSlack(
   }
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rowi.app";
+    const baseUrl = getServerAppBaseUrl();
 
     // Build Slack Block Kit message
     const blocks = [
@@ -139,7 +140,7 @@ export async function sendTeams(
   }
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rowi.app";
+    const baseUrl = getServerAppBaseUrl();
 
     // Build Adaptive Card for Teams
     const card = {

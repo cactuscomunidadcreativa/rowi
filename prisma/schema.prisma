@@ -580,6 +580,14 @@ model Tenant {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // 📣 Canales de notificación a nivel organización (saliente).
+  // Para alertas agregadas (ej. HR: "el equipo X tiene Vital Signs
+  // bajos") enviadas a un canal compartido de Slack/Teams del tenant.
+  // Independiente de las preferencias por usuario (NotificationPreference).
+  orgSlackWebhookUrl String?
+  orgTeamsWebhookUrl String?
+  orgNotifyEnabled   Boolean @default(false)
+
   // 🔗 Jerarquía superior
   rowiVerseId String?
   superHubId  String?

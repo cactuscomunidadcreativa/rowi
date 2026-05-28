@@ -5,6 +5,7 @@
 
 import { NotificationResult } from "../types";
 import { NotificationType } from "@prisma/client";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 interface SMSNotification {
   id: string;
@@ -110,7 +111,7 @@ export async function sendWhatsApp(notification: SMSNotification): Promise<Notif
 
     // Add action URL if present
     if (actionUrl) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rowi.app";
+      const baseUrl = getServerAppBaseUrl();
       body += `\n\n${baseUrl}${actionUrl}`;
     }
 

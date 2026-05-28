@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 export async function GET() {
   const hubs = await prisma.hub.findMany({
@@ -33,5 +34,6 @@ export async function POST(req: Request) {
       description: body.description ?? null,
     },
   });
+  await cloneAgentsForContext({ hubId: hub.id });
   return NextResponse.json(hub, { status: 201 });
 }

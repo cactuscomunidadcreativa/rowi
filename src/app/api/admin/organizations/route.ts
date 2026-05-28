@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 /* =========================================================
    🔧 Helper — Normalizar slug
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`🏢 Organización creada: ${org.name} (${org.slug})`);
+    await cloneAgentsForContext({ organizationId: org.id });
     return NextResponse.json({ ok: true, organization: org }, { status: 201 });
   } catch (error: any) {
     console.error("❌ Error POST /api/hub/organizations:", error);

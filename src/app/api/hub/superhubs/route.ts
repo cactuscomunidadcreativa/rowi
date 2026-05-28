@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 import { canAccess } from "@/core/auth/hasAccess";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 /* =========================================================
    INCLUDE correcto según tu modelo Prisma
@@ -108,6 +109,8 @@ export async function POST(req: NextRequest) {
       },
       include: superHubInclude,
     });
+
+    await cloneAgentsForContext({ superHubId: newSH.id });
 
     return NextResponse.json({ ok: true, superHub: newSH }, { status: 201 });
   } catch (err: any) {

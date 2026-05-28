@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { PLATFORM_AGENT_SLUGS } from "@/lib/agents/platform";
 
 /**
  * POST /api/admin/agents/sync
@@ -10,16 +11,14 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
  * org) como copias INDEPENDIENTES, para que cada una pueda personalizar su
  * prompt y su cultura. Idempotente: solo crea los que faltan (dedup slug+scope).
  *
- * - PLATFORM_SLUGS (p.ej. "research") NO se distribuyen: son agentes de
+ * - PLATFORM_AGENT_SLUGS (p.ej. "research") NO se distribuyen: son agentes de
  *   plataforma y viven solo en global (evita la explosión de copias).
- * - Limpia copias con scope de los PLATFORM_SLUGS dejadas por versiones previas.
+ * - Limpia copias con scope de los PLATFORM_AGENT_SLUGS dejadas por versiones previas.
  *
  * Nota: el resolver del chat usa hub → tenant → superhub → global (no org), así
  * que los agentes de org hoy se personalizan/ven en admin pero no se sirven en
  * el chat hasta cablear la resolución por organización.
  */
-const PLATFORM_SLUGS = new Set(["research"]);
-
 export async function POST() {
   try {
     const auth = await requireSuperAdmin();
@@ -36,7 +35,7 @@ export async function POST() {
     // global. Borra cualquier copia con scope creada por syncs antiguos.
     const cleaned = await prisma.agentConfig.deleteMany({
       where: {
-        slug: { in: [...PLATFORM_SLUGS] },
+        slug: { in: [...PLATFORM_AGENT_SLUGS] },
         OR: [
           { tenantId: { not: null } },
           { superHubId: { not: null } },
@@ -47,7 +46,7 @@ export async function POST() {
     });
 
     // Agentes distribuibles = globales que NO son de plataforma.
-    const distributable = globalAgents.filter((a) => !PLATFORM_SLUGS.has(a.slug));
+    const distributable = globalAgents.filter((a) => !PLATFORM_AGENT_SLUGS.has(a.slug));
 
     const [tenants, superHubs, hubs, orgs] = await Promise.all([
       prisma.tenant.findMany({ select: { id: true } }),

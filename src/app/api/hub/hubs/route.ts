@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 export const runtime = "nodejs";
 
@@ -80,6 +81,9 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`🧱 Nuevo Hub creado: ${hub.name} (${hub.slug})`);
+
+    // Provisiona agentes propios del nuevo hub (personalizables).
+    await cloneAgentsForContext({ hubId: hub.id });
 
     // ⚙️ Sincronizar agentes globales automáticamente para este Tenant
     try {

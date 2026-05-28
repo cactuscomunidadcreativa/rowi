@@ -1,6 +1,7 @@
 // src/app/api/hub/agents/activate/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { PLATFORM_AGENT_SLUGS } from "@/lib/agents/platform";
 
 export const runtime = "nodejs";
 
@@ -29,7 +30,9 @@ export async function POST(req: NextRequest) {
       ? { slug: agentSlug, tenantId: null, superHubId: null, organizationId: null }
       : { tenantId: null, superHubId: null, organizationId: null };
 
-    const globals = await prisma.agentConfig.findMany({ where: whereGlobal });
+    const globalsAll = await prisma.agentConfig.findMany({ where: whereGlobal });
+    // Agentes de plataforma (research) no se distribuyen: quedan solo en global.
+    const globals = globalsAll.filter((g) => !PLATFORM_AGENT_SLUGS.has(g.slug));
     if (globals.length === 0)
       return NextResponse.json({ ok: false, error: "No se encontraron agentes globales" }, { status: 404 });
 

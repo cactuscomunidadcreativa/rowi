@@ -1,4 +1,5 @@
 import { prisma } from "../prisma";
+import { PLATFORM_AGENT_SLUGS } from "@/lib/agents/platform";
 
 export async function assignAgentsToEntity(
   scope: "tenant" | "superhub" | "hub" | "organization",
@@ -7,7 +8,7 @@ export async function assignAgentsToEntity(
   try {
     console.log(`🔄 Vinculando IA → ${scope} (${entityId})`);
 
-    const globals = await prisma.agentConfig.findMany({
+    const globalsAll = await prisma.agentConfig.findMany({
       where: {
         tenantId: null,
         superHubId: null,
@@ -16,8 +17,11 @@ export async function assignAgentsToEntity(
       },
     });
 
+    // Los agentes de plataforma (p.ej. research) NO se distribuyen: quedan global.
+    const globals = globalsAll.filter((a) => !PLATFORM_AGENT_SLUGS.has(a.slug));
+
     if (!globals.length) {
-      console.warn("⚠️ No hay agentes globales. Ejecuta ensureBaseAgents.");
+      console.warn("⚠️ No hay agentes globales distribuibles. Ejecuta ensureBaseAgents.");
       return;
     }
 

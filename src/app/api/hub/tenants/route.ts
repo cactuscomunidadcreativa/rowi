@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 import { canAccess } from "@/core/auth/hasAccess";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 const tenantInclude = {
   plan: true,
@@ -103,6 +104,8 @@ export async function POST(req: NextRequest) {
       },
       include: tenantInclude,
     });
+
+    await cloneAgentsForContext({ tenantId: created.id });
 
     return NextResponse.json({ ok: true, tenant: created }, { status: 201 });
   } catch (err: any) {

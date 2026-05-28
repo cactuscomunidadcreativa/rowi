@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireAuth } from "@/core/auth/requireAdmin";
 import { secureLog } from "@/lib/logging";
+import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
 
 export const dynamic = "force-dynamic";
 
@@ -115,6 +116,9 @@ export async function POST(req: NextRequest) {
     secureLog.info(
       `[create-org] user=${user.id} created tenant=${tenant.id} slug=${tenant.slug}`,
     );
+
+    // Provisiona los agentes de usuario para el nuevo tenant (best-effort).
+    await cloneAgentsForContext({ tenantId: tenant.id });
 
     return NextResponse.json({
       ok: true,

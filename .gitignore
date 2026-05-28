@@ -71,3 +71,4 @@ src/data/seeds/*.json
 
 # Documentos internos sensibles (no publicar)
 REVISION_LEGAL.md
+SESION_CONTEXTO.md

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { listUserWorkspaces, PROFESSIONAL_ROLES } from "@/lib/workspace/permissions";
-import { getTemplate } from "@/lib/workspace/templates";
+import { getTemplate, isValidTemplate } from "@/lib/workspace/templates";
 import {
   ACTIVE_CONTEXT_COOKIE,
   resolveContextTenantId,
@@ -89,14 +89,28 @@ export async function POST(req: NextRequest) {
 
     if (!templateKey || !name?.trim()) {
       return NextResponse.json(
-        { error: "templateKey and name are required" },
+        { ok: false, error: "templateKey and name are required" },
         { status: 400 }
+      );
+    }
+
+    // Type-guarded validation: rechaza cualquier key fuera de la lista
+    // canónica (WORKSPACE_TEMPLATE_KEYS). El cliente recibe un error
+    // estable que puede mapear a i18n sin parsear texto.
+    if (!isValidTemplate(templateKey)) {
+      return NextResponse.json(
+        { ok: false, error: "invalid_template" },
+        { status: 400 },
       );
     }
 
     const template = getTemplate(templateKey);
     if (!template) {
-      return NextResponse.json({ error: "Invalid template" }, { status: 400 });
+      // Defensa en profundidad — no debería ocurrir tras isValidTemplate.
+      return NextResponse.json(
+        { ok: false, error: "invalid_template" },
+        { status: 400 },
+      );
     }
 
     // Slug unico

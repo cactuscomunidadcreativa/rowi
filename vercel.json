@@ -44,6 +44,18 @@
     {
       "path": "/api/cron/vital-signs-calibrate",
       "schedule": "0 3 * * 0"
+    },
+    {
+      "path": "/api/cron/weekly-pulse",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron/debrief-reminder",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/invite-expiry-reminder",
+      "schedule": "0 10 * * *"
     }
   ]
 }

@@ -131,6 +131,22 @@ export default function InvitesAdminPage() {
     }
   }
 
+  async function resendInvite(id: string) {
+    if (!confirm(t("admin.invites.resendConfirm", "¿Reenviar la invitación? Se revocará el link anterior."))) return;
+    try {
+      const res = await fetch(`/api/admin/invites/${id}/resend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const j = await res.json();
+      if (!res.ok || j.ok === false) throw new Error(j.error);
+      toast.success(t("admin.invites.resendSuccess", "Invitación reenviada correctamente"));
+      loadInvites();
+    } catch (e: any) {
+      toast.error(e.message || t("common.error"));
+    }
+  }
+
   function copyInviteLink(inv: Invite) {
     const link = inv.url || `${window.location.origin}/invite/${inv.token}`;
     navigator.clipboard.writeText(link).then(() => {
@@ -285,6 +301,13 @@ export default function InvitesAdminPage() {
                     />
                     {inv.status === "pending" && (
                       <AdminIconButton
+                        icon={Send}
+                        onClick={() => resendInvite(inv.id)}
+                        title={t("admin.invites.resend", "Reenviar")}
+                      />
+                    )}
+                    {inv.status === "pending" && (
+                      <AdminIconButton
                         icon={Trash2}
                         variant="danger"
                         onClick={() => deleteInvite(inv.id)}
@@ -357,6 +380,13 @@ export default function InvitesAdminPage() {
                     icon={copiedId === inv.id ? Check : Link2}
                     onClick={() => copyInviteLink(inv)}
                   />
+                  {inv.status === "pending" && (
+                    <AdminIconButton
+                      icon={Send}
+                      onClick={() => resendInvite(inv.id)}
+                      title={t("admin.invites.resend", "Reenviar")}
+                    />
+                  )}
                   {inv.status === "pending" && (
                     <AdminIconButton
                       icon={Trash2}

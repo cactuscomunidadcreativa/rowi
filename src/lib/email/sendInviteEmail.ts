@@ -18,6 +18,8 @@ import { secureLog } from "@/lib/logging";
 
 export type InviteEmailLocale = "es" | "en" | "pt" | "it";
 
+export type InviteEmailKind = "initial" | "reminder";
+
 export interface SendInviteEmailInput {
   to: string;
   inviteUrl: string;
@@ -29,6 +31,10 @@ export interface SendInviteEmailInput {
   role?: string | null;
   /** Language for subject + body. Defaults to "es". */
   locale?: InviteEmailLocale | string;
+  /** Email variant. "initial" = first send (default), "reminder" = expiry reminder. */
+  kind?: InviteEmailKind;
+  /** Días hasta que el token expira. Solo se usa cuando kind="reminder". */
+  expiresInDays?: number;
 }
 
 export interface SendInviteEmailResult {
@@ -43,68 +49,107 @@ export interface SendInviteEmailResult {
 
 const STRINGS: Record<InviteEmailLocale, {
   subject: (workspace?: string | null) => string;
+  subjectReminder: (workspace?: string | null) => string;
   greeting: string;
   intro: (inviter?: string | null) => string;
+  introReminder: (inviter?: string | null) => string;
   workspaceLine: (name?: string | null) => string;
   roleLine: (role?: string | null) => string;
   cta: string;
   expiry: string;
+  expiryDays: (days: number) => string;
   fallbackUrl: string;
   footer: string;
 }> = {
   es: {
     subject: (w) => w ? `Te invitaron a "${w}" en Rowi` : "Te invitaron a Rowi",
+    subjectReminder: (w) =>
+      w
+        ? `Recordatorio: tu invitación a "${w}" expira mañana`
+        : "Recordatorio: tu invitación a Rowi expira mañana",
     greeting: "¡Hola!",
     intro: (inviter) =>
       inviter
         ? `${inviter} te ha invitado a colaborar en Rowi, la plataforma de inteligencia emocional con IA.`
         : `Te han invitado a colaborar en Rowi, la plataforma de inteligencia emocional con IA.`,
+    introReminder: (inviter) =>
+      inviter
+        ? `Este es un recordatorio: ${inviter} te invitó a Rowi y tu invitación está a punto de expirar.`
+        : `Este es un recordatorio: tu invitación a Rowi está a punto de expirar.`,
     workspaceLine: (name) => name ? `Workspace: <strong>${name}</strong>` : "",
     roleLine: (role) => role ? `Rol asignado: <strong>${role}</strong>` : "",
     cta: "Aceptar invitación",
     expiry: "Este enlace expira en 14 días.",
+    expiryDays: (d) => `Este enlace expira en ${d} ${d === 1 ? "día" : "días"}.`,
     fallbackUrl: "Si el botón no funciona, copia este enlace en tu navegador:",
     footer: "Si no esperabas esta invitación, puedes ignorar este correo.",
   },
   en: {
     subject: (w) => w ? `You were invited to "${w}" on Rowi` : "You were invited to Rowi",
+    subjectReminder: (w) =>
+      w
+        ? `Reminder: your invitation to "${w}" expires tomorrow`
+        : "Reminder: your Rowi invitation expires tomorrow",
     greeting: "Hi!",
     intro: (inviter) =>
       inviter
         ? `${inviter} has invited you to collaborate on Rowi, the AI-powered emotional intelligence platform.`
         : `You've been invited to collaborate on Rowi, the AI-powered emotional intelligence platform.`,
+    introReminder: (inviter) =>
+      inviter
+        ? `Friendly reminder: ${inviter} invited you to Rowi and your invitation is about to expire.`
+        : `Friendly reminder: your invitation to Rowi is about to expire.`,
     workspaceLine: (name) => name ? `Workspace: <strong>${name}</strong>` : "",
     roleLine: (role) => role ? `Assigned role: <strong>${role}</strong>` : "",
     cta: "Accept invitation",
     expiry: "This link expires in 14 days.",
+    expiryDays: (d) => `This link expires in ${d} ${d === 1 ? "day" : "days"}.`,
     fallbackUrl: "If the button doesn't work, copy this link into your browser:",
     footer: "If you didn't expect this invitation, you can safely ignore this email.",
   },
   pt: {
     subject: (w) => w ? `Você foi convidado para "${w}" no Rowi` : "Você foi convidado para o Rowi",
+    subjectReminder: (w) =>
+      w
+        ? `Lembrete: seu convite para "${w}" expira amanhã`
+        : "Lembrete: seu convite para o Rowi expira amanhã",
     greeting: "Olá!",
     intro: (inviter) =>
       inviter
         ? `${inviter} convidou você para colaborar no Rowi, a plataforma de inteligência emocional com IA.`
         : `Você foi convidado para colaborar no Rowi, a plataforma de inteligência emocional com IA.`,
+    introReminder: (inviter) =>
+      inviter
+        ? `Lembrete amigável: ${inviter} convidou você para o Rowi e seu convite está prestes a expirar.`
+        : `Lembrete amigável: seu convite para o Rowi está prestes a expirar.`,
     workspaceLine: (name) => name ? `Workspace: <strong>${name}</strong>` : "",
     roleLine: (role) => role ? `Papel atribuído: <strong>${role}</strong>` : "",
     cta: "Aceitar convite",
     expiry: "Este link expira em 14 dias.",
+    expiryDays: (d) => `Este link expira em ${d} ${d === 1 ? "dia" : "dias"}.`,
     fallbackUrl: "Se o botão não funcionar, copie este link no seu navegador:",
     footer: "Se você não esperava este convite, pode ignorar este email.",
   },
   it: {
     subject: (w) => w ? `Sei stato invitato a "${w}" su Rowi` : "Sei stato invitato a Rowi",
+    subjectReminder: (w) =>
+      w
+        ? `Promemoria: il tuo invito a "${w}" scade domani`
+        : "Promemoria: il tuo invito a Rowi scade domani",
     greeting: "Ciao!",
     intro: (inviter) =>
       inviter
         ? `${inviter} ti ha invitato a collaborare su Rowi, la piattaforma di intelligenza emotiva con IA.`
         : `Sei stato invitato a collaborare su Rowi, la piattaforma di intelligenza emotiva con IA.`,
+    introReminder: (inviter) =>
+      inviter
+        ? `Promemoria: ${inviter} ti ha invitato su Rowi e il tuo invito sta per scadere.`
+        : `Promemoria: il tuo invito a Rowi sta per scadere.`,
     workspaceLine: (name) => name ? `Workspace: <strong>${name}</strong>` : "",
     roleLine: (role) => role ? `Ruolo assegnato: <strong>${role}</strong>` : "",
     cta: "Accetta invito",
     expiry: "Questo link scade tra 14 giorni.",
+    expiryDays: (d) => `Questo link scade tra ${d} ${d === 1 ? "giorno" : "giorni"}.`,
     fallbackUrl: "Se il pulsante non funziona, copia questo link nel tuo browser:",
     footer: "Se non ti aspettavi questo invito, puoi ignorare questa email.",
   },
@@ -115,19 +160,28 @@ function buildHtml(input: SendInviteEmailInput): { subject: string; html: string
     ? (input.locale as InviteEmailLocale)
     : "es";
   const s = STRINGS[locale];
-  const subject = s.subject(input.workspaceName);
+  const kind: InviteEmailKind = input.kind ?? "initial";
+  const subject = kind === "reminder"
+    ? s.subjectReminder(input.workspaceName)
+    : s.subject(input.workspaceName);
+  const introText = kind === "reminder"
+    ? s.introReminder(input.inviterName)
+    : s.intro(input.inviterName);
+  const expiryStr = typeof input.expiresInDays === "number"
+    ? s.expiryDays(input.expiresInDays)
+    : s.expiry;
 
   const text = [
     `${s.greeting}`,
     "",
-    s.intro(input.inviterName).replace(/<[^>]+>/g, ""),
+    introText.replace(/<[^>]+>/g, ""),
     "",
     input.workspaceName ? `Workspace: ${input.workspaceName}` : null,
     input.role ? `${locale === "es" ? "Rol" : locale === "pt" ? "Papel" : locale === "it" ? "Ruolo" : "Role"}: ${input.role}` : null,
     "",
     `${s.cta}: ${input.inviteUrl}`,
     "",
-    s.expiry,
+    expiryStr,
     s.footer,
   ]
     .filter(Boolean)
@@ -151,7 +205,7 @@ function buildHtml(input: SendInviteEmailInput): { subject: string; html: string
     <!-- Content -->
     <div style="padding: 32px;">
       <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #1f2937;">${s.greeting}</h1>
-      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #4b5563;">${s.intro(input.inviterName)}</p>
+      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #4b5563;">${introText}</p>
 
       ${input.workspaceName ? `<p style="margin: 0 0 8px; font-size: 15px; color: #4b5563;">${s.workspaceLine(input.workspaceName)}</p>` : ""}
       ${input.role ? `<p style="margin: 0 0 24px; font-size: 15px; color: #4b5563;">${s.roleLine(input.role)}</p>` : ""}
@@ -165,7 +219,7 @@ function buildHtml(input: SendInviteEmailInput): { subject: string; html: string
         <a href="${input.inviteUrl}" style="color: #6b7280;">${input.inviteUrl}</a>
       </p>
 
-      <p style="margin: 0; font-size: 13px; color: #9ca3af;">${s.expiry}</p>
+      <p style="margin: 0; font-size: 13px; color: #9ca3af;">${expiryStr}</p>
     </div>
 
     <!-- Footer -->
@@ -219,7 +273,7 @@ export async function sendInviteEmail(input: SendInviteEmailInput): Promise<Send
         subject,
         html,
         text,
-        tags: [{ name: "kind", value: "invite" }],
+        tags: [{ name: "kind", value: input.kind === "reminder" ? "invite_reminder" : "invite" }],
       }),
     });
 

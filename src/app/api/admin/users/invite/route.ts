@@ -62,6 +62,43 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
 
+    // 🔄 Re-invite: si ya hay tokens pendientes (mismo email + tenantId,
+    // no revocados, no aceptados, no expirados), márcalos como revocados
+    // antes de crear el nuevo. Mantiene historial y evita confusión con
+    // varios links válidos a la vez. Loggea en ActivityLog.
+    const now = new Date();
+    const lowerEmail = String(email).toLowerCase();
+    const previousPending = await prisma.inviteToken.findMany({
+      where: {
+        email: lowerEmail,
+        tenantId: tenantId || null,
+        revokedAt: null,
+        acceptedAt: null,
+        expiresAt: { gt: now },
+      },
+      select: { id: true },
+    });
+    if (previousPending.length > 0) {
+      const ids = previousPending.map((p) => p.id);
+      await prisma.inviteToken.updateMany({
+        where: { id: { in: ids } },
+        data: { revokedAt: now },
+      });
+      try {
+        await prisma.activityLog.createMany({
+          data: ids.map((targetId) => ({
+            userId: actor.id,
+            action: "INVITE_REVOKED",
+            entity: "InviteToken",
+            targetId,
+            details: { reason: "replaced_by_new_invite", email: lowerEmail, tenantId: tenantId || null },
+          })),
+        });
+      } catch (logErr) {
+        console.warn("[POST /admin/users/invite] activity log fail:", logErr);
+      }
+    }
+
     const token = crypto.randomBytes(24).toString("hex");
     const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000);
 

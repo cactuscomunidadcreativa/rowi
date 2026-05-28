@@ -4,8 +4,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/core/prisma";
 import bcrypt from "bcryptjs";
+import { sendVerificationEmail } from "@/lib/email/sendVerificationEmail";
+import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 interface RegisterBody {
   email: string;
@@ -329,6 +333,41 @@ export async function POST(req: NextRequest) {
     } catch (rvError) {
       // No fallar el registro si hay error vinculando a RowiVerse
       console.warn("⚠️ Error vinculando a RowiVerse (no crítico):", rvError);
+    }
+
+    // Verification email (no bloqueante — si falla, el usuario puede pedir
+    // un reenvío más tarde desde /verify-email).
+    try {
+      const verifyToken = crypto.randomBytes(24).toString("hex");
+      const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await prisma.emailVerificationToken.create({
+        data: {
+          userId: user.id,
+          email: user.email,
+          token: verifyToken,
+          expiresAt: verifyExpiresAt,
+        },
+      });
+      await sendVerificationEmail({
+        to: user.email,
+        name: user.name,
+        verifyUrl: `${getServerAppBaseUrl(req)}/verify-email?token=${encodeURIComponent(verifyToken)}`,
+        locale: language,
+      });
+    } catch (verifyErr) {
+      console.warn("⚠️ Error enviando verification email (no crítico):", verifyErr);
+    }
+
+    // Welcome email — independiente del verification email. Va siempre.
+    try {
+      await sendWelcomeEmail({
+        to: user.email,
+        name: user.name,
+        appUrl: `${getServerAppBaseUrl(req)}/hub`,
+        locale: language,
+      });
+    } catch (welcomeErr) {
+      console.warn("⚠️ Error enviando welcome email (no crítico):", welcomeErr);
     }
 
     return NextResponse.json({

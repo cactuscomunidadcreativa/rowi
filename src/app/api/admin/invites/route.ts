@@ -58,13 +58,26 @@ export async function GET(req: NextRequest) {
       take: 500,
     });
 
-    // Calculate stats
+    // Status resolution — toma en cuenta los nuevos campos revokedAt y
+    // acceptedAt. "Revoked" (re-invite o eliminado suavemente) se mapea a
+    // "expired" en UI para no romper el statusFilter existente.
     const now = new Date();
+    const statusOf = (inv: {
+      expiresAt: Date;
+      acceptedAt: Date | null;
+      revokedAt: Date | null;
+    }): "pending" | "accepted" | "expired" => {
+      if (inv.acceptedAt) return "accepted";
+      if (inv.revokedAt) return "expired";
+      if (new Date(inv.expiresAt) <= now) return "expired";
+      return "pending";
+    };
+
     const stats = {
       total: invites.length,
-      pending: invites.filter((i) => new Date(i.expiresAt) > now).length,
-      accepted: 0, // Would need to track this separately
-      expired: invites.filter((i) => new Date(i.expiresAt) <= now).length,
+      pending: invites.filter((i) => statusOf(i) === "pending").length,
+      accepted: invites.filter((i) => statusOf(i) === "accepted").length,
+      expired: invites.filter((i) => statusOf(i) === "expired").length,
     };
 
     // Transform to expected format
@@ -74,7 +87,7 @@ export async function GET(req: NextRequest) {
       email: inv.email,
       contact: inv.email,
       channel: "email" as const,
-      status: new Date(inv.expiresAt) > now ? "pending" : "expired",
+      status: statusOf(inv),
       createdAt: inv.createdAt.toISOString(),
       expiresAt: inv.expiresAt.toISOString(),
       url: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.rowiia.com"}/invite/${inv.token}`,

@@ -282,3 +282,25 @@ export function getTemplate(key: string): WorkspaceTemplate | undefined {
 export function getTemplateByType(type: WorkspaceType): WorkspaceTemplate | undefined {
   return WORKSPACE_TEMPLATES.find((t) => t.type === type);
 }
+
+/**
+ * Lista canónica de keys de templates válidos. Se deriva de
+ * WORKSPACE_TEMPLATES para mantener una única fuente de verdad.
+ *
+ * Si en el futuro se añade un template nuevo a la lista de arriba, este
+ * array se actualiza automáticamente — no hay que tocar el guard.
+ */
+export const WORKSPACE_TEMPLATE_KEYS = WORKSPACE_TEMPLATES.map((t) => t.key);
+
+/** Type literal-union de las keys de WORKSPACE_TEMPLATES. */
+export type WorkspaceTemplateKey = (typeof WORKSPACE_TEMPLATES)[number]["key"];
+
+/**
+ * Type guard para validar query params / body fields que pretenden ser
+ * un template key. Usado por:
+ *   - /workspace/new (lee ?template=... con fallback seguro)
+ *   - POST /api/workspaces (rechaza body.templateKey inválido con 400)
+ */
+export function isValidTemplate(value: unknown): value is WorkspaceTemplateKey {
+  return typeof value === "string" && WORKSPACE_TEMPLATE_KEYS.includes(value);
+}

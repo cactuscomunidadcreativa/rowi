@@ -38,6 +38,9 @@ type Step = {
 const STEPS: Step[] = [
   { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-fuchsia-500" },
   { key: "consent", icon: ShieldCheck, gradient: "from-amber-500 to-orange-600" },
+  // Manager auto-link — solo aplica si el user tiene primaryTenantId.
+  // En B2C el step se auto-saltea (ver useEffect más abajo).
+  { key: "manager", icon: Users, gradient: "from-sky-500 to-blue-600" },
   { key: "workspace", icon: Briefcase, gradient: "from-indigo-500 to-purple-600", href: "/workspace/new" },
   { key: "invite", icon: Users, gradient: "from-blue-500 to-cyan-600" },
   { key: "explore", icon: Brain, gradient: "from-emerald-500 to-green-600" },
@@ -79,6 +82,25 @@ export default function OnboardingPage() {
   const [consentInitial, setConsentInitial] = useState<Record<ConsentKey, boolean> | null>(null);
   const [consentsLoading, setConsentsLoading] = useState(false);
   const [consentsSaving, setConsentsSaving] = useState(false);
+
+  // Manager step state — populated when the user lands on the step.
+  // managerSkippable = no primaryTenant (B2C) → step se omite automáticamente.
+  type ManagerSuggestion = {
+    userId: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    employeeProfileId: string;
+    position: string | null;
+    department: string | null;
+  };
+  const [managerSkippable, setManagerSkippable] = useState<boolean | null>(null);
+  const [managerQuery, setManagerQuery] = useState("");
+  const [managerSuggestions, setManagerSuggestions] = useState<ManagerSuggestion[]>([]);
+  const [managerSelected, setManagerSelected] = useState<ManagerSuggestion | null>(null);
+  const [managerSaving, setManagerSaving] = useState(false);
+  const [managerError, setManagerError] = useState<string | null>(null);
+  const [managerSearching, setManagerSearching] = useState(false);
   const [consentsError, setConsentsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -159,9 +181,72 @@ export default function OnboardingPage() {
     }
   }
 
+  // Manager step — fetch suggestions when query changes (debounced) and
+  // decide whether the step is skippable (B2C user, no primaryTenant).
+  useEffect(() => {
+    if (STEPS[step]?.key !== "manager") return;
+    let cancelled = false;
+    const handle = setTimeout(() => {
+      setManagerSearching(true);
+      const url = managerQuery.trim()
+        ? `/api/account/employee-profile/manager-suggest?q=${encodeURIComponent(managerQuery.trim())}`
+        : "/api/account/employee-profile/manager-suggest";
+      fetch(url)
+        .then((r) => r.json())
+        .then((data) => {
+          if (cancelled) return;
+          if (data?.ok === false) {
+            setManagerError(data.error || "load_failed");
+            return;
+          }
+          setManagerSkippable(!data.tenantId);
+          setManagerSuggestions(data.results || []);
+        })
+        .catch((e) => {
+          if (!cancelled) setManagerError(e instanceof Error ? e.message : "load_failed");
+        })
+        .finally(() => {
+          if (!cancelled) setManagerSearching(false);
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [step, managerQuery]);
+
+  async function saveManager(): Promise<boolean> {
+    // Sin manager seleccionado → skip silencioso (no es obligatorio).
+    if (!managerSelected) return true;
+    setManagerSaving(true);
+    setManagerError(null);
+    try {
+      const res = await fetch("/api/account/employee-profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ managerId: managerSelected.employeeProfileId }),
+      });
+      const j = await res.json();
+      if (j?.ok === false) {
+        setManagerError(j.error ?? "save_failed");
+        return false;
+      }
+      return true;
+    } catch (e) {
+      setManagerError(e instanceof Error ? e.message : "save_failed");
+      return false;
+    } finally {
+      setManagerSaving(false);
+    }
+  }
+
   const next = async () => {
     if (STEPS[step]?.key === "consent") {
       const ok = await saveConsents();
+      if (!ok) return;
+    }
+    if (STEPS[step]?.key === "manager") {
+      const ok = await saveManager();
       if (!ok) return;
     }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
@@ -332,6 +417,86 @@ export default function OnboardingPage() {
               </div>
             )}
 
+            {/* Step: Manager auto-link (#28) */}
+            {current.key === "manager" && (
+              <div className="max-w-xl mx-auto space-y-4 text-left">
+                {managerSkippable === true ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-[var(--rowi-muted)]">
+                      {t(
+                        "onboarding.manager.skip",
+                        "Sin organización vinculada. Puedes declararla más tarde desde tu perfil.",
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={managerQuery}
+                      onChange={(e) => setManagerQuery(e.target.value)}
+                      placeholder={t(
+                        "onboarding.manager.searchPlaceholder",
+                        "Buscar por nombre o email...",
+                      )}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)] focus:border-transparent"
+                    />
+                    {managerSearching && (
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--rowi-g2)]" />
+                    )}
+                    {!managerSearching && managerSuggestions.length === 0 && (
+                      <p className="text-xs text-[var(--rowi-muted)]">
+                        {t(
+                          "onboarding.manager.noResults",
+                          "No encontramos coincidencias en tu organización.",
+                        )}
+                      </p>
+                    )}
+                    <ul className="space-y-2 max-h-72 overflow-y-auto">
+                      {managerSuggestions.map((m) => {
+                        const isSel =
+                          managerSelected?.employeeProfileId === m.employeeProfileId;
+                        return (
+                          <li key={m.employeeProfileId}>
+                            <button
+                              type="button"
+                              onClick={() => setManagerSelected(isSel ? null : m)}
+                              className={`w-full text-left px-3 py-2 rounded-xl border transition-all ${
+                                isSel
+                                  ? "border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5"
+                                  : "border-gray-200 dark:border-zinc-700 hover:border-[var(--rowi-g2)]/40"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <UserRound className="w-5 h-5 text-[var(--rowi-muted)]" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {m.name || m.email}
+                                  </div>
+                                  <div className="text-xs text-[var(--rowi-muted)]">
+                                    {m.position || m.email}
+                                  </div>
+                                </div>
+                                {isSel && (
+                                  <Check className="w-4 h-4 text-[var(--rowi-g2)]" />
+                                )}
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {managerError && (
+                      <div className="flex items-start gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>{managerError}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Step: Create workspace */}
             {current.key === "workspace" && (
               <div className="space-y-3 max-w-md mx-auto">
@@ -450,15 +615,21 @@ export default function OnboardingPage() {
               onClick={next}
               disabled={
                 (current.key === "welcome" && selectedRoles.length === 0) ||
-                (current.key === "consent" && (consentsLoading || consentsSaving || !consentMap.basic_processing))
+                (current.key === "consent" && (consentsLoading || consentsSaving || !consentMap.basic_processing)) ||
+                (current.key === "manager" && managerSaving)
               }
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
             >
-              {consentsSaving && current.key === "consent" ? (
+              {(consentsSaving && current.key === "consent") ||
+              (managerSaving && current.key === "manager") ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  {t("onboarding.next")}
+                  {current.key === "manager" && !managerSelected
+                    ? t("onboarding.manager.skip", "Omitir paso")
+                    : current.key === "manager"
+                      ? t("onboarding.manager.confirm", "Confirmar manager")
+                      : t("onboarding.next")}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

@@ -74,6 +74,8 @@ model User {
   ownedMembers          CommunityMember[]     @relation("OwnerMember")
   communityMemberships  CommunityMember[]
   csvUploads            CsvUpload[]           @relation("UserCsvUploads")
+  emailVerificationTokens EmailVerificationToken[] @relation("EmailVerificationTokens")
+  passwordResetTokens   PasswordResetToken[]  @relation("PasswordResetTokens")
   emotionalEvents       EmotionalEvent[]
   employeeProfiles      EmployeeProfile[]
   enrollments           Enrollment[]
@@ -178,13 +180,13 @@ model User {
   actionCommitments   ActionCommitment[]    @relation("ActionCommitmentOwner")
 
   // 🔒 Privacy / Consent / Research lens
-  researchAccessLevel  ResearchAccessLevel      @default(none)
-  consents             UserConsent[]            @relation("UserConsentOwner")
-  researchViewsMade    ResearchAccessAudit[]    @relation("ResearchViewer")
-  researchViewsOnMe    ResearchAccessAudit[]    @relation("ResearchSubject")
-  personalInvitesSent  PersonalResearchInvite[] @relation("InviteSubject")
-  personalInvitesRecv  PersonalResearchInvite[] @relation("InviteInvitee")
-  coachProfile         CoachProfile?
+  researchAccessLevel ResearchAccessLevel      @default(none)
+  consents            UserConsent[]            @relation("UserConsentOwner")
+  researchViewsMade   ResearchAccessAudit[]    @relation("ResearchViewer")
+  researchViewsOnMe   ResearchAccessAudit[]    @relation("ResearchSubject")
+  personalInvitesSent PersonalResearchInvite[] @relation("InviteSubject")
+  personalInvitesRecv PersonalResearchInvite[] @relation("InviteInvitee")
+  coachProfile        CoachProfile?
 
   @@map("user")
 }
@@ -2723,20 +2725,36 @@ model CsvUpload {
 /// 💌 INVITE TOKEN — Invitaciones pendientes
 /// =========================================================
 model InviteToken {
-  id        String   @id @default(cuid())
-  userId    String
-  tenantId  String?
-  email     String
-  role      String?  @default("USER")
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  tenant    Tenant?  @relation("TenantInvites", fields: [tenantId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserInvites", fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  userId         String
+  tenantId       String?
+  email          String
+  role           String?   @default("USER")
+  token          String    @unique
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  // 🔄 Re-invitación: cuando una invitación pendiente se reemplaza por una
+  // nueva (resend / re-invite via /api/admin/invites/[id]/resend o
+  // POST /api/admin/users/invite con email repetido), marcamos la vieja
+  // como revocada en vez de borrarla. Queda traza en ActivityLog y los
+  // filtros de "pending" usan (revokedAt IS NULL AND acceptedAt IS NULL).
+  revokedAt      DateTime?
+  // ✅ Aceptación explícita — el flujo de aceptación pone acceptedAt = now().
+  // Antes se inferia por presencia de un User con el mismo email; mantenemos
+  // ese fallback en GET pero este campo es la fuente canónica.
+  acceptedAt     DateTime?
+  // ⏰ Recordatorio de expiración — set por /api/cron/invite-expiry-reminder
+  // cuando enviamos el email de "tu invitación expira mañana". null = aún
+  // no enviado, no-null = ya enviado (no repetir).
+  reminderSentAt DateTime?
+  tenant         Tenant?   @relation("TenantInvites", fields: [tenantId], references: [id], onDelete: Cascade)
+  user           User      @relation("UserInvites", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tenantId])
   @@index([email])
+  @@index([revokedAt])
+  @@index([expiresAt, reminderSentAt])
   @@map("invite_token")
 }
 
@@ -6422,19 +6440,19 @@ model PulsePointGroundTruth {
 ///        between predictor and the pulse point's outcome family, normalized).
 /// `active=true` is the model used by the inference engine.
 model PulsePointWeights {
-  id              String   @id @default(cuid())
-  pulsePointCode  String   // e.g. "BELONGING" | "RECOGNITION" | "PURPOSE" | ...
-  version         Int      // monotonic per pulsePointCode (v0 reserved for hardcoded)
-  predictor       String   // SEI competency key | Brain Talent key | group key (e.g. "grp:focus_data")
-  weight          Float    // typically normalized correlation (-1..1)
-  sampleSize      Int?     // n of the benchmark cohort used
-  rSquared        Float?   // explanatory power if available
-  active          Boolean  @default(false)
-  notes           String?  @db.Text
-  benchmarkId     String?  // source benchmark when calibrated
-  createdById     String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  pulsePointCode String // e.g. "BELONGING" | "RECOGNITION" | "PURPOSE" | ...
+  version        Int // monotonic per pulsePointCode (v0 reserved for hardcoded)
+  predictor      String // SEI competency key | Brain Talent key | group key (e.g. "grp:focus_data")
+  weight         Float // typically normalized correlation (-1..1)
+  sampleSize     Int? // n of the benchmark cohort used
+  rSquared       Float? // explanatory power if available
+  active         Boolean  @default(false)
+  notes          String?  @db.Text
+  benchmarkId    String? // source benchmark when calibrated
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   createdBy User @relation("PulsePointWeightsCreator", fields: [createdById], references: [id])
 
@@ -6548,19 +6566,19 @@ model PulsePointSignal {
 /// Five keys: basic_processing, analytics, research_lens, benchmarking_contribution, marketing_communications.
 /// Default opt-in is false for everything except basic_processing (required to use the product).
 model UserConsent {
-  id          String   @id @default(cuid())
-  userId      String
-  consentKey  String   // basic_processing | analytics | research_lens | benchmarking_contribution | marketing_communications
-  version     Int      @default(1)
-  granted     Boolean
-  textHash    String?  // hash of the consent text shown at grant time, so we can prove which version they accepted
-  locale      String?  // language shown at grant time
-  grantedAt   DateTime @default(now())
-  revokedAt   DateTime?
-  ipAddress   String?
-  userAgent   String?  @db.Text
+  id         String    @id @default(cuid())
+  userId     String
+  consentKey String // basic_processing | analytics | research_lens | benchmarking_contribution | marketing_communications
+  version    Int       @default(1)
+  granted    Boolean
+  textHash   String? // hash of the consent text shown at grant time, so we can prove which version they accepted
+  locale     String? // language shown at grant time
+  grantedAt  DateTime  @default(now())
+  revokedAt  DateTime?
+  ipAddress  String?
+  userAgent  String?   @db.Text
 
-  user        User     @relation("UserConsentOwner", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserConsentOwner", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, consentKey])
   @@index([consentKey, granted])
@@ -6576,14 +6594,14 @@ model ResearchAccessAudit {
   subjectUserId String?
   subjectTeamId String?
   subjectOrgId  String?
-  action        String   // view_inference | view_csv | view_comments | export_case_study | run_calibration
-  contextPath   String   // e.g., "/research/cases/case-001"
+  action        String // view_inference | view_csv | view_comments | export_case_study | run_calibration
+  contextPath   String // e.g., "/research/cases/case-001"
   reason        String?  @db.Text
   metadata      Json?
   at            DateTime @default(now())
 
-  viewer        User     @relation("ResearchViewer", fields: [viewerUserId], references: [id])
-  subject       User?    @relation("ResearchSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
+  viewer  User  @relation("ResearchViewer", fields: [viewerUserId], references: [id])
+  subject User? @relation("ResearchSubject", fields: [subjectUserId], references: [id], onDelete: SetNull)
 
   @@index([viewerUserId, at])
   @@index([subjectUserId, at])
@@ -6594,22 +6612,22 @@ model ResearchAccessAudit {
 /// Direction tracks who initiated: user→coach (user shares with provider) or coach→user (provider requests access).
 /// Both directions require dual confirmation before access activates.
 model PersonalResearchInvite {
-  id            String   @id @default(cuid())
-  subjectUserId String   // the data subject (the person whose VS will be shared)
-  inviteeUserId String?  // the invited coach/mentor, if already on Rowi
-  inviteeEmail  String?  // if not yet on Rowi
-  direction     String   // user_to_coach | coach_to_user
-  serviceRole   String   // coach | mentor | facilitator | trainer | advisor
-  scope         String   // vital_signs | kcg | brain_talents | full
-  status        String   @default("pending") // pending | accepted | revoked | expired
-  invitedAt     DateTime @default(now())
+  id            String    @id @default(cuid())
+  subjectUserId String // the data subject (the person whose VS will be shared)
+  inviteeUserId String? // the invited coach/mentor, if already on Rowi
+  inviteeEmail  String? // if not yet on Rowi
+  direction     String // user_to_coach | coach_to_user
+  serviceRole   String // coach | mentor | facilitator | trainer | advisor
+  scope         String // vital_signs | kcg | brain_talents | full
+  status        String    @default("pending") // pending | accepted | revoked | expired
+  invitedAt     DateTime  @default(now())
   acceptedAt    DateTime?
   revokedAt     DateTime?
   expiresAt     DateTime?
-  message       String?  @db.Text
+  message       String?   @db.Text
 
-  subject       User     @relation("InviteSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
-  invitee       User?    @relation("InviteInvitee", fields: [inviteeUserId], references: [id], onDelete: SetNull)
+  subject User  @relation("InviteSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  invitee User? @relation("InviteInvitee", fields: [inviteeUserId], references: [id], onDelete: SetNull)
 
   @@index([subjectUserId, status])
   @@index([inviteeUserId, status])
@@ -6621,34 +6639,70 @@ model PersonalResearchInvite {
 /// A user becomes a marketplace coach by opting in here.
 /// Visibility is controlled by `published`; admin can verify Six Seconds certification.
 model CoachProfile {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  displayName        String
-  headline           String?  @db.Text   // one-liner shown in directory
-  bio                String?  @db.Text
-  specialties        String[] @default([])   // e.g., ["leadership", "family", "executive"]
-  languages          String[] @default([])   // ISO codes
-  countries          String[] @default([])   // ISO country codes served
-  serviceRoles       String[] @default([])   // coach | mentor | facilitator | trainer | advisor
-  certifications     Json?    // [{type: "six_seconds_eqac", verifiedAt, expiresAt}, ...]
-  hourlyRateMin      Decimal? @db.Decimal(10, 2)
-  hourlyRateMax      Decimal? @db.Decimal(10, 2)
-  currency           String?  @default("USD")
-  photoUrl           String?
-  linkedinUrl        String?
-  websiteUrl         String?
-  acceptingClients   Boolean  @default(true)
-  published          Boolean  @default(false)
-  verifiedBySixSeconds Boolean @default(false)
-  verifiedByRowi     Boolean  @default(false)
-  ratingAvg          Float?   // average client rating
-  ratingCount        Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  displayName          String
+  headline             String?  @db.Text // one-liner shown in directory
+  bio                  String?  @db.Text
+  specialties          String[] @default([]) // e.g., ["leadership", "family", "executive"]
+  languages            String[] @default([]) // ISO codes
+  countries            String[] @default([]) // ISO country codes served
+  serviceRoles         String[] @default([]) // coach | mentor | facilitator | trainer | advisor
+  certifications       Json? // [{type: "six_seconds_eqac", verifiedAt, expiresAt}, ...]
+  hourlyRateMin        Decimal? @db.Decimal(10, 2)
+  hourlyRateMax        Decimal? @db.Decimal(10, 2)
+  currency             String?  @default("USD")
+  photoUrl             String?
+  linkedinUrl          String?
+  websiteUrl           String?
+  acceptingClients     Boolean  @default(true)
+  published            Boolean  @default(false)
+  verifiedBySixSeconds Boolean  @default(false)
+  verifiedByRowi       Boolean  @default(false)
+  ratingAvg            Float? // average client rating
+  ratingCount          Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([published, acceptingClients])
   @@index([verifiedBySixSeconds])
   @@map("coach_profile")
+}
+
+// ============================================================
+// Auth: email verification & password reset tokens (#24 + #25)
+// ============================================================
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation("EmailVerificationTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@map("email_verification_token")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation("PasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@map("password_reset_token")
 }

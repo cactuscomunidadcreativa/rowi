@@ -1,22 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { WORKSPACE_TEMPLATES } from "@/lib/workspace/templates";
+import { WORKSPACE_TEMPLATES, isValidTemplate } from "@/lib/workspace/templates";
 
 type Lang = "es" | "en" | "pt" | "it";
 
 export default function NewWorkspacePage() {
   const { t, lang } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const L = lang as Lang;
 
+  // Preselección por query param ?template=... (ej. desde el onboarding).
+  // Si el valor está fuera de la lista canónica, ignoramos el hint en vez
+  // de fallar — el usuario seguirá viendo el step 1 con todos los templates
+  // disponibles y nada preseleccionado, que es el fallback más seguro.
+  const templateHint = searchParams?.get("template");
+  const initialTemplateKey =
+    templateHint && isValidTemplate(templateHint) ? templateHint : null;
+
   const [step, setStep] = useState(1); // 1=template, 2=info, 3=config, 4=confirm
-  const [templateKey, setTemplateKey] = useState<string | null>(null);
+  const [templateKey, setTemplateKey] = useState<string | null>(initialTemplateKey);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [targetRole, setTargetRole] = useState("");

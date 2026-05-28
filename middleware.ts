@@ -32,6 +32,13 @@ const PUBLIC_API_PATHS = [
   "/api/health", // Health check for monitoring
   "/api/cron", // Cron jobs (secured by CRON_SECRET)
   "/api/admin/benchmarks", // All benchmark APIs (auth handled internally)
+  // Webhooks externos — autenticados por firma (Stripe) o secret, no por
+  // sesión NextAuth. Sin esto el middleware devuelve 401 a Stripe y los
+  // eventos nunca llegan al handler. La verificación de firma sucede
+  // dentro de cada route. NOTA: solo el webhook es público; /api/stripe/
+  // checkout y /portal siguen requiriendo sesión.
+  "/api/stripe/webhook",
+  "/api/webhooks",
 ];
 
 /* =========================================================

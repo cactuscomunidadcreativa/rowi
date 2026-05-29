@@ -206,10 +206,10 @@ export default function PublicWorldMap() {
           <StatCard icon={<TrendingUp className="w-5 h-5" />} value={`+${formatNumber(summary.newUsers)}`} label={text.newRowiers} color="orange" />
         </motion.div>
 
-        {/* Map — Real world map with react-simple-maps */}
+        {/* Map — animate opacity only (no scale) to avoid layout reflow/jump */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
           className="relative"

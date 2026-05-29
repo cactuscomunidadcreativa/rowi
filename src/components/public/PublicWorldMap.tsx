@@ -16,7 +16,7 @@ interface CountryData {
 }
 
 interface Summary {
-  totalReach: number;
+  benchmarkBase: number;
   activeUsers: number;
   conversations: number;
   countries: number;
@@ -34,51 +34,51 @@ const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 
 const t = {
   es: {
-    title: "La red Six Seconds en el mundo",
-    subtitle: "Rowi se construye sobre la red de inteligencia emocional más grande del mundo",
+    title: "Tu inteligencia emocional, en contexto global",
+    subtitle: "Rowi compara tu perfil SEI contra la base de Six Seconds: +273.000 evaluaciones de referencia en todo el mundo",
     activeUsers: "Usuarios Rowi",
     conversations: "Conversaciones",
     countries: "Países y territorios",
-    reach: "Alcance Six Seconds",
+    benchmark: "Base de comparación SEI (Six Seconds)",
     newRowiers: "Nuevos usuarios",
     last3months: "últimos 3 meses",
-    benchmarks: "Evaluaciones Six Seconds",
+    benchmarks: "Base de comparación SEI",
     users: "Usuarios Rowi",
   },
   en: {
-    title: "The Six Seconds network worldwide",
-    subtitle: "Rowi is built on the world's largest emotional intelligence network",
+    title: "Your emotional intelligence, in global context",
+    subtitle: "Rowi compares your SEI profile against the Six Seconds base: 273,000+ reference assessments worldwide",
     activeUsers: "Rowi Users",
     conversations: "Conversations",
     countries: "Countries & territories",
-    reach: "Six Seconds reach",
+    benchmark: "SEI comparison base (Six Seconds)",
     newRowiers: "New users",
     last3months: "last 3 months",
-    benchmarks: "Six Seconds assessments",
+    benchmarks: "SEI comparison base",
     users: "Rowi Users",
   },
   pt: {
-    title: "A rede Six Seconds no mundo",
-    subtitle: "Rowi se constrói sobre a maior rede de inteligência emocional do mundo",
+    title: "Sua inteligência emocional, em contexto global",
+    subtitle: "Rowi compara seu perfil SEI com a base de Six Seconds: +273.000 avaliações de referência no mundo todo",
     activeUsers: "Usuários Rowi",
     conversations: "Conversas",
     countries: "Países e territórios",
-    reach: "Alcance Six Seconds",
+    benchmark: "Base de comparação SEI (Six Seconds)",
     newRowiers: "Novos usuários",
     last3months: "últimos 3 meses",
-    benchmarks: "Avaliações Six Seconds",
+    benchmarks: "Base de comparação SEI",
     users: "Usuários Rowi",
   },
   it: {
-    title: "La rete Six Seconds nel mondo",
-    subtitle: "Rowi è costruito sulla più grande rete di intelligenza emotiva al mondo",
+    title: "La tua intelligenza emotiva, nel contesto globale",
+    subtitle: "Rowi confronta il tuo profilo SEI con la base di Six Seconds: oltre 273.000 valutazioni di riferimento nel mondo",
     activeUsers: "Utenti Rowi",
     conversations: "Conversazioni",
     countries: "Paesi e territori",
-    reach: "Copertura Six Seconds",
+    benchmark: "Base di confronto SEI (Six Seconds)",
     newRowiers: "Nuovi utenti",
     last3months: "ultimi 3 mesi",
-    benchmarks: "Valutazioni Six Seconds",
+    benchmarks: "Base di confronto SEI",
     users: "Utenti Rowi",
   },
 };
@@ -180,7 +180,7 @@ export default function PublicWorldMap() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2,#31a2e3)]/10 text-[var(--rowi-g2,#31a2e3)] text-sm font-medium mb-4">
             <Globe2 className="w-4 h-4" />
-            {formatNumber(summary.totalReach)} · {text.reach}
+            {formatNumber(summary.benchmarkBase)} · {text.benchmark}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--rowi-fg,#1a1c1e)] mb-3">
             {text.title}

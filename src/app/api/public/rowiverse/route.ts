@@ -276,15 +276,17 @@ export async function GET() {
     );
 
     // Calculate summary stats.
-    // totalReach = the Six Seconds network's historical reach (citable) plus
-    // Rowi's own users. Labeled "Six Seconds reach" in the UI, never as "Rowi users".
-    const totalReach = BENCHMARK_BASE + totalUsers;
+    // benchmarkBase = the Six Seconds SEI comparison base (N=273k historical
+    // "State of the Heart" records) that Rowi compares each user against. It is
+    // the reference cohort, NOT Rowi users — kept separate from activeUsers and
+    // never summed with them.
+    const benchmarkBase = BENCHMARK_BASE;
     const totalNewUsers = newUsersByCountry.reduce((sum, r) => sum + r._count.id, 0);
 
     return NextResponse.json({
       ok: true,
       summary: {
-        totalReach,
+        benchmarkBase,
         activeUsers: totalUsers,
         conversations: totalConversations,
         countries: mapData.length,

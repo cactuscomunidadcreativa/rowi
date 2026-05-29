@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn, getProviders } from "next-auth/react";
+import { signIn, getProviders, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -464,7 +464,18 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { lang } = useI18n();
+  const { data: session, status } = useSession();
   const t = translations[lang as keyof typeof translations] || translations.en;
+
+  // Guard: un usuario YA logueado no debe ver el alta de cuenta. Si llega aquí
+  // (p.ej. desde un CTA viejo /register?plan=X para mejorar plan), lo mandamos
+  // a /pricing, donde el CTA logueado va directo al checkout de Stripe.
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.email) {
+      const plan = searchParams.get("plan");
+      router.replace(plan ? `/pricing?plan=${plan}` : "/dashboard");
+    }
+  }, [status, session, searchParams, router]);
 
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);

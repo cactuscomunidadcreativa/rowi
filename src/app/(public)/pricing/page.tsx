@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   Check,
@@ -44,9 +45,42 @@ const PLAN_ICONS: Record<PlanSlug, React.ElementType> = {
 
 export default function PricingPage() {
   const { t, lang } = useI18n();
+  const { data: session } = useSession();
+  const isLogged = !!session?.user?.email;
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [expandedPlan, setExpandedPlan] = useState<PlanSlug | null>(null);
   const [showB2B, setShowB2B] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+
+  // Usuario YA logueado que mejora plan: ir directo a Stripe checkout, NO a
+  // /register (que es el flujo de alta de cuenta nueva). Visitante anónimo:
+  // mantener /register?plan=slug.
+  async function goToCheckout(slug: string) {
+    setCheckoutLoading(slug);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planSlug: slug,
+          billingPeriod,
+          successUrl: `${window.location.origin}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+        }),
+      });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        // Sin URL (p.ej. plan sin Stripe configurado): caer al portal de planes.
+        window.location.href = "/settings/subscription";
+      }
+    } catch {
+      window.location.href = "/settings/subscription";
+    } finally {
+      setCheckoutLoading(null);
+    }
+  }
 
   const plans = getAllPlans();
   const b2cPlans = plans.filter(p => p.targetAudience === "B2C" || (p.targetAudience === "B2C/B2B" && !showB2B));
@@ -321,22 +355,44 @@ export default function PricingPage() {
                 )}
 
                 {/* CTA Button */}
-                <Link
-                  href={plan.isCustomPricing ? "/contact" : `/register?plan=${plan.slug}`}
-                  className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all ${
+                {(() => {
+                  const ctaClass = `w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all ${
                     isHighlighted
                       ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90"
                       : "bg-[var(--rowi-bg)] hover:bg-[var(--rowi-border)]"
-                  }`}
-                >
-                  {plan.isCustomPricing
-                    ? (lang === "es" ? "Contactar ventas" : "Contact sales")
-                    : plan.priceMonthly === 0
-                    ? (lang === "es" ? "Comenzar gratis" : "Start free")
-                    : (lang === "es" ? "Comenzar ahora" : "Start now")
+                  }`;
+                  const isPaid = !plan.isCustomPricing && plan.priceMonthly > 0;
+                  // Logueado + plan de pago → checkout directo (no /register).
+                  if (isLogged && isPaid) {
+                    return (
+                      <button
+                        type="button"
+                        disabled={checkoutLoading === plan.slug}
+                        onClick={() => goToCheckout(plan.slug)}
+                        className={`${ctaClass} disabled:opacity-60 disabled:cursor-not-allowed`}
+                      >
+                        {checkoutLoading === plan.slug
+                          ? (lang === "es" ? "Redirigiendo…" : "Redirecting…")
+                          : (lang === "es" ? "Mejorar a este plan" : "Upgrade to this plan")}
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    );
                   }
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  // Visitante anónimo o plan free/custom → flujo de registro/contacto.
+                  return (
+                    <Link
+                      href={plan.isCustomPricing ? "/contact" : `/register?plan=${plan.slug}`}
+                      className={ctaClass}
+                    >
+                      {plan.isCustomPricing
+                        ? (lang === "es" ? "Contactar ventas" : "Contact sales")
+                        : plan.priceMonthly === 0
+                        ? (lang === "es" ? "Comenzar gratis" : "Start free")
+                        : (lang === "es" ? "Comenzar ahora" : "Start now")}
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  );
+                })()}
 
                 {/* Support Level */}
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--rowi-muted)]">

@@ -479,7 +479,13 @@ export default function ProfileSettingsPage() {
       if (profileRes.ok && prefsRes.ok) {
         setMsg(t("saved") + " ✅");
       } else {
-        setMsg(t("error") + " ⚠️");
+        // Reportar específicamente qué parte falló, en vez de un error genérico
+        // que oculta cuál de los dos guardados no se persistió.
+        const isEN = lang === "en";
+        const failed: string[] = [];
+        if (!profileRes.ok) failed.push(isEN ? "profile" : "perfil");
+        if (!prefsRes.ok) failed.push(isEN ? "preferences" : "preferencias");
+        setMsg(`${t("error")}: ${failed.join(", ")} ⚠️`);
       }
     } catch (e) {
       setMsg(t("error") + " ❌");

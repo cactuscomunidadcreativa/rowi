@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/core/prisma";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/core/auth";
 import { getI18n } from "@/lib/i18n/getI18n";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,7 +31,9 @@ function isProfileComplete(user: any): boolean {
 }
 
 export default async function ProfileHomePage() {
-  const session = await getServerSession();
+  // Con authOptions para que la sesión (JWT) se resuelva igual que en el resto
+  // de la app; sin ellos session.user venía incompleto → faltaban datos.
+  const session = await getServerSession(authOptions);
   const email = session?.user?.email ?? null;
   const { t, lang } = await getI18n();
   const labels = EQ_LABELS[lang as keyof typeof EQ_LABELS] || EQ_LABELS.es;

@@ -81,6 +81,7 @@ const translations = {
     exploreAffinity: "Explorar Afinidad",
     joinCommunity: "Unirse a la Comunidad",
     viewProgress: "Ver mi progreso",
+    upgradePlan: "Mejora tu plan",
 
     // Mood
     currentMood: "Estado de ánimo",
@@ -141,6 +142,7 @@ const translations = {
     exploreAffinity: "Explore Affinity",
     joinCommunity: "Join Community",
     viewProgress: "View my progress",
+    upgradePlan: "Upgrade your plan",
 
     // Mood
     currentMood: "Current mood",
@@ -189,6 +191,7 @@ const translations = {
     exploreAffinity: "Explorar Afinidade",
     joinCommunity: "Entrar na Comunidade",
     viewProgress: "Ver meu progresso",
+    upgradePlan: "Melhore seu plano",
     currentMood: "Estado de ânimo",
     additionalInfo: "Informações Adicionais",
     user: "Usuário",
@@ -227,6 +230,7 @@ const translations = {
     exploreAffinity: "Esplora Affinità",
     joinCommunity: "Unisciti alla Comunità",
     viewProgress: "Vedi il mio progresso",
+    upgradePlan: "Migliora il tuo piano",
     currentMood: "Stato d'animo",
     additionalInfo: "Informazioni Aggiuntive",
     user: "Utente",
@@ -368,6 +372,12 @@ export default function ClientDashboard() {
           icon={TrendingUp}
           label={t.viewProgress}
           gradient="from-green-500 to-emerald-500"
+        />
+        <QuickAction
+          href="/settings/subscription"
+          icon={Sparkles}
+          label={t.upgradePlan}
+          gradient="from-violet-500 to-fuchsia-500"
         />
       </motion.div>
 

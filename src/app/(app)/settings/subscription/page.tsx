@@ -13,7 +13,9 @@ import {
   ExternalLink,
   AlertCircle,
   ChevronRight,
+  ArrowRight,
 } from "lucide-react";
+import { getAllPlans } from "@/domains/plans/lib/plans";
 
 /* ====== Traducciones inline ====== */
 const T: Record<string, Record<string, string>> = {
@@ -118,6 +120,30 @@ export default function SubscriptionPage() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubscriptionData | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+
+  // Checkout directo desde esta página: el usuario ya está logueado, así que
+  // llamamos al endpoint y lo mandamos a Stripe sin saltar a /pricing.
+  async function upgradeTo(slug: string) {
+    setCheckoutLoading(slug);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planSlug: slug,
+          billingPeriod: "monthly",
+          successUrl: `${window.location.origin}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/settings/subscription`,
+        }),
+      });
+      const json = await res.json();
+      if (json?.url) window.location.href = json.url;
+      else setCheckoutLoading(null);
+    } catch {
+      setCheckoutLoading(null);
+    }
+  }
 
   useEffect(() => {
     async function loadSubscription() {
@@ -246,6 +272,65 @@ export default function SubscriptionPage() {
               );
             })}
           </div>
+        </div>
+      </motion.section>
+
+      {/* Upgrade options — planes embebidos, checkout directo sin salir */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <h2 className="text-lg font-semibold mb-1">
+          {lang === "en" ? "Upgrade your plan" : "Mejora tu plan"}
+        </h2>
+        <p className="text-sm rowi-muted mb-4">
+          {lang === "en"
+            ? "Pick a plan and pay securely — no extra steps."
+            : "Elige un plan y paga de forma segura, sin pasos extra."}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {getAllPlans()
+            .filter(
+              (p) =>
+                !p.isCustomPricing &&
+                p.priceMonthly > 0 &&
+                (p.targetAudience === "B2C" || p.targetAudience === "B2C/B2B") &&
+                p.slug !== planName, // no mostrar el plan actual
+            )
+            .map((p) => {
+              const isLoadingThis = checkoutLoading === p.slug;
+              return (
+                <div
+                  key={p.slug}
+                  className="rowi-card flex flex-col gap-3 border dark:border-gray-800"
+                >
+                  <div>
+                    <div className="font-semibold">{lang === "en" ? p.nameEN : p.name}</div>
+                    <div className="text-2xl font-bold mt-1">
+                      ${p.priceMonthly}
+                      <span className="text-sm font-normal rowi-muted">
+                        /{lang === "en" ? "mo" : "mes"}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs rowi-muted flex-1">
+                    {lang === "en" ? p.descriptionEN : p.description}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={isLoadingThis}
+                    onClick={() => upgradeTo(p.slug)}
+                    className="rowi-btn-primary flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {isLoadingThis
+                      ? lang === "en" ? "Redirecting…" : "Redirigiendo…"
+                      : lang === "en" ? "Choose this plan" : "Elegir este plan"}
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              );
+            })}
         </div>
       </motion.section>
 

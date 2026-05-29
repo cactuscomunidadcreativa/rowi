@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
+import AdminSectionTabs from "../components/AdminSectionTabs";
 import {
   AdminPage,
   AdminCard,
@@ -47,6 +48,11 @@ interface OrgData {
   tenantLinks?: { tenant: { id: string; name: string } }[];
   hubLinks?: { hub: { id: string; name: string } }[];
 }
+
+const ORG_TABS = [
+  { href: "/hub/admin/organizations", es: "Organizaciones", en: "Organizations" },
+  { href: "/hub/admin/organizations/hierarchy", es: "Jerarquía", en: "Hierarchy" },
+];
 
 export default function OrganizationsPage() {
   const { t, ready } = useI18n();
@@ -214,6 +220,8 @@ export default function OrganizationsPage() {
         </div>
       }
     >
+      <AdminSectionTabs tabs={ORG_TABS} />
+
       {/* Editor Form */}
       {editor && (
         <AdminCard className="mb-6">

@@ -11,6 +11,14 @@ import {
   Database,
   BarChart3,
 } from "lucide-react";
+import AdminSectionTabs from "../components/AdminSectionTabs";
+
+const VS_TABS = [
+  { href: "/hub/admin/vital-signs", es: "Ingesta", en: "Ingestion" },
+  { href: "/hub/admin/vital-signs/benchmarks", es: "Benchmarks", en: "Benchmarks" },
+  { href: "/hub/admin/vital-signs/cross-instrument", es: "VS↔SEI", en: "VS↔SEI" },
+  { href: "/hub/admin/vital-signs/lab", es: "Laboratorio", en: "Lab" },
+];
 
 interface Score {
   dimension: string;
@@ -105,6 +113,8 @@ export default function AdminVitalSignsPage() {
           </p>
         </div>
       </div>
+
+      <AdminSectionTabs tabs={VS_TABS} />
 
       {/* Upload form */}
       <section className="rowi-card space-y-4">

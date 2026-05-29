@@ -6,6 +6,14 @@ import {
   Brain, Users, TrendingUp, BarChart3, RefreshCw,
   Target, Heart, Zap, Globe2
 } from "lucide-react";
+import AdminSectionTabs from "../components/AdminSectionTabs";
+
+const EQ_TABS = [
+  { href: "/hub/admin/eq", es: "Panel global", en: "Global panel" },
+  { href: "/hub/admin/eq/snapshots", es: "Snapshots", en: "Snapshots" },
+  { href: "/hub/admin/eq/progress", es: "Progreso", en: "Progress" },
+  { href: "/hub/admin/eq/insights", es: "Insights", en: "Insights" },
+];
 
 /**
  * =========================================================
@@ -89,6 +97,8 @@ export default function EqAdminPage() {
           {t("admin.eq.refresh")}
         </button>
       </div>
+
+      <AdminSectionTabs tabs={EQ_TABS} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

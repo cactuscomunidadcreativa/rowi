@@ -5804,5 +5804,7 @@
   "forOrg.stats.source": "Source: Six Seconds case studies",
   "forOrg.stats.subtitle": "Figures from Six Seconds case studies, the methodology Rowi is built on.",
   "forOrg.stats.title": "The impact of emotional intelligence on organizations",
-  "forOrg.stats.turnover": "Turnover reduction (Amadori case)"
+  "forOrg.stats.turnover": "Turnover reduction (Amadori case)",
+  "admin.finance.dashboard.empty.title": "No financial data yet",
+  "admin.finance.dashboard.empty.description": "Metrics will appear once there are transactions recorded in accounting."
 }

@@ -35,14 +35,6 @@ interface Client {
   lastActivity: string;
 }
 
-const DEFAULT_CLIENTS: Client[] = [
-  { id: "1", name: "TechCorp S.A.", email: "contact@techcorp.com", phone: "+1 555-0101", company: "TechCorp S.A.", industry: "Tecnología", country: "México", totalSpent: 45000, subscriptionCount: 3, rating: 5, createdAt: new Date(Date.now() - 86400000 * 365).toISOString(), lastActivity: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: "2", name: "Innovatech", email: "info@innovatech.com", phone: "+1 555-0102", company: "Innovatech", industry: "Consultoría", country: "Colombia", totalSpent: 28000, subscriptionCount: 2, rating: 4, createdAt: new Date(Date.now() - 86400000 * 180).toISOString(), lastActivity: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: "3", name: "HR Solutions", email: "contact@hrsolutions.com", phone: "+1 555-0103", company: "HR Solutions", industry: "Recursos Humanos", country: "Perú", totalSpent: 18000, subscriptionCount: 1, rating: 5, createdAt: new Date(Date.now() - 86400000 * 120).toISOString(), lastActivity: new Date(Date.now() - 86400000 * 1).toISOString() },
-  { id: "4", name: "Global Retail", email: "sales@globalretail.com", phone: "+1 555-0104", company: "Global Retail", industry: "Retail", country: "Chile", totalSpent: 62000, subscriptionCount: 5, rating: 4, createdAt: new Date(Date.now() - 86400000 * 400).toISOString(), lastActivity: new Date(Date.now() - 86400000 * 10).toISOString() },
-  { id: "5", name: "FinanceGroup", email: "info@financegroup.com", phone: "+1 555-0105", company: "FinanceGroup", industry: "Finanzas", country: "Argentina", totalSpent: 35000, subscriptionCount: 2, rating: 3, createdAt: new Date(Date.now() - 86400000 * 200).toISOString(), lastActivity: new Date(Date.now() - 86400000 * 15).toISOString() },
-];
-
 export default function ClientsPage() {
   const { t } = useI18n();
   const [clients, setClients] = useState<Client[]>([]);
@@ -59,12 +51,12 @@ export default function ClientsPage() {
       const res = await fetch("/api/admin/sales/clients");
       if (res.ok) {
         const data = await res.json();
-        setClients(data.clients || DEFAULT_CLIENTS);
+        setClients(data.clients || []);
       } else {
-        setClients(DEFAULT_CLIENTS);
+        setClients([]);
       }
     } catch {
-      setClients(DEFAULT_CLIENTS);
+      setClients([]);
     } finally {
       setLoading(false);
     }

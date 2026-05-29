@@ -5804,5 +5804,7 @@
   "forOrg.stats.source": "Fuente: casos de estudio de Six Seconds",
   "forOrg.stats.subtitle": "Datos de los casos de estudio de Six Seconds, la metodología sobre la que se construye Rowi.",
   "forOrg.stats.title": "El impacto de la inteligencia emocional en las organizaciones",
-  "forOrg.stats.turnover": "Reducción de rotación (caso Amadori)"
+  "forOrg.stats.turnover": "Reducción de rotación (caso Amadori)",
+  "admin.finance.dashboard.empty.title": "Aún no hay datos financieros",
+  "admin.finance.dashboard.empty.description": "Las métricas aparecerán cuando haya transacciones registradas en contabilidad."
 }

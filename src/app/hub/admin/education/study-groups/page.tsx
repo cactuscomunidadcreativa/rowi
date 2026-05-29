@@ -41,13 +41,6 @@ interface StudyGroup {
   createdAt: string;
 }
 
-const DEFAULT_GROUPS: StudyGroup[] = [
-  { id: "1", name: "IE Cohorte Enero 2024", description: "Grupo de estudio intensivo de inteligencia emocional", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", facilitator: "Dr. María González", facilitatorEmail: "maria@rowi.com", membersCount: 12, maxMembers: 15, sessionsCount: 8, avgProgress: 75, avgRating: 4.8, status: "active", startDate: new Date(Date.now() - 86400000 * 30).toISOString(), endDate: new Date(Date.now() + 86400000 * 30).toISOString(), createdAt: new Date(Date.now() - 86400000 * 45).toISOString() },
-  { id: "2", name: "Liderazgo Q1 2024", description: "Programa de desarrollo de líderes", courseId: "c2", courseName: "Liderazgo Transformacional", facilitator: "Carlos Méndez", facilitatorEmail: "carlos@rowi.com", membersCount: 8, maxMembers: 10, sessionsCount: 6, avgProgress: 100, avgRating: 4.5, status: "completed", startDate: new Date(Date.now() - 86400000 * 90).toISOString(), endDate: new Date(Date.now() - 86400000 * 30).toISOString(), createdAt: new Date(Date.now() - 86400000 * 100).toISOString() },
-  { id: "3", name: "Comunicación Equipo Ventas", description: "Mejora de habilidades comunicativas para el equipo comercial", courseId: "c3", courseName: "Comunicación Asertiva", facilitator: "Ana Ruiz", facilitatorEmail: "ana@rowi.com", membersCount: 15, maxMembers: 15, sessionsCount: 4, avgProgress: 50, avgRating: 4.9, status: "active", startDate: new Date(Date.now() - 86400000 * 15).toISOString(), endDate: new Date(Date.now() + 86400000 * 45).toISOString(), createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
-  { id: "4", name: "Productividad RRHH", description: "Grupo de gestión del tiempo para recursos humanos", courseId: "c4", courseName: "Gestión del Tiempo", facilitator: "Roberto Torres", facilitatorEmail: "roberto@rowi.com", membersCount: 0, maxMembers: 12, sessionsCount: 5, avgProgress: 0, avgRating: 0, status: "scheduled", startDate: new Date(Date.now() + 86400000 * 15).toISOString(), endDate: new Date(Date.now() + 86400000 * 75).toISOString(), createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-];
-
 const STATUS_CONFIG = {
   active: { label: "Activo", color: "bg-green-500/20 text-green-500", icon: CheckCircle },
   completed: { label: "Completado", color: "bg-blue-500/20 text-blue-500", icon: CheckCircle },
@@ -71,12 +64,12 @@ export default function StudyGroupsPage() {
       const res = await fetch("/api/admin/education/study-groups");
       if (res.ok) {
         const data = await res.json();
-        setGroups(data.groups || DEFAULT_GROUPS);
+        setGroups(data.groups || []);
       } else {
-        setGroups(DEFAULT_GROUPS);
+        setGroups([]);
       }
     } catch {
-      setGroups(DEFAULT_GROUPS);
+      setGroups([]);
     } finally {
       setLoading(false);
     }

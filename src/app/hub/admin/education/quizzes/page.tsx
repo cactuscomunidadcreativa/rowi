@@ -38,14 +38,6 @@ interface Quiz {
   createdAt: string;
 }
 
-const DEFAULT_QUIZZES: Quiz[] = [
-  { id: "1", title: "Evaluación Final - Inteligencia Emocional", description: "Evaluación completa del curso", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", questionsCount: 20, timeLimit: 30, passingScore: 70, attempts: 145, avgScore: 82, passRate: 85, isActive: true, createdAt: new Date(Date.now() - 86400000 * 180).toISOString() },
-  { id: "2", title: "Quiz Módulo 1 - Autoconciencia", description: "Evaluación del primer módulo", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", questionsCount: 10, timeLimit: 15, passingScore: 60, attempts: 156, avgScore: 78, passRate: 92, isActive: true, createdAt: new Date(Date.now() - 86400000 * 175).toISOString() },
-  { id: "3", title: "Evaluación Liderazgo", description: "Test de conocimientos de liderazgo", courseId: "c2", courseName: "Liderazgo Transformacional", questionsCount: 15, timeLimit: 20, passingScore: 70, attempts: 89, avgScore: 75, passRate: 78, isActive: true, createdAt: new Date(Date.now() - 86400000 * 120).toISOString() },
-  { id: "4", title: "Test Comunicación Asertiva", description: "Evaluación de habilidades comunicativas", courseId: "c3", courseName: "Comunicación Asertiva", questionsCount: 12, timeLimit: 15, passingScore: 65, attempts: 234, avgScore: 86, passRate: 94, isActive: true, createdAt: new Date(Date.now() - 86400000 * 90).toISOString() },
-  { id: "5", title: "Quiz Beta - Mindfulness", description: "Quiz en desarrollo", courseId: "c5", courseName: "Mindfulness Corporativo", questionsCount: 8, timeLimit: 10, passingScore: 60, attempts: 0, avgScore: 0, passRate: 0, isActive: false, createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-];
-
 export default function QuizzesPage() {
   const { t } = useI18n();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -62,12 +54,12 @@ export default function QuizzesPage() {
       const res = await fetch("/api/admin/education/quizzes");
       if (res.ok) {
         const data = await res.json();
-        setQuizzes(data.quizzes || DEFAULT_QUIZZES);
+        setQuizzes(data.quizzes || []);
       } else {
-        setQuizzes(DEFAULT_QUIZZES);
+        setQuizzes([]);
       }
     } catch {
-      setQuizzes(DEFAULT_QUIZZES);
+      setQuizzes([]);
     } finally {
       setLoading(false);
     }

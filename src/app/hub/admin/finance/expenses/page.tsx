@@ -36,14 +36,6 @@ interface Expense {
   notes?: string;
 }
 
-const DEFAULT_EXPENSES: Expense[] = [
-  { id: "1", description: "Viaje a conferencia Tech Summit", amount: 1250, currency: "USD", category: "Viajes", submittedBy: "Juan García", submittedByEmail: "juan@example.com", status: "approved", date: new Date(Date.now() - 86400000 * 5).toISOString(), receiptUrl: "#", notes: "Incluye vuelo y hotel" },
-  { id: "2", description: "Software de diseño anual", amount: 599, currency: "USD", category: "Software", submittedBy: "María López", submittedByEmail: "maria@example.com", status: "reimbursed", date: new Date(Date.now() - 86400000 * 10).toISOString(), receiptUrl: "#" },
-  { id: "3", description: "Material de oficina", amount: 185, currency: "USD", category: "Suministros", submittedBy: "Carlos Ruiz", submittedByEmail: "carlos@example.com", status: "pending", date: new Date(Date.now() - 86400000 * 2).toISOString(), receiptUrl: "#" },
-  { id: "4", description: "Almuerzo con cliente", amount: 95, currency: "USD", category: "Comidas", submittedBy: "Ana Martínez", submittedByEmail: "ana@example.com", status: "approved", date: new Date(Date.now() - 86400000 * 7).toISOString() },
-  { id: "5", description: "Curso de certificación", amount: 450, currency: "USD", category: "Capacitación", submittedBy: "Pedro Sánchez", submittedByEmail: "pedro@example.com", status: "rejected", date: new Date(Date.now() - 86400000 * 15).toISOString(), notes: "No aprobado - presupuesto agotado" },
-];
-
 const STATUS_CONFIG = {
   pending: { label: "Pendiente", color: "bg-amber-500/20 text-amber-500", icon: Clock },
   approved: { label: "Aprobado", color: "bg-blue-500/20 text-blue-500", icon: CheckCircle },
@@ -76,12 +68,12 @@ export default function ExpensesPage() {
       const res = await fetch("/api/admin/finance/expenses");
       if (res.ok) {
         const data = await res.json();
-        setExpenses(data.expenses || DEFAULT_EXPENSES);
+        setExpenses(data.expenses || []);
       } else {
-        setExpenses(DEFAULT_EXPENSES);
+        setExpenses([]);
       }
     } catch {
-      setExpenses(DEFAULT_EXPENSES);
+      setExpenses([]);
     } finally {
       setLoading(false);
     }

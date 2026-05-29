@@ -40,14 +40,6 @@ interface Subscription {
   createdAt: string;
 }
 
-const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
-  { id: "1", userId: "u1", userName: "Juan García", userEmail: "juan@example.com", planName: "Pro", status: "active", amount: 29, currency: "USD", interval: "month", currentPeriodStart: new Date(Date.now() - 86400000 * 15).toISOString(), currentPeriodEnd: new Date(Date.now() + 86400000 * 15).toISOString(), createdAt: new Date(Date.now() - 86400000 * 180).toISOString() },
-  { id: "2", userId: "u2", userName: "María López", userEmail: "maria@example.com", planName: "Enterprise", status: "active", amount: 99, currency: "USD", interval: "month", currentPeriodStart: new Date(Date.now() - 86400000 * 5).toISOString(), currentPeriodEnd: new Date(Date.now() + 86400000 * 25).toISOString(), createdAt: new Date(Date.now() - 86400000 * 90).toISOString() },
-  { id: "3", userId: "u3", userName: "Carlos Ruiz", userEmail: "carlos@example.com", planName: "Pro", status: "trialing", amount: 29, currency: "USD", interval: "month", currentPeriodStart: new Date(Date.now() - 86400000 * 7).toISOString(), currentPeriodEnd: new Date(Date.now() + 86400000 * 7).toISOString(), createdAt: new Date(Date.now() - 86400000 * 7).toISOString() },
-  { id: "4", userId: "u4", userName: "Ana Martínez", userEmail: "ana@example.com", planName: "Basic", status: "past_due", amount: 9, currency: "USD", interval: "month", currentPeriodStart: new Date(Date.now() - 86400000 * 35).toISOString(), currentPeriodEnd: new Date(Date.now() - 86400000 * 5).toISOString(), createdAt: new Date(Date.now() - 86400000 * 120).toISOString() },
-  { id: "5", userId: "u5", userName: "Pedro Sánchez", userEmail: "pedro@example.com", planName: "Pro", status: "canceled", amount: 290, currency: "USD", interval: "year", currentPeriodStart: new Date(Date.now() - 86400000 * 200).toISOString(), currentPeriodEnd: new Date(Date.now() + 86400000 * 165).toISOString(), createdAt: new Date(Date.now() - 86400000 * 200).toISOString() },
-];
-
 const STATUS_CONFIG = {
   active: { label: "Activa", color: "bg-green-500/20 text-green-500", icon: CheckCircle },
   canceled: { label: "Cancelada", color: "bg-red-500/20 text-red-500", icon: XCircle },
@@ -72,12 +64,12 @@ export default function SubscriptionsPage() {
       const res = await fetch("/api/admin/sales/subscriptions");
       if (res.ok) {
         const data = await res.json();
-        setSubscriptions(data.subscriptions || DEFAULT_SUBSCRIPTIONS);
+        setSubscriptions(data.subscriptions || []);
       } else {
-        setSubscriptions(DEFAULT_SUBSCRIPTIONS);
+        setSubscriptions([]);
       }
     } catch {
-      setSubscriptions(DEFAULT_SUBSCRIPTIONS);
+      setSubscriptions([]);
     } finally {
       setLoading(false);
     }

@@ -36,14 +36,6 @@ interface Product {
   createdAt: string;
 }
 
-const DEFAULT_PRODUCTS: Product[] = [
-  { id: "1", name: "Basic", description: "Para individuos que comienzan", price: 9, interval: "month", currency: "USD", isActive: true, features: ["1 usuario", "Funciones básicas", "Soporte por email"], subscriberCount: 45, totalRevenue: 4050, createdAt: new Date(Date.now() - 86400000 * 365).toISOString() },
-  { id: "2", name: "Pro", description: "Para profesionales y equipos pequeños", price: 29, interval: "month", currency: "USD", isActive: true, features: ["Hasta 10 usuarios", "Todas las funciones", "Soporte prioritario", "Analytics avanzados"], subscriberCount: 128, totalRevenue: 44544, createdAt: new Date(Date.now() - 86400000 * 300).toISOString() },
-  { id: "3", name: "Enterprise", description: "Para grandes organizaciones", price: 99, interval: "month", currency: "USD", isActive: true, features: ["Usuarios ilimitados", "API access", "Soporte 24/7", "Custom integrations", "SLA garantizado"], subscriberCount: 23, totalRevenue: 27324, createdAt: new Date(Date.now() - 86400000 * 200).toISOString() },
-  { id: "4", name: "Pro Anual", description: "Pro con descuento anual", price: 290, interval: "year", currency: "USD", isActive: true, features: ["Igual que Pro", "2 meses gratis"], subscriberCount: 34, totalRevenue: 9860, createdAt: new Date(Date.now() - 86400000 * 180).toISOString() },
-  { id: "5", name: "Consultoría EQ", description: "Servicio de consultoría one-time", price: 500, interval: "one_time", currency: "USD", isActive: false, features: ["Sesión personalizada", "Informe detallado", "Plan de acción"], subscriberCount: 12, totalRevenue: 6000, createdAt: new Date(Date.now() - 86400000 * 150).toISOString() },
-];
-
 const PRODUCT_ICONS: Record<string, any> = {
   Basic: Star,
   Pro: Zap,
@@ -66,12 +58,12 @@ export default function ProductsPage() {
       const res = await fetch("/api/admin/sales/products");
       if (res.ok) {
         const data = await res.json();
-        setProducts(data.products || DEFAULT_PRODUCTS);
+        setProducts(data.products || []);
       } else {
-        setProducts(DEFAULT_PRODUCTS);
+        setProducts([]);
       }
     } catch {
-      setProducts(DEFAULT_PRODUCTS);
+      setProducts([]);
     } finally {
       setLoading(false);
     }

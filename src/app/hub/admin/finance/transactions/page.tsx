@@ -30,16 +30,6 @@ interface Transaction {
   status: "completed" | "pending" | "failed";
 }
 
-const DEFAULT_TRANSACTIONS: Transaction[] = [
-  { id: "1", type: "income", description: "Pago factura INV-2024-001", amount: 4500, currency: "USD", category: "Ventas", account: "Cuenta Principal", reference: "TRX-001", date: new Date(Date.now() - 86400000 * 2).toISOString(), status: "completed" },
-  { id: "2", type: "expense", description: "Suscripción AWS", amount: 850, currency: "USD", category: "Tecnología", account: "Cuenta Principal", reference: "TRX-002", date: new Date(Date.now() - 86400000 * 3).toISOString(), status: "completed" },
-  { id: "3", type: "income", description: "Pago factura INV-2024-005", amount: 3500, currency: "USD", category: "Ventas", account: "Cuenta Principal", reference: "TRX-003", date: new Date(Date.now() - 86400000 * 5).toISOString(), status: "completed" },
-  { id: "4", type: "expense", description: "Nómina Enero", amount: 12500, currency: "USD", category: "Salarios", account: "Cuenta Nómina", reference: "TRX-004", date: new Date(Date.now() - 86400000 * 7).toISOString(), status: "completed" },
-  { id: "5", type: "transfer", description: "Transferencia a cuenta de reserva", amount: 5000, currency: "USD", category: "Transferencia", account: "Cuenta Principal → Reserva", reference: "TRX-005", date: new Date(Date.now() - 86400000 * 10).toISOString(), status: "completed" },
-  { id: "6", type: "expense", description: "Marketing Digital", amount: 2200, currency: "USD", category: "Marketing", account: "Cuenta Principal", reference: "TRX-006", date: new Date(Date.now() - 86400000 * 12).toISOString(), status: "completed" },
-  { id: "7", type: "income", description: "Consultoría especial", amount: 1800, currency: "USD", category: "Servicios", account: "Cuenta Principal", reference: "TRX-007", date: new Date(Date.now() - 86400000 * 15).toISOString(), status: "pending" },
-];
-
 const TYPE_CONFIG = {
   income: { label: "Ingreso", color: "text-green-500", bg: "bg-green-500/10", icon: ArrowDownLeft },
   expense: { label: "Gasto", color: "text-red-500", bg: "bg-red-500/10", icon: ArrowUpRight },
@@ -63,12 +53,12 @@ export default function TransactionsPage() {
       const res = await fetch("/api/admin/finance/transactions");
       if (res.ok) {
         const data = await res.json();
-        setTransactions(data.transactions || DEFAULT_TRANSACTIONS);
+        setTransactions(data.transactions || []);
       } else {
-        setTransactions(DEFAULT_TRANSACTIONS);
+        setTransactions([]);
       }
     } catch {
-      setTransactions(DEFAULT_TRANSACTIONS);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }

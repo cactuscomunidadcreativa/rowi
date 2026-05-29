@@ -33,14 +33,6 @@ interface Budget {
   status: "on_track" | "warning" | "over_budget" | "completed";
 }
 
-const DEFAULT_BUDGETS: Budget[] = [
-  { id: "1", name: "Marketing Digital", description: "Campañas de publicidad online", category: "Marketing", allocated: 15000, spent: 8500, currency: "USD", period: "monthly", startDate: new Date(Date.now() - 86400000 * 15).toISOString(), endDate: new Date(Date.now() + 86400000 * 15).toISOString(), status: "on_track" },
-  { id: "2", name: "Tecnología", description: "Software y herramientas", category: "Operaciones", allocated: 5000, spent: 4200, currency: "USD", period: "monthly", startDate: new Date(Date.now() - 86400000 * 15).toISOString(), endDate: new Date(Date.now() + 86400000 * 15).toISOString(), status: "warning" },
-  { id: "3", name: "Capacitación Q1", description: "Cursos y certificaciones", category: "RRHH", allocated: 10000, spent: 12500, currency: "USD", period: "quarterly", startDate: new Date(Date.now() - 86400000 * 60).toISOString(), endDate: new Date(Date.now() + 86400000 * 30).toISOString(), status: "over_budget" },
-  { id: "4", name: "Viajes de Negocios", description: "Viajes y representación", category: "Ventas", allocated: 8000, spent: 3200, currency: "USD", period: "monthly", startDate: new Date(Date.now() - 86400000 * 15).toISOString(), endDate: new Date(Date.now() + 86400000 * 15).toISOString(), status: "on_track" },
-  { id: "5", name: "Eventos 2024", description: "Conferencias y networking", category: "Marketing", allocated: 25000, spent: 25000, currency: "USD", period: "yearly", startDate: new Date(Date.now() - 86400000 * 180).toISOString(), endDate: new Date(Date.now() - 86400000 * 30).toISOString(), status: "completed" },
-];
-
 const STATUS_CONFIG = {
   on_track: { label: "En presupuesto", color: "bg-green-500/20 text-green-500", icon: CheckCircle },
   warning: { label: "Alerta", color: "bg-amber-500/20 text-amber-500", icon: AlertTriangle },
@@ -70,12 +62,12 @@ export default function BudgetsPage() {
       const res = await fetch("/api/admin/finance/budgets");
       if (res.ok) {
         const data = await res.json();
-        setBudgets(data.budgets || DEFAULT_BUDGETS);
+        setBudgets(data.budgets || []);
       } else {
-        setBudgets(DEFAULT_BUDGETS);
+        setBudgets([]);
       }
     } catch {
-      setBudgets(DEFAULT_BUDGETS);
+      setBudgets([]);
     } finally {
       setLoading(false);
     }

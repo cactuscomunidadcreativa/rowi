@@ -35,15 +35,6 @@ interface Enrollment {
   score?: number;
 }
 
-const DEFAULT_ENROLLMENTS: Enrollment[] = [
-  { id: "1", userId: "u1", userName: "Juan García", userEmail: "juan@example.com", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", status: "active", progress: 65, startedAt: new Date(Date.now() - 86400000 * 30).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: "2", userId: "u2", userName: "María López", userEmail: "maria@example.com", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", status: "completed", progress: 100, startedAt: new Date(Date.now() - 86400000 * 60).toISOString(), completedAt: new Date(Date.now() - 86400000 * 15).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 15).toISOString(), score: 92 },
-  { id: "3", userId: "u3", userName: "Carlos Ruiz", userEmail: "carlos@example.com", courseId: "c2", courseName: "Liderazgo Transformacional", status: "active", progress: 40, startedAt: new Date(Date.now() - 86400000 * 20).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: "4", userId: "u4", userName: "Ana Martínez", userEmail: "ana@example.com", courseId: "c3", courseName: "Comunicación Asertiva", status: "dropped", progress: 25, startedAt: new Date(Date.now() - 86400000 * 45).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 30).toISOString() },
-  { id: "5", userId: "u5", userName: "Pedro Sánchez", userEmail: "pedro@example.com", courseId: "c2", courseName: "Liderazgo Transformacional", status: "pending", progress: 0, startedAt: new Date(Date.now() - 86400000 * 1).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 1).toISOString() },
-  { id: "6", userId: "u6", userName: "Laura Torres", userEmail: "laura@example.com", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", status: "completed", progress: 100, startedAt: new Date(Date.now() - 86400000 * 90).toISOString(), completedAt: new Date(Date.now() - 86400000 * 45).toISOString(), lastActivityAt: new Date(Date.now() - 86400000 * 45).toISOString(), score: 88 },
-];
-
 const STATUS_CONFIG = {
   active: { label: "Activo", color: "bg-blue-500/20 text-blue-500", icon: Clock },
   completed: { label: "Completado", color: "bg-green-500/20 text-green-500", icon: CheckCircle },
@@ -68,12 +59,12 @@ export default function EnrollmentsPage() {
       const res = await fetch("/api/admin/education/enrollments");
       if (res.ok) {
         const data = await res.json();
-        setEnrollments(data.enrollments || DEFAULT_ENROLLMENTS);
+        setEnrollments(data.enrollments || []);
       } else {
-        setEnrollments(DEFAULT_ENROLLMENTS);
+        setEnrollments([]);
       }
     } catch {
-      setEnrollments(DEFAULT_ENROLLMENTS);
+      setEnrollments([]);
     } finally {
       setLoading(false);
     }

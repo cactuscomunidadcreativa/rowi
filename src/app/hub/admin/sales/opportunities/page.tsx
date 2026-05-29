@@ -33,14 +33,6 @@ interface Opportunity {
   createdAt: string;
 }
 
-const DEFAULT_OPPORTUNITIES: Opportunity[] = [
-  { id: "1", name: "Implementación Enterprise", company: "TechCorp S.A.", contact: "Roberto Méndez", email: "roberto@techcorp.com", value: 15000, stage: "proposal", probability: 60, expectedClose: new Date(Date.now() + 86400000 * 30).toISOString(), createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
-  { id: "2", name: "Licencias Team Pro", company: "Innovatech", contact: "Lucía Fernández", email: "lucia@innovatech.com", value: 5000, stage: "negotiation", probability: 80, expectedClose: new Date(Date.now() + 86400000 * 15).toISOString(), createdAt: new Date(Date.now() - 86400000 * 45).toISOString() },
-  { id: "3", name: "Consultoría EQ", company: "HR Solutions", contact: "Miguel Ángel Torres", email: "miguel@hrsolutions.com", value: 8000, stage: "qualified", probability: 40, expectedClose: new Date(Date.now() + 86400000 * 60).toISOString(), createdAt: new Date(Date.now() - 86400000 * 10).toISOString() },
-  { id: "4", name: "Expansión Regional", company: "Global Retail", contact: "Andrea Paredes", email: "andrea@globalretail.com", value: 25000, stage: "lead", probability: 20, expectedClose: new Date(Date.now() + 86400000 * 90).toISOString(), createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: "5", name: "Renovación Anual", company: "FinanceGroup", contact: "Carlos Vega", email: "cvega@financegroup.com", value: 12000, stage: "won", probability: 100, expectedClose: new Date(Date.now() - 86400000 * 10).toISOString(), createdAt: new Date(Date.now() - 86400000 * 60).toISOString() },
-];
-
 const STAGE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   lead: { label: "Lead", color: "text-gray-500", bg: "bg-gray-500/20" },
   qualified: { label: "Calificado", color: "text-blue-500", bg: "bg-blue-500/20" },
@@ -66,12 +58,12 @@ export default function OpportunitiesPage() {
       const res = await fetch("/api/admin/sales/opportunities");
       if (res.ok) {
         const data = await res.json();
-        setOpportunities(data.opportunities || DEFAULT_OPPORTUNITIES);
+        setOpportunities(data.opportunities || []);
       } else {
-        setOpportunities(DEFAULT_OPPORTUNITIES);
+        setOpportunities([]);
       }
     } catch {
-      setOpportunities(DEFAULT_OPPORTUNITIES);
+      setOpportunities([]);
     } finally {
       setLoading(false);
     }

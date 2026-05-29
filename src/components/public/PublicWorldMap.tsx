@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Globe2, Users, MessageCircle, TrendingUp, Clock } from "lucide-react";
+import { Globe2, Users, MessageCircle, TrendingUp } from "lucide-react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { useI18n } from "@/lib/i18n/useI18n";
 
@@ -16,11 +16,9 @@ interface CountryData {
 }
 
 interface Summary {
-  totalRowiers: number;
+  totalReach: number;
   activeUsers: number;
   conversations: number;
-  satisfaction: number;
-  availability: string;
   countries: number;
   newUsers: number;
 }
@@ -36,59 +34,51 @@ const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 
 const t = {
   es: {
-    title: "Comunidad Global Rowi",
-    subtitle: "Personas desarrollando su inteligencia emocional en todo el mundo",
-    activeUsers: "Usuarios Activos",
+    title: "La red Six Seconds en el mundo",
+    subtitle: "Rowi se construye sobre la red de inteligencia emocional más grande del mundo",
+    activeUsers: "Usuarios Rowi",
     conversations: "Conversaciones",
-    satisfaction: "Satisfacción",
-    availability: "Disponibilidad",
-    countries: "Países",
-    rowiers: "Rowiers",
-    newRowiers: "Nuevos Rowiers",
+    countries: "Países y territorios",
+    reach: "Alcance Six Seconds",
+    newRowiers: "Nuevos usuarios",
     last3months: "últimos 3 meses",
-    benchmarks: "Benchmarks SEI",
+    benchmarks: "Evaluaciones Six Seconds",
     users: "Usuarios Rowi",
   },
   en: {
-    title: "Rowi Global Community",
-    subtitle: "People developing their emotional intelligence worldwide",
-    activeUsers: "Active Users",
+    title: "The Six Seconds network worldwide",
+    subtitle: "Rowi is built on the world's largest emotional intelligence network",
+    activeUsers: "Rowi Users",
     conversations: "Conversations",
-    satisfaction: "Satisfaction",
-    availability: "Availability",
-    countries: "Countries",
-    rowiers: "Rowiers",
-    newRowiers: "New Rowiers",
+    countries: "Countries & territories",
+    reach: "Six Seconds reach",
+    newRowiers: "New users",
     last3months: "last 3 months",
-    benchmarks: "SEI Benchmarks",
+    benchmarks: "Six Seconds assessments",
     users: "Rowi Users",
   },
   pt: {
-    title: "Comunidade Global Rowi",
-    subtitle: "Pessoas desenvolvendo sua inteligência emocional no mundo todo",
-    activeUsers: "Usuários Ativos",
+    title: "A rede Six Seconds no mundo",
+    subtitle: "Rowi se constrói sobre a maior rede de inteligência emocional do mundo",
+    activeUsers: "Usuários Rowi",
     conversations: "Conversas",
-    satisfaction: "Satisfação",
-    availability: "Disponibilidade",
-    countries: "Países",
-    rowiers: "Rowiers",
-    newRowiers: "Novos Rowiers",
+    countries: "Países e territórios",
+    reach: "Alcance Six Seconds",
+    newRowiers: "Novos usuários",
     last3months: "últimos 3 meses",
-    benchmarks: "Benchmarks SEI",
+    benchmarks: "Avaliações Six Seconds",
     users: "Usuários Rowi",
   },
   it: {
-    title: "Comunità Globale Rowi",
-    subtitle: "Persone che sviluppano la propria intelligenza emotiva in tutto il mondo",
-    activeUsers: "Utenti Attivi",
+    title: "La rete Six Seconds nel mondo",
+    subtitle: "Rowi è costruito sulla più grande rete di intelligenza emotiva al mondo",
+    activeUsers: "Utenti Rowi",
     conversations: "Conversazioni",
-    satisfaction: "Soddisfazione",
-    availability: "Disponibilità",
-    countries: "Paesi",
-    rowiers: "Rowiers",
-    newRowiers: "Nuovi Rowiers",
+    countries: "Paesi e territori",
+    reach: "Copertura Six Seconds",
+    newRowiers: "Nuovi utenti",
     last3months: "ultimi 3 mesi",
-    benchmarks: "Benchmark SEI",
+    benchmarks: "Valutazioni Six Seconds",
     users: "Utenti Rowi",
   },
 };
@@ -190,7 +180,7 @@ export default function PublicWorldMap() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2,#31a2e3)]/10 text-[var(--rowi-g2,#31a2e3)] text-sm font-medium mb-4">
             <Globe2 className="w-4 h-4" />
-            {formatNumber(summary.totalRowiers)} {text.rowiers}
+            {formatNumber(summary.totalReach)} · {text.reach}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--rowi-fg,#1a1c1e)] mb-3">
             {text.title}
@@ -210,8 +200,8 @@ export default function PublicWorldMap() {
         >
           <StatCard icon={<Users className="w-5 h-5" />} value={formatNumber(summary.activeUsers)} label={text.activeUsers} color="blue" />
           <StatCard icon={<MessageCircle className="w-5 h-5" />} value={formatNumber(summary.conversations)} label={text.conversations} color="purple" />
-          <StatCard icon={<TrendingUp className="w-5 h-5" />} value={`${summary.satisfaction}%`} label={text.satisfaction} color="green" />
-          <StatCard icon={<Clock className="w-5 h-5" />} value={summary.availability} label={text.availability} color="orange" />
+          <StatCard icon={<Globe2 className="w-5 h-5" />} value={formatNumber(summary.countries)} label={text.countries} color="green" />
+          <StatCard icon={<TrendingUp className="w-5 h-5" />} value={`+${formatNumber(summary.newUsers)}`} label={text.newRowiers} color="orange" />
         </motion.div>
 
         {/* Map — Real world map with react-simple-maps */}

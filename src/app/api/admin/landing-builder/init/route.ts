@@ -79,9 +79,9 @@ export async function POST() {
             ctaPrimary: "Comenzar gratis",
             ctaSecondary: "Ver demo",
             trustBadges: [
-              { icon: "shield", text: "Datos 100% seguros" },
-              { icon: "globe", text: "Metodología Six Seconds" },
-              { icon: "star", text: "+10,000 usuarios" },
+              { icon: "shield", text: "Datos privados y seguros" },
+              { icon: "globe", text: "Respaldado por Six Seconds" },
+              { icon: "star", text: "Presente en +200 países" },
             ],
           },
           en: {
@@ -92,9 +92,9 @@ export async function POST() {
             ctaPrimary: "Get started free",
             ctaSecondary: "Watch demo",
             trustBadges: [
-              { icon: "shield", text: "100% secure data" },
-              { icon: "globe", text: "Six Seconds methodology" },
-              { icon: "star", text: "+10,000 users" },
+              { icon: "shield", text: "Private and secure data" },
+              { icon: "globe", text: "Backed by Six Seconds" },
+              { icon: "star", text: "In 200+ countries" },
             ],
           },
         },

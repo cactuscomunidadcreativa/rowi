@@ -46,18 +46,6 @@ interface IssuedCertificate {
   score: number;
 }
 
-const DEFAULT_CERTIFICATES: Certificate[] = [
-  { id: "1", name: "Certificado de Inteligencia Emocional", description: "Otorgado por completar exitosamente el curso", courseId: "c1", courseName: "Inteligencia Emocional en el Trabajo", templateStyle: "premium", issuedCount: 98, validityPeriod: 24, isActive: true, createdAt: new Date(Date.now() - 86400000 * 180).toISOString() },
-  { id: "2", name: "Certificado de Liderazgo", description: "Reconocimiento de competencias de liderazgo", courseId: "c2", courseName: "Liderazgo Transformacional", templateStyle: "modern", issuedCount: 45, validityPeriod: undefined, isActive: true, createdAt: new Date(Date.now() - 86400000 * 120).toISOString() },
-  { id: "3", name: "Certificado de Comunicación", description: "Dominio de técnicas de comunicación asertiva", courseId: "c3", courseName: "Comunicación Asertiva", templateStyle: "classic", issuedCount: 156, validityPeriod: 12, isActive: true, createdAt: new Date(Date.now() - 86400000 * 90).toISOString() },
-];
-
-const DEFAULT_ISSUED: IssuedCertificate[] = [
-  { id: "i1", certificateId: "1", certificateName: "Certificado de Inteligencia Emocional", userId: "u1", userName: "María López", userEmail: "maria@example.com", courseName: "Inteligencia Emocional en el Trabajo", issuedAt: new Date(Date.now() - 86400000 * 15).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 715).toISOString(), score: 92 },
-  { id: "i2", certificateId: "1", certificateName: "Certificado de Inteligencia Emocional", userId: "u2", userName: "Laura Torres", userEmail: "laura@example.com", courseName: "Inteligencia Emocional en el Trabajo", issuedAt: new Date(Date.now() - 86400000 * 45).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 685).toISOString(), score: 88 },
-  { id: "i3", certificateId: "3", certificateName: "Certificado de Comunicación", userId: "u3", userName: "Carlos Ruiz", userEmail: "carlos@example.com", courseName: "Comunicación Asertiva", issuedAt: new Date(Date.now() - 86400000 * 30).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 335).toISOString(), score: 85 },
-];
-
 const STYLE_CONFIG: Record<string, { label: string; color: string }> = {
   classic: { label: "Clásico", color: "bg-amber-500/20 text-amber-500" },
   modern: { label: "Moderno", color: "bg-blue-500/20 text-blue-500" },
@@ -86,19 +74,19 @@ export default function CertificatesPage() {
       ]);
       if (certRes.ok) {
         const data = await certRes.json();
-        setCertificates(data.certificates || DEFAULT_CERTIFICATES);
+        setCertificates(data.certificates || []);
       } else {
-        setCertificates(DEFAULT_CERTIFICATES);
+        setCertificates([]);
       }
       if (issuedRes.ok) {
         const data = await issuedRes.json();
-        setIssuedCertificates(data.issued || DEFAULT_ISSUED);
+        setIssuedCertificates(data.issued || []);
       } else {
-        setIssuedCertificates(DEFAULT_ISSUED);
+        setIssuedCertificates([]);
       }
     } catch {
-      setCertificates(DEFAULT_CERTIFICATES);
-      setIssuedCertificates(DEFAULT_ISSUED);
+      setCertificates([]);
+      setIssuedCertificates([]);
     } finally {
       setLoading(false);
     }

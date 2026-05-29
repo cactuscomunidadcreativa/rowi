@@ -35,14 +35,6 @@ interface Invoice {
   items: number;
 }
 
-const DEFAULT_INVOICES: Invoice[] = [
-  { id: "1", number: "INV-2024-001", clientName: "TechCorp S.A.", clientEmail: "billing@techcorp.com", amount: 4500, currency: "USD", status: "paid", dueDate: new Date(Date.now() - 86400000 * 10).toISOString(), issuedDate: new Date(Date.now() - 86400000 * 40).toISOString(), paidDate: new Date(Date.now() - 86400000 * 15).toISOString(), items: 3 },
-  { id: "2", number: "INV-2024-002", clientName: "Innovatech", clientEmail: "finance@innovatech.com", amount: 2800, currency: "USD", status: "sent", dueDate: new Date(Date.now() + 86400000 * 15).toISOString(), issuedDate: new Date(Date.now() - 86400000 * 15).toISOString(), items: 2 },
-  { id: "3", number: "INV-2024-003", clientName: "HR Solutions", clientEmail: "accounts@hrsolutions.com", amount: 1500, currency: "USD", status: "overdue", dueDate: new Date(Date.now() - 86400000 * 5).toISOString(), issuedDate: new Date(Date.now() - 86400000 * 35).toISOString(), items: 1 },
-  { id: "4", number: "INV-2024-004", clientName: "Global Retail", clientEmail: "billing@globalretail.com", amount: 6200, currency: "USD", status: "draft", dueDate: new Date(Date.now() + 86400000 * 30).toISOString(), issuedDate: new Date(Date.now()).toISOString(), items: 5 },
-  { id: "5", number: "INV-2024-005", clientName: "FinanceGroup", clientEmail: "ap@financegroup.com", amount: 3500, currency: "USD", status: "paid", dueDate: new Date(Date.now() - 86400000 * 20).toISOString(), issuedDate: new Date(Date.now() - 86400000 * 50).toISOString(), paidDate: new Date(Date.now() - 86400000 * 25).toISOString(), items: 2 },
-];
-
 const STATUS_CONFIG = {
   draft: { label: "Borrador", color: "bg-gray-500/20 text-gray-500", icon: FileText },
   sent: { label: "Enviada", color: "bg-blue-500/20 text-blue-500", icon: Send },
@@ -68,12 +60,12 @@ export default function InvoicesPage() {
       const res = await fetch("/api/admin/finance/invoices");
       if (res.ok) {
         const data = await res.json();
-        setInvoices(data.invoices || DEFAULT_INVOICES);
+        setInvoices(data.invoices || []);
       } else {
-        setInvoices(DEFAULT_INVOICES);
+        setInvoices([]);
       }
     } catch {
-      setInvoices(DEFAULT_INVOICES);
+      setInvoices([]);
     } finally {
       setLoading(false);
     }

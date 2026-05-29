@@ -34,24 +34,6 @@ interface MonthlyFinance {
   profit: number;
 }
 
-const DEFAULT_METRICS: FinanceMetric[] = [
-  { label: "Ingresos Totales", value: 125400, change: 15.2, trend: "up", prefix: "$" },
-  { label: "Gastos Totales", value: 78200, change: 8.5, trend: "up", prefix: "$" },
-  { label: "Beneficio Neto", value: 47200, change: 28.3, trend: "up", prefix: "$" },
-  { label: "Facturas Pendientes", value: 12500, change: -15.0, trend: "down", prefix: "$" },
-  { label: "Margen de Beneficio", value: 37.6, change: 5.2, trend: "up", suffix: "%" },
-  { label: "Flujo de Caja", value: 34800, change: 12.1, trend: "up", prefix: "$" },
-];
-
-const DEFAULT_MONTHLY: MonthlyFinance[] = [
-  { month: "Jul", income: 18500, expenses: 12300, profit: 6200 },
-  { month: "Ago", income: 19200, expenses: 11800, profit: 7400 },
-  { month: "Sep", income: 21000, expenses: 13200, profit: 7800 },
-  { month: "Oct", income: 20500, expenses: 12900, profit: 7600 },
-  { month: "Nov", income: 22800, expenses: 14100, profit: 8700 },
-  { month: "Dic", income: 23400, expenses: 13900, profit: 9500 },
-];
-
 export default function FinanceDashboardPage() {
   const { t } = useI18n();
   const [metrics, setMetrics] = useState<FinanceMetric[]>([]);
@@ -69,21 +51,24 @@ export default function FinanceDashboardPage() {
       const res = await fetch(`/api/admin/finance/dashboard?period=${period}`);
       if (res.ok) {
         const data = await res.json();
-        setMetrics(data.metrics || DEFAULT_METRICS);
-        setMonthlyData(data.monthlyData || DEFAULT_MONTHLY);
+        setMetrics(data.metrics || []);
+        setMonthlyData(data.monthlyData || []);
       } else {
-        setMetrics(DEFAULT_METRICS);
-        setMonthlyData(DEFAULT_MONTHLY);
+        setMetrics([]);
+        setMonthlyData([]);
       }
     } catch {
-      setMetrics(DEFAULT_METRICS);
-      setMonthlyData(DEFAULT_MONTHLY);
+      setMetrics([]);
+      setMonthlyData([]);
     } finally {
       setLoading(false);
     }
   }
 
-  const maxValue = Math.max(...monthlyData.map((d) => Math.max(d.income, d.expenses)));
+  const maxValue = monthlyData.length
+    ? Math.max(...monthlyData.map((d) => Math.max(d.income, d.expenses)))
+    : 0;
+  const isEmpty = !loading && metrics.length === 0 && monthlyData.length === 0;
 
   return (
     <div className="space-y-6">
@@ -114,6 +99,12 @@ export default function FinanceDashboardPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-muted)]" /></div>
+      ) : isEmpty ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Wallet className="w-12 h-12 text-[var(--rowi-muted)]/40 mb-4" />
+          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-1">{t("admin.finance.dashboard.empty.title", "Aún no hay datos financieros")}</h3>
+          <p className="text-sm text-[var(--rowi-muted)] max-w-md">{t("admin.finance.dashboard.empty.description", "Las métricas aparecerán cuando haya transacciones registradas en contabilidad.")}</p>
+        </div>
       ) : (
         <>
           {/* KPIs Grid */}

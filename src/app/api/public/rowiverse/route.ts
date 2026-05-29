@@ -275,18 +275,18 @@ export async function GET() {
       (a: any, b: any) => b.total - a.total
     );
 
-    // Calculate summary stats
-    const totalRowiers = BENCHMARK_BASE + totalUsers;
+    // Calculate summary stats.
+    // totalReach = the Six Seconds network's historical reach (citable) plus
+    // Rowi's own users. Labeled "Six Seconds reach" in the UI, never as "Rowi users".
+    const totalReach = BENCHMARK_BASE + totalUsers;
     const totalNewUsers = newUsersByCountry.reduce((sum, r) => sum + r._count.id, 0);
 
     return NextResponse.json({
       ok: true,
       summary: {
-        totalRowiers,
+        totalReach,
         activeUsers: totalUsers,
         conversations: totalConversations,
-        satisfaction: 95, // Static for now
-        availability: "24/7",
         countries: mapData.length,
         newUsers: totalNewUsers,
       },

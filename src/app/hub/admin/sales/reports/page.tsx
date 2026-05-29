@@ -34,24 +34,6 @@ interface MonthlyData {
   churn: number;
 }
 
-const DEFAULT_METRICS: SalesMetric[] = [
-  { label: "MRR", value: 12450, change: 12.5, trend: "up", prefix: "$" },
-  { label: "ARR", value: 149400, change: 15.2, trend: "up", prefix: "$" },
-  { label: "Nuevos clientes", value: 28, change: 8.3, trend: "up" },
-  { label: "Churn rate", value: 2.4, change: -0.5, trend: "down", suffix: "%" },
-  { label: "LTV", value: 890, change: 5.1, trend: "up", prefix: "$" },
-  { label: "CAC", value: 125, change: -12.0, trend: "down", prefix: "$" },
-];
-
-const DEFAULT_MONTHLY_DATA: MonthlyData[] = [
-  { month: "Jul", revenue: 9800, subscriptions: 145, churn: 3 },
-  { month: "Ago", revenue: 10200, subscriptions: 152, churn: 4 },
-  { month: "Sep", revenue: 10850, subscriptions: 161, churn: 2 },
-  { month: "Oct", revenue: 11300, subscriptions: 170, churn: 5 },
-  { month: "Nov", revenue: 11900, subscriptions: 182, churn: 3 },
-  { month: "Dic", revenue: 12450, subscriptions: 195, churn: 4 },
-];
-
 export default function SalesReportsPage() {
   const { t } = useI18n();
   const [metrics, setMetrics] = useState<SalesMetric[]>([]);
@@ -69,21 +51,21 @@ export default function SalesReportsPage() {
       const res = await fetch(`/api/admin/sales/reports?period=${period}`);
       if (res.ok) {
         const data = await res.json();
-        setMetrics(data.metrics || DEFAULT_METRICS);
-        setMonthlyData(data.monthlyData || DEFAULT_MONTHLY_DATA);
+        setMetrics(data.metrics || []);
+        setMonthlyData(data.monthlyData || []);
       } else {
-        setMetrics(DEFAULT_METRICS);
-        setMonthlyData(DEFAULT_MONTHLY_DATA);
+        setMetrics([]);
+        setMonthlyData([]);
       }
     } catch {
-      setMetrics(DEFAULT_METRICS);
-      setMonthlyData(DEFAULT_MONTHLY_DATA);
+      setMetrics([]);
+      setMonthlyData([]);
     } finally {
       setLoading(false);
     }
   }
 
-  const maxRevenue = Math.max(...monthlyData.map((d) => d.revenue));
+  const maxRevenue = monthlyData.length ? Math.max(...monthlyData.map((d) => d.revenue)) : 0;
 
   return (
     <div className="space-y-6">

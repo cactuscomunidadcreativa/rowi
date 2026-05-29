@@ -39,14 +39,6 @@ interface Course {
   thumbnail?: string;
 }
 
-const DEFAULT_COURSES: Course[] = [
-  { id: "1", title: "Inteligencia Emocional en el Trabajo", description: "Aprende a gestionar tus emociones y las de tu equipo", instructor: "Dr. María González", category: "Soft Skills", duration: 240, lessons: 12, enrollments: 156, completionRate: 78, rating: 4.8, isPublished: true, createdAt: new Date(Date.now() - 86400000 * 180).toISOString() },
-  { id: "2", title: "Liderazgo Transformacional", description: "Desarrolla habilidades de liderazgo moderno", instructor: "Carlos Méndez", category: "Liderazgo", duration: 180, lessons: 8, enrollments: 89, completionRate: 65, rating: 4.5, isPublished: true, createdAt: new Date(Date.now() - 86400000 * 120).toISOString() },
-  { id: "3", title: "Comunicación Asertiva", description: "Mejora tu comunicación interpersonal", instructor: "Ana Ruiz", category: "Comunicación", duration: 120, lessons: 6, enrollments: 234, completionRate: 82, rating: 4.9, isPublished: true, createdAt: new Date(Date.now() - 86400000 * 90).toISOString() },
-  { id: "4", title: "Gestión del Tiempo", description: "Optimiza tu productividad diaria", instructor: "Roberto Torres", category: "Productividad", duration: 90, lessons: 5, enrollments: 312, completionRate: 71, rating: 4.6, isPublished: true, createdAt: new Date(Date.now() - 86400000 * 60).toISOString() },
-  { id: "5", title: "Mindfulness Corporativo", description: "Técnicas de atención plena para el trabajo", instructor: "Laura Sánchez", category: "Bienestar", duration: 150, lessons: 10, enrollments: 0, completionRate: 0, rating: 0, isPublished: false, createdAt: new Date(Date.now() - 86400000 * 10).toISOString() },
-];
-
 const CATEGORY_COLORS: Record<string, string> = {
   "Soft Skills": "bg-purple-500/20 text-purple-500",
   "Liderazgo": "bg-blue-500/20 text-blue-500",
@@ -71,12 +63,12 @@ export default function CoursesPage() {
       const res = await fetch("/api/admin/education/courses");
       if (res.ok) {
         const data = await res.json();
-        setCourses(data.courses || DEFAULT_COURSES);
+        setCourses(data.courses || []);
       } else {
-        setCourses(DEFAULT_COURSES);
+        setCourses([]);
       }
     } catch {
-      setCourses(DEFAULT_COURSES);
+      setCourses([]);
     } finally {
       setLoading(false);
     }

@@ -81,54 +81,6 @@ const ACTION_TYPES = [
   { type: "delay", icon: Clock, label: "Esperar", color: "text-gray-500" },
 ];
 
-const DEFAULT_AUTOMATIONS: Automation[] = [
-  {
-    id: "1",
-    name: "Bienvenida a nuevos usuarios",
-    description: "Envía email de bienvenida cuando se crea un usuario",
-    isActive: true,
-    trigger: { type: "user_created", config: {} },
-    conditions: [],
-    actions: [
-      { type: "send_email", config: { template: "welcome", delay: 0 } },
-      { type: "send_notification", config: { title: "Bienvenido", message: "¡Gracias por unirte!" } },
-    ],
-    executionCount: 156,
-    lastExecuted: new Date(Date.now() - 3600000).toISOString(),
-    createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: "2",
-    name: "Recordatorio de perfil incompleto",
-    description: "Notifica a usuarios que no han completado su perfil después de 3 días",
-    isActive: true,
-    trigger: { type: "scheduled", config: { cron: "0 9 * * *" } },
-    conditions: [
-      { field: "profile.completeness", operator: "lt", value: "80" },
-      { field: "createdAt", operator: "gt", value: "3d" },
-    ],
-    actions: [{ type: "send_email", config: { template: "complete_profile" } }],
-    executionCount: 89,
-    lastExecuted: new Date(Date.now() - 86400000).toISOString(),
-    createdAt: new Date(Date.now() - 86400000 * 15).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: "3",
-    name: "Notificación de nuevo contenido",
-    description: "Notifica a los managers cuando se publica nuevo contenido",
-    isActive: false,
-    trigger: { type: "content_published", config: {} },
-    conditions: [{ field: "contentType", operator: "eq", value: "announcement" }],
-    actions: [{ type: "send_notification", config: { audience: "managers" } }],
-    executionCount: 42,
-    lastExecuted: new Date(Date.now() - 86400000 * 5).toISOString(),
-    createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-  },
-];
-
 export default function AutomationPage() {
   const { t } = useI18n();
   const [automations, setAutomations] = useState<Automation[]>([]);
@@ -145,12 +97,12 @@ export default function AutomationPage() {
       const res = await fetch("/api/admin/automation");
       if (res.ok) {
         const data = await res.json();
-        setAutomations(data.automations || DEFAULT_AUTOMATIONS);
+        setAutomations(data.automations || []);
       } else {
-        setAutomations(DEFAULT_AUTOMATIONS);
+        setAutomations([]);
       }
     } catch {
-      setAutomations(DEFAULT_AUTOMATIONS);
+      setAutomations([]);
     } finally {
       setLoading(false);
     }

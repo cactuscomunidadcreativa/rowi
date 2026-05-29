@@ -193,8 +193,36 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`🎟️ Cupón creado: ${coupon.code}`);
-    return NextResponse.json({ ok: true, coupon }, { status: 201 });
+    // 🔗 Sincronizar a Stripe para que el descuento APLIQUE en el checkout.
+    // Sin esto, el cupón existe en la DB pero el checkout lo ignora (su
+    // stripeCouponId queda null). Best-effort: si Stripe falla o el tipo no
+    // es descontable (FREE_TRIAL/FREE_ACCESS), el cupón queda creado y se
+    // reporta stripeSynced=false para que el admin lo reintente.
+    let stripeSynced = false;
+    let stripeError: string | undefined;
+    if (discountType === "PERCENTAGE" || discountType === "FIXED_AMOUNT") {
+      try {
+        const { createStripeCoupon } = await import("@/lib/stripe/coupons");
+        const { stripeCouponId } = await createStripeCoupon({
+          code: coupon.code,
+          discountType,
+          discountValue,
+          maxUses,
+          expiresAt: coupon.expiresAt,
+        });
+        await prisma.coupon.update({
+          where: { id: coupon.id },
+          data: { stripeCouponId },
+        });
+        stripeSynced = true;
+      } catch (e: any) {
+        stripeError = e?.message || "No se pudo sincronizar con Stripe";
+        console.error("⚠️ Cupón creado pero NO sincronizado a Stripe:", stripeError);
+      }
+    }
+
+    console.log(`🎟️ Cupón creado: ${coupon.code} (stripeSynced=${stripeSynced})`);
+    return NextResponse.json({ ok: true, coupon, stripeSynced, stripeError }, { status: 201 });
   } catch (error: any) {
     console.error("❌ Error POST coupon:", error);
     return NextResponse.json(

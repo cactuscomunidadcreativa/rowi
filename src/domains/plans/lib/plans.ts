@@ -3,7 +3,7 @@
  * Define los 6 planes de ROWI con toda su información
  */
 
-export type PlanSlug = "free" | "plus" | "family" | "pro" | "business" | "enterprise";
+export type PlanSlug = "free" | "sei" | "plus" | "family" | "pro" | "business" | "enterprise";
 export type PlanType = "individual" | "family" | "team" | "business" | "enterprise";
 export type TargetAudience = "B2C" | "B2B" | "B2C/B2B";
 export type SupportLevel = "community" | "email" | "chat" | "priority" | "dedicated";
@@ -193,7 +193,101 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   },
 
   // ============================================================
-  // 2. ROWI+
+  // 2. ROWI SEI — ancla individual. $9.95/mes o $49 por 6 meses (con SEI).
+  // ============================================================
+  sei: {
+    slug: "sei",
+    name: "ROWI SEI",
+    nameEN: "ROWI SEI",
+    description:
+      "Tu inteligencia emocional medida y en acción. Incluye tu evaluación SEER completa y seguimiento Vital Signs. Paga 6 meses ($49) y tu SEI va incluido, con re-test cada 6 meses.",
+    descriptionEN:
+      "Your emotional intelligence, measured and in action. Includes your full SEI assessment and Vital Signs tracking. Pay 6 months ($49) and your SEI is included, re-tested every 6 months.",
+
+    priceMonthly: 9.95,
+    priceYearly: 49, // pago por 6 meses (≈ $8.16/mes) que desbloquea el SEI
+    isCustomPricing: false,
+    currency: "USD",
+
+    tokensMonthly: 80,
+    tokensShared: false,
+
+    maxUsers: 1,
+    minUsers: 1,
+    allowFamilyMembers: false,
+
+    planType: "individual",
+    targetAudience: "B2C",
+
+    agents: {
+      superRowi: true,
+      rowiEQ: true,
+      rowiAffinity: true,
+      rowiECO: false,
+      rowiTrainer: false,
+      rowiSales: false,
+    },
+
+    seiIncluded: true,
+    seiAnnual: true,
+    brainBriefIncluded: false,
+    seiDiscountPercent: 0,
+
+    maxCommunities: 1,
+    privateGroups: false,
+    benchmarkAccess: true,
+    advancedReports: false,
+    executiveDashboard: false,
+    benchmarkingSectorial: false,
+    apiAccess: false,
+
+    integrations: {
+      slack: false,
+      teams: false,
+      gmail: false,
+    },
+
+    supportLevel: "email",
+    customOnboarding: false,
+    workshopIncludes: false,
+
+    // WeekFlow
+    weekflowAccess: false,
+    maxWeekflows: 0,
+    weekflowInsights: false,
+
+    emoji: "🧭",
+    color: "#7C3AED",
+    icon: "Compass",
+    sortOrder: 2,
+    isPublic: true,
+
+    features: [
+      "Evaluación SEI completa incluida",
+      "Re-test SEI cada 6 meses",
+      "Seguimiento Vital Signs",
+      "80 tokens IA / mes",
+      "Rowi EQ + Afinidad",
+    ],
+    featuresEN: [
+      "Full SEI assessment included",
+      "SEI re-test every 6 months",
+      "Vital Signs tracking",
+      "80 AI tokens / month",
+      "Rowi EQ + Affinity",
+    ],
+    limitations: [
+      "1 usuario",
+      "Sin grupos privados",
+    ],
+    limitationsEN: [
+      "1 user",
+      "No private groups",
+    ],
+  },
+
+  // ============================================================
+  // 3. ROWI+
   // ============================================================
   plus: {
     slug: "plus",

@@ -106,24 +106,34 @@ export async function POST(req: NextRequest) {
           console.log(`✅ Precio mensual creado: $${plan.priceCents / 100}/mes -> ${priceMonthly.id}`);
         }
 
-        // 3. Crear precio anual si no existe (con descuento ~17%)
-        const yearlyPriceCents = plan.priceYearlyCents || Math.round(plan.priceCents * 10); // 10 meses = ~17% descuento
-        if (!stripePriceIdYearly && yearlyPriceCents > 0) {
-          const priceYearly = await stripe.prices.create({
+        // 3. Crear el precio de "periodo largo" si no existe.
+        //    - Por defecto es ANUAL (interval year), con descuento ~17% si no
+        //      se definió priceYearlyCents explícito.
+        //    - EXCEPCIÓN plan "sei": su pago largo es SEMESTRAL (cada 6 meses,
+        //      $49) e incluye el re-test SEI. Se modela como interval=month,
+        //      interval_count=6. Vive en el mismo campo stripePriceIdYearly,
+        //      que el checkout usa cuando billingPeriod="yearly".
+        const isSeiSemestral = plan.slug === "sei";
+        const longPriceCents = plan.priceYearlyCents || Math.round(plan.priceCents * 10);
+        if (!stripePriceIdYearly && longPriceCents > 0) {
+          const recurring: { interval: "year" | "month"; interval_count?: number } =
+            isSeiSemestral ? { interval: "month", interval_count: 6 } : { interval: "year" };
+          const priceLong = await stripe.prices.create({
             product: stripeProductId,
-            unit_amount: yearlyPriceCents,
+            unit_amount: longPriceCents,
             currency: "usd",
-            recurring: {
-              interval: "year",
-            },
+            recurring,
             metadata: {
               planId: plan.id,
-              billingPeriod: "yearly",
+              billingPeriod: isSeiSemestral ? "semiannual" : "yearly",
             },
           });
-          stripePriceIdYearly = priceYearly.id;
-          console.log(`✅ Precio anual creado: $${yearlyPriceCents / 100}/año -> ${priceYearly.id}`);
+          stripePriceIdYearly = priceLong.id;
+          console.log(
+            `✅ Precio largo creado (${isSeiSemestral ? "6 meses" : "año"}): $${longPriceCents / 100} -> ${priceLong.id}`,
+          );
         }
+        const yearlyPriceCents = longPriceCents;
 
         // 4. Actualizar plan en la BD con los IDs de Stripe
         await prisma.plan.update({

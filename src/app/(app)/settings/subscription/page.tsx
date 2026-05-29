@@ -187,7 +187,10 @@ export default function SubscriptionPage() {
                 {t("trialEnds")} {new Date(data!.trialEndsAt!).toLocaleDateString()} ({trialDaysLeft} {t("trialDaysLeft")})
               </p>
             </div>
-            <button className="rowi-btn-primary">
+            <button
+              className="rowi-btn-primary"
+              onClick={() => { window.location.href = "/pricing"; }}
+            >
               {t("upgradeNow")}
             </button>
           </div>
@@ -218,7 +221,10 @@ export default function SubscriptionPage() {
               )}
             </div>
           </div>
-          <button className="rowi-btn flex items-center gap-2">
+          <button
+            className="rowi-btn flex items-center gap-2"
+            onClick={() => { window.location.href = "/pricing"; }}
+          >
             <Sparkles size={16} />
             {t("upgradeNow")}
           </button>
@@ -302,7 +308,22 @@ export default function SubscriptionPage() {
               </div>
             )}
 
-            <button className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <button
+              className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/stripe/portal", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ returnUrl: window.location.href }),
+                  });
+                  const json = await res.json();
+                  if (json.url) window.location.href = json.url;
+                } catch {
+                  /* el portal requiere un customer de Stripe; si falla, no-op */
+                }
+              }}
+            >
               <span className="text-sm">{t("manageBilling")}</span>
               <ExternalLink size={16} className="rowi-muted" />
             </button>

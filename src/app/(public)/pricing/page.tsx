@@ -34,6 +34,7 @@ import {
 
 const PLAN_ICONS: Record<PlanSlug, React.ElementType> = {
   free: Sparkles,
+  sei: Star,
   plus: Star,
   family: Users,
   pro: Rocket,

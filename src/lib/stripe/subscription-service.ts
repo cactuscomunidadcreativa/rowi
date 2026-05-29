@@ -86,6 +86,12 @@ interface CreateCheckoutParams {
    * la sub al tenant y sincronizar asientos.
    */
   tenantId?: string;
+  /**
+   * Periodo de cobro: "monthly" usa stripePriceIdMonthly, "yearly" usa
+   * stripePriceIdYearly (también el plan semestral $49 vive en el price
+   * "yearly"/long-term). Default "monthly".
+   */
+  billingPeriod?: "monthly" | "yearly";
 }
 
 interface CreateCustomerParams {
@@ -149,6 +155,7 @@ export async function createCheckoutSession(
     locale = "es",
     quantity,
     tenantId,
+    billingPeriod = "monthly",
   } = params;
 
   // 🎫 Cantidad de asientos: al menos 1. Entero positivo. En B2C no se
@@ -164,7 +171,14 @@ export async function createCheckoutSession(
     throw new Error("Plan not found");
   }
 
-  if (!plan.stripePriceIdMonthly) {
+  // Elegir el price según el periodo. "yearly" cae a mensual si no hay
+  // price anual configurado (evita romper si solo existe el mensual).
+  const stripePriceId =
+    billingPeriod === "yearly"
+      ? plan.stripePriceIdYearly || plan.stripePriceIdMonthly
+      : plan.stripePriceIdMonthly;
+
+  if (!stripePriceId) {
     throw new Error("Plan not configured for Stripe payments");
   }
 
@@ -181,7 +195,7 @@ export async function createCheckoutSession(
     payment_method_types: ["card"],
     line_items: [
       {
-        price: plan.stripePriceIdMonthly,
+        price: stripePriceId,
         quantity: seatQuantity,
       },
     ],
@@ -192,6 +206,7 @@ export async function createCheckoutSession(
       userId,
       planId,
       ...(tenantId ? { tenantId } : {}),
+      ...(couponCode ? { couponCode: String(couponCode).toUpperCase() } : {}),
     },
     subscription_data: {
       metadata: {
@@ -206,19 +221,24 @@ export async function createCheckoutSession(
         trial_period_days: plan.trialDays,
       }),
     },
-    // Permitir códigos promocionales
-    allow_promotion_codes: true,
   };
 
-  // Aplicar cupón si se proporcionó
+  // Aplicar cupón si se proporcionó y existe en Stripe. Stripe NO permite
+  // `discounts` y `allow_promotion_codes` simultáneamente: si hay cupón
+  // explícito lo aplicamos directo; si no, dejamos que el usuario escriba un
+  // promo code en el checkout de Stripe (allow_promotion_codes).
+  let appliedExplicitCoupon = false;
   if (couponCode) {
     const coupon = await prisma.coupon.findUnique({
-      where: { code: couponCode },
+      where: { code: String(couponCode).toUpperCase() },
     });
-
     if (coupon?.stripeCouponId) {
       sessionParams.discounts = [{ coupon: coupon.stripeCouponId }];
+      appliedExplicitCoupon = true;
     }
+  }
+  if (!appliedExplicitCoupon) {
+    sessionParams.allow_promotion_codes = true;
   }
 
   const stripeClient = await requireStripe();
@@ -366,6 +386,59 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       convertedAt: new Date(),
     },
   });
+
+  // 🎟️ Registrar redención de cupón (best-effort): si la sesión aplicó un
+  // descuento, ubicamos el Coupon local por su stripeCouponId, creamos la
+  // CouponRedemption (única por user+coupon) e incrementamos usedCount. Un
+  // fallo aquí NO debe afectar la activación del plan, por eso va aislado.
+  try {
+    // Fuente primaria y fiable: el couponCode que guardamos en la metadata de
+    // la sesión al crear el checkout. Fallback: el descuento del breakdown
+    // (puede no venir si no se expandió). `coupon` puede ser id o expandido.
+    const metaCode = session.metadata?.couponCode || null;
+    const firstDiscount = session.total_details?.breakdown?.discounts?.[0]?.discount as
+      | { coupon?: string | { id?: string } }
+      | undefined;
+    const rawCoupon = firstDiscount?.coupon;
+    const discountCouponId =
+      typeof rawCoupon === "string" ? rawCoupon : rawCoupon?.id ?? null;
+
+    if (metaCode || discountCouponId) {
+      const coupon = await prisma.coupon.findFirst({
+        where: metaCode
+          ? { code: metaCode }
+          : { stripeCouponId: discountCouponId as string },
+        select: { id: true, maxUses: true, usedCount: true },
+      });
+      if (coupon) {
+        const already = await prisma.couponRedemption.findUnique({
+          where: { couponId_userId: { couponId: coupon.id, userId } },
+        });
+        if (!already) {
+          const discountApplied = (session.total_details?.amount_discount ?? 0) / 100;
+          await prisma.couponRedemption.create({
+            data: {
+              couponId: coupon.id,
+              userId,
+              subscriptionId: (session.subscription as string) || null,
+              discountApplied,
+            },
+          });
+          const newUsed = coupon.usedCount + 1;
+          await prisma.coupon.update({
+            where: { id: coupon.id },
+            data: {
+              usedCount: newUsed,
+              // Desactivar si alcanzó el tope de usos.
+              ...(coupon.maxUses && newUsed >= coupon.maxUses ? { active: false } : {}),
+            },
+          });
+        }
+      }
+    }
+  } catch (redErr) {
+    console.error("⚠️ No se pudo registrar la redención del cupón:", redErr);
+  }
 
   console.log(`✅ Checkout completed for user ${userId}, plan ${planId}`);
 }

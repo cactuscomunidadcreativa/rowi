@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createCheckoutSession } from "@/lib/stripe/subscription-service";
 import { rateLimiters, getClientIdentifier } from "@/lib/security/rateLimit";
+import { prisma } from "@/core/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,14 +41,36 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // quantity + tenantId son opcionales (B2B por asientos). Si no vienen,
     // el checkout se comporta igual que antes (retro-compat B2C).
-    const { planId, couponCode, locale, quantity, tenantId } = body;
+    // Acepta planId (UUID) O planSlug (ej. "sei", "plus") — el register y la
+    // página de pricing envían slug; resolvemos a id aquí. billingPeriod
+    // elige price mensual vs anual/semestral.
+    const { planId: rawPlanId, planSlug, couponCode, locale, quantity, tenantId, billingPeriod } = body;
+
+    let planId: string | undefined = typeof rawPlanId === "string" ? rawPlanId : undefined;
+
+    if (!planId && typeof planSlug === "string" && planSlug) {
+      const bySlug = await prisma.plan.findUnique({
+        where: { slug: planSlug },
+        select: { id: true },
+      });
+      if (!bySlug) {
+        return NextResponse.json(
+          { error: `Plan no encontrado para slug "${planSlug}"` },
+          { status: 404 }
+        );
+      }
+      planId = bySlug.id;
+    }
 
     if (!planId) {
       return NextResponse.json(
-        { error: "planId is required" },
+        { error: "planId o planSlug es requerido" },
         { status: 400 }
       );
     }
+
+    const period: "monthly" | "yearly" =
+      billingPeriod === "yearly" || billingPeriod === "annual" ? "yearly" : "monthly";
 
     // Normaliza quantity → entero ≥ 1 si vino. undefined si no.
     const seatQuantity =
@@ -67,6 +90,7 @@ export async function POST(req: NextRequest) {
       locale: locale || "es",
       quantity: seatQuantity,
       tenantId: typeof tenantId === "string" && tenantId ? tenantId : undefined,
+      billingPeriod: period,
     });
 
     return NextResponse.json({

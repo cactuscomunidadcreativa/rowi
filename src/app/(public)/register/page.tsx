@@ -431,6 +431,7 @@ const STEPS = [
 
 const PLAN_ICONS: Record<PlanSlug, React.ElementType> = {
   free: Sparkles,
+  sei: Star,
   plus: Star,
   family: Users,
   pro: Rocket,
@@ -637,6 +638,9 @@ function RegisterPageContent() {
         body: JSON.stringify({
           planSlug: selectedPlan.slug,
           billingPeriod,
+          // Cupón: el usuario pudo ingresar un código de cupón o de referido.
+          // Se pasa al checkout; el backend lo aplica si tiene stripeCouponId.
+          couponCode: formData.couponCode || formData.referralCode || undefined,
           successUrl: `${window.location.origin}/register/success`,
           cancelUrl: `${window.location.origin}/register?step=plan`,
         }),

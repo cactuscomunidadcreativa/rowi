@@ -430,13 +430,19 @@ export async function GET(req: NextRequest) {
     let communityTopPerformerProfile: any = null;
 
     if (compareWith === "rowiverse" || compareWith === "benchmark") {
-      // Buscar benchmark activo del Rowiverse o específico
+      // Buscar benchmark del Rowiverse o uno específico.
+      // Para el scope "rowiverse" hay múltiples ROWIVERSE activos en prod (SOH
+      // 273k + 6sGO-SEI 13). Sin orden explícito findFirst agarraba el más
+      // pequeño y el usuario veía "Sample: 13 people". Ordenar por totalRows
+      // desc garantiza usar el más representativo (el seed Six Seconds).
+      // Pendiente arquitectura: agregado virtual que sume TODOS los benchmarks.
       const whereClause = benchmarkId
         ? { id: benchmarkId }
         : { type: "ROWIVERSE" as const, isActive: true };
 
       benchmark = await prisma.benchmark.findFirst({
         where: whereClause,
+        orderBy: benchmarkId ? undefined : { totalRows: "desc" },
         include: {
           statistics: {
             where: {

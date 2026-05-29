@@ -146,7 +146,9 @@ export default function PublicWorldMap() {
     return (
       <section className="py-20 bg-gradient-to-b from-[var(--rowi-bg,#f7f9fb)] to-[var(--rowi-card,#ffffff)]">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center h-[400px]">
+          {/* Reserve the same vertical space the loaded section occupies
+              (header + stats + map) so there is no layout jump on load. */}
+          <div className="flex items-center justify-center min-h-[700px] md:min-h-[800px]">
             <div className="w-12 h-12 border-4 border-[var(--rowi-g2,#31a2e3)] border-t-transparent rounded-full animate-spin" />
           </div>
         </div>

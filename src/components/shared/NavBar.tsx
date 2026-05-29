@@ -266,17 +266,22 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 /* =========================================================
    🔗 Links principales del navbar (base)
 ========================================================= */
+// Orden = prioridad del loop personal primero (Dashboard → Vital Signs →
+// Rowi Coach), luego herramientas personales (ECO, Afinidad, WeekFlow) y al
+// final lo de grupo/datos (Workspace, Comunidad, Org, Benchmark). Todos se
+// muestran como icono con el nombre en tooltip (title); en pantallas muy
+// anchas (2xl) aparece también el texto.
 const BASE_LINKS = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"] },
+  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
   { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"] },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"] },
   { href: "/community", key: "community", icon: Users, roles: ["*"] },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"] },
   { href: "/org", key: "org", icon: Building2, roles: ["*"] },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"] },
-  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
 ];
 
 // Social sub-links for the dropdown
@@ -489,7 +494,7 @@ export default function NavBar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0">
-          {visibleLinks.slice(0, 8).map((l) => {
+          {visibleLinks.map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
             const label = t[l.key as keyof typeof t] || l.key;

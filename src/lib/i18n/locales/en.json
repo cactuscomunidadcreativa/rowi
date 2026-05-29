@@ -5806,5 +5806,6 @@
   "forOrg.stats.title": "The impact of emotional intelligence on organizations",
   "forOrg.stats.turnover": "Turnover reduction (Amadori case)",
   "admin.finance.dashboard.empty.title": "No financial data yet",
-  "admin.finance.dashboard.empty.description": "Metrics will appear once there are transactions recorded in accounting."
+  "admin.finance.dashboard.empty.description": "Metrics will appear once there are transactions recorded in accounting.",
+  "landing.pain.item6": "You feel exhausted even when you've slept well."
 }

@@ -14,6 +14,7 @@ export default function PainSection() {
     t("landing.pain.item3"),
     t("landing.pain.item4"),
     t("landing.pain.item5"),
+    t("landing.pain.item6"),
   ];
 
   return (

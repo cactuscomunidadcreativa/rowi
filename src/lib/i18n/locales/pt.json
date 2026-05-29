@@ -5806,5 +5806,6 @@
   "forOrg.stats.title": "O impacto da inteligência emocional nas organizações",
   "forOrg.stats.turnover": "Redução de rotatividade (caso Amadori)",
   "admin.finance.dashboard.empty.title": "Ainda não há dados financeiros",
-  "admin.finance.dashboard.empty.description": "As métricas aparecerão quando houver transações registradas na contabilidade."
+  "admin.finance.dashboard.empty.description": "As métricas aparecerão quando houver transações registradas na contabilidade.",
+  "landing.pain.item6": "Você se sente esgotado/a mesmo tendo dormido bem."
 }

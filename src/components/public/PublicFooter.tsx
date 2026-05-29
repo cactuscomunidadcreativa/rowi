@@ -48,7 +48,7 @@ export default function PublicFooter() {
               <span className="font-bold text-xl rowi-gradient-text">Rowi</span>
             </Link>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm">
-              {t("footer.description", "Tu compañero de inteligencia emocional impulsado por IA y metodología Six Seconds.")}
+              {t("footer.description", "La IA que te ayuda a entender tus emociones, mejorar tus relaciones y liderar mejor — con la metodología líder en inteligencia emocional, Six Seconds.")}
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (

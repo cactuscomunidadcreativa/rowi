@@ -14,7 +14,7 @@ interface Section {
 }
 
 export default function ForOrganizationsPage() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
@@ -57,137 +57,102 @@ export default function ForOrganizationsPage() {
     <div className="min-h-screen pt-16">
       <HeroSection
         content={{
-          badge: lang !== "es" ? "🏢 For Business" : "🏢 Para empresas",
-          title1: lang !== "es" ? "Emotional intelligence" : "Inteligencia emocional",
-          title2: lang !== "es" ? "for your organization" : "para tu organización",
-          subtitle: lang === "en"
-            ? "Boost your team's wellbeing and performance with data-driven emotional development tools."
-            : "Potencia el bienestar y rendimiento de tu equipo con herramientas de desarrollo emocional basadas en datos.",
-          ctaPrimary: lang !== "es" ? "Request demo" : "Solicitar demo",
-          ctaSecondary: lang !== "es" ? "See success stories" : "Ver casos de éxito",
+          badge: t("forOrg.hero.badge"),
+          title1: t("forOrg.hero.title1"),
+          title2: t("forOrg.hero.title2"),
+          subtitle: t("forOrg.hero.subtitle"),
+          ctaPrimary: t("forOrg.hero.cta.primary"),
+          ctaSecondary: t("forOrg.hero.cta.secondary"),
+          ctaSecondaryHref: "#cases",
           image: "/rowivectors/Rowi-06.png",
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />
 
+      {/* Six Seconds case-study evidence — real, citable figures */}
       <StatsSection
         content={{
+          title: t("forOrg.stats.title"),
+          subtitle: t("forOrg.stats.subtitle"),
           stats: [
-            { value: "32", suffix: "%", label: lang !== "es" ? "Communication improvement" : "Mejora en comunicación" },
-            { value: "45", suffix: "%", label: lang !== "es" ? "Conflict reduction" : "Reducción de conflictos" },
-            { value: "28", suffix: "%", label: lang !== "es" ? "Productivity increase" : "Aumento de productividad" },
-            { value: "3", suffix: "x", label: lang !== "es" ? "Average ROI" : "ROI promedio" },
+            { value: "22", suffix: "x", label: t("forOrg.stats.highPerf") },
+            { value: "63", suffix: "%", label: t("forOrg.stats.turnover") },
+            { value: "47", suffix: "%", label: t("forOrg.stats.managerial") },
+            { value: "50", suffix: "+", label: t("forOrg.stats.cases") },
           ],
         }}
-        config={{ layout: "gradient", columns: 4 }}
+        config={{ layout: "gradient", columns: 4, animated: false }}
       />
 
       <FeaturesSection
         content={{
-          title1: lang !== "es" ? "B2B" : "Soluciones",
-          title2: lang !== "es" ? "Solutions" : "B2B",
-          subtitle: lang === "en"
-            ? "Enterprise tools for organizations of any size"
-            : "Herramientas enterprise para organizaciones de cualquier tamaño",
+          title1: t("forOrg.features.title1"),
+          title2: t("forOrg.features.title2"),
+          subtitle: t("forOrg.features.subtitle"),
           features: [
             {
               icon: "users",
-              title: lang !== "es" ? "Team Assessments" : "Evaluaciones de Equipo",
-              description: lang === "en"
-                ? "Map your organization's emotional intelligence with group SEI assessments"
-                : "Mapea la inteligencia emocional de tu organización con evaluaciones SEI grupales",
-              gradient: "from-blue-500 to-cyan-500"
+              title: t("forOrg.features.assessments.title"),
+              description: t("forOrg.features.assessments.description"),
+              gradient: "from-blue-500 to-cyan-500",
             },
             {
               icon: "bar-chart",
-              title: lang !== "es" ? "Advanced Analytics" : "Analytics Avanzados",
-              description: lang === "en"
-                ? "Executive dashboards with real-time EI metrics"
-                : "Dashboards ejecutivos con métricas de IE en tiempo real",
-              gradient: "from-purple-500 to-violet-500"
+              title: t("forOrg.features.analytics.title"),
+              description: t("forOrg.features.analytics.description"),
+              gradient: "from-purple-500 to-violet-500",
             },
             {
               icon: "heart",
-              title: lang !== "es" ? "Team Affinity" : "Team Affinity",
-              description: lang === "en"
-                ? "Optimize team composition by emotional affinity"
-                : "Optimiza la composición de equipos por afinidad emocional",
-              gradient: "from-pink-500 to-rose-500"
+              title: t("forOrg.features.affinity.title"),
+              description: t("forOrg.features.affinity.description"),
+              gradient: "from-pink-500 to-rose-500",
             },
             {
               icon: "shield",
-              title: lang !== "es" ? "SSO & Security" : "SSO & Seguridad",
-              description: lang === "en"
-                ? "Enterprise integration with the highest security standards"
-                : "Integración empresarial con los más altos estándares de seguridad",
-              gradient: "from-green-500 to-emerald-500"
+              title: t("forOrg.features.security.title"),
+              description: t("forOrg.features.security.description"),
+              gradient: "from-green-500 to-emerald-500",
             },
             {
               icon: "sparkles",
-              title: lang !== "es" ? "Corporate Rowi" : "Rowi Corporativo",
-              description: lang === "en"
-                ? "Personalized AI coach for every member of your organization"
-                : "Coach IA personalizado para cada colaborador de tu organización",
-              gradient: "from-orange-500 to-amber-500"
+              title: t("forOrg.features.corporate.title"),
+              description: t("forOrg.features.corporate.description"),
+              gradient: "from-orange-500 to-amber-500",
             },
             {
               icon: "zap",
-              title: lang !== "es" ? "API & Integrations" : "API & Integraciones",
-              description: lang === "en"
-                ? "Connect with Slack, Teams, HRIS and more existing tools"
-                : "Conecta con Slack, Teams, HRIS y más herramientas existentes",
-              gradient: "from-indigo-500 to-blue-500"
+              title: t("forOrg.features.api.title"),
+              description: t("forOrg.features.api.description"),
+              gradient: "from-indigo-500 to-blue-500",
             },
           ],
         }}
         config={{ columns: 3, showIcons: true }}
       />
 
-      <TestimonialsSection
-        content={{
-          title: lang !== "es" ? "Companies that trust Rowi" : "Empresas que confían en Rowi",
-          testimonials: [
-            {
-              quote: lang === "en"
-                ? "Rowi transformed our team dynamics. Productivity increased and conflicts decreased significantly."
-                : "Rowi transformó la dinámica de nuestros equipos. La productividad aumentó y los conflictos disminuyeron notablemente.",
-              author: "María González",
-              role: "VP de People",
-              company: "TechCorp",
-              rating: 5
-            },
-            {
-              quote: lang === "en"
-                ? "The ROI was evident in the first 3 months. Our leaders now have concrete tools to manage teams."
-                : "El ROI fue evidente en los primeros 3 meses. Nuestros líderes ahora tienen herramientas concretas para gestionar equipos.",
-              author: "Carlos Ruiz",
-              role: "CEO",
-              company: "Innovatech",
-              rating: 5
-            },
-            {
-              quote: lang === "en"
-                ? "Integration was simple and support exceptional. I recommend Rowi to any organization serious about wellbeing."
-                : "La integración fue sencilla y el soporte excepcional. Recomiendo Rowi a cualquier organización seria sobre bienestar.",
-              author: "Ana Martínez",
-              role: "CHRO",
-              company: "Global Solutions",
-              rating: 5
-            },
-          ],
-        }}
-        config={{ columns: 3, showRating: true }}
-      />
+      {/* Social proof — Six Seconds case studies (not invented companies) */}
+      <div id="cases">
+        <TestimonialsSection
+          content={{
+            title: t("forOrg.social.title"),
+            subtitle: t("forOrg.social.subtitle"),
+            testimonials: [
+              { quote: t("forOrg.social.1.quote"), author: t("forOrg.social.1.author"), role: t("forOrg.social.1.role") },
+              { quote: t("forOrg.social.2.quote"), author: t("forOrg.social.2.author"), role: t("forOrg.social.2.role") },
+              { quote: t("forOrg.social.3.quote"), author: t("forOrg.social.3.author"), role: t("forOrg.social.3.role") },
+            ],
+          }}
+          config={{ columns: 3 }}
+        />
+      </div>
 
       <CTASection
         content={{
-          title: lang !== "es" ? "Ready to transform your organization?" : "¿Listo para transformar tu organización?",
-          subtitle: lang === "en"
-            ? "Schedule a personalized demo and discover how Rowi can help your team."
-            : "Agenda una demo personalizada y descubre cómo Rowi puede ayudar a tu equipo.",
-          buttonText: lang !== "es" ? "Request demo" : "Solicitar demo",
+          title: t("forOrg.cta.title"),
+          subtitle: t("forOrg.cta.subtitle"),
+          buttonText: t("forOrg.cta.button"),
           buttonIcon: "rocket",
-          secondaryButtonText: lang !== "es" ? "Download brochure" : "Descargar brochure",
         }}
         config={{ gradient: true }}
       />

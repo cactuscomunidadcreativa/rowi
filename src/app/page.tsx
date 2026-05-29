@@ -2,11 +2,21 @@
 
 import { useEffect, useState } from "react";
 import CMSPageRenderer from "@/components/public/CMSPageRenderer";
-import { HeroSection, FeaturesSection, StatsSection, CTASection } from "@/components/public/sections";
+import {
+  HeroSection,
+  FeaturesSection,
+  StatsSection,
+  CTASection,
+  HowItWorksSection,
+  TestimonialsSection,
+} from "@/components/public/sections";
 import RowiEvolution from "@/components/public/RowiEvolution";
 import PublicWorldMap from "@/components/public/PublicWorldMap";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+import PainSection from "@/components/public/PainSection";
+import UseCasesSection from "@/components/public/UseCasesSection";
+import FloatingCTA from "@/components/public/FloatingCTA";
 import { useI18n } from "@/lib/i18n/useI18n";
 
 /**
@@ -88,7 +98,7 @@ function FallbackHomePage() {
     <>
       <PublicNavbar />
       <main className="min-h-screen bg-[var(--rowi-bg,#f7f9fb)]" style={{ paddingTop: "calc(4rem + var(--banner-height, 0px))" }}>
-        {/* Hero */}
+        {/* Hero — sell transformation */}
         <HeroSection
           content={{
             badge: t("landing.hero.badge"),
@@ -98,6 +108,7 @@ function FallbackHomePage() {
             ctaPrimary: t("landing.hero.cta.primary"),
             ctaSecondary: t("landing.hero.cta.secondary"),
             ctaSecondaryHref: "/demo",
+            image: "/rowivectors/Rowi-06.png",
             trustBadges: [
               { icon: "shield", text: t("landing.hero.trust.security") },
               { icon: "globe", text: t("landing.hero.trust.methodology") },
@@ -105,31 +116,31 @@ function FallbackHomePage() {
             ],
           }}
           config={{
-            layout: "centered",
+            layout: "split",
             showBadge: true,
             showTrustBadges: true,
             gradient: true,
           }}
         />
 
-        {/* Stats */}
-        <StatsSection
+        {/* Problem before product */}
+        <PainSection />
+
+        {/* How it works — 5 steps */}
+        <HowItWorksSection
           content={{
-            stats: [
-              { value: "10,000", suffix: "+", label: t("landing.stats.activeUsers") },
-              { value: "50,000", suffix: "+", label: t("landing.stats.conversations") },
-              { value: "95", suffix: "%", label: t("landing.stats.satisfaction") },
-              { value: "24", suffix: "/7", label: t("landing.stats.availability") },
+            title: t("landing.howItWorks.title"),
+            subtitle: t("landing.howItWorks.subtitle"),
+            steps: [
+              { number: "1", title: t("landing.howItWorks.step1.title"), description: t("landing.howItWorks.step1.description") },
+              { number: "2", title: t("landing.howItWorks.step2.title"), description: t("landing.howItWorks.step2.description") },
+              { number: "3", title: t("landing.howItWorks.step3.title"), description: t("landing.howItWorks.step3.description") },
+              { number: "4", title: t("landing.howItWorks.step4.title"), description: t("landing.howItWorks.step4.description") },
+              { number: "5", title: t("landing.howItWorks.step5.title"), description: t("landing.howItWorks.step5.description") },
             ],
           }}
-          config={{ layout: "gradient", columns: 4 }}
+          config={{ layout: "timeline", showNumbers: true }}
         />
-
-        {/* Global Map */}
-        <PublicWorldMap />
-
-        {/* Evolution */}
-        <RowiEvolution />
 
         {/* Features */}
         <FeaturesSection
@@ -179,6 +190,44 @@ function FallbackHomePage() {
           config={{ columns: 3, showIcons: true }}
         />
 
+        {/* Use cases — sense of momentum */}
+        <UseCasesSection />
+
+        {/* Global Map */}
+        <PublicWorldMap />
+
+        {/* Evolution */}
+        <RowiEvolution />
+
+        {/* Six Seconds reach — real, verifiable numbers */}
+        <StatsSection
+          content={{
+            title: t("landing.stats.title"),
+            subtitle: t("landing.stats.subtitle"),
+            stats: [
+              { value: "200", prefix: "+", label: t("landing.stats.countries") },
+              { value: "500,000", prefix: "+", label: t("landing.stats.assessments") },
+              { value: "27", label: t("landing.stats.languages") },
+              { value: "1997", label: t("landing.stats.since") },
+            ],
+          }}
+          config={{ layout: "gradient", columns: 4, animated: false }}
+        />
+
+        {/* Social proof — Six Seconds methodology */}
+        <TestimonialsSection
+          content={{
+            title: t("landing.social.title"),
+            subtitle: t("landing.social.subtitle"),
+            testimonials: [
+              { quote: t("landing.social.1.quote"), author: t("landing.social.1.author"), role: t("landing.social.1.role") },
+              { quote: t("landing.social.2.quote"), author: t("landing.social.2.author"), role: t("landing.social.2.role") },
+              { quote: t("landing.social.3.quote"), author: t("landing.social.3.author"), role: t("landing.social.3.role") },
+            ],
+          }}
+          config={{ columns: 3 }}
+        />
+
         {/* CTA */}
         <CTASection
           content={{
@@ -191,6 +240,7 @@ function FallbackHomePage() {
         />
       </main>
       <PublicFooter />
+      <FloatingCTA />
     </>
   );
 }

@@ -292,12 +292,12 @@ function CenteredHero({ content, config }: { content: HeroContent; config?: Hero
 ========================================================= */
 function SplitHero({ content, config }: { content: HeroContent; config?: HeroConfig }) {
   return (
-    <section className="relative min-h-[80vh] flex items-center overflow-hidden">
+    <section className="relative lg:min-h-[80vh] flex items-center overflow-hidden">
       {config?.gradient && <div className="absolute inset-0 bg-gradient-to-br from-[var(--rowi-g1)]/10 via-transparent to-[var(--rowi-g2)]/10" />}
       <AnimatedGrid />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 lg:py-20">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="order-2 lg:order-1">
             {config?.showBadge && content.badge && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -347,18 +347,41 @@ function SplitHero({ content, config }: { content: HeroContent; config?: HeroCon
                 </Link>
               )}
             </motion.div>
+
+            {config?.showTrustBadges && content.trustBadges && (
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8"
+              >
+                {content.trustBadges.map((badge, i) => {
+                  const Icon = iconMap[badge.icon] || Star;
+                  return (
+                    <div key={i} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <Icon className="w-4 h-4 text-[var(--rowi-g2,#31a2e3)]" />
+                      <span>{badge.text}</span>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
           </div>
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="relative aspect-square max-w-lg mx-auto"
+            className="order-1 lg:order-2 relative mx-auto w-56 h-56 sm:w-80 sm:h-80 lg:w-[28rem] lg:h-[28rem]"
           >
             {content.image && (
-              <div className="relative w-full h-full">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--rowi-g1)]/30 to-[var(--rowi-g2)]/30 blur-3xl" />
-                <Image src={content.image} alt="Hero" fill className="object-contain drop-shadow-2xl relative z-10" />
-              </div>
+              <>
+                {/* Soft glow behind the mascot */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--rowi-g1)]/40 to-[var(--rowi-g2)]/40 blur-3xl" />
+                {/* Circular frame crops the PNG's solid background block */}
+                <div className="absolute inset-[6%] rounded-full overflow-hidden bg-gradient-to-br from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 ring-1 ring-white/30 dark:ring-white/10 shadow-2xl z-10">
+                  <Image src={content.image} alt="Rowi" fill sizes="(max-width: 1024px) 24rem, 28rem" className="object-cover scale-110" />
+                </div>
+              </>
             )}
           </motion.div>
         </div>

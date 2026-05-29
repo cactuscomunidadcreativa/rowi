@@ -20,9 +20,13 @@ import Stripe from "stripe";
 const prisma = new PrismaClient();
 
 async function main() {
+  // NOTA: este script de build lee la key SOLO de env. Si la key está en
+  // SystemConfig (UI admin) pero NO en env de Vercel, este sync se omite —
+  // en ese caso, corre la sincronización desde el panel admin
+  // (POST /api/admin/stripe/sync-products), que sí lee SystemConfig.
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
-    console.log("⏭️  STRIPE_SECRET_KEY no configurada — se omite la sync a Stripe.");
+    console.log("⏭️  STRIPE_SECRET_KEY no está en env — se omite la sync en build (usa el panel admin si la pusiste en el UI).");
     return;
   }
   const stripe = new Stripe(key, { apiVersion: "2025-05-28.basil" as never });

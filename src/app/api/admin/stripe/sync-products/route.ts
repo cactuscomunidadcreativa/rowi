@@ -12,15 +12,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
-import Stripe from "stripe";
+import { getStripeClient } from "@/lib/stripe/client";
 import { logStripeSync } from "@/lib/audit/auditLog";
 
 export const dynamic = "force-dynamic";
 
-// Inicializar Stripe
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-05-28.basil" as any })
-  : null;
+// Stripe se resuelve dentro de cada handler vía getStripeClient(), que lee la
+// secret key desde SystemConfig (UI admin) PRIMERO y env como fallback. Antes
+// este endpoint leía solo process.env.STRIPE_SECRET_KEY, por eso reportaba
+// stripeConfigured:false aunque la clave estuviera puesta en el UI admin.
 
 /**
  * Verifica si el usuario es administrador del sistema
@@ -43,9 +43,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
     }
 
+    const stripe = await getStripeClient();
     if (!stripe) {
       return NextResponse.json(
-        { ok: false, error: "Stripe no está configurado. Falta STRIPE_SECRET_KEY." },
+        { ok: false, error: "Stripe no está configurado (ni en Ajustes → Integraciones ni en env)." },
         { status: 500 }
       );
     }
@@ -220,6 +221,8 @@ export async function GET(req: NextRequest) {
     if (!(await isSystemAdmin(session.user.email))) {
       return NextResponse.json({ ok: false, error: "Acceso denegado" }, { status: 403 });
     }
+
+    const stripe = await getStripeClient();
 
     const plans = await prisma.plan.findMany({
       where: { isActive: true },

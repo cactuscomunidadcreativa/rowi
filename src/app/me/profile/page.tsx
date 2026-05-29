@@ -60,7 +60,7 @@ export default function MeProfilePage() {
   ============================================== */
   useEffect(() => {
     async function loadProfile() {
-      const res = await fetch("/api/me");
+      const res = await fetch("/api/user/me");
       const data = await res.json();
       setUser(data.user || {});
       if (data.user?.brainProfile) setPrefs((p: any) => ({ ...p, talents: data.user.brainProfile.talents || [] }));

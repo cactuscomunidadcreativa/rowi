@@ -306,7 +306,10 @@ export default function PrivacyPage() {
         </div>
 
         <div className="space-y-3">
-          <button className="w-full flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+          <button
+            onClick={() => { window.location.href = "/api/account/privacy/export"; }}
+            className="w-full flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+          >
             <div className="flex items-center gap-3">
               <Download size={20} style={{ color: COLORS.blue }} />
               <div className="text-left">
@@ -316,7 +319,14 @@ export default function PrivacyPage() {
             </div>
           </button>
 
-          <button className="w-full flex items-center justify-between p-4 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800">
+          {/* Borrado de cuenta = acción irreversible. No la ejecutamos en un
+              clic; abrimos una solicitud de soporte (el equipo la procesa). */}
+          <a
+            href={`mailto:soporte@rowiia.com?subject=${encodeURIComponent(
+              lang === "en" ? "Account deletion request" : "Solicitud de eliminación de cuenta",
+            )}`}
+            className="w-full flex items-center justify-between p-4 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800"
+          >
             <div className="flex items-center gap-3">
               <Trash2 size={20} style={{ color: COLORS.red }} />
               <div className="text-left">
@@ -324,7 +334,7 @@ export default function PrivacyPage() {
                 <p className="text-xs text-red-600 dark:text-red-400/70">{t("deleteAccountDesc")}</p>
               </div>
             </div>
-          </button>
+          </a>
         </div>
       </motion.section>
 

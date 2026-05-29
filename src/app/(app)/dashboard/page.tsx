@@ -28,8 +28,7 @@ import { PursuitsBars } from "@/components/metrics/PursuitsBars";
 import { MoodChip } from "@/components/dashboard/MoodChip";
 import DailyPulseCard from "@/components/dashboard/DailyPulseCard";
 import { TalentCluster } from "@/components/talents/TalentCluster";
-import { BRAIN_TALENTS } from "@/domains/eq/lib/dictionary";
-import type { BrainTalentKey } from "@/domains/eq/lib/dictionary";
+import { getTalentLabel } from "@/domains/eq/lib/dictionary";
 import OutcomesPanel from "@/components/outcomes/OutcomesPanel";
 import OverallSummary from "@/components/outcomes/OverallSummary";
 import CoachPanel from "@/components/coach/CoachPanel";
@@ -239,11 +238,14 @@ const translations = {
   },
 };
 
-/** Resuelve el label localizado de un Brain Talent (lookup en BRAIN_TALENTS). */
+/**
+ * Resuelve el label localizado de un Brain Talent. Delega en getTalentLabel
+ * (dictionary.ts), que normaliza la key cruda PascalCase del API ("DataMining",
+ * "Reflecting", "Designing") a la key camelCase del diccionario. El lookup
+ * directo anterior fallaba con PascalCase y dejaba el nombre crudo.
+ */
 function talentLabel(k: string, lang: string): string {
-  const found = BRAIN_TALENTS[k as BrainTalentKey];
-  if (!found) return k;
-  return lang === "en" ? found.labelEN : found.labelES;
+  return getTalentLabel(k, lang);
 }
 
 export default function ClientDashboard() {

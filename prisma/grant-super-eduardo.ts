@@ -19,6 +19,7 @@ const prisma = new PrismaClient();
 const DEFAULT_EMAILS = [
   "eduardo@cactuscomunidadcreativa.com",
   "eduardo.gonzalez@cactuscomunidadcreativa.com",
+  "eduardo.gonzalez@6seconds.org",
 ];
 
 async function grantSuper(email: string) {
@@ -36,12 +37,19 @@ async function grantSuper(email: string) {
 
   console.log(`  ✓ Found: ${user.name || user.email}`);
 
-  // 1. organizationRole = SUPERADMIN
+  // 1. organizationRole = SUPERADMIN + plan Enterprise
+  const enterprisePlan = await prisma.plan.findFirst({
+    where: { slug: "enterprise" },
+    select: { id: true },
+  });
   await prisma.user.update({
     where: { id: user.id },
-    data: { organizationRole: "SUPERADMIN" },
+    data: {
+      organizationRole: "SUPERADMIN",
+      ...(enterprisePlan ? { planId: enterprisePlan.id } : {}),
+    },
   });
-  console.log(`  ✓ organizationRole = SUPERADMIN`);
+  console.log(`  ✓ organizationRole = SUPERADMIN${enterprisePlan ? " + plan Enterprise" : ""}`);
 
   // 2. Ensure tenant + Membership with ADMIN role
   let tenantId = user.primaryTenantId;
@@ -185,6 +193,30 @@ async function grantSuper(email: string) {
   console.log(`  ✅ ${email} is now SUPER user (all roles, all views)`);
 }
 
+/**
+ * Asigna el plan Enterprise a TODOS los usuarios @6seconds.org (el equipo Six
+ * Seconds entra como Enterprise por defecto). Idempotente: solo actualiza los
+ * que aún no están en enterprise. No toca su rol — solo el plan.
+ */
+async function grantEnterpriseToSixSeconds() {
+  const enterprisePlan = await prisma.plan.findFirst({
+    where: { slug: "enterprise" },
+    select: { id: true },
+  });
+  if (!enterprisePlan) {
+    console.log("  ⏭️  Plan enterprise no encontrado — se omite la regla @6seconds.org.");
+    return;
+  }
+  const res = await prisma.user.updateMany({
+    where: {
+      email: { endsWith: "@6seconds.org" },
+      NOT: { planId: enterprisePlan.id },
+    },
+    data: { planId: enterprisePlan.id },
+  });
+  console.log(`\n🟣 @6seconds.org → Enterprise: ${res.count} usuario(s) actualizado(s).`);
+}
+
 async function main() {
   const emails = process.argv[2] ? [process.argv[2]] : DEFAULT_EMAILS;
   for (const email of emails) {
@@ -193,6 +225,12 @@ async function main() {
     } catch (e) {
       console.error(`  ❌ Error for ${email}:`, e);
     }
+  }
+  // Regla de dominio: todo @6seconds.org = Enterprise.
+  try {
+    await grantEnterpriseToSixSeconds();
+  } catch (e) {
+    console.error("  ❌ Error en regla @6seconds.org:", e);
   }
 }
 

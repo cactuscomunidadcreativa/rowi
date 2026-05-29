@@ -598,24 +598,10 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
           <p className="text-gray-600 dark:text-gray-400 mb-4">{t.noSei}</p>
           <button
             type="button"
-            onClick={async () => {
-              // El SEI se toma en la plataforma de Six Seconds. /api/sei/link
-              // resuelve la URL según el plan/idioma del usuario. Si el plan no
-              // incluye SEI, devuelve upgrade:true → lo mandamos a /pricing.
-              try {
-                const res = await fetch("/api/sei/link");
-                const data = await res.json();
-                if (data?.ok && data.link?.url) {
-                  window.open(data.link.url, "_blank", "noopener,noreferrer");
-                } else if (data?.upgrade) {
-                  window.location.href = "/pricing";
-                } else {
-                  // Sin link configurado: llevar a pricing como fallback seguro.
-                  window.location.href = "/pricing";
-                }
-              } catch {
-                window.location.href = "/pricing";
-              }
+            onClick={() => {
+              // Lleva a /sei: el usuario elige idioma y desde ahí abre el SEI
+              // real (la página maneja el caso de plan sin SEI → upgrade).
+              window.location.href = "/sei";
             }}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
           >
@@ -638,21 +624,8 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
         </Link>
 
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              const res = await fetch("/api/sei/link");
-              const data = await res.json();
-              if (data?.ok && data.link?.url) {
-                window.open(data.link.url, "_blank", "noopener,noreferrer");
-              } else {
-                window.location.href = "/pricing";
-              }
-            } catch {
-              window.location.href = "/pricing";
-            }
-          }}
+        <Link
+          href="/sei"
           className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors group text-left w-full"
         >
           <Target className="w-5 h-5 text-orange-500" />
@@ -660,7 +633,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             {t.takeAssessment}
           </span>
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
-        </button>
+        </Link>
 
         <Link
           href="/dashboard#competencies"

@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { getServerAuthUser } from "@/core/auth";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -111,14 +111,9 @@ const PLANS = [
 
 export async function POST(req: NextRequest) {
   try {
-    // Verificar autenticación (solo admin puede hacer esto)
-    const auth = await getServerAuthUser().catch(() => null);
-    if (!auth) {
-      return NextResponse.json(
-        { ok: false, error: "No autorizado" },
-        { status: 401 }
-      );
-    }
+    // Solo SuperAdmin puede sembrar/sobrescribir los planes de precios.
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     const results = {
       created: [] as string[],

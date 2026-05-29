@@ -477,6 +477,7 @@ model Hub {
   costLinks         CostCenterLink[]
   agents            AgentConfig[]
   emotionalEngines  EmotionalAIEngine[]
+  budgets           Budget[]
   invoices          Invoice[]
   predictiveMetrics PredictiveMetric[]
   projects          Project[]
@@ -619,6 +620,7 @@ model Tenant {
   courses             Course[]
   emotionalEngines    EmotionalAIEngine[]
   employees           EmployeeProfile[]
+  budgets             Budget[]
   externalConnections ExternalConnection[]
   invites             InviteToken[]        @relation("TenantInvites")
   invoices            Invoice[]
@@ -1954,6 +1956,27 @@ model InvoiceItem {
   product     Product? @relation(fields: [productId], references: [id])
 
   @@map("invoice_item")
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  hubId       String?
+  name        String
+  category    String?
+  period      String   @default("monthly")
+  allocatedUsd Decimal @db.Decimal(12, 2)
+  spentUsd    Decimal  @default(0) @db.Decimal(12, 2)
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  meta        Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  hub         Hub?     @relation(fields: [hubId], references: [id])
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, hubId, startDate])
+  @@map("budget")
 }
 
 model CostCenter {

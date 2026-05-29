@@ -96,9 +96,11 @@ function Toggle({ checked, onChange }: ToggleProps) {
 }
 
 export default function NotificationsPage() {
-  const { locale } = useI18n();
+  const { t: tBase, locale } = useI18n();
   const lang = locale; // all 4 languages
-  const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
+  // Usa el JSON central (settings.notifications.*) y cae al texto ES del
+  // catálogo T como fallback. Así PT/IT salen del JSON en vez de ver inglés.
+  const t = (key: string) => tBase(`settings.notifications.${key}`, T[key]?.es || key);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

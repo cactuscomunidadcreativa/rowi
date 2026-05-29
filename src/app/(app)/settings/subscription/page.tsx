@@ -110,9 +110,11 @@ type SubscriptionData = {
 };
 
 export default function SubscriptionPage() {
-  const { locale } = useI18n();
+  const { t: tBase, locale } = useI18n();
   const lang = locale; // all 4 languages
-  const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
+  // Usa el JSON central (settings.subscription.*) y cae al texto ES del
+  // catálogo T como fallback. Así PT/IT salen del JSON en vez de ver inglés.
+  const t = (key: string) => tBase(`settings.subscription.${key}`, T[key]?.es || key);
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubscriptionData | null>(null);

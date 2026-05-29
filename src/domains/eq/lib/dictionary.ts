@@ -828,6 +828,41 @@ export function getBrainStyleColor(raw: string): string {
   return BRAIN_STYLES[key]?.color || "#94a3b8";
 }
 
+/**
+ * Resuelve el nombre localizado de un Brain Talent a partir de la key cruda
+ * que llega de los imports (PascalCase como "DataMining", "Reflecting",
+ * "Designing"). Normaliza a la key camelCase del diccionario (con alias para
+ * las variantes -ing) y devuelve el label por idioma. pt/it caen a es.
+ */
+const TALENT_KEY_ALIASES: Record<string, BrainTalentKey> = {
+  reflecting: "reflection",
+  designing: "design",
+  visionary: "vision",
+};
+
+export function getTalentLabel(raw: string, lang: string = "es"): string {
+  if (!raw) return raw;
+  // PascalCase/space → camelCase compacto: "Data Mining"/"DataMining" → "datamining"
+  const compact = raw.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  // Buscar la key del diccionario cuyo lowercase coincide.
+  let key = (Object.keys(BRAIN_TALENTS) as BrainTalentKey[]).find(
+    (k) => k.toLowerCase() === compact,
+  );
+  if (!key && TALENT_KEY_ALIASES[compact]) key = TALENT_KEY_ALIASES[compact];
+  if (!key) return raw; // sin match: devolver crudo (mejor que romper)
+  const t = BRAIN_TALENTS[key];
+  return lang === "en" ? t.labelEN : t.labelES;
+}
+
+/** Nombre localizado de un grupo de talentos (focus/decisions/drive). */
+export function getTalentCategoryLabel(category: string, lang: string = "es"): string {
+  const cat = (BRAIN_TALENT_CATEGORIES as Record<string, { labelEN: string; labelES: string }>)[
+    category
+  ];
+  if (!cat) return category;
+  return lang === "en" ? cat.labelEN : cat.labelES;
+}
+
 /** Obtener outcomes con sus subfactores */
 export function getOutcomeWithSubfactors(key: OutcomeKey) {
   const outcome = OUTCOMES[key];

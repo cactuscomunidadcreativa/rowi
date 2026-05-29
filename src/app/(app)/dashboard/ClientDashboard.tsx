@@ -9,6 +9,7 @@ import { EqTotalBar } from "@/components/metrics/EqTotalBar";
 import { PursuitsBars } from "@/components/metrics/PursuitsBars";
 import { MoodChip } from "@/components/dashboard/MoodChip";
 import { TalentCluster } from "@/components/talents/TalentCluster";
+import { getTalentLabel, getTalentCategoryLabel } from "@/domains/eq/lib/dictionary";
 import OutcomesPanel from "@/components/outcomes/OutcomesPanel";
 import OverallSummary from "@/components/outcomes/OverallSummary";
 import CoachPanel from "@/components/coach/CoachPanel";
@@ -50,7 +51,7 @@ export default function ClientDashboard() {
   if (!base) {
     return (
       <div className="text-gray-400 py-10 text-sm animate-pulse">
-        Cargando datos emocionales…
+        {t("dashboard.loadingEmotional", "Cargando datos emocionales…")}
       </div>
     );
   }
@@ -60,8 +61,8 @@ export default function ClientDashboard() {
       {/* ENCABEZADO */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-gray-500">Fuente de datos: {base.source}</p>
+          <h1 className="text-2xl font-semibold">{t("dashboard.title", "Dashboard")}</h1>
+          <p className="text-sm text-gray-500">{t("dashboard.dataSource", "Fuente de datos")}: {base.source}</p>
         </div>
       </div>
 
@@ -95,7 +96,7 @@ export default function ClientDashboard() {
         {/* COMPETENCIAS */}
         <div className="rounded-xl border p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-2">
-            <h2 className="font-medium">🧭 Competencias</h2>
+            <h2 className="font-medium">🧭 {t("dashboard.competencies", "Competencias")}</h2>
           </div>
 
           <CompetenciesSpider comps={base.eq.competencias} />
@@ -106,28 +107,28 @@ export default function ClientDashboard() {
       {/* TALENTOS */}
       <div className="grid gap-4 md:grid-cols-3">
         <TalentCluster
-          title="Focus"
+          title={getTalentCategoryLabel("focus", locale)}
           color="#1E88E5"
           talents={Object.entries(base.eq.talents?.focus || {}).map(([k, v]) => ({
-            label: k,
+            label: getTalentLabel(k, locale),
             value: toPercentOf135(typeof v === "number" ? v : 0),
             raw: typeof v === "number" ? v : null,
           }))}
         />
         <TalentCluster
-          title="Decisions"
+          title={getTalentCategoryLabel("decisions", locale)}
           color="#E53935"
           talents={Object.entries(base.eq.talents?.decisions || {}).map(([k, v]) => ({
-            label: k,
+            label: getTalentLabel(k, locale),
             value: toPercentOf135(typeof v === "number" ? v : 0),
             raw: typeof v === "number" ? v : null,
           }))}
         />
         <TalentCluster
-          title="Drive"
+          title={getTalentCategoryLabel("drive", locale)}
           color="#43A047"
           talents={Object.entries(base.eq.talents?.drive || {}).map(([k, v]) => ({
-            label: k,
+            label: getTalentLabel(k, locale),
             value: toPercentOf135(typeof v === "number" ? v : 0),
             raw: typeof v === "number" ? v : null,
           }))}

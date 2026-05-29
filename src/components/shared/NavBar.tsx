@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -52,6 +52,7 @@ const translations = {
       sixSeconds: "Six Seconds",
       rowiLevel: "Nivel Rowi",
       social: "Social",
+      more: "Más",
       feed: "Actividad",
       connections: "Conexiones",
       messages: "Mensajes",
@@ -107,6 +108,7 @@ const translations = {
       sixSeconds: "Six Seconds",
       rowiLevel: "Rowi Level",
       social: "Social",
+      more: "More",
       feed: "Activity",
       connections: "Connections",
       messages: "Messages",
@@ -162,6 +164,7 @@ const translations = {
       sixSeconds: "Six Seconds",
       rowiLevel: "Nível Rowi",
       social: "Social",
+      more: "Mais",
       feed: "Atividade",
       connections: "Conexões",
       messages: "Mensagens",
@@ -217,6 +220,7 @@ const translations = {
       sixSeconds: "Six Seconds",
       rowiLevel: "Livello Rowi",
       social: "Social",
+      more: "Altro",
       feed: "Attività",
       connections: "Connessioni",
       messages: "Messaggi",
@@ -271,17 +275,19 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 // final lo de grupo/datos (Workspace, Comunidad, Org, Benchmark). Todos se
 // muestran como icono con el nombre en tooltip (title); en pantallas muy
 // anchas (2xl) aparece también el texto.
+// `primary: true` = visible en la barra con texto (desde lg). El resto va al
+// dropdown "Más" para no saturar la barra. Orden = loop personal primero.
 const BASE_LINKS = [
-  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"] },
-  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"] },
-  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"] },
-  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"] },
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"] },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"] },
-  { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"] },
-  { href: "/community", key: "community", icon: Users, roles: ["*"] },
-  { href: "/org", key: "org", icon: Building2, roles: ["*"] },
-  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"] },
+  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: true },
+  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: true },
+  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: true },
+  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: true },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: true },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: true },
+  { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false },
+  { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false },
+  { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false },
+  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false },
 ];
 
 // Social sub-links for the dropdown
@@ -353,15 +359,17 @@ export default function NavBar() {
 
   // Calcular links visibles basados en rol actual
   const currentRole = currentContext?.role || "USER";
-  const visibleLinks = [
-    ...BASE_LINKS,
-    ...ROLE_LINKS.filter(link =>
-      link.roles.includes(currentRole) ||
-      (isAdmin && link.roles.includes("ADMIN")) ||
-      (isConsultant && link.roles.includes("CONSULTANT")) ||
-      (isCoach && link.roles.includes("COACH"))
-    ),
-  ];
+  const roleLinks = ROLE_LINKS.filter(link =>
+    link.roles.includes(currentRole) ||
+    (isAdmin && link.roles.includes("ADMIN")) ||
+    (isConsultant && link.roles.includes("CONSULTANT")) ||
+    (isCoach && link.roles.includes("COACH"))
+  );
+  const visibleLinks = [...BASE_LINKS, ...roleLinks];
+  // Barra: solo los BASE_LINKS marcados primary. Dropdown "Más": los BASE
+  // secundarios + los links por rol (que son de nicho).
+  const primaryLinks = BASE_LINKS.filter((l) => l.primary);
+  const moreLinks = [...BASE_LINKS.filter((l) => !l.primary), ...roleLinks];
 
   // Fetch avatar data
   const { data: avatarData } = useSWR(
@@ -377,6 +385,7 @@ export default function NavBar() {
   const [expandedSection, setExpandedSection] = useState<string | null>("avatar"); // Seccion expandida por defecto
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [socialDropdownOpen, setSocialDropdownOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const isSocialActive = pathname?.startsWith("/social");
 
   // Fetch notificaciones
@@ -427,6 +436,7 @@ export default function NavBar() {
       if (!target.closest?.("#rowi-user-menu")) setMenuOpen(false);
       if (!target.closest?.("#rowi-notifications-menu")) setNotificationsOpen(false);
       if (!target.closest?.("#rowi-social-dropdown")) setSocialDropdownOpen(false);
+      if (!target.closest?.("#rowi-more-dropdown")) setMoreDropdownOpen(false);
     };
     document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
@@ -493,8 +503,8 @@ export default function NavBar() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 flex-1 justify-center min-w-0">
-          {visibleLinks.map((l) => {
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center min-w-0">
+          {primaryLinks.map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
             const label = t[l.key as keyof typeof t] || l.key;
@@ -503,17 +513,69 @@ export default function NavBar() {
                 key={l.href}
                 href={l.href}
                 title={label}
-                className={`flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active
                     ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
                     : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden 2xl:inline whitespace-nowrap">{label}</span>
+                {/* Texto desde lg (antes solo en 2xl → barra ilegible) */}
+                <span className="hidden lg:inline whitespace-nowrap">{label}</span>
               </Link>
             );
           })}
+
+          {/* "Más" Dropdown — agrupa los links secundarios + por rol */}
+          {isLogged && moreLinks.length > 0 && (
+            <div id="rowi-more-dropdown" className="relative">
+              <button
+                onClick={() => setMoreDropdownOpen((v) => !v)}
+                title={t.more || "Más"}
+                className={`flex items-center gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  moreLinks.some((l) => pathname?.startsWith(l.href))
+                    ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
+                    : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-100 dark:hover:bg-zinc-800"
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4 flex-shrink-0" />
+                <span className="hidden lg:inline whitespace-nowrap">{t.more || "Más"}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${moreDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {moreDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-1 overflow-hidden z-50"
+                  >
+                    {moreLinks.map((ml) => {
+                      const mlActive = pathname?.startsWith(ml.href);
+                      const MlIcon = ml.icon;
+                      const mlLabel = t[ml.key as keyof typeof t] || ml.key;
+                      return (
+                        <Link
+                          key={ml.href}
+                          href={ml.href}
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                            mlActive
+                              ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10 font-medium"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                          }`}
+                        >
+                          <MlIcon className="w-4 h-4" />
+                          {mlLabel}
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Social Dropdown */}
           {isLogged && (
@@ -528,7 +590,7 @@ export default function NavBar() {
                 }`}
               >
                 <Users2 className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden 2xl:inline whitespace-nowrap">{t.social}</span>
+                <span className="hidden lg:inline whitespace-nowrap">{t.social}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${socialDropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>

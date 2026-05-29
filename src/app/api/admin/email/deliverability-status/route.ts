@@ -20,7 +20,7 @@ import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const DEFAULT_FROM = "noreply@rowi.app";
+const DEFAULT_FROM = "noreply@rowiia.com";
 
 export async function GET() {
   const auth = await requireSuperAdmin();

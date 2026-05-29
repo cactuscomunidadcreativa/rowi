@@ -31,7 +31,7 @@ const socialLinks = [
   { icon: Twitter, href: "https://twitter.com/rowi", label: "Twitter" },
   { icon: Linkedin, href: "https://linkedin.com/company/rowi", label: "LinkedIn" },
   { icon: Instagram, href: "https://instagram.com/rowi", label: "Instagram" },
-  { icon: Mail, href: "mailto:hello@rowi.app", label: "Email" },
+  { icon: Mail, href: "mailto:hello@rowiia.com", label: "Email" },
 ];
 
 export default function PublicFooter() {

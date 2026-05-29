@@ -53,7 +53,7 @@ export default function BetaBanner() {
     const body = encodeURIComponent(
       t("beta.emailBody", "Describe the problem you found:\n\n\nSteps to reproduce:\n1.\n2.\n3.\n\n\nBrowser and device:")
     );
-    return `mailto:soporte@rowi.app?subject=${subject}&body=${body}`;
+    return `mailto:soporte@rowiia.com?subject=${subject}&body=${body}`;
   };
 
   // Don't render on server or if dismissed

@@ -296,7 +296,7 @@ export async function sendContextNotification(
     return { ok: true, skipped: true };
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@rowi.app";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@rowiia.com";
   const fromName = process.env.RESEND_FROM_NAME || "Rowi";
 
   const { subject, html, text } = buildHtml(input);

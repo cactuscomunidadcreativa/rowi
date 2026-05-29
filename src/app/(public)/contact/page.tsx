@@ -61,7 +61,7 @@ export default function ContactPage() {
               <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                 <Mail className="w-6 h-6 text-[var(--rowi-g2)] mb-2" />
                 <h3 className="font-semibold mb-1">{t("contact.emailTitle", "Email")}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">hello@rowi.app</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">hello@rowiia.com</p>
               </div>
               <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                 <MessageCircle className="w-6 h-6 text-[var(--rowi-g2)] mb-2" />
@@ -71,7 +71,7 @@ export default function ContactPage() {
               <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                 <Building className="w-6 h-6 text-[var(--rowi-g2)] mb-2" />
                 <h3 className="font-semibold mb-1">{t("contact.enterpriseTitle", "Enterprise")}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">enterprise@rowi.app</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">enterprise@rowiia.com</p>
               </div>
             </div>
 

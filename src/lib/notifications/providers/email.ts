@@ -45,7 +45,7 @@ function buildEmailHtml(
   <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 24px 32px;">
-      <img src="https://rowi.app/logo-white.png" alt="Rowi" style="height: 32px; display: block;" />
+      <img src="https://www.rowiia.com/rowi-logo.png" alt="Rowi" style="height: 32px; display: block;" />
     </div>
 
     <!-- Content -->
@@ -89,7 +89,7 @@ export async function sendEmail(notification: EmailNotification): Promise<Notifi
     return { success: false, error: "Email provider not configured" };
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@rowi.app";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@rowiia.com";
   const fromName = process.env.RESEND_FROM_NAME || "Rowi";
 
   try {

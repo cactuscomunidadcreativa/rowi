@@ -430,7 +430,7 @@ function MessagingConfigSection({
                       email: { ...messaging.email, fromEmail: e.target.value },
                     })
                   }
-                  placeholder="noreply@rowi.app"
+                  placeholder="noreply@rowiia.com"
                   className="w-full px-3 py-2 rounded-lg bg-[var(--rowi-surface)] border border-[var(--rowi-border)] text-sm"
                 />
               </div>

@@ -72,3 +72,10 @@ src/data/seeds/*.json
 # Documentos internos sensibles (no publicar)
 REVISION_LEGAL.md
 SESION_CONTEXTO.md
+
+# Pitch / material interno — NUNCA commitear (regla del repo)
+/pitch/
+src/app/pitch/
+NVIDIA_PITCH_DECK.md
+.claude/
+scripts/import-cmg24.ts

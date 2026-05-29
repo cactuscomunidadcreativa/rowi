@@ -596,20 +596,39 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
         <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 p-6 text-center">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400 mb-4">{t.noSei}</p>
-          <Link
-            href="/sei"
+          <button
+            type="button"
+            onClick={async () => {
+              // El SEI se toma en la plataforma de Six Seconds. /api/sei/link
+              // resuelve la URL según el plan/idioma del usuario. Si el plan no
+              // incluye SEI, devuelve upgrade:true → lo mandamos a /pricing.
+              try {
+                const res = await fetch("/api/sei/link");
+                const data = await res.json();
+                if (data?.ok && data.link?.url) {
+                  window.open(data.link.url, "_blank", "noopener,noreferrer");
+                } else if (data?.upgrade) {
+                  window.location.href = "/pricing";
+                } else {
+                  // Sin link configurado: llevar a pricing como fallback seguro.
+                  window.location.href = "/pricing";
+                }
+              } catch {
+                window.location.href = "/pricing";
+              }
+            }}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
           >
             {t.takeSeiNow}
             <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       )}
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-3">
         <Link
-          href="/sei/learn"
+          href="/learning"
           className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors group"
         >
           <BookOpen className="w-5 h-5 text-blue-500" />
@@ -619,16 +638,29 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
         </Link>
 
-        <Link
-          href="/sei"
-          className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors group"
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              const res = await fetch("/api/sei/link");
+              const data = await res.json();
+              if (data?.ok && data.link?.url) {
+                window.open(data.link.url, "_blank", "noopener,noreferrer");
+              } else {
+                window.location.href = "/pricing";
+              }
+            } catch {
+              window.location.href = "/pricing";
+            }
+          }}
+          className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-g2)] transition-colors group text-left w-full"
         >
           <Target className="w-5 h-5 text-orange-500" />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[var(--rowi-g2)]">
             {t.takeAssessment}
           </span>
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
-        </Link>
+        </button>
 
         <Link
           href="/dashboard#competencies"

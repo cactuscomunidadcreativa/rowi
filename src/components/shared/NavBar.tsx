@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -36,6 +36,8 @@ const translations = {
       vsFamily: "Familia",
       vsPrivacy: "Mi Privacidad",
       vsResearch: "Research",
+      vsLearning: "Aprender (juegos EQ)",
+      vsProgress: "Mi evolución",
       workspace: "Workspace",
       org: "Organización",
       weekflow: "WeekFlow",
@@ -89,6 +91,8 @@ const translations = {
       vsFamily: "Family",
       vsPrivacy: "My Privacy",
       vsResearch: "Research",
+      vsLearning: "Learn (EQ games)",
+      vsProgress: "My progress",
       workspace: "Workspace",
       org: "Organization",
       weekflow: "WeekFlow",
@@ -142,6 +146,8 @@ const translations = {
       vsFamily: "Família",
       vsPrivacy: "Minha Privacidade",
       vsResearch: "Pesquisa",
+      vsLearning: "Aprender (jogos EQ)",
+      vsProgress: "Minha evolução",
       workspace: "Workspace",
       org: "Organização",
       weekflow: "WeekFlow",
@@ -195,6 +201,8 @@ const translations = {
       vsFamily: "Famiglia",
       vsPrivacy: "La mia Privacy",
       vsResearch: "Ricerca",
+      vsLearning: "Impara (giochi EQ)",
+      vsProgress: "La mia evoluzione",
       workspace: "Workspace",
       org: "Organizzazione",
       weekflow: "WeekFlow",
@@ -869,6 +877,12 @@ export default function NavBar() {
                         </MenuLink>
                         <MenuLink href="/hub/family/vital-signs" icon={Users} onClick={() => setMenuOpen(false)}>
                           {t.vsFamily}
+                        </MenuLink>
+                        <MenuLink href="/progress" icon={TrendingUp} onClick={() => setMenuOpen(false)}>
+                          {t.vsProgress}
+                        </MenuLink>
+                        <MenuLink href="/learning" icon={GraduationCap} onClick={() => setMenuOpen(false)}>
+                          {t.vsLearning}
                         </MenuLink>
                         <MenuLink href="/hub/account/privacy" icon={Shield} onClick={() => setMenuOpen(false)}>
                           {t.vsPrivacy}

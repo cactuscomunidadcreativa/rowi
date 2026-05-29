@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/react";
-import { Settings, Shield, Plug, ChevronRight, User } from "lucide-react";
+import { Settings, Shield, ChevronRight, User } from "lucide-react";
 
 export default function HubSettingsPage() {
   const { t } = useI18n();
@@ -17,16 +17,6 @@ export default function HubSettingsPage() {
         "Controla qué datos compartes y con quién."
       ),
       color: "text-emerald-400",
-    },
-    {
-      href: "/hub/account/connections",
-      icon: Plug,
-      title: t("hub.settings.connections", "Conexiones"),
-      desc: t(
-        "hub.settings.connectionsDesc",
-        "Gestiona apps y proveedores conectados a tu cuenta."
-      ),
-      color: "text-blue-400",
     },
     {
       href: "/settings/profile",

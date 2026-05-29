@@ -67,7 +67,7 @@ export default function DailyPulseWeek() {
           {data.answered}/{data.days} {isEN ? "answered" : "respondidos"}
         </span>
       </div>
-      <div className="flex items-end justify-between gap-1.5 h-24">
+      <div className="flex items-stretch justify-between gap-1.5 h-24">
         {data.items.map((it) => {
           const heightPct = it.value === null ? 8 : (it.value / 5) * 100;
           const dow = it.dow;
@@ -75,15 +75,18 @@ export default function DailyPulseWeek() {
             ? isEN ? "No answer" : "Sin respuesta"
             : `${it.sei ?? "—"} · ${it.value}/5`;
           return (
-            <div key={it.date} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-              <div className="w-full flex items-end h-full">
+            <div key={it.date} className="flex-1 flex flex-col items-center gap-1 min-w-0 h-full">
+              {/* La zona de barra ocupa el alto disponible (flex-1) y alinea
+                  la barra al fondo; así height:% se calcula sobre un padre
+                  con altura real (antes h-full resolvía a 0 → barra invisible). */}
+              <div className="w-full flex-1 flex items-end min-h-0">
                 <div
                   className={`w-full rounded-md transition-all ${bandColor(it.value)}`}
                   style={{ height: `${heightPct}%` }}
                   title={tooltip}
                 />
               </div>
-              <span className="text-[10px] text-[var(--rowi-muted-weak)]">{labels[dow]}</span>
+              <span className="text-[10px] text-[var(--rowi-muted-weak)] flex-shrink-0">{labels[dow]}</span>
             </div>
           );
         })}

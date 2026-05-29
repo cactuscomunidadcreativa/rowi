@@ -1,9 +1,11 @@
 /**
  * GET /api/daily-pulse/history?days=7&tz=300
  *
- * Devuelve las respuestas del Daily Pulse del usuario para los últimos N
- * días (default 7), agrupadas por el día LOCAL del usuario (mismo criterio
- * que /today y /answer). Cada día tiene a lo sumo una respuesta. Días sin
+ * Devuelve las lecturas de pulso del usuario para los últimos N días
+ * (default 7), agrupadas por el día LOCAL del usuario (mismo criterio que
+ * /today y /answer). Incluye Daily Pulse (source "daily_pulse") y los
+ * check-ins/microsignals de la página Vital Signs (source "self_check").
+ * Cada día tiene a lo sumo una respuesta (la primera del día gana). Días sin
  * respuesta se devuelven con value=null. Cada item incluye `dow` (0-6, día
  * de semana local) para que el cliente etiquete sin recalcular el tz.
  *
@@ -55,7 +57,11 @@ export async function GET(req: NextRequest) {
     const signals = await prisma.pulsePointSignal.findMany({
       where: {
         userId: user.id,
-        source: "daily_pulse",
+        // Cuenta tanto el Daily Pulse (dashboard) como el check-in/microsignal
+        // de la página Vital Signs (source "self_check"): ambos son una lectura
+        // del día del usuario y deben aparecer en "Tu semana". Antes solo se
+        // leía "daily_pulse", así que los check-ins de la página VS no pintaban.
+        source: { in: ["daily_pulse", "self_check"] },
         createdAt: { gte: startDay },
       },
       select: {

@@ -67,12 +67,20 @@ async function validatePartnerAccess(req: NextRequest) {
   });
 
   if (!user) {
-    // Create user if doesn't exist
+    // 🔐 SEGURIDAD: el rol del SSO de Six Seconds describe el acceso del
+    // usuario DENTRO de Six Seconds, NO su rol de plataforma en Rowi. Auto-
+    // provisionar SUPERADMIN/ADMIN aquí permitiría que un token de partner
+    // con Role="SuperAdmin" se convirtiera en SuperAdmin del rowiverse.
+    // El SuperAdmin de Rowi se otorga manualmente (es único: el owner).
+    // Los partners entran como usuario normal; su capacidad de gestionar
+    // comunidades se evalúa por membership/ownership en cada operación, no
+    // por un rol de plataforma elevado.
     user = await prisma.user.create({
       data: {
         email,
         name: userInfo.name || email.split("@")[0],
-        organizationRole: userInfo.role === "SuperAdmin" ? "SUPERADMIN" : "ADMIN",
+        // organizationRole se omite a propósito → hereda el default seguro
+        // ("VIEWER"). El rol de plataforma NO se deriva del token SSO.
         ssoProvider: "six-seconds",
         ssoProviderId: userInfo.ssoUserId,
         emailVerified: new Date(),

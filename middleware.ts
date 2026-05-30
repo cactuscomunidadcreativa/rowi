@@ -101,12 +101,23 @@ const ALLOWED_HOSTS = [
 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
+// ⚠️ DEUDA TÉCNICA (post-launch): este store es un Map in-memory por
+// instancia serverless. En Vercel con N instancias, el límite efectivo es
+// ~N× el configurado y se reinicia en cold starts. Es una defensa básica,
+// NO un control de costo robusto. Para los endpoints de IA (sensibles a
+// costo) conviene migrar a un store compartido (Upstash/Redis) cuando haya
+// margen. Mientras tanto, los límites de IA se mantienen estrictos abajo y
+// cada endpoint de IA tiene además max_tokens acotado en su handler.
+
 // Rate limit configs (requests per minute)
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/auth": { limit: 10, windowMs: 60000 }, // Auth: 10/min
-  "/api/rowi": { limit: 30, windowMs: 60000 }, // AI Chat: 30/min
-  "/api/eco": { limit: 30, windowMs: 60000 }, // AI Eco: 30/min
-  "/api/affinity": { limit: 30, windowMs: 60000 }, // AI Affinity: 30/min
+  "/api/rowi": { limit: 20, windowMs: 60000 }, // AI Chat: 20/min (cost-control)
+  "/api/eco": { limit: 20, windowMs: 60000 }, // AI Eco: 20/min (cost-control)
+  "/api/affinity": { limit: 20, windowMs: 60000 }, // AI Affinity: 20/min (cost-control)
+  "/api/hub/insights": { limit: 15, windowMs: 60000 }, // AI Insights: 15/min
+  "/api/hub/knowledge": { limit: 20, windowMs: 60000 }, // AI Knowledge summarize: 20/min
+  "/api/ai": { limit: 20, windowMs: 60000 }, // AI genérico: 20/min
   "/api/admin/benchmarks/blob-token": { limit: 200, windowMs: 60000 }, // Blob upload: 200/min (multipart chunks)
   "/api/admin/benchmarks/job": { limit: 120, windowMs: 60000 }, // Job polling: 120/min
   "/api/admin": { limit: 50, windowMs: 60000 }, // Admin: 50/min
@@ -114,19 +125,34 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   default: { limit: 100, windowMs: 60000 }, // Default: 100/min
 };
 
-function getRateLimitKey(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-  return `${ip}:${req.nextUrl.pathname.split("/").slice(0, 3).join("/")}`;
-}
-
-function getRateLimitConfig(pathname: string) {
-  for (const [prefix, config] of Object.entries(RATE_LIMITS)) {
-    if (prefix !== "default" && pathname.startsWith(prefix)) {
-      return config;
+// Devuelve el prefijo de RATE_LIMITS más específico (el más largo) que
+// matchea el pathname. Así /api/hub/insights no cae en el cubo de /api/hub.
+function matchRateLimitPrefix(pathname: string): string {
+  let best = "default";
+  let bestLen = -1;
+  for (const prefix of Object.keys(RATE_LIMITS)) {
+    if (prefix === "default") continue;
+    if (pathname.startsWith(prefix) && prefix.length > bestLen) {
+      best = prefix;
+      bestLen = prefix.length;
     }
   }
-  return RATE_LIMITS.default;
+  return best;
+}
+
+function getRateLimitKey(req: NextRequest, prefix: string): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  // La clave se ata al prefijo que matcheó el config, no a los 2 primeros
+  // segmentos: así cada bucket tiene su propia ventana.
+  const bucket = prefix === "default"
+    ? req.nextUrl.pathname.split("/").slice(0, 3).join("/")
+    : prefix;
+  return `${ip}:${bucket}`;
+}
+
+function getRateLimitConfig(prefix: string) {
+  return RATE_LIMITS[prefix] ?? RATE_LIMITS.default;
 }
 
 function checkRateLimit(
@@ -199,8 +225,9 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/api/")) {
     cleanupExpiredEntries();
 
-    const key = getRateLimitKey(req);
-    const config = getRateLimitConfig(pathname);
+    const prefix = matchRateLimitPrefix(pathname);
+    const key = getRateLimitKey(req, prefix);
+    const config = getRateLimitConfig(prefix);
     const { allowed, remaining, resetAt } = checkRateLimit(key, config.limit, config.windowMs);
 
     if (!allowed) {

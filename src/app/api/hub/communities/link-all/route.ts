@@ -1,13 +1,19 @@
 // src/app/api/hub/community/link-all/route.ts
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
 /**
  * Vincula automáticamente miembros de comunidad con usuarios globales.
+ * 🔐 Job masivo que reasigna datos psicométricos (EqSnapshot, EqProgress,
+ * EmotionalEvent, AffinitySnapshot) en TODA la plataforma: solo SuperAdmin.
  */
 export async function POST() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     // 🔹 Buscar miembros sin userId
     const unlinkedMembers = await prisma.rowiCommunityUser.findMany({

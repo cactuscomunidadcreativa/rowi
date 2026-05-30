@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     const resp = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.6,
+      max_tokens: 400,
       messages: [
         { role: "system", content: "Eres Rowi, analista de afinidad emocional." },
         { role: "user", content: prompt },

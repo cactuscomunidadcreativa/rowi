@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const runtime = "nodejs";
 
 /* =========================================================
    🧠 /api/hub/usage/check
    Verifica o registra uso IA por tenant + feature + día
+   🔐 Solo admins: escribir UsageDaily de un tenant ajeno permite
+   falsear atribución de costo/uso entre tenants.
 ========================================================= */
 export async function POST(req: NextRequest) {
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
+
   try {
     const body = await req.json();
     const {
@@ -51,6 +58,12 @@ export async function POST(req: NextRequest) {
       }
 
       tenantRef = tenant.id;
+    }
+
+    // 🔐 El tenant resuelto debe estar dentro del scope del admin.
+    const allowedTenantIds = await tenantIdsForScope(auth.scope);
+    if (allowedTenantIds !== null && !allowedTenantIds.includes(tenantRef)) {
+      return NextResponse.json({ ok: false, error: "No autorizado para este tenant" }, { status: 403 });
     }
 
     /* ======================================================

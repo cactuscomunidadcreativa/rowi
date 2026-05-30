@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       const res = await ai.chat.completions.create({
         model: "gpt-4o-mini",
         temperature: 0.5,
+        max_tokens: 400,
         messages: [{ role: "system", content: prompt }],
         response_format: { type: "json_object" },
       });

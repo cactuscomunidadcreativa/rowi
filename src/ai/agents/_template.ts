@@ -16,6 +16,7 @@ export const EqAgent = {
     const completion = await ai.chat.completions.create({
       model: this.model,
       temperature: 0.6,
+      max_tokens: 600, // cost-control: todo agente acota su salida
       messages: messages as any,
     });
     const answer = completion.choices[0]?.message?.content?.trim() || "";

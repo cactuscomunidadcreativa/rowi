@@ -1,5 +1,7 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 function normSlug(s?: string) {
   return (s || "")
@@ -34,8 +36,26 @@ export async function PATCH(
   req: Request,
   ctx: { params: Promise<{ slug: string }> }
 ) {
+  // 🔐 Editar un tenant (nombre, slug, plan, billing) es cross-tenant:
+  // solo admins, y solo sobre tenants dentro de su scope.
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
+
   try {
     const { slug: oldSlug } = await ctx.params;
+
+    // Verificar que el tenant objetivo esté dentro del scope del admin.
+    const target = await prisma.tenant.findUnique({
+      where: { slug: oldSlug },
+      select: { id: true },
+    });
+    if (!target) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    const allowedTenantIds = await tenantIdsForScope(auth.scope);
+    if (allowedTenantIds !== null && !allowedTenantIds.includes(target.id)) {
+      return NextResponse.json({ error: "No autorizado para este tenant" }, { status: 403 });
+    }
 
     const body = await req.json().catch(() => ({} as any));
     const updates: Record<string, any> = {};

@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { PLATFORM_AGENT_SLUGS } from "@/lib/agents/platform";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export const runtime = "nodejs";
 
@@ -16,6 +18,10 @@ export const runtime = "nodejs";
  * }
  */
 export async function POST(req: NextRequest) {
+  // 🔐 Clonar agentes a un contexto consume recursos: solo admins.
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
+
   try {
     const { agentSlug, scope, scopeId } = await req.json();
 
@@ -24,6 +30,24 @@ export async function POST(req: NextRequest) {
         { ok: false, error: "Faltan parámetros (scope, scopeId)" },
         { status: 400 }
       );
+
+    // Validar el destino contra el scope del admin.
+    // - rowiverse (SuperAdmin): null → permitido en cualquier scope.
+    // - tenant: el scopeId debe estar en sus tenants.
+    // - superhub/org: requiere SuperAdmin (tenantIdsForScope no cubre org).
+    const allowedTenantIds = await tenantIdsForScope(auth.scope);
+    if (allowedTenantIds !== null) {
+      if (scope === "tenant") {
+        if (!allowedTenantIds.includes(scopeId)) {
+          return NextResponse.json({ ok: false, error: "No autorizado para este tenant" }, { status: 403 });
+        }
+      } else {
+        return NextResponse.json(
+          { ok: false, error: "Operación reservada a SuperAdmin para este scope" },
+          { status: 403 }
+        );
+      }
+    }
 
     // 🔍 Obtener todos los agentes globales base
     const whereGlobal = agentSlug

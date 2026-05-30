@@ -1,9 +1,8 @@
 // apps/rowi/src/app/api/hub/agents/sync/route.ts
 import { NextResponse } from "next/server";
 import { ensureBaseAgents } from "@/core/startup/ensureAgents";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /**
  * =========================================================
@@ -15,6 +14,10 @@ const prisma = new PrismaClient();
  * - Devuelve lista actualizada
  */
 export async function POST() {
+  // 🔐 Re-sincroniza y reasigna agentes en TODA la plataforma: SuperAdmin.
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     console.log("🚀 Ejecutando /api/hub/agents/sync ...");
 
@@ -72,7 +75,5 @@ export async function POST() {
       { ok: false, error: e?.message || "Error interno del servidor" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

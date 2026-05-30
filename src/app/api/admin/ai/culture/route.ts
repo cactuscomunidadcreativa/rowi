@@ -15,22 +15,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
+import {
+  CULTURE_SCOPE_HIERARCHY,
+  DEFAULT_CULTURE,
+  resolveCultureWithInheritance,
+  type CultureScope,
+} from "@/lib/ai/cultureConfig";
 
-type Scope = "global" | "tenant" | "hub" | "organization" | "team";
+type Scope = CultureScope;
 
-const SCOPE_HIERARCHY: Scope[] = ["team", "organization", "hub", "tenant", "global"];
-
-const DEFAULT_CULTURE = {
-  mission: "",
-  vision: "",
-  values: [],
-  tone: "professional",
-  keywords: [],
-  guidelines: "",
-  restrictions: "",
-  language: "es",
-  industry: "",
-};
+const SCOPE_HIERARCHY = CULTURE_SCOPE_HIERARCHY;
 
 /**
  * GET - Obtener configuración cultural
@@ -49,13 +43,8 @@ export async function GET(req: NextRequest) {
 
     // Si resolve=true, obtener config con herencia completa
     if (resolve) {
-      const resolvedConfig = await resolveConfigWithInheritance(scope, scopeId);
-      return NextResponse.json({
-        ok: true,
-        config: resolvedConfig.config,
-        source: resolvedConfig.source,
-        inheritance: resolvedConfig.inheritance,
-      });
+      const config = await resolveCultureWithInheritance(scope, scopeId);
+      return NextResponse.json({ ok: true, config });
     }
 
     // Buscar configuración específica del scope
@@ -236,151 +225,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Resolver configuración con herencia
- */
-async function resolveConfigWithInheritance(
-  scope: Scope,
-  scopeId: string | null
-): Promise<{
-  config: typeof DEFAULT_CULTURE;
-  source: Record<string, string>;
-  inheritance: Array<{ scope: string; scopeId: string | null; found: boolean }>;
-}> {
-  const inheritance: Array<{ scope: string; scopeId: string | null; found: boolean }> = [];
-  const source: Record<string, string> = {};
-
-  let resolvedConfig = JSON.parse(JSON.stringify(DEFAULT_CULTURE));
-  Object.keys(DEFAULT_CULTURE).forEach((key) => {
-    source[key] = "default";
-  });
-
-  const scopeIds = await getScopeHierarchyIds(scope, scopeId);
-  const orderedScopes = [...SCOPE_HIERARCHY].reverse();
-
-  for (const currentScope of orderedScopes) {
-    const currentScopeId = scopeIds[currentScope];
-
-    if (currentScope !== "global" && !currentScopeId) {
-      inheritance.push({ scope: currentScope, scopeId: null, found: false });
-      continue;
-    }
-
-    const config = await prisma.aiCultureConfig.findFirst({
-      where: {
-        scope: currentScope,
-        scopeId: currentScope === "global" ? null : currentScopeId,
-        isActive: true,
-      },
-    });
-
-    inheritance.push({
-      scope: currentScope,
-      scopeId: currentScopeId || null,
-      found: !!config,
-    });
-
-    if (config) {
-      const scopeLabel = `${currentScope}${currentScopeId ? `:${currentScopeId}` : ""}`;
-
-      if (config.mission) {
-        resolvedConfig.mission = config.mission;
-        source.mission = scopeLabel;
-      }
-      if (config.vision) {
-        resolvedConfig.vision = config.vision;
-        source.vision = scopeLabel;
-      }
-      if (config.values && (config.values as string[]).length > 0) {
-        resolvedConfig.values = config.values;
-        source.values = scopeLabel;
-      }
-      if (config.tone) {
-        resolvedConfig.tone = config.tone;
-        source.tone = scopeLabel;
-      }
-      if (config.keywords && (config.keywords as string[]).length > 0) {
-        resolvedConfig.keywords = config.keywords;
-        source.keywords = scopeLabel;
-      }
-      if (config.guidelines) {
-        resolvedConfig.guidelines = config.guidelines;
-        source.guidelines = scopeLabel;
-      }
-      if (config.restrictions) {
-        resolvedConfig.restrictions = config.restrictions;
-        source.restrictions = scopeLabel;
-      }
-      if (config.language) {
-        resolvedConfig.language = config.language;
-        source.language = scopeLabel;
-      }
-      if (config.industry) {
-        resolvedConfig.industry = config.industry;
-        source.industry = scopeLabel;
-      }
-    }
-  }
-
-  return { config: resolvedConfig, source, inheritance };
-}
-
-/**
- * Obtener IDs de la jerarquía de scopes
- */
-async function getScopeHierarchyIds(
-  scope: Scope,
-  scopeId: string | null
-): Promise<Record<string, string | null>> {
-  const ids: Record<string, string | null> = {
-    global: null,
-    tenant: null,
-    hub: null,
-    organization: null,
-    team: null,
-  };
-
-  if (!scopeId || scope === "global") return ids;
-
-  try {
-    switch (scope) {
-      case "team":
-      case "organization":
-        const org = await prisma.organization.findUnique({
-          where: { id: scopeId },
-          select: { id: true, hubId: true, hub: { select: { tenantId: true } } },
-        });
-        if (org) {
-          if (scope === "team") {
-            ids.team = org.id;
-          } else {
-            ids.organization = org.id;
-          }
-          ids.hub = org.hubId;
-          ids.tenant = org.hub?.tenantId || null;
-        }
-        break;
-
-      case "hub":
-        const hub = await prisma.hub.findUnique({
-          where: { id: scopeId },
-          select: { id: true, tenantId: true },
-        });
-        if (hub) {
-          ids.hub = hub.id;
-          ids.tenant = hub.tenantId;
-        }
-        break;
-
-      case "tenant":
-        ids.tenant = scopeId;
-        break;
-    }
-  } catch (error) {
-    console.error("[getScopeHierarchyIds] Error:", error);
-  }
-
-  return ids;
 }

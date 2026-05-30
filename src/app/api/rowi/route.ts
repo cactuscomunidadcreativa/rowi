@@ -87,7 +87,17 @@ function estimateTokens(text: string): number {
    SIEMPRE hace fallback a global si no encuentra en niveles específicos.
    Si no encuentra con el slug principal, intenta aliases (ej: super → super-rowi)
 ========================================================= */
-async function resolveAgent(slug: string, auth: any) {
+interface ResolvedAgentContext {
+  organizationId: string | null;
+  hubId: string | null;
+  tenantId: string | null;
+  superHubId: string | null;
+}
+
+async function resolveAgent(
+  slug: string,
+  auth: any,
+): Promise<{ agent: any; ctx: ResolvedAgentContext } | null> {
   // Extraer IDs del contexto del usuario
   const tenantId: string | null = auth?.primaryTenantId ?? null;
 
@@ -121,6 +131,8 @@ async function resolveAgent(slug: string, auth: any) {
     organizationId = null;
   }
 
+  const ctx: ResolvedAgentContext = { organizationId, hubId, tenantId, superHubId };
+
   // Intentar resolver con el slug principal y luego con aliases
   const slugsToTry = [slug, ...(SLUG_ALIASES[slug] || [])];
 
@@ -130,7 +142,7 @@ async function resolveAgent(slug: string, auth: any) {
       const orgAgent = await prisma.agentConfig.findFirst({
         where: { slug: trySlug, organizationId, isActive: true },
       });
-      if (orgAgent) return orgAgent;
+      if (orgAgent) return { agent: orgAgent, ctx };
     }
 
     // 1️⃣ Intentar agente por Hub
@@ -138,7 +150,7 @@ async function resolveAgent(slug: string, auth: any) {
       const hubAgent = await prisma.agentConfig.findFirst({
         where: { slug: trySlug, hubId, isActive: true },
       });
-      if (hubAgent) return hubAgent;
+      if (hubAgent) return { agent: hubAgent, ctx };
     }
 
     // 2️⃣ Intentar agente por Tenant
@@ -146,7 +158,7 @@ async function resolveAgent(slug: string, auth: any) {
       const tenantAgent = await prisma.agentConfig.findFirst({
         where: { slug: trySlug, tenantId, isActive: true },
       });
-      if (tenantAgent) return tenantAgent;
+      if (tenantAgent) return { agent: tenantAgent, ctx };
     }
 
     // 3️⃣ Intentar agente por SuperHub
@@ -154,7 +166,7 @@ async function resolveAgent(slug: string, auth: any) {
       const shAgent = await prisma.agentConfig.findFirst({
         where: { slug: trySlug, superHubId, isActive: true },
       });
-      if (shAgent) return shAgent;
+      if (shAgent) return { agent: shAgent, ctx };
     }
 
     // 4️⃣ Fallback global (accessLevel = 'global', 'system' o sin scope asignado)
@@ -175,7 +187,7 @@ async function resolveAgent(slug: string, auth: any) {
       },
     });
 
-    if (globalAgent) return globalAgent;
+    if (globalAgent) return { agent: globalAgent, ctx };
   }
 
   return null;
@@ -306,15 +318,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let agent = await resolveAgent(slug, auth);
+    let resolved = await resolveAgent(slug, auth);
 
     // Fallback: intents sin agente propio (relationship/community/router o
     // cualquier intent desconocido) caen al agente general en vez de fallar.
-    if (!agent && slug !== "super" && slug !== "super-rowi") {
-      agent = await resolveAgent("super", auth);
+    if (!resolved && slug !== "super" && slug !== "super-rowi") {
+      resolved = await resolveAgent("super", auth);
     }
 
-    if (!agent) {
+    if (!resolved) {
       return NextResponse.json(
         {
           ok: false,
@@ -324,6 +336,9 @@ export async function POST(req: NextRequest) {
         { status: 200 }
       );
     }
+
+    const agent = resolved.agent;
+    const agentCtx = resolved.ctx;
 
     const model = agent.model || MODEL_BY_LEVEL[accessLevel] || "gpt-4o-mini";
 
@@ -405,6 +420,29 @@ export async function POST(req: NextRequest) {
     // no solo con el marco. Best-effort: si falla la consulta o no hay datos
     // suficientes, el bloque se omite y el agente sigue con el prompt base.
     let systemPromptWithData = systemPrompt;
+
+    // 🏛️ Cultura + conocimiento + contexto configurados por el admin.
+    // Antes se persistían (AiCultureConfig, AgentKnowledgeDeployment,
+    // AgentContext y los campos culturales de AgentConfig) pero NUNCA
+    // llegaban al modelo. Ahora se inyectan al systemPrompt para que la
+    // configuración del admin sí cambie el comportamiento del agente.
+    // Best-effort: si falla, el agente sigue con su prompt base.
+    try {
+      const { buildAgentPromptContext } = await import(
+        "@/lib/ai/agentPromptContext"
+      );
+      const contextBlock = await buildAgentPromptContext(agent, {
+        organizationId: agentCtx.organizationId,
+        hubId: agentCtx.hubId,
+        tenantId: agentCtx.tenantId,
+      });
+      if (contextBlock) {
+        systemPromptWithData = `${systemPromptWithData}\n\n---\n${contextBlock}`;
+      }
+    } catch (ctxErr) {
+      console.warn("⚠️ No se pudo inyectar contexto de agente:", ctxErr);
+    }
+
     if (slug === "research") {
       try {
         const { buildVsSeiCorrelationContext } = await import(
@@ -412,7 +450,7 @@ export async function POST(req: NextRequest) {
         );
         const dataBlock = await buildVsSeiCorrelationContext();
         if (dataBlock) {
-          systemPromptWithData = `${systemPrompt}\n\n---\n${dataBlock}`;
+          systemPromptWithData = `${systemPromptWithData}\n\n---\n${dataBlock}`;
         }
       } catch (ragErr) {
         console.warn("⚠️ No se pudo inyectar contexto VS↔SEI:", ragErr);

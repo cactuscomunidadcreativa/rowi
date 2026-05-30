@@ -46,6 +46,16 @@ const nextConfig: NextConfig = {
         // Aplicar a todas las rutas
         source: "/:path*",
         headers: [
+          // Forzar HTTPS (HSTS) — 2 años, subdominios, apto para preload.
+          // Solo se emite en producción para no romper http://localhost en dev.
+          ...(process.env.NODE_ENV === "production"
+            ? [
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=63072000; includeSubDomains; preload",
+                },
+              ]
+            : []),
           // Prevenir clickjacking
           {
             key: "X-Frame-Options",

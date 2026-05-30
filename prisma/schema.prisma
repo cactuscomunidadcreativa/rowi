@@ -77,6 +77,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[] @relation("EmailVerificationTokens")
   passwordResetTokens     PasswordResetToken[]     @relation("PasswordResetTokens")
   phoneVerificationTokens PhoneVerificationToken[] @relation("PhoneVerificationTokens")
+  adminOtpTokens          AdminOtpToken[]          @relation("AdminOtpTokens")
   slackUserLinks          SlackUserLink[]          @relation("SlackUserLinks")
   emotionalEvents         EmotionalEvent[]
   employeeProfiles        EmployeeProfile[]
@@ -6955,6 +6956,27 @@ model PhoneVerificationToken {
   @@index([userId])
   @@index([phone])
   @@map("phone_verification_token")
+}
+
+/// =========================================================
+/// 🔐 ADMIN OTP TOKEN — segundo factor por email para el área admin
+/// No reemplaza el login: es un gate adicional al entrar a /hub/admin.
+/// Mismo patrón que PhoneVerificationToken (código de 6 dígitos, TTL,
+/// intentos). El código se entrega por email (Resend).
+/// =========================================================
+model AdminOtpToken {
+  id        String    @id @default(cuid())
+  userId    String
+  code      String // OTP de 6 dígitos
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  user User @relation("AdminOtpTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("admin_otp_token")
 }
 
 /// =========================================================

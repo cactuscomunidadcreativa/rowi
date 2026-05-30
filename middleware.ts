@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
+import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge } from "@/lib/admin-mfa/edge";
 
 /* =========================================================
    🌍 CONFIG — Rutas públicas de promoción/landing
@@ -342,6 +343,31 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
     const signin = new URL("/signin", req.url);
     signin.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signin);
+  }
+
+  /* =========================================================
+     4.5) 🔐 GATE MFA PARA EL PANEL ADMIN
+     Antes de evaluar roles: si esto es una PÁGINA /hub/admin/* y el
+     usuario aún no verificó el segundo factor (cookie firmada
+     rowi_admin_mfa), lo mandamos a la pantalla de verificación.
+     - No aplica a /api/* (los endpoints admin tienen sus propios
+       guards y el endpoint de MFA debe poder llamarse).
+     - No aplica a la propia página de verificación (evita loop).
+     - Se salta por completo si ADMIN_MFA_BYPASS === "true".
+  ========================================================== */
+  if (
+    process.env.ADMIN_MFA_BYPASS !== "true" &&
+    pathname.startsWith(ADMIN_PATH) &&
+    !pathname.startsWith(`${ADMIN_PATH}/mfa`) &&
+    !pathname.startsWith(`${ADMIN_PATH}/unauthorized`)
+  ) {
+    const userId = (token as any).sub || (token as any).id || "";
+    const mfaCookie = req.cookies.get(ADMIN_MFA_COOKIE)?.value;
+    if (!userId || !(await verifyAdminMfaCookieEdge(mfaCookie, userId))) {
+      const url = new URL(`${ADMIN_PATH}/mfa`, req.url);
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   /* =========================================================

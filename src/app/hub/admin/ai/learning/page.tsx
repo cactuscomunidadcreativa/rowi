@@ -64,7 +64,7 @@ interface Agent {
   model: string;
   type: string;
   autoLearn: boolean;
-  updatedAt: string;
+  updatedAt?: string;
   knowledgeCount?: number;
 }
 
@@ -391,8 +391,11 @@ export default function AILearningPage() {
   async function loadData() {
     setLoading(true);
     try {
+      // Usamos /api/admin/ai/list porque devuelve `autoLearn` por agente.
+      // /api/admin/agents NO incluye autoLearn, lo que hacía que el toggle de
+      // aprendizaje se "reseteara" visualmente tras cada recarga.
       const [agentsRes, statsRes] = await Promise.all([
-        fetch("/api/admin/agents", { cache: "no-store" }),
+        fetch("/api/admin/ai/list", { cache: "no-store" }),
         fetch("/api/admin/ai/learning/stats").catch(() => null),
       ]);
 
@@ -466,13 +469,21 @@ export default function AILearningPage() {
         body: JSON.stringify({ id: agentId, autoLearn: enabled }),
       });
 
-      if (res.ok) {
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.ok !== false) {
         setAgents((prev) =>
           prev.map((a) => (a.id === agentId ? { ...a, autoLearn: enabled } : a))
+        );
+        // Reflejar también el agente seleccionado si es el mismo.
+        setSelectedAgent((prev) =>
+          prev && prev.id === agentId ? { ...prev, autoLearn: enabled } : prev
         );
         toast.success(
           enabled ? t("admin.aiLearning.agents.enabledSuccess") : t("admin.aiLearning.agents.disabledSuccess")
         );
+      } else {
+        toast.error(data?.error || t("admin.aiLearning.agents.toggleError"));
       }
     } catch {
       toast.error(t("admin.aiLearning.agents.toggleError"));

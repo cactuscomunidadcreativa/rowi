@@ -1,10 +1,21 @@
 // apps/rowi/src/app/api/ai/engine/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma"; // ✅ corregido
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
 
 export async function POST(req: Request) {
+  // 🔐 Configura el motor de IA de un tenant/hub: solo admins en su scope.
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
+
   try {
     const body = await req.json();
+
+    const allowedTenantIds = await tenantIdsForScope(auth.scope);
+    if (allowedTenantIds !== null && body.tenantId && !allowedTenantIds.includes(body.tenantId)) {
+      return NextResponse.json({ ok: false, error: "No autorizado para este tenant" }, { status: 403 });
+    }
 
     // Buscar motor existente por tenant o hub
     const existing = await prisma.emotionalAIEngine.findFirst({

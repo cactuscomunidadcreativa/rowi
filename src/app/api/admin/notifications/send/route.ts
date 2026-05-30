@@ -4,8 +4,9 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { scopeCanSeeUser } from "@/core/admin/scopedList";
 import { NotificationService } from "@/lib/notifications";
 import { NotificationType, NotificationChannel, NotificationScope } from "@prisma/client";
 
@@ -13,15 +14,16 @@ export const runtime = "nodejs";
 
 /**
  * POST /api/admin/notifications/send
- * Send notification to hub/tenant/user
+ * Send notification to hub/tenant/user.
+ * 🔐 Solo administradores. Para scope USER, el target debe estar en el
+ * scope del admin (evita spam/phishing in-app a usuarios arbitrarios).
  */
 export async function POST(req: NextRequest) {
-  try {
-    const auth = await getServerAuthUser();
-    if (!auth?.id) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
+  const authResult = await requireAdminWithScope();
+  if (authResult.error) return authResult.error;
+  const auth = authResult.user;
 
+  try {
     const body = await req.json();
     const {
       scope,
@@ -50,6 +52,10 @@ export async function POST(req: NextRequest) {
       case "USER":
         if (!userId) {
           return NextResponse.json({ ok: false, error: "userId required for USER scope" }, { status: 400 });
+        }
+        // El target debe estar dentro del scope del admin.
+        if (!(await scopeCanSeeUser(authResult.scope, userId))) {
+          return NextResponse.json({ ok: false, error: "Usuario fuera de tu scope" }, { status: 403 });
         }
         targetUsers = [userId];
         notificationScope = "PERSONAL";

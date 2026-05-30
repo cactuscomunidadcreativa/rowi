@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { OpenAI } from "openai";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -101,6 +102,8 @@ export async function GET(req: NextRequest) {
    🧩 POST — CREAR NUEVO RECURSO
    ========================================================= */
 export async function POST(req: NextRequest) {
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
   try {
     const body = await req.json();
     const {
@@ -137,6 +140,7 @@ export async function POST(req: NextRequest) {
           model: "gpt-4o-mini",
           messages: [{ role: "system", content: summarizePrompt(title, content, url) }],
           temperature: 0.6,
+          max_tokens: 300,
         });
         aiSummary = completion.choices[0]?.message?.content ?? undefined;
       } catch (err: any) {
@@ -201,6 +205,8 @@ export async function POST(req: NextRequest) {
    🧩 PATCH — ACTUALIZAR RECURSO
    ========================================================= */
 export async function PATCH(req: NextRequest) {
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
   try {
     const body = await req.json();
     const { id, title, kind, content, tags, agents } = body;
@@ -251,6 +257,8 @@ export async function PATCH(req: NextRequest) {
    🧩 DELETE — ELIMINAR RECURSO
    ========================================================= */
 export async function DELETE(req: NextRequest) {
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
   try {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");

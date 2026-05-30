@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { ThemeTokens, defaultTokens } from "@/lib/theme/tokens";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { tenantIdsForScope } from "@/core/admin/scopedList";
+
+// Campos del branding que un admin puede escribir. Evita mass-assignment
+// (p.ej. flags internos) y limita la superficie de inyección de CSS al
+// conjunto explícito de columnas conocidas.
+const BRANDING_FIELDS = [
+  "primaryColor",
+  "secondaryColor",
+  "accentColor",
+  "backgroundColor",
+  "textColor",
+  "colorK",
+  "colorC",
+  "colorG",
+  "fontHeading",
+  "fontBody",
+  "logoUrl",
+  "logoLightUrl",
+  "faviconUrl",
+  "customCss",
+  "cssVariables",
+  "isActive",
+] as const;
+
+function pickBrandingFields(input: Record<string, unknown>) {
+  const out: Record<string, unknown> = {};
+  for (const f of BRANDING_FIELDS) {
+    if (input[f] !== undefined) out[f] = input[f];
+  }
+  return out;
+}
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -102,14 +134,27 @@ export async function GET(req: NextRequest) {
  * Crea o actualiza el branding de un tenant
  */
 export async function POST(req: NextRequest) {
+  // 🔐 Solo admins; y solo sobre tenants dentro de su scope.
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
+
   try {
     const body = await req.json();
-    const { tenantId, ...brandingData } = body;
+    const { tenantId } = body;
 
     if (!tenantId) {
       return NextResponse.json(
         { ok: false, error: "tenantId requerido" },
         { status: 400 }
+      );
+    }
+
+    // El tenant debe estar dentro del scope del admin (null = SuperAdmin global).
+    const allowedTenantIds = await tenantIdsForScope(auth.scope);
+    if (allowedTenantIds !== null && !allowedTenantIds.includes(tenantId)) {
+      return NextResponse.json(
+        { ok: false, error: "No autorizado para este tenant" },
+        { status: 403 }
       );
     }
 
@@ -124,6 +169,9 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Solo campos whitelisteados (corta mass-assignment / inyección arbitraria).
+    const brandingData = pickBrandingFields(body);
 
     // Upsert branding
     const branding = await prisma.tenantBranding.upsert({

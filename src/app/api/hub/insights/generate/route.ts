@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const AUTH_KEY = process.env.INSIGHT_AUTH_KEY || "rowi-key";
 
 /* =========================================================
    🧠 POST /api/hub/insights/generate
-   Procesa un insight cognitivo manual (controlado por clave)
+   Genera un insight cognitivo. 🔐 Solo administradores.
+   (Antes usaba una clave compartida con fallback "rowi-key"
+   embebido en el repo — eliminado por seguridad/costo.)
    ========================================================= */
 export async function POST(req: NextRequest) {
-  try {
-    const { type, authKey } = await req.json();
+  const auth = await requireAdminWithScope();
+  if (auth.error) return auth.error;
 
-    if (authKey !== AUTH_KEY)
-      return NextResponse.json({ error: "Clave inválida." }, { status: 403 });
+  try {
+    const { type } = await req.json();
 
     let prompt = "";
     switch (type) {
@@ -47,6 +49,7 @@ Genera interpretaciones sobre competencias EQ clave.`;
         { role: "user", content: prompt },
       ],
       temperature: 0.6,
+      max_tokens: 500,
     });
 
     const result = completion.choices[0]?.message?.content || "Sin resultados disponibles.";

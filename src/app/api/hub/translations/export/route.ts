@@ -1,6 +1,7 @@
 // apps/rowi/app/api/hub/translations/export/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import { stringify } from "csv-stringify/sync";
 import fs from "fs";
 import path from "path";
@@ -11,6 +12,9 @@ export const runtime = "nodejs";
    🌍 POST — Exportar JSON locales a /src/lib/i18n/locales/
 ========================================================= */
 export async function POST() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     console.log("📦 Exportando traducciones a archivos locales...");
 

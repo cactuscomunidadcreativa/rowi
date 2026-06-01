@@ -1,6 +1,7 @@
 // apps/rowi/app/api/hub/translations/import/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import { parse } from "csv-parse/sync";
 
 export const runtime = "nodejs";
@@ -14,6 +15,9 @@ export const runtime = "nodejs";
    ✅ Solo modifica celdas cuyo valor cambia
 ========================================================= */
 export async function POST(req: Request) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;

@@ -1,40 +1,9 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
 import { propagateMemberToParents } from "@/lib/communities/propagate-member";
-import { requireAdminWithScope } from "@/core/auth/requireAdmin";
-import { tenantIdsForScope } from "@/core/admin/scopedList";
+import { ensureCanAdminCommunity } from "@/lib/communities/adminGuard";
 
 export const runtime = "nodejs";
-
-/**
- * 🔐 Guard de mutación: el caller debe ser admin y la comunidad debe
- * pertenecer a un tenant dentro de su scope (SuperAdmin pasa siempre).
- * Devuelve NextResponse de error, o null si está autorizado.
- */
-async function ensureCanAdminCommunity(communityId: string) {
-  const auth = await requireAdminWithScope();
-  if (auth.error) return auth.error;
-
-  const community = await prisma.rowiCommunity.findUnique({
-    where: { id: communityId },
-    select: { id: true, tenantId: true },
-  });
-  if (!community) {
-    return NextResponse.json({ error: "Comunidad no encontrada" }, { status: 404 });
-  }
-
-  const allowedTenantIds = await tenantIdsForScope(auth.scope);
-  // allowedTenantIds === null → SuperAdmin/rowiverse, acceso total.
-  if (allowedTenantIds !== null) {
-    if (!community.tenantId || !allowedTenantIds.includes(community.tenantId)) {
-      return NextResponse.json(
-        { error: "No autorizado para esta comunidad" },
-        { status: 403 }
-      );
-    }
-  }
-  return null;
-}
 
 /* =========================================================
    🔹 GET — Listar miembros de una comunidad (Next 15+)
@@ -47,6 +16,10 @@ export async function GET(
   context: { params: Promise<{ communityId: string }> }
 ) {
   const { communityId } = await context.params;
+
+  // 🔐 Lista emails de todos los miembros: exige ser admin de la comunidad.
+  const guard = await ensureCanAdminCommunity(communityId);
+  if (guard) return guard;
 
   try {
     const members = await prisma.rowiCommunityUser.findMany({

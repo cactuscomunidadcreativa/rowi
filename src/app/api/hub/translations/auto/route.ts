@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import { translateText } from "@/lib/google/translate";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     const { keys, lang } = await req.json();
     if (!Array.isArray(keys) || !lang) {

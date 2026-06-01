@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 /* =========================================================
    🧠 Utilidades
@@ -137,13 +138,18 @@ export async function GET(req: NextRequest) {
     const dateQ = url.searchParams.get("date");
     const mode = url.searchParams.get("mode");
 
-    // 🧭 SEI 360 demo (mantiene estructura)
+    // 🧭 SEI 360 demo (datos sintéticos, sin PII) — libre para logueados.
     if (mode === "360") {
       const present = shapeSnapshotFromRow({ Profile: "Strategist" });
       const compare = shapeSnapshotFromRow({ Profile: "Guardian" });
       const feedback = buildFeedback(present, compare);
       return NextResponse.json({ present, compare, feedback, labels: { competencies: COMP }, colors: { sei: COLOR } });
     }
+
+    // 🔐 A partir de aquí se sirve PII real (name/email/competencias SEI) de
+    // un CSV. Solo SuperAdmin. (El middleware ya exige login para /api/*.)
+    const auth = await requireSuperAdmin();
+    if (auth.error) return auth.error;
 
     // 🗂 Cargar CSV
     const rows = await loadCsvRows();

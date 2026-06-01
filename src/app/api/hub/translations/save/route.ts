@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,10 @@ export const runtime = "nodejs";
  * Este endpoint modifica directamente los archivos JSON.
  */
 export async function POST(req: NextRequest) {
+  // 🔐 Escribe los archivos JSON de i18n (fuente de verdad): SuperAdmin.
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     const data = await req.json();
 

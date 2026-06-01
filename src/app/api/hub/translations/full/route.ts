@@ -1,6 +1,7 @@
 // apps/rowi/app/api/hub/translations/full/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import fs from "fs";
 import path from "path";
 
@@ -72,6 +73,8 @@ export async function GET() {
    💾 POST — Crear o actualizar traducciones
 ========================================================= */
 export async function POST(req: Request) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
   try {
     const body = await req.json();
     if (!Array.isArray(body))

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 import fs from "fs";
 import path from "path";
 
@@ -17,6 +18,9 @@ export const runtime = "nodejs";
  * ⚠️ Los JSON son la fuente de verdad para traducciones globales
  */
 export async function PATCH() {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     const LANGS = ["es", "en", "pt", "it"];
     const LOCALES_DIR = path.resolve(process.cwd(), "src/lib/i18n/locales");

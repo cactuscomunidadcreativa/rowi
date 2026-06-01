@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { ensureCanAdminMember } from "@/lib/communities/adminGuard";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,7 @@ export const runtime = "nodejs";
  *  - datos del miembro
  *  - comunidad
  *  - snapshot SEI más reciente (si existe)
+ * 🔐 Expone PII + EqSnapshot SEI: exige ser admin de la comunidad.
  * =========================================================
  */
 export async function GET(
@@ -18,6 +20,9 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  const guard = await ensureCanAdminMember(id);
+  if (guard) return guard;
 
   try {
     const member = await prisma.rowiCommunityUser.findUnique({

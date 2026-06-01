@@ -1,5 +1,6 @@
 import { prisma } from "@/core/prisma";
 import { NextResponse } from "next/server";
+import { ensureCanAdminMember } from "@/lib/communities/adminGuard";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,7 @@ export const runtime = "nodejs";
  * 🔹 GET — Detalle de un miembro (por ID)
  * ---------------------------------------------------------
  * Devuelve info del RowiCommunityUser + comunidad + snapshot
+ * 🔐 Expone PII + assessment: exige ser admin de la comunidad.
  * =========================================================
  */
 export async function GET(
@@ -15,6 +17,9 @@ export async function GET(
   context: { params: Promise<{ memberId: string }> }
 ) {
   const { memberId } = await context.params;
+
+  const guard = await ensureCanAdminMember(memberId);
+  if (guard) return guard;
 
   try {
     // 🔹 Buscar al miembro

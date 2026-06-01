@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { ensureCanAdminMember } from "@/lib/communities/adminGuard";
+
+export const runtime = "nodejs";
 
 /**
  * 🔗 Link Account API
  * Vincula un miembro de comunidad con un usuario global
  * y COPIA TODOS los datos (EQ, talentos, competencias, outcomes, etc.) al perfil del usuario
+ *
+ * 🔐 SEGURIDAD: reasigna datos psicométricos (EqSnapshot SEI, etc.) a un
+ * userId. Sin guard, cualquier usuario logueado podía pasar su propio
+ * userId y apropiarse de la evaluación SEI de otra persona. Ahora exige
+ * ser admin de la comunidad del miembro.
  */
 export async function POST(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  const guard = await ensureCanAdminMember(id);
+  if (guard) return guard;
 
   try {
     const body = await req.json().catch(() => ({}));

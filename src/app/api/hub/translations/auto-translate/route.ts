@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { requireSuperAdmin } from "@/core/auth/requireAdmin";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max for large translations
@@ -17,6 +18,9 @@ export const maxDuration = 300; // 5 minutes max for large translations
  * }
  */
 export async function POST(req: NextRequest) {
+  const auth = await requireSuperAdmin();
+  if (auth.error) return auth.error;
+
   try {
     const { sourceLang, targetLang, translations } = await req.json();
 

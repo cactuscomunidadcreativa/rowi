@@ -149,9 +149,12 @@ export async function sendVerificationEmail(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    secureLog.info(
-      "[verify-email] RESEND_API_KEY not set — verification email not sent",
+  // Key ausente o placeholder (toda key real de Resend empieza con "re_").
+  // Se mantiene skipped (no romper el flujo de registro), pero como WARN
+  // para que sea visible en los logs que NO se está enviando email.
+  if (!apiKey || !apiKey.startsWith("re_")) {
+    secureLog.warn(
+      "[verify-email] RESEND_API_KEY ausente o placeholder — email NO enviado. Configura una key real (re_...) en el entorno.",
     );
     return { ok: true, skipped: true };
   }

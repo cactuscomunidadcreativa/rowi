@@ -76,11 +76,11 @@ describe("calibration scan", () => {
     const res = await POST(req("Bearer topsecret"));
 
     expect(gtFindMany).toHaveBeenCalledTimes(PULSE_POINTS.length);
-    expect(res.body.ok).toBe(true);
-    expect(res.body.summary.totalPulsePoints).toBe(PULSE_POINTS.length);
-    expect(res.body.summary.readyForCalibration).toBe(0);
-    expect(res.body.summary.notReady).toBe(PULSE_POINTS.length);
-    expect(res.body.details).toHaveLength(PULSE_POINTS.length);
+    expect((res as any).body.ok).toBe(true);
+    expect((res as any).body.summary.totalPulsePoints).toBe(PULSE_POINTS.length);
+    expect((res as any).body.summary.readyForCalibration).toBe(0);
+    expect((res as any).body.summary.notReady).toBe(PULSE_POINTS.length);
+    expect((res as any).body.details).toHaveLength(PULSE_POINTS.length);
   });
 
   it("flags a pulse point ready only at >= 30 samples and computes mean delta", async () => {
@@ -96,11 +96,11 @@ describe("calibration scan", () => {
 
     const res = await POST(req("Bearer topsecret"));
 
-    const first = res.body.details.find((d: any) => d.pulsePointCode === PULSE_POINTS[0].code);
+    const first = (res as any).body.details.find((d: any) => d.pulsePointCode === PULSE_POINTS[0].code);
     expect(first.pairedSamples).toBe(30);
     expect(first.meanDelta).toBe(2);
     expect(first.readyForCalibration).toBe(true);
-    expect(res.body.summary.readyForCalibration).toBe(1);
+    expect((res as any).body.summary.readyForCalibration).toBe(1);
   });
 
   it("does NOT flag ready at 29 samples (boundary below the floor)", async () => {
@@ -113,10 +113,10 @@ describe("calibration scan", () => {
     });
 
     const res = await POST(req("Bearer topsecret"));
-    const first = res.body.details.find((d: any) => d.pulsePointCode === PULSE_POINTS[0].code);
+    const first = (res as any).body.details.find((d: any) => d.pulsePointCode === PULSE_POINTS[0].code);
     expect(first.pairedSamples).toBe(29);
     expect(first.readyForCalibration).toBe(false);
-    expect(res.body.summary.readyForCalibration).toBe(0);
+    expect((res as any).body.summary.readyForCalibration).toBe(0);
   });
 
   it("records a completed BackgroundTask ledger row", async () => {
@@ -131,7 +131,7 @@ describe("calibration scan", () => {
     gtFindMany.mockRejectedValueOnce(new Error("connection reset"));
     const res = await POST(req("Bearer topsecret"));
     expect(res.status).toBe(500);
-    expect(res.body.ok).toBe(false);
-    expect(res.body.error).toBe("connection reset");
+    expect((res as any).body.ok).toBe(false);
+    expect((res as any).body.error).toBe("connection reset");
   });
 });

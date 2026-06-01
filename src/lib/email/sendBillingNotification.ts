@@ -209,9 +209,9 @@ export async function sendBillingNotification(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    secureLog.info(
-      `[billing-notification] RESEND_API_KEY not set — kind=${input.kind} not sent`,
+  if (!apiKey || !apiKey.startsWith("re_")) {
+    secureLog.warn(
+      `[billing-notification] RESEND_API_KEY ausente o placeholder — kind=${input.kind} NO enviado. Configura una key real (re_...).`,
     );
     return { ok: true, skipped: true };
   }

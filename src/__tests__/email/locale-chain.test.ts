@@ -48,7 +48,6 @@ describe("sendInviteEmail — guards + skipped", () => {
 
   it("returns { skipped: true } and sends nothing when RESEND_API_KEY is unset", async () => {
     const fetchSpy = jest.fn();
-    // @ts-expect-error test stub
     global.fetch = fetchSpy;
 
     const r = await sendInviteEmail({ to: "a@b.com", inviteUrl: "https://x/invite/t" } as any);

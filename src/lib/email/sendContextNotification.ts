@@ -289,9 +289,9 @@ export async function sendContextNotification(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    secureLog.info(
-      "[context-notification] RESEND_API_KEY not set — notification not sent",
+  if (!apiKey || !apiKey.startsWith("re_")) {
+    secureLog.warn(
+      "[context-notification] RESEND_API_KEY ausente o placeholder — email NO enviado. Configura una key real (re_...) en el entorno.",
     );
     return { ok: true, skipped: true };
   }

@@ -77,9 +77,17 @@ export async function sendAdminOtpEmail(
   if (!input.code) return { ok: false, error: "code is required" };
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    secureLog.info("[admin-otp] RESEND_API_KEY not set — OTP email not sent");
-    return { ok: true, skipped: true };
+  // El OTP de admin es crítico: a diferencia de otros emails, NO debe fallar
+  // en silencio. Una API key ausente o placeholder (toda key de Resend real
+  // empieza con "re_") significa que el código nunca llegaría, dejando al
+  // admin fuera sin saberlo. Devolvemos error explícito.
+  if (!apiKey || !apiKey.startsWith("re_")) {
+    secureLog.info("[admin-otp] RESEND_API_KEY ausente o inválida — OTP no enviado");
+    return {
+      ok: false,
+      error:
+        "El envío de email no está configurado (RESEND_API_KEY). Contacta al administrador o usa el bypass de emergencia.",
+    };
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@rowiia.com";

@@ -104,7 +104,7 @@ describe("reminder logic", () => {
   it("short-circuits with zero counts when there are no candidates", async () => {
     inviteFindMany.mockResolvedValue([]);
     const res = await GET(req("Bearer topsecret"));
-    expect(res.body).toMatchObject({ ok: true, sent: 0, skipped: 0, failed: 0, candidates: 0 });
+    expect((res as any).body).toMatchObject({ ok: true, sent: 0, skipped: 0, failed: 0, candidates: 0 });
     expect(sendMock).not.toHaveBeenCalled();
   });
 
@@ -123,8 +123,8 @@ describe("reminder logic", () => {
       where: { id: "inv1" },
       data: { reminderSentAt: expect.any(Date) },
     });
-    expect(res.body.sent).toBe(1);
-    expect(res.body.failed).toBe(0);
+    expect((res as any).body.sent).toBe(1);
+    expect((res as any).body.failed).toBe(0);
   });
 
   it("skips an already-accepted invitee but still stamps it to stop daily scans", async () => {
@@ -138,8 +138,8 @@ describe("reminder logic", () => {
       where: { id: "inv1" },
       data: { reminderSentAt: expect.any(Date) },
     });
-    expect(res.body.skipped).toBe(1);
-    expect(res.body.sent).toBe(0);
+    expect((res as any).body.skipped).toBe(1);
+    expect((res as any).body.sent).toBe(0);
   });
 
   it("counts a failed send and does NOT stamp it (so tomorrow retries)", async () => {
@@ -148,8 +148,8 @@ describe("reminder logic", () => {
 
     const res = await GET(req("Bearer topsecret"));
 
-    expect(res.body.failed).toBe(1);
-    expect(res.body.sent).toBe(0);
+    expect((res as any).body.failed).toBe(1);
+    expect((res as any).body.sent).toBe(0);
     expect(inviteUpdate).not.toHaveBeenCalled();
   });
 
@@ -161,14 +161,14 @@ describe("reminder logic", () => {
 
     const res = await GET(req("Bearer topsecret"));
 
-    expect(res.body.failed).toBe(1);
-    expect(res.body.sent).toBe(1);
+    expect((res as any).body.failed).toBe(1);
+    expect((res as any).body.sent).toBe(1);
   });
 
   it("500s when the candidate query throws", async () => {
     inviteFindMany.mockRejectedValueOnce(new Error("db down"));
     const res = await GET(req("Bearer topsecret"));
     expect(res.status).toBe(500);
-    expect(res.body.ok).toBe(false);
+    expect((res as any).body.ok).toBe(false);
   });
 });

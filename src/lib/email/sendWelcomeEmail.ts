@@ -163,9 +163,9 @@ export async function sendWelcomeEmail(
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    secureLog.info(
-      "[welcome-email] RESEND_API_KEY not set — welcome email not sent",
+  if (!apiKey || !apiKey.startsWith("re_")) {
+    secureLog.warn(
+      "[welcome-email] RESEND_API_KEY ausente o placeholder — email NO enviado. Configura una key real (re_...) en el entorno.",
     );
     return { ok: true, skipped: true };
   }

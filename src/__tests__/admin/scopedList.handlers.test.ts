@@ -139,7 +139,8 @@ describe("scopedPaginatedListHandler — authorization contract", () => {
 
     expect(m.findMany.mock.calls[0][0].where).toEqual({ tenantId: "t1" });
     expect(m.count).toHaveBeenCalledWith({ where: { tenantId: "t1" } });
-    expect(res.body.scope).toEqual({ type: "tenant", id: "t1" });
+    // NextResponse.json está mockeado → `body` es el payload directo.
+    expect((res as any).body.scope).toEqual({ type: "tenant", id: "t1" });
   });
 
   it("combines the scope filter with a search query under AND", async () => {
@@ -169,7 +170,7 @@ describe("tenantScopedPaginatedListHandler — fail-closed invariant", () => {
 
     // CRITICAL: must NOT fall through to an unfiltered query.
     expect(m.findMany).not.toHaveBeenCalled();
-    expect(res.body).toMatchObject({ ok: true, rows: [], total: 0 });
+    expect((res as any).body).toMatchObject({ ok: true, rows: [], total: 0 });
   });
 
   it("narrows to the resolved tenant set with an `in` filter", async () => {

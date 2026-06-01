@@ -19,6 +19,11 @@ model User {
   planExpiresAt         DateTime?
   active                Boolean     @default(true)
   allowAI               Boolean     @default(true)
+  // 🔐 MFA TOTP para el panel admin (app autenticadora). El secreto se
+  // guarda cifrado en reposo (AES-256-GCM vía encryptValue). mfaEnabledAt
+  // null = aún no completó el enroll.
+  mfaTotpSecret         String?
+  mfaEnabledAt          DateTime?
   contributeToRowiverse Boolean     @default(true) // Auto-contribuir data EQ al RowiVerse global
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt

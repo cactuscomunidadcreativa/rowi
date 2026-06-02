@@ -66,10 +66,13 @@ const nextConfig: NextConfig = {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
-          // Habilitar XSS filter del navegador
+          // X-XSS-Protection: header obsoleto. Los navegadores modernos lo
+          // ignoraron/retiraron y en versiones viejas podía introducir
+          // vulnerabilidades. La protección XSS moderna es la CSP de abajo.
+          // Lo fijamos en "0" (deshabilitado explícito) en vez de removerlo.
           {
             key: "X-XSS-Protection",
-            value: "1; mode=block",
+            value: "0",
           },
           // Referrer policy
           {
@@ -85,15 +88,19 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value: [
-              // Scripts: solo de mismo origen y dominios específicos
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
+              // Scripts: mismo origen + dominios específicos. 'unsafe-eval'
+              // solo en desarrollo (Next dev/HMR lo requiere); en producción
+              // se elimina para reducir superficie XSS. 'unsafe-inline' se
+              // mantiene porque GTM/GA y los scripts inline de Next lo exigen
+              // (migrar a nonces sería un cambio mayor, ver backlog).
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"} https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com`,
               // Estilos: mismo origen y inline (necesario para Tailwind)
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Fuentes
               "font-src 'self' https://fonts.gstatic.com data:",
-              // Imágenes
-              "img-src 'self' data: blob: https: http:",
+              // Imágenes: https + data/blob. Se elimina http: (mixed content).
+              "img-src 'self' data: blob: https:",
               // Conexiones (APIs)
               "connect-src 'self' https://api.stripe.com https://api.openai.com https://*.vercel-insights.com https://*.google-analytics.com https://*.blob.vercel-storage.com https://*.public.blob.vercel-storage.com https://vercel.com https://*.vercel.com https://cdn.jsdelivr.net wss:",
               // Frames (para Stripe checkout)

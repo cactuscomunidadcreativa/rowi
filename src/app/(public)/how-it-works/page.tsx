@@ -117,7 +117,7 @@ export default function HowItWorksPage() {
             >
               <div className="relative aspect-square max-w-md mx-auto">
                 <Image
-                  src="/rowivectors/Rowi-06.png"
+                  src="/rowivectors/Rowi-06.webp"
                   alt="Rowi"
                   fill
                   className="object-contain drop-shadow-2xl"
@@ -192,7 +192,7 @@ export default function HowItWorksPage() {
                   1
                 </div>
                 <div className="relative w-24 h-24 mx-auto mb-6">
-                  <Image src="/rowivectors/Rowi-01.png" alt="Rowi Challenge" fill className="object-contain" />
+                  <Image src="/rowivectors/Rowi-01.webp" alt="Rowi Challenge" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
                   {lang === "es" ? "Conoce a tu Rowi" : "Meet your Rowi"}
@@ -228,7 +228,7 @@ export default function HowItWorksPage() {
                   2
                 </div>
                 <div className="relative w-24 h-24 mx-auto mb-6">
-                  <Image src="/rowivectors/Rowi-02.png" alt="Rowi Emerging" fill className="object-contain" />
+                  <Image src="/rowivectors/Rowi-02.webp" alt="Rowi Emerging" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
                   {lang === "es" ? "Evalúa y descubre" : "Assess and discover"}
@@ -264,7 +264,7 @@ export default function HowItWorksPage() {
                   3
                 </div>
                 <div className="relative w-24 h-24 mx-auto mb-6">
-                  <Image src="/rowivectors/Rowi-06.png" alt="Rowi Expert" fill className="object-contain" />
+                  <Image src="/rowivectors/Rowi-06.webp" alt="Rowi Expert" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
                   {lang === "es" ? "Crece y evoluciona" : "Grow and evolve"}

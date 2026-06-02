@@ -4300,6 +4300,25 @@ model BenchmarkCorrelation {
   @@map("benchmark_correlation")
 }
 
+/// Asignación líder↔equipo declarada por el consultor sobre un benchmark.
+/// La persona se identifica SOLO por el hash sha256 de su email (personHash),
+/// nunca por email en claro — el benchmark sigue siendo anónimo. El consultor
+/// escribe el email, el endpoint lo hashea y verifica que exista en los
+/// BenchmarkDataPoint antes de persistir. Sin FK dura a Benchmark para evitar
+/// back-relations / columnas non-null sobre tablas pobladas (db push seguro).
+model ConsultantLeaderAssignment {
+  id            String   @id @default(cuid())
+  benchmarkId   String
+  personHash    String // "sha256:<hex>" — coincide con BenchmarkDataPoint.sourceId
+  projectCohort String? // equipo declarado (si se omite, se infiere del data point)
+  createdById   String? // userId del consultor que la creó
+  createdAt     DateTime @default(now())
+
+  @@unique([benchmarkId, personHash])
+  @@index([benchmarkId])
+  @@map("consultant_leader_assignment")
+}
+
 /// Outcome Pattern — Mapas de éxito emocional
 model BenchmarkOutcomePattern {
   id          String @id @default(cuid())

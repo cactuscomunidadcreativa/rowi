@@ -171,15 +171,17 @@ function computeTopCorrelations(points: DP[], topN: number): CorrelationFinding[
     .slice(0, topN);
 }
 
-/** Espejo líder↔equipo: Δ del SEI del líder vs la media del resto del equipo. */
-function computeLeaderMirror(
+/**
+ * Espejo líder↔equipo (por HASH): Δ del SEI del líder vs la media del resto
+ * del equipo. El líder se identifica por su pseudónimo estable (sha256 del
+ * email, guardado en sourceId) — nunca comparamos emails en claro. Esta es la
+ * ruta directa: recibe el hash ya calculado y evita re-hashear.
+ */
+function computeLeaderMirrorByHash(
   allPoints: DP[],
-  leaderEmail: string,
+  leaderHash: string,
   leaderCohort?: string
 ): LeaderMirror {
-  // El líder se identifica por el hash de su email (pseudónimo estable que el
-  // import guardó en sourceId). Nunca comparamos emails en claro.
-  const leaderHash = hashPersonId(leaderEmail);
   if (!leaderHash) {
     return { present: false, aboveTeam: [], belowTeam: [] };
   }
@@ -212,6 +214,22 @@ function computeLeaderMirror(
   const belowTeam = deltas.filter((d) => d.vsNorm < 0).sort((a, b) => a.vsNorm - b.vsNorm);
 
   return { present: true, aboveTeam, belowTeam };
+}
+
+/**
+ * Espejo líder↔equipo (por EMAIL): wrapper que hashea el email y delega en la
+ * ruta por hash. Mantiene el contrato de la fase 2 (runCrossAnalysis usa email).
+ */
+function computeLeaderMirror(
+  allPoints: DP[],
+  leaderEmail: string,
+  leaderCohort?: string
+): LeaderMirror {
+  const leaderHash = hashPersonId(leaderEmail);
+  if (!leaderHash) {
+    return { present: false, aboveTeam: [], belowTeam: [] };
+  }
+  return computeLeaderMirrorByHash(allPoints, leaderHash, leaderCohort);
 }
 
 /** Deriva temporal: personas (mismo hash) medidas 2+ veces. */
@@ -323,5 +341,107 @@ export async function runCrossAnalysis(
     topCorrelations,
     leaderMirror,
     temporalDrift,
+  };
+}
+
+// =====================================================================
+// Multi-líder — vista primaria del consultor (informe tipo Bancolombia)
+// =====================================================================
+
+/** Un líder marcado + su espejo vs el equipo de su cohorte. */
+export interface LeaderFinding {
+  /** pseudónimo estable (sha256:<hex>) — nunca email en claro */
+  personHash: string;
+  /** cohorte/equipo del líder (puede ser null si el data point no la traía) */
+  projectCohort: string | null;
+  /** espejo líder↔equipo para este líder */
+  mirror: LeaderMirror;
+}
+
+export interface MultiLeaderAnalysisResult {
+  benchmarkId: string;
+  totalDataPoints: number;
+  /** fortalezas/brechas por equipo (cohorte) */
+  teams: TeamAnalysis[];
+  /** correlaciones EQ→outcome más fuertes del benchmark completo */
+  topCorrelations: CorrelationFinding[];
+  /** deriva temporal de personas re-medidas */
+  temporalDrift: TemporalDrift;
+  /**
+   * espejo de CADA líder marcado (ConsultantLeaderAssignment). Si no hay
+   * líderes marcados, queda [] (vacío honesto — la UI invita a marcar líderes).
+   */
+  leaders: LeaderFinding[];
+}
+
+/**
+ * Vista primaria del consultor: para CADA líder marcado en
+ * ConsultantLeaderAssignment, calcula su espejo líder↔equipo, más las
+ * correlaciones top y la deriva temporal del benchmark. Carga los data points
+ * una sola vez y reutiliza la lógica de espejo por hash (sin re-hashear).
+ */
+export async function runMultiLeaderAnalysis(
+  benchmarkId: string,
+  options: { topN?: number } = {}
+): Promise<MultiLeaderAnalysisResult> {
+  const topN = options.topN ?? 8;
+
+  // Cargar asignaciones de líder y data points en paralelo.
+  const [assignments, points] = await Promise.all([
+    prisma.consultantLeaderAssignment.findMany({
+      where: { benchmarkId },
+      orderBy: { createdAt: "asc" },
+      select: { personHash: true, projectCohort: true },
+    }),
+    prisma.benchmarkDataPoint.findMany({
+      where: { benchmarkId },
+      select: {
+        projectCohort: true,
+        sourceDate: true,
+        sourceId: true,
+        eqTotal: true,
+        EL: true, RP: true, ACT: true, NE: true,
+        IM: true, OP: true, EMP: true, NG: true,
+        K: true, C: true, G: true,
+        effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
+        influence: true, decisionMaking: true, community: true, network: true,
+        achievement: true, satisfaction: true, balance: true, health: true,
+      },
+    }),
+  ]);
+
+  // Agrupar por cohorte (equipo). Las filas sin cohorte van a "General".
+  const byCohort = new Map<string, DP[]>();
+  for (const p of points) {
+    const c = p.projectCohort || "General";
+    if (!byCohort.has(c)) byCohort.set(c, []);
+    byCohort.get(c)!.push(p);
+  }
+
+  const teams = [...byCohort.entries()]
+    .map(([cohort, pts]) => analyzeTeam(cohort, pts))
+    .sort((a, b) => b.n - a.n);
+
+  const topCorrelations = computeTopCorrelations(points, topN);
+  const temporalDrift = computeTemporalDrift(points);
+
+  // Espejo por cada líder marcado, vía hash directo (sin re-hashear emails).
+  const leaders: LeaderFinding[] = assignments.map((a) => ({
+    personHash: a.personHash,
+    projectCohort: a.projectCohort ?? null,
+    mirror: computeLeaderMirrorByHash(
+      points,
+      a.personHash,
+      a.projectCohort ?? undefined
+    ),
+  }));
+
+  return {
+    benchmarkId,
+    totalDataPoints: points.length,
+    teams,
+    topCorrelations,
+    temporalDrift,
+    leaders,
   };
 }

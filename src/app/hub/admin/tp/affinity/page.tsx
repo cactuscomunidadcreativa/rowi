@@ -34,7 +34,7 @@ const translations = {
     backToHub: "TP Hub",
     badge: "Afinidad de Equipo",
     title: "Afinidad de Equipo TP",
-    subtitle: "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de 14,886 evaluaciones",
+    subtitle: "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de {count} evaluaciones",
 
     // Brain styles section
     brainDistTitle: "Distribucion Real de Estilos Cerebrales",
@@ -77,7 +77,7 @@ const translations = {
 
     // Info box
     infoTitle: "Datos de Afinidad TP",
-    infoDesc: "Datos basados en el benchmark real de Teleperformance con 14,886 evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.",
+    infoDesc: "Datos basados en el benchmark real de Teleperformance con {count} evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -183,12 +183,13 @@ const translations = {
     errorTitle: "Error al cargar datos",
     errorDesc: "No se pudieron cargar los datos del benchmark. Intenta de nuevo.",
     retry: "Reintentar",
+    emptyBenchmark: "Sin datos de benchmark todavía",
   },
   en: {
     backToHub: "TP Hub",
     badge: "Team Affinity",
     title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from 14,886 assessments",
+    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -231,7 +232,7 @@ const translations = {
 
     // Info box
     infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with 14,886 SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -337,12 +338,13 @@ const translations = {
     errorTitle: "Error loading data",
     errorDesc: "Could not load benchmark data. Please try again.",
     retry: "Retry",
+    emptyBenchmark: "No benchmark data yet",
   },
   pt: {
     backToHub: "TP Hub",
     badge: "Team Affinity",
     title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from 14,886 assessments",
+    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -385,7 +387,7 @@ const translations = {
 
     // Info box
     infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with 14,886 SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -491,12 +493,13 @@ const translations = {
     errorTitle: "Error loading data",
     errorDesc: "Could not load benchmark data. Please try again.",
     retry: "Retry",
+    emptyBenchmark: "No benchmark data yet",
   },
   it: {
     backToHub: "TP Hub",
     badge: "Team Affinity",
     title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from 14,886 assessments",
+    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -539,7 +542,7 @@ const translations = {
 
     // Info box
     infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with 14,886 SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -645,6 +648,7 @@ const translations = {
     errorTitle: "Error loading data",
     errorDesc: "Could not load benchmark data. Please try again.",
     retry: "Retry",
+    emptyBenchmark: "No benchmark data yet",
   },
 
 };
@@ -1109,7 +1113,14 @@ export default function TPAffinityPage() {
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
           <Heart className="w-8 h-8 text-pink-500" /> {t.title}
         </h1>
-        <p className="text-[var(--rowi-muted)]">{t.subtitle}</p>
+        <p className="text-[var(--rowi-muted)]">
+          {totalAssessments > 0
+            ? t.subtitle.replace("{count}", totalAssessments.toLocaleString())
+            : t.subtitle.replace(
+                lang === "es" ? "datos reales de {count} evaluaciones" : "real data from {count} assessments",
+                lang === "es" ? "datos reales del benchmark TP" : "real TP benchmark data"
+              )}
+        </p>
       </div>
 
       {/* ── Tab Selector ── */}
@@ -1992,6 +2003,12 @@ export default function TPAffinityPage() {
           <Brain className="w-5 h-5 text-purple-500" /> {t.brainDistTitle}
         </h2>
         <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.brainDistDesc}</p>
+        {sortedBrainStyles.length === 0 ? (
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-10 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
+            <Brain className="w-10 h-10 text-[var(--rowi-muted)] mx-auto mb-3 opacity-50" />
+            <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {sortedBrainStyles.map((group, i) => {
             const pct = totalAssessments > 0 ? ((group.count / totalAssessments) * 100).toFixed(1) : "0";
@@ -2042,6 +2059,7 @@ export default function TPAffinityPage() {
             );
           })}
         </div>
+        )}
       </div>
 
       {/* ── EQ by Brain Style (bars) ── */}
@@ -2421,7 +2439,14 @@ export default function TPAffinityPage() {
         <Shield className="w-6 h-6 text-pink-500 flex-shrink-0 mt-0.5" />
         <div>
           <h3 className="font-semibold text-pink-900 dark:text-pink-100 mb-1">{t.infoTitle}</h3>
-          <p className="text-sm text-pink-700 dark:text-pink-300">{t.infoDesc}</p>
+          <p className="text-sm text-pink-700 dark:text-pink-300">
+            {totalAssessments > 0
+              ? t.infoDesc.replace("{count}", totalAssessments.toLocaleString())
+              : t.infoDesc.replace(
+                  lang === "es" ? "benchmark real de Teleperformance con {count} evaluaciones SEI" : "real Teleperformance benchmark with {count} SEI assessments",
+                  lang === "es" ? "benchmark real de Teleperformance" : "real Teleperformance benchmark"
+                )}
+          </p>
         </div>
       </motion.div>
 

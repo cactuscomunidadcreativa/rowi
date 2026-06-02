@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -65,8 +65,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "Benchmark TP",
-    benchmarkDesc: "14,886 evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.",
-    benchmarkFeat1: "14,886 Evaluaciones",
+    benchmarkDesc: "{count} evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.",
+    benchmarkFeat1: "{count} Evaluaciones",
     benchmarkFeat2: "42 Países",
     benchmarkFeat3: "Insights Regionales",
     benchmarkFeat4: "Perfiles Cerebrales",
@@ -177,8 +177,9 @@ const translations = {
 
     // Footer
     footerText:
-      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de 14,886 evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
+      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Plataforma de Inteligencia Emocional con IA",
+    noData: "—",
   },
   en: {
     // Header
@@ -207,8 +208,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -319,8 +320,9 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
   pt: {
     // Header
@@ -349,8 +351,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -461,8 +463,9 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
   it: {
     // Header
@@ -491,8 +494,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -603,22 +606,64 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
 
 };
+
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 export default function TPAdminHub() {
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
+  // --- Live data from the real benchmark API ---
+  const [avgEQ, setAvgEQ] = useState<number | null>(null);
+  const [totalAssessments, setTotalAssessments] = useState<number | null>(null);
+  const [countryCount, setCountryCount] = useState<number | null>(null);
+  const [brainStyleCount, setBrainStyleCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadData() {
+      try {
+        const [statsRes, countryRes, brainRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=country`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=brainStyle`),
+        ]);
+        const statsJson = await statsRes.json();
+        const countryJson = await countryRes.json();
+        const brainJson = await brainRes.json();
+        if (cancelled) return;
+        if (statsJson.ok) {
+          const eq = (statsJson.statistics ?? []).find((s: { metricKey: string }) => s.metricKey === "eqTotal");
+          if (eq) {
+            setAvgEQ(eq.mean ?? null);
+            setTotalAssessments(eq.n ?? null);
+          }
+        }
+        if (countryJson.ok) setCountryCount(countryJson.totalGroups ?? null);
+        if (brainJson.ok) setBrainStyleCount(brainJson.totalGroups ?? null);
+      } catch (e) {
+        console.error("Error loading TP hub stats:", e);
+      }
+    }
+    loadData();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fmt = (v: number | null, digits = 0) =>
+    v === null ? t.noData : digits ? v.toFixed(digits) : v.toLocaleString();
+
   const TP_QUICK_STATS = [
-    { icon: Activity, value: "98.7", label: t.statAvgEQ, color: "#7B2D8E" },
-    { icon: Users, value: "14,886", label: t.statAssessments, color: "#3b82f6" },
-    { icon: Globe, value: "42", label: t.statCountries, color: "#10b981" },
-    { icon: Brain, value: "7", label: t.statBrainProfiles, color: "#f59e0b" },
+    { icon: Activity, value: fmt(avgEQ, 1), label: t.statAvgEQ, color: "#7B2D8E" },
+    { icon: Users, value: fmt(totalAssessments), label: t.statAssessments, color: "#3b82f6" },
+    { icon: Globe, value: fmt(countryCount), label: t.statCountries, color: "#10b981" },
+    { icon: Brain, value: fmt(brainStyleCount), label: t.statBrainProfiles, color: "#f59e0b" },
   ];
 
   const modules = [
@@ -639,8 +684,8 @@ export default function TPAdminHub() {
       gradient: "from-purple-600 to-pink-600",
       image: "/rowivectors/Rowi-01.webp",
       title: t.benchmarkTitle,
-      desc: t.benchmarkDesc,
-      features: [t.benchmarkFeat1, t.benchmarkFeat2, t.benchmarkFeat3, t.benchmarkFeat4],
+      desc: t.benchmarkDesc.replace("{count}", fmt(totalAssessments)),
+      features: [t.benchmarkFeat1.replace("{count}", fmt(totalAssessments)), t.benchmarkFeat2, t.benchmarkFeat3, t.benchmarkFeat4],
     },
     {
       key: "affinity",
@@ -891,7 +936,7 @@ export default function TPAdminHub() {
       >
         <Shield className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
         <div>
-          <p>{t.footerText}</p>
+          <p>{t.footerText.replace("{count}", fmt(totalAssessments))}</p>
           <p className="text-xs mt-1 text-purple-400">
             Rowi SIA &copy; {new Date().getFullYear()} &mdash; {t.footerCopyright}
           </p>

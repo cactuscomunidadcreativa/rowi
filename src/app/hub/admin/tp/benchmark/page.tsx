@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, BarChart3, Brain, Building2, Globe, Heart,
   Layers, Sparkles, Target, TrendingUp, Users, Zap, Shield, Award,
-  Activity, PieChart,
+  Activity, PieChart, Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 /* =========================================================
    TP Benchmark — Full Benchmark Analysis (moved from demo)
-   14,886 real SEI assessments
+   Real SEI assessments — fetched live from the benchmark API
 ========================================================= */
 
 const translations = {
@@ -22,7 +22,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeLabel: "Benchmark Teleperformance",
     pageTitle: "Benchmark EQ — Teleperformance",
-    pageSubtitle: "14,886 evaluaciones SEI analizadas en 42 países. Benchmarking corporativo en acción.",
+    pageSubtitle: "{count} evaluaciones SEI analizadas en {countries} países. Benchmarking corporativo en acción.",
 
     // Section tabs
     tabOverview: "Resumen",
@@ -96,14 +96,20 @@ const translations = {
 
     // Insights section
     sectionInsights: "Hallazgos Clave",
+    insightsReferenceNote: "Ejemplos ilustrativos del marco SEI — referencia, no calculados desde el benchmark actual",
     insight1: "Los mejores en Efectividad muestran +22% en Pensamiento Consecuente (ACT) vs. el promedio",
-    insight2: "RRHH tiene el EQ promedio más alto (101.1), lo que sugiere una correlación entre EQ y roles de gestión de personas",
-    insight3: "Motivación Intrínseca (IM) es la competencia más fuerte globalmente — clave para la retención",
-    insight4: "El perfil cerebral 'Científico' domina (19%), lo que indica una cultura analítica orientada a datos",
+    insight2: "RRHH tiende a mostrar EQ promedio más alto, lo que sugiere una correlación entre EQ y roles de gestión de personas",
+    insight3: "Motivación Intrínseca (IM) suele ser una competencia fuerte — clave para la retención",
+    insight4: "El perfil cerebral 'Científico' es frecuente, lo que indica una cultura analítica orientada a datos",
 
     // Footer
-    footerText: "Datos reales agregados de 14,886 evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados.",
+    footerText: "Datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados.",
     footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // States
+    loading: "Cargando datos del benchmark...",
+    emptyBenchmark: "Sin datos de benchmark todavía",
+    noData: "—",
 
     // Navigation
     navDashboard: "Dashboard",
@@ -114,7 +120,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeLabel: "Teleperformance Benchmark",
     pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "14,886 SEI assessments analyzed across 42 countries. Corporate benchmarking in action.",
+    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
 
     // Section tabs
     tabOverview: "Overview",
@@ -188,14 +194,20 @@ const translations = {
 
     // Insights section
     sectionInsights: "Key Insights",
+    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
     insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR has the highest average EQ (101.1), suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is the strongest competency globally — key for retention",
-    insight4: "The 'Scientist' brain profile dominates (19%), indicating a data-driven analytical culture",
+    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
+    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
+    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
 
     // Footer
-    footerText: "Real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized.",
+    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
     footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // States
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
 
     // Navigation
     navDashboard: "Dashboard",
@@ -206,7 +218,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeLabel: "Teleperformance Benchmark",
     pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "14,886 SEI assessments analyzed across 42 countries. Corporate benchmarking in action.",
+    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
 
     // Section tabs
     tabOverview: "Overview",
@@ -280,14 +292,20 @@ const translations = {
 
     // Insights section
     sectionInsights: "Key Insights",
+    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
     insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR has the highest average EQ (101.1), suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is the strongest competency globally — key for retention",
-    insight4: "The 'Scientist' brain profile dominates (19%), indicating a data-driven analytical culture",
+    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
+    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
+    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
 
     // Footer
-    footerText: "Real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized.",
+    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
     footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // States
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
 
     // Navigation
     navDashboard: "Dashboard",
@@ -298,7 +316,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeLabel: "Teleperformance Benchmark",
     pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "14,886 SEI assessments analyzed across 42 countries. Corporate benchmarking in action.",
+    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
 
     // Section tabs
     tabOverview: "Overview",
@@ -372,14 +390,20 @@ const translations = {
 
     // Insights section
     sectionInsights: "Key Insights",
+    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
     insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR has the highest average EQ (101.1), suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is the strongest competency globally — key for retention",
-    insight4: "The 'Scientist' brain profile dominates (19%), indicating a data-driven analytical culture",
+    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
+    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
+    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
 
     // Footer
-    footerText: "Real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized.",
+    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
     footerPowered: "Powered by Rowi SIA × Six Seconds",
+
+    // States
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
 
     // Navigation
     navDashboard: "Dashboard",
@@ -388,7 +412,37 @@ const translations = {
 
 };
 
-const TP_STATS = { totalAssessments: 14886, countries: 42, avgEQ: 98.7, avgEffectiveness: 101.2, avgRelationships: 99.8, avgWellbeing: 97.4, avgQualityOfLife: 98.1 };
+/* =========================================================
+   Real benchmark data wiring
+========================================================= */
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
+
+interface StatItem {
+  metricKey: string;
+  n: number;
+  mean: number;
+  median: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+}
+
+interface GroupBucket {
+  name: string;
+  count: number;
+  metrics: Record<string, { mean: number; median: number; min: number; max: number; stdDev: number }>;
+}
+
+const REGION_FLAGS: Record<string, string> = {
+  "North America": "🌎", "NA": "🌎", "Latin America": "🌎", "LATAM": "🌎",
+  "EMEA": "🌍", "Europe": "🌍", "Asia Pacific": "🌏", "APAC": "🌏",
+};
 
 /* Components */
 function EQGauge({ score, color = "#7B2D8E" }: { score: number; color?: string }) {
@@ -462,54 +516,138 @@ export default function TPBenchmarkPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
-  const TP_COMPETENCIES = [
-    { key: "EL", name: t.compEmotionalLiteracy, pursuit: "know", avg: 97.3, topPerformer: 118.2, color: "#3b82f6" },
-    { key: "RP", name: t.compRecognizePatterns, pursuit: "know", avg: 99.1, topPerformer: 116.8, color: "#3b82f6" },
-    { key: "ACT", name: t.compConsequentialThinking, pursuit: "know", avg: 98.4, topPerformer: 119.5, color: "#3b82f6" },
-    { key: "NE", name: t.compNavigateEmotions, pursuit: "choose", avg: 96.8, topPerformer: 117.1, color: "#10b981" },
-    { key: "IM", name: t.compIntrinsicMotivation, pursuit: "choose", avg: 100.2, topPerformer: 115.9, color: "#10b981" },
-    { key: "OP", name: t.compExerciseOptimism, pursuit: "choose", avg: 99.5, topPerformer: 116.3, color: "#10b981" },
-    { key: "EMP", name: t.compIncreaseEmpathy, pursuit: "give", avg: 98.9, topPerformer: 118.7, color: "#f59e0b" },
-    { key: "NG", name: t.compPursueNobleGoals, pursuit: "give", avg: 97.6, topPerformer: 114.2, color: "#f59e0b" },
-  ];
+  // --- Live data from the real benchmark API ---
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [regionGroups, setRegionGroups] = useState<GroupBucket[]>([]);
+  const [jobGroups, setJobGroups] = useState<GroupBucket[]>([]);
+  const [brainGroups, setBrainGroups] = useState<GroupBucket[]>([]);
+  const [countryCount, setCountryCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const TP_PURSUITS = {
-    know: { label: t.pursuitKnow, avg: 98.3, color: "#3b82f6", icon: Brain },
-    choose: { label: t.pursuitChoose, avg: 98.8, color: "#10b981", icon: Target },
-    give: { label: t.pursuitGive, avg: 98.2, color: "#f59e0b", icon: Heart },
-  };
+  useEffect(() => {
+    let cancelled = false;
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [statsRes, regionRes, jobRes, brainRes, countryRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=region`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=jobRole`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=brainStyle`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=country`),
+        ]);
+        const statsJson = await statsRes.json();
+        const regionJson = await regionRes.json();
+        const jobJson = await jobRes.json();
+        const brainJson = await brainRes.json();
+        const countryJson = await countryRes.json();
+        if (cancelled) return;
+        if (statsJson.ok) setStats(statsJson.statistics ?? []);
+        if (regionJson.ok) setRegionGroups(regionJson.groups ?? []);
+        if (jobJson.ok) setJobGroups(jobJson.groups ?? []);
+        if (brainJson.ok) setBrainGroups(brainJson.groups ?? []);
+        if (countryJson.ok) setCountryCount(countryJson.totalGroups ?? 0);
+      } catch (e) {
+        console.error("Error loading benchmark data:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadData();
+    return () => { cancelled = true; };
+  }, []);
 
-  const TP_OUTCOMES = [
-    { key: "effectiveness", label: t.outcomeEffectiveness, avg: 101.2, icon: Zap, color: "#6366f1" },
-    { key: "relationships", label: t.outcomeRelationships, avg: 99.8, icon: Users, color: "#ec4899" },
-    { key: "wellbeing", label: t.outcomeWellbeing, avg: 97.4, icon: Heart, color: "#10b981" },
-    { key: "qualityOfLife", label: t.outcomeQualityOfLife, avg: 98.1, icon: Award, color: "#f59e0b" },
-  ];
+  const getStat = (key: string) => stats.find((s) => s.metricKey === key);
+  const hasData = stats.length > 0;
 
-  const TP_BRAIN_PROFILES = [
-    { name: t.brainScientist, count: 2841, percent: 19.1, color: "#3b82f6", emoji: "🔬" },
-    { name: t.brainDeliverer, count: 2673, percent: 18.0, color: "#10b981", emoji: "📦" },
-    { name: t.brainStrategist, count: 2524, percent: 17.0, color: "#8b5cf6", emoji: "♟️" },
-    { name: t.brainInventor, count: 2227, percent: 15.0, color: "#f59e0b", emoji: "💡" },
-    { name: t.brainGuardian, count: 1935, percent: 13.0, color: "#ef4444", emoji: "🛡️" },
-    { name: t.brainVisionary, count: 1489, percent: 10.0, color: "#ec4899", emoji: "🔮" },
-    { name: t.brainSuperhero, count: 1197, percent: 7.9, color: "#14b8a6", emoji: "🦸" },
-  ];
+  // --- Real aggregate stats ---
+  const TP_STATS = useMemo(() => {
+    const eq = getStat("eqTotal");
+    return {
+      totalAssessments: eq?.n ?? 0,
+      countries: countryCount,
+      avgEQ: eq?.mean ?? 0,
+      avgEffectiveness: getStat("effectiveness")?.mean ?? 0,
+      avgRelationships: getStat("relationships")?.mean ?? 0,
+      avgWellbeing: getStat("wellbeing")?.mean ?? 0,
+      avgQualityOfLife: getStat("qualityOfLife")?.mean ?? 0,
+    };
+  }, [stats, countryCount]);
 
-  const TP_REGIONS = [
-    { name: t.regionNorthAmerica, count: 5214, avgEQ: 99.8, flag: "🇺🇸" },
-    { name: t.regionAsiaPacific, count: 3872, avgEQ: 97.2, flag: "🇵🇭" },
-    { name: t.regionEMEA, count: 3418, avgEQ: 99.1, flag: "🇬🇧" },
-    { name: t.regionLatinAmerica, count: 2382, avgEQ: 98.4, flag: "🇲🇽" },
-  ];
+  // --- Competencies: avg = mean, topPerformer = p90 (real) ---
+  const TP_COMPETENCIES = useMemo(() => {
+    const defs = [
+      { key: "EL", name: t.compEmotionalLiteracy, pursuit: "know", color: "#3b82f6" },
+      { key: "RP", name: t.compRecognizePatterns, pursuit: "know", color: "#3b82f6" },
+      { key: "ACT", name: t.compConsequentialThinking, pursuit: "know", color: "#3b82f6" },
+      { key: "NE", name: t.compNavigateEmotions, pursuit: "choose", color: "#10b981" },
+      { key: "IM", name: t.compIntrinsicMotivation, pursuit: "choose", color: "#10b981" },
+      { key: "OP", name: t.compExerciseOptimism, pursuit: "choose", color: "#10b981" },
+      { key: "EMP", name: t.compIncreaseEmpathy, pursuit: "give", color: "#f59e0b" },
+      { key: "NG", name: t.compPursueNobleGoals, pursuit: "give", color: "#f59e0b" },
+    ];
+    return defs.map((d) => {
+      const s = getStat(d.key);
+      return { ...d, avg: s?.mean ?? 0, topPerformer: s?.p90 ?? 0 };
+    });
+  }, [stats, t]);
 
-  const TP_JOB_FUNCTIONS = [
-    { name: t.jobCustomerService, count: 6891, avgEQ: 97.9, icon: "💬" },
-    { name: t.jobSalesBusinessDev, count: 3102, avgEQ: 100.3, icon: "📈" },
-    { name: t.jobHumanResources, count: 1843, avgEQ: 101.1, icon: "👥" },
-    { name: t.jobITTechnology, count: 1527, avgEQ: 98.5, icon: "💻" },
-    { name: t.jobOperations, count: 1523, avgEQ: 98.1, icon: "⚙️" },
-  ];
+  // --- Pursuits: mean of member competency means (real) ---
+  const TP_PURSUITS = useMemo(() => {
+    const meanOf = (keys: string[]) => {
+      const vals = keys.map((k) => getStat(k)?.mean ?? 0).filter((v) => v > 0);
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    };
+    return {
+      know: { label: t.pursuitKnow, avg: meanOf(["EL", "RP", "ACT"]), color: "#3b82f6", icon: Brain },
+      choose: { label: t.pursuitChoose, avg: meanOf(["NE", "IM", "OP"]), color: "#10b981", icon: Target },
+      give: { label: t.pursuitGive, avg: meanOf(["EMP", "NG"]), color: "#f59e0b", icon: Heart },
+    };
+  }, [stats, t]);
+
+  const TP_OUTCOMES = useMemo(() => [
+    { key: "effectiveness", label: t.outcomeEffectiveness, avg: getStat("effectiveness")?.mean ?? 0, icon: Zap, color: "#6366f1" },
+    { key: "relationships", label: t.outcomeRelationships, avg: getStat("relationships")?.mean ?? 0, icon: Users, color: "#ec4899" },
+    { key: "wellbeing", label: t.outcomeWellbeing, avg: getStat("wellbeing")?.mean ?? 0, icon: Heart, color: "#10b981" },
+    { key: "qualityOfLife", label: t.outcomeQualityOfLife, avg: getStat("qualityOfLife")?.mean ?? 0, icon: Award, color: "#f59e0b" },
+  ], [stats, t]);
+
+  // --- Strongest competency (real) ---
+  const strongestComp = useMemo(() => {
+    if (!TP_COMPETENCIES.length || !hasData) return null;
+    return [...TP_COMPETENCIES].filter((c) => c.avg > 0).sort((a, b) => b.avg - a.avg)[0] ?? null;
+  }, [TP_COMPETENCIES, hasData]);
+
+  // --- Brain profiles from real grouped data ---
+  const BRAIN_PALETTE = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899", "#14b8a6", "#6366f1"];
+  const TP_BRAIN_PROFILES = useMemo(() => {
+    const total = brainGroups.reduce((s, g) => s + g.count, 0);
+    return brainGroups.map((g, i) => ({
+      name: g.name,
+      count: g.count,
+      percent: total > 0 ? Math.round((g.count / total) * 1000) / 10 : 0,
+      color: BRAIN_PALETTE[i % BRAIN_PALETTE.length],
+      emoji: "🧠",
+    }));
+  }, [brainGroups]);
+
+  // --- Regions from real grouped data ---
+  const TP_REGIONS = useMemo(() =>
+    regionGroups.map((g) => ({
+      name: g.name,
+      count: g.count,
+      avgEQ: g.metrics.eqTotal?.mean ?? 0,
+      flag: REGION_FLAGS[g.name] ?? "🌐",
+    })), [regionGroups]);
+
+  // --- Job functions from real grouped data ---
+  const TP_JOB_FUNCTIONS = useMemo(() =>
+    jobGroups.slice(0, 5).map((g) => ({
+      name: g.name,
+      count: g.count,
+      avgEQ: g.metrics.eqTotal?.mean ?? 0,
+      icon: "💼",
+    })), [jobGroups]);
 
   const TP_KEY_INSIGHTS = [
     { text: t.insight1, icon: TrendingUp, color: "#6366f1" },
@@ -525,6 +663,44 @@ export default function TPBenchmarkPage() {
     { id: "brainProfiles", label: t.tabBrainProfiles, icon: PieChart },
     { id: "insights", label: t.tabInsights, icon: Sparkles },
   ];
+
+  const headerBlock = (
+    <div>
+      <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+        <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+      </Link>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-purple-500/20 text-purple-500">
+          <Building2 className="w-4 h-4" /> {t.badgeLabel}
+        </span>
+      </div>
+      <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        {headerBlock}
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Loader2 className="w-10 h-10 text-purple-500 animate-spin" />
+          <p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="space-y-8">
+        {headerBlock}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-12 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
+          <BarChart3 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3 opacity-50" />
+          <p className="text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -543,7 +719,11 @@ export default function TPBenchmarkPage() {
             </span>
           </div>
           <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          <p className="text-[var(--rowi-muted)]">
+            {t.pageSubtitle
+              .replace("{count}", TP_STATS.totalAssessments.toLocaleString())
+              .replace("{countries}", TP_STATS.countries > 0 ? String(TP_STATS.countries) : t.noData)}
+          </p>
         </motion.div>
       </div>
 
@@ -568,8 +748,8 @@ export default function TPBenchmarkPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             <StatCard icon={Activity} value={TP_STATS.avgEQ.toFixed(1)} label={t.statAvgEQ} color="#7B2D8E" index={0} />
             <StatCard icon={Users} value={TP_STATS.totalAssessments.toLocaleString()} label={t.statAssessments} color="#3b82f6" index={1} />
-            <StatCard icon={Globe} value={TP_STATS.countries.toString()} label={t.statCountries} color="#10b981" index={2} />
-            <StatCard icon={Zap} value="IM" label={t.statStrongestCompetency} color="#f59e0b" index={3} />
+            <StatCard icon={Globe} value={TP_STATS.countries > 0 ? TP_STATS.countries.toString() : t.noData} label={t.statCountries} color="#10b981" index={2} />
+            <StatCard icon={Zap} value={strongestComp?.key ?? t.noData} label={t.statStrongestCompetency} color="#f59e0b" index={3} />
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -603,6 +783,9 @@ export default function TPBenchmarkPage() {
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-purple-500" /> {t.regionalDistribution}</h3>
+            {TP_REGIONS.length === 0 ? (
+              <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+            ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {TP_REGIONS.map((region, i) => (
                 <motion.div key={region.name} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
@@ -614,6 +797,7 @@ export default function TPBenchmarkPage() {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
         </section>
 
@@ -635,6 +819,9 @@ export default function TPBenchmarkPage() {
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Layers className="w-5 h-5 text-purple-500" /> {t.byJobFunction}</h3>
+            {TP_JOB_FUNCTIONS.length === 0 ? (
+              <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
               {TP_JOB_FUNCTIONS.map((jf, i) => (
                 <motion.div key={jf.name} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
@@ -646,6 +833,7 @@ export default function TPBenchmarkPage() {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
         </section>
 
@@ -677,6 +865,9 @@ export default function TPBenchmarkPage() {
         <section id="brainProfiles">
           <SectionHeader title={t.sectionBrainProfiles} icon={PieChart} />
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
+            {TP_BRAIN_PROFILES.length === 0 ? (
+              <p className="text-sm text-[var(--rowi-muted)] text-center py-4">{t.emptyBenchmark}</p>
+            ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {TP_BRAIN_PROFILES.map((profile, i) => (
                 <motion.div key={profile.name} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
@@ -691,12 +882,14 @@ export default function TPBenchmarkPage() {
                 </motion.div>
               ))}
             </div>
+            )}
           </div>
         </section>
 
         {/* Insights */}
         <section id="insights">
           <SectionHeader title={t.sectionInsights} icon={Sparkles} />
+          <p className="text-xs text-[var(--rowi-muted)] mb-4 italic">{t.insightsReferenceNote}</p>
           <div className="grid md:grid-cols-2 gap-4">
             {TP_KEY_INSIGHTS.map((insight, i) => {
               const Icon = insight.icon;
@@ -720,7 +913,7 @@ export default function TPBenchmarkPage() {
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex items-start gap-3 p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10 text-sm text-[var(--rowi-muted)]">
         <Shield className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
         <div>
-          <p>{t.footerText}</p>
+          <p>{t.footerText.replace("{count}", TP_STATS.totalAssessments.toLocaleString())}</p>
           <p className="text-xs mt-1 text-purple-400">{t.footerPowered}</p>
         </div>
       </motion.div>

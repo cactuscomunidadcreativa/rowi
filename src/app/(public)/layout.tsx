@@ -4,7 +4,12 @@ import PublicFooter from "@/components/public/PublicFooter";
 import CookieConsent from "@/components/legal/CookieConsent";
 
 export const metadata: Metadata = {
-  title: "Rowi - Tu compañero de Inteligencia Emocional",
+  // default → usado por páginas públicas sin title propio.
+  // template → las páginas con title propio (vía su layout) le anexan " · Rowi".
+  title: {
+    default: "Rowi — Tu compañero de Inteligencia Emocional",
+    template: "%s · Rowi",
+  },
   description: "Desarrolla tu inteligencia emocional con Rowi, tu coach personal impulsado por IA y metodología Six Seconds.",
 };
 

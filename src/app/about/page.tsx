@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Nosotros",
+  description:
+    "Rowi ayuda a personas y equipos a mejorar su inteligencia emocional, colaboración y bienestar, con metodología Six Seconds.",
+  openGraph: {
+    title: "Nosotros · Rowi",
+    description:
+      "Rowi ayuda a personas y equipos a mejorar su inteligencia emocional y bienestar, con metodología Six Seconds.",
+  },
+};
+
 export default function AboutPage() {
   return (
     <main className="mx-auto max-w-3xl p-6">

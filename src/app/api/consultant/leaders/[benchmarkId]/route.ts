@@ -53,6 +53,7 @@ interface RouteParams {
 interface LeaderInput {
   email?: unknown;
   cohort?: unknown;
+  label?: unknown; // alias legible para mostrar (no es PII de análisis)
 }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
@@ -69,6 +70,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
         id: true,
         personHash: true,
         projectCohort: true,
+        label: true,
         createdAt: true,
       },
     });
@@ -131,7 +133,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const notFound: string[] = [];
     // De-dup por hash dentro del propio request (última gana).
-    const toPersist = new Map<string, { personHash: string; projectCohort: string | null }>();
+    const toPersist = new Map<
+      string,
+      { personHash: string; projectCohort: string | null; label: string | null }
+    >();
 
     for (const raw of rawLeaders as LeaderInput[]) {
       const email = typeof raw?.email === "string" ? raw.email.trim() : "";
@@ -144,17 +149,20 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       const declaredCohort =
         typeof raw?.cohort === "string" && raw.cohort.trim() ? raw.cohort.trim() : null;
       const cohort = declaredCohort ?? cohortByHash.get(hash)!.cohort;
-      toPersist.set(hash, { personHash: hash, projectCohort: cohort });
+      const label =
+        typeof raw?.label === "string" && raw.label.trim() ? raw.label.trim() : null;
+      toPersist.set(hash, { personHash: hash, projectCohort: cohort, label });
     }
 
     const createdById = admin.user?.id ?? null;
 
     // Upsert idempotente por (benchmarkId, personHash).
-    for (const { personHash, projectCohort } of toPersist.values()) {
+    for (const { personHash, projectCohort, label } of toPersist.values()) {
       await prisma.consultantLeaderAssignment.upsert({
         where: { benchmarkId_personHash: { benchmarkId, personHash } },
-        create: { benchmarkId, personHash, projectCohort, createdById },
-        update: { projectCohort },
+        create: { benchmarkId, personHash, projectCohort, label, createdById },
+        // El label solo se actualiza si vino uno nuevo (no se borra al re-enviar).
+        update: { projectCohort, ...(label ? { label } : {}) },
       });
     }
 

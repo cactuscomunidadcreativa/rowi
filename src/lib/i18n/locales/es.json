@@ -5963,6 +5963,7 @@
   "admin.consultant.teams.useCohort": "usar como equipo",
   "admin.consultant.leaders.add": "Añadir líderes",
   "admin.consultant.leaders.emailPlaceholder": "Email del líder",
+  "admin.consultant.leaders.labelPlaceholder": "Nombre visible (opcional)",
   "admin.consultant.leaders.cohortPlaceholder": "Equipo (opcional)",
   "admin.consultant.leaders.addButton": "Añadir",
   "admin.consultant.leaders.save": "Guardar líderes",

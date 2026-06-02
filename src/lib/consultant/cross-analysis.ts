@@ -352,6 +352,8 @@ export async function runCrossAnalysis(
 export interface LeaderFinding {
   /** pseudónimo estable (sha256:<hex>) — nunca email en claro */
   personHash: string;
+  /** alias legible que dio el consultor (no es PII de análisis). null si no */
+  label: string | null;
   /** cohorte/equipo del líder (puede ser null si el data point no la traía) */
   projectCohort: string | null;
   /** espejo líder↔equipo para este líder */
@@ -391,7 +393,7 @@ export async function runMultiLeaderAnalysis(
     prisma.consultantLeaderAssignment.findMany({
       where: { benchmarkId },
       orderBy: { createdAt: "asc" },
-      select: { personHash: true, projectCohort: true },
+      select: { personHash: true, projectCohort: true, label: true },
     }),
     prisma.benchmarkDataPoint.findMany({
       where: { benchmarkId },
@@ -428,6 +430,7 @@ export async function runMultiLeaderAnalysis(
   // Espejo por cada líder marcado, vía hash directo (sin re-hashear emails).
   const leaders: LeaderFinding[] = assignments.map((a) => ({
     personHash: a.personHash,
+    label: a.label ?? null,
     projectCohort: a.projectCohort ?? null,
     mirror: computeLeaderMirrorByHash(
       points,

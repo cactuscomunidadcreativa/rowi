@@ -4311,6 +4311,7 @@ model ConsultantLeaderAssignment {
   benchmarkId   String
   personHash    String // "sha256:<hex>" — coincide con BenchmarkDataPoint.sourceId
   projectCohort String? // equipo declarado (si se omite, se infiere del data point)
+  label         String? // alias legible que el consultor da al líder (p.ej. "Soraya R. — Líder HR"). NO es el email; solo para mostrar en hallazgos.
   createdById   String? // userId del consultor que la creó
   createdAt     DateTime @default(now())
 

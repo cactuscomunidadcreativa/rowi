@@ -103,6 +103,7 @@ interface TeamAnalysis {
 
 interface LeaderFinding {
   personHash: string;
+  label: string | null;
   projectCohort: string | null;
   mirror: LeaderMirror;
 }
@@ -126,6 +127,7 @@ type UploadPhase =
 interface PendingLeader {
   email: string;
   cohort: string;
+  label: string;
 }
 
 /* ───────────────────────────── Helpers locales ───────────────────────────── */
@@ -185,6 +187,7 @@ export default function ConsultantVitalSignsPage() {
   const [pendingLeaders, setPendingLeaders] = useState<PendingLeader[]>([]);
   const [leaderEmail, setLeaderEmail] = useState("");
   const [leaderCohort, setLeaderCohort] = useState("");
+  const [leaderLabel, setLeaderLabel] = useState("");
   const [savingLeaders, setSavingLeaders] = useState(false);
   const [leaderResult, setLeaderResult] = useState<{
     assigned: number;
@@ -409,10 +412,11 @@ export default function ConsultantVitalSignsPage() {
     }
     setPendingLeaders((prev) => [
       ...prev,
-      { email, cohort: leaderCohort.trim() },
+      { email, cohort: leaderCohort.trim(), label: leaderLabel.trim() },
     ]);
     setLeaderEmail("");
     setLeaderCohort("");
+    setLeaderLabel("");
   };
 
   const removePendingLeader = (email: string) => {
@@ -431,6 +435,7 @@ export default function ConsultantVitalSignsPage() {
           leaders: pendingLeaders.map((l) => ({
             email: l.email,
             cohort: l.cohort || undefined,
+            label: l.label || undefined,
           })),
         }),
       });
@@ -866,6 +871,19 @@ export default function ConsultantVitalSignsPage() {
                 />
                 <input
                   type="text"
+                  value={leaderLabel}
+                  onChange={(e) => setLeaderLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") addPendingLeader();
+                  }}
+                  placeholder={t(
+                    "admin.consultant.leaders.labelPlaceholder",
+                    "Nombre visible (opcional)",
+                  )}
+                  className="sm:w-48 bg-[var(--rowi-card)] border border-[var(--rowi-border)] rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--rowi-primary)]"
+                />
+                <input
+                  type="text"
                   value={leaderCohort}
                   onChange={(e) => setLeaderCohort(e.target.value)}
                   onKeyDown={(e) => {
@@ -896,7 +914,10 @@ export default function ConsultantVitalSignsPage() {
                       className="flex items-center justify-between text-xs bg-black/[0.03] rounded-lg px-3 py-1.5"
                     >
                       <span>
-                        <span className="font-medium">{l.email}</span>
+                        <span className="font-medium">{l.label || l.email}</span>
+                        {l.label && (
+                          <span className="text-[var(--rowi-muted)]"> ({l.email})</span>
+                        )}
                         {l.cohort && (
                           <span className="text-[var(--rowi-muted)]">
                             {" "}
@@ -1079,9 +1100,15 @@ function FindingsView({
                 className="rounded-lg border border-[var(--rowi-border)] p-3"
               >
                 <div className="flex items-center gap-2 mb-2 text-xs">
-                  <span className="font-mono text-[var(--rowi-muted)]">
-                    {shortHash(leader.personHash)}
-                  </span>
+                  {leader.label ? (
+                    <span className="text-[var(--rowi-foreground)] font-semibold">
+                      {leader.label}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[var(--rowi-muted)]">
+                      {shortHash(leader.personHash)}
+                    </span>
+                  )}
                   {leader.projectCohort && (
                     <span className="text-[var(--rowi-foreground)] font-medium">
                       · {leader.projectCohort}

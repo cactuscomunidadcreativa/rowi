@@ -15,8 +15,6 @@ import {
   Brain,
   Users,
   TrendingUp,
-  Building2,
-  BarChart3,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -221,13 +219,8 @@ const modules = [
     gradient: "from-blue-500 to-cyan-600",
     image: "/rowivectors/Rowi-03.webp",
   },
-  {
-    key: "tp",
-    href: "/hub/admin/tp",
-    icon: BarChart3,
-    gradient: "from-purple-600 to-pink-600",
-    image: "/rowivectors/Rowi-01.webp",
-  },
+  // El demo organizacional "TP" se retiró de la vista pública. Vive ahora
+  // solo en la zona admin (/hub/admin/tp) como reportes/data para HR.
 ];
 
 export default function DemoPage() {

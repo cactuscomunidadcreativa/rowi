@@ -4121,6 +4121,11 @@ model BenchmarkDataPoint {
   gender      String?
   education   String?
   generation  String? // Millennials, Gen Z, etc.
+
+  // Equipo/cohorte de origen (columna "Project" del CSV de Six Seconds,
+  // p.ej. "Equipo Soraya - Bancolombia"). Permite separar equipos dentro
+  // de un mismo benchmark org y hacer el cruce equipo↔individuo.
+  projectCohort String?
   year        Int? // Año del assessment (extraído de Date/Year)
   month       Int? // Mes del assessment (1-12, extraído de Date)
   quarter     Int? // Trimestre (1-4, calculado desde month)
@@ -4197,6 +4202,7 @@ model BenchmarkDataPoint {
   @@index([benchmarkId, sector])
   @@index([benchmarkId, tenantId])
   @@index([benchmarkId, jobRole])
+  @@index([benchmarkId, projectCohort])
   @@map("benchmark_data_point")
 }
 

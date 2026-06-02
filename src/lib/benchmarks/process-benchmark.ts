@@ -7,6 +7,7 @@
 
 import { prisma } from "@/core/prisma";
 import * as XLSX from "xlsx";
+import crypto from "crypto";
 import {
   EQ_COMPETENCIES,
   SOH_COLUMN_MAPPING,
@@ -16,6 +17,19 @@ import {
   extractDateInfo,
 } from "@/lib/benchmarks";
 import { contributeBenchmarkToRowiverse } from "@/lib/rowiverse/contribution-service";
+
+/**
+ * 🔐 Pseudonimización: hash irreversible del email (SHA-256). Permite cruzar
+ * las distintas tomas de la MISMA persona (deriva temporal) e identificar al
+ * líder por su hash, SIN almacenar el email en claro. El benchmark sigue
+ * siendo anónimo: el hash no es reversible a la identidad.
+ */
+export function hashPersonId(email: string | null | undefined): string | null {
+  if (!email || typeof email !== "string") return null;
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return null;
+  return "sha256:" + crypto.createHash("sha256").update(normalized).digest("hex");
+}
 
 // 📏 Limits
 // 50MB. Consistente con maximumSizeInBytes del blob-token. Un benchmark
@@ -98,9 +112,15 @@ function buildDataPoint(
   const dateInfo = extractDateInfo(row.year || row.sourceDate);
   const ageRange = normalizeAgeRange(row.ageRange);
 
+  // Pseudónimo estable de la persona (hash del email) para cruzar tomas
+  // y el espejo líder↔equipo. No se guarda el email en claro.
+  const personId = hashPersonId(rawRow["Email"] || rawRow["email"]);
+
   return {
     benchmarkId,
     sourceType: "soh",
+    sourceId: personId,
+    projectCohort: row.projectCohort || null,
     country: row.country || null,
     region: row.region || null,
     jobFunction: row.jobFunction || null,

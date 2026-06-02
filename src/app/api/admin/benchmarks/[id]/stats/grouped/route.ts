@@ -19,7 +19,7 @@ const METRICS = [
   "effectiveness", "relationships", "wellbeing", "qualityOfLife",
 ];
 
-const VALID_GROUP_FIELDS = ["region", "country", "jobRole", "jobFunction", "sector", "brainStyle", "ageRange", "gender"];
+const VALID_GROUP_FIELDS = ["region", "country", "jobRole", "jobFunction", "sector", "brainStyle", "ageRange", "gender", "projectCohort"];
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {

@@ -583,6 +583,7 @@ export async function contributeBenchmarkToRowiverse(
 
   // Campos a copiar (todo menos identidad/relaciones del data point origen).
   const COPY_FIELDS = [
+    "projectCohort",
     "country", "region", "jobFunction", "jobRole", "sector",
     "ageRange", "gender", "education", "generation", "year", "month", "quarter",
     "K", "C", "G", "eqTotal",

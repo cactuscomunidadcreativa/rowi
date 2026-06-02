@@ -1,4 +1,10 @@
-import { checkRateLimit, RATE_LIMITS, getClientIP } from '@/lib/security/rate-limit';
+import {
+  checkRateLimit,
+  checkRateLimitDistributed,
+  RATE_LIMITS,
+  getClientIP,
+} from '@/lib/security/rate-limit';
+import { isRedisRateLimitEnabled } from '@/lib/security/redisRateLimit';
 
 describe('Rate Limiting', () => {
   describe('checkRateLimit', () => {
@@ -105,6 +111,58 @@ describe('Rate Limiting', () => {
         'x-real-ip': '192.168.1.2',
       });
       expect(getClientIP(request)).toBe('192.168.1.1');
+    });
+  });
+
+  describe('distributed fallback (no Redis credentials)', () => {
+    it('reports Redis disabled when env vars are absent', () => {
+      // Test env has no UPSTASH_* vars → must use in-memory path.
+      expect(isRedisRateLimitEnabled()).toBe(false);
+    });
+
+    it('checkRateLimitDistributed allows requests within limit (in-memory)', async () => {
+      const identifier = 'dist-user-1';
+      const config = { limit: 5, windowSeconds: 60 };
+
+      const result1 = await checkRateLimitDistributed(identifier, config);
+      expect(result1.success).toBe(true);
+      expect(result1.remaining).toBe(4);
+
+      const result2 = await checkRateLimitDistributed(identifier, config);
+      expect(result2.success).toBe(true);
+      expect(result2.remaining).toBe(3);
+    });
+
+    it('checkRateLimitDistributed blocks over the limit (in-memory)', async () => {
+      const identifier = 'dist-user-2';
+      const config = { limit: 2, windowSeconds: 60 };
+
+      await checkRateLimitDistributed(identifier, config); // 1
+      await checkRateLimitDistributed(identifier, config); // 2
+
+      const blocked = await checkRateLimitDistributed(identifier, config); // 3
+      expect(blocked.success).toBe(false);
+      expect(blocked.remaining).toBe(0);
+    });
+
+    it('falls back to the exact same store as checkRateLimit', async () => {
+      const identifier = 'dist-user-shared';
+      const config = { limit: 3, windowSeconds: 60 };
+
+      // Distributed (no creds) and sync share the in-memory store.
+      const a = await checkRateLimitDistributed(identifier, config);
+      expect(a.remaining).toBe(2);
+      const b = checkRateLimit(identifier, config);
+      expect(b.remaining).toBe(1);
+    });
+
+    it('returns a positive resetIn (in-memory)', async () => {
+      const result = await checkRateLimitDistributed('dist-user-3', {
+        limit: 5,
+        windowSeconds: 60,
+      });
+      expect(result.resetIn).toBeGreaterThan(0);
+      expect(result.resetIn).toBeLessThanOrEqual(60);
     });
   });
 });

@@ -17,7 +17,9 @@ import {
 } from "@/lib/benchmarks";
 
 // 📏 Limits
-const MAX_FILE_SIZE_MB = 500;
+// 50MB. Consistente con maximumSizeInBytes del blob-token. Un benchmark
+// CSV/XLSX realista pesa muy por debajo; 500MB era riesgo DoS/coste/abuso.
+const MAX_FILE_SIZE_MB = 50;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 120000; // 2 min
 

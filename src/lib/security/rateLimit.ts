@@ -7,7 +7,20 @@
  * - Almacenamiento en memoria con límite de tamaño
  * - Limpieza automática de entradas expiradas
  * - Soporte para sliding window
- * - Preparado para migrar a Redis/Upstash
+ * - Backend DISTRIBUIDO opcional vía Upstash Redis (REST/fetch)
+ *
+ * BACKEND DISTRIBUIDO (opcional):
+ * Si están definidas AMBAS variables de entorno, el rate limit pasa
+ * a ser compartido entre todas las instancias serverless (resuelve
+ * el problema de "límite × N instancias" y el reset en cold start):
+ *
+ *   UPSTASH_REDIS_REST_URL    = https://<region>.upstash.io
+ *   UPSTASH_REDIS_REST_TOKEN  = <REST token>
+ *
+ * Si falta cualquiera de las dos → comportamiento IDÉNTICO al actual
+ * (store en memoria por instancia). Si Redis falla en runtime, se
+ * cae a memoria automáticamente (fail-open). Ver
+ * `src/lib/security/redisRateLimit.ts`.
  *
  * USO:
  * ```ts
@@ -31,6 +44,11 @@
  * }
  * ```
  */
+
+import {
+  isRedisRateLimitEnabled,
+  redisIncrWindow,
+} from "./redisRateLimit";
 
 interface RateLimitEntry {
   count: number;
@@ -136,10 +154,32 @@ export async function rateLimit(
   options: RateLimitOptions
 ): Promise<RateLimitResult> {
   const { limit, window, prefix = "rl" } = options;
-  const now = Date.now();
   const windowMs = window * 1000;
   const key = `${prefix}:${identifier}`;
 
+  // --- Backend distribuido (Upstash Redis) -----------------------
+  // Solo si AMBAS env vars están presentes. Si Redis falla o expira,
+  // `redisIncrWindow` devuelve null y caemos al store en memoria
+  // (fail-open). Cuando no hay credenciales este bloque se salta por
+  // completo y el comportamiento es idéntico al histórico.
+  if (isRedisRateLimitEnabled()) {
+    const r = await redisIncrWindow(key, windowMs);
+    if (r) {
+      const blocked = r.count > limit;
+      if (blocked) storeStats.blocked++;
+      else storeStats.hits++;
+      return {
+        success: !blocked,
+        remaining: Math.max(0, limit - r.count),
+        resetAt: r.resetAt,
+        limit,
+      };
+    }
+    // r === null → fail-open hacia memoria (no return).
+  }
+
+  // --- Store en memoria (fallback / default) ---------------------
+  const now = Date.now();
   const entry = store.get(key);
 
   // Si no hay entrada o expiró, crear nueva

@@ -1,7 +1,23 @@
 /**
- * Simple in-memory rate limiter for API routes
- * For production, consider using Redis-based rate limiting
+ * Simple in-memory rate limiter for API routes.
+ *
+ * `checkRateLimit` is SYNCHRONOUS (and in-memory) by design — it is
+ * the stable, test-covered core. For a distributed limit shared
+ * across serverless instances use `checkRateLimitDistributed`
+ * (async), which talks to Upstash Redis when configured and falls
+ * back to this same in-memory store otherwise.
+ *
+ * DISTRIBUTED BACKEND (optional) — set BOTH env vars to activate:
+ *   UPSTASH_REDIS_REST_URL    = https://<region>.upstash.io
+ *   UPSTASH_REDIS_REST_TOKEN  = <REST token>
+ * Missing either → in-memory (identical to legacy behavior). Redis
+ * failures fail-open to in-memory. See `./redisRateLimit.ts`.
  */
+
+import {
+  isRedisRateLimitEnabled,
+  redisIncrWindow,
+} from "./redisRateLimit";
 
 interface RateLimitEntry {
   count: number;
@@ -81,6 +97,40 @@ export function checkRateLimit(
     remaining: config.limit - entry.count,
     resetIn: Math.ceil((entry.resetTime - now) / 1000),
   };
+}
+
+/**
+ * Distributed-aware rate limit check.
+ *
+ * Identical contract to `checkRateLimit`, but async: when Upstash
+ * Redis is configured (both env vars present) the counter is shared
+ * across every serverless instance. When it is NOT configured — or
+ * if a Redis call throws/times out — this falls back to the
+ * synchronous in-memory `checkRateLimit`, so behavior is unchanged
+ * pre-launch and the limiter never takes down the API (fail-open).
+ *
+ * @param identifier - Unique identifier (IP address, user ID, etc.)
+ * @param config - Rate limit configuration
+ */
+export async function checkRateLimitDistributed(
+  identifier: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  if (isRedisRateLimitEnabled()) {
+    const windowMs = config.windowSeconds * 1000;
+    const r = await redisIncrWindow(`rl:${identifier}`, windowMs);
+    if (r) {
+      const success = r.count <= config.limit;
+      return {
+        success,
+        remaining: Math.max(0, config.limit - r.count),
+        resetIn: Math.max(0, Math.ceil((r.resetAt - Date.now()) / 1000)),
+      };
+    }
+    // r === null → fall through to in-memory (fail-open).
+  }
+
+  return checkRateLimit(identifier, config);
 }
 
 /**

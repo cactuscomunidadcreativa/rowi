@@ -3,7 +3,7 @@
  * POST /api/admin/benchmarks/blob-token
  *
  * Genera token para subir archivos directamente desde el cliente a Vercel Blob.
- * Esto permite uploads de hasta 500MB sin pasar por el servidor.
+ * Esto permite uploads directos desde el cliente sin pasar por el servidor.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -35,13 +35,21 @@ export async function POST(req: NextRequest) {
         }
 
         return {
+          // Solo los MIME reales de hoja de cálculo. NO se permite
+          // 'application/octet-stream' ni wildcards: aceptar tipos arbitrarios
+          // anula la validación del lado del servidor y abre abuso/upload de
+          // binarios. .csv → text/csv · .xls → application/vnd.ms-excel ·
+          // .xlsx → ...spreadsheetml.sheet.
           allowedContentTypes: [
             'text/csv',
             'application/vnd.ms-excel',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/octet-stream',
           ],
-          maximumSizeInBytes: 500 * 1024 * 1024, // 500MB
+          // 50MB. Un benchmark CSV/XLSX realista (decenas de miles de filas)
+          // pesa muy por debajo de esto. El límite anterior de 500MB era un
+          // riesgo de DoS/coste/abuso. Debe mantenerse consistente con
+          // MAX_FILE_SIZE_BYTES en src/lib/benchmarks/process-benchmark.ts.
+          maximumSizeInBytes: 52428800, // 50MB
           addRandomSuffix: true,
           multipart, // Pasar el flag multipart al token
           tokenPayload: JSON.stringify({

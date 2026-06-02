@@ -1137,6 +1137,9 @@ model EqSnapshot {
   @@index([dataset])
   @@index([email])
   @@index([rowiverseUserId]) // ✅ índice global
+  // Último snapshot por usuario (DISTINCT ON userId ORDER BY at DESC) —
+  // usado por la agregación de Vital Signs.
+  @@index([userId, at])
   @@map("eq_snapshot")
 }
 
@@ -1261,6 +1264,9 @@ model RowiChat {
 
   @@index([userId])
   @@index([contextType, contextId])
+  // Historial reciente por (usuario, agente, intent) ordenado por fecha:
+  // lo lee /api/rowi en cada turno para construir el contexto.
+  @@index([userId, agentId, intent, createdAt])
   @@map("rowi_chat")
 }
 
@@ -2832,6 +2838,8 @@ model ActivityLog {
   @@index([action])
   @@index([entity])
   @@index([createdAt])
+  // Listados por usuario ordenados por fecha (timeline de actividad).
+  @@index([userId, createdAt])
   @@map("activity_log")
 }
 

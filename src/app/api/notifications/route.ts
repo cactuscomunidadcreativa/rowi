@@ -4,7 +4,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerAuthUser } from "@/core/auth";
+import { getAuthIdentity } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { NotificationService } from "@/lib/notifications";
 
@@ -20,7 +20,7 @@ export const runtime = "nodejs";
  */
 export async function GET(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser();
+    const auth = await getAuthIdentity();
     if (!auth?.id) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser();
+    const auth = await getAuthIdentity();
     if (!auth?.id) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
   try {
-    const auth = await getServerAuthUser();
+    const auth = await getAuthIdentity();
     if (!auth?.id) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }

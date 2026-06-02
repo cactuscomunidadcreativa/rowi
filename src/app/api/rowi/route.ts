@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { cookies } from "next/headers";
 import type OpenAI from "openai";
 import { prisma } from "@/core/prisma";
@@ -133,64 +133,61 @@ async function resolveAgent(
 
   const ctx: ResolvedAgentContext = { organizationId, hubId, tenantId, superHubId };
 
-  // Intentar resolver con el slug principal y luego con aliases
+  // Resolver en UNA sola query (antes: hasta 4-8 findFirst secuenciales en
+  // el camino crítico de cada chat). Traemos todos los candidatos (slug
+  // principal + aliases) en cualquiera de los scopes aplicables o global, y
+  // elegimos el más prioritario en JS con el MISMO orden que la cascada
+  // secuencial original: primero por slug (principal > alias), luego por
+  // especificidad de scope (org > hub > tenant > superHub > global).
   const slugsToTry = [slug, ...(SLUG_ALIASES[slug] || [])];
 
-  for (const trySlug of slugsToTry) {
-    // 0️⃣ Intentar agente por Organización (más específico cuando hay org activa)
-    if (organizationId) {
-      const orgAgent = await prisma.agentConfig.findFirst({
-        where: { slug: trySlug, organizationId, isActive: true },
-      });
-      if (orgAgent) return { agent: orgAgent, ctx };
+  const scopeOr: any[] = [];
+  if (organizationId) scopeOr.push({ organizationId });
+  if (hubId) scopeOr.push({ hubId });
+  if (tenantId) scopeOr.push({ tenantId });
+  if (superHubId) scopeOr.push({ superHubId });
+  // Fallback global (accessLevel = 'global' | 'system' o sin scope asignado).
+  scopeOr.push({ accessLevel: "global" });
+  scopeOr.push({ accessLevel: "system" });
+  scopeOr.push({ tenantId: null, superHubId: null, organizationId: null, hubId: null });
+
+  const candidates = await prisma.agentConfig.findMany({
+    where: {
+      slug: { in: slugsToTry },
+      isActive: true,
+      OR: scopeOr,
+    },
+  });
+
+  if (candidates.length === 0) return null;
+
+  // 0=org, 1=hub, 2=tenant, 3=superHub, 4=global/system/sin-scope.
+  const scopeRank = (a: any): number => {
+    if (organizationId && a.organizationId === organizationId) return 0;
+    if (hubId && a.hubId === hubId) return 1;
+    if (tenantId && a.tenantId === tenantId) return 2;
+    if (superHubId && a.superHubId === superHubId) return 3;
+    return 4;
+  };
+  const slugRank = (a: any): number => {
+    const i = slugsToTry.indexOf(a.slug);
+    return i < 0 ? slugsToTry.length : i;
+  };
+
+  let best = candidates[0];
+  let bestSlug = slugRank(best);
+  let bestScope = scopeRank(best);
+  for (const a of candidates) {
+    const s = slugRank(a);
+    const sc = scopeRank(a);
+    if (s < bestSlug || (s === bestSlug && sc < bestScope)) {
+      best = a;
+      bestSlug = s;
+      bestScope = sc;
     }
-
-    // 1️⃣ Intentar agente por Hub
-    if (hubId) {
-      const hubAgent = await prisma.agentConfig.findFirst({
-        where: { slug: trySlug, hubId, isActive: true },
-      });
-      if (hubAgent) return { agent: hubAgent, ctx };
-    }
-
-    // 2️⃣ Intentar agente por Tenant
-    if (tenantId) {
-      const tenantAgent = await prisma.agentConfig.findFirst({
-        where: { slug: trySlug, tenantId, isActive: true },
-      });
-      if (tenantAgent) return { agent: tenantAgent, ctx };
-    }
-
-    // 3️⃣ Intentar agente por SuperHub
-    if (superHubId) {
-      const shAgent = await prisma.agentConfig.findFirst({
-        where: { slug: trySlug, superHubId, isActive: true },
-      });
-      if (shAgent) return { agent: shAgent, ctx };
-    }
-
-    // 4️⃣ Fallback global (accessLevel = 'global', 'system' o sin scope asignado)
-    const globalAgent = await prisma.agentConfig.findFirst({
-      where: {
-        slug: trySlug,
-        isActive: true,
-        OR: [
-          { accessLevel: "global" },
-          { accessLevel: "system" },
-          {
-            tenantId: null,
-            superHubId: null,
-            organizationId: null,
-            hubId: null,
-          }
-        ]
-      },
-    });
-
-    if (globalAgent) return { agent: globalAgent, ctx };
   }
 
-  return null;
+  return { agent: best, ctx };
 }
 
 /* =========================================================
@@ -482,36 +479,40 @@ export async function POST(req: NextRequest) {
     const tokensOutput = estimateTokens(replyText);
 
     /* =========================================================
-     📊 6. Registrar usage (ROWI_CHAT)
+     ⏭️ 6. Trabajo diferido — FUERA del path de respuesta
+     ---------------------------------------------------------
+     usage + gamificación + persistencia NO deben bloquear la
+     respuesta: antes corrían ~37 queries secuenciales DESPUÉS del
+     LLM y ANTES del return. `after()` (Next 15+) las ejecuta tras
+     enviar la respuesta al usuario. Todo best-effort; cada bloque
+     captura su propio error.
     ========================================================== */
-    try {
-      const tenantId = tenantFromBody || auth?.primaryTenantId || null;
-
-      if (tenantId) {
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
-
-        const feature: "AFFINITY" | "ECO" | "ROWI_CHAT" | "OTHER" = "ROWI_CHAT";
-
-        const existingUsage = await prisma.usageDaily.findFirst({
-          where: { tenantId, feature, day: today },
-        });
-
-        if (existingUsage) {
-          await prisma.usageDaily.update({
-            where: { id: existingUsage.id },
-            data: {
-              tokensInput: existingUsage.tokensInput + tokensInput,
-              tokensOutput: existingUsage.tokensOutput + tokensOutput,
-              calls: existingUsage.calls + 1,
-              costUsd: (Number(existingUsage.costUsd) || 0) + 0, // aquí puedes poner cálculo real de coste
+    after(async () => {
+      // 6.1 Usage diario — UPSERT atómico sobre el unique
+      // (tenantId, feature, day, model). Elimina la race del patrón
+      // findFirst+update bajo concurrencia (lost updates / filas dup).
+      try {
+        const usageTenantId = tenantFromBody || auth?.primaryTenantId || null;
+        if (usageTenantId) {
+          const today = new Date();
+          today.setUTCHours(0, 0, 0, 0);
+          await prisma.usageDaily.upsert({
+            where: {
+              tenantId_feature_day_model: {
+                tenantId: usageTenantId,
+                feature: "ROWI_CHAT",
+                day: today,
+                model,
+              },
             },
-          });
-        } else {
-          await prisma.usageDaily.create({
-            data: {
-              tenantId,
-              feature,
+            update: {
+              tokensInput: { increment: tokensInput },
+              tokensOutput: { increment: tokensOutput },
+              calls: { increment: 1 },
+            },
+            create: {
+              tenantId: usageTenantId,
+              feature: "ROWI_CHAT",
               model,
               tokensInput,
               tokensOutput,
@@ -521,61 +522,53 @@ export async function POST(req: NextRequest) {
             },
           });
         }
+      } catch (usageErr) {
+        console.warn("⚠️ Error registrando usage en usageDaily:", usageErr);
       }
-    } catch (usageErr) {
-      console.warn("⚠️ Error registrando usage en usageDaily:", usageErr);
-    }
 
-    /* =========================================================
-     🎮 6.5 Gamificación - Otorgar puntos por sesión de chat
-    ========================================================== */
-    let gamificationResult = null;
-    try {
-      if (auth?.id) {
-        gamificationResult = await recordActivity(auth.id, "CHAT", {
-          points: 10,
-          reasonId: slug,
-          description: `Chat con ${slug}`,
-        });
+      // 6.2 Gamificación (puntos / racha / achievements / avatar).
+      try {
+        if (auth?.id) {
+          await recordActivity(auth.id, "CHAT", {
+            points: 10,
+            reasonId: slug,
+            description: `Chat con ${slug}`,
+          });
+        }
+      } catch (gamErr) {
+        console.warn("⚠️ Error en gamificación:", gamErr);
       }
-    } catch (gamErr) {
-      console.warn("⚠️ Error en gamificación:", gamErr);
-    }
 
-    /* =========================================================
-     💾 6.6 Persistir conversación en rowi_chat
-    ========================================================== */
-    try {
-      if (auth?.id && auth.id !== "hub-control-user") {
-        // Guardar mensaje del usuario
-        await prisma.rowiChat.create({
-          data: {
-            userId: auth.id,
-            agentId: agent.id,
-            role: "user",
-            content: userContent.slice(0, 2000),
-            intent: slug,
-            locale: lang,
-            contextType: "coach",
-          },
-        });
-
-        // Guardar respuesta del asistente
-        await prisma.rowiChat.create({
-          data: {
-            userId: auth.id,
-            agentId: agent.id,
-            role: "assistant",
-            content: replyText.slice(0, 5000),
-            intent: slug,
-            locale: lang,
-            contextType: "coach",
-          },
-        });
+      // 6.3 Persistir la conversación en rowi_chat.
+      try {
+        if (auth?.id && auth.id !== "hub-control-user") {
+          await prisma.rowiChat.create({
+            data: {
+              userId: auth.id,
+              agentId: agent.id,
+              role: "user",
+              content: userContent.slice(0, 2000),
+              intent: slug,
+              locale: lang,
+              contextType: "coach",
+            },
+          });
+          await prisma.rowiChat.create({
+            data: {
+              userId: auth.id,
+              agentId: agent.id,
+              role: "assistant",
+              content: replyText.slice(0, 5000),
+              intent: slug,
+              locale: lang,
+              contextType: "coach",
+            },
+          });
+        }
+      } catch (chatErr) {
+        console.warn("⚠️ Error guardando en rowi_chat:", chatErr);
       }
-    } catch (chatErr) {
-      console.warn("⚠️ Error guardando en rowi_chat:", chatErr);
-    }
+    });
 
     /* =========================================================
      📤 7. Respuesta final para RowiCoach
@@ -595,7 +588,9 @@ export async function POST(req: NextRequest) {
         permissions: auth?.permissions,
       },
       text: replyText,
-      gamification: gamificationResult,
+      // La gamificación ahora es diferida (after()); ya no viaja en la
+      // respuesta. Ningún cliente consumía este campo.
+      gamification: null,
     });
   } catch (e: any) {
     console.error("❌ Error en /api/rowi:", e);

@@ -17,7 +17,8 @@ interface AwardPointsOptions {
 
 interface CheckAchievementOptions {
   userId: string;
-  category?: AchievementCategory;
+  /** Una categoría o varias — varias se resuelven en UNA sola pasada. */
+  category?: AchievementCategory | AchievementCategory[];
 }
 
 // Multiplicadores de racha
@@ -248,6 +249,11 @@ export async function checkAndAwardAchievements(
   options: CheckAchievementOptions
 ): Promise<Array<{ slug: string; name: string; points: number }>> {
   const { userId, category } = options;
+  const categories = category
+    ? Array.isArray(category)
+      ? category
+      : [category]
+    : undefined;
   const awardedAchievements: Array<{ slug: string; name: string; points: number }> = [];
 
   // Obtener datos del usuario para verificar condiciones
@@ -292,7 +298,7 @@ export async function checkAndAwardAchievements(
   const achievementsToCheck = await prisma.achievement.findMany({
     where: {
       isActive: true,
-      ...(category ? { category } : {}),
+      ...(categories ? { category: { in: categories } } : {}),
     },
   });
 
@@ -494,16 +500,16 @@ export async function recordActivity(
     FORUM_POST: "COMMUNITY" as AchievementCategory,
   };
 
-  const newAchievements = await checkAndAwardAchievements({
-    userId,
-    category: categoryMap[activityType],
-  });
-
-  // También verificar achievements generales
-  const generalAchievements = await checkAndAwardAchievements({
-    userId,
-    category: "GENERAL",
-  });
+  // Una sola pasada sobre las categorías relevantes (específica + GENERAL).
+  // Antes eran DOS llamadas, cada una recomputando los 11 counts (22 por
+  // mensaje). Unificadas: 11 counts y una única query de achievements.
+  const specificCategory = categoryMap[activityType];
+  const categories: AchievementCategory[] = specificCategory
+    ? specificCategory === "GENERAL"
+      ? ["GENERAL"]
+      : [specificCategory, "GENERAL"]
+    : ["GENERAL"];
+  const newAchievements = await checkAndAwardAchievements({ userId, category: categories });
 
   // Actualizar evolucion del avatar
   try {
@@ -517,7 +523,7 @@ export async function recordActivity(
   return {
     pointsAwarded: pointsResult.pointsAwarded,
     streakUpdated: !streakResult.continued || streakResult.currentStreak === 1,
-    newAchievements: [...newAchievements, ...generalAchievements],
+    newAchievements,
     leveledUp: pointsResult.leveledUp,
   };
 }

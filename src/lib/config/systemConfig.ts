@@ -153,25 +153,48 @@ export const SYSTEM_CONFIG_KEYS = {
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_KEYS;
 
+/* =========================================================
+   ⚡ Caché en memoria (TTL) para lecturas de config
+   ---------------------------------------------------------
+   getSystemConfig() se llamaba en CADA request de IA (p.ej.
+   getOpenAIClient → OPENAI_API_KEY), pagando un findUnique +
+   descifrado AES por llamada. Estas claves casi nunca cambian.
+   Mismo patrón que el caché de telemetría (5 min). La escritura
+   (setSystemConfig/deleteSystemConfig) invalida la clave en la
+   instancia que escribe; otras instancias convergen al expirar
+   el TTL. Tradeoff aceptado: hasta 5 min de propagación.
+========================================================= */
+const CONFIG_CACHE_TTL_MS = 5 * 60 * 1000;
+const configCache = new Map<string, { value: string | null; at: number }>();
+
+export function invalidateSystemConfigCache(key?: SystemConfigKey): void {
+  if (key) configCache.delete(key);
+  else configCache.clear();
+}
+
 /**
  * Obtiene una configuración del sistema
  * Prioridad: BD > ENV
  */
 export async function getSystemConfig(key: SystemConfigKey): Promise<string | null> {
+  const cached = configCache.get(key);
+  if (cached && Date.now() - cached.at < CONFIG_CACHE_TTL_MS) {
+    return cached.value;
+  }
   try {
     // Intentar obtener de la BD primero
     const config = await prisma.systemConfig.findUnique({
       where: { key, isActive: true },
     });
 
-    if (config?.value) {
-      return decryptValue(config.value);
-    }
-
-    // Fallback a variable de entorno
-    return process.env[key] || null;
+    const value = config?.value
+      ? decryptValue(config.value)
+      : process.env[key] || null;
+    configCache.set(key, { value, at: Date.now() });
+    return value;
   } catch {
-    // Si hay error de BD, usar variable de entorno
+    // Si hay error de BD, usar variable de entorno (no cachear el fallback
+    // de error para reintentar pronto cuando la BD vuelva).
     return process.env[key] || null;
   }
 }
@@ -230,6 +253,7 @@ export async function setSystemConfig(
       updatedBy,
     },
   });
+  invalidateSystemConfigCache(key);
 }
 
 /**
@@ -307,6 +331,7 @@ export async function deleteSystemConfig(key: SystemConfigKey): Promise<void> {
   }).catch(() => {
     // Ignorar si no existe
   });
+  invalidateSystemConfigCache(key);
 }
 
 /**

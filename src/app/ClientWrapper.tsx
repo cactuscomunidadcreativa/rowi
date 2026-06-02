@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "framer-motion";
 import Providers from "../components/shared/Providers";
 import ThemeToggle from "../components/shared/ThemeToggle";
 import NavBar from "../components/shared/NavBar";
@@ -9,6 +10,7 @@ import { Toaster } from "sonner";
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   return (
     <Providers>
+     <MotionConfig reducedMotion="user">
       {/* 🔹 Barra de navegación global */}
       <NavBar />
 
@@ -50,6 +52,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
           },
         }}
       />
+     </MotionConfig>
     </Providers>
   );
 }

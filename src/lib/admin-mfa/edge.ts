@@ -16,13 +16,18 @@ export function adminMfaBypassEnabled(): boolean {
   return process.env.ADMIN_MFA_BYPASS === "true";
 }
 
-/** Secreto para firmar/verificar la cookie de sesión MFA. */
+/** Secreto para firmar/verificar la cookie de sesión MFA.
+ *  Fail-closed: si no hay secreto configurado lanzamos en vez de caer a un
+ *  valor predecible (un fallback hardcoded haría trivial forjar la cookie y
+ *  bypassear el MFA admin). NEXTAUTH_SECRET ya es obligatorio para la app. */
 export function mfaSigningSecret(): string {
-  return (
-    process.env.ADMIN_MFA_SECRET ||
-    process.env.NEXTAUTH_SECRET ||
-    "rowi-admin-mfa-dev-secret"
-  );
+  const secret = process.env.ADMIN_MFA_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error(
+      "🔐 CRITICAL: ADMIN_MFA_SECRET or NEXTAUTH_SECRET must be set to sign the admin MFA cookie. Refusing to use a predictable fallback.",
+    );
+  }
+  return secret;
 }
 
 /** Parseo + validaciones comunes (formato, usuario, expiración). */

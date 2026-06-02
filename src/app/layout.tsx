@@ -4,8 +4,16 @@ import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
 export const metadata = {
+  metadataBase: new URL("https://www.rowiia.com"),
   title: "Rowi SIA",
   description: "App de Inteligencia Emocional",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: "/owl.png?v=4", type: "image/png", sizes: "any" },
@@ -30,11 +38,22 @@ export const metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Rowi SIA",
     description: "App de Inteligencia Emocional - Desarrolla tu potencial",
     images: ["https://www.rowiia.com/rowi-logo.png"],
   },
+};
+
+// JSON-LD Organization — habilita rich results / knowledge panel.
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Rowi",
+  url: "https://www.rowiia.com",
+  logo: "https://www.rowiia.com/rowi-logo.png",
+  description:
+    "Plataforma de inteligencia emocional basada en la metodología Six Seconds.",
 };
 
 export default async function RootLayout({
@@ -69,6 +88,10 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-zinc-950 dark:to-zinc-900 text-gray-900 dark:text-gray-100">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <I18nProvider>
           <BetaBanner />
           <ClientWrapper>{children}</ClientWrapper>

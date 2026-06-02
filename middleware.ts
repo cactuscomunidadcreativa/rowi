@@ -317,8 +317,19 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
           { status: 403 }
         );
       }
+    } else {
+      // Fail-closed: una mutación SIN Origin NI Referer se rechaza. Los
+      // navegadores envían Origin en POST/PUT/PATCH/DELETE incluso same-origin,
+      // así que su ausencia es señal de cliente no-navegador o ataque CSRF.
+      // Los callers server-to-server legítimos (Stripe, Slack, WhatsApp, cron)
+      // ya están en CSRF_EXEMPT_PATHS. Un cliente nativo/API que no mande
+      // Origin debe añadirse a la exención.
+      console.warn(`🛡️ CSRF blocked: missing Origin/Referer on ${method} ${pathname}`);
+      return NextResponse.json(
+        { ok: false, error: "Missing request origin" },
+        { status: 403 }
+      );
     }
-    // Si no hay origin ni referer, permitir (puede ser fetch sin credentials)
   }
 
   /* =========================================================

@@ -984,6 +984,7 @@ function RegisterPageContent() {
                 <div className="space-y-4">
                   <input
                     type="text"
+                    aria-label={t.account.namePlaceholder}
                     placeholder={t.account.namePlaceholder}
                     value={formData.name}
                     onChange={(e) =>
@@ -993,6 +994,7 @@ function RegisterPageContent() {
                   />
                   <input
                     type="email"
+                    aria-label={t.account.emailPlaceholder}
                     placeholder={t.account.emailPlaceholder}
                     value={formData.email}
                     onChange={(e) =>
@@ -1002,6 +1004,7 @@ function RegisterPageContent() {
                   />
                   <input
                     type="password"
+                    aria-label={t.errors.passwordPlaceholder}
                     placeholder={t.errors.passwordPlaceholder}
                     value={formData.password}
                     onChange={(e) =>

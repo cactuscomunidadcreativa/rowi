@@ -23,7 +23,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 ========================================================= */
 const DEMO_USER = {
   name: "María García",
-  avatar: "/rowivectors/Rowi-06.png",
+  avatar: "/rowivectors/Rowi-06.webp",
   level: "Diestro",
   eqTotal: 112,
   eqMax: 135,

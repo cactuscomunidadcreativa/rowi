@@ -535,10 +535,10 @@ export default function TPEcoPage() {
 
   /* --- Translated data objects --- */
   const TP_RECIPIENTS = [
-    { id: "sarah", name: "Sarah Chen", role: t.roleSarah, avatar: "/rowivectors/Rowi-05.png", brainStyle: t.brainStrategist, emoji: "♟️", region: t.regionNA },
-    { id: "marcus", name: "Marcus Rivera", role: t.roleMarcus, avatar: "/rowivectors/Rowi-04.png", brainStyle: t.brainDeliverer, emoji: "📦", region: t.regionLATAM },
-    { id: "aiko", name: "Aiko Tanaka", role: t.roleAiko, avatar: "/rowivectors/Rowi-03.png", brainStyle: t.brainScientist, emoji: "🔬", region: t.regionAPAC },
-    { id: "emma", name: "Emma Schmidt", role: t.roleEmma, avatar: "/rowivectors/Rowi-02.png", brainStyle: t.brainVisionary, emoji: "🔮", region: t.regionEMEA },
+    { id: "sarah", name: "Sarah Chen", role: t.roleSarah, avatar: "/rowivectors/Rowi-05.webp", brainStyle: t.brainStrategist, emoji: "♟️", region: t.regionNA },
+    { id: "marcus", name: "Marcus Rivera", role: t.roleMarcus, avatar: "/rowivectors/Rowi-04.webp", brainStyle: t.brainDeliverer, emoji: "📦", region: t.regionLATAM },
+    { id: "aiko", name: "Aiko Tanaka", role: t.roleAiko, avatar: "/rowivectors/Rowi-03.webp", brainStyle: t.brainScientist, emoji: "🔬", region: t.regionAPAC },
+    { id: "emma", name: "Emma Schmidt", role: t.roleEmma, avatar: "/rowivectors/Rowi-02.webp", brainStyle: t.brainVisionary, emoji: "🔮", region: t.regionEMEA },
   ];
 
   const CHANNELS = [

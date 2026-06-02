@@ -281,7 +281,7 @@ export default function ClientDashboard() {
         <div className="relative">
           <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 flex items-center justify-center animate-pulse">
             <Image
-              src="/rowivectors/Rowi-06.png"
+              src="/rowivectors/Rowi-06.webp"
               alt="Rowi"
               width={60}
               height={60}
@@ -656,7 +656,7 @@ export default function ClientDashboard() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
               <Image
-                src="/rowivectors/Rowi-06.png"
+                src="/rowivectors/Rowi-06.webp"
                 alt="Rowi"
                 width={48}
                 height={48}

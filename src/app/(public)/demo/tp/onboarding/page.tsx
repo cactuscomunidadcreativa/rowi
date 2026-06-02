@@ -335,7 +335,7 @@ export default function TPOnboardingPage() {
               className="text-center"
             >
               <div className="w-32 h-32 mx-auto mb-8 relative">
-                <Image src="/rowivectors/Rowi-01.png" alt="Rowi" fill className="object-contain" />
+                <Image src="/rowivectors/Rowi-01.webp" alt="Rowi" fill className="object-contain" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">{t.welcomeTitle}</h1>
               <p className="text-lg text-purple-500 font-medium mb-2">{t.welcomeSubtitle}</p>
@@ -462,7 +462,7 @@ export default function TPOnboardingPage() {
               className="text-center"
             >
               <div className="w-24 h-24 mx-auto mb-6 relative">
-                <Image src="/rowivectors/Rowi-06.png" alt="Rowi" fill className="object-contain" />
+                <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" fill className="object-contain" />
               </div>
               <h2 className="text-2xl font-bold mb-2">{t.assessmentTitle}</h2>
               <p className="text-[var(--rowi-muted)] mb-6">{t.assessmentSubtitle}</p>

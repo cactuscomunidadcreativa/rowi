@@ -42,7 +42,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "challenge",
     seiLevel: EQ_LEVELS[0], // Desafío 65-81
-    image: "/rowivectors/Rowi-01.png", // Huevo cerrado
+    image: "/rowivectors/Rowi-01.webp", // Huevo cerrado
     fallbackEmoji: "🥚",
     icon: Sparkles,
     bgGradient: "from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30",
@@ -53,7 +53,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "emerging",
     seiLevel: EQ_LEVELS[1], // Emergente 82-91
-    image: "/rowivectors/Rowi-02.png", // Huevo agrietado
+    image: "/rowivectors/Rowi-02.webp", // Huevo agrietado
     fallbackEmoji: "🐣",
     icon: Heart,
     bgGradient: "from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30",
@@ -64,7 +64,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "functional",
     seiLevel: EQ_LEVELS[2], // Funcional 92-107
-    image: "/rowivectors/Rowi-04.png", // Rowi asomándose del huevo
+    image: "/rowivectors/Rowi-04.webp", // Rowi asomándose del huevo
     fallbackEmoji: "🐥",
     icon: Brain,
     bgGradient: "from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-blue-900/30",
@@ -75,7 +75,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "skilled",
     seiLevel: EQ_LEVELS[3], // Diestro 108-117
-    image: "/rowivectors/Rowi-05.png", // Rowi joven saliendo del huevo
+    image: "/rowivectors/Rowi-05.webp", // Rowi joven saliendo del huevo
     fallbackEmoji: "🦉",
     icon: Target,
     bgGradient: "from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30",
@@ -87,7 +87,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "expert",
     seiLevel: EQ_LEVELS[4], // Experto 118-135
-    image: "/rowivectors/Rowi-06.png", // 🦉 Rowi adulto COMPLETO
+    image: "/rowivectors/Rowi-06.webp", // 🦉 Rowi adulto COMPLETO
     fallbackEmoji: "🦉",
     icon: Star,
     bgGradient: "from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30",

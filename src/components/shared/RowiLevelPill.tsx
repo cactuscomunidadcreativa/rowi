@@ -58,18 +58,18 @@ function resolveLevel(signals?: RowiSignals) {
   const sessions = s.coachSessions || 0;
 
   if (!s.hasProfile && !s.hasSEI && sessions < 1)
-    return { key: "egg", icon: "🥚", img: "/rowivectors/Rowi-01.png" };
+    return { key: "egg", icon: "🥚", img: "/rowivectors/Rowi-01.webp" };
 
   if (s.hasProfile && !s.hasSEI)
-    return { key: "signals", icon: "🔭", img: "/rowivectors/Rowi-02.png" };
+    return { key: "signals", icon: "🔭", img: "/rowivectors/Rowi-02.webp" };
 
   if (s.hasSEI && !s.hasProfile)
-    return { key: "almost", icon: "✨", img: "/rowivectors/Rowi-03.png" };
+    return { key: "almost", icon: "✨", img: "/rowivectors/Rowi-03.webp" };
 
   if (s.hasProfile && s.hasSEI && sessions < 5)
-    return { key: "minrowi", icon: "🐣", img: "/rowivectors/Rowi-04.png" };
+    return { key: "minrowi", icon: "🐣", img: "/rowivectors/Rowi-04.webp" };
 
-  return { key: "rowi", icon: "🦉", img: "/rowivectors/Rowi-06.png" };
+  return { key: "rowi", icon: "🦉", img: "/rowivectors/Rowi-06.webp" };
 }
 
 /* =========================================================

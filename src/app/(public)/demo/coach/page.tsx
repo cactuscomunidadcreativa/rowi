@@ -177,7 +177,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
           <User className="w-5 h-5 text-[var(--rowi-primary)]" />
         ) : (
           <Image
-            src="/rowivectors/Rowi-06.png"
+            src="/rowivectors/Rowi-06.webp"
             alt="Rowi"
             width={32}
             height={32}
@@ -278,7 +278,7 @@ export default function DemoCoachPage() {
               <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                   <Image
-                    src="/rowivectors/Rowi-06.png"
+                    src="/rowivectors/Rowi-06.webp"
                     alt="Rowi"
                     width={40}
                     height={40}
@@ -313,7 +313,7 @@ export default function DemoCoachPage() {
                   >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                       <Image
-                        src="/rowivectors/Rowi-06.png"
+                        src="/rowivectors/Rowi-06.webp"
                         alt="Rowi"
                         width={32}
                         height={32}

@@ -71,7 +71,7 @@ function FallbackHomePage() {
             ctaPrimary: t("landing.hero.cta.primary"),
             ctaSecondary: t("landing.hero.cta.secondary"),
             ctaSecondaryHref: "/demo",
-            image: "/rowivectors/Rowi-06.png",
+            image: "/rowivectors/Rowi-06.webp",
             trustBadges: [
               { icon: "shield", text: t("landing.hero.trust.security") },
               { icon: "globe", text: t("landing.hero.trust.methodology") },

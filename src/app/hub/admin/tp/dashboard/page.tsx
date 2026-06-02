@@ -202,7 +202,7 @@ const translations = {
 
 const TP_USER = {
   name: "TP Global Organization",
-  avatar: "/rowivectors/Rowi-01.png",
+  avatar: "/rowivectors/Rowi-01.webp",
   level: "Enterprise",
   eqTotal: 98.7,
   eqMax: 135,

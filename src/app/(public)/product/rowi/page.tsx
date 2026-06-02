@@ -15,7 +15,7 @@ export default function ProductRowiPage() {
           title2: t("product.rowi.title2", "inteligencia emocional"),
           subtitle: t("product.rowi.subtitle", "Rowi es una IA conversacional diseñada para ayudarte a desarrollar tu inteligencia emocional a través de conversaciones profundas y significativas."),
           ctaPrimary: t("product.rowi.cta", "Conocer a mi Rowi"),
-          image: "/rowivectors/Rowi-06.png"
+          image: "/rowivectors/Rowi-06.webp"
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />

@@ -391,14 +391,14 @@ export default function TPCommunityPage() {
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const LEADERBOARD = [
-    { rank: 1, name: "Priya Sharma", region: "APAC", dept: t.deptCustomerSuccess, eqScore: 118.7, growth: "+8.3", brainStyle: t.brainStyleSuperhero, emoji: "\u{1f9b8}", avatar: "/rowivectors/Rowi-06.png" },
-    { rank: 2, name: "David Okonkwo", region: "EMEA", dept: t.deptHR, eqScore: 116.2, growth: "+7.1", brainStyle: t.brainStyleVisionary, emoji: "\u{1f52e}", avatar: "/rowivectors/Rowi-05.png" },
-    { rank: 3, name: "Maria Santos", region: "LATAM", dept: t.deptSales, eqScore: 115.8, growth: "+6.9", brainStyle: t.brainStyleStrategist, emoji: "\u265f\ufe0f", avatar: "/rowivectors/Rowi-04.png" },
-    { rank: 4, name: "James Wilson", region: "NA", dept: t.deptOperations, eqScore: 114.5, growth: "+5.4", brainStyle: t.brainStyleInventor, emoji: "\u{1f4a1}", avatar: "/rowivectors/Rowi-03.png" },
-    { rank: 5, name: "Li Wei", region: "APAC", dept: t.deptIT, eqScore: 113.9, growth: "+6.2", brainStyle: t.brainStyleScientist, emoji: "\u{1f52c}", avatar: "/rowivectors/Rowi-02.png" },
-    { rank: 6, name: "Anna Kowalski", region: "EMEA", dept: t.deptCustomerService, eqScore: 112.8, growth: "+4.8", brainStyle: t.brainStyleGuardian, emoji: "\u{1f6e1}\ufe0f", avatar: "/rowivectors/Rowi-01.png" },
-    { rank: 7, name: "Roberto D\u00edaz", region: "LATAM", dept: t.deptTraining, eqScore: 112.1, growth: "+5.7", brainStyle: t.brainStyleDeliverer, emoji: "\u{1f4e6}", avatar: "/rowivectors/Rowi-06.png" },
-    { rank: 8, name: "Sarah Mitchell", region: "NA", dept: t.deptSales, eqScore: 111.5, growth: "+4.2", brainStyle: t.brainStyleStrategist, emoji: "\u265f\ufe0f", avatar: "/rowivectors/Rowi-05.png" },
+    { rank: 1, name: "Priya Sharma", region: "APAC", dept: t.deptCustomerSuccess, eqScore: 118.7, growth: "+8.3", brainStyle: t.brainStyleSuperhero, emoji: "\u{1f9b8}", avatar: "/rowivectors/Rowi-06.webp" },
+    { rank: 2, name: "David Okonkwo", region: "EMEA", dept: t.deptHR, eqScore: 116.2, growth: "+7.1", brainStyle: t.brainStyleVisionary, emoji: "\u{1f52e}", avatar: "/rowivectors/Rowi-05.webp" },
+    { rank: 3, name: "Maria Santos", region: "LATAM", dept: t.deptSales, eqScore: 115.8, growth: "+6.9", brainStyle: t.brainStyleStrategist, emoji: "\u265f\ufe0f", avatar: "/rowivectors/Rowi-04.webp" },
+    { rank: 4, name: "James Wilson", region: "NA", dept: t.deptOperations, eqScore: 114.5, growth: "+5.4", brainStyle: t.brainStyleInventor, emoji: "\u{1f4a1}", avatar: "/rowivectors/Rowi-03.webp" },
+    { rank: 5, name: "Li Wei", region: "APAC", dept: t.deptIT, eqScore: 113.9, growth: "+6.2", brainStyle: t.brainStyleScientist, emoji: "\u{1f52c}", avatar: "/rowivectors/Rowi-02.webp" },
+    { rank: 6, name: "Anna Kowalski", region: "EMEA", dept: t.deptCustomerService, eqScore: 112.8, growth: "+4.8", brainStyle: t.brainStyleGuardian, emoji: "\u{1f6e1}\ufe0f", avatar: "/rowivectors/Rowi-01.webp" },
+    { rank: 7, name: "Roberto D\u00edaz", region: "LATAM", dept: t.deptTraining, eqScore: 112.1, growth: "+5.7", brainStyle: t.brainStyleDeliverer, emoji: "\u{1f4e6}", avatar: "/rowivectors/Rowi-06.webp" },
+    { rank: 8, name: "Sarah Mitchell", region: "NA", dept: t.deptSales, eqScore: 111.5, growth: "+4.2", brainStyle: t.brainStyleStrategist, emoji: "\u265f\ufe0f", avatar: "/rowivectors/Rowi-05.webp" },
   ];
 
   const EVENTS = [

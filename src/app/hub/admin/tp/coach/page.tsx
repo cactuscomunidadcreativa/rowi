@@ -206,7 +206,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
       <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isUser ? "bg-purple-500/20" : "bg-gradient-to-br from-blue-500 to-cyan-500"}`}>
-        {isUser ? <User className="w-5 h-5 text-purple-500" /> : <Image src="/rowivectors/Rowi-06.png" alt="Rowi" width={32} height={32} className="object-contain" />}
+        {isUser ? <User className="w-5 h-5 text-purple-500" /> : <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={32} height={32} className="object-contain" />}
       </div>
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${isUser ? "bg-purple-500 text-white rounded-tr-sm" : "bg-gray-100 dark:bg-zinc-800 rounded-tl-sm"}`}>
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -271,7 +271,7 @@ export default function TPCoachPage() {
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <Image src="/rowivectors/Rowi-06.png" alt="Rowi" width={40} height={40} className="object-contain" />
+                <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={40} height={40} className="object-contain" />
               </div>
               <div className="text-white">
                 <h3 className="font-bold">{t.chatTitle}</h3>
@@ -292,7 +292,7 @@ export default function TPCoachPage() {
               {isTyping && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                    <Image src="/rowivectors/Rowi-06.png" alt="Rowi" width={32} height={32} />
+                    <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={32} height={32} />
                   </div>
                   <div className="bg-gray-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm px-4 py-3">
                     <div className="flex gap-1">

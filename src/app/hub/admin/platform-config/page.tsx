@@ -117,11 +117,11 @@ const DEFAULT_COMPETENCIES: SixSecondsCompetency[] = [
 
 // Default Rowi levels
 const DEFAULT_ROWI_LEVELS: RowiLevel[] = [
-  { id: "1", code: "egg", nameEs: "Huevito", nameEn: "Egg", descriptionEs: "Apenas comenzando tu viaje emocional", descriptionEn: "Just starting your emotional journey", minScore: 0, maxScore: 65, color: "#FEF3C7", icon: "Egg", vectorImage: "/rowivectors/Rowi-01.png", order: 1 },
-  { id: "2", code: "signals", nameEs: "Señales", nameEn: "Signals", descriptionEs: "Empezando a reconocer patrones emocionales", descriptionEn: "Starting to recognize emotional patterns", minScore: 66, maxScore: 82, color: "#DBEAFE", icon: "Eye", vectorImage: "/rowivectors/Rowi-02.png", order: 2 },
-  { id: "3", code: "almost", nameEs: "Casi Listo", nameEn: "Almost Ready", descriptionEs: "Desarrollando habilidades emocionales", descriptionEn: "Developing emotional skills", minScore: 83, maxScore: 92, color: "#E9D5FF", icon: "Zap", vectorImage: "/rowivectors/Rowi-03.png", order: 3 },
-  { id: "4", code: "minirowi", nameEs: "Mini Rowi", nameEn: "Mini Rowi", descriptionEs: "Aplicando inteligencia emocional consistentemente", descriptionEn: "Applying emotional intelligence consistently", minScore: 93, maxScore: 107, color: "#BBF7D0", icon: "Sparkles", vectorImage: "/rowivectors/Rowi-04.png", order: 4 },
-  { id: "5", code: "rowi", nameEs: "Rowi", nameEn: "Rowi", descriptionEs: "Dominio de la inteligencia emocional", descriptionEn: "Mastery of emotional intelligence", minScore: 108, maxScore: 135, color: "#FDE68A", icon: "Shield", vectorImage: "/rowivectors/Rowi-05.png", order: 5 },
+  { id: "1", code: "egg", nameEs: "Huevito", nameEn: "Egg", descriptionEs: "Apenas comenzando tu viaje emocional", descriptionEn: "Just starting your emotional journey", minScore: 0, maxScore: 65, color: "#FEF3C7", icon: "Egg", vectorImage: "/rowivectors/Rowi-01.webp", order: 1 },
+  { id: "2", code: "signals", nameEs: "Señales", nameEn: "Signals", descriptionEs: "Empezando a reconocer patrones emocionales", descriptionEn: "Starting to recognize emotional patterns", minScore: 66, maxScore: 82, color: "#DBEAFE", icon: "Eye", vectorImage: "/rowivectors/Rowi-02.webp", order: 2 },
+  { id: "3", code: "almost", nameEs: "Casi Listo", nameEn: "Almost Ready", descriptionEs: "Desarrollando habilidades emocionales", descriptionEn: "Developing emotional skills", minScore: 83, maxScore: 92, color: "#E9D5FF", icon: "Zap", vectorImage: "/rowivectors/Rowi-03.webp", order: 3 },
+  { id: "4", code: "minirowi", nameEs: "Mini Rowi", nameEn: "Mini Rowi", descriptionEs: "Aplicando inteligencia emocional consistentemente", descriptionEn: "Applying emotional intelligence consistently", minScore: 93, maxScore: 107, color: "#BBF7D0", icon: "Sparkles", vectorImage: "/rowivectors/Rowi-04.webp", order: 4 },
+  { id: "5", code: "rowi", nameEs: "Rowi", nameEn: "Rowi", descriptionEs: "Dominio de la inteligencia emocional", descriptionEn: "Mastery of emotional intelligence", minScore: 108, maxScore: 135, color: "#FDE68A", icon: "Shield", vectorImage: "/rowivectors/Rowi-05.webp", order: 5 },
 ];
 
 export default function PlatformConfigPage() {
@@ -926,7 +926,7 @@ function RowiLevelsConfigSection({
                     alt={level.nameEs}
                     className="w-8 h-8 object-contain"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/rowivectors/Rowi-01.png";
+                      (e.target as HTMLImageElement).src = "/rowivectors/Rowi-01.webp";
                     }}
                   />
                 </div>
@@ -1074,7 +1074,7 @@ function RowiLevelsConfigSection({
                       type="text"
                       value={editingLevel.vectorImage}
                       onChange={(e) => setEditingLevel({ ...editingLevel, vectorImage: e.target.value })}
-                      placeholder="/rowivectors/Rowi-01.png"
+                      placeholder="/rowivectors/Rowi-01.webp"
                       className="w-full px-3 py-2 rounded-lg bg-[var(--rowi-surface)] border border-[var(--rowi-border)] text-sm"
                     />
                   </div>

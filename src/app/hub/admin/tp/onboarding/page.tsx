@@ -323,7 +323,7 @@ export default function TPOnboardingPage() {
           {/* STEP 1: Welcome */}
           {currentStep === 0 && (
             <motion.div key="welcome" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
-              <div className="w-32 h-32 mx-auto mb-8 relative"><Image src="/rowivectors/Rowi-01.png" alt="Rowi" fill className="object-contain" /></div>
+              <div className="w-32 h-32 mx-auto mb-8 relative"><Image src="/rowivectors/Rowi-01.webp" alt="Rowi" fill className="object-contain" /></div>
               <h1 className="text-3xl font-bold mb-3">{t.welcomeTitle}</h1>
               <p className="text-lg text-purple-500 font-medium mb-2">{t.welcomeSubtitle}</p>
               <p className="text-[var(--rowi-muted)] mb-8 max-w-lg mx-auto">{t.welcomeDesc}</p>
@@ -388,7 +388,7 @@ export default function TPOnboardingPage() {
           {/* STEP 3: Assessment */}
           {currentStep === 2 && (
             <motion.div key="assessment" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center">
-              <div className="w-24 h-24 mx-auto mb-6 relative"><Image src="/rowivectors/Rowi-06.png" alt="Rowi" fill className="object-contain" /></div>
+              <div className="w-24 h-24 mx-auto mb-6 relative"><Image src="/rowivectors/Rowi-06.webp" alt="Rowi" fill className="object-contain" /></div>
               <h2 className="text-2xl font-bold mb-2">{t.assessmentTitle}</h2>
               <p className="text-[var(--rowi-muted)] mb-6">{t.assessmentSubtitle}</p>
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800 max-w-md mx-auto mb-8">

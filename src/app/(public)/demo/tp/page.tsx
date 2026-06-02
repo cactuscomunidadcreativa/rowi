@@ -737,7 +737,7 @@ export default function TPDemoPage() {
             </div>
             <div className="relative z-10">
               <div className="w-20 h-20 mx-auto mb-6 relative">
-                <Image src="/rowivectors/Rowi-01.png" alt="Rowi" fill className="object-contain" />
+                <Image src="/rowivectors/Rowi-01.webp" alt="Rowi" fill className="object-contain" />
               </div>
               <h2 className="text-3xl font-bold mb-4">{t.ctaTitle}</h2>
               <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">{t.ctaSubtitle}</p>

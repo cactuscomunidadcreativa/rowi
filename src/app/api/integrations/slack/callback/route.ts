@@ -19,7 +19,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/core/auth/requireAdmin";
+import { getServerAuthUser } from "@/core/auth";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
 import { getSlackConfig, getSlackRedirectUri } from "@/lib/slack/config";
 import { encryptValue } from "@/lib/config/systemConfig";
 import { prisma } from "@/core/prisma";
@@ -88,14 +89,19 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Re-validar sesión para atar installedByUserId al instalador.
-  const auth = await requireAuth();
-  if (auth.error || !auth.user) {
+  // Re-validar sesión + rol admin para atar installedByUserId al instalador.
+  // Debe coincidir con el guard de /install (cualquier admin autorizado).
+  const user = await getServerAuthUser();
+  if (!user) {
     const signin = new URL("/signin", req.url);
     signin.searchParams.set("callbackUrl", "/hub/admin/integrations");
     return NextResponse.redirect(signin);
   }
-  const user = auth.user;
+  const admin = await requireAdminWithScope();
+  if (admin.error) {
+    secureLog.warn("slack.callback.forbidden", { userId: user.id });
+    return redirectToIntegrations(req, "forbidden");
+  }
 
   // 2) Intercambiar code por token.
   const { clientId, clientSecret } = await getSlackConfig();

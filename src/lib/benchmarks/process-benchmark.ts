@@ -15,6 +15,7 @@ import {
   detectGeneration,
   extractDateInfo,
 } from "@/lib/benchmarks";
+import { contributeBenchmarkToRowiverse } from "@/lib/rowiverse/contribution-service";
 
 // 📏 Limits
 // 50MB. Consistente con maximumSizeInBytes del blob-token. Un benchmark
@@ -372,6 +373,25 @@ export async function processBenchmark({
     });
 
     console.log(`✅ Benchmark ${benchmarkId} completed: ${finalCount} rows`);
+
+    /* ─── Phase 5: Contribuir al RowiVerse global ────────────
+       Los benchmarks organizacionales (INTERNAL) suman sus data points
+       anónimos al benchmark global RowiVerse, a nivel cohorte. NO bloquea
+       ni puede romper el import: si falla, solo se loguea. La función es
+       idempotente y se auto-salta los tipos no-INTERNAL. */
+    try {
+      const result = await contributeBenchmarkToRowiverse(benchmarkId);
+      if (result.contributed > 0) {
+        console.log(
+          `🌐 RowiVerse: +${result.contributed} data points desde ${benchmarkId}`
+        );
+      }
+    } catch (contribErr) {
+      console.error(
+        `⚠️ Contribución a RowiVerse falló (no bloqueante) para ${benchmarkId}:`,
+        contribErr
+      );
+    }
 
   } catch (error) {
     console.error(`❌ [processBenchmark] Error:`, error);

@@ -100,10 +100,17 @@ export async function POST(req: NextRequest) {
     });
 
     await prisma.$transaction(async (tx) => {
+      // 🔐 El hash vive en User.passwordHash (campo dedicado). Limpiamos el
+      // legacy access_token para no dejar el hash duplicado en el campo OAuth.
+      await tx.user.update({
+        where: { id: user.id },
+        data: { passwordHash: hashed },
+      });
+
       if (credentialsAccount) {
         await tx.account.update({
           where: { id: credentialsAccount.id },
-          data: { access_token: hashed },
+          data: { access_token: null },
         });
       } else {
         // Edge case: OAuth-only user adding a password via reset.
@@ -113,7 +120,6 @@ export async function POST(req: NextRequest) {
             type: "credentials",
             provider: "credentials",
             providerAccountId: user.email || user.id,
-            access_token: hashed,
           },
         });
       }

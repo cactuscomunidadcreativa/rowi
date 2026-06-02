@@ -42,6 +42,12 @@ model User {
   trialStartedAt   DateTime? // Inicio del trial
   trialEndsAt      DateTime? // Fin del trial
 
+  // 🔐 Credenciales locales (bcrypt). Campo dedicado en vez del workaround
+  // histórico de guardar el hash en Account.access_token (semántica peligrosa:
+  // un campo de tokens OAuth no debe contener hashes de contraseña). Durante
+  // la migración el authorize() lee este campo y cae al legacy si está vacío.
+  passwordHash String?
+
   // 🔐 SSO Six Seconds Integration
   ssoProvider   String? // "six-seconds" | null
   ssoProviderId String? // ID único del usuario en el SSO

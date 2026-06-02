@@ -31,6 +31,9 @@ const PUBLIC_PAGES = [
   "/product",
   "/demo",
   "/pitch",
+  "/about",
+  "/stories",
+  "/resources",
 ];
 
 const PUBLIC_API_PATHS = [
@@ -57,6 +60,19 @@ const PUBLIC_API_PATHS = [
   // WhatsApp — webhook entrante de Twilio, autenticado por firma
   // X-Twilio-Signature. Twilio lo llama sin sesión NextAuth.
   "/api/integrations/whatsapp/webhook",
+];
+
+/* =========================================================
+   🌐 Rutas de API que son PUNTOS DE ENTRADA DE NAVEGACIÓN
+   ---------------------------------------------------------
+   Un humano abre estas URLs directamente en el navegador (no son fetch
+   de la SPA). Si no hay sesión, el middleware debe MANDARLAS A /signin
+   con callbackUrl — NO devolver 401 JSON crudo (que es lo que un usuario
+   veía al hacer clic en "Conectar Slack" sin sesión). Tras autenticarse,
+   el callbackUrl los devuelve al flujo OAuth.
+========================================================= */
+const API_NAV_ENTRYPOINTS = [
+  "/api/integrations/slack/install",
 ];
 
 /* =========================================================
@@ -291,22 +307,31 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
       }
     }
 
-    // Si hay origin/referer, verificar que coincida
-    if (requestOriginHost) {
-      const isAllowed =
-        requestOriginHost === host ||
-        ALLOWED_HOSTS.includes(requestOriginHost) ||
-        requestOriginHost.endsWith(".rowi.app"); // Subdominios de rowi.app
-
-      if (!isAllowed) {
-        console.warn(`🛡️ CSRF blocked: origin=${requestOriginHost}, host=${host}, path=${pathname}`);
-        return NextResponse.json(
-          { ok: false, error: "Invalid request origin" },
-          { status: 403 }
-        );
-      }
+    // 🛡️ Exigir Origin o Referer en mutaciones no exentas. Un navegador real
+    // siempre envía al menos uno en un POST autenticado por cookie; la
+    // ausencia de ambos es precisamente el vector CSRF que queremos cerrar.
+    // Los callers server-to-server legítimos (Stripe, cron, Slack, WhatsApp,
+    // NextAuth) ya están en CSRF_EXEMPT_PATHS y verifican firma aparte.
+    if (!requestOriginHost) {
+      console.warn(`🛡️ CSRF blocked: missing origin/referer, host=${host}, path=${pathname}`);
+      return NextResponse.json(
+        { ok: false, error: "Missing request origin" },
+        { status: 403 }
+      );
     }
-    // Si no hay origin ni referer, permitir (puede ser fetch sin credentials)
+
+    const isAllowed =
+      requestOriginHost === host ||
+      ALLOWED_HOSTS.includes(requestOriginHost) ||
+      requestOriginHost.endsWith(".rowi.app"); // Subdominios de rowi.app
+
+    if (!isAllowed) {
+      console.warn(`🛡️ CSRF blocked: origin=${requestOriginHost}, host=${host}, path=${pathname}`);
+      return NextResponse.json(
+        { ok: false, error: "Invalid request origin" },
+        { status: 403 }
+      );
+    }
   }
 
   /* =========================================================
@@ -335,11 +360,16 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
      4) Si no está autenticado → redirigir a login
   ========================================================== */
   if (!isAuth) {
-    // Para APIs, devolver 401
-    if (pathname.startsWith("/api/")) {
+    const isApiNavEntrypoint = API_NAV_ENTRYPOINTS.some(
+      (p) => pathname === p || pathname.startsWith(p + "/")
+    );
+    // Para APIs normales (fetch de la SPA), devolver 401 JSON.
+    // EXCEPCIÓN: las entradas de navegación (p.ej. /slack/install) las abre
+    // un humano en el browser → redirigir a /signin para no mostrar JSON crudo.
+    if (pathname.startsWith("/api/") && !isApiNavEntrypoint) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    // Para páginas, redirigir a signin
+    // Para páginas y entradas de navegación, redirigir a signin
     const signin = new URL("/signin", req.url);
     signin.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signin);

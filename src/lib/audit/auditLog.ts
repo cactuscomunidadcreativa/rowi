@@ -32,6 +32,7 @@ export type AuditAction =
   | "CSRF_BLOCKED"
   | "UNAUTHORIZED_ACCESS"
   | "SUSPICIOUS_ACTIVITY"
+  | "ACCOUNT_LINK_BLOCKED"
   // Data events
   | "USER_CREATED"
   | "USER_UPDATED"
@@ -213,6 +214,7 @@ function getSeverity(action: AuditAction): "LOW" | "MEDIUM" | "HIGH" {
     "UNAUTHORIZED_ACCESS",
     "SUSPICIOUS_ACTIVITY",
     "CSRF_BLOCKED",
+    "ACCOUNT_LINK_BLOCKED",
     "USER_DELETED",
     "TENANT_DELETED",
     "HUB_DELETED",

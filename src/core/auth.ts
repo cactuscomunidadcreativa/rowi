@@ -6,6 +6,41 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export { authOptions };
 
 /* =========================================================
+   ⚡ getAuthIdentity — identidad LIGERA, CERO queries a BD
+   ---------------------------------------------------------
+   Lee únicamente lo que el JWT ya transporta (lo pone el jwt
+   callback de NextAuth en loadAuthProfile): id, isSuperAdmin,
+   primaryTenantId, organizationRole. NO toca Prisma.
+
+   Úsalo en el ~90% de rutas que sólo necesitan saber QUIÉN es
+   el caller. Reserva getServerAuthUser() (grafo de 8 niveles
+   hub→superHub→{tenants,orgs,hubs}) para las pocas superficies
+   que de verdad renderizan esa jerarquía.
+========================================================= */
+export interface AuthIdentity {
+  id: string;
+  email: string | null;
+  name: string | null;
+  isSuperAdmin: boolean;
+  primaryTenantId: string | null;
+  organizationRole: string | null;
+}
+
+export async function getAuthIdentity(): Promise<AuthIdentity | null> {
+  const session = await getServerSession(authOptions);
+  const u = session?.user;
+  if (!u?.id) return null;
+  return {
+    id: u.id,
+    email: u.email ?? null,
+    name: u.name ?? null,
+    isSuperAdmin: u.isSuperAdmin === true,
+    primaryTenantId: u.primaryTenantId ?? null,
+    organizationRole: u.organizationRole ?? null,
+  };
+}
+
+/* =========================================================
    🧩 getServerAuthUser — VERSIÓN FINAL PARA APP ROUTER
    ---------------------------------------------------------
    ✔ SIN req/res

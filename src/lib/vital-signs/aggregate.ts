@@ -179,6 +179,13 @@ function round1(n: number | null): number | null {
   return Math.round(n * 10) / 10;
 }
 
+// Hard upper bound on the number of users (and therefore latest snapshots)
+// pulled into a single aggregate. Protects the serverless instance from OOM
+// on unbounded scopes (notably `world`). Beyond this, the aggregate is still
+// statistically representative; the proper long-term fix is a materialized
+// rollup refreshed by cron (see docs/PERFORMANCE_AUDIT.md).
+const MAX_AGG_USERS = 5000;
+
 async function userIdsForScope(scope: AggregateScope, subjectId: string): Promise<string[]> {
   if (scope === "team") {
     const rows = await prisma.rowiCommunityUser.findMany({
@@ -195,8 +202,12 @@ async function userIdsForScope(scope: AggregateScope, subjectId: string): Promis
     return rows.map((r) => r.userId);
   }
   if (scope === "world") {
-    // Toda la base Rowi (consent analytics se aplica después).
-    const rows = await prisma.user.findMany({ select: { id: true } });
+    // Toda la base Rowi (consent analytics se aplica después). Acotado a
+    // MAX_AGG_USERS para no traer toda la tabla `user` en caliente.
+    const rows = await prisma.user.findMany({
+      select: { id: true },
+      take: MAX_AGG_USERS,
+    });
     return rows.map((r) => r.id);
   }
   // family
@@ -422,10 +433,15 @@ export async function aggregateInferredVitalSigns(args: {
     return suppressed(scope, subjectId, subjectName, consenting.length, nTotal);
   }
 
-  // Latest EqSnapshot per user (one row per user)
+  // Latest EqSnapshot per user (one row per user). DISTINCT ON (userId)
+  // at the DB level so we never pull a user's full pulse history into
+  // memory; `take` is a hard memory bound for very large scopes. The JS
+  // de-dup below stays as an idempotent safety net.
   const snapshots = await prisma.eqSnapshot.findMany({
     where: { userId: { in: consenting } },
-    orderBy: { at: "desc" },
+    orderBy: [{ userId: "asc" }, { at: "desc" }],
+    distinct: ["userId"],
+    take: MAX_AGG_USERS,
   });
   const latestByUser = new Map<string, (typeof snapshots)[number]>();
   for (const s of snapshots) {

@@ -78,14 +78,16 @@ const SERVICE_ROLE_FALLBACK_ES: Record<string, string> = {
 export async function getActiveContexts(
   userId: string,
 ): Promise<AccountContext[]> {
+  // Family + service hats are each fetched in ONE query (OR over both
+  // sides of the relation) instead of two, then split in memory below.
+  // Cuts the per-call query count from 8 → 6 (less pool pressure under
+  // concurrency). All unbounded list reads get a defensive `take`.
   const [
     user,
     employeeProfiles,
     reportsCount,
-    familyOwned,
-    familyRelatedTo,
-    servicesProvided,
-    servicesReceived,
+    familyRows,
+    serviceRows,
     workspaceMemberships,
   ] = await Promise.all([
     prisma.user.findUnique({
@@ -107,48 +109,54 @@ export async function getActiveContexts(
         tenantId: true,
         tenant: { select: { id: true, name: true } },
       },
+      take: 100,
     }),
     prisma.employeeProfile.count({
       where: { manager: { userId }, status: "ACTIVE" },
     }),
+    // Family relations on EITHER side: owner sees all; the related user
+    // only sees accepted ones (split applied in JS after the fetch).
     prisma.familyRelation.findMany({
-      where: { ownerId: userId },
+      where: {
+        OR: [
+          { ownerId: userId },
+          { relatedUserId: userId, consentStatus: "accepted" },
+        ],
+      },
       select: {
         id: true,
+        ownerId: true,
+        relatedUserId: true,
         relationship: true,
         relatedName: true,
         relatedEmail: true,
         consentStatus: true,
         relatedUser: { select: { id: true, name: true, email: true } },
-      },
-    }),
-    prisma.familyRelation.findMany({
-      where: { relatedUserId: userId, consentStatus: "accepted" },
-      select: {
-        id: true,
-        relationship: true,
         owner: { select: { id: true, name: true, email: true } },
       },
+      take: 200,
     }),
+    // Service engagements where the user is provider OR client.
     prisma.serviceEngagement.findMany({
-      where: { providerId: userId, status: { in: ["active", "proposed"] } },
+      where: {
+        OR: [
+          { providerId: userId, status: { in: ["active", "proposed"] } },
+          { clientUserId: userId, status: "active" },
+        ],
+      },
       select: {
         id: true,
+        providerId: true,
+        clientUserId: true,
         serviceRole: true,
         status: true,
         clientTenant: { select: { id: true, name: true } },
         clientCommunity: { select: { id: true, name: true } },
         clientOrganization: { select: { id: true, name: true } },
         clientUser: { select: { id: true, name: true, email: true } },
-      },
-    }),
-    prisma.serviceEngagement.findMany({
-      where: { clientUserId: userId, status: "active" },
-      select: {
-        id: true,
-        serviceRole: true,
         provider: { select: { id: true, name: true, email: true } },
       },
+      take: 200,
     }),
     prisma.rowiCommunityUser.findMany({
       where: {
@@ -160,10 +168,26 @@ export async function getActiveContexts(
         role: true,
         community: { select: { id: true, name: true, workspaceType: true } },
       },
+      take: 200,
     }),
   ]);
 
   if (!user) return [];
+
+  // Split the merged family/service rows back into the four logical sets
+  // the builders below expect.
+  const familyOwned = familyRows.filter((fr) => fr.ownerId === userId);
+  const familyRelatedTo = familyRows.filter(
+    (fr) => fr.relatedUserId === userId && fr.consentStatus === "accepted",
+  );
+  const servicesProvided = serviceRows.filter(
+    (se) =>
+      se.providerId === userId &&
+      (se.status === "active" || se.status === "proposed"),
+  );
+  const servicesReceived = serviceRows.filter(
+    (se) => se.clientUserId === userId && se.status === "active",
+  );
 
   const contexts: AccountContext[] = [];
 

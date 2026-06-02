@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge } from "@/lib/admin-mfa/edge";
+import {
+  distributedRateLimit,
+  distributedRateLimitEnabled,
+} from "@/lib/rate-limit/distributed";
 
 /* =========================================================
    🌍 CONFIG — Rutas públicas de promoción/landing
@@ -229,7 +233,15 @@ export async function middleware(req: NextRequest) {
     const prefix = matchRateLimitPrefix(pathname);
     const key = getRateLimitKey(req, prefix);
     const config = getRateLimitConfig(prefix);
-    const { allowed, remaining, resetAt } = checkRateLimit(key, config.limit, config.windowMs);
+
+    // Preferir el rate limit DISTRIBUIDO (Redis compartido) cuando esté
+    // configurado — crítico para los buckets de IA, que son control de costo.
+    // Si Redis no está configurado o falla, caer al store in-memory.
+    const distributed = distributedRateLimitEnabled
+      ? await distributedRateLimit({ prefix, key, limit: config.limit, windowMs: config.windowMs })
+      : null;
+    const { allowed, remaining, resetAt } =
+      distributed ?? checkRateLimit(key, config.limit, config.windowMs);
 
     if (!allowed) {
       const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);

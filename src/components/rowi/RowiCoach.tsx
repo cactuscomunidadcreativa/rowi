@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Mic, Paperclip, MessageCircle, Sparkles, Heart, ArrowRight, ThumbsUp, ThumbsDown, Bug } from "lucide-react";
-import { registerUsage } from "@/ai/client/registerUsage";
 import { useSession, signIn } from "next-auth/react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { toast } from "sonner";
@@ -108,18 +107,30 @@ export default function RowiCoach() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, showDemoTyping]);
 
-  // Persistencia para usuarios logueados
+  // Persistencia para usuarios logueados (lectura defensiva: un historial
+  // corrupto no debe romper el montaje del componente).
   React.useEffect(() => {
-    if (isLoggedIn) {
+    if (!isLoggedIn) return;
+    try {
       const saved = localStorage.getItem("rowiCoachHistory");
       if (saved) setMessages(JSON.parse(saved));
+    } catch {
+      localStorage.removeItem("rowiCoachHistory");
     }
   }, [isLoggedIn]);
 
+  // Escritura debounced + acotada a los últimos 50 mensajes: evita
+  // re-serializar TODO el historial (síncrono, main-thread) en cada cambio.
   React.useEffect(() => {
-    if (isLoggedIn) {
-      localStorage.setItem("rowiCoachHistory", JSON.stringify(messages));
-    }
+    if (!isLoggedIn) return;
+    const handle = setTimeout(() => {
+      try {
+        localStorage.setItem("rowiCoachHistory", JSON.stringify(messages.slice(-50)));
+      } catch {
+        // Cuota/serialización: no es crítico, se reintenta al próximo cambio.
+      }
+    }, 400);
+    return () => clearTimeout(handle);
   }, [messages, isLoggedIn]);
 
   // Simulación de conversación demo
@@ -222,10 +233,18 @@ export default function RowiCoach() {
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
         const blob = new Blob(chunks, { type: "audio/mp3" });
-        const buf = new Uint8Array(await blob.arrayBuffer());
-        const base64 = btoa(String.fromCharCode(...buf));
+        // FileReader.readAsDataURL evita el `btoa(String.fromCharCode(...buf))`,
+        // que desborda la pila (RangeError) con audios de pocos MB y bloquea
+        // el main thread.
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onloadend = () => resolve(fr.result as string);
+          fr.onerror = () => reject(fr.error);
+          fr.readAsDataURL(blob);
+        });
+        const base64 = dataUrl.split(",")[1] || "";
 
-        setMessages((m) => [...m, { id: uid(), role: "user", audioUrl: `data:audio/mp3;base64,${base64}` }]);
+        setMessages((m) => [...m, { id: uid(), role: "user", audioUrl: dataUrl }]);
         await sendMessage({ audio: base64 });
       };
 
@@ -295,14 +314,8 @@ export default function RowiCoach() {
 
       setMessages((m) => [...m, reply]);
       setAttachments([]);
-
-      await registerUsage({
-        tenantId,
-        feature: "ROWI_COACH",
-        model: json.model || "gpt-4o-mini",
-        tokensInput: 0,
-        tokensOutput: 0,
-      });
+      // El servidor (/api/rowi) ya registra el usage en usageDaily; la
+      // llamada cliente enviaba ceros — round-trip redundante, eliminado.
     } catch (e) {
       console.error("[RowiCoach] Error:", e);
       setMessages((m) => [...m, { id: uid(), role: "assistant", text: "Error procesando tu mensaje." }]);

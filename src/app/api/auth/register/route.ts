@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/lib/email/sendVerificationEmail";
 import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 import { getServerAppBaseUrl } from "@/core/utils/base-url";
+import { claimPreSeiSession } from "@/lib/pre-sei/claim";
 
 interface RegisterBody {
   email: string;
@@ -23,6 +24,8 @@ interface RegisterBody {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  // Pre-SEI: token de la sesión anónima a reclamar tras crear la cuenta.
+  preSeiToken?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -242,6 +245,17 @@ export async function POST(req: NextRequest) {
         passwordHash: hashedPassword,
       },
     });
+
+    // Pre-SEI: si el usuario hizo el diagnóstico anónimo, reclamar la sesión
+    // (materializa EqSnapshot + señales). No crítico: un fallo aquí no debe
+    // romper el registro.
+    if (body.preSeiToken) {
+      try {
+        await claimPreSeiSession(body.preSeiToken, user.id);
+      } catch (claimErr) {
+        console.warn("⚠️ Error reclamando sesión Pre-SEI (no crítico):", claimErr);
+      }
+    }
 
     // Crear registro de adquisición
     await prisma.userAcquisition.create({

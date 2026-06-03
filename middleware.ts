@@ -34,6 +34,7 @@ const PUBLIC_PAGES = [
   "/about",
   "/stories",
   "/resources",
+  "/pre-sei", // Pre-SEI: diagnóstico EQ público (gancho EQ Day)
 ];
 
 const PUBLIC_API_PATHS = [
@@ -139,6 +140,7 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/admin/benchmarks/job": { limit: 120, windowMs: 60000 }, // Job polling: 120/min
   "/api/admin": { limit: 50, windowMs: 60000 }, // Admin: 50/min
   "/api/stripe": { limit: 10, windowMs: 60000 }, // Stripe: 10/min
+  "/api/public/pre-sei": { limit: 10, windowMs: 60000 }, // Pre-SEI público sin auth: 10/min anti-abuso
   default: { limit: 100, windowMs: 60000 }, // Default: 100/min
 };
 

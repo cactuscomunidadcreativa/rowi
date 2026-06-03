@@ -27,6 +27,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import AffinityMonitor from "@/components/affinity/AffinityMonitor";
+import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 
 /* =========================================================
    🎯 Affinity Page — Rowi SIA
@@ -115,6 +116,38 @@ const PROJECT_ICONS: Record<ProjectType, React.ElementType> = {
   decision: Brain,
   conversation: MessageCircle,
 };
+
+/* Escala de SINTONÍA (reemplaza el "% compatible" — afinidad es BRECHA que se
+   cierra, nunca veredicto). Barra de 4 pasos que se llena hacia la sintonía. */
+function AttunementBar({
+  piece,
+  t,
+}: {
+  piece: { heat135?: number; heat100?: number; brainStyles?: { compatibility?: number } };
+  t: (k: string, fb?: string) => string;
+}) {
+  const gap = affinityAsGap({
+    heat135: piece.heat135,
+    heat100: piece.heat100,
+    compatibility: piece.brainStyles?.compatibility,
+  });
+  if (!gap) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex gap-0.5" aria-hidden>
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-4 rounded-full ${
+              i <= gap.step ? "bg-[var(--rowi-primary)]" : "bg-[var(--rowi-chip)]"
+            }`}
+          />
+        ))}
+      </div>
+      <span className="text-xs text-[var(--rowi-muted)]">{t(gap.labelKey)}</span>
+    </div>
+  );
+}
 
 export default function AffinityPage() {
   const { t, lang } = useI18n();
@@ -899,9 +932,7 @@ export default function AffinityPage() {
                           <span className="px-2 py-1 rounded-lg bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]">
                             {aff.brainStyles.theirs || member.brainStyle || t("affinity.detail.theirStyle") || "Su estilo"}
                           </span>
-                          <span className="text-xs text-[var(--rowi-muted)]">
-                            {aff.brainStyles.compatibility}% {t("affinity.detail.compatible") || "compatible"}
-                          </span>
+                          <AttunementBar piece={aff} t={t} />
                         </div>
                       </div>
                     )}
@@ -1082,7 +1113,7 @@ export default function AffinityPage() {
                               <span className="px-2 py-0.5 rounded bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)]">{aff.brainStyles.yours}</span>
                               <span className="text-[var(--rowi-muted)]">↔</span>
                               <span className="px-2 py-0.5 rounded bg-[var(--rowi-secondary)]/10 text-[var(--rowi-secondary)]">{aff.brainStyles.theirs || member.brainStyle}</span>
-                              <span className="text-[var(--rowi-muted)] ml-auto">{aff.brainStyles.compatibility}% {t("affinity.detail.compatible") || "compatible"}</span>
+                              <span className="ml-auto"><AttunementBar piece={aff} t={t} /></span>
                             </div>
                           )}
 

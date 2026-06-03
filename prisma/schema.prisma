@@ -77,6 +77,10 @@ model User {
   affinityInteractions    AffinityInteraction[]
   affinitySnapshots       AffinitySnapshot[]
   affinityProfile         AffinityProfile?
+  communicationProfile    CommunicationProfile?
+  dyadsOwned              RelationshipDyad[]       @relation("DyadOwner")
+  dyadsAsOther            RelationshipDyad[]       @relation("DyadOther")
+  relInvitesSent          RelationshipInvite[]     @relation("RelInviteInviter")
   batches                 Batch[]                  @relation("UserBatches")
   caseStudyAuthor         CaseStudy[]              @relation("CaseStudyAuthor")
   issuedCertificates      Certificate[]            @relation("CertificateIssuedBy")
@@ -2640,6 +2644,146 @@ model AffinityProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("affinity_profile")
+}
+
+/// CommunicationProfile — el "manual de uso" declarado del usuario:
+/// "cómo me comunico" + "cómo quiero que me hablen". Es el Perfil de la cadena
+/// SIA. Se PRELLENA (borrador) desde el mini-SEI "Rowi Test" bajo el capó y el
+/// usuario solo edita. Promueve a tabla estructurada lo que hoy vive en
+/// User.brainProfile (Json) — ese campo NO se borra (backfill perezoso).
+/// El ajuste por tipo de relación NO duplica este perfil: vive en la díada.
+model CommunicationProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  commSelf      Json      @default("{}") // cómo me comunico
+  commPref      Json      @default("{}") // cómo prefiero que me hablen
+  channels      Json      @default("[]") // canales preferidos, ordenados
+  tone          String? // tono base autodeclarado
+  activates     Json      @default("[]")
+  drains        Json      @default("[]")
+  values        Json      @default("[]")
+  archetype     String? // arquetipo Rowi inferido (bajo el capó, NO se muestra como score)
+  draftSource   String? // "pre_sei" | "manual" | null
+  seiSnapshotId String? // EqSnapshot que originó el borrador
+  privacy       Json      @default("{}") // toggles de visibilidad por campo
+  editedAt      DateTime? // null = aún borrador puro del mini-SEI (no tocar al re-seed)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("communication_profile")
+}
+
+/// RelationshipDyad — la "díada" de la cadena SIA: el vínculo entre el dueño
+/// (siempre usuario Rowi) y otra persona (usuaria o solo percepción). Núcleo de
+/// la MEMORIA DE RELACIONES. Diseñada multi-persona (futuro: tabla pivote
+/// DyadParticipant) pero implementada como díada (lado A + lado B). Usa identidad
+/// global (RowiVerseUser) para ser trans-tenant, igual que AffinitySnapshot.
+/// NO reemplaza AffinitySnapshot — cachea la brecha y da memoria/contexto.
+model RelationshipDyad {
+  id            String  @id @default(cuid())
+  ownerUserId   String
+  ownerGlobalId String?
+  otherUserId   String? // si el otro ya es usuario Rowi
+  otherGlobalId String?
+  otherName     String? // si B no es usuario aún (percepción del dueño)
+  otherEmail    String?
+  relationType  String  @default("other") // partner|child|parent|friend|colleague|boss|other
+  context       String  @default("relationship") // mapea a los contextos de affinity
+  toneOverride  String? // ajuste de tono por relación (no duplica el perfil base)
+  otherJoined   Boolean @default(false) // ¿B declaró su CommunicationProfile?
+  otherSeiDone  Boolean @default(false) // ¿B validó con SEI real?
+  // Cache de la BRECHA (escala de sintonía), NUNCA un veredicto de compatibilidad.
+  lastGapSummary Json?
+  lastGapAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  owner   User                 @relation("DyadOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  other   User?                @relation("DyadOther", fields: [otherUserId], references: [id], onDelete: SetNull)
+  threads EcoThread[]
+  invites RelationshipInvite[]
+
+  @@index([ownerUserId])
+  @@index([otherUserId])
+  @@index([ownerGlobalId])
+  @@index([otherGlobalId])
+  @@map("relationship_dyad")
+}
+
+/// EcoThread — memoria de ECO por persona (recurrencia estructural). Cada hilo
+/// agrupa los mensajes-puente que el dueño compuso para una díada.
+/// PRIVACIDAD DURA: el contenido NUNCA se contribuye al Rowiverse anónimo.
+model EcoThread {
+  id           String   @id @default(cuid())
+  dyadId       String
+  ownerUserId  String
+  title        String?
+  channel      String?
+  lastGoal     String?
+  messageCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  dyad     RelationshipDyad @relation(fields: [dyadId], references: [id], onDelete: Cascade)
+  messages EcoMessage[]
+
+  @@index([dyadId])
+  @@index([ownerUserId])
+  @@map("eco_thread")
+}
+
+/// EcoMessage — un turno del hilo ECO: el goal del usuario (input) o el
+/// mensaje-puente generado (bridge). `gapUsed` guarda la brecha aplicada para
+/// auditoría. PRIVACIDAD DURA: texto/goal/insight NUNCA al Rowiverse anónimo.
+model EcoMessage {
+  id         String   @id @default(cuid())
+  threadId   String
+  role       String // "input" (goal del usuario) | "bridge" (salida ECO)
+  goal       String?
+  channel    String?
+  text       String   @db.Text
+  insight    String?  @db.Text
+  gapUsed    Json? // snapshot de la brecha de sintonía aplicada
+  ecoLevel   String? // "general" | "profile" | "sei"
+  tokensUsed Int?
+  createdAt  DateTime @default(now())
+
+  thread EcoThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+  @@map("eco_message")
+}
+
+/// RelationshipInvite — el HOOK de la cadena: "invito a una persona a ver
+/// NUESTRA afinidad y mejorar el vínculo". Distinta de InviteToken (que es a
+/// nivel tenant/cuenta). Tiene su propio deep link público /r/[token].
+model RelationshipInvite {
+  id             String    @id @default(cuid())
+  dyadId         String
+  inviterUserId  String
+  token          String    @unique // deep link opaco
+  relationType   String    @default("other") // encuadre por tipo de relación
+  inviteeName    String?
+  inviteeEmail   String?
+  message        String?   @db.Text // nota personal del invitador
+  locale         String    @default("es")
+  status         String    @default("pending") // pending|opened|accepted|declined|expired
+  openedAt       DateTime?
+  acceptedAt     DateTime?
+  acceptedUserId String?
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+
+  dyad    RelationshipDyad @relation(fields: [dyadId], references: [id], onDelete: Cascade)
+  inviter User             @relation("RelInviteInviter", fields: [inviterUserId], references: [id], onDelete: Cascade)
+
+  @@index([dyadId])
+  @@index([inviterUserId])
+  @@index([inviteeEmail])
+  @@index([status])
+  @@map("relationship_invite")
 }
 
 /// =========================================================

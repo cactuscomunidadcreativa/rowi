@@ -4,6 +4,13 @@ import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { isEcoLLMEnabled } from "@/domains/eco/libAI";
 import { getOpenAIClient } from "@/lib/openai/client";
+import {
+  buildDyadBridge,
+  recordEcoTurn,
+  recentThreadSummary,
+  type DyadBridgeContext,
+} from "@/domains/eco/lib/ecoBridge";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +31,9 @@ type ComposeInput = {
   refine?: boolean;
   ask?: string;
   locale?: "es" | "en" | "pt" | "it";
+  /** Cadena SIA: si se compone para una díada, ECO actúa como PUENTE sobre la
+   *  brecha (inyecta sintonía + memoria + nivel general/profile/sei). */
+  dyadId?: string;
 };
 
 interface TargetData {
@@ -220,6 +230,16 @@ export async function POST(req: NextRequest) {
     const userBrainStyle = userSnap?.brainStyle || "Strategist";
     const userTalents = userSnap?.talents?.map((t) => t.key) || [];
 
+    // Cadena SIA: si hay díada, ECO actúa como PUENTE (brecha + memoria + nivel).
+    let bridge: DyadBridgeContext | null = null;
+    let memoryHint: string | null = null;
+    if (body.dyadId) {
+      bridge = await buildDyadBridge(body.dyadId, user.id);
+      if (bridge) {
+        memoryHint = await recentThreadSummary(body.dyadId, user.id);
+      }
+    }
+
     /* =========================================================
        👥 Resolver TODOS los destinatarios (no solo el primero)
        Paraleliza los fetch para no agregar latencia con N personas.
@@ -399,6 +419,13 @@ export async function POST(req: NextRequest) {
         prompt += `Instrucción específica del remitente: ${body.ask}\n\n`;
       }
 
+      // Cadena SIA: la brecha de sintonía como instrucción de PUENTE + memoria.
+      if (bridge) {
+        prompt += `Puente sobre la brecha (no lo cites): ${bridge.bridgeInstruction} La relación es de tipo ${bridge.relationType}. `;
+        if (memoryHint) prompt += memoryHint + " ";
+        prompt += "\n\n";
+      }
+
       prompt += `Devuelve el JSON con subject (o null), text (mensaje natural sin bullets) ${
         isGroup
           ? "e insight (2-4 frases para mí explicando qué tienen en común y cómo abordarlos)"
@@ -482,6 +509,31 @@ Responde SOLO en JSON válido:
 
       const raw = completion.choices[0].message?.content || "{}";
       const parsed = JSON.parse(raw);
+      const tokensUsed = completion.usage?.total_tokens || 0;
+
+      // Cadena SIA: guardar el turno en la memoria del hilo de la díada.
+      if (bridge && body.dyadId) {
+        try {
+          await recordEcoTurn({
+            dyadId: body.dyadId,
+            ownerUserId: user.id,
+            goal: body.goal,
+            channel: body.channel,
+            text: parsed.text || "",
+            insight: parsed.insight ?? null,
+            level: bridge.level,
+            gapUsed: bridge.gap,
+            tokensUsed,
+          });
+        } catch (memErr) {
+          console.warn("⚠️ recordEcoTurn falló (no crítico):", memErr);
+        }
+      }
+
+      await trackFunnel("eco_used", {
+        userId: user.id,
+        details: { dyadId: body.dyadId ?? null, ecoLevel: bridge?.level ?? null, channel: body.channel },
+      });
 
       return NextResponse.json({
         ok: true,
@@ -489,8 +541,9 @@ Responde SOLO en JSON válido:
         base: baseMessage,
         refined: parsed,
         analysis: analysisData,
+        ecoLevel: bridge?.level ?? null,
         aiPrompt: null,
-        tokensUsed: completion.usage?.total_tokens || 0,
+        tokensUsed,
       });
     } catch (aiError) {
       console.warn("⚠️ ECO AI fallback — usando mensaje estructurado:", aiError);

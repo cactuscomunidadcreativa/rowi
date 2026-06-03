@@ -125,6 +125,7 @@ const T: Record<string, Record<string, string>> = {
   commStyleTitle: { es: "Estilos de Comunicación", en: "Communication Styles" },
   commStyleSelf: { es: "Cómo suelo comunicarme", en: "How I usually communicate" },
   commStyleExpect: { es: "Cómo prefiero que se comuniquen conmigo", en: "How I prefer others to communicate with me" },
+  commDraftHint: { es: "Esto es lo que entendimos de tu Rowi Test — edítalo libremente.", en: "This is what we gathered from your Rowi Test — edit it freely." },
 
   // Acerca de mí
   aboutTitle: { es: "Acerca de Mí", en: "About Me" },
@@ -165,6 +166,32 @@ const T: Record<string, Record<string, string>> = {
   // Privacidad extras
   allowAIDesc: { es: "Permite que Rowi analice tus datos para darte mejores recomendaciones", en: "Allow Rowi to analyze your data for better recommendations" },
 };
+
+/* ====== Frases del borrador del Rowi Test (claves i18n → texto) ======
+   El CommunicationProfile sembrado por el mini-SEI guarda CLAVES (no texto);
+   aquí las resolvemos a frases editables para prellenar los estilos. */
+const COMM_DRAFT_PHRASES: Record<string, { es: string; en: string }> = {
+  "profile.comm.self.EL.high": { es: "Sé nombrar con precisión lo que siento", en: "I can name what I feel precisely" },
+  "profile.comm.self.ACT.high": { es: "Voy al grano y pienso en las consecuencias", en: "I get to the point and weigh consequences" },
+  "profile.comm.self.NE.high": { es: "Mantengo la calma cuando hay tensión", en: "I stay calm under tension" },
+  "profile.comm.self.IM.high": { es: "Me mueve un porqué propio", en: "I'm driven by my own why" },
+  "profile.comm.self.OP.high": { es: "Tiendo a ver posibilidades", en: "I tend to see possibilities" },
+  "profile.comm.self.EMP.high": { es: "Me sintonizo con cómo se siente el otro", en: "I tune into how the other feels" },
+  "profile.comm.self.NG.high": { es: "Conecto lo que hago con algo más grande", en: "I connect what I do to something bigger" },
+  "profile.comm.pref.EL.low": { es: "Dame espacio para procesar lo que siento", en: "Give me space to process what I feel" },
+  "profile.comm.pref.ACT.low": { es: "Dame contexto antes del pedido", en: "Give me context before the ask" },
+  "profile.comm.pref.NE.low": { es: "Cuida el tono cuando hay carga emocional", en: "Mind your tone when emotions run high" },
+  "profile.comm.pref.IM.low": { es: "Ayúdame a ver el sentido de las cosas", en: "Help me see the meaning behind things" },
+  "profile.comm.pref.EMP.high": { es: "Háblame con calidez", en: "Speak to me with warmth" },
+  "profile.comm.pref.EMP.low": { es: "Dime de forma explícita cómo te sientes", en: "Tell me explicitly how you feel" },
+};
+
+function resolveCommDraft(keys: unknown, lang: string): string[] {
+  if (!Array.isArray(keys)) return [];
+  return keys
+    .map((k) => COMM_DRAFT_PHRASES[String(k)]?.[lang === "en" ? "en" : "es"])
+    .filter((s): s is string => Boolean(s));
+}
 
 /* ====== Sugerencias traducibles ====== */
 const SUGGESTED_VALUES: Record<string, { es: string; en: string }[]> = {
@@ -345,6 +372,7 @@ export default function ProfileSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [commIsDraft, setCommIsDraft] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [newEmail, setNewEmail] = useState("");
   const [newEmailLabel, setNewEmailLabel] = useState<"work" | "personal" | "alt">("work");
@@ -437,6 +465,20 @@ export default function ProfileSettingsPage() {
           setPrefs((prev) => ({
             ...prev,
             ...from,
+          }));
+        }
+
+        // Cadena SIA: prellenar los estilos desde el borrador del Rowi Test.
+        const cp = prefsData?.communicationProfile;
+        if (cp) {
+          setCommIsDraft(Boolean(cp.isDraft));
+          const selfPhrases = resolveCommDraft(cp.commSelf, lang);
+          const prefPhrases = resolveCommDraft(cp.commPref, lang);
+          setPrefs((prev) => ({
+            ...prev,
+            commStyleSelf: prev.commStyleSelf?.length ? prev.commStyleSelf : selfPhrases,
+            commExpectations: prev.commExpectations?.length ? prev.commExpectations : prefPhrases,
+            tone: cp.tone && !prev.tone ? prev.tone : prev.tone,
           }));
         }
       } catch (e) {
@@ -1231,6 +1273,12 @@ export default function ProfileSettingsPage() {
             <h2 className="text-lg font-semibold">{t("commStyleTitle")}</h2>
           </div>
         </div>
+
+        {commIsDraft && (
+          <p className="text-xs text-[var(--rowi-muted)] bg-[var(--rowi-chip)] rounded-lg px-3 py-2 mb-3">
+            ✨ {t("commDraftHint")}
+          </p>
+        )}
 
         <div className="space-y-4">
           {/* Cómo me comunico */}

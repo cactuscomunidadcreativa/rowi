@@ -6503,7 +6503,9 @@ model VitalSignsScoreSource {
   contributesToBenchmark Boolean   @default(false)
   contributedAt          DateTime?
   createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  // @default(now()) además de @updatedAt: permite que `prisma db push` añada
+  // esta columna NOT NULL sobre filas ya existentes sin romper el deploy.
+  updatedAt              DateTime  @default(now()) @updatedAt
 
   @@index([scope, contributesToBenchmark])
   @@index([scope, dimension, level, sourceKind])

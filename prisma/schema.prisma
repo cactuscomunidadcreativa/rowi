@@ -188,6 +188,7 @@ model User {
   vsInferences        PulsePointInference[] @relation("VsInferenceSubject")
   vsFeedbacks         HypothesisFeedback[]  @relation("VsFeedbackRespondent")
   vsSignals           PulsePointSignal[]    @relation("VsSignalUser")
+  preSeiSessions      PreSeiSession[]       @relation("PreSeiClaim")
   vsWeightsCreated    PulsePointWeights[]   @relation("PulsePointWeightsCreator")
   debriefsFacilitated DebriefSession[]      @relation("DebriefFacilitator")
   debriefsAsSubject   DebriefSession[]      @relation("DebriefSubject")
@@ -6823,6 +6824,36 @@ model PulsePointSignal {
   @@index([teamId])
   @@index([orgId])
   @@map("pulse_point_signal")
+}
+
+/// Pre-SEI: diagnóstico EQ rápido de 8 preguntas (una por competencia SEI).
+/// Persiste respuestas ANÓNIMAS (sin userId) para poder reclamarlas al crear
+/// cuenta. Al reclamar, los datos se materializan en EqSnapshot(dataset:"pre_sei")
+/// + PulsePointSignal(source:"pre_sei") — los modelos normados existentes.
+/// `answers`/`result` son Json (no columnas Int) para evitar migraciones
+/// frágiles bajo `prisma db push --accept-data-loss`. Tabla nueva → safe.
+model PreSeiSession {
+  id              String    @id @default(cuid())
+  token           String    @unique // cuid opaco; cookie httpOnly + URL del resultado
+  locale          String    @default("es")
+  answers         Json // { EL:4, RP:3, ... } respuestas crudas 1-5
+  result          Json? // PreSeiResult cacheado (competencias, arquetipo, etc.)
+  // Demografía opcional autodeclarada para el segmento pre-normado (inclusivo).
+  ageRange        String?
+  gender          String?
+  sector          String?
+  country         String?
+  source          String    @default("public") // public | onboarding
+  ipHash          String? // hash de IP para anti-abuso (no PII cruda)
+  claimedByUserId String?
+  createdAt       DateTime  @default(now())
+  claimedAt       DateTime?
+
+  claimedBy User? @relation("PreSeiClaim", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([claimedByUserId])
+  @@index([createdAt])
+  @@map("pre_sei_session")
 }
 
 // =============================================================================

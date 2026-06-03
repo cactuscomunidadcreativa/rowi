@@ -157,6 +157,8 @@ function HubLoginContent() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t("auth.emailPlaceholder")}
+            aria-label={t("auth.email", "Correo electrónico")}
+            autoComplete="email"
             className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors"
             required
           />
@@ -165,6 +167,8 @@ function HubLoginContent() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t("auth.password")}
+            aria-label={t("auth.password", "Contraseña")}
+            autoComplete="current-password"
             className="w-full py-3 px-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-colors"
             required
           />

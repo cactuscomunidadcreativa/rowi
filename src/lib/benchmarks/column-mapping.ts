@@ -8,6 +8,9 @@
 // =========================================================
 
 export const SOH_COLUMN_MAPPING: Record<string, string> = {
+  // Equipo/cohorte de origen (columna "Project" del export de Six Seconds).
+  Project: "projectCohort",
+  "Project Name": "projectCohort",
   // Demográficos
   Country: "country",
   Countries: "country",

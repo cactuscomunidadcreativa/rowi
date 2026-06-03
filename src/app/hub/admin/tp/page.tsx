@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -65,8 +65,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "Benchmark TP",
-    benchmarkDesc: "14,886 evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.",
-    benchmarkFeat1: "14,886 Evaluaciones",
+    benchmarkDesc: "{count} evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.",
+    benchmarkFeat1: "{count} Evaluaciones",
     benchmarkFeat2: "42 Países",
     benchmarkFeat3: "Insights Regionales",
     benchmarkFeat4: "Perfiles Cerebrales",
@@ -177,8 +177,9 @@ const translations = {
 
     // Footer
     footerText:
-      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de 14,886 evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
+      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Plataforma de Inteligencia Emocional con IA",
+    noData: "—",
   },
   en: {
     // Header
@@ -207,8 +208,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -319,8 +320,9 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
   pt: {
     // Header
@@ -349,8 +351,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -461,8 +463,9 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
   it: {
     // Header
@@ -491,8 +494,8 @@ const translations = {
 
     // Module: Benchmark
     benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "14,886 real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "14,886 Assessments",
+    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
+    benchmarkFeat1: "{count} Assessments",
     benchmarkFeat2: "42 Countries",
     benchmarkFeat3: "Regional Insights",
     benchmarkFeat4: "Brain Profiles",
@@ -603,22 +606,64 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
     footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+    noData: "—",
   },
 
 };
+
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 export default function TPAdminHub() {
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
+  // --- Live data from the real benchmark API ---
+  const [avgEQ, setAvgEQ] = useState<number | null>(null);
+  const [totalAssessments, setTotalAssessments] = useState<number | null>(null);
+  const [countryCount, setCountryCount] = useState<number | null>(null);
+  const [brainStyleCount, setBrainStyleCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadData() {
+      try {
+        const [statsRes, countryRes, brainRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=country`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=brainStyle`),
+        ]);
+        const statsJson = await statsRes.json();
+        const countryJson = await countryRes.json();
+        const brainJson = await brainRes.json();
+        if (cancelled) return;
+        if (statsJson.ok) {
+          const eq = (statsJson.statistics ?? []).find((s: { metricKey: string }) => s.metricKey === "eqTotal");
+          if (eq) {
+            setAvgEQ(eq.mean ?? null);
+            setTotalAssessments(eq.n ?? null);
+          }
+        }
+        if (countryJson.ok) setCountryCount(countryJson.totalGroups ?? null);
+        if (brainJson.ok) setBrainStyleCount(brainJson.totalGroups ?? null);
+      } catch (e) {
+        console.error("Error loading TP hub stats:", e);
+      }
+    }
+    loadData();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fmt = (v: number | null, digits = 0) =>
+    v === null ? t.noData : digits ? v.toFixed(digits) : v.toLocaleString();
+
   const TP_QUICK_STATS = [
-    { icon: Activity, value: "98.7", label: t.statAvgEQ, color: "#7B2D8E" },
-    { icon: Users, value: "14,886", label: t.statAssessments, color: "#3b82f6" },
-    { icon: Globe, value: "42", label: t.statCountries, color: "#10b981" },
-    { icon: Brain, value: "7", label: t.statBrainProfiles, color: "#f59e0b" },
+    { icon: Activity, value: fmt(avgEQ, 1), label: t.statAvgEQ, color: "#7B2D8E" },
+    { icon: Users, value: fmt(totalAssessments), label: t.statAssessments, color: "#3b82f6" },
+    { icon: Globe, value: fmt(countryCount), label: t.statCountries, color: "#10b981" },
+    { icon: Brain, value: fmt(brainStyleCount), label: t.statBrainProfiles, color: "#f59e0b" },
   ];
 
   const modules = [
@@ -627,7 +672,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/dashboard",
       icon: LayoutDashboard,
       gradient: "from-violet-500 to-purple-600",
-      image: "/rowivectors/Rowi-06.png",
+      image: "/rowivectors/Rowi-06.webp",
       title: t.dashboardTitle,
       desc: t.dashboardDesc,
       features: [t.dashboardFeat1, t.dashboardFeat2, t.dashboardFeat3, t.dashboardFeat4],
@@ -637,17 +682,17 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/benchmark",
       icon: BarChart3,
       gradient: "from-purple-600 to-pink-600",
-      image: "/rowivectors/Rowi-01.png",
+      image: "/rowivectors/Rowi-01.webp",
       title: t.benchmarkTitle,
-      desc: t.benchmarkDesc,
-      features: [t.benchmarkFeat1, t.benchmarkFeat2, t.benchmarkFeat3, t.benchmarkFeat4],
+      desc: t.benchmarkDesc.replace("{count}", fmt(totalAssessments)),
+      features: [t.benchmarkFeat1.replace("{count}", fmt(totalAssessments)), t.benchmarkFeat2, t.benchmarkFeat3, t.benchmarkFeat4],
     },
     {
       key: "affinity",
       href: "/hub/admin/tp/affinity",
       icon: Heart,
       gradient: "from-pink-500 to-rose-600",
-      image: "/rowivectors/Rowi-05.png",
+      image: "/rowivectors/Rowi-05.webp",
       title: t.affinityTitle,
       desc: t.affinityDesc,
       features: [t.affinityFeat1, t.affinityFeat2, t.affinityFeat3, t.affinityFeat4],
@@ -657,7 +702,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/eco",
       icon: MessageSquare,
       gradient: "from-emerald-500 to-green-600",
-      image: "/rowivectors/Rowi-04.png",
+      image: "/rowivectors/Rowi-04.webp",
       title: t.ecoTitle,
       desc: t.ecoDesc,
       features: [t.ecoFeat1, t.ecoFeat2, t.ecoFeat3, t.ecoFeat4],
@@ -667,7 +712,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/coach",
       icon: Bot,
       gradient: "from-blue-500 to-cyan-600",
-      image: "/rowivectors/Rowi-03.png",
+      image: "/rowivectors/Rowi-03.webp",
       title: t.coachTitle,
       desc: t.coachDesc,
       features: [t.coachFeat1, t.coachFeat2, t.coachFeat3, t.coachFeat4],
@@ -677,7 +722,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/community",
       icon: Users,
       gradient: "from-amber-500 to-orange-600",
-      image: "/rowivectors/Rowi-02.png",
+      image: "/rowivectors/Rowi-02.webp",
       title: t.communityTitle,
       desc: t.communityDesc,
       features: [t.communityFeat1, t.communityFeat2, t.communityFeat3, t.communityFeat4],
@@ -687,7 +732,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/onboarding",
       icon: GraduationCap,
       gradient: "from-indigo-500 to-violet-600",
-      image: "/rowivectors/Rowi-06.png",
+      image: "/rowivectors/Rowi-06.webp",
       title: t.onboardingTitle,
       desc: t.onboardingDesc,
       features: [t.onboardingFeat1, t.onboardingFeat2, t.onboardingFeat3, t.onboardingFeat4],
@@ -697,7 +742,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/people",
       icon: GitCompareArrows,
       gradient: "from-cyan-500 to-blue-600",
-      image: "/rowivectors/Rowi-01.png",
+      image: "/rowivectors/Rowi-01.webp",
       title: t.peopleTitle,
       desc: t.peopleDesc,
       features: [t.peopleFeat1, t.peopleFeat2, t.peopleFeat3, t.peopleFeat4],
@@ -707,7 +752,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/teams",
       icon: Users,
       gradient: "from-teal-500 to-emerald-600",
-      image: "/rowivectors/Rowi-02.png",
+      image: "/rowivectors/Rowi-02.webp",
       title: t.teamsTitle,
       desc: t.teamsDesc,
       features: [t.teamsFeat1, t.teamsFeat2, t.teamsFeat3, t.teamsFeat4],
@@ -717,7 +762,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/selection",
       icon: UserCheck,
       gradient: "from-lime-500 to-green-600",
-      image: "/rowivectors/Rowi-03.png",
+      image: "/rowivectors/Rowi-03.webp",
       title: t.selectionTitle,
       desc: t.selectionDesc,
       features: [t.selectionFeat1, t.selectionFeat2, t.selectionFeat3, t.selectionFeat4],
@@ -727,7 +772,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/evolution",
       icon: LineChart,
       gradient: "from-sky-500 to-blue-600",
-      image: "/rowivectors/Rowi-04.png",
+      image: "/rowivectors/Rowi-04.webp",
       title: t.evolutionTitle,
       desc: t.evolutionDesc,
       features: [t.evolutionFeat1, t.evolutionFeat2, t.evolutionFeat3, t.evolutionFeat4],
@@ -737,7 +782,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/roi",
       icon: Target,
       gradient: "from-yellow-500 to-amber-600",
-      image: "/rowivectors/Rowi-05.png",
+      image: "/rowivectors/Rowi-05.webp",
       title: t.roiTitle,
       desc: t.roiDesc,
       features: [t.roiFeat1, t.roiFeat2, t.roiFeat3, t.roiFeat4],
@@ -747,7 +792,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/world",
       icon: Globe,
       gradient: "from-emerald-500 to-teal-600",
-      image: "/rowivectors/Rowi-06.png",
+      image: "/rowivectors/Rowi-06.webp",
       title: t.worldTitle,
       desc: t.worldDesc,
       features: [t.worldFeat1, t.worldFeat2, t.worldFeat3, t.worldFeat4],
@@ -757,7 +802,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/alerts",
       icon: AlertTriangle,
       gradient: "from-red-500 to-rose-600",
-      image: "/rowivectors/Rowi-01.png",
+      image: "/rowivectors/Rowi-01.webp",
       title: t.alertsTitle,
       desc: t.alertsDesc,
       features: [t.alertsFeat1, t.alertsFeat2, t.alertsFeat3, t.alertsFeat4],
@@ -767,7 +812,7 @@ export default function TPAdminHub() {
       href: "/hub/admin/tp/data-quality",
       icon: Database,
       gradient: "from-slate-500 to-gray-600",
-      image: "/rowivectors/Rowi-02.png",
+      image: "/rowivectors/Rowi-02.webp",
       title: t.dataQualityTitle,
       desc: t.dataQualityDesc,
       features: [t.dataQualityFeat1, t.dataQualityFeat2, t.dataQualityFeat3, t.dataQualityFeat4],
@@ -891,7 +936,7 @@ export default function TPAdminHub() {
       >
         <Shield className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
         <div>
-          <p>{t.footerText}</p>
+          <p>{t.footerText.replace("{count}", fmt(totalAssessments))}</p>
           <p className="text-xs mt-1 text-purple-400">
             Rowi SIA &copy; {new Date().getFullYear()} &mdash; {t.footerCopyright}
           </p>

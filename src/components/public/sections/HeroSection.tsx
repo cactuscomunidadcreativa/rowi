@@ -379,7 +379,7 @@ function SplitHero({ content, config }: { content: HeroContent; config?: HeroCon
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--rowi-g1)]/40 to-[var(--rowi-g2)]/40 blur-3xl" />
                 {/* Circular frame crops the PNG's solid background block */}
                 <div className="absolute inset-[6%] rounded-full overflow-hidden bg-gradient-to-br from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 ring-1 ring-white/30 dark:ring-white/10 shadow-2xl z-10">
-                  <Image src={content.image} alt="Rowi" fill sizes="(max-width: 1024px) 24rem, 28rem" className="object-cover scale-110" />
+                  <Image src={content.image} alt="Rowi" fill priority sizes="(max-width: 1024px) 24rem, 28rem" className="object-cover scale-110" />
                 </div>
               </>
             )}

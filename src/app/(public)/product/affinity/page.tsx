@@ -23,7 +23,7 @@ export default function ProductAffinityPage() {
           ctaPrimaryHref: "/register",
           ctaSecondary: lang !== "es" ? "See how it works" : "Ver cómo funciona",
           ctaSecondaryHref: "#how-it-works",
-          image: "/rowivectors/Rowi-06.png"
+          image: "/rowivectors/Rowi-06.webp"
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />

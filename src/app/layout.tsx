@@ -4,8 +4,15 @@ import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
 export const metadata = {
-  title: "Rowi SIA",
-  description: "App de Inteligencia Emocional",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.rowiia.com"
+  ),
+  title: {
+    default: "Rowi — Inteligencia emocional con IA y metodología Six Seconds",
+    template: "%s · Rowi",
+  },
+  description:
+    "Rowi convierte tus señales emocionales diarias en acciones concretas para personas, familias y equipos, con privacidad y metodología Six Seconds.",
   icons: {
     icon: [
       { url: "/owl.png?v=4", type: "image/png", sizes: "any" },

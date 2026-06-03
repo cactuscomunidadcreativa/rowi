@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -21,6 +21,7 @@ import {
   BarChart3,
   Globe,
   Shield,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -32,7 +33,7 @@ const translations = {
     backToHub: "TP Hub",
     badgeEQDashboard: "EQ Dashboard",
     pageTitle: "Teleperformance EQ Dashboard",
-    pageSubtitle: "Métricas agregadas de inteligencia emocional de 14,886 evaluaciones SEI en 42 países",
+    pageSubtitle: "Métricas agregadas de inteligencia emocional de {count} evaluaciones SEI en {countries} países",
     levelEnterprise: "Enterprise",
     assessments: "evaluaciones",
     globalEQAverage: "Promedio EQ Global",
@@ -62,18 +63,21 @@ const translations = {
     outcomeWellbeing: "Bienestar",
     outcomeQuality: "Calidad de Vida",
     infoTitle: "Datos TP en Vivo",
-    infoDesc: "Este dashboard muestra datos reales agregados de 14,886 evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Escala SEI: 65–135.",
+    infoDesc: "Este dashboard muestra datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Escala SEI: 65–135.",
     navBenchmark: "Benchmark",
     regionNorthAmerica: "Norteamérica",
     regionAsiaPacific: "Asia Pacífico",
     regionEMEA: "EMEA",
     regionLatinAmerica: "Latinoamérica",
+    loading: "Cargando datos del benchmark...",
+    emptyBenchmark: "Sin datos de benchmark todavía",
+    noData: "—",
   },
   en: {
     backToHub: "TP Hub",
     badgeEQDashboard: "EQ Dashboard",
     pageTitle: "Teleperformance EQ Dashboard",
-    pageSubtitle: "Aggregated emotional intelligence metrics from 14,886 SEI assessments across 42 countries",
+    pageSubtitle: "Aggregated emotional intelligence metrics from {count} SEI assessments across {countries} countries",
     levelEnterprise: "Enterprise",
     assessments: "assessments",
     globalEQAverage: "Global EQ Average",
@@ -103,18 +107,21 @@ const translations = {
     outcomeWellbeing: "Wellbeing",
     outcomeQuality: "Quality of Life",
     infoTitle: "Live TP Data",
-    infoDesc: "This dashboard shows real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
+    infoDesc: "This dashboard shows real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
     navBenchmark: "Benchmark",
     regionNorthAmerica: "North America",
     regionAsiaPacific: "Asia Pacific",
     regionEMEA: "EMEA",
     regionLatinAmerica: "Latin America",
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
   },
   pt: {
     backToHub: "TP Hub",
     badgeEQDashboard: "EQ Dashboard",
     pageTitle: "Teleperformance EQ Dashboard",
-    pageSubtitle: "Aggregated emotional intelligence metrics from 14,886 SEI assessments across 42 countries",
+    pageSubtitle: "Aggregated emotional intelligence metrics from {count} SEI assessments across {countries} countries",
     levelEnterprise: "Enterprise",
     assessments: "assessments",
     globalEQAverage: "Global EQ Average",
@@ -144,18 +151,21 @@ const translations = {
     outcomeWellbeing: "Wellbeing",
     outcomeQuality: "Quality of Life",
     infoTitle: "Live TP Data",
-    infoDesc: "This dashboard shows real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
+    infoDesc: "This dashboard shows real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
     navBenchmark: "Benchmark",
     regionNorthAmerica: "North America",
     regionAsiaPacific: "Asia Pacific",
     regionEMEA: "EMEA",
     regionLatinAmerica: "Latin America",
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
   },
   it: {
     backToHub: "TP Hub",
     badgeEQDashboard: "EQ Dashboard",
     pageTitle: "Teleperformance EQ Dashboard",
-    pageSubtitle: "Aggregated emotional intelligence metrics from 14,886 SEI assessments across 42 countries",
+    pageSubtitle: "Aggregated emotional intelligence metrics from {count} SEI assessments across {countries} countries",
     levelEnterprise: "Enterprise",
     assessments: "assessments",
     globalEQAverage: "Global EQ Average",
@@ -185,12 +195,15 @@ const translations = {
     outcomeWellbeing: "Wellbeing",
     outcomeQuality: "Quality of Life",
     infoTitle: "Live TP Data",
-    infoDesc: "This dashboard shows real aggregated data from 14,886 Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
+    infoDesc: "This dashboard shows real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
     navBenchmark: "Benchmark",
     regionNorthAmerica: "North America",
     regionAsiaPacific: "Asia Pacific",
     regionEMEA: "EMEA",
     regionLatinAmerica: "Latin America",
+    loading: "Loading benchmark data...",
+    emptyBenchmark: "No benchmark data yet",
+    noData: "—",
   },
 
 };
@@ -200,46 +213,63 @@ const translations = {
    Shows aggregated TP data in individual dashboard format
 ========================================================= */
 
-const TP_USER = {
+const TP_BENCHMARK_ID = "tp-all-assessments-2025";
+
+interface StatItem {
+  metricKey: string;
+  n: number;
+  mean: number;
+  median: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+  p95: number;
+}
+
+interface GroupBucket {
+  name: string;
+  count: number;
+  metrics: Record<string, { mean: number; median: number; min: number; max: number; stdDev: number }>;
+}
+
+// Static identity (non-metric) for the aggregate org card
+const TP_USER_IDENTITY = {
   name: "TP Global Organization",
-  avatar: "/rowivectors/Rowi-01.png",
+  avatar: "/rowivectors/Rowi-01.webp",
   level: "Enterprise",
-  eqTotal: 98.7,
   eqMax: 135,
   eqMin: 65,
-  totalAssessments: 14886,
 };
 
-const TP_PURSUITS = {
-  know: { score: 98.3, max: 135, min: 65, color: "#3b82f6" },
-  choose: { score: 98.8, max: 135, min: 65, color: "#10b981" },
-  give: { score: 98.2, max: 135, min: 65, color: "#f59e0b" },
+type CompTKey = "compEL" | "compRP" | "compACT" | "compNE" | "compIM" | "compOP" | "compEMP" | "compNG";
+type OutcomeTKey = "outcomeEffectiveness" | "outcomeRelationships" | "outcomeWellbeing" | "outcomeQuality";
+
+interface CompetencyDatum {
+  key: string;
+  tKey: CompTKey;
+  score: number;
+  max: number;
+  pursuit: string;
+  topPerformer: number;
+}
+
+interface OutcomeDatum {
+  key: string;
+  tKey: OutcomeTKey;
+  score: number;
+}
+
+const REGION_FLAGS: Record<string, string> = {
+  "North America": "\u{1F30E}", "NA": "\u{1F30E}",
+  "Latin America": "\u{1F30E}", "LATAM": "\u{1F30E}",
+  "EMEA": "\u{1F30D}", "Europe": "\u{1F30D}",
+  "Asia Pacific": "\u{1F30F}", "APAC": "\u{1F30F}",
 };
-
-const TP_COMPETENCIES = [
-  { key: "EL", tKey: "compEL" as const, score: 97.3, max: 135, pursuit: "know", topPerformer: 118.2 },
-  { key: "RP", tKey: "compRP" as const, score: 99.1, max: 135, pursuit: "know", topPerformer: 116.8 },
-  { key: "ACT", tKey: "compACT" as const, score: 98.4, max: 135, pursuit: "know", topPerformer: 119.5 },
-  { key: "NE", tKey: "compNE" as const, score: 96.8, max: 135, pursuit: "choose", topPerformer: 117.1 },
-  { key: "IM", tKey: "compIM" as const, score: 100.2, max: 135, pursuit: "choose", topPerformer: 115.9 },
-  { key: "OP", tKey: "compOP" as const, score: 99.5, max: 135, pursuit: "choose", topPerformer: 116.3 },
-  { key: "EMP", tKey: "compEMP" as const, score: 98.9, max: 135, pursuit: "give", topPerformer: 118.7 },
-  { key: "NG", tKey: "compNG" as const, score: 97.6, max: 135, pursuit: "give", topPerformer: 114.2 },
-];
-
-const TP_OUTCOMES = [
-  { key: "effectiveness", tKey: "outcomeEffectiveness" as const, score: 101.2 },
-  { key: "relationships", tKey: "outcomeRelationships" as const, score: 99.8 },
-  { key: "wellbeing", tKey: "outcomeWellbeing" as const, score: 97.4 },
-  { key: "quality", tKey: "outcomeQuality" as const, score: 98.1 },
-];
-
-const TP_REGIONS = [
-  { tKey: "regionNorthAmerica" as const, count: 5214, avgEQ: 99.8, flag: "\u{1F1FA}\u{1F1F8}" },
-  { tKey: "regionAsiaPacific" as const, count: 3872, avgEQ: 97.2, flag: "\u{1F1F5}\u{1F1ED}" },
-  { tKey: "regionEMEA" as const, count: 3418, avgEQ: 99.1, flag: "\u{1F1EC}\u{1F1E7}" },
-  { tKey: "regionLatinAmerica" as const, count: 2382, avgEQ: 98.4, flag: "\u{1F1F2}\u{1F1FD}" },
-];
 
 /* =========================================================
    Components
@@ -304,7 +334,7 @@ function PursuitBar({ pursuit, label }: { pursuit: { score: number; max: number;
   );
 }
 
-function CompetencyCard({ comp, name, avgLabel, topLabel }: { comp: typeof TP_COMPETENCIES[0]; name: string; avgLabel: string; topLabel: string }) {
+function CompetencyCard({ comp, name, avgLabel, topLabel }: { comp: CompetencyDatum; name: string; avgLabel: string; topLabel: string }) {
   const percentage = ((comp.score - 65) / 70) * 100;
   const topPercentage = ((comp.topPerformer - 65) / 70) * 100;
   const pursuitColors: Record<string, string> = { know: "#3b82f6", choose: "#10b981", give: "#f59e0b" };
@@ -347,7 +377,7 @@ function CompetencyCard({ comp, name, avgLabel, topLabel }: { comp: typeof TP_CO
   );
 }
 
-function OutcomeCard({ outcome, name }: { outcome: typeof TP_OUTCOMES[0]; name: string }) {
+function OutcomeCard({ outcome, name }: { outcome: OutcomeDatum; name: string }) {
   const percentage = ((outcome.score - 65) / 70) * 100;
 
   return (
@@ -378,6 +408,125 @@ export default function TPDashboardPage() {
   const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
+  // --- Live data from the real benchmark API ---
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [regionGroups, setRegionGroups] = useState<GroupBucket[]>([]);
+  const [countryCount, setCountryCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [statsRes, regionRes, countryRes] = await Promise.all([
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=region`),
+          fetch(`/api/admin/benchmarks/${TP_BENCHMARK_ID}/stats/grouped?groupBy=country`),
+        ]);
+        const statsJson = await statsRes.json();
+        const regionJson = await regionRes.json();
+        const countryJson = await countryRes.json();
+        if (cancelled) return;
+        if (statsJson.ok) setStats(statsJson.statistics ?? []);
+        if (regionJson.ok) setRegionGroups(regionJson.groups ?? []);
+        if (countryJson.ok) setCountryCount(countryJson.totalGroups ?? 0);
+      } catch (e) {
+        console.error("Error loading dashboard data:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadData();
+    return () => { cancelled = true; };
+  }, []);
+
+  const getStat = (key: string) => stats.find((s) => s.metricKey === key);
+  const hasData = stats.length > 0;
+
+  const eqStat = getStat("eqTotal");
+  const totalAssessments = eqStat?.n ?? 0;
+  const avgEQ = eqStat?.mean ?? 0;
+
+  const meanOf = (keys: string[]) => {
+    const vals = keys.map((k) => getStat(k)?.mean ?? 0).filter((v) => v > 0);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  };
+
+  const TP_PURSUITS = useMemo(() => ({
+    know: { score: meanOf(["EL", "RP", "ACT"]), max: 135, min: 65, color: "#3b82f6" },
+    choose: { score: meanOf(["NE", "IM", "OP"]), max: 135, min: 65, color: "#10b981" },
+    give: { score: meanOf(["EMP", "NG"]), max: 135, min: 65, color: "#f59e0b" },
+  }), [stats]);
+
+  const TP_COMPETENCIES = useMemo<CompetencyDatum[]>(() => {
+    const defs: { key: string; tKey: CompTKey; pursuit: string }[] = [
+      { key: "EL", tKey: "compEL", pursuit: "know" },
+      { key: "RP", tKey: "compRP", pursuit: "know" },
+      { key: "ACT", tKey: "compACT", pursuit: "know" },
+      { key: "NE", tKey: "compNE", pursuit: "choose" },
+      { key: "IM", tKey: "compIM", pursuit: "choose" },
+      { key: "OP", tKey: "compOP", pursuit: "choose" },
+      { key: "EMP", tKey: "compEMP", pursuit: "give" },
+      { key: "NG", tKey: "compNG", pursuit: "give" },
+    ];
+    return defs.map((d) => {
+      const s = getStat(d.key);
+      return { ...d, max: 135, score: s?.mean ?? 0, topPerformer: s?.p90 ?? 0 };
+    });
+  }, [stats]);
+
+  const TP_OUTCOMES = useMemo<OutcomeDatum[]>(() => [
+    { key: "effectiveness", tKey: "outcomeEffectiveness", score: getStat("effectiveness")?.mean ?? 0 },
+    { key: "relationships", tKey: "outcomeRelationships", score: getStat("relationships")?.mean ?? 0 },
+    { key: "wellbeing", tKey: "outcomeWellbeing", score: getStat("wellbeing")?.mean ?? 0 },
+    { key: "quality", tKey: "outcomeQuality", score: getStat("qualityOfLife")?.mean ?? 0 },
+  ], [stats]);
+
+  const TP_REGIONS = useMemo(() =>
+    regionGroups.map((g) => ({
+      name: g.name,
+      count: g.count,
+      avgEQ: g.metrics.eqTotal?.mean ?? 0,
+      flag: REGION_FLAGS[g.name] ?? "\u{1F310}",
+    })), [regionGroups]);
+
+  const headerBlock = (
+    <div>
+      <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
+        <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+      </Link>
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
+        <Sparkles className="w-3 h-3" /> {t.badgeEQDashboard}
+      </span>
+      <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        {headerBlock}
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Loader2 className="w-10 h-10 text-purple-500 animate-spin" />
+          <p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="space-y-8">
+        {headerBlock}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-12 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
+          <BarChart3 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3 opacity-50" />
+          <p className="text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -392,7 +541,11 @@ export default function TPDashboardPage() {
               <Sparkles className="w-3 h-3" /> {t.badgeEQDashboard}
             </span>
             <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-            <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+            <p className="text-[var(--rowi-muted)]">
+              {t.pageSubtitle
+                .replace("{count}", totalAssessments.toLocaleString())
+                .replace("{countries}", countryCount > 0 ? String(countryCount) : t.noData)}
+            </p>
           </div>
 
           <motion.div
@@ -401,10 +554,10 @@ export default function TPDashboardPage() {
             className="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-zinc-800 flex items-center gap-4"
           >
             <div className="relative w-16 h-16">
-              <Image src={TP_USER.avatar} alt="TP" fill className="object-contain" />
+              <Image src={TP_USER_IDENTITY.avatar} alt="TP" fill className="object-contain" />
             </div>
             <div>
-              <div className="font-bold text-lg">{TP_USER.name}</div>
+              <div className="font-bold text-lg">{TP_USER_IDENTITY.name}</div>
               <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                 <Award className="w-3 h-3" /> {t.levelEnterprise}
               </div>
@@ -414,22 +567,28 @@ export default function TPDashboardPage() {
       </div>
 
       {/* Quick Stats */}
+      {TP_REGIONS.length === 0 ? (
+        <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
+          <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {TP_REGIONS.map((region, i) => (
           <motion.div
-            key={region.tKey}
+            key={region.name}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
             className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 text-center"
           >
             <span className="text-2xl block mb-1">{region.flag}</span>
-            <div className="text-xs text-[var(--rowi-muted)] mb-1">{t[region.tKey]}</div>
+            <div className="text-xs text-[var(--rowi-muted)] mb-1">{region.name}</div>
             <div className="text-lg font-bold text-purple-600">{region.avgEQ.toFixed(1)}</div>
             <div className="text-[10px] text-[var(--rowi-muted)]">{region.count.toLocaleString()} {t.assessments}</div>
           </motion.div>
         ))}
       </div>
+      )}
 
       {/* EQ Score + Pursuits */}
       <div className="grid lg:grid-cols-2 gap-8">
@@ -438,10 +597,10 @@ export default function TPDashboardPage() {
             <Brain className="w-5 h-5 text-purple-500" /> {t.globalEQAverage}
           </h2>
           <div className="flex items-center justify-center">
-            <EQCircle score={TP_USER.eqTotal} max={TP_USER.eqMax} min={TP_USER.eqMin} avgLabel={t.tpGlobalAvg} />
+            <EQCircle score={avgEQ} max={TP_USER_IDENTITY.eqMax} min={TP_USER_IDENTITY.eqMin} avgLabel={t.tpGlobalAvg} />
           </div>
           <p className="text-xs text-[var(--rowi-muted)] text-center mt-4">
-            {t.seiScaleLabel.replace("{count}", TP_USER.totalAssessments.toLocaleString())}
+            {t.seiScaleLabel.replace("{count}", totalAssessments.toLocaleString())}
           </p>
         </motion.div>
 
@@ -494,7 +653,7 @@ export default function TPDashboardPage() {
         <div>
           <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t.infoTitle}</h3>
           <p className="text-sm text-purple-700 dark:text-purple-300">
-            {t.infoDesc}
+            {t.infoDesc.replace("{count}", totalAssessments.toLocaleString())}
           </p>
         </div>
       </motion.div>

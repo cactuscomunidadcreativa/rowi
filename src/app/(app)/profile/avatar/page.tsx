@@ -37,7 +37,7 @@ interface SeiLevel {
 const SEI_LEVELS: SeiLevel[] = [
   {
     key: "challenge",
-    image: "/rowivectors/Rowi-01.png",
+    image: "/rowivectors/Rowi-01.webp",
     name: { es: "Desafío", en: "Challenge" },
     emoji: "🧩",
     color: "#ef4444",
@@ -53,7 +53,7 @@ const SEI_LEVELS: SeiLevel[] = [
   },
   {
     key: "emerging",
-    image: "/rowivectors/Rowi-02.png",
+    image: "/rowivectors/Rowi-02.webp",
     name: { es: "Emergente", en: "Emerging" },
     emoji: "🌱",
     color: "#f59e0b",
@@ -69,7 +69,7 @@ const SEI_LEVELS: SeiLevel[] = [
   },
   {
     key: "functional",
-    image: "/rowivectors/Rowi-04.png",
+    image: "/rowivectors/Rowi-04.webp",
     name: { es: "Funcional", en: "Functional" },
     emoji: "🧠",
     color: "#3b82f6",
@@ -85,7 +85,7 @@ const SEI_LEVELS: SeiLevel[] = [
   },
   {
     key: "skilled",
-    image: "/rowivectors/Rowi-05.png",
+    image: "/rowivectors/Rowi-05.webp",
     name: { es: "Diestro", en: "Skilled" },
     emoji: "🎯",
     color: "#8b5cf6",
@@ -101,7 +101,7 @@ const SEI_LEVELS: SeiLevel[] = [
   },
   {
     key: "expert",
-    image: "/rowivectors/Rowi-06.png",
+    image: "/rowivectors/Rowi-06.webp",
     name: { es: "Experto", en: "Expert" },
     emoji: "🌟",
     color: "#10b981",
@@ -203,7 +203,7 @@ export default function AvatarPage() {
             transition={{ duration: 2, repeat: Infinity }}
           >
             <Image
-              src="/rowivectors/Rowi-01.png"
+              src="/rowivectors/Rowi-01.webp"
               alt="Loading Rowi"
               width={120}
               height={120}
@@ -274,7 +274,7 @@ export default function AvatarPage() {
             className="bg-white dark:bg-zinc-800 rounded-3xl shadow-xl p-12 text-center"
           >
             <Image
-              src="/rowivectors/Rowi-01.png"
+              src="/rowivectors/Rowi-01.webp"
               alt="Rowi"
               width={160}
               height={160}

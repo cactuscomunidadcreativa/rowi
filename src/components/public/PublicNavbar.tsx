@@ -62,20 +62,47 @@ export default function PublicNavbar() {
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-1">
           {navItems.map((item) => (
-            <div key={item.href} className="relative" onMouseEnter={() => item.children && setOpenDropdown(item.href)} onMouseLeave={() => setOpenDropdown(null)}>
-              <Link
-                href={item.children ? "#" : item.href}
-                className={"px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 " + (pathname === item.href ? "text-[var(--rowi-g2)]" : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)]")}
-                onClick={(e) => item.children && e.preventDefault()}
-              >
-                {t(item.labelKey, item.labelKey)}
-                {item.children && <ChevronDown className="w-4 h-4" />}
-              </Link>
-              
+            <div
+              key={item.href}
+              className="relative"
+              onMouseEnter={() => item.children && setOpenDropdown(item.href)}
+              onMouseLeave={() => setOpenDropdown(null)}
+              onKeyDown={(e) => {
+                // Escape cierra el dropdown abierto (a11y teclado).
+                if (e.key === "Escape" && openDropdown === item.href) {
+                  setOpenDropdown(null);
+                }
+              }}
+            >
+              {item.children ? (
+                // Trigger con submenú → botón real (no <a href="#">), con
+                // aria-expanded/haspopup y toggle por teclado (Enter/Espacio).
+                <button
+                  type="button"
+                  aria-expanded={openDropdown === item.href}
+                  aria-haspopup="menu"
+                  onClick={() =>
+                    setOpenDropdown(openDropdown === item.href ? null : item.href)
+                  }
+                  className={"px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 " + (pathname === item.href ? "text-[var(--rowi-g2)]" : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)]")}
+                >
+                  {t(item.labelKey, item.labelKey)}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              ) : (
+                <Link
+                  href={item.href}
+                  className={"px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 " + (pathname === item.href ? "text-[var(--rowi-g2)]" : "text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)]")}
+                >
+                  {t(item.labelKey, item.labelKey)}
+                </Link>
+              )}
+
               {/* Dropdown */}
               <AnimatePresence>
                 {item.children && openDropdown === item.href && (
                   <motion.div
+                    role="menu"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
@@ -85,6 +112,8 @@ export default function PublicNavbar() {
                       <Link
                         key={child.href}
                         href={child.href}
+                        role="menuitem"
+                        onClick={() => setOpenDropdown(null)}
                         className="block px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[var(--rowi-g2)] hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                       >
                         {t(child.labelKey, child.labelKey)}

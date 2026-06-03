@@ -16,7 +16,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { requireAuth } from "@/core/auth/requireAdmin";
+import { getServerAuthUser } from "@/core/auth";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
 import { getSlackConfig, getSlackRedirectUri } from "@/lib/slack/config";
 import { secureLog } from "@/lib/logging";
 
@@ -38,14 +39,30 @@ const SLACK_SCOPES = [
 const STATE_COOKIE = "slack_oauth_state";
 
 export async function GET(req: NextRequest) {
-  // 1) Debe estar logueado. requireAuth devuelve { user, error }.
-  const auth = await requireAuth();
-  if (auth.error) {
-    // Para una navegación de browser, redirigir a /signin con callback
-    // en lugar de devolver 401 JSON.
+  // 1) Debe estar logueado Y ser admin (SuperAdmin O admin con scope que
+  // nosotros autorizamos vía UserPermission / HUB_ADMINS). Slack exige que
+  // quien instale sea admin del workspace de Slack, que no es necesariamente
+  // nuestro SuperAdmin — por eso permitimos cualquier admin autorizado, no
+  // solo SuperAdmin.
+  const user = await getServerAuthUser();
+
+  if (!user) {
+    // Sin sesión: es una navegación de browser → mandar a /signin con
+    // callback en lugar de mostrar 401 JSON crudo. (El middleware ya
+    // redirige también, esto es la segunda capa de defensa.)
     const signin = new URL("/signin", req.url);
     signin.searchParams.set("callbackUrl", "/api/integrations/slack/install");
     return NextResponse.redirect(signin);
+  }
+
+  const admin = await requireAdminWithScope();
+  if (admin.error) {
+    // Logueado pero sin permisos de admin: NO mandar a login (haría un loop).
+    // Llevar al panel de integraciones con un aviso legible.
+    secureLog.warn("slack.install.forbidden", { userId: user.id });
+    const dest = new URL("/hub/admin/integrations", req.url);
+    dest.searchParams.set("slack", "forbidden");
+    return NextResponse.redirect(dest);
   }
 
   // 2) Config Slack (SystemConfig → env). Sin clientId no hay flujo.

@@ -15,8 +15,6 @@ import {
   Brain,
   Users,
   TrendingUp,
-  Building2,
-  BarChart3,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -198,36 +196,31 @@ const modules = [
     href: "/demo/dashboard",
     icon: LayoutDashboard,
     gradient: "from-violet-500 to-purple-600",
-    image: "/rowivectors/Rowi-06.png",
+    image: "/rowivectors/Rowi-06.webp",
   },
   {
     key: "affinity",
     href: "/demo/affinity",
     icon: Heart,
     gradient: "from-pink-500 to-rose-600",
-    image: "/rowivectors/Rowi-05.png",
+    image: "/rowivectors/Rowi-05.webp",
   },
   {
     key: "eco",
     href: "/demo/eco",
     icon: MessageSquare,
     gradient: "from-emerald-500 to-green-600",
-    image: "/rowivectors/Rowi-04.png",
+    image: "/rowivectors/Rowi-04.webp",
   },
   {
     key: "coach",
     href: "/demo/coach",
     icon: Bot,
     gradient: "from-blue-500 to-cyan-600",
-    image: "/rowivectors/Rowi-03.png",
+    image: "/rowivectors/Rowi-03.webp",
   },
-  {
-    key: "tp",
-    href: "/hub/admin/tp",
-    icon: BarChart3,
-    gradient: "from-purple-600 to-pink-600",
-    image: "/rowivectors/Rowi-01.png",
-  },
+  // El demo organizacional "TP" se retiró de la vista pública. Vive ahora
+  // solo en la zona admin (/hub/admin/tp) como reportes/data para HR.
 ];
 
 export default function DemoPage() {

@@ -651,7 +651,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
         <div className="flex items-center gap-3 mb-4">
           <Image
-            src="/rowivectors/Rowi-06.png"
+            src="/rowivectors/Rowi-06.webp"
             alt="Rowi"
             width={40}
             height={40}

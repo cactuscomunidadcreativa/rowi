@@ -50,12 +50,17 @@ export default function ConnectSlackButton({
             "integrations.slack.misconfigured",
             "Slack no está configurado todavía. Contacta al administrador.",
           )
-        : slackStatus === "error"
+        : slackStatus === "forbidden"
           ? t(
-              "integrations.slack.error",
-              "No se pudo conectar con Slack. Intenta de nuevo.",
+              "integrations.slack.forbidden",
+              "Solo un administrador puede instalar la app de Slack. Contacta al administrador de Rowi.",
             )
-          : null;
+          : slackStatus === "error"
+            ? t(
+                "integrations.slack.error",
+                "No se pudo conectar con Slack. Intenta de nuevo.",
+              )
+            : null;
 
   function connect() {
     setRedirecting(true);

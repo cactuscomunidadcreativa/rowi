@@ -39,7 +39,7 @@ export default function ForYouPage() {
           ctaPrimary: lang !== "es" ? "Start free" : "Comenzar gratis",
           ctaSecondary: lang !== "es" ? "See plans" : "Ver planes",
           ctaSecondaryHref: "/pricing",
-          image: "/rowivectors/Rowi-06.png"
+          image: "/rowivectors/Rowi-06.webp"
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />

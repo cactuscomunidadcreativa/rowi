@@ -159,6 +159,7 @@ export default function PricingPage() {
           >
             <button
               onClick={() => setShowB2B(false)}
+              aria-pressed={!showB2B}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 !showB2B
                   ? "bg-[var(--rowi-primary)] text-white"
@@ -169,6 +170,7 @@ export default function PricingPage() {
             </button>
             <button
               onClick={() => setShowB2B(true)}
+              aria-pressed={showB2B}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 showB2B
                   ? "bg-[var(--rowi-primary)] text-white"
@@ -191,6 +193,9 @@ export default function PricingPage() {
             </span>
             <button
               onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+              role="switch"
+              aria-checked={billingPeriod === "yearly"}
+              aria-label={lang === "es" ? "Cambiar a facturación anual" : "Switch to yearly billing"}
               className={`relative w-14 h-7 rounded-full transition-colors ${
                 billingPeriod === "yearly" ? "bg-green-500" : "bg-[var(--rowi-border)]"
               }`}
@@ -379,16 +384,19 @@ export default function PricingPage() {
                     );
                   }
                   // Visitante anónimo o plan free/custom → flujo de registro/contacto.
+                  // CTA por intención: el copy dice exactamente qué pasa al
+                  // hacer clic (crear cuenta gratis vs empezar prueba vs hablar
+                  // con ventas) — sube conversión vs un "Comenzar" genérico.
                   return (
                     <Link
                       href={plan.isCustomPricing ? "/contact" : `/register?plan=${plan.slug}`}
                       className={ctaClass}
                     >
                       {plan.isCustomPricing
-                        ? (lang === "es" ? "Contactar ventas" : "Contact sales")
+                        ? t("pricing.cta.custom", "Agendar demo")
                         : plan.priceMonthly === 0
-                        ? (lang === "es" ? "Comenzar gratis" : "Start free")
-                        : (lang === "es" ? "Comenzar ahora" : "Start now")}
+                        ? t("pricing.cta.free", "Crear mi Rowi gratis")
+                        : t("pricing.cta.paid", "Empezar prueba")}
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   );
@@ -540,10 +548,40 @@ export default function PricingPage() {
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {[
               {
+                q: lang === "es"
+                  ? "¿Quién puede ver mis datos emocionales?"
+                  : "Who can see my emotional data?",
+                a: lang === "es"
+                  ? "Tus datos individuales son privados y solo tuyos. Las vistas de equipo u organización son siempre agregadas y anónimas (mínimo 5 personas), nunca individuales. Nuestro piso de privacidad es el GDPR, adaptado a cada jurisdicción."
+                  : "Your individual data is private and yours alone. Team or organization views are always aggregated and anonymous (minimum 5 people), never individual. Our privacy floor is GDPR, adapted per jurisdiction.",
+              },
+              {
+                q: lang === "es"
+                  ? "¿Cómo usa Rowi la inteligencia artificial?"
+                  : "How does Rowi use AI?",
+                a: lang === "es"
+                  ? "La IA te da insights accionables a partir de tus check-ins, sin sustituir el juicio humano. No vendemos tus datos ni los usamos para entrenar modelos de terceros. Puedes desactivar las funciones de IA en cualquier momento."
+                  : "AI turns your check-ins into actionable insights without replacing human judgment. We don't sell your data or use it to train third-party models. You can disable AI features at any time.",
+              },
+              {
+                q: lang === "es"
+                  ? "¿En qué metodología se basa Rowi?"
+                  : "What methodology is Rowi based on?",
+                a: lang === "es"
+                  ? "Rowi se apoya en el marco de Six Seconds, con instrumentos validados internacionalmente (SEI, talentos cerebrales) y el modelo de Vital Signs. Combinamos ciencia de inteligencia emocional con una experiencia digital continua."
+                  : "Rowi is grounded in the Six Seconds framework, with internationally validated instruments (SEI, brain talents) and the Vital Signs model. We combine emotional intelligence science with a continuous digital experience.",
+              },
+              {
                 q: lang === "es" ? "¿Puedo cambiar de plan?" : "Can I change plans?",
                 a: lang === "es"
                   ? "Sí, puedes actualizar o degradar tu plan cuando quieras. Los cambios se aplican en tu próximo ciclo."
                   : "Yes, you can upgrade or downgrade anytime. Changes apply on your next billing cycle.",
+              },
+              {
+                q: lang === "es" ? "¿Cómo cancelo mi suscripción?" : "How do I cancel?",
+                a: lang === "es"
+                  ? "Puedes cancelar cuando quieras desde los ajustes de tu cuenta, sin llamadas ni trámites. Conservas el acceso hasta el final del periodo ya pagado."
+                  : "You can cancel anytime from your account settings — no calls, no hassle. You keep access until the end of the period you already paid for.",
               },
               {
                 q: lang === "es" ? "¿Hay período de prueba?" : "Is there a free trial?",

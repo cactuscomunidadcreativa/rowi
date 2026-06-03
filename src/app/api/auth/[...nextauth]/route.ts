@@ -94,7 +94,11 @@ export const authOptions: NextAuthOptions = {
         const email = credentials.email.toLowerCase();
         const user = await prisma.user.findUnique({
           where: { email },
-          include: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            passwordHash: true,
             accounts: {
               where: { provider: "credentials" },
               select: { access_token: true },
@@ -111,9 +115,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Password está guardado en access_token de la cuenta credentials
-        const credentialsAccount = user.accounts?.[0];
-        const hashedPassword = credentialsAccount?.access_token;
+        // 🔐 Password hash: campo dedicado User.passwordHash. Fallback al
+        // legacy Account.access_token para usuarios creados antes de la
+        // migración. Tras backfill el fallback puede eliminarse.
+        const hashedPassword = user.passwordHash || user.accounts?.[0]?.access_token;
 
         if (!hashedPassword) {
           // Usuario existe pero no tiene cuenta de credentials (solo OAuth)
@@ -225,6 +230,26 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!existingAccount) {
+            // 🔐 SEGURIDAD: Solo enlazar una cuenta OAuth nueva a un usuario
+            // existente si el proveedor confirma que el email está verificado.
+            // Sin esto, un atacante con un proveedor OAuth que no verifica
+            // emails podría reclamar el email de otra persona y secuestrar su
+            // cuenta (account takeover). Si el proveedor no entrega el flag,
+            // asumimos NO verificado y rechazamos el linking automático.
+            const emailVerified =
+              (profile as { email_verified?: boolean })?.email_verified === true;
+
+            if (!emailVerified) {
+              await logSecurityEvent("ACCOUNT_LINK_BLOCKED", {
+                userId: existingUser.id,
+                email,
+                reason: `Blocked ${account.provider} auto-link: email not verified by provider`,
+              }).catch(() => {});
+              // Rechazar el sign-in: el usuario debe iniciar sesión con su
+              // método original y vincular OAuth desde ajustes de cuenta.
+              return false;
+            }
+
             // Link the OAuth account to the existing user
             await prisma.account.create({
               data: {

@@ -64,7 +64,7 @@ export default function ForOrganizationsPage() {
           ctaPrimary: t("forOrg.hero.cta.primary"),
           ctaSecondary: t("forOrg.hero.cta.secondary"),
           ctaSecondaryHref: "#cases",
-          image: "/rowivectors/Rowi-06.png",
+          image: "/rowivectors/Rowi-06.webp",
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />

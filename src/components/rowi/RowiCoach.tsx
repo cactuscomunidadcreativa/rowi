@@ -391,7 +391,7 @@ export default function RowiCoach() {
             <X className="w-6 h-6 text-white" />
           ) : (
             <Image
-              src="/rowivectors/Rowi-06.png"
+              src="/rowivectors/Rowi-06.webp"
               alt="Rowi"
               width={48}
               height={48}
@@ -425,7 +425,7 @@ export default function RowiCoach() {
           <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)]">
             <div className="relative w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
               <Image
-                src="/rowivectors/Rowi-06.png"
+                src="/rowivectors/Rowi-06.webp"
                 alt="Rowi"
                 width={40}
                 height={40}
@@ -508,7 +508,7 @@ export default function RowiCoach() {
               <div className="text-center py-8">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-[var(--rowi-g1)]/20 to-[var(--rowi-g2)]/20 flex items-center justify-center">
                   <Image
-                    src="/rowivectors/Rowi-06.png"
+                    src="/rowivectors/Rowi-06.webp"
                     alt="Rowi"
                     width={60}
                     height={60}
@@ -533,7 +533,7 @@ export default function RowiCoach() {
                 {m.role === "assistant" && (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center mr-2 flex-shrink-0">
                     <Image
-                      src="/rowivectors/Rowi-06.png"
+                      src="/rowivectors/Rowi-06.webp"
                       alt="Rowi"
                       width={24}
                       height={24}
@@ -593,7 +593,7 @@ export default function RowiCoach() {
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
                   <Image
-                    src="/rowivectors/Rowi-06.png"
+                    src="/rowivectors/Rowi-06.webp"
                     alt="Rowi"
                     width={24}
                     height={24}

@@ -539,3 +539,103 @@ export async function getTenantContributions(tenantId: string) {
     totalContributions: contributions.length,
   };
 }
+
+// =========================================================
+// Contribuir un benchmark ORGANIZACIONAL completo al RowiVerse
+// ---------------------------------------------------------
+// Copia los data points (ya anónimos — sin userId/PII) de un benchmark
+// org/tenant (p.ej. el de una empresa subido por CSV) al benchmark global
+// RowiVerse, a nivel cohorte. Así cada org que sube datos hace crecer el
+// benchmark global. Idempotente: marca cada copia con sourceId derivado
+// del benchmark origen, y omite si ya fue contribuido.
+//
+// Privacidad: los benchmarkDataPoint NO contienen identidad (son agregables
+// por diseño). Solo se copian métricas EQ + demografía de cohorte.
+// =========================================================
+export async function contributeBenchmarkToRowiverse(
+  sourceBenchmarkId: string
+): Promise<{ contributed: number; skipped: number }> {
+  const source = await prisma.benchmark.findUnique({
+    where: { id: sourceBenchmarkId },
+    select: { id: true, type: true },
+  });
+
+  // Solo contribuyen benchmarks organizacionales (INTERNAL). El propio
+  // ROWIVERSE no se auto-contribuye, y los EXTERNAL (mercado) no son datos
+  // de la comunidad Rowi.
+  if (!source || source.type !== "INTERNAL") {
+    return { contributed: 0, skipped: 0 };
+  }
+
+  const rowiverseBenchmarkId = await getOrCreateRowiverseBenchmark();
+  if (rowiverseBenchmarkId === sourceBenchmarkId) {
+    return { contributed: 0, skipped: 0 };
+  }
+
+  // Tag idempotente: si ya contribuimos este benchmark, no duplicar.
+  const contributionTag = `benchmark:${sourceBenchmarkId}`;
+  const already = await prisma.benchmarkDataPoint.count({
+    where: { benchmarkId: rowiverseBenchmarkId, sourceId: contributionTag },
+  });
+  if (already > 0) {
+    return { contributed: 0, skipped: already };
+  }
+
+  // Campos a copiar (todo menos identidad/relaciones del data point origen).
+  const COPY_FIELDS = [
+    "projectCohort",
+    "country", "region", "jobFunction", "jobRole", "sector",
+    "ageRange", "gender", "education", "generation", "year", "month", "quarter",
+    "K", "C", "G", "eqTotal",
+    "EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG",
+    "effectiveness", "relationships", "qualityOfLife", "wellbeing",
+    "influence", "decisionMaking", "community", "network", "achievement",
+    "satisfaction", "balance", "health",
+    "dataMining", "modeling", "prioritizing", "connection", "emotionalInsight",
+    "collaboration", "reflecting", "adaptability", "criticalThinking",
+    "resilience", "riskTolerance", "imagination", "proactivity", "commitment",
+    "problemSolving", "vision", "designing", "entrepreneurship", "brainAgility",
+    "brainStyle", "profile", "reliabilityIndex",
+  ] as const;
+
+  const PAGE = 1000;
+  let contributed = 0;
+  let cursor: string | null = null;
+
+  // Paginación por cursor para no cargar todo en memoria en benchmarks grandes.
+  for (;;) {
+    const page: any[] = await prisma.benchmarkDataPoint.findMany({
+      where: { benchmarkId: sourceBenchmarkId },
+      orderBy: { id: "asc" },
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      take: PAGE,
+    });
+    if (page.length === 0) break;
+
+    const rows = page.map((dp) => {
+      const copy: Record<string, any> = {
+        benchmarkId: rowiverseBenchmarkId,
+        sourceId: contributionTag,
+        sourceType: "benchmark_contribution",
+        sourceDate: new Date(),
+      };
+      for (const f of COPY_FIELDS) copy[f] = dp[f] ?? null;
+      return copy;
+    });
+
+    const res = await prisma.benchmarkDataPoint.createMany({
+      // Las claves de `rows` se construyen desde COPY_FIELDS (todas columnas
+      // válidas del modelo); el cast evita el tipado estricto del shape dinámico.
+      data: rows as any,
+      skipDuplicates: true,
+    });
+    contributed += res.count;
+    cursor = page[page.length - 1].id;
+    if (page.length < PAGE) break;
+  }
+
+  console.log(
+    `🌐 Benchmark ${sourceBenchmarkId} → RowiVerse: ${contributed} data points contribuidos`
+  );
+  return { contributed, skipped: 0 };
+}

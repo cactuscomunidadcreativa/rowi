@@ -64,7 +64,7 @@ export default function ProductIntegrationsPage() {
             : "Integra la inteligencia emocional en tu flujo de trabajo diario. Slack, Teams, calendarios y más.",
           ctaPrimary: lang !== "es" ? "View integrations" : "Ver integraciones",
           ctaPrimaryHref: "/contact",
-          image: "/rowivectors/Rowi-06.png",
+          image: "/rowivectors/Rowi-06.webp",
         }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireAdminWithScope } from "@/core/auth/requireAdmin";
-import { checkRateLimit, getClientIP } from "@/lib/security/rate-limit";
+import { checkRateLimitDistributed, getClientIP } from "@/lib/security/rate-limit";
 import {
   ADMIN_MFA_COOKIE,
   ADMIN_MFA_SESSION_MS,
@@ -41,11 +41,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Anti fuerza bruta por usuario + IP.
-  const rl = checkRateLimit(`admin-otp-verify:${user.id}`, { limit: 10, windowSeconds: 600 });
+  const rl = await checkRateLimitDistributed(`admin-otp-verify:${user.id}`, { limit: 10, windowSeconds: 600 });
   if (!rl.success) {
     return NextResponse.json({ ok: false, error: "Demasiados intentos." }, { status: 429 });
   }
-  const ipRl = checkRateLimit(`admin-otp-verify-ip:${getClientIP(req)}`, { limit: 20, windowSeconds: 600 });
+  const ipRl = await checkRateLimitDistributed(`admin-otp-verify-ip:${getClientIP(req)}`, { limit: 20, windowSeconds: 600 });
   if (!ipRl.success) {
     return NextResponse.json({ ok: false, error: "Demasiados intentos." }, { status: 429 });
   }

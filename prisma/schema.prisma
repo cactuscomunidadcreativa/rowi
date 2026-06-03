@@ -42,6 +42,12 @@ model User {
   trialStartedAt   DateTime? // Inicio del trial
   trialEndsAt      DateTime? // Fin del trial
 
+  // 🔐 Credenciales locales (bcrypt). Campo dedicado en vez del workaround
+  // histórico de guardar el hash en Account.access_token (semántica peligrosa:
+  // un campo de tokens OAuth no debe contener hashes de contraseña). Durante
+  // la migración el authorize() lee este campo y cae al legacy si está vacío.
+  passwordHash String?
+
   // 🔐 SSO Six Seconds Integration
   ssoProvider   String? // "six-seconds" | null
   ssoProviderId String? // ID único del usuario en el SSO
@@ -4115,6 +4121,11 @@ model BenchmarkDataPoint {
   gender      String?
   education   String?
   generation  String? // Millennials, Gen Z, etc.
+
+  // Equipo/cohorte de origen (columna "Project" del CSV de Six Seconds,
+  // p.ej. "Equipo Soraya - Bancolombia"). Permite separar equipos dentro
+  // de un mismo benchmark org y hacer el cruce equipo↔individuo.
+  projectCohort String?
   year        Int? // Año del assessment (extraído de Date/Year)
   month       Int? // Mes del assessment (1-12, extraído de Date)
   quarter     Int? // Trimestre (1-4, calculado desde month)
@@ -4191,6 +4202,7 @@ model BenchmarkDataPoint {
   @@index([benchmarkId, sector])
   @@index([benchmarkId, tenantId])
   @@index([benchmarkId, jobRole])
+  @@index([benchmarkId, projectCohort])
   @@map("benchmark_data_point")
 }
 
@@ -4286,6 +4298,26 @@ model BenchmarkCorrelation {
   @@index([benchmarkId, outcomeKey])
   @@index([benchmarkId, year])
   @@map("benchmark_correlation")
+}
+
+/// Asignación líder↔equipo declarada por el consultor sobre un benchmark.
+/// La persona se identifica SOLO por el hash sha256 de su email (personHash),
+/// nunca por email en claro — el benchmark sigue siendo anónimo. El consultor
+/// escribe el email, el endpoint lo hashea y verifica que exista en los
+/// BenchmarkDataPoint antes de persistir. Sin FK dura a Benchmark para evitar
+/// back-relations / columnas non-null sobre tablas pobladas (db push seguro).
+model ConsultantLeaderAssignment {
+  id            String   @id @default(cuid())
+  benchmarkId   String
+  personHash    String // "sha256:<hex>" — coincide con BenchmarkDataPoint.sourceId
+  projectCohort String? // equipo declarado (si se omite, se infiere del data point)
+  label         String? // alias legible que el consultor da al líder (p.ej. "Soraya R. — Líder HR"). NO es el email; solo para mostrar en hallazgos.
+  createdById   String? // userId del consultor que la creó
+  createdAt     DateTime @default(now())
+
+  @@unique([benchmarkId, personHash])
+  @@index([benchmarkId])
+  @@map("consultant_leader_assignment")
 }
 
 /// Outcome Pattern — Mapas de éxito emocional
@@ -6471,7 +6503,9 @@ model VitalSignsScoreSource {
   contributesToBenchmark Boolean   @default(false)
   contributedAt          DateTime?
   createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  // @default(now()) además de @updatedAt: permite que `prisma db push` añada
+  // esta columna NOT NULL sobre filas ya existentes sin romper el deploy.
+  updatedAt              DateTime  @default(now()) @updatedAt
 
   @@index([scope, contributesToBenchmark])
   @@index([scope, dimension, level, sourceKind])

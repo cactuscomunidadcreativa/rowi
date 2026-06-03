@@ -10,7 +10,7 @@ import crypto from "crypto";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { postWhatsAppMessage } from "@/lib/whatsapp/postMessage";
-import { checkRateLimit, getClientIP } from "@/lib/security/rate-limit";
+import { checkRateLimitDistributed, getClientIP } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: máx 3 envíos por usuario cada 10 min (anti-abuso + costo).
-    const rl = checkRateLimit(`phone-verify:${auth.id}`, { limit: 3, windowSeconds: 600 });
+    const rl = await checkRateLimitDistributed(`phone-verify:${auth.id}`, { limit: 3, windowSeconds: 600 });
     if (!rl.success) {
       return NextResponse.json(
         { ok: false, error: "Demasiados intentos. Espera unos minutos antes de pedir otro código." },
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       );
     }
     // Segundo limitador por IP para mitigar enumeración.
-    const ipRl = checkRateLimit(`phone-verify-ip:${getClientIP(req)}`, { limit: 10, windowSeconds: 600 });
+    const ipRl = await checkRateLimitDistributed(`phone-verify-ip:${getClientIP(req)}`, { limit: 10, windowSeconds: 600 });
     if (!ipRl.success) {
       return NextResponse.json({ ok: false, error: "Demasiados intentos." }, { status: 429 });
     }

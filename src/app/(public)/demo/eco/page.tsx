@@ -25,7 +25,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 ========================================================= */
 const DEMO_RECIPIENT = {
   name: "Carlos Ruiz",
-  avatar: "/rowivectors/Rowi-05.png",
+  avatar: "/rowivectors/Rowi-05.webp",
   brainStyle: "Innovator",
   brainStyleEs: "Innovador",
   preferredChannel: "email",

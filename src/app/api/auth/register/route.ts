@@ -94,17 +94,19 @@ export async function POST(req: NextRequest) {
           language: language || existingUser.language || "es",
           country: country || existingUser.country || "Unknown",
           onboardingStatus: existingUser.onboardingStatus || "REGISTERED",
+          // 🔐 Hash en campo dedicado (no más Account.access_token)
+          passwordHash: hashedPassword,
         },
       });
 
-      // Crear cuenta de credentials para login
+      // Crear cuenta de credentials para que NextAuth registre el provider.
+      // El hash vive en User.passwordHash, no aquí.
       await prisma.account.create({
         data: {
           userId: existingUser.id,
           type: "credentials",
           provider: "credentials",
           providerAccountId: normalizedEmail,
-          access_token: hashedPassword,
         },
       });
 
@@ -236,6 +238,8 @@ export async function POST(req: NextRequest) {
         trialEndsAt,
         contributeToRowiverse: true,
         organizationRole: "VIEWER", // Rol por defecto
+        // 🔐 Hash en campo dedicado (no más Account.access_token)
+        passwordHash: hashedPassword,
       },
     });
 
@@ -256,15 +260,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Crear cuenta de credentials para login con password
+    // Crear cuenta de credentials para que NextAuth registre el provider.
+    // El hash vive en User.passwordHash, no aquí.
     await prisma.account.create({
       data: {
         userId: user.id,
         type: "credentials",
         provider: "credentials",
         providerAccountId: normalizedEmail,
-        // Guardar password hash en el campo access_token (workaround para NextAuth)
-        access_token: hashedPassword,
       },
     });
 

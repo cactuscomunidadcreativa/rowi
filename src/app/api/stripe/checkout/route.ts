@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createCheckoutSession } from "@/lib/stripe/subscription-service";
 import { rateLimiters, getClientIdentifier } from "@/lib/security/rateLimit";
+import { safeInternalUrl } from "@/lib/security/safeRedirect";
 import { prisma } from "@/core/prisma";
 
 export async function POST(req: NextRequest) {
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
     // Acepta planId (UUID) O planSlug (ej. "sei", "plus") — el register y la
     // página de pricing envían slug; resolvemos a id aquí. billingPeriod
     // elige price mensual vs anual/semestral.
-    const { planId: rawPlanId, planSlug, couponCode, locale, quantity, tenantId, billingPeriod } = body;
+    const { planId: rawPlanId, planSlug, couponCode, locale, quantity, tenantId, billingPeriod, successUrl: rawSuccessUrl, cancelUrl: rawCancelUrl } = body;
 
     let planId: string | undefined = typeof rawPlanId === "string" ? rawPlanId : undefined;
 
@@ -80,12 +81,41 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+    // 🔐 Honra successUrl/cancelUrl del cliente pero SOLO rutas internas
+    // permitidas (anti open-redirect). Extrae el pathname, ignora cualquier
+    // host/origen externo, y cae al default si no está en la allowlist.
+    // El front del registro envía /register/success; un upgrade puede enviar
+    // /settings/subscription; el default sigue siendo el flujo de onboarding.
+    const SUCCESS_PATH_ALLOWLIST = [
+      "/register/success",
+      "/onboarding/success",
+      "/settings/subscription",
+    ];
+    const CANCEL_PATH_ALLOWLIST = [
+      "/register",
+      "/pricing",
+      "/settings/subscription",
+    ];
+
+    const successUrl = `${safeInternalUrl(
+      rawSuccessUrl,
+      SUCCESS_PATH_ALLOWLIST,
+      baseUrl,
+      "/register/success"
+    )}?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${safeInternalUrl(
+      rawCancelUrl,
+      CANCEL_PATH_ALLOWLIST,
+      baseUrl,
+      "/pricing"
+    )}?cancelled=true`;
+
     const checkout = await createCheckoutSession({
       userId: session.user.id,
       userEmail: session.user.email,
       planId,
-      successUrl: `${baseUrl}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${baseUrl}/pricing?cancelled=true`,
+      successUrl,
+      cancelUrl,
       couponCode,
       locale: locale || "es",
       quantity: seatQuantity,

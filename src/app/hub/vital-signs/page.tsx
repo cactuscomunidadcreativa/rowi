@@ -20,6 +20,7 @@ import {
 } from "@/lib/vital-signs/vsLocale";
 import ContextDetailDrawer from "@/components/vital-signs/ContextDetailDrawer";
 import DailyPulseWeek from "@/components/dashboard/DailyPulseWeek";
+import { BudgetCrossCard } from "@/components/vital-signs/BudgetCrossCard";
 import {
   Activity,
   Brain,
@@ -277,6 +278,9 @@ export default function VitalSignsPage() {
         <>
           {/* Daily pulse 7-day sparkline */}
           <DailyPulseWeek />
+
+          {/* Emotional Budgeting — capacity vs perception gap */}
+          <BudgetCrossCard />
 
           {/* Intelligent check-in */}
           {checkIn?.question && !checkInDone && (

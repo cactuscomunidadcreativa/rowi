@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2, AlertTriangle, CheckCircle2, Gem } from "lucide-react";
-import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useI18n } from "@/lib/i18n/react";
 
 type Cell = "blind_spot" | "aligned" | "hidden_strength" | null;
 

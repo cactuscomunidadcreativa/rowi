@@ -17,6 +17,7 @@ import {
   type SeiKey,
   type BrainTalentKey,
 } from "./catalog";
+import { coarseBand } from "./sei-bands";
 
 export interface InputSeiCompetencies {
   EL: number | null;
@@ -132,11 +133,10 @@ function avg(values: Array<number | null | undefined>): number | null {
   return xs.reduce((a, b) => a + b, 0) / xs.length;
 }
 
+// Version-aware band classification. Delegates to coarseBand, which reads the
+// active SEI scale version from env (v4 default → 90/110 cuts; v5 → 92/108).
 function band(score: number | null): "low" | "mid" | "high" | "unknown" {
-  if (score === null) return "unknown";
-  if (score < 90) return "low";
-  if (score >= 110) return "high";
-  return "mid";
+  return coarseBand(score);
 }
 
 function round1(n: number | null): number | null {

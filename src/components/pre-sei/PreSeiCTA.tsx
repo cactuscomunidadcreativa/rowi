@@ -43,16 +43,16 @@ export default function PreSeiCTA({ token }: Props) {
           </Link>
         </div>
 
-        {/* VS real — invitar org */}
+        {/* Relacional — invitar a alguien (el HOOK). Anónimo → registro con intención. */}
         <div className="rowi-card">
           <h4 className="font-semibold text-[var(--rowi-fg)] mb-1">
-            {t("preSei.cta.org.title", "Norma a tu organización")}
+            {t("preSei.cta.org.title", "Invita a quien te importa")}
           </h4>
           <p className="text-sm text-[var(--rowi-muted)] mb-3">
-            {t("preSei.cta.org.body", "Invita a tu equipo para pasar de tu percepción a una lectura validada de Vital Signs.")}
+            {t("preSei.cta.org.body", "El verdadero valor aparece al cruzar tu lectura con otra persona: ves la brecha y cómo cerrarla.")}
           </p>
-          <Link href="/for-organizations?source=presei" className="rowi-btn inline-block">
-            {t("preSei.cta.org.button", "Invitar a mi gente")}
+          <Link href={`${registerHref}${registerHref.includes("?") ? "&" : "?"}intent=invite`} className="rowi-btn inline-block">
+            {t("preSei.cta.org.button", "Invitar a alguien")}
           </Link>
         </div>
       </div>

@@ -112,6 +112,19 @@ function FallbackHomePage() {
             title2: t("landing.features.title2"),
             subtitle: t("landing.features.subtitle"),
             features: [
+              // Espina SIA: relaciones (afinidad) y comunicación (ECO) son el primer wow.
+              {
+                icon: "heart",
+                title: t("landing.features.affinity.title"),
+                description: t("landing.features.affinity.description"),
+                gradient: "from-purple-500 to-violet-500",
+              },
+              {
+                icon: "message-circle",
+                title: t("landing.features.eco.title"),
+                description: t("landing.features.eco.description"),
+                gradient: "from-pink-500 to-rose-500",
+              },
               {
                 icon: "sparkles",
                 title: t("landing.features.coach.title"),
@@ -125,22 +138,10 @@ function FallbackHomePage() {
                 gradient: "from-blue-500 to-cyan-500",
               },
               {
-                icon: "heart",
-                title: t("landing.features.affinity.title"),
-                description: t("landing.features.affinity.description"),
-                gradient: "from-purple-500 to-violet-500",
-              },
-              {
                 icon: "bar-chart",
                 title: t("landing.features.dashboard.title"),
                 description: t("landing.features.dashboard.description"),
                 gradient: "from-green-500 to-emerald-500",
-              },
-              {
-                icon: "users",
-                title: t("landing.features.community.title"),
-                description: t("landing.features.community.description"),
-                gradient: "from-orange-500 to-amber-500",
               },
               {
                 icon: "target",

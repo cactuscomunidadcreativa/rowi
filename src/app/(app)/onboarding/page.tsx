@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CONSENTS, type ConsentKey, titleFor, bodyFor } from "@/lib/privacy/consents";
+import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
 
 type Lang = "es" | "en" | "pt" | "it";
 
@@ -38,6 +39,8 @@ type Step = {
 const STEPS: Step[] = [
   { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-fuchsia-500" },
   { key: "consent", icon: ShieldCheck, gradient: "from-amber-500 to-orange-600" },
+  // Cadena SIA: el Rowi Test siembra el perfil bajo el capó (primer paso del valor).
+  { key: "rowiTest", icon: Sparkles, gradient: "from-fuchsia-500 to-pink-600" },
   // Manager auto-link — solo aplica si el user tiene primaryTenantId.
   // En B2C el step se auto-saltea (ver useEffect más abajo).
   { key: "manager", icon: Users, gradient: "from-sky-500 to-blue-600" },
@@ -67,6 +70,12 @@ export default function OnboardingPage() {
   const L = lang as Lang;
   const [step, setStep] = useState(0);
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
+  // Rowi Test step (cadena SIA).
+  const [rowiTestQuestions, setRowiTestQuestions] = useState<
+    { sei: string; index: number; prompt: string }[]
+  >([]);
+  const [rowiTestSaving, setRowiTestSaving] = useState(false);
+  const [rowiTestDone, setRowiTestDone] = useState(false);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
   // + consultor + persona). El primer rol seleccionado define el template
   // del primer workspace en el step siguiente; los demás quedan declarados.
@@ -115,6 +124,34 @@ export default function OnboardingPage() {
     }
     checkState();
   }, []);
+
+  // Cargar las preguntas del Rowi Test al entrar a ese step.
+  useEffect(() => {
+    if (STEPS[step]?.key !== "rowiTest" || rowiTestQuestions.length > 0) return;
+    fetch(`/api/public/pre-sei/questions?lang=${lang}`)
+      .then((r) => r.json())
+      .then((json) => { if (json.ok) setRowiTestQuestions(json.questions); })
+      .catch(() => {});
+  }, [step, lang, rowiTestQuestions.length]);
+
+  async function submitRowiTest(
+    answers: Record<string, number>,
+    demographics: PreSeiDemographics,
+  ) {
+    setRowiTestSaving(true);
+    try {
+      await fetch("/api/pre-sei/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers, ...demographics }),
+      });
+      setRowiTestDone(true);
+      // Avanzar al siguiente step tras un instante.
+      setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 800);
+    } finally {
+      setRowiTestSaving(false);
+    }
+  }
 
   useEffect(() => {
     if (STEPS[step]?.key !== "consent" || consentInitial !== null) return;
@@ -414,6 +451,27 @@ export default function OnboardingPage() {
                     "Puedes revisar o revocar estos permisos en cualquier momento desde tu página de privacidad.",
                   )}
                 </p>
+              </div>
+            )}
+
+            {/* Step: Rowi Test — siembra el perfil bajo el capó (cadena SIA) */}
+            {current.key === "rowiTest" && (
+              <div className="max-w-xl mx-auto">
+                {rowiTestDone ? (
+                  <p className="text-center text-[var(--rowi-muted)] py-6">
+                    {t("onboarding.rowiTest.done", "¡Listo! Tu perfil se está afinando.")}
+                  </p>
+                ) : rowiTestQuestions.length > 0 ? (
+                  <PreSeiWizard
+                    questions={rowiTestQuestions}
+                    submitting={rowiTestSaving}
+                    onComplete={submitRowiTest}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--rowi-g2)]" />
+                  </div>
+                )}
               </div>
             )}
 

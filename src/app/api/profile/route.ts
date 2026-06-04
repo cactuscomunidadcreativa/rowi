@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
+import {
+  getCommunicationProfile,
+  updateCommunicationProfile,
+} from "@/domains/profile/lib/communicationProfile";
 
 export const runtime = "nodejs";
 
@@ -40,20 +44,39 @@ export async function PATCH(req: NextRequest) {
     if (image !== undefined) data.image = image;
     if (allowAI !== undefined) data.allowAI = allowAI;
 
-    // 🧠 Guarda todo el perfil cognitivo como JSON
-    const brainProfile: Record<string, any> = {};
-    if (values) brainProfile.values = values;
-    if (commSelf) brainProfile.commSelf = commSelf;
-    if (commPref) brainProfile.commPref = commPref;
-    if (activates) brainProfile.activates = activates;
-    if (drains) brainProfile.drains = drains;
-    if (talents) brainProfile.talents = talents;
-    if (Object.keys(brainProfile).length > 0) data.brainProfile = brainProfile;
+    // NOTA: el perfil cognitivo (commSelf/commPref/...) ya NO se escribe a
+    // `User.brainProfile` — ese campo no existe en el schema (la escritura legacy
+    // nunca persistió). Ahora vive en la tabla estructurada CommunicationProfile
+    // (más abajo). `talents` se ignora aquí hasta que se modele aparte.
+    void talents;
 
     const updated = await prisma.user.update({
       where: { email: user.email },
       data,
     });
+
+    // Cadena SIA: persistir las preferencias de comunicación también en la tabla
+    // estructurada CommunicationProfile (marca editedAt → el usuario lo hizo suyo,
+    // el seed del mini-SEI ya no lo sobrescribe). Mantiene brainProfile por compat.
+    const commTouched =
+      commSelf !== undefined ||
+      commPref !== undefined ||
+      activates !== undefined ||
+      drains !== undefined ||
+      values !== undefined ||
+      body.channels !== undefined ||
+      body.tone !== undefined;
+    if (commTouched) {
+      await updateCommunicationProfile(updated.id, {
+        commSelf,
+        commPref,
+        activates,
+        drains,
+        values,
+        channels: body.channels,
+        tone: body.tone,
+      });
+    }
 
     return NextResponse.json({ ok: true, user: updated });
   } catch (err: any) {
@@ -102,7 +125,14 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ ok: true, user: profile });
+    // Cadena SIA: incluir el CommunicationProfile (con backfill perezoso desde
+    // el legacy brainProfile). isDraft=true significa que aún es el borrador
+    // prellenado por el mini-SEI y la UI debe invitar a editarlo.
+    const communicationProfile = profile
+      ? await getCommunicationProfile(profile.id)
+      : null;
+
+    return NextResponse.json({ ok: true, user: profile, communicationProfile });
   } catch (err: any) {
     console.error("❌ Error GET /api/profile:", err);
     return NextResponse.json(

@@ -35,6 +35,7 @@ const PUBLIC_PAGES = [
   "/stories",
   "/resources",
   "/pre-sei", // Pre-SEI: diagnóstico EQ público (gancho EQ Day)
+  "/r", // Invitación relacional: deep link público del invitado (HOOK SIA)
 ];
 
 const PUBLIC_API_PATHS = [

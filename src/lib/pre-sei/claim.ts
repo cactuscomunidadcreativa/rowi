@@ -14,6 +14,7 @@ import { prisma } from "@/core/prisma";
 import { SEI_ORDER, PRE_SEI_QUESTIONS } from "@/lib/pre-sei/questions";
 import { seiScore, scorePreSei, type PreSeiAnswers } from "@/lib/pre-sei/scoring";
 import { SEI_COMPETENCIES, type SeiKey } from "@/lib/vital-signs/catalog";
+import { seedCommunicationProfile } from "@/domains/profile/lib/seedCommunicationProfile";
 
 const PRE_SEI_DATASET = "pre_sei";
 const PRE_SEI_SOURCE = "pre_sei";
@@ -95,6 +96,14 @@ export async function materializePreSei(
       metadata: { sei, preSeiSessionId: preSeiSessionId ?? null },
     })),
   });
+
+  // Cadena SIA: sembrar el borrador del CommunicationProfile bajo el capó.
+  // No crítico: si falla, no debe romper la materialización del mini-SEI.
+  try {
+    await seedCommunicationProfile(userId, answers, snapshot.id);
+  } catch (seedErr) {
+    console.warn("⚠️ seedCommunicationProfile falló (no crítico):", seedErr);
+  }
 
   return { snapshotId: snapshot.id, created: true };
 }

@@ -27,6 +27,7 @@ const translations = {
       dashboard: "Dashboard",
       community: "Comunidad",
       affinity: "Afinidad",
+      relationships: "Relaciones",
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
@@ -83,6 +84,7 @@ const translations = {
       dashboard: "Dashboard",
       community: "Community",
       affinity: "Affinity",
+      relationships: "Relationships",
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
@@ -139,6 +141,7 @@ const translations = {
       dashboard: "Dashboard",
       community: "Comunidade",
       affinity: "Afinidade",
+      relationships: "Relações",
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
@@ -195,6 +198,7 @@ const translations = {
       dashboard: "Dashboard",
       community: "Comunità",
       affinity: "Affinità",
+      relationships: "Relazioni",
       benchmark: "Benchmark",
       eco: "ECO",
       rowicoach: "Rowi Coach",
@@ -278,12 +282,16 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 // `primary: true` = visible en la barra con texto (desde lg). El resto va al
 // dropdown "Más" para no saturar la barra. Orden = loop personal primero.
 const BASE_LINKS = [
+  // Espina SIA: Hoy · Relaciones · ECO · Perfil son los 4 primarios.
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: true },
-  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: true },
-  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: true },
+  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: true },
   { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: true },
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: true },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: true },
+  { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: true },
+  // El resto vive en "Más" para no saturar la barra.
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false },
+  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false },
+  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: false },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false },
   { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false },
   { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false },

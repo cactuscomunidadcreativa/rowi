@@ -23,7 +23,7 @@
  * }
  */
 
-import { SEI_ORDER } from "@/lib/daily-pulse/questions";
+import { SEI_ORDER, DAILY_PULSE_QUESTIONS } from "@/lib/daily-pulse/questions";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 export interface MiniSeiItem {
@@ -31,6 +31,13 @@ export interface MiniSeiItem {
   competency: SeiKey;
   reverse: boolean;
   weight: number;
+  /**
+   * Localized stems. SECRET layer: the mapping id→competency/reverse/weight
+   * never leaves the server, but the stem TEXT must reach the client so the
+   * user can read the question. Served via the opaque-position presentation
+   * (publicQuestions), never alongside competency/reverse/id.
+   */
+  stem?: Partial<Record<"es" | "en" | "pt" | "it", string>>;
 }
 
 export interface MiniSeiItemSet {
@@ -47,15 +54,60 @@ let _cache: MiniSeiItemSet | undefined;
 function fallbackSet(): MiniSeiItemSet {
   return {
     version: "competency-fallback-v1",
-    items: SEI_ORDER.map((c) => ({
-      id: `c_${c}`,
-      competency: c,
-      reverse: false,
-      weight: 1,
-    })),
+    items: SEI_ORDER.map((c) => {
+      const q = DAILY_PULSE_QUESTIONS[c];
+      return {
+        id: `c_${c}`,
+        competency: c,
+        reverse: false,
+        weight: 1,
+        // Fallback stems come from the public daily-pulse intake prompts (not
+        // secret), so the fallback questionnaire can render without an env.
+        stem: {
+          es: q.esQuestion,
+          en: q.enQuestion,
+          pt: q.ptQuestion,
+          it: q.itQuestion,
+        },
+      };
+    }),
     norm: { mean: 100, sd: 15 },
     hasShortForm: false,
   };
+}
+
+export type MiniSeiLang = "es" | "en" | "pt" | "it";
+
+/**
+ * PUBLIC-SAFE question presentation. Returns ONLY the opaque position and the
+ * localized stem — never the competency, reverse-key, weight, or real item id.
+ * The position is the index into the (server-known) item order; the client
+ * answers by position and the server maps it back via resolveItemByPosition.
+ */
+export function publicQuestions(lang: MiniSeiLang): Array<{ pos: number; stem: string }> {
+  const set = loadMiniSeiItems();
+  return set.items.map((item, pos) => ({
+    pos,
+    stem: item.stem?.[lang] ?? item.stem?.es ?? `Pregunta ${pos + 1}`,
+  }));
+}
+
+/**
+ * Server-side: map opaque positional answers { "0": 4, "1": 3, ... } back to
+ * the real item-id-keyed answers the scorer expects. Positions outside range
+ * are dropped. NEVER call this with client-supplied item ids — only positions.
+ */
+export function answersByPosition(
+  positional: Record<string, number>,
+): Record<string, number> {
+  const set = loadMiniSeiItems();
+  const out: Record<string, number> = {};
+  for (const [posStr, value] of Object.entries(positional)) {
+    const pos = Number(posStr);
+    const item = set.items[pos];
+    if (item && typeof value === "number") out[item.id] = value;
+  }
+  return out;
 }
 
 /**

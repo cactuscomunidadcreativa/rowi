@@ -16,13 +16,15 @@ export type BillingPeriod = "monthly" | "yearly" | "custom";
  * (no por tokens/features sueltos):
  *   eco_general → prepara una conversación con ECO general (gancho gratis)
  *   relational  → guarda relaciones, ECO recurrente, afinidad por perfil
+ *   learning    → e-learning / entrenador IA para desarrollar tu EQ
  *   validated   → precisión validada Six Seconds (SEI completo)
- *   guided      → acompañamiento (coach / certificado / debrief)
+ *   guided      → acompañamiento humano (coach / certificado / debrief)
  *   contextual  → familia / equipo con privacidad y contexto organizacional
  */
 export type RelationalDepth =
   | "eco_general"
   | "relational"
+  | "learning"
   | "validated"
   | "guided"
   | "contextual";
@@ -317,6 +319,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     nameEN: "ROWI+",
     description: "Para tu crecimiento personal. Todo lo que necesitas para desarrollar tu inteligencia emocional.",
     descriptionEN: "For your personal growth. Everything you need to develop your emotional intelligence.",
+    relationalDepth: "learning",
 
     priceMonthly: 12,
     priceYearly: 120,
@@ -873,10 +876,13 @@ export function relationalDepthForPlan(plan: RowiPlan): RelationalDepth {
   ) {
     return "contextual";
   }
-  if (plan.customOnboarding || plan.workshopIncludes || plan.agents.rowiTrainer) {
+  // Acompañamiento HUMANO (onboarding dedicado / workshop). El entrenador IA
+  // (rowiTrainer) NO es acompañamiento — es e-learning, va a "learning".
+  if (plan.customOnboarding || plan.workshopIncludes) {
     return "guided";
   }
   if (plan.seiIncluded) return "validated";
+  if (plan.agents.rowiTrainer) return "learning";
   if (plan.agents.rowiAffinity || plan.agents.rowiECO) return "relational";
   return "eco_general";
 }
@@ -889,6 +895,7 @@ export function relationalDepthLabel(
   const labels: Record<RelationalDepth, Record<string, string>> = {
     eco_general: { es: "Prepara una conversación", en: "Prepare a conversation", pt: "Prepare uma conversa", it: "Prepara una conversazione" },
     relational: { es: "Guarda y mejora tus relaciones", en: "Save and improve your relationships", pt: "Guarde e melhore suas relações", it: "Salva e migliora le tue relazioni" },
+    learning: { es: "Aprende y entrena tu EQ", en: "Learn and train your EQ", pt: "Aprenda e treine seu EQ", it: "Impara e allena il tuo EQ" },
     validated: { es: "Precisión validada Six Seconds", en: "Six Seconds validated precision", pt: "Precisão validada Six Seconds", it: "Precisione validata Six Seconds" },
     guided: { es: "Acompañamiento y certificación", en: "Guidance and certification", pt: "Acompanhamento e certificação", it: "Accompagnamento e certificazione" },
     contextual: { es: "Familia o equipo con privacidad", en: "Family or team with privacy", pt: "Família ou equipe com privacidade", it: "Famiglia o team con privacy" },

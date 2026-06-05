@@ -630,10 +630,10 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
     description: "Inteligencia emocional para tu organización. Transforma la cultura de tu empresa.",
     descriptionEN: "Emotional intelligence for your organization. Transform your company culture.",
 
-    priceMonthly: 5,
-    priceYearly: 54,
-    pricePerUser: 5,
-    pricePerUserYearly: 54,
+    priceMonthly: 10,
+    priceYearly: 108,
+    pricePerUser: 10,
+    pricePerUserYearly: 108,
     isCustomPricing: false,
     currency: "USD",
 

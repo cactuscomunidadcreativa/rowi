@@ -21,6 +21,7 @@ import {
 import ContextDetailDrawer from "@/components/vital-signs/ContextDetailDrawer";
 import DailyPulseWeek from "@/components/dashboard/DailyPulseWeek";
 import { BudgetCrossCard } from "@/components/vital-signs/BudgetCrossCard";
+import { MiniSeiTrendCard } from "@/components/vital-signs/MiniSeiTrendCard";
 import {
   Activity,
   Brain,
@@ -278,6 +279,9 @@ export default function VitalSignsPage() {
         <>
           {/* Daily pulse 7-day sparkline */}
           <DailyPulseWeek />
+
+          {/* Mini-SEI monthly trend (trait) */}
+          <MiniSeiTrendCard />
 
           {/* Emotional Budgeting — capacity vs perception gap */}
           <BudgetCrossCard />

@@ -6096,5 +6096,14 @@
   "vitalSigns.budget.subtitleAbsolute": "Comparación de tu capacidad (SEI) con el clima percibido.",
   "vitalSigns.budget.cell.blindSpot": "Punto ciego",
   "vitalSigns.budget.cell.aligned": "Alineado",
-  "vitalSigns.budget.cell.hidden": "Fortaleza oculta"
+  "vitalSigns.budget.cell.hidden": "Fortaleza oculta",
+  "miniSei.title": "Tu Rowi Test mensual",
+  "miniSei.subtitle": "Cómo evoluciona tu capacidad emocional mes a mes (lectura indicativa).",
+  "miniSei.indicativeNote": "Lectura indicativa, no normada. El SEI completo de Six Seconds da el resultado certificado.",
+  "miniSei.totalEq": "EQ Total",
+  "miniSei.trend.up": "En ascenso",
+  "miniSei.trend.down": "En descenso",
+  "miniSei.trend.stable": "Estable",
+  "miniSei.empty": "Aún no has tomado tu primer Rowi Test. Tarda 2 minutos.",
+  "miniSei.cta": "Tomar el Rowi Test"
 }

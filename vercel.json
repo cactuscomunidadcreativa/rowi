@@ -56,6 +56,10 @@
     {
       "path": "/api/cron/invite-expiry-reminder",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/mini-sei-reminder",
+      "schedule": "0 6 1 * *"
     }
   ]
 }

@@ -193,6 +193,7 @@ model User {
   vsFeedbacks         HypothesisFeedback[]  @relation("VsFeedbackRespondent")
   vsSignals           PulsePointSignal[]    @relation("VsSignalUser")
   preSeiSessions      PreSeiSession[]       @relation("PreSeiClaim")
+  miniSeiSnapshots    MiniSeiSnapshot[]     @relation("MiniSeiUser")
   vsWeightsCreated    PulsePointWeights[]   @relation("PulsePointWeightsCreator")
   debriefsFacilitated DebriefSession[]      @relation("DebriefFacilitator")
   debriefsAsSubject   DebriefSession[]      @relation("DebriefSubject")
@@ -1976,21 +1977,21 @@ model InvoiceItem {
 }
 
 model Budget {
-  id          String   @id @default(cuid())
-  tenantId    String?
-  hubId       String?
-  name        String
-  category    String?
-  period      String   @default("monthly")
-  allocatedUsd Decimal @db.Decimal(12, 2)
-  spentUsd    Decimal  @default(0) @db.Decimal(12, 2)
-  startDate   DateTime @default(now())
-  endDate     DateTime?
-  meta        Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  hub         Hub?     @relation(fields: [hubId], references: [id])
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  id           String    @id @default(cuid())
+  tenantId     String?
+  hubId        String?
+  name         String
+  category     String?
+  period       String    @default("monthly")
+  allocatedUsd Decimal   @db.Decimal(12, 2)
+  spentUsd     Decimal   @default(0) @db.Decimal(12, 2)
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  meta         Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  hub          Hub?      @relation(fields: [hubId], references: [id])
+  tenant       Tenant?   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, hubId, startDate])
   @@map("budget")
@@ -2682,18 +2683,18 @@ model CommunicationProfile {
 /// global (RowiVerseUser) para ser trans-tenant, igual que AffinitySnapshot.
 /// NO reemplaza AffinitySnapshot — cachea la brecha y da memoria/contexto.
 model RelationshipDyad {
-  id            String  @id @default(cuid())
-  ownerUserId   String
-  ownerGlobalId String?
-  otherUserId   String? // si el otro ya es usuario Rowi
-  otherGlobalId String?
-  otherName     String? // si B no es usuario aún (percepción del dueño)
-  otherEmail    String?
-  relationType  String  @default("other") // partner|child|parent|friend|colleague|boss|other
-  context       String  @default("relationship") // mapea a los contextos de affinity
-  toneOverride  String? // ajuste de tono por relación (no duplica el perfil base)
-  otherJoined   Boolean @default(false) // ¿B declaró su CommunicationProfile?
-  otherSeiDone  Boolean @default(false) // ¿B validó con SEI real?
+  id             String    @id @default(cuid())
+  ownerUserId    String
+  ownerGlobalId  String?
+  otherUserId    String? // si el otro ya es usuario Rowi
+  otherGlobalId  String?
+  otherName      String? // si B no es usuario aún (percepción del dueño)
+  otherEmail     String?
+  relationType   String    @default("other") // partner|child|parent|friend|colleague|boss|other
+  context        String    @default("relationship") // mapea a los contextos de affinity
+  toneOverride   String? // ajuste de tono por relación (no duplica el perfil base)
+  otherJoined    Boolean   @default(false) // ¿B declaró su CommunicationProfile?
+  otherSeiDone   Boolean   @default(false) // ¿B validó con SEI real?
   // Cache de la BRECHA (escala de sintonía), NUNCA un veredicto de compatibilidad.
   lastGapSummary Json?
   lastGapAt      DateTime?
@@ -4271,9 +4272,9 @@ model BenchmarkDataPoint {
   // p.ej. "Equipo Soraya - Bancolombia"). Permite separar equipos dentro
   // de un mismo benchmark org y hacer el cruce equipo↔individuo.
   projectCohort String?
-  year        Int? // Año del assessment (extraído de Date/Year)
-  month       Int? // Mes del assessment (1-12, extraído de Date)
-  quarter     Int? // Trimestre (1-4, calculado desde month)
+  year          Int? // Año del assessment (extraído de Date/Year)
+  month         Int? // Mes del assessment (1-12, extraído de Date)
+  quarter       Int? // Trimestre (1-4, calculado desde month)
 
   // Segmentación organizacional
   tenantId    String?
@@ -6998,6 +6999,31 @@ model PreSeiSession {
   @@index([claimedByUserId])
   @@index([createdAt])
   @@map("pre_sei_session")
+}
+
+/// Mini-SEI recurrente ("SEI cada cierto tiempo"). Hito mensual de RASGO: el
+/// daily-pulse mide estado en vivo, este snapshot mide la capacidad estable.
+/// Total EQ proviene del bloque de 12 items (short-form, r=.904 con el SEI
+/// completo); el perfil por competencia es INDICATIVO (no normado) hasta el
+/// SEI real. Los items/pesos/normas viven en env ROWI_MINISEI_ITEMS, nunca en
+/// git. db-push safe: tabla nueva, FK opcional en User.
+model MiniSeiSnapshot {
+  id                String   @id @default(cuid())
+  userId            String
+  takenAt           DateTime @default(now())
+  totalEq           Float // 75-130 según versión de escala activa
+  totalEqBand       String // coarse band (low|mid|high) por versión SEI
+  competencyProfile Json // { EL:4.1, RP:3.2, ... } indicativo, no normado
+  answers           Json // respuestas crudas 1-5 { item: value }
+  itemsVersion      String   @default("hybrid-v1") // versión del set de items
+  scaleVersion      String   @default("v4") // v4 | v5 (escala usada al scorear)
+  source            String   @default("monthly") // monthly | onboarding | adhoc
+  createdAt         DateTime @default(now())
+
+  user User @relation("MiniSeiUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, takenAt])
+  @@map("mini_sei_snapshot")
 }
 
 // =============================================================================

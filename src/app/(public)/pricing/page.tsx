@@ -29,6 +29,8 @@ import {
   calculateYearlySavingsPercent,
   getTokensText,
   getSupportLevelName,
+  relationalDepthForPlan,
+  relationalDepthLabel,
   type RowiPlan,
   type PlanSlug,
 } from "@/domains/plans/lib/plans";
@@ -270,6 +272,14 @@ export default function PricingPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-xl">{plan.name}</h3>
+                    {/* Profundidad relacional: qué nivel de la cadena SIA
+                        desbloquea este plan (no cambia el precio). */}
+                    <span
+                      className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1"
+                      style={{ backgroundColor: `${plan.color}1A`, color: plan.color }}
+                    >
+                      {relationalDepthLabel(relationalDepthForPlan(plan), lang)}
+                    </span>
                     <p className="text-sm text-[var(--rowi-muted)]">
                       {lang === "es" ? plan.description.split(".")[0] : plan.descriptionEN.split(".")[0]}
                     </p>

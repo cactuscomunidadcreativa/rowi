@@ -69,6 +69,11 @@ src/data/seeds/*.json
 *.old
 *.backup
 
+# Benchmark seed + raw imports — NUNCA en public/ ni en git.
+# Datos crudos (anonimizados o no) que siembran el benchmark/Rowiverse.
+# Viven en almacenamiento privado (Vercel Blob) + copia local aquí.
+/data/seed/
+
 # Documentos internos sensibles (no publicar)
 REVISION_LEGAL.md
 SESION_CONTEXTO.md

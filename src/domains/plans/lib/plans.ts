@@ -9,6 +9,24 @@ export type TargetAudience = "B2C" | "B2B" | "B2C/B2B";
 export type SupportLevel = "community" | "email" | "chat" | "priority" | "dedicated";
 export type BillingPeriod = "monthly" | "yearly" | "custom";
 
+/**
+ * Profundidad relacional — la espina narrativa SIA del pricing.
+ * No reemplaza precios ni features; expresa QUÉ profundidad de la cadena
+ * relacional desbloquea cada plan, para comunicar valor por profundidad
+ * (no por tokens/features sueltos):
+ *   eco_general → prepara una conversación con ECO general (gancho gratis)
+ *   relational  → guarda relaciones, ECO recurrente, afinidad por perfil
+ *   validated   → precisión validada Six Seconds (SEI completo)
+ *   guided      → acompañamiento (coach / certificado / debrief)
+ *   contextual  → familia / equipo con privacidad y contexto organizacional
+ */
+export type RelationalDepth =
+  | "eco_general"
+  | "relational"
+  | "validated"
+  | "guided"
+  | "contextual";
+
 export interface RowiPlan {
   slug: PlanSlug;
   name: string;
@@ -37,6 +55,10 @@ export interface RowiPlan {
   // Tipo
   planType: PlanType;
   targetAudience: TargetAudience;
+
+  // Profundidad relacional (espina narrativa SIA del pricing).
+  // Opcional: si no se declara, se deriva con relationalDepthForPlan().
+  relationalDepth?: RelationalDepth;
 
   // Agentes IA
   agents: {
@@ -829,6 +851,49 @@ export function getB2BPlans(): RowiPlan[] {
 /** Obtener plan por slug */
 export function getPlanBySlug(slug: PlanSlug): RowiPlan | undefined {
   return ROWI_PLANS[slug];
+}
+
+/**
+ * Profundidad relacional de un plan. Usa el campo explícito si está declarado;
+ * si no, lo deriva de las features para no exigir editar los 7 planes a mano:
+ *   - sin SEI ni afinidad → eco_general (gancho gratis)
+ *   - afinidad/ECO sin SEI → relational
+ *   - SEI incluido         → validated
+ *   - coach/onboarding/workshop → guided
+ *   - team/family/business → contextual
+ * El orden de evaluación va de mayor a menor contexto.
+ */
+export function relationalDepthForPlan(plan: RowiPlan): RelationalDepth {
+  if (plan.relationalDepth) return plan.relationalDepth;
+  if (
+    plan.planType === "team" ||
+    plan.planType === "family" ||
+    plan.planType === "business" ||
+    plan.planType === "enterprise"
+  ) {
+    return "contextual";
+  }
+  if (plan.customOnboarding || plan.workshopIncludes || plan.agents.rowiTrainer) {
+    return "guided";
+  }
+  if (plan.seiIncluded) return "validated";
+  if (plan.agents.rowiAffinity || plan.agents.rowiECO) return "relational";
+  return "eco_general";
+}
+
+/** Etiqueta corta i18n de la profundidad relacional (ES/EN/PT/IT). */
+export function relationalDepthLabel(
+  depth: RelationalDepth,
+  locale = "es",
+): string {
+  const labels: Record<RelationalDepth, Record<string, string>> = {
+    eco_general: { es: "Prepara una conversación", en: "Prepare a conversation", pt: "Prepare uma conversa", it: "Prepara una conversazione" },
+    relational: { es: "Guarda y mejora tus relaciones", en: "Save and improve your relationships", pt: "Guarde e melhore suas relações", it: "Salva e migliora le tue relazioni" },
+    validated: { es: "Precisión validada Six Seconds", en: "Six Seconds validated precision", pt: "Precisão validada Six Seconds", it: "Precisione validata Six Seconds" },
+    guided: { es: "Acompañamiento y certificación", en: "Guidance and certification", pt: "Acompanhamento e certificação", it: "Accompagnamento e certificazione" },
+    contextual: { es: "Familia o equipo con privacidad", en: "Family or team with privacy", pt: "Família ou equipe com privacidade", it: "Famiglia o team con privacy" },
+  };
+  return labels[depth][locale] ?? labels[depth].es;
 }
 
 /** Formatear precio */

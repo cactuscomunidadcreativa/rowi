@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
+import { mapSourceToEnum } from "@/lib/acquisition/source";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,11 @@ interface FinalizeBody {
   country?: string;
   wantsSei?: boolean;
   referralCode?: string;
+  // Atribución preservada a través del redirect de OAuth.
+  source?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +35,16 @@ export async function POST(req: NextRequest) {
     }
 
     const body: FinalizeBody = await req.json().catch(() => ({}));
-    const { planSlug, language, country, referralCode } = body;
+    const {
+      planSlug,
+      language,
+      country,
+      referralCode,
+      source,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    } = body;
 
     const user = await prisma.user.findUnique({
       where: { id: auth.id },
@@ -97,6 +112,31 @@ export async function POST(req: NextRequest) {
         name: true,
         onboardingStatus: true,
         planId: true,
+      },
+    });
+
+    // Atribución de adquisición para usuarios OAuth (antes no se registraba).
+    // Upsert idempotente por userId; solo escribe la fuente en la creación —
+    // un re-finalize no debe pisar la atribución original.
+    const mappedSource = mapSourceToEnum(source);
+    await prisma.userAcquisition.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        source: mappedSource
+          ? mappedSource
+          : referredBy
+          ? "REFERRAL"
+          : utmSource
+          ? "PAID_SEARCH"
+          : "ORGANIC",
+        channel: source || utmSource || null,
+        referredBy: referredBy ?? null,
+        referralCode: referralCode || null,
+        utmSource: utmSource ?? null,
+        utmMedium: utmMedium ?? null,
+        utmCampaign: utmCampaign ?? null,
       },
     });
 

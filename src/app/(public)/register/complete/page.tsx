@@ -15,6 +15,11 @@ interface StoredRegistration {
     referralCode?: string;
   };
   billingPeriod?: string;
+  // Atribución preservada a través del redirect de OAuth.
+  source?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
 }
 
 export default function RegisterCompletePage() {
@@ -49,6 +54,10 @@ export default function RegisterCompletePage() {
       country: stored?.formData?.country,
       wantsSei: stored?.formData?.wantsSei,
       referralCode: stored?.formData?.referralCode,
+      source: stored?.source,
+      utmSource: stored?.utmSource,
+      utmMedium: stored?.utmMedium,
+      utmCampaign: stored?.utmCampaign,
     };
 
     (async () => {

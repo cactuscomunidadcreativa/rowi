@@ -48,7 +48,8 @@ const TALENTS = [
 ];
 
 async function main() {
-  const csvPath = path.join(process.cwd(), "public/TEST/be2growplaning.csv");
+  // Moved out of public/ (was world-downloadable). Now a private seed file.
+  const csvPath = path.join(process.cwd(), "data/seed/imports/be2growplaning.csv");
   const csvText = fs.readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
   const rows = parse(csvText, { columns: true, skip_empty_lines: true, trim: true });
 

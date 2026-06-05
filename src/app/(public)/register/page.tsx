@@ -554,6 +554,12 @@ function RegisterPageContent() {
           selectedPlan,
           formData,
           billingPeriod,
+          // Atribución: el query ?source= se pierde tras el redirect de OAuth,
+          // así que lo guardamos junto con los datos de registro.
+          source: searchParams.get("source"),
+          utmSource: searchParams.get("utm_source"),
+          utmMedium: searchParams.get("utm_medium"),
+          utmCampaign: searchParams.get("utm_campaign"),
         })
       );
       await signIn(providerId, { callbackUrl: "/register/complete" });
@@ -593,6 +599,7 @@ function RegisterPageContent() {
           utmSource: searchParams.get("utm_source"),
           utmMedium: searchParams.get("utm_medium"),
           utmCampaign: searchParams.get("utm_campaign"),
+          source: searchParams.get("source"),
         }),
       });
 

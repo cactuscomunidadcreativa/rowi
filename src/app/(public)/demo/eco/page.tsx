@@ -82,7 +82,7 @@ Do you have a moment this week for a quick call? I'd love to hear your opinion a
 ========================================================= */
 const translations = {
   es: {
-    badge: "Demo Interactivo",
+    badge: "Ejemplo ilustrativo",
     title: "ECO",
     titleFull: "Emotional Communication Optimizer",
     subtitle: "Optimiza tu comunicación emocional con mensajes adaptados a cada persona",
@@ -115,9 +115,10 @@ const translations = {
     tipDesc: "En tu cuenta real, ECO analizará el perfil SEI real de tus contactos para generar mensajes verdaderamente personalizados.",
 
     createAccount: "Crear mi cuenta",
+    tryReal: "Probar con mi perfil real",
   },
   en: {
-    badge: "Interactive Demo",
+    badge: "Illustrative example",
     title: "ECO",
     titleFull: "Emotional Communication Optimizer",
     subtitle: "Optimize your emotional communication with messages adapted to each person",
@@ -150,9 +151,10 @@ const translations = {
     tipDesc: "In your real account, ECO will analyze the actual SEI profile of your contacts to generate truly personalized messages.",
 
     createAccount: "Create my account",
+    tryReal: "Try with my real profile",
   },
   pt: {
-    badge: "Demo Interativo",
+    badge: "Exemplo ilustrativo",
     title: "ECO",
     titleFull: "Emotional Communication Optimizer",
     subtitle: "Otimize sua comunicação emocional com mensagens adaptadas a cada pessoa",
@@ -178,9 +180,10 @@ const translations = {
     tipTitle: "Isto é um demo",
     tipDesc: "Na sua conta real, o ECO analisará o perfil SEI real dos seus contatos para gerar mensagens verdadeiramente personalizadas.",
     createAccount: "Criar minha conta",
+    tryReal: "Testar com meu perfil real",
   },
   it: {
-    badge: "Demo Interattivo",
+    badge: "Esempio illustrativo",
     title: "ECO",
     titleFull: "Emotional Communication Optimizer",
     subtitle: "Ottimizza la tua comunicazione emotiva con messaggi adattati a ogni persona",
@@ -206,6 +209,7 @@ const translations = {
     tipTitle: "Questo è un demo",
     tipDesc: "Nel tuo account reale, ECO analizzerà il profilo SEI reale dei tuoi contatti per generare messaggi veramente personalizzati.",
     createAccount: "Crea il mio account",
+    tryReal: "Prova con il mio profilo reale",
   },
 };
 
@@ -431,17 +435,17 @@ export default function DemoEcoPage() {
           </Link>
           <div className="flex gap-4">
             <Link
-              href="/register"
+              href="/pre-sei?source=demo_eco"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold hover:opacity-90 transition-opacity"
             >
-              {t.createAccount}
+              {t.tryReal}
+              <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/demo/coach"
+              href="/register?source=demo_eco"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors font-medium"
             >
-              {t.next}
-              <ArrowRight className="w-5 h-5" />
+              {t.createAccount}
             </Link>
           </div>
         </div>

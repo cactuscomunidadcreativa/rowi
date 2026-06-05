@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/core/prisma";
 import bcrypt from "bcryptjs";
 import { logSecurityEvent } from "@/lib/audit/auditLog";
+import { rateLimiters } from "@/lib/security/rateLimit";
 
 /* =========================================================
    🔧 Helper: Cargar perfil MINIMO para JWT
@@ -88,10 +89,29 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Contraseña", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = credentials.email.toLowerCase();
+
+        // 🛡️ Rate limit de login: frena brute-force / credential stuffing.
+        // Por email (siempre disponible) y por IP cuando viene en headers.
+        // authStrict = 5 intentos / 5 min. Con Upstash es distribuido; sin
+        // credenciales cae a in-memory (fail-open) — comportamiento histórico.
+        const fwd =
+          (req?.headers as Record<string, string> | undefined)?.[
+            "x-forwarded-for"
+          ] ?? "";
+        const ip = fwd.split(",")[0]?.trim() || "unknown";
+        const loginRl = await rateLimiters.authStrict(`login:${ip}:${email}`);
+        if (!loginRl.success) {
+          logSecurityEvent("LOGIN_FAILED", {
+            email,
+            reason: "Rate limited",
+          }).catch(() => {});
+          // NextAuth interpreta el throw como error de credenciales genérico.
+          throw new Error("rate_limited");
+        }
         const user = await prisma.user.findUnique({
           where: { email },
           select: {

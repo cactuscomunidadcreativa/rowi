@@ -11,6 +11,9 @@ import { sendVerificationEmail } from "@/lib/email/sendVerificationEmail";
 import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 import { getServerAppBaseUrl } from "@/core/utils/base-url";
 import { claimPreSeiSession } from "@/lib/pre-sei/claim";
+import { mapSourceToEnum } from "@/lib/acquisition/source";
+import { rateLimiters } from "@/lib/security/rateLimit";
+import { verifyTurnstile } from "@/lib/security/turnstile";
 
 interface RegisterBody {
   email: string;
@@ -24,8 +27,14 @@ interface RegisterBody {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  // Canal de adquisición libre (?source=...): rel_invite, coach_invite,
+  // eco_general, register, etc. Se mapea al enum AcquisitionSource y se
+  // conserva el valor crudo en UserAcquisition.channel.
+  source?: string;
   // Pre-SEI: token de la sesión anónima a reclamar tras crear la cuenta.
   preSeiToken?: string;
+  // Cloudflare Turnstile (captcha). Se verifica solo si está configurado.
+  turnstileToken?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -42,6 +51,7 @@ export async function POST(req: NextRequest) {
       utmSource,
       utmMedium,
       utmCampaign,
+      source,
     } = body;
 
     // Validaciones básicas
@@ -49,6 +59,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "email_password_required" },
         { status: 400 }
+      );
+    }
+
+    // 🛡️ Rate limit anti-abuso: frena registro masivo automatizado.
+    // Por IP: 5 cuentas / 5 min. Con Upstash es distribuido entre instancias;
+    // sin credenciales cae a in-memory (fail-open).
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rl = await rateLimiters.authStrict(`register:${ip}`);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "rate_limited" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000)),
+            ),
+          },
+        },
+      );
+    }
+
+    // 🛡️ Captcha (Cloudflare Turnstile). Omitido si no está configurado.
+    const captcha = await verifyTurnstile(body.turnstileToken, ip);
+    if (!captcha.ok) {
+      return NextResponse.json(
+        { error: captcha.error || "captcha_failed" },
+        { status: 400 },
       );
     }
 
@@ -257,15 +296,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Crear registro de adquisición
+    // Crear registro de adquisición.
+    // Prioridad del enum source: ?source= explícito > referido > UTM > orgánico.
+    // El canal crudo (rel_invite, coach_invite, ...) se conserva en `channel`
+    // aunque el enum lo agrupe, para no perder la atribución fina del ad/invite.
+    const mappedSource = mapSourceToEnum(source);
     await prisma.userAcquisition.create({
       data: {
         userId: user.id,
-        source: referredBy
+        source: mappedSource
+          ? mappedSource
+          : referredBy
           ? "REFERRAL"
           : utmSource
           ? "PAID_SEARCH"
           : "ORGANIC",
+        channel: source || utmSource || null,
         referredBy,
         referralCode: referralCode || null,
         utmSource,

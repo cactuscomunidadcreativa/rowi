@@ -90,6 +90,19 @@ const IA_PATHS = [
   "/api/hub/ai",
 ];
 
+// Webhooks externos autenticados por FIRMA (no por sesión) que NO deben pasar
+// por el rate limit por IP: Stripe/Twilio/Slack envían desde pools de IPs y un
+// burst de eventos legítimos (o reintentos) en la misma ventana de 60s podría
+// disparar un 429 — para Stripe eso significa pagos que no se activan. La firma
+// ya es la defensa correcta aquí; el rate limit por IP solo añade riesgo.
+const RATE_LIMIT_EXEMPT_PATHS = [
+  "/api/stripe/webhook",
+  "/api/webhooks",
+  "/api/integrations/slack/events",
+  "/api/integrations/slack/commands",
+  "/api/integrations/whatsapp/webhook",
+];
+
 // APIs que no requieren verificación de origen (webhooks externos)
 const CSRF_EXEMPT_PATHS = [
   "/api/stripe/webhook",
@@ -242,7 +255,10 @@ export async function middleware(req: NextRequest) {
   /* =========================================================
      2) 🛡️ RATE LIMITING para todas las APIs
   ========================================================== */
-  if (pathname.startsWith("/api/")) {
+  if (
+    pathname.startsWith("/api/") &&
+    !RATE_LIMIT_EXEMPT_PATHS.some((p) => pathname.startsWith(p))
+  ) {
     cleanupExpiredEntries();
 
     const prefix = matchRateLimitPrefix(pathname);

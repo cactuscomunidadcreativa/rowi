@@ -22,14 +22,15 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
  * partida. Lee /api/avatar (sistema de dos ejes ya existente) y
  * /api/daily-pulse/today (señal de reflexión + racha).
  *
- * Niveles Six Seconds → asset del Rowi:
- *  1 Desafío → Rowi-01 · 2 Emergente → Rowi-02 · 3 Funcional → Rowi-04
+ * Niveles Six Seconds → asset del Rowi (consecutivos, sin saltar ninguno):
+ *  1 Desafío → Rowi-02 · 2 Emergente → Rowi-03 · 3 Funcional → Rowi-04
  *  4 Diestro → Rowi-05 · 5 Experto → Rowi-06
+ * (Rowi-01 es el inicio del viaje y vive en el hero por etapa de Becoming.)
  */
 
 const LEVEL_ASSET: Record<number, string> = {
-  1: "/rowivectors/Rowi-01.webp",
-  2: "/rowivectors/Rowi-02.webp",
+  1: "/rowivectors/Rowi-02.webp",
+  2: "/rowivectors/Rowi-03.webp",
   3: "/rowivectors/Rowi-04.webp",
   4: "/rowivectors/Rowi-05.webp",
   5: "/rowivectors/Rowi-06.webp",

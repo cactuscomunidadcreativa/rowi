@@ -5,24 +5,27 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * RowiStageImage — renderiza los ASSETS REALES del huevo→búho por etapa de
- * Becoming (no emoji). Enciende los assets que ya existían pero nunca se usaban:
- * egg-1/2/3.png para las etapas pre-eclosión, owl.png una vez nacido.
+ * RowiStageImage — renderiza al personaje Rowi por ETAPA de Becoming usando los
+ * 6 vectores en orden (Rowi-01→06), uno por etapa. La progresión 01→06 ES la
+ * evolución del personaje; ningún vector se salta.
  *
- * El eje aquí es la ETAPA (Becoming), distinto del eje nivel (Foundation/SEI,
- * que usa los vectores Rowi-0X). Las dos representaciones conviven.
+ * Eje ETAPA (Becoming, 6 vectores en secuencia) vs eje NIVEL (Foundation/SEI,
+ * en la tarjeta Foundation). Las dos representaciones conviven.
  */
 
 export type RowiStage = "EGG" | "HATCHING" | "BABY" | "YOUNG" | "ADULT" | "WISE";
 
-/** Asset real por etapa: el huevo se va abriendo, luego nace el búho. */
+/**
+ * Asset por etapa de Becoming: los 6 vectores Rowi en orden (01→06), uno por
+ * etapa. La progresión del personaje ES la evolución 01→06; no se salta ninguno.
+ */
 const STAGE_ASSET: Record<RowiStage, string> = {
-  EGG: "/egg-1.png",
-  HATCHING: "/egg-2.png",
-  BABY: "/egg-3.png",
-  YOUNG: "/owl.png",
-  ADULT: "/owl.png",
-  WISE: "/owl.png",
+  EGG: "/rowivectors/Rowi-01.webp",
+  HATCHING: "/rowivectors/Rowi-02.webp",
+  BABY: "/rowivectors/Rowi-03.webp",
+  YOUNG: "/rowivectors/Rowi-04.webp",
+  ADULT: "/rowivectors/Rowi-05.webp",
+  WISE: "/rowivectors/Rowi-06.webp",
 };
 
 const SIZE_PX: Record<NonNullable<RowiStageImageProps["size"]>, number> = {

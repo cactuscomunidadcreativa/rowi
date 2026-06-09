@@ -15,8 +15,12 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.next/',
+    '<rootDir>/.claude/', // git worktrees de sesiones de agente — copias, no código real
     '<rootDir>/e2e/', // Playwright lives here — runs separately
   ],
+  // Sin esto, Jest descubre los módulos duplicados de cada worktree bajo
+  // .claude/ y avisa de "haste module naming collision".
+  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',

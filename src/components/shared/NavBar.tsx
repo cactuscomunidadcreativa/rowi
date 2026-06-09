@@ -357,7 +357,7 @@ const BASE_LINKS = [
   { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
   { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
   { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
-  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "impact" },
+  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "see" },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false, journey: "workspace" },
 ];
 

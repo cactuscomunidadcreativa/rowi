@@ -80,6 +80,7 @@ export default function ForOrganizationsPage() {
             { value: "47", suffix: "%", label: t("forOrg.stats.managerial") },
             { value: "50", suffix: "+", label: t("forOrg.stats.cases") },
           ],
+          source: t("forOrg.stats.source", "Fuente: casos de estudio de Six Seconds"),
         }}
         config={{ layout: "gradient", columns: 4, animated: false }}
       />

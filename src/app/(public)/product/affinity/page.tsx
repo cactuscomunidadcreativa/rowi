@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { HeroSection, FeaturesSection, CTASection, StatsSection } from "@/components/public/sections";
+import { HeroSection, FeaturesSection, CTASection } from "@/components/public/sections";
 import { motion } from "framer-motion";
 import { Users, Brain, MessageCircle, Zap, Puzzle, Rocket, Shield, Target, Heart, Briefcase, UserCheck, BarChart3 } from "lucide-react";
 
@@ -49,18 +49,38 @@ export default function ProductAffinityPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <StatsSection
-        content={{
-          stats: [
-            { value: "32", suffix: "%", label: t("productAffinity.stats.collaboration", "Mejor colaboración") },
-            { value: "45", suffix: "%", label: t("productAffinity.stats.friction", "Menos fricción") },
-            { value: "28", suffix: "%", label: t("productAffinity.stats.execution", "Mayor ejecución") },
-            { value: "3", suffix: "x", label: t("productAffinity.stats.decisions", "Decisiones más rápidas") },
-          ]
-        }}
-        config={{ layout: "gradient", columns: 4 }}
-      />
+      {/* Beneficios cualitativos — sin cifras no respaldadas (feedback_no_fake_social_proof) */}
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-gradient-to-r from-[var(--rowi-g2)] via-[var(--rowi-g3)] to-[var(--rowi-g1)] rounded-3xl p-8 md:p-12"
+          >
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: Users, label: t("productAffinity.stats.collaboration", "Mejor colaboración") },
+                { icon: Zap, label: t("productAffinity.stats.friction", "Menos fricción") },
+                { icon: Rocket, label: t("productAffinity.stats.execution", "Mayor ejecución") },
+                { icon: Target, label: t("productAffinity.stats.decisions", "Decisiones más rápidas") },
+              ].map(({ icon: Icon, label }, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex flex-col items-center text-center gap-3"
+                >
+                  <Icon className="w-9 h-9 text-white" />
+                  <span className="text-lg md:text-xl font-semibold text-white">{label}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* What Affinity Enables - Work Level */}
       <section id="how-it-works" className="py-20 px-4">

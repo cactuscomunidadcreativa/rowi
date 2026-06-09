@@ -14,6 +14,8 @@ interface StatsContent {
   title?: string;
   subtitle?: string;
   stats: Stat[];
+  /** Nota de fuente citable, visible bajo las cifras (e.g. "Fuente: Six Seconds Business Case"). */
+  source?: string;
 }
 
 interface StatsConfig {
@@ -57,6 +59,9 @@ export default function StatsSection({ content, config }: StatsSectionProps) {
                 />
               ))}
             </div>
+            {content.source && (
+              <p className="mt-8 text-center text-sm text-white/70">{content.source}</p>
+            )}
           </motion.div>
         </div>
       </section>
@@ -103,6 +108,9 @@ export default function StatsSection({ content, config }: StatsSectionProps) {
             />
           ))}
         </div>
+        {content.source && (
+          <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">{content.source}</p>
+        )}
       </div>
     </section>
   );

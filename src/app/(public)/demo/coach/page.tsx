@@ -170,7 +170,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
         className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
           isUser
             ? "bg-[var(--rowi-primary)]/20"
-            : "bg-gradient-to-br from-blue-500 to-cyan-500"
+            : "bg-gradient-to-br from-violet-500 to-purple-500"
         }`}
       >
         {isUser ? (
@@ -239,7 +239,7 @@ export default function DemoCoachPage() {
   return (
     <div className="min-h-screen pt-16 pb-24 bg-[var(--rowi-background)]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-500/10 via-cyan-500/5 to-transparent py-12 px-4">
+      <div className="bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-2 mb-6">
             <Link
@@ -251,12 +251,12 @@ export default function DemoCoachPage() {
             </Link>
           </div>
 
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-600 dark:text-blue-400 mb-4">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-violet-500/20 text-violet-600 dark:text-violet-400 mb-4">
             <Sparkles className="w-3 h-3" />
             {t.badge}
           </span>
           <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
-            <Bot className="w-8 h-8 text-blue-500" />
+            <Bot className="w-8 h-8 text-violet-500" />
             {t.title}
           </h1>
           <p className="text-[var(--rowi-muted)] max-w-2xl">{t.subtitle}</p>
@@ -275,7 +275,7 @@ export default function DemoCoachPage() {
               style={{ height: "600px" }}
             >
               {/* Chat Header */}
-              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 flex items-center gap-3">
+              <div className="bg-gradient-to-r from-violet-500 to-purple-500 p-4 flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                   <Image
                     src="/rowivectors/Rowi-06.webp"
@@ -311,7 +311,7 @@ export default function DemoCoachPage() {
                     animate={{ opacity: 1 }}
                     className="flex gap-3"
                   >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
                       <Image
                         src="/rowivectors/Rowi-06.webp"
                         alt="Rowi"
@@ -362,12 +362,12 @@ export default function DemoCoachPage() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
                     placeholder={t.inputPlaceholder}
-                    className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-violet-500 outline-none"
                   />
                   <button
                     onClick={() => handleSend()}
                     disabled={!input.trim() || isTyping}
-                    className="px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     <Send className="w-5 h-5" />
                   </button>
@@ -388,8 +388,8 @@ export default function DemoCoachPage() {
               <ul className="space-y-3">
                 {[t.feature1, t.feature2, t.feature3, t.feature4].map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Sparkles className="w-3 h-3 text-blue-500" />
+                    <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Sparkles className="w-3 h-3 text-violet-500" />
                     </div>
                     <span className="text-sm">{feature}</span>
                   </li>
@@ -402,13 +402,13 @@ export default function DemoCoachPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6"
+              className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-2xl p-6"
             >
               <div className="flex gap-4">
-                <Info className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                <Info className="w-6 h-6 text-violet-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">{t.tipTitle}</h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">{t.tipDesc}</p>
+                  <h3 className="font-semibold text-violet-900 dark:text-violet-100 mb-1">{t.tipTitle}</h3>
+                  <p className="text-sm text-violet-700 dark:text-violet-300">{t.tipDesc}</p>
                 </div>
               </div>
             </motion.div>
@@ -418,7 +418,7 @@ export default function DemoCoachPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 text-white"
+              className="bg-gradient-to-br from-violet-500 to-purple-500 rounded-2xl p-6 text-white"
             >
               <h3 className="font-bold text-lg mb-2">
                 {lang === "es" ? "¿Listo para comenzar?" : "Ready to start?"}
@@ -430,7 +430,7 @@ export default function DemoCoachPage() {
               </p>
               <Link
                 href="/register"
-                className="block w-full py-3 rounded-xl bg-white text-blue-500 font-semibold text-center hover:bg-opacity-90 transition-opacity"
+                className="block w-full py-3 rounded-xl bg-white text-violet-500 font-semibold text-center hover:bg-opacity-90 transition-opacity"
               >
                 {t.createAccount}
               </Link>
@@ -450,13 +450,13 @@ export default function DemoCoachPage() {
           <div className="flex gap-4">
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity"
             >
               {t.createAccount}
             </Link>
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors font-medium"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-violet-500 text-violet-500 hover:bg-violet-500 hover:text-white transition-colors font-medium"
             >
               {t.finishTour}
             </Link>

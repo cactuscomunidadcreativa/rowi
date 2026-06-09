@@ -30,9 +30,9 @@ const DEMO_USER = {
 };
 
 const DEMO_PURSUITS = {
-  know: { score: 38, max: 45, label: "Know Yourself", color: "#3b82f6" },
-  choose: { score: 35, max: 45, label: "Choose Yourself", color: "#ef4444" },
-  give: { score: 39, max: 45, label: "Give Yourself", color: "#10b981" },
+  know: { score: 38, max: 45, label: "Know Yourself", labelEs: "Conócete", color: "#3b82f6" },
+  choose: { score: 35, max: 45, label: "Choose Yourself", labelEs: "Elígete", color: "#ef4444" },
+  give: { score: 39, max: 45, label: "Give Yourself", labelEs: "Entrégate", color: "#10b981" },
 };
 
 const DEMO_COMPETENCIES = [
@@ -216,7 +216,7 @@ function PursuitBar({ pursuit, lang }: { pursuit: typeof DEMO_PURSUITS.know; lan
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="font-medium">{pursuit.label}</span>
+        <span className="font-medium">{lang === "es" ? pursuit.labelEs : pursuit.label}</span>
         <span className="text-[var(--rowi-muted)]">{pursuit.score}/{pursuit.max}</span>
       </div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -433,12 +433,12 @@ export default function DemoDashboardPage() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6 flex gap-4"
+          className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-2xl p-6 flex gap-4"
         >
-          <Info className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
+          <Info className="w-6 h-6 text-violet-500 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">{t.tipTitle}</h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300">{t.tipDesc}</p>
+            <h3 className="font-semibold text-violet-900 dark:text-violet-100 mb-1">{t.tipTitle}</h3>
+            <p className="text-sm text-violet-700 dark:text-violet-300">{t.tipDesc}</p>
           </div>
         </motion.div>
 

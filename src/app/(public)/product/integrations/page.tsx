@@ -14,7 +14,7 @@ interface Section {
 }
 
 export default function ProductIntegrationsPage() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
@@ -56,13 +56,14 @@ export default function ProductIntegrationsPage() {
     <div className="min-h-screen pt-16">
       <HeroSection
         content={{
-          badge: lang !== "es" ? "🔌 Integrations" : "🔌 Integraciones",
-          title1: lang !== "es" ? "Connect Rowi with" : "Conecta Rowi con",
-          title2: lang !== "es" ? "your tools" : "tus herramientas",
-          subtitle: lang === "en"
-            ? "Integrate emotional intelligence into your daily workflow. Slack, Teams, calendars and more."
-            : "Integra la inteligencia emocional en tu flujo de trabajo diario. Slack, Teams, calendarios y más.",
-          ctaPrimary: lang !== "es" ? "View integrations" : "Ver integraciones",
+          badge: t("productIntegrations.hero.badge", "🔌 Integraciones"),
+          title1: t("productIntegrations.hero.title1", "Conecta Rowi con"),
+          title2: t("productIntegrations.hero.title2", "tus herramientas"),
+          subtitle: t(
+            "productIntegrations.hero.subtitle",
+            "Integra la inteligencia emocional en tu flujo de trabajo diario. Slack, Teams, calendarios y más."
+          ),
+          ctaPrimary: t("productIntegrations.hero.cta", "Ver integraciones"),
           ctaPrimaryHref: "/contact",
           image: "/rowivectors/Rowi-06.webp",
         }}
@@ -71,57 +72,63 @@ export default function ProductIntegrationsPage() {
 
       <FeaturesSection
         content={{
-          title1: lang !== "es" ? "Available" : "Integraciones",
-          title2: lang !== "es" ? "integrations" : "disponibles",
-          subtitle: lang !== "es" ? "Rowi where you need it" : "Rowi donde lo necesites",
+          title1: t("productIntegrations.features.title1", "Integraciones"),
+          title2: t("productIntegrations.features.title2", "disponibles"),
+          subtitle: t("productIntegrations.features.subtitle", "Rowi donde lo necesites"),
           features: [
             {
               icon: "message-circle",
               title: "Slack",
-              description: lang === "en"
-                ? "Receive EI reminders and tips directly in your workspace"
-                : "Recibe recordatorios y tips de IE directamente en tu workspace",
+              description: t(
+                "productIntegrations.features.slack",
+                "Recibe recordatorios y tips de inteligencia emocional directamente en tu workspace"
+              ),
               gradient: "from-purple-500 to-violet-500"
             },
             {
               icon: "users",
               title: "Microsoft Teams",
-              description: lang === "en"
-                ? "Native integration for teams using the Microsoft ecosystem"
-                : "Integración nativa para equipos que usan el ecosistema Microsoft",
-              gradient: "from-blue-500 to-cyan-500"
+              description: t(
+                "productIntegrations.features.teams",
+                "Integración nativa para equipos que usan el ecosistema Microsoft"
+              ),
+              gradient: "from-violet-600 to-purple-500"
             },
             {
               icon: "zap",
               title: "Zapier",
-              description: lang === "en"
-                ? "Connect Rowi with 5,000+ apps without code"
-                : "Conecta Rowi con más de 5,000 aplicaciones sin código",
+              description: t(
+                "productIntegrations.features.zapier",
+                "Conecta Rowi con más de 5,000 aplicaciones sin código"
+              ),
               gradient: "from-orange-500 to-amber-500"
             },
             {
               icon: "bar-chart",
               title: "Google Workspace",
-              description: lang === "en"
-                ? "Sync with Calendar, Meet and more Google tools"
-                : "Sincroniza con Calendar, Meet y más herramientas de Google",
+              description: t(
+                "productIntegrations.features.google",
+                "Sincroniza con Calendar, Meet y más herramientas de Google"
+              ),
               gradient: "from-green-500 to-emerald-500"
             },
             {
               icon: "shield",
               title: "REST API",
-              description: lang === "en"
-                ? "Custom integration for specific needs"
-                : "Integración personalizada para necesidades específicas",
+              description: t(
+                "productIntegrations.features.api",
+                "Integración personalizada para necesidades específicas"
+              ),
               gradient: "from-pink-500 to-rose-500"
             },
             {
               icon: "globe",
               title: "Webhooks",
-              description: lang === "en"
-                ? "Receive real-time notifications of important events"
-                : "Recibe notificaciones en tiempo real de eventos importantes",
-              gradient: "from-indigo-500 to-blue-500"
+              description: t(
+                "productIntegrations.features.webhooks",
+                "Recibe notificaciones en tiempo real de eventos importantes"
+              ),
+              gradient: "from-violet-500 to-purple-600"
             },
           ],
         }}
@@ -130,11 +137,12 @@ export default function ProductIntegrationsPage() {
 
       <CTASection
         content={{
-          title: lang !== "es" ? "Need a specific integration?" : "¿Necesitas una integración específica?",
-          subtitle: lang === "en"
-            ? "Contact us and let's discuss how to connect Rowi with your existing systems."
-            : "Contáctanos y conversemos sobre cómo conectar Rowi con tus sistemas existentes.",
-          buttonText: lang !== "es" ? "Contact team" : "Contactar equipo",
+          title: t("productIntegrations.cta.title", "¿Necesitas una integración específica?"),
+          subtitle: t(
+            "productIntegrations.cta.subtitle",
+            "Contáctanos y conversemos sobre cómo conectar Rowi con tus sistemas existentes."
+          ),
+          buttonText: t("productIntegrations.cta.button", "Contactar equipo"),
           buttonIcon: "zap",
         }}
         config={{ gradient: true }}

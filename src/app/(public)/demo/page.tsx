@@ -216,7 +216,7 @@ const modules = [
     key: "coach",
     href: "/demo/coach",
     icon: Bot,
-    gradient: "from-blue-500 to-cyan-600",
+    gradient: "from-violet-600 to-purple-600",
     image: "/rowivectors/Rowi-03.webp",
   },
   // El demo organizacional "TP" se retiró de la vista pública. Vive ahora

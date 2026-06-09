@@ -3,6 +3,10 @@ import ClientWrapper from "./ClientWrapper";
 import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
+export const viewport = {
+  themeColor: "#7c3aed",
+};
+
 export const metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.rowiia.com"
@@ -13,6 +17,7 @@ export const metadata = {
   },
   description:
     "Rowi convierte tus señales emocionales diarias en acciones concretas para personas, familias y equipos, con privacidad y metodología Six Seconds.",
+  manifest: "/site.webmanifest",
   icons: {
     icon: [
       { url: "/owl.png?v=4", type: "image/png", sizes: "any" },

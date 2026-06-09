@@ -491,6 +491,6 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
 
 export const config = {
   matcher: [
-    "/((?!_next|static|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.gif$).*)",
+    "/((?!_next|static|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.svg$|.*\\.webp$|.*\\.ico$|.*\\.gif$|.*\\.webmanifest$|.*\\.json$|.*\\.txt$|.*\\.xml$|.*\\.woff2?$|.*\\.ttf$).*)",
   ],
 };

@@ -552,15 +552,15 @@ export default function RowiEvolution({
         >
           <p className="text-[var(--rowi-muted)] mb-4">
             {lang === "es"
-              ? "¿Quieres descubrir tu nivel real? Completa la evaluación SEI."
-              : "Want to discover your real level? Complete the SEI assessment."}
+              ? "Tu Rowi crece con tu práctica diaria. Empieza tu Becoming hoy."
+              : "Your Rowi grows with your daily practice. Start your Becoming today."}
           </p>
           <a
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
           >
             <TrendingUp className="w-5 h-5" />
-            {lang === "es" ? "Evaluar mi Inteligencia Emocional" : "Assess my Emotional Intelligence"}
+            {lang === "es" ? "Comenzar gratis" : "Start free"}
           </a>
         </motion.div>
       </div>

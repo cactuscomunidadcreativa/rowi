@@ -376,9 +376,14 @@ export default function RowiEvolution({
               <p className="text-sm text-[var(--rowi-muted)] mb-1">
                 {lang === "es" ? "Explora cada nivel" : "Explore each level"}
               </p>
-              <p className="text-4xl font-bold" style={{ color: currentStage.seiLevel.color }}>
-                {simulatedScore}
-                <span className="text-lg font-normal text-[var(--rowi-muted)]">/{EQ_MAX}</span>
+              {/* Mostramos el NIVEL (cualitativo) como protagonista, no el número
+                  crudo — un score sin medición real no es un claim de SEI.
+                  El rango va como contexto secundario. */}
+              <p className="text-3xl font-bold" style={{ color: currentStage.seiLevel.color }}>
+                {lang === "es" ? currentStage.seiLevel.label : currentStage.seiLevel.labelEN}
+              </p>
+              <p className="text-xs text-[var(--rowi-muted)] mt-1">
+                {lang === "es" ? "Rango SEI" : "SEI range"} {currentStage.seiLevel.min}–{currentStage.seiLevel.max}/{EQ_MAX}
               </p>
             </motion.div>
           </motion.div>

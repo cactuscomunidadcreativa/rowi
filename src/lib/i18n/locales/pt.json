@@ -6417,5 +6417,8 @@
   "admin.knowledgeLayer.tenantIdPlaceholder": "ID do tenant",
   "admin.knowledgeLayer.actionsHint": "Os padrões de outcome por benchmark são gerados na página de cada benchmark.",
   "admin.knowledgeLayer.actionOk": "Ação concluída",
-  "admin.common.processing": "Processando…"
+  "admin.common.processing": "Processando…",
+  "admin.benchmarks.outcomePatterns.generate": "Padrões de outcome",
+  "admin.benchmarks.outcomePatterns.generating": "Gerando…",
+  "admin.benchmarks.outcomePatterns.generated": "Padrões gerados"
 }

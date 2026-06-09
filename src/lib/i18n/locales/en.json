@@ -6417,5 +6417,8 @@
   "admin.knowledgeLayer.tenantIdPlaceholder": "Tenant ID",
   "admin.knowledgeLayer.actionsHint": "Per-benchmark outcome patterns are generated from each benchmark's page.",
   "admin.knowledgeLayer.actionOk": "Action completed",
-  "admin.common.processing": "Processing…"
+  "admin.common.processing": "Processing…",
+  "admin.benchmarks.outcomePatterns.generate": "Outcome patterns",
+  "admin.benchmarks.outcomePatterns.generating": "Generating…",
+  "admin.benchmarks.outcomePatterns.generated": "Patterns generated"
 }

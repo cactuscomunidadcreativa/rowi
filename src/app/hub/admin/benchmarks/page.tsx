@@ -20,6 +20,7 @@ import {
   Archive,
   Calculator,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -63,6 +64,7 @@ export default function BenchmarksPage() {
   const [loading, setLoading] = useState(true);
   const [calculatingId, setCalculatingId] = useState<string | null>(null);
   const [calculatingTopId, setCalculatingTopId] = useState<string | null>(null);
+  const [calculatingPatternsId, setCalculatingPatternsId] = useState<string | null>(null);
 
   async function loadBenchmarks() {
     setLoading(true);
@@ -143,6 +145,32 @@ export default function BenchmarksPage() {
       toast.error(t("common.error"));
     } finally {
       setCalculatingTopId(null);
+    }
+  }
+
+  // Deriva BenchmarkOutcomePattern desde los top performers (knowledge layer Fase 3).
+  async function calculateOutcomePatterns(id: string) {
+    setCalculatingPatternsId(id);
+    try {
+      const res = await fetch(`/api/admin/benchmarks/${id}/outcome-patterns/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(
+          t("admin.benchmarks.outcomePatterns.generated", "Patrones generados") +
+            (typeof data.created === "number" ? ` (${data.created})` : "")
+        );
+        loadBenchmarks();
+      } else {
+        toast.error(data.error || t("common.error"));
+      }
+    } catch {
+      toast.error(t("common.error"));
+    } finally {
+      setCalculatingPatternsId(null);
     }
   }
 
@@ -330,6 +358,19 @@ export default function BenchmarksPage() {
                         {calculatingTopId === benchmark.id
                           ? t("admin.benchmarks.topPerformers.calculating")
                           : t("admin.benchmarks.topPerformers.generate")}
+                      </AdminButton>
+                    )}
+                    {benchmark.status === "COMPLETED" && benchmark._count.topPerformers > 0 && (
+                      <AdminButton
+                        variant="secondary"
+                        size="sm"
+                        icon={calculatingPatternsId === benchmark.id ? Loader2 : Sparkles}
+                        onClick={() => calculateOutcomePatterns(benchmark.id)}
+                        disabled={calculatingPatternsId === benchmark.id}
+                      >
+                        {calculatingPatternsId === benchmark.id
+                          ? t("admin.benchmarks.outcomePatterns.generating", "Generando…")
+                          : t("admin.benchmarks.outcomePatterns.generate", "Patrones de outcome")}
                       </AdminButton>
                     )}
                     {benchmark.status === "COMPLETED" && benchmark._count.correlations === 0 && (

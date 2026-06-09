@@ -32,7 +32,7 @@ const translations = {
       relationships: "Relaciones",
       benchmark: "Benchmark",
       eco: "ECO",
-      rowicoach: "Rowi Coach",
+      guide: "Guía",
       vitalSigns: "Vital Signs",
       vsHub: "Mis Vital Signs",
       vsDebriefs: "Mis Debriefs",
@@ -91,7 +91,7 @@ const translations = {
       relationships: "Relationships",
       benchmark: "Benchmark",
       eco: "ECO",
-      rowicoach: "Rowi Coach",
+      guide: "Guide",
       vitalSigns: "Vital Signs",
       vsHub: "My Vital Signs",
       vsDebriefs: "My Debriefs",
@@ -150,7 +150,7 @@ const translations = {
       relationships: "Relações",
       benchmark: "Benchmark",
       eco: "ECO",
-      rowicoach: "Rowi Coach",
+      guide: "Guia",
       vitalSigns: "Vital Signs",
       vsHub: "Meus Vital Signs",
       vsDebriefs: "Meus Debriefs",
@@ -209,7 +209,7 @@ const translations = {
       relationships: "Relazioni",
       benchmark: "Benchmark",
       eco: "ECO",
-      rowicoach: "Rowi Coach",
+      guide: "Guida",
       vitalSigns: "Vital Signs",
       vsHub: "I miei Vital Signs",
       vsDebriefs: "I miei Debrief",
@@ -299,19 +299,34 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 //   impact  = propósito / org / benchmark
 //   coach   = Rowi, siempre disponible
 //   workspace = B2B (separado del viaje personal)
+// Arquitectura "Human Growth OS" (ver ROWI_ARQUITECTURA_MAESTRA / DOCUMENTO_TOTAL).
+// La espina = TODAY · BECOMING · GUIDE. BECOMING es el HOGAR: contiene las etapas
+// del crecimiento (see/practice/affinity/eco/connect/impact) que viven en "Más".
+// GUIDE (antes "Coach") es neutral: IA + coaches humanos + mentores.
+// `journey` agrupa cada módulo bajo su etapa; nada se borra, solo se reubica.
+//   today     = el presente (loop diario)
+//   becoming  = la memoria viva (hogar; avatar, milestones, historia)
+//   see       = autoconocimiento (perfil, vital signs, espejo)
+//   practice  = entrenamiento (weekflow)
+//   affinity  = diagnóstico relacional
+//   eco       = acción relacional
+//   connect   = relaciones (relationships, community)
+//   impact    = resultados (org, benchmark)
+//   guide     = quién me ayuda a avanzar (IA + humanos)
+//   workspace = B2B (estructura org, fuera del viaje personal)
 const BASE_LINKS = [
-  // 4 primarios = la espina del viaje: TODAY · Relaciones · Coach · Perfil.
+  // Espina del Human Growth OS: TODAY · BECOMING · GUIDE.
   { href: "/today", key: "today", icon: Sun, roles: ["*"], primary: true, journey: "today" },
-  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: true, journey: "connect" },
-  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: true, journey: "coach" },
-  { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: true, journey: "see" },
-  // El resto vive en "Más", agrupado por etapa del viaje.
-  { href: "/becoming", key: "myBecoming", icon: TrendingUp, roles: ["*"], primary: false, journey: "impact" },
+  { href: "/becoming", key: "myBecoming", icon: TrendingUp, roles: ["*"], primary: true, journey: "becoming" },
+  { href: "/rowi", key: "guide", icon: Bot, roles: ["*"], primary: true, journey: "guide" },
+  // El resto vive en "Más", agrupado por etapa del viaje (dentro de BECOMING).
+  { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: false, journey: "see" },
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: false, journey: "see" },
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false, journey: "see" },
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
-  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "connect" },
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "affinity" },
+  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "eco" },
+  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
   { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
   { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "impact" },

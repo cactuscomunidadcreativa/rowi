@@ -141,7 +141,7 @@ export default function AvatarPage() {
           <p className="text-gray-500 dark:text-gray-400">
             {t(
               "avatar.becoming.foundation.none",
-              "Haz tu Emotional Mirror para ver tu punto de partida"
+              "Haz tu espejo emocional para ver tu punto de partida"
             )}
           </p>
         </div>
@@ -307,7 +307,7 @@ export default function AvatarPage() {
             <div className="w-full max-w-md mt-6">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="font-semibold text-violet-600 dark:text-violet-400">
-                  {t("avatar.becoming.progressLabel", "Tu Becoming")}
+                  {t("avatar.becoming.progressLabel", "Tu evolución")}
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">
                   {state.nextStage && nextStageName
@@ -354,7 +354,7 @@ export default function AvatarPage() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-500" />
-              {t("avatar.becoming.practice.title", "Practice Energy")}
+              {t("avatar.becoming.practice.title", "Energía de práctica")}
             </h3>
           </div>
           <p className="text-xs text-gray-400 mb-2">
@@ -393,7 +393,7 @@ export default function AvatarPage() {
         >
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              {t("avatar.becoming.foundation.title", "Foundation")}
+              {t("avatar.becoming.foundation.title", "Punto de partida")}
             </h3>
             {isValidatedBySei && (
               <span
@@ -401,7 +401,7 @@ export default function AvatarPage() {
                 style={{ backgroundColor: "#10b98122", color: "#047857" }}
               >
                 <ShieldCheck className="w-3 h-3" />
-                {t("avatar.becoming.validated.badge", "Validated by SEI")}
+                {t("avatar.becoming.validated.badge", "Validado por SEI")}
               </span>
             )}
           </div>
@@ -453,7 +453,7 @@ export default function AvatarPage() {
                   <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   {t(
                     "avatar.becoming.foundation.hint",
-                    "Tu punto de partida proviene de tu Emotional Mirror (mini-SEI inferido). Es un baseline provisional, no una evaluación formal."
+                    "Tu punto de partida proviene de tu espejo emocional (mini-SEI inferido). Es una estimación provisional, no una evaluación formal."
                   )}
                 </p>
               )}
@@ -462,7 +462,7 @@ export default function AvatarPage() {
             <p className="text-sm text-gray-500">
               {t(
                 "avatar.becoming.foundation.none",
-                "Haz tu Emotional Mirror para ver tu punto de partida"
+                "Haz tu espejo emocional para ver tu punto de partida"
               )}
             </p>
           )}

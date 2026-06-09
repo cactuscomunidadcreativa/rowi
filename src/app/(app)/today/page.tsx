@@ -259,7 +259,7 @@ export default function TodayPage() {
             animate={{ opacity: 1 }}
             className="text-center text-sm font-medium text-violet-600 dark:text-violet-400 py-2"
           >
-            {t("today.complete", "Cerraste tu día. Eso es Becoming.")}
+            {t("today.complete", "Cerraste tu día. Eso es evolución.")}
           </motion.p>
         )}
       </div>

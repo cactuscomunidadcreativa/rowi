@@ -25,7 +25,7 @@ const translations = {
   es: {
     nav: {
       today: "Hoy",
-      myBecoming: "Mi Becoming",
+      myBecoming: "Mi evolución",
       dashboard: "Dashboard",
       community: "Comunidad",
       affinity: "Afinidad",
@@ -84,7 +84,7 @@ const translations = {
   en: {
     nav: {
       today: "Today",
-      myBecoming: "My Becoming",
+      myBecoming: "My growth",
       dashboard: "Dashboard",
       community: "Community",
       affinity: "Affinity",
@@ -143,7 +143,7 @@ const translations = {
   pt: {
     nav: {
       today: "Hoje",
-      myBecoming: "Meu Becoming",
+      myBecoming: "Minha evolução",
       dashboard: "Dashboard",
       community: "Comunidade",
       affinity: "Afinidade",
@@ -202,7 +202,7 @@ const translations = {
   it: {
     nav: {
       today: "Oggi",
-      myBecoming: "Il mio Becoming",
+      myBecoming: "La mia evoluzione",
       dashboard: "Dashboard",
       community: "Comunità",
       affinity: "Affinità",

@@ -160,7 +160,7 @@ export default function RowiEvolution({
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-[var(--rowi-primary)]/20 to-[var(--rowi-secondary)]/20 text-[var(--rowi-primary)] mb-4"
           >
             <Zap className="w-4 h-4" />
-            {t("public.evolution.badge", "Becoming + Six Seconds")}
+            {t("public.evolution.badge", "Tu evolución + Six Seconds")}
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -552,8 +552,8 @@ export default function RowiEvolution({
         >
           <p className="text-[var(--rowi-muted)] mb-4">
             {lang === "es"
-              ? "Tu Rowi crece con tu práctica diaria. Empieza tu Becoming hoy."
-              : "Your Rowi grows with your daily practice. Start your Becoming today."}
+              ? "Tu Rowi crece con tu práctica diaria. Empieza tu evolución hoy."
+              : "Your Rowi grows with your daily practice. Start your journey today."}
           </p>
           <a
             href="/register"

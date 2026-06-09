@@ -65,7 +65,7 @@ export default function BecomingPage() {
   if (!isAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">{t("becoming.signIn", "Inicia sesión para ver tu Becoming")}</p>
+        <p className="text-gray-500">{t("becoming.signIn", "Inicia sesión para ver tu evolución")}</p>
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function BecomingPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Sparkles className="w-7 h-7 text-violet-500" />
-            {t("becoming.title", "Mi Becoming")}
+            {t("becoming.title", "Mi evolución")}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {t("becoming.subtitle", "Tú, comparado contigo mismo. No con nadie más.")}
@@ -193,7 +193,7 @@ export default function BecomingPage() {
           <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           {t(
             "becoming.noScore",
-            "Aquí no hay un puntaje. El Becoming no se mide con un número — se ve en el contraste honesto contigo mismo."
+            "Aquí no hay un puntaje. La evolución no se mide con un número — se ve en el contraste honesto contigo mismo."
           )}
         </p>
       </div>

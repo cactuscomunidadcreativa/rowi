@@ -6430,5 +6430,9 @@
   "becoming.signals.active": "días con registro",
   "becoming.signals.xp": "experiencia",
   "becoming.contrastSection": "Tu contraste honesto",
-  "becoming.cta": "Sigue creciendo hoy"
+  "becoming.cta": "Sigue creciendo hoy",
+  "admin.nav.knowledgeLayer": "Base de Conocimiento",
+  "admin.nav.usage": "Uso de IA",
+  "admin.nav.mfa": "MFA Admin",
+  "admin.nav.emotions": "Emociones"
 }

@@ -11,12 +11,13 @@ import { EQ_LEVELS, getEqLevel, EQ_MAX } from "@/domains/eq/lib/eqLevels";
  * 🥚 Rowi Evolution Component
  * Conectado con los niveles SEI de Six Seconds (65-135)
  *
- * Niveles SEI y evolución visual (usando /rowivectors/):
- * - Desafío (65-81) → Rowi-01.png - Huevo cerrado
- * - Emergente (82-91) → Rowi-02.png - Huevo agrietado
- * - Funcional (92-107) → Rowi-04.png - Rowi asomándose
- * - Diestro (108-117) → Rowi-05.png - Rowi joven saliendo
- * - Experto (118-135) → Rowi-06.png - 🦉 Rowi adulto COMPLETO
+ * Niveles SEI y evolución visual (vectores Rowi consecutivos, sin saltar el 03):
+ * - Desafío (65-81) → Rowi-02
+ * - Emergente (82-91) → Rowi-03
+ * - Funcional (92-107) → Rowi-04
+ * - Diestro (108-117) → Rowi-05
+ * - Experto (118-135) → Rowi-06 - 🦉 Rowi adulto COMPLETO
+ * (Rowi-01 es el inicio del viaje.)
  */
 
 type EvolutionStage = "challenge" | "emerging" | "functional" | "skilled" | "expert";
@@ -42,7 +43,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "challenge",
     seiLevel: EQ_LEVELS[0], // Desafío 65-81
-    image: "/rowivectors/Rowi-01.webp", // Huevo cerrado
+    image: "/rowivectors/Rowi-02.webp",
     fallbackEmoji: "🥚",
     icon: Sparkles,
     bgGradient: "from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30",
@@ -53,7 +54,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "emerging",
     seiLevel: EQ_LEVELS[1], // Emergente 82-91
-    image: "/rowivectors/Rowi-02.webp", // Huevo agrietado
+    image: "/rowivectors/Rowi-03.webp",
     fallbackEmoji: "🐣",
     icon: Heart,
     bgGradient: "from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30",
@@ -64,7 +65,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "functional",
     seiLevel: EQ_LEVELS[2], // Funcional 92-107
-    image: "/rowivectors/Rowi-04.webp", // Rowi asomándose del huevo
+    image: "/rowivectors/Rowi-04.webp",
     fallbackEmoji: "🐥",
     icon: Brain,
     bgGradient: "from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-blue-900/30",
@@ -75,7 +76,7 @@ const EVOLUTION_STAGES: StageInfo[] = [
   {
     id: "skilled",
     seiLevel: EQ_LEVELS[3], // Diestro 108-117
-    image: "/rowivectors/Rowi-05.webp", // Rowi joven saliendo del huevo
+    image: "/rowivectors/Rowi-05.webp",
     fallbackEmoji: "🦉",
     icon: Target,
     bgGradient: "from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30",
@@ -159,7 +160,7 @@ export default function RowiEvolution({
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-[var(--rowi-primary)]/20 to-[var(--rowi-secondary)]/20 text-[var(--rowi-primary)] mb-4"
           >
             <Zap className="w-4 h-4" />
-            {t("public.evolution.badge", "Gamificación + Six Seconds")}
+            {t("public.evolution.badge", "Becoming + Six Seconds")}
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -373,7 +374,7 @@ export default function RowiEvolution({
               className="text-center mt-6"
             >
               <p className="text-sm text-[var(--rowi-muted)] mb-1">
-                {lang === "es" ? "Puntaje SEI simulado" : "Simulated SEI Score"}
+                {lang === "es" ? "Explora cada nivel" : "Explore each level"}
               </p>
               <p className="text-4xl font-bold" style={{ color: currentStage.seiLevel.color }}>
                 {simulatedScore}

@@ -16,6 +16,19 @@ export function adminMfaBypassEnabled(): boolean {
   return process.env.ADMIN_MFA_BYPASS === "true";
 }
 
+/**
+ * ¿El MFA de admin está ACTIVO?
+ *
+ * Decisión (jun-2026): el admin se protege con login + rol (ya es fuerte) y son
+ * pocos admins de confianza. El MFA queda **DESACTIVADO por defecto** y solo se
+ * enciende explícitamente con `ADMIN_MFA_REQUIRED=true`. El TOTP sigue intacto,
+ * solo dormido. `ADMIN_MFA_BYPASS=true` lo apaga aunque esté requerido.
+ */
+export function adminMfaEnabled(): boolean {
+  if (adminMfaBypassEnabled()) return false;
+  return process.env.ADMIN_MFA_REQUIRED === "true";
+}
+
 /** Secreto para firmar/verificar la cookie de sesión MFA. */
 export function mfaSigningSecret(): string {
   return (

@@ -9,7 +9,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { requireAdminWithScope } from "@/core/auth/requireAdmin";
-import { adminMfaBypassEnabled } from "@/lib/admin-mfa/edge";
+import { adminMfaBypassEnabled, adminMfaEnabled } from "@/lib/admin-mfa/edge";
 import {
   generateTotpSecret,
   encryptTotpSecret,
@@ -30,6 +30,8 @@ export async function GET() {
     ok: true,
     enrolled: !!user?.mfaEnabledAt,
     bypass: adminMfaBypassEnabled(),
+    // MFA apagado por defecto: la página puede reenviar a `next` sin pedir nada.
+    disabled: !adminMfaEnabled(),
   });
 }
 

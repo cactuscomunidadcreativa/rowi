@@ -42,6 +42,11 @@ function AdminMfaInner() {
     try {
       const res = await fetch("/api/admin/mfa/enroll");
       const data = await res.json().catch(() => ({}));
+      if (data?.disabled) {
+        // MFA desactivado (login+rol basta): no pedimos nada, entramos directo.
+        router.replace(next);
+        return;
+      }
       if (data?.bypass) {
         // Bypass activo: la cookie se setea al verificar; entramos directo.
         await verifyCode(true);

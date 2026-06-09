@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
-import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge } from "@/lib/admin-mfa/edge";
+import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge, adminMfaEnabled } from "@/lib/admin-mfa/edge";
 
 /* =========================================================
    🌍 CONFIG — Rutas públicas de promoción/landing
@@ -402,10 +402,11 @@ async function processRequest(req: NextRequest, pathname: string): Promise<NextR
      - No aplica a /api/* (los endpoints admin tienen sus propios
        guards y el endpoint de MFA debe poder llamarse).
      - No aplica a la propia página de verificación (evita loop).
-     - Se salta por completo si ADMIN_MFA_BYPASS === "true".
+     - DESACTIVADO por defecto: el admin se protege con login + rol. El MFA
+       solo aplica si ADMIN_MFA_REQUIRED === "true" (y nunca si BYPASS).
   ========================================================== */
   if (
-    process.env.ADMIN_MFA_BYPASS !== "true" &&
+    adminMfaEnabled() &&
     pathname.startsWith(ADMIN_PATH) &&
     !pathname.startsWith(`${ADMIN_PATH}/mfa`) &&
     !pathname.startsWith(`${ADMIN_PATH}/unauthorized`)

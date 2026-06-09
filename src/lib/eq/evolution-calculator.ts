@@ -106,12 +106,20 @@ export function getRowiLevelInfo(level: number): RowiLevelInfo {
   return ROWI_LEVELS.find((l) => l.level === level) || ROWI_LEVELS[0];
 }
 
+/** Pesos del avatar de dos ejes (arquitectura maestra Human Growth OS).
+ *  El avatar refleja MÁS lo que haces (Becoming: práctica + reflexión) que el
+ *  punto de partida (mini-SEI). NO crece por actividad vacía. */
+export const BECOMING_WEIGHT = 0.6; // rowiLevel = práctica/reflexión/streak
+export const BASE_SEI_WEIGHT = 0.4; // sixSecondsLevel = mini-SEI/SEI (punto de partida)
+
 /**
- * Calcula el score de evolucion combinando ambos niveles
- * Formula: (rowiLevel * 0.6) + (sixSecondsLevel * 0.4)
+ * Calcula el score de evolución combinando los dos ejes del avatar.
+ * Fórmula: 60% Becoming + 40% Mini-SEI (ver ROWI_DOCUMENTO_TOTAL §9).
+ * El avatar responde "¿en quién me estoy convirtiendo?" — por eso el eje
+ * Becoming (lo que haces con tu punto de partida) pesa más que el eje base.
  */
 export function calculateEvolutionScore(rowiLevel: number, sixSecondsLevel: number): number {
-  return rowiLevel * 0.6 + sixSecondsLevel * 0.4;
+  return rowiLevel * BECOMING_WEIGHT + sixSecondsLevel * BASE_SEI_WEIGHT;
 }
 
 /**

@@ -6407,5 +6407,8 @@
   "landing.useCases.clients.title": "Clients",
   "landing.useCases.clients.description": "Read the bond with each client and communicate in a way that connects.",
   "landing.useCases.community.title": "Your community",
-  "landing.useCases.community.description": "The groups you belong to: contribute and grow alongside others."
+  "landing.useCases.community.description": "The groups you belong to: contribute and grow alongside others.",
+  "admin.knowledgeLayer.patternsTitle": "Detected patterns",
+  "admin.knowledgeLayer.outcomePatterns": "Outcome patterns",
+  "admin.knowledgeLayer.collectivePatterns": "Collective patterns"
 }

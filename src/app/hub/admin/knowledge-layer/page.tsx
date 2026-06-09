@@ -43,6 +43,7 @@ interface Stats {
     pulseGroundTruth: number;
     total: number;
   };
+  patterns: { outcomePatterns: number; collectivePatterns: number };
   calibration: { affinityWeightsActive: number; pulseWeightsActive: number };
   cache: { entries: number; hits: number };
   dataset: { total: number; byTask: Record<string, number> };
@@ -204,6 +205,26 @@ export default function KnowledgeLayerPage() {
           <Stat
             label={t("admin.knowledgeLayer.interventionGt", "Intervenciones")}
             value={gt?.interventionOutcomes ?? 0}
+          />
+        </div>
+      </AdminCard>
+
+      {/* Patrones detectados */}
+      <AdminCard className="mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-4 h-4 text-[var(--rowi-primary)]" />
+          <h3 className="font-semibold text-[var(--rowi-foreground)]">
+            {t("admin.knowledgeLayer.patternsTitle", "Patrones detectados")}
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <Stat
+            label={t("admin.knowledgeLayer.outcomePatterns", "Patrones de outcome")}
+            value={stats?.patterns?.outcomePatterns ?? 0}
+          />
+          <Stat
+            label={t("admin.knowledgeLayer.collectivePatterns", "Patrones colectivos")}
+            value={stats?.patterns?.collectivePatterns ?? 0}
           />
         </div>
       </AdminCard>

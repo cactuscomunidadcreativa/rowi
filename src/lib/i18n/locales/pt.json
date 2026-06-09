@@ -6407,5 +6407,8 @@
   "landing.useCases.clients.title": "Clientes",
   "landing.useCases.clients.description": "Leia o vínculo com cada cliente e comunique-se de forma que conecte.",
   "landing.useCases.community.title": "Sua comunidade",
-  "landing.useCases.community.description": "Os grupos aos quais você pertence: contribua e cresça junto a outros."
+  "landing.useCases.community.description": "Os grupos aos quais você pertence: contribua e cresça junto a outros.",
+  "admin.knowledgeLayer.patternsTitle": "Padrões detectados",
+  "admin.knowledgeLayer.outcomePatterns": "Padrões de outcome",
+  "admin.knowledgeLayer.collectivePatterns": "Padrões coletivos"
 }

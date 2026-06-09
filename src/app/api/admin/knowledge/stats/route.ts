@@ -38,6 +38,8 @@ export async function GET() {
     pulseGroundTruth,
     pulseWeightsActive,
     jobProfiles,
+    outcomePatterns,
+    collectivePatterns,
     aiCacheEntries,
     aiCacheHits,
   ] = await Promise.all([
@@ -50,6 +52,8 @@ export async function GET() {
     safeCount(() => prisma.pulsePointGroundTruth.count()),
     safeCount(() => prisma.pulsePointWeights.count({ where: { active: true } })),
     safeCount(() => prisma.jobProfile.count()),
+    safeCount(() => prisma.benchmarkOutcomePattern.count()),
+    safeCount(() => prisma.collectivePattern.count()),
     safeCount(() => prisma.aIResponseCache.count()),
     safeCount(async () => {
       const agg = await prisma.aIResponseCache.aggregate({ _sum: { hits: true } });
@@ -73,6 +77,10 @@ export async function GET() {
       interventionsHypothesis,
       interventionsCalibrated,
       jobProfiles,
+    },
+    patterns: {
+      outcomePatterns,
+      collectivePatterns,
     },
     groundTruth: {
       interventionOutcomes,

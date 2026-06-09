@@ -8,7 +8,7 @@
  * POST { step, ... }  → avanza un paso del loop:
  *      - "morning":    { mood, intensity? }   "¿cómo llegas hoy?"
  *      - "practice":   { done }               marca la práctica del día
- *      - "reflection": { text }               "¿cuándo te pareciste más?"
+ *      - "reflection": { text }               "¿cuánto te estás pareciendo a quien quieres ser?"
  *
  * BECOME no se "elige": se propone al crear la entrada. No hay step para
  * elegir identidad de un menú (arquitectura: el sistema propone).

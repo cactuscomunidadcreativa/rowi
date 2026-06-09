@@ -15,7 +15,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 /**
  * TODAY — el corazón del producto. El loop diario:
  *   MAÑANA (SEE) → BECOME (el sistema propone) → PRACTICE (una acción) →
- *   NOCHE (REFLECT, "¿cuándo te pareciste más?").
+ *   NOCHE (REFLECT, "¿cuánto te estás pareciendo a quien quieres ser?").
  * Diseñado alrededor del fracaso: la noche difícil es el dato más valioso.
  */
 
@@ -216,7 +216,7 @@ export default function TodayPage() {
           <div className="flex items-center gap-2 mb-3">
             <Moon className="w-5 h-5 text-indigo-400" />
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {t("today.night.title", "¿Cuándo te pareciste más a esa persona hoy?")}
+              {t("today.night.title", "¿Cuánto te estás pareciendo a la persona que quieres ser?")}
             </h2>
           </div>
           {hasReflection ? (
@@ -231,13 +231,13 @@ export default function TodayPage() {
               <p className="text-xs text-violet-600 dark:text-violet-300 mb-3">
                 {t(
                   "today.night.failure",
-                  "¿Costó? Eso no es un fracaso — es exactamente el dato que necesitábamos. ¿Cuándo estuviste más cerca?"
+                  "¿Costó? Eso no es un fracaso — es exactamente el dato que necesitábamos. ¿Qué tan cerca estuviste?"
                 )}
               </p>
               <textarea
                 value={reflectionInput}
                 onChange={(e) => setReflectionInput(e.target.value)}
-                placeholder={t("today.night.placeholder", "Un momento del día en que te acercaste…")}
+                placeholder={t("today.night.placeholder", "Qué tanto te acercaste hoy…")}
                 maxLength={1000}
                 rows={3}
                 className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"

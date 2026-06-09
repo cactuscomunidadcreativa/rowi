@@ -805,7 +805,7 @@ type RowiverseProfile = {
    📄 COMPONENTE PRINCIPAL
 ========================================================= */
 export default function CommunityPage() {
-  const { lang } = useI18n();
+  const { lang, t: tx } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [activeTab, setActiveTab] = useState<"myPeople" | "invited" | "rowiverse" | "communities">("myPeople");
@@ -1225,7 +1225,7 @@ export default function CommunityPage() {
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              {lang === "es" ? "Sugerencias de Afinidad" : "Affinity Insights"}
+              {tx("communityPage.affinitySuggestionsTitle", "Sugerencias de Afinidad")}
             </h3>
           </div>
 
@@ -1235,7 +1235,7 @@ export default function CommunityPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Heart className="w-4 h-4 text-green-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {lang === "es" ? "Mejores conexiones" : "Best connections"}
+                  {tx("communityPage.bestConnections", "Mejores conexiones")}
                 </span>
               </div>
               <div className="space-y-2">
@@ -1256,7 +1256,7 @@ export default function CommunityPage() {
               </div>
               {affinitySuggestions.highAffinityCount > 3 && (
                 <p className="text-xs text-gray-500 mt-2">
-                  +{affinitySuggestions.highAffinityCount - 3} {lang === "es" ? "más con alta afinidad" : "more with high affinity"}
+                  +{affinitySuggestions.highAffinityCount - 3} {tx("communityPage.moreWithHighAffinity", "más con alta afinidad")}
                 </p>
               )}
             </div>
@@ -1267,7 +1267,7 @@ export default function CommunityPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="w-4 h-4 text-amber-500" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {lang === "es" ? "Oportunidades de mejora" : "Room for growth"}
+                    {tx("communityPage.roomForGrowth", "Oportunidades de mejora")}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -1281,9 +1281,7 @@ export default function CommunityPage() {
                   ))}
                 </div>
                 <p className="text-xs text-gray-500 mt-3">
-                  💡 {lang === "es"
-                    ? "Considera iniciar una conversación para fortalecer estas conexiones"
-                    : "Consider starting a conversation to strengthen these connections"}
+                  💡 {tx("communityPage.growthHint", "Considera iniciar una conversación para fortalecer estas conexiones")}
                 </p>
               </div>
             )}
@@ -1292,15 +1290,13 @@ export default function CommunityPage() {
           {/* Quick action */}
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-gray-500">
-              {lang === "es"
-                ? `${affinitySuggestions.highAffinityCount} conexiones fuertes · ${affinitySuggestions.lowAffinityCount} oportunidades`
-                : `${affinitySuggestions.highAffinityCount} strong connections · ${affinitySuggestions.lowAffinityCount} opportunities`}
+              {`${affinitySuggestions.highAffinityCount} ${tx("communityPage.strongConnections", "conexiones fuertes")} · ${affinitySuggestions.lowAffinityCount} ${tx("communityPage.opportunities", "oportunidades")}`}
             </p>
             <Link
               href="/affinity"
               className="text-sm text-[var(--rowi-g2)] hover:underline flex items-center gap-1"
             >
-              {lang === "es" ? "Ver análisis completo" : "View full analysis"}
+              {tx("communityPage.viewFullAnalysis", "Ver análisis completo")}
               <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
@@ -1537,14 +1533,12 @@ export default function CommunityPage() {
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {showAllCommunities
-                        ? (lang === "es" ? "Todas las Comunidades" : "All Communities")
+                        ? tx("communityPage.allCommunitiesTitle", "Todas las Comunidades")
                         : t.comm.title}
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {showAllCommunities
-                        ? (lang === "es"
-                          ? `${allCommunities.length} comunidades en tu hub`
-                          : `${allCommunities.length} communities in your hub`)
+                        ? `${allCommunities.length} ${tx("communityPage.communitiesInYourHub", "comunidades en tu hub")}`
                         : t.comm.desc}
                     </p>
                   </div>
@@ -1559,7 +1553,7 @@ export default function CommunityPage() {
                           : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
                       }`}
                     >
-                      {lang === "es" ? "Mis comunidades" : "My communities"}
+                      {tx("communityPage.myCommunitiesToggle", "Mis comunidades")}
                     </button>
                     <button
                       onClick={() => setShowAllCommunities(true)}
@@ -1569,7 +1563,7 @@ export default function CommunityPage() {
                           : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
                       }`}
                     >
-                      {lang === "es" ? "Todas" : "All"} ({allCommunities.length})
+                      {tx("communityPage.allToggle", "Todas")} ({allCommunities.length})
                     </button>
                   </div>
                 </div>
@@ -1602,7 +1596,7 @@ export default function CommunityPage() {
                           <div className="flex items-center gap-1">
                             {c._membership === "inherited" && (
                               <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                                {lang === "es" ? "Heredada" : "Inherited"}
+                                {tx("communityPage.inherited", "Heredada")}
                               </span>
                             )}
                             {c.role && c.role !== "viewer" && (

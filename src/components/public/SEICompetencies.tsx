@@ -81,7 +81,7 @@ export default function SEICompetencies({
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-5xl font-bold mb-4"
           >
-            {lang === "es" ? "El modelo" : "The"}{" "}
+            {t("seiCompetencies.modelPrefix", "El modelo")}{" "}
             <span className="bg-gradient-to-r from-blue-500 via-red-500 to-green-500 bg-clip-text text-transparent">
               Six Seconds
             </span>
@@ -93,9 +93,10 @@ export default function SEICompetencies({
             transition={{ delay: 0.2 }}
             className="text-lg text-[var(--rowi-muted)] max-w-2xl mx-auto"
           >
-            {lang === "es"
-              ? "Tres áreas fundamentales y ocho competencias para desarrollar tu inteligencia emocional."
-              : "Three fundamental areas and eight competencies to develop your emotional intelligence."}
+            {t(
+              "seiCompetencies.subtitle",
+              "Tres áreas fundamentales y ocho competencias para desarrollar tu inteligencia emocional."
+            )}
           </motion.p>
         </div>
 
@@ -137,7 +138,7 @@ export default function SEICompetencies({
                     {lang === "es" ? pursuit.labelES : pursuit.labelEN}
                   </p>
                   <p className="text-sm text-[var(--rowi-muted)]">
-                    {pursuit.competencies.length} {lang === "es" ? "competencias" : "competencies"}
+                    {pursuit.competencies.length} {t("seiCompetencies.competenciesLabel", "competencias")}
                   </p>
                 </div>
 
@@ -237,7 +238,7 @@ export default function SEICompetencies({
                             <div className="mb-3">
                               <p className="text-xs font-semibold text-green-600 dark:text-green-400 flex items-center gap-1 mb-1">
                                 <Check className="w-3 h-3" />
-                                {lang === "es" ? "Beneficios" : "Benefits"}
+                                {t("seiCompetencies.benefits", "Beneficios")}
                               </p>
                               <div className="flex flex-wrap gap-1">
                                 {competency.benefits.map((benefit, i) => (
@@ -255,7 +256,7 @@ export default function SEICompetencies({
                             <div>
                               <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1">
                                 <AlertTriangle className="w-3 h-3" />
-                                {lang === "es" ? "Riesgos si no se desarrolla" : "Risks if not developed"}
+                                {t("seiCompetencies.risksIfNotDeveloped", "Riesgos si no se desarrolla")}
                               </p>
                               <div className="flex flex-wrap gap-1">
                                 {competency.risks.map((risk, i) => (

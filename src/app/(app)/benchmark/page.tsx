@@ -113,7 +113,7 @@ function getLevel(score: number) {
 }
 
 export default function BenchmarkPage() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -127,127 +127,71 @@ export default function BenchmarkPage() {
   // =========================================================
   // 🌐 Translations
   // =========================================================
-  const tr = useMemo(() => {
-    const t: Record<string, Record<string, string>> = {
-      es: {
-        title: "Benchmark",
-        subtitle: "Compara tu perfil SEI",
-        description: "Descubre cómo te comparas con otros y potencia tus fortalezas",
-        compareWith: "Comparar con",
-        rowiverse: "Rowiverse Global",
-        community: "Mi Comunidad",
-        benchmark: "Benchmark Específico",
-        yourStrengths: "Tus Fortalezas",
-        top3Competencies: "Top 3 Competencias SEI",
-        top5Talents: "Top 5 Talentos",
-        allTalents: "Todos los Talentos",
-        showAll: "Ver todos",
-        showLess: "Ver menos",
-        vsTopPerformers: "vs Top Performers",
-        competencyComparison: "Comparación de Competencias",
-        talentComparison: "Comparación de Talentos",
-        talentComparisonDesc: "Tus talentos vs el promedio del benchmark",
-        outcome: "Resultado buscado",
-        outcomeDesc: "¿Qué quieres mejorar?",
-        noData: "Sin datos SEI",
-        noDataDesc: "Completa tu evaluación SEI para ver tu benchmark",
-        loading: "Cargando benchmark...",
-        yourScore: "Tu puntaje",
-        average: "Promedio",
-        topPerformers: "Top Performers",
-        above: "por encima",
-        below: "por debajo",
-        onPar: "en el promedio",
-        benchmarkN: "Muestra",
-        people: "personas",
-        percentile: "Percentil",
-        pursuitsK: "Conocerse",
-        pursuitsC: "Elegirse",
-        pursuitsG: "Darse",
-        radarYou: "Tú",
-        radarAvg: "Promedio",
-        radarTop: "Top 10%",
-        levelsLegend: "Niveles SEI",
-        // Suggestions
-        suggestions: "Sugerencias de Desarrollo",
-        suggestionsDesc: "Basadas en correlaciones con los top performers en",
-        developAreas: "Áreas a Desarrollar",
-        developDesc: "Los top performers tienen un nivel más alto en estas áreas",
-        leverageStrengths: "Fortalezas a Aprovechar",
-        leverageDesc: "Ya estás al nivel de los top performers o por encima",
-        talentGaps: "Talentos con Oportunidad",
-        talentGapsDesc: "Talentos donde los top performers destacan más",
-        talentStrengths: "Talentos Destacados",
-        talentStrengthsDesc: "Talentos donde estás al nivel de los mejores",
-        shouldIncrease: "Deberías aumentar",
-        shouldMaintain: "Mantén tu nivel en",
-        youAre: "Estás en",
-        topPerformersAre: "Top performers están en",
-        suggestedAction: "Acción sugerida",
-        noSuggestions: "Necesitas datos de top performers para generar sugerencias",
-        mainCommunity: "Mi comunidad principal",
-      },
-      en: {
-        title: "Benchmark",
-        subtitle: "Compare your SEI profile",
-        description: "Discover how you compare with others and leverage your strengths",
-        compareWith: "Compare with",
-        rowiverse: "Global Rowiverse",
-        community: "My Community",
-        benchmark: "Specific Benchmark",
-        yourStrengths: "Your Strengths",
-        top3Competencies: "Top 3 SEI Competencies",
-        top5Talents: "Top 5 Talents",
-        allTalents: "All Talents",
-        showAll: "Show all",
-        showLess: "Show less",
-        vsTopPerformers: "vs Top Performers",
-        competencyComparison: "Competency Comparison",
-        talentComparison: "Talent Comparison",
-        talentComparisonDesc: "Your talents vs the benchmark average",
-        outcome: "Target outcome",
-        outcomeDesc: "What do you want to improve?",
-        noData: "No SEI data",
-        noDataDesc: "Complete your SEI assessment to see your benchmark",
-        loading: "Loading benchmark...",
-        yourScore: "Your score",
-        average: "Average",
-        topPerformers: "Top Performers",
-        above: "above",
-        below: "below",
-        onPar: "on par",
-        benchmarkN: "Sample",
-        people: "people",
-        percentile: "Percentile",
-        pursuitsK: "Know Yourself",
-        pursuitsC: "Choose Yourself",
-        pursuitsG: "Give Yourself",
-        radarYou: "You",
-        radarAvg: "Average",
-        radarTop: "Top 10%",
-        levelsLegend: "SEI Levels",
-        // Suggestions
-        suggestions: "Development Suggestions",
-        suggestionsDesc: "Based on correlations with top performers in",
-        developAreas: "Areas to Develop",
-        developDesc: "Top performers have a higher level in these areas",
-        leverageStrengths: "Strengths to Leverage",
-        leverageDesc: "You're already at or above top performer level",
-        talentGaps: "Talent Opportunities",
-        talentGapsDesc: "Talents where top performers stand out more",
-        talentStrengths: "Outstanding Talents",
-        talentStrengthsDesc: "Talents where you match the best",
-        shouldIncrease: "You should increase",
-        shouldMaintain: "Maintain your level in",
-        youAre: "You're at",
-        topPerformersAre: "Top performers are at",
-        suggestedAction: "Suggested action",
-        noSuggestions: "Need top performer data to generate suggestions",
-        mainCommunity: "My main community",
-      },
-    };
-    return t[lang] || t.es;
-  }, [lang]);
+  const tr = useMemo(() => ({
+    title: t("benchmarkPage.title", "Benchmark"),
+    subtitle: t("benchmarkPage.subtitle", "Compara tu perfil SEI"),
+    description: t("benchmarkPage.description", "Descubre cómo te comparas con otros y potencia tus fortalezas"),
+    compareWith: t("benchmarkPage.compareWith", "Comparar con"),
+    rowiverse: t("benchmarkPage.rowiverse", "Rowiverse Global"),
+    community: t("benchmarkPage.community", "Mi Comunidad"),
+    benchmark: t("benchmarkPage.benchmark", "Benchmark Específico"),
+    yourStrengths: t("benchmarkPage.yourStrengths", "Tus Fortalezas"),
+    top3Competencies: t("benchmarkPage.top3Competencies", "Top 3 Competencias SEI"),
+    top5Talents: t("benchmarkPage.top5Talents", "Top 5 Talentos"),
+    allTalents: t("benchmarkPage.allTalents", "Todos los Talentos"),
+    showAll: t("benchmarkPage.showAll", "Ver todos"),
+    showLess: t("benchmarkPage.showLess", "Ver menos"),
+    vsTopPerformers: t("benchmarkPage.vsTopPerformers", "vs Top Performers"),
+    competencyComparison: t("benchmarkPage.competencyComparison", "Comparación de Competencias"),
+    talentComparison: t("benchmarkPage.talentComparison", "Comparación de Talentos"),
+    talentComparisonDesc: t("benchmarkPage.talentComparisonDesc", "Tus talentos vs el promedio del benchmark"),
+    outcome: t("benchmarkPage.outcome", "Resultado buscado"),
+    outcomeDesc: t("benchmarkPage.outcomeDesc", "¿Qué quieres mejorar?"),
+    noData: t("benchmarkPage.noData", "Sin datos SEI"),
+    noDataDesc: t("benchmarkPage.noDataDesc", "Completa tu evaluación SEI para ver tu benchmark"),
+    loading: t("benchmarkPage.loading", "Cargando benchmark..."),
+    yourScore: t("benchmarkPage.yourScore", "Tu puntaje"),
+    average: t("benchmarkPage.average", "Promedio"),
+    topPerformers: t("benchmarkPage.topPerformers", "Top Performers"),
+    above: t("benchmarkPage.above", "por encima"),
+    below: t("benchmarkPage.below", "por debajo"),
+    onPar: t("benchmarkPage.onPar", "en el promedio"),
+    benchmarkN: t("benchmarkPage.benchmarkN", "Muestra"),
+    people: t("benchmarkPage.people", "personas"),
+    percentile: t("benchmarkPage.percentile", "Percentil"),
+    pursuitsK: t("benchmarkPage.pursuitsK", "Conocerse"),
+    pursuitsC: t("benchmarkPage.pursuitsC", "Elegirse"),
+    pursuitsG: t("benchmarkPage.pursuitsG", "Darse"),
+    radarYou: t("benchmarkPage.radarYou", "Tú"),
+    radarAvg: t("benchmarkPage.radarAvg", "Promedio"),
+    radarTop: t("benchmarkPage.radarTop", "Top 10%"),
+    levelsLegend: t("benchmarkPage.levelsLegend", "Niveles SEI"),
+    // Suggestions
+    suggestions: t("benchmarkPage.suggestions", "Sugerencias de Desarrollo"),
+    suggestionsDesc: t("benchmarkPage.suggestionsDesc", "Basadas en correlaciones con los top performers en"),
+    developAreas: t("benchmarkPage.developAreas", "Áreas a Desarrollar"),
+    developDesc: t("benchmarkPage.developDesc", "Los top performers tienen un nivel más alto en estas áreas"),
+    leverageStrengths: t("benchmarkPage.leverageStrengths", "Fortalezas a Aprovechar"),
+    leverageDesc: t("benchmarkPage.leverageDesc", "Ya estás al nivel de los top performers o por encima"),
+    talentGaps: t("benchmarkPage.talentGaps", "Talentos con Oportunidad"),
+    talentGapsDesc: t("benchmarkPage.talentGapsDesc", "Talentos donde los top performers destacan más"),
+    talentStrengths: t("benchmarkPage.talentStrengths", "Talentos Destacados"),
+    talentStrengthsDesc: t("benchmarkPage.talentStrengthsDesc", "Talentos donde estás al nivel de los mejores"),
+    shouldIncrease: t("benchmarkPage.shouldIncrease", "Deberías aumentar"),
+    shouldMaintain: t("benchmarkPage.shouldMaintain", "Mantén tu nivel en"),
+    youAre: t("benchmarkPage.youAre", "Estás en"),
+    topPerformersAre: t("benchmarkPage.topPerformersAre", "Top performers están en"),
+    suggestedAction: t("benchmarkPage.suggestedAction", "Acción sugerida"),
+    noSuggestions: t("benchmarkPage.noSuggestions", "Necesitas datos de top performers para generar sugerencias"),
+    mainCommunity: t("benchmarkPage.mainCommunity", "Mi comunidad principal"),
+  }), [t]);
+
+  // Localized label for an SEI level (pt/it via t(), es fallback from data)
+  const levelLabel = (level: { key: string; es: string }) =>
+    t(`benchmarkPage.seiLevel.${level.key}`, level.es);
+  // Localized label for an outcome (pt/it via t(), es fallback from data)
+  const outcomeLabelOf = (o: { value: string; labelEs: string }) =>
+    t(`benchmarkPage.outcome.${o.value}`, o.labelEs);
 
   // =========================================================
   // 📦 Load data
@@ -399,7 +343,7 @@ export default function BenchmarkPage() {
 
   const selectedOutcomeLabel = OUTCOMES.find((o) => o.value === selectedOutcome);
   const outcomeLabel = selectedOutcomeLabel
-    ? lang === "es" ? selectedOutcomeLabel.labelEs : selectedOutcomeLabel.labelEn
+    ? outcomeLabelOf(selectedOutcomeLabel)
     : selectedOutcome;
 
   // =========================================================
@@ -506,7 +450,7 @@ export default function BenchmarkPage() {
                 >
                   <Icon className={`w-5 h-5 ${isSelected ? "text-[var(--rowi-g2)]" : "text-gray-500 dark:text-gray-400"}`} />
                   <span className={`text-xs font-medium text-center leading-tight ${isSelected ? "text-[var(--rowi-g2)]" : "text-gray-600 dark:text-gray-400"}`}>
-                    {lang === "es" ? o.labelEs : o.labelEn}
+                    {outcomeLabelOf(o)}
                   </span>
                 </button>
               );
@@ -556,10 +500,10 @@ export default function BenchmarkPage() {
                       <div className="flex items-center gap-2 ml-11">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: level.color }}>
                           <span>{level.emoji}</span>
-                          <span>{lang === "es" ? level.es : level.en}</span>
+                          <span>{levelLabel(level)}</span>
                         </span>
                         <span className="text-xs text-gray-500">
-                          vs {tr.average}: {lang === "es" ? avgLevel.es : avgLevel.en}
+                          vs {tr.average}: {levelLabel(avgLevel)}
                         </span>
                       </div>
                     </div>
@@ -591,13 +535,13 @@ export default function BenchmarkPage() {
                         </div>
                         {avgLevel && (
                           <span className="text-[10px] text-gray-400 ml-5">
-                            vs {tr.average}: {lang === "es" ? avgLevel.es : avgLevel.en}
+                            vs {tr.average}: {levelLabel(avgLevel)}
                           </span>
                         )}
                       </div>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-white whitespace-nowrap" style={{ backgroundColor: level.color }}>
                         <span>{level.emoji}</span>
-                        <span>{lang === "es" ? level.es : level.en}</span>
+                        <span>{levelLabel(level)}</span>
                       </span>
                     </div>
                   );
@@ -650,7 +594,7 @@ export default function BenchmarkPage() {
                                   <div key={row.label} className="flex items-center justify-between gap-3">
                                     <span className="text-gray-500 text-sm">{row.label}:</span>
                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: row.level.color }}>
-                                      {row.level.emoji} {lang === "es" ? row.level.es : row.level.en}
+                                      {row.level.emoji} {levelLabel(row.level)}
                                     </span>
                                   </div>
                                 ))}
@@ -738,7 +682,7 @@ export default function BenchmarkPage() {
                             style={{ width: `${pct}%`, backgroundColor: level.color }}
                           >
                             <span className="text-[10px] text-white font-medium">
-                              {lang === "es" ? level.es : level.en}
+                              {levelLabel(level)}
                             </span>
                           </div>
                         </div>
@@ -813,15 +757,15 @@ export default function BenchmarkPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: item.userLevel.color }}>
-                            {item.userLevel.emoji} {lang === "es" ? item.userLevel.es : item.userLevel.en}
+                            {item.userLevel.emoji} {levelLabel(item.userLevel)}
                           </span>
                           <ChevronRight className="w-4 h-4 text-gray-400" />
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: item.topLevel.color }}>
-                            {item.topLevel.emoji} {lang === "es" ? item.topLevel.es : item.topLevel.en}
+                            {item.topLevel.emoji} {levelLabel(item.topLevel)}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500">
-                          {tr.shouldIncrease} <strong>{item.label}</strong>. {tr.youAre} <em>{lang === "es" ? item.userLevel.es : item.userLevel.en}</em>, {tr.topPerformersAre} <em>{lang === "es" ? item.topLevel.es : item.topLevel.en}</em>.
+                          {tr.shouldIncrease} <strong>{item.label}</strong>. {tr.youAre} <em>{levelLabel(item.userLevel)}</em>, {tr.topPerformersAre} <em>{levelLabel(item.topLevel)}</em>.
                         </p>
                       </div>
                     ))}
@@ -848,14 +792,14 @@ export default function BenchmarkPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: item.userLevel.color }}>
-                            {item.userLevel.emoji} {lang === "es" ? item.userLevel.es : item.userLevel.en}
+                            {item.userLevel.emoji} {levelLabel(item.userLevel)}
                           </span>
                           {item.gap > 0 && (
                             <span className="text-xs text-green-500 font-medium">+{Math.round(item.gap)}</span>
                           )}
                         </div>
                         <p className="text-xs text-gray-500">
-                          {tr.shouldMaintain} <strong>{item.label}</strong>. {tr.youAre} <em>{lang === "es" ? item.userLevel.es : item.userLevel.en}</em>.
+                          {tr.shouldMaintain} <strong>{item.label}</strong>. {tr.youAre} <em>{levelLabel(item.userLevel)}</em>.
                         </p>
                       </div>
                     ))}
@@ -883,11 +827,11 @@ export default function BenchmarkPage() {
                             <span className="text-sm font-medium text-gray-900 dark:text-white">{item.label}</span>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: item.userLevel.color }}>
-                                {item.userLevel.emoji} {lang === "es" ? item.userLevel.es : item.userLevel.en}
+                                {item.userLevel.emoji} {levelLabel(item.userLevel)}
                               </span>
                               <ChevronRight className="w-3 h-3 text-gray-400" />
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: item.topLevel.color }}>
-                                {item.topLevel.emoji} {lang === "es" ? item.topLevel.es : item.topLevel.en}
+                                {item.topLevel.emoji} {levelLabel(item.topLevel)}
                               </span>
                             </div>
                           </div>
@@ -914,7 +858,7 @@ export default function BenchmarkPage() {
                             <span className="text-sm font-medium text-gray-900 dark:text-white">{item.label}</span>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: item.userLevel.color }}>
-                                {item.userLevel.emoji} {lang === "es" ? item.userLevel.es : item.userLevel.en}
+                                {item.userLevel.emoji} {levelLabel(item.userLevel)}
                               </span>
                               {item.gap > 0 && <span className="text-xs text-emerald-500 font-medium">+{Math.round(item.gap)}</span>}
                             </div>
@@ -942,7 +886,7 @@ export default function BenchmarkPage() {
             {SEI_LEVELS.map((level) => (
               <div key={level.key} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: level.color }}>
                 <span>{level.emoji}</span>
-                <span>{lang === "es" ? level.es : level.en}</span>
+                <span>{levelLabel(level)}</span>
               </div>
             ))}
           </div>

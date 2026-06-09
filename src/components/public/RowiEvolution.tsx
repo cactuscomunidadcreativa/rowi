@@ -374,7 +374,7 @@ export default function RowiEvolution({
               className="text-center mt-6"
             >
               <p className="text-sm text-[var(--rowi-muted)] mb-1">
-                {lang === "es" ? "Explora cada nivel" : "Explore each level"}
+                {t("rowiEvolution.exploreEachLevel", "Explora cada nivel")}
               </p>
               {/* Mostramos el NIVEL (cualitativo) como protagonista, no el número
                   crudo — un score sin medición real no es un claim de SEI.
@@ -383,7 +383,7 @@ export default function RowiEvolution({
                 {lang === "es" ? currentStage.seiLevel.label : currentStage.seiLevel.labelEN}
               </p>
               <p className="text-xs text-[var(--rowi-muted)] mt-1">
-                {lang === "es" ? "Rango SEI" : "SEI range"} {currentStage.seiLevel.min}–{currentStage.seiLevel.max}/{EQ_MAX}
+                {t("rowiEvolution.seiRange", "Rango SEI")} {currentStage.seiLevel.min}–{currentStage.seiLevel.max}/{EQ_MAX}
               </p>
             </motion.div>
           </motion.div>
@@ -392,7 +392,7 @@ export default function RowiEvolution({
           <div className="space-y-3">
             <p className="text-sm font-medium text-[var(--rowi-muted)] mb-4 flex items-center gap-2">
               <Award className="w-4 h-4" />
-              {lang === "es" ? "Niveles de Inteligencia Emocional (SEI)" : "Emotional Intelligence Levels (SEI)"}
+              {t("rowiEvolution.levelsHeading", "Niveles de Inteligencia Emocional (SEI)")}
             </p>
 
             {EVOLUTION_STAGES.map((stage, index) => (
@@ -431,7 +431,7 @@ export default function RowiEvolution({
                             animate={{ scale: 1 }}
                             className="text-xs px-2 py-0.5 rounded-full bg-[var(--rowi-primary)] text-white"
                           >
-                            {lang === "es" ? "Actual" : "Current"}
+                            {t("rowiEvolution.current", "Actual")}
                           </motion.span>
                         )}
                       </h3>
@@ -463,7 +463,7 @@ export default function RowiEvolution({
           className="mt-16 max-w-4xl mx-auto"
         >
           <div className="flex items-center justify-between mb-2 text-sm">
-            <span className="text-[var(--rowi-muted)]">{lang === "es" ? "Escala SEI" : "SEI Scale"}</span>
+            <span className="text-[var(--rowi-muted)]">{t("rowiEvolution.seiScale", "Escala SEI")}</span>
             <span className="font-mono text-[var(--rowi-primary)]">{simulatedScore}/{EQ_MAX}</span>
           </div>
 
@@ -556,16 +556,17 @@ export default function RowiEvolution({
           className="text-center mt-12"
         >
           <p className="text-[var(--rowi-muted)] mb-4">
-            {lang === "es"
-              ? "Tu Rowi crece con tu práctica diaria. Empieza tu evolución hoy."
-              : "Your Rowi grows with your daily practice. Start your journey today."}
+            {t(
+              "rowiEvolution.ctaSubtitle",
+              "Tu Rowi crece con tu práctica diaria. Empieza tu evolución hoy."
+            )}
           </p>
           <a
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
           >
             <TrendingUp className="w-5 h-5" />
-            {lang === "es" ? "Comenzar gratis" : "Start free"}
+            {t("rowiEvolution.startFree", "Comenzar gratis")}
           </a>
         </motion.div>
       </div>

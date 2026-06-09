@@ -61,7 +61,7 @@ const BENCHMARK_SCOPES = [
 ];
 
 export default function ResearchPage() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const { currentContext, getContextsOfType } = useUserContext();
 
   const [activeTab, setActiveTab] = useState<TabType>("benchmarks");
@@ -110,12 +110,12 @@ export default function ResearchPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  {lang === "es" ? "Centro de Investigación" : "Research Center"}
+                  {t("research.title", "Centro de Investigación")}
                 </h1>
                 <p className="text-violet-200">
                   {currentContext?.type === "community"
-                    ? `${currentContext.name} - ${lang === "es" ? "Datos de comunidad" : "Community data"}`
-                    : lang === "es" ? "Todos los benchmarks" : "All benchmarks"
+                    ? `${currentContext.name} - ${t("research.communityData", "Datos de comunidad")}`
+                    : t("research.allBenchmarks", "Todos los benchmarks")
                   }
                 </p>
               </div>
@@ -126,12 +126,12 @@ export default function ResearchPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-white text-violet-700 rounded-lg hover:bg-violet-50 transition-colors font-medium"
               >
                 <FileUp className="w-4 h-4" />
-                {lang === "es" ? "Subir Benchmark" : "Upload Benchmark"}
+                {t("research.uploadBenchmark", "Subir Benchmark")}
               </button>
               <button
                 onClick={() => refreshBenchmarks()}
                 className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
-                title={lang === "es" ? "Actualizar" : "Refresh"}
+                title={t("research.refresh", "Actualizar")}
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
@@ -151,7 +151,7 @@ export default function ResearchPage() {
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {lang === "es" ? tab.labelES : tab.labelEN}
+                {t(`research.tab.${tab.id}`, tab.labelES)}
               </button>
             ))}
           </div>
@@ -164,7 +164,7 @@ export default function ResearchPage() {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3 mb-6">
             <AlertCircle className="w-5 h-5 text-red-500" />
             <p className="text-red-700 dark:text-red-300">
-              {lang === "es" ? "Error al cargar benchmarks" : "Error loading benchmarks"}
+              {t("research.errorLoading", "Error al cargar benchmarks")}
             </p>
           </div>
         )}
@@ -173,17 +173,17 @@ export default function ResearchPage() {
         {(activeTab === "top-performers" || activeTab === "correlations") && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {lang === "es" ? "Seleccionar Benchmark" : "Select Benchmark"}
+              {t("research.selectBenchmark", "Seleccionar Benchmark")}
             </label>
             <select
               value={selectedBenchmarkId || ""}
               onChange={(e) => setSelectedBenchmarkId(e.target.value || null)}
               className="w-full md:w-96 px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none"
             >
-              <option value="">{lang === "es" ? "-- Seleccionar --" : "-- Select --"}</option>
+              <option value="">{t("research.selectPlaceholder", "-- Seleccionar --")}</option>
               {benchmarks.map((b: any) => (
                 <option key={b.id} value={b.id}>
-                  {b.name} ({b._count?.dataPoints || 0} {lang === "es" ? "puntos" : "points"})
+                  {b.name} ({b._count?.dataPoints || 0} {t("research.points", "puntos")})
                 </option>
               ))}
             </select>
@@ -195,7 +195,7 @@ export default function ResearchPage() {
           <BenchmarksTab
             benchmarks={benchmarks}
             isLoading={benchmarksLoading}
-            lang={lang}
+            t={t}
             onSelectBenchmark={(id) => {
               setSelectedBenchmarkId(id);
               setActiveTab("top-performers");
@@ -210,7 +210,7 @@ export default function ResearchPage() {
             data={topPerformersData}
             isLoading={topPerformersLoading}
             benchmarkId={selectedBenchmarkId}
-            lang={lang}
+            t={t}
             onGenerate={refreshTopPerformers}
           />
         )}
@@ -221,7 +221,7 @@ export default function ResearchPage() {
             data={correlationsData}
             isLoading={correlationsLoading}
             benchmarkId={selectedBenchmarkId}
-            lang={lang}
+            t={t}
             onCalculate={refreshCorrelations}
           />
         )}
@@ -231,7 +231,7 @@ export default function ResearchPage() {
       <AnimatePresence>
         {showUploadModal && (
           <UploadBenchmarkModal
-            lang={lang}
+            t={t}
             communities={communities}
             currentCommunityId={currentContext?.type === "community" ? currentContext.id : null}
             onClose={() => setShowUploadModal(false)}
@@ -252,13 +252,13 @@ export default function ResearchPage() {
 function BenchmarksTab({
   benchmarks,
   isLoading,
-  lang,
+  t,
   onSelectBenchmark,
   onRefresh,
 }: {
   benchmarks: any[];
   isLoading: boolean;
-  lang: string;
+  t: (key: string, fallback?: string) => string;
   onSelectBenchmark: (id: string) => void;
   onRefresh: () => void;
 }) {
@@ -316,10 +316,10 @@ function BenchmarksTab({
       <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
         <Database className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <p className="text-gray-500 mb-4">
-          {lang === "es" ? "No hay benchmarks disponibles" : "No benchmarks available"}
+          {t("research.noBenchmarks", "No hay benchmarks disponibles")}
         </p>
         <p className="text-sm text-gray-400">
-          {lang === "es" ? "Sube un archivo CSV o Excel para comenzar" : "Upload a CSV or Excel file to get started"}
+          {t("research.noBenchmarksHint", "Sube un archivo CSV o Excel para comenzar")}
         </p>
       </div>
     );
@@ -367,7 +367,7 @@ function BenchmarksTab({
               <div className="flex items-center gap-6 mt-3 text-sm flex-wrap">
                 <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                   <BarChart3 className="w-4 h-4" />
-                  <span>{bench._count?.dataPoints || 0} {lang === "es" ? "puntos" : "points"}</span>
+                  <span>{bench._count?.dataPoints || 0} {t("research.points", "puntos")}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                   <Target className="w-4 h-4" />
@@ -375,7 +375,7 @@ function BenchmarksTab({
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                   <TrendingUp className="w-4 h-4" />
-                  <span>{bench._count?.correlations || 0} {lang === "es" ? "correlaciones" : "correlations"}</span>
+                  <span>{bench._count?.correlations || 0} {t("research.correlations", "correlaciones")}</span>
                 </div>
               </div>
             </div>
@@ -387,7 +387,7 @@ function BenchmarksTab({
                 onClick={() => handleGenerateTopPerformers(bench.id)}
                 disabled={generatingId === bench.id || bench.status !== "READY"}
                 className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors disabled:opacity-50"
-                title={lang === "es" ? "Generar Top Performers" : "Generate Top Performers"}
+                title={t("research.generateTopPerformers", "Generar Top Performers")}
               >
                 {generatingId === bench.id ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -401,7 +401,7 @@ function BenchmarksTab({
                 onClick={() => handleCalculateCorrelations(bench.id)}
                 disabled={processingId === bench.id || bench.status !== "READY"}
                 className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors disabled:opacity-50"
-                title={lang === "es" ? "Calcular Correlaciones" : "Calculate Correlations"}
+                title={t("research.calculateCorrelations", "Calcular Correlaciones")}
               >
                 {processingId === bench.id ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -414,7 +414,7 @@ function BenchmarksTab({
               <button
                 onClick={() => onSelectBenchmark(bench.id)}
                 className="p-2 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg transition-colors"
-                title={lang === "es" ? "Ver análisis" : "View analysis"}
+                title={t("research.viewAnalysis", "Ver análisis")}
               >
                 <Eye className="w-5 h-5" />
               </button>
@@ -422,7 +422,7 @@ function BenchmarksTab({
               {/* Export */}
               <button
                 className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
-                title={lang === "es" ? "Exportar" : "Export"}
+                title={t("research.export", "Exportar")}
               >
                 <Download className="w-5 h-5" />
               </button>
@@ -441,13 +441,13 @@ function TopPerformersTab({
   data,
   isLoading,
   benchmarkId,
-  lang,
+  t,
   onGenerate,
 }: {
   data: any;
   isLoading: boolean;
   benchmarkId: string | null;
-  lang: string;
+  t: (key: string, fallback?: string) => string;
   onGenerate: () => void;
 }) {
   const [generating, setGenerating] = useState(false);
@@ -470,7 +470,7 @@ function TopPerformersTab({
       <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
         <Target className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <p className="text-gray-500">
-          {lang === "es" ? "Selecciona un benchmark" : "Select a benchmark"}
+          {t("research.selectABenchmark", "Selecciona un benchmark")}
         </p>
       </div>
     );
@@ -492,10 +492,10 @@ function TopPerformersTab({
       <div className="flex items-center justify-between bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 p-4">
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
-            {lang === "es" ? "Análisis Top Performers" : "Top Performers Analysis"}
+            {t("research.topPerformersAnalysis", "Análisis Top Performers")}
           </h3>
           <p className="text-sm text-gray-500">
-            {topPerformers.length} {lang === "es" ? "outcomes analizados" : "outcomes analyzed"}
+            {topPerformers.length} {t("research.outcomesAnalyzed", "outcomes analizados")}
           </p>
         </div>
         <button
@@ -508,7 +508,7 @@ function TopPerformersTab({
           ) : (
             <Zap className="w-4 h-4" />
           )}
-          {lang === "es" ? "Regenerar" : "Regenerate"}
+          {t("research.regenerate", "Regenerar")}
         </button>
       </div>
 
@@ -516,14 +516,14 @@ function TopPerformersTab({
         <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
           <Target className="w-12 h-12 mx-auto text-gray-400 mb-4" />
           <p className="text-gray-500 mb-4">
-            {lang === "es" ? "No hay datos de top performers" : "No top performer data"}
+            {t("research.noTopPerformerData", "No hay datos de top performers")}
           </p>
           <button
             onClick={handleGenerate}
             disabled={generating}
             className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
           >
-            {lang === "es" ? "Generar ahora" : "Generate now"}
+            {t("research.generateNow", "Generar ahora")}
           </button>
         </div>
       ) : (
@@ -541,7 +541,7 @@ function TopPerformersTab({
                     {tp.outcomeKey}
                   </h4>
                   <p className="text-sm text-gray-500">
-                    n = {tp.sampleSize} | {lang === "es" ? "Confianza" : "Confidence"}:
+                    n = {tp.sampleSize} | {t("research.confidence", "Confianza")}:
                     <span className={`ml-1 ${
                       tp.confidenceLevel === "high" ? "text-green-600" :
                       tp.confidenceLevel === "medium" ? "text-yellow-600" : "text-red-600"
@@ -564,7 +564,7 @@ function TopPerformersTab({
               {tp.topCompetencies && tp.topCompetencies.length > 0 && (
                 <div className="mb-4">
                   <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {lang === "es" ? "Competencias Clave" : "Key Competencies"}
+                    {t("research.keyCompetencies", "Competencias Clave")}
                   </h5>
                   <div className="flex flex-wrap gap-2">
                     {tp.topCompetencies.slice(0, 5).map((comp: any, idx: number) => (
@@ -587,19 +587,19 @@ function TopPerformersTab({
               {tp.statistics && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
                   <div>
-                    <span className="text-xs text-gray-500">{lang === "es" ? "Comp. Significativas" : "Significant Comp."}</span>
+                    <span className="text-xs text-gray-500">{t("research.significantComp", "Comp. Significativas")}</span>
                     <p className="font-semibold">{tp.statistics.significantCompetencies || 0}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-500">{lang === "es" ? "Talentos Signif." : "Significant Talents"}</span>
+                    <span className="text-xs text-gray-500">{t("research.significantTalents", "Talentos Signif.")}</span>
                     <p className="font-semibold">{tp.statistics.significantTalents || 0}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-500">{lang === "es" ? "Effect Size Prom." : "Avg Effect Size"}</span>
+                    <span className="text-xs text-gray-500">{t("research.avgEffectSize", "Effect Size Prom.")}</span>
                     <p className="font-semibold">{(tp.statistics.avgEffectSizeCompetencies || 0).toFixed(2)}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-500">{lang === "es" ? "Población" : "Population"}</span>
+                    <span className="text-xs text-gray-500">{t("research.population", "Población")}</span>
                     <p className="font-semibold">{tp.totalPopulation || 0}</p>
                   </div>
                 </div>
@@ -619,13 +619,13 @@ function CorrelationsTab({
   data,
   isLoading,
   benchmarkId,
-  lang,
+  t,
   onCalculate,
 }: {
   data: any;
   isLoading: boolean;
   benchmarkId: string | null;
-  lang: string;
+  t: (key: string, fallback?: string) => string;
   onCalculate: () => void;
 }) {
   const [calculating, setCalculating] = useState(false);
@@ -650,7 +650,7 @@ function CorrelationsTab({
       <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
         <TrendingUp className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <p className="text-gray-500">
-          {lang === "es" ? "Selecciona un benchmark" : "Select a benchmark"}
+          {t("research.selectABenchmark", "Selecciona un benchmark")}
         </p>
       </div>
     );
@@ -673,10 +673,10 @@ function CorrelationsTab({
       <div className="flex items-center justify-between bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 p-4">
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
-            {lang === "es" ? "Análisis de Correlaciones" : "Correlations Analysis"}
+            {t("research.correlationsAnalysis", "Análisis de Correlaciones")}
           </h3>
           <p className="text-sm text-gray-500">
-            {data?.total || 0} {lang === "es" ? "correlaciones en" : "correlations across"} {outcomes.length} outcomes
+            {data?.total || 0} {t("research.correlationsAcross", "correlaciones en")} {outcomes.length} outcomes
           </p>
         </div>
         <button
@@ -689,7 +689,7 @@ function CorrelationsTab({
           ) : (
             <Zap className="w-4 h-4" />
           )}
-          {lang === "es" ? "Recalcular" : "Recalculate"}
+          {t("research.recalculate", "Recalcular")}
         </button>
       </div>
 
@@ -697,14 +697,14 @@ function CorrelationsTab({
         <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
           <TrendingUp className="w-12 h-12 mx-auto text-gray-400 mb-4" />
           <p className="text-gray-500 mb-4">
-            {lang === "es" ? "No hay correlaciones calculadas" : "No correlations calculated"}
+            {t("research.noCorrelationsCalculated", "No hay correlaciones calculadas")}
           </p>
           <button
             onClick={handleCalculate}
             disabled={calculating}
             className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
           >
-            {lang === "es" ? "Calcular ahora" : "Calculate now"}
+            {t("research.calculateNow", "Calcular ahora")}
           </button>
         </div>
       ) : (
@@ -760,13 +760,13 @@ function CorrelationsTab({
    📤 Modal: Subir Benchmark
 ========================================================= */
 function UploadBenchmarkModal({
-  lang,
+  t,
   communities,
   currentCommunityId,
   onClose,
   onSuccess,
 }: {
-  lang: string;
+  t: (key: string, fallback?: string) => string;
   communities: any[];
   currentCommunityId: string | null;
   onClose: () => void;
@@ -783,7 +783,7 @@ function UploadBenchmarkModal({
 
   const handleUpload = async () => {
     if (!file || !name.trim()) {
-      setError(lang === "es" ? "Nombre y archivo son requeridos" : "Name and file are required");
+      setError(t("research.nameFileRequired", "Nombre y archivo son requeridos"));
       return;
     }
 
@@ -848,7 +848,7 @@ function UploadBenchmarkModal({
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {lang === "es" ? "Subir Benchmark" : "Upload Benchmark"}
+            {t("research.uploadBenchmark", "Subir Benchmark")}
           </h2>
           <button
             onClick={onClose}
@@ -862,13 +862,13 @@ function UploadBenchmarkModal({
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {lang === "es" ? "Nombre" : "Name"} *
+              {t("research.name", "Nombre")} *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={lang === "es" ? "Nombre del benchmark" : "Benchmark name"}
+              placeholder={t("research.benchmarkNamePlaceholder", "Nombre del benchmark")}
               className="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-violet-500 outline-none"
             />
           </div>
@@ -876,7 +876,7 @@ function UploadBenchmarkModal({
           {/* Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {lang === "es" ? "Tipo" : "Type"}
+              {t("research.type", "Tipo")}
             </label>
             <select
               value={type}
@@ -892,7 +892,7 @@ function UploadBenchmarkModal({
           {/* Scope */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {lang === "es" ? "Alcance" : "Scope"}
+              {t("research.scope", "Alcance")}
             </label>
             <select
               value={scope}
@@ -908,7 +908,7 @@ function UploadBenchmarkModal({
           {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {lang === "es" ? "Archivo (CSV/Excel)" : "File (CSV/Excel)"} *
+              {t("research.fileCsvExcel", "Archivo (CSV/Excel)")} *
             </label>
             <div
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
@@ -937,7 +937,7 @@ function UploadBenchmarkModal({
                 <>
                   <Upload className="w-10 h-10 mx-auto text-gray-400 mb-2" />
                   <p className="text-gray-500">
-                    {lang === "es" ? "Click para seleccionar archivo" : "Click to select file"}
+                    {t("research.clickToSelectFile", "Click para seleccionar archivo")}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">CSV, XLSX, XLS (max 500MB)</p>
                 </>
@@ -950,7 +950,7 @@ function UploadBenchmarkModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">
-                  {lang === "es" ? "Procesando..." : "Processing..."}
+                  {t("research.processing", "Procesando...")}
                 </span>
                 <span className="font-medium">{progress}%</span>
               </div>
@@ -978,7 +978,7 @@ function UploadBenchmarkModal({
               disabled={uploading}
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
-              {lang === "es" ? "Cancelar" : "Cancel"}
+              {t("research.cancel", "Cancelar")}
             </button>
             <button
               onClick={handleUpload}
@@ -990,7 +990,7 @@ function UploadBenchmarkModal({
               ) : (
                 <Upload className="w-4 h-4" />
               )}
-              {lang === "es" ? "Subir" : "Upload"}
+              {t("research.upload", "Subir")}
             </button>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default function PricingPage() {
 
   const getPrice = (plan: RowiPlan) => {
     if (plan.isCustomPricing) {
-      return lang === "es" ? "Personalizado" : "Custom";
+      return t("pricingPage.price.custom", "Personalizado");
     }
     const price = billingPeriod === "yearly" ? plan.priceYearly : plan.priceMonthly;
     return formatPrice(price, plan.currency, lang);
@@ -100,17 +100,15 @@ export default function PricingPage() {
 
   const getPeriodText = (plan: RowiPlan) => {
     if (plan.isCustomPricing) return "";
-    if (plan.priceMonthly === 0) return lang === "es" ? "/siempre" : "/forever";
-    if (billingPeriod === "yearly") return lang === "es" ? "/año" : "/year";
-    return lang === "es" ? "/mes" : "/month";
+    if (plan.priceMonthly === 0) return t("pricingPage.period.forever", "/siempre");
+    if (billingPeriod === "yearly") return t("pricingPage.period.year", "/año");
+    return t("pricingPage.period.month", "/mes");
   };
 
   const getPerUserText = (plan: RowiPlan) => {
     if (plan.pricePerUser && plan.pricePerUser > 0) {
       const price = billingPeriod === "yearly" ? plan.pricePerUserYearly : plan.pricePerUser;
-      return lang === "es"
-        ? `${formatPrice(price || 0, plan.currency, lang)}/usuario`
-        : `${formatPrice(price || 0, plan.currency, lang)}/user`;
+      return `${formatPrice(price || 0, plan.currency, lang)}/${t("pricingPage.perUser.user", "usuario")}`;
     }
     return null;
   };
@@ -126,7 +124,7 @@ export default function PricingPage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-green-500/20 mb-4"
           >
             <Zap className="w-4 h-4 text-yellow-500" />
-            {lang === "es" ? "Planes transparentes" : "Transparent pricing"}
+            {t("pricingPage.badge", "Planes transparentes")}
           </motion.span>
 
           <motion.h1
@@ -135,9 +133,9 @@ export default function PricingPage() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-bold mb-4"
           >
-            {lang === "es" ? "Elige tu" : "Choose your"}{" "}
+            {t("pricingPage.title.choose", "Elige tu")}{" "}
             <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 bg-clip-text text-transparent">
-              {lang === "es" ? "plan perfecto" : "perfect plan"}
+              {t("pricingPage.title.perfectPlan", "plan perfecto")}
             </span>
           </motion.h1>
 
@@ -147,9 +145,7 @@ export default function PricingPage() {
             transition={{ delay: 0.2 }}
             className="text-lg text-[var(--rowi-muted)] max-w-2xl mx-auto mb-8"
           >
-            {lang === "es"
-              ? "Comienza gratis y escala según tus necesidades. Todos los planes incluyen tu Rowi personal."
-              : "Start free and scale as you grow. All plans include your personal Rowi."}
+            {t("pricingPage.subtitle", "Comienza gratis y escala según tus necesidades. Todos los planes incluyen tu Rowi personal.")}
           </motion.p>
 
           {/* Toggle B2C / B2B */}
@@ -168,7 +164,7 @@ export default function PricingPage() {
                   : "bg-[var(--rowi-card)] hover:bg-[var(--rowi-card-hover)]"
               }`}
             >
-              {lang === "es" ? "👤 Personal y Familia" : "👤 Personal & Family"}
+              {t("pricingPage.toggle.personalFamily", "👤 Personal y Familia")}
             </button>
             <button
               onClick={() => setShowB2B(true)}
@@ -179,7 +175,7 @@ export default function PricingPage() {
                   : "bg-[var(--rowi-card)] hover:bg-[var(--rowi-card-hover)]"
               }`}
             >
-              {lang === "es" ? "🏢 Empresas" : "🏢 Business"}
+              {t("pricingPage.toggle.business", "🏢 Empresas")}
             </button>
           </motion.div>
 
@@ -191,13 +187,13 @@ export default function PricingPage() {
             className="flex items-center justify-center gap-3"
           >
             <span className={`text-sm ${billingPeriod === "monthly" ? "text-[var(--rowi-text)]" : "text-[var(--rowi-muted)]"}`}>
-              {lang === "es" ? "Mensual" : "Monthly"}
+              {t("pricingPage.billing.monthly", "Mensual")}
             </span>
             <button
               onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
               role="switch"
               aria-checked={billingPeriod === "yearly"}
-              aria-label={lang === "es" ? "Cambiar a facturación anual" : "Switch to yearly billing"}
+              aria-label={t("pricingPage.billing.switchYearlyAria", "Cambiar a facturación anual")}
               className={`relative w-14 h-7 rounded-full transition-colors ${
                 billingPeriod === "yearly" ? "bg-green-500" : "bg-[var(--rowi-border)]"
               }`}
@@ -209,11 +205,11 @@ export default function PricingPage() {
               />
             </button>
             <span className={`text-sm ${billingPeriod === "yearly" ? "text-[var(--rowi-text)]" : "text-[var(--rowi-muted)]"}`}>
-              {lang === "es" ? "Anual" : "Yearly"}
+              {t("pricingPage.billing.yearly", "Anual")}
             </span>
             {billingPeriod === "yearly" && (
               <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-600 dark:text-green-400 text-xs font-medium rounded-full">
-                {lang === "es" ? "Ahorra hasta 17%" : "Save up to 17%"}
+                {t("pricingPage.billing.saveBadge", "Ahorra hasta 17%")}
               </span>
             )}
           </motion.div>
@@ -295,7 +291,7 @@ export default function PricingPage() {
                   {getPerUserText(plan) && (
                     <p className="text-sm text-[var(--rowi-muted)] mt-1">
                       {getPerUserText(plan)}
-                      {plan.minUsers > 1 && ` (mín. ${plan.minUsers})`}
+                      {plan.minUsers > 1 && ` (${t("pricingPage.minUsers", "mín.")} ${plan.minUsers})`}
                     </p>
                   )}
                 </div>
@@ -325,14 +321,15 @@ export default function PricingPage() {
                     {isExpanded ? (
                       <>
                         <ChevronUp className="w-4 h-4" />
-                        {lang === "es" ? "Ver menos" : "See less"}
+                        {t("pricingPage.features.seeLess", "Ver menos")}
                       </>
                     ) : (
                       <>
                         <ChevronDown className="w-4 h-4" />
-                        {lang === "es"
-                          ? `Ver ${plan.features.length - 4} más`
-                          : `See ${plan.featuresEN.length - 4} more`}
+                        {t("pricingPage.features.seeMore", "Ver {n} más").replace(
+                          "{n}",
+                          String((lang === "es" ? plan.features : plan.featuresEN).length - 4)
+                        )}
                       </>
                     )}
                   </button>
@@ -356,7 +353,7 @@ export default function PricingPage() {
                     {(lang === "es" ? plan.limitations : plan.limitationsEN).length > 0 && (
                       <div className="pt-2 mt-2 border-t border-[var(--rowi-border)]">
                         <p className="text-xs font-semibold text-[var(--rowi-muted)] mb-2">
-                          {lang === "es" ? "Limitaciones" : "Limitations"}
+                          {t("pricingPage.limitations.title", "Limitaciones")}
                         </p>
                         {(lang === "es" ? plan.limitations : plan.limitationsEN).map((limitation, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-[var(--rowi-muted)]">
@@ -387,8 +384,8 @@ export default function PricingPage() {
                         className={`${ctaClass} disabled:opacity-60 disabled:cursor-not-allowed`}
                       >
                         {checkoutLoading === plan.slug
-                          ? (lang === "es" ? "Redirigiendo…" : "Redirecting…")
-                          : (lang === "es" ? "Mejorar a este plan" : "Upgrade to this plan")}
+                          ? t("pricingPage.cta.redirecting", "Redirigiendo…")
+                          : t("pricingPage.cta.upgrade", "Mejorar a este plan")}
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     );
@@ -415,7 +412,7 @@ export default function PricingPage() {
                 {/* Support Level */}
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--rowi-muted)]">
                   <MessageCircle className="w-3 h-3" />
-                  {lang === "es" ? "Soporte:" : "Support:"} {getSupportLevelName(plan.supportLevel, lang)}
+                  {t("pricingPage.support.label", "Soporte:")} {getSupportLevelName(plan.supportLevel, lang)}
                 </div>
               </motion.div>
             );
@@ -435,30 +432,28 @@ export default function PricingPage() {
             </div>
             <div>
               <h3 className="font-bold text-lg mb-2">
-                {lang === "es" ? "¿Qué son los tokens IA?" : "What are AI tokens?"}
+                {t("pricingPage.tokens.title", "¿Qué son los tokens IA?")}
               </h3>
               <p className="text-[var(--rowi-muted)] mb-4">
-                {lang === "es"
-                  ? "Los tokens IA son unidades de conversación con tu Rowi. Cada interacción consume tokens según su complejidad. Tus tokens se renuevan cada mes."
-                  : "AI tokens are conversation units with your Rowi. Each interaction consumes tokens based on complexity. Your tokens renew monthly."}
+                {t("pricingPage.tokens.desc", "Los tokens IA son unidades de conversación con tu Rowi. Cada interacción consume tokens según su complejidad. Tus tokens se renuevan cada mes.")}
               </p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                  <p className="font-semibold text-sm mb-1">🆓 Free (10 tokens)</p>
+                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.freeLabel", "🆓 Free (10 tokens)")}</p>
                   <p className="text-xs text-[var(--rowi-muted)]">
-                    {lang === "es" ? "Exploración básica" : "Basic exploration"}
+                    {t("pricingPage.tokens.freeDesc", "Exploración básica")}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                  <p className="font-semibold text-sm mb-1">⭐ ROWI+ (150 tokens)</p>
+                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.plusLabel", "⭐ ROWI+ (150 tokens)")}</p>
                   <p className="text-xs text-[var(--rowi-muted)]">
-                    {lang === "es" ? "Conversación profunda + resúmenes" : "Deep conversation + summaries"}
+                    {t("pricingPage.tokens.plusDesc", "Conversación profunda + resúmenes")}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                  <p className="font-semibold text-sm mb-1">🚀 Pro (500 tokens)</p>
+                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.proLabel", "🚀 Pro (500 tokens)")}</p>
                   <p className="text-xs text-[var(--rowi-muted)]">
-                    {lang === "es" ? "IA copiloto para coaching" : "AI copilot for coaching"}
+                    {t("pricingPage.tokens.proDesc", "IA copiloto para coaching")}
                   </p>
                 </div>
               </div>
@@ -474,12 +469,10 @@ export default function PricingPage() {
           className="mt-16 text-center"
         >
           <h2 className="text-2xl font-bold mb-4">
-            {lang === "es" ? "Comparación detallada" : "Detailed comparison"}
+            {t("pricingPage.comparison.title", "Comparación detallada")}
           </h2>
           <p className="text-[var(--rowi-muted)] mb-8">
-            {lang === "es"
-              ? "Todos los planes incluyen tu Rowi personal con IA y acceso a la comunidad"
-              : "All plans include your personal Rowi with AI and community access"}
+            {t("pricingPage.comparison.subtitle", "Todos los planes incluyen tu Rowi personal con IA y acceso a la comunidad")}
           </p>
 
           <div className="overflow-x-auto">
@@ -487,7 +480,7 @@ export default function PricingPage() {
               <thead>
                 <tr className="border-b border-[var(--rowi-border)]">
                   <th className="py-4 px-4 text-left font-semibold">
-                    {lang === "es" ? "Característica" : "Feature"}
+                    {t("pricingPage.comparison.feature", "Característica")}
                   </th>
                   {getAllPlans().map(plan => (
                     <th key={plan.slug} className="py-4 px-2 text-center">
@@ -500,7 +493,7 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 <tr className="border-b border-[var(--rowi-border)]">
-                  <td className="py-3 px-4 font-medium">{lang === "es" ? "Tokens IA/mes" : "AI tokens/month"}</td>
+                  <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.tokensMonth", "Tokens IA/mes")}</td>
                   {getAllPlans().map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.tokensOrganization || plan.tokensMonthly}
@@ -509,7 +502,7 @@ export default function PricingPage() {
                   ))}
                 </tr>
                 <tr className="border-b border-[var(--rowi-border)]">
-                  <td className="py-3 px-4 font-medium">{lang === "es" ? "Usuarios máx." : "Max users"}</td>
+                  <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.maxUsers", "Usuarios máx.")}</td>
                   {getAllPlans().map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.maxUsers >= 999 ? "∞" : plan.maxUsers}
@@ -517,7 +510,7 @@ export default function PricingPage() {
                   ))}
                 </tr>
                 <tr className="border-b border-[var(--rowi-border)]">
-                  <td className="py-3 px-4 font-medium">SEI {lang === "es" ? "incluido" : "included"}</td>
+                  <td className="py-3 px-4 font-medium">SEI {t("pricingPage.comparison.seiIncluded", "incluido")}</td>
                   {getAllPlans().map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.seiIncluded ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />}
@@ -533,7 +526,7 @@ export default function PricingPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="py-3 px-4 font-medium">{lang === "es" ? "Integraciones" : "Integrations"}</td>
+                  <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.integrations", "Integraciones")}</td>
                   {getAllPlans().map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.integrations.slack || plan.integrations.teams ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />}
@@ -553,63 +546,41 @@ export default function PricingPage() {
           className="mt-16"
         >
           <h2 className="text-2xl font-bold text-center mb-8">
-            {lang === "es" ? "Preguntas frecuentes" : "Frequently asked questions"}
+            {t("pricingPage.faq.title", "Preguntas frecuentes")}
           </h2>
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {[
               {
-                q: lang === "es"
-                  ? "¿Quién puede ver mis datos emocionales?"
-                  : "Who can see my emotional data?",
-                a: lang === "es"
-                  ? "Tus datos individuales son privados y solo tuyos. Las vistas de equipo u organización son siempre agregadas y anónimas (mínimo 5 personas), nunca individuales. Nuestro piso de privacidad es el GDPR, adaptado a cada jurisdicción."
-                  : "Your individual data is private and yours alone. Team or organization views are always aggregated and anonymous (minimum 5 people), never individual. Our privacy floor is GDPR, adapted per jurisdiction.",
+                q: t("pricingPage.faq.q1", "¿Quién puede ver mis datos emocionales?"),
+                a: t("pricingPage.faq.a1", "Tus datos individuales son privados y solo tuyos. Las vistas de equipo u organización son siempre agregadas y anónimas (mínimo 5 personas), nunca individuales. Nuestro piso de privacidad es el GDPR, adaptado a cada jurisdicción."),
               },
               {
-                q: lang === "es"
-                  ? "¿Cómo usa Rowi la inteligencia artificial?"
-                  : "How does Rowi use AI?",
-                a: lang === "es"
-                  ? "La IA te da insights accionables a partir de tus check-ins, sin sustituir el juicio humano. No vendemos tus datos ni los usamos para entrenar modelos de terceros. Puedes desactivar las funciones de IA en cualquier momento."
-                  : "AI turns your check-ins into actionable insights without replacing human judgment. We don't sell your data or use it to train third-party models. You can disable AI features at any time.",
+                q: t("pricingPage.faq.q2", "¿Cómo usa Rowi la inteligencia artificial?"),
+                a: t("pricingPage.faq.a2", "La IA te da insights accionables a partir de tus check-ins, sin sustituir el juicio humano. No vendemos tus datos ni los usamos para entrenar modelos de terceros. Puedes desactivar las funciones de IA en cualquier momento."),
               },
               {
-                q: lang === "es"
-                  ? "¿En qué metodología se basa Rowi?"
-                  : "What methodology is Rowi based on?",
-                a: lang === "es"
-                  ? "Rowi se apoya en el marco de Six Seconds, con instrumentos validados internacionalmente (SEI, talentos cerebrales) y el modelo de Vital Signs. Combinamos ciencia de inteligencia emocional con una experiencia digital continua."
-                  : "Rowi is grounded in the Six Seconds framework, with internationally validated instruments (SEI, brain talents) and the Vital Signs model. We combine emotional intelligence science with a continuous digital experience.",
+                q: t("pricingPage.faq.q3", "¿En qué metodología se basa Rowi?"),
+                a: t("pricingPage.faq.a3", "Rowi se apoya en el marco de Six Seconds, con instrumentos validados internacionalmente (SEI, talentos cerebrales) y el modelo de Vital Signs. Combinamos ciencia de inteligencia emocional con una experiencia digital continua."),
               },
               {
-                q: lang === "es" ? "¿Puedo cambiar de plan?" : "Can I change plans?",
-                a: lang === "es"
-                  ? "Sí, puedes actualizar o degradar tu plan cuando quieras. Los cambios se aplican en tu próximo ciclo."
-                  : "Yes, you can upgrade or downgrade anytime. Changes apply on your next billing cycle.",
+                q: t("pricingPage.faq.q4", "¿Puedo cambiar de plan?"),
+                a: t("pricingPage.faq.a4", "Sí, puedes actualizar o degradar tu plan cuando quieras. Los cambios se aplican en tu próximo ciclo."),
               },
               {
-                q: lang === "es" ? "¿Cómo cancelo mi suscripción?" : "How do I cancel?",
-                a: lang === "es"
-                  ? "Puedes cancelar cuando quieras desde los ajustes de tu cuenta, sin llamadas ni trámites. Conservas el acceso hasta el final del periodo ya pagado."
-                  : "You can cancel anytime from your account settings — no calls, no hassle. You keep access until the end of the period you already paid for.",
+                q: t("pricingPage.faq.q5", "¿Cómo cancelo mi suscripción?"),
+                a: t("pricingPage.faq.a5", "Puedes cancelar cuando quieras desde los ajustes de tu cuenta, sin llamadas ni trámites. Conservas el acceso hasta el final del periodo ya pagado."),
               },
               {
-                q: lang === "es" ? "¿Hay período de prueba?" : "Is there a free trial?",
-                a: lang === "es"
-                  ? "El plan Free es gratuito para siempre. Los planes de pago incluyen 14 días de garantía."
-                  : "The Free plan is free forever. Paid plans include a 14-day money-back guarantee.",
+                q: t("pricingPage.faq.q6", "¿Hay período de prueba?"),
+                a: t("pricingPage.faq.a6", "El plan Free es gratuito para siempre. Los planes de pago incluyen 14 días de garantía."),
               },
               {
-                q: lang === "es" ? "¿Qué pasa si agoto mis tokens?" : "What if I run out of tokens?",
-                a: lang === "es"
-                  ? "Puedes comprar tokens adicionales o esperar a que se renueven el próximo mes."
-                  : "You can purchase additional tokens or wait for them to renew next month.",
+                q: t("pricingPage.faq.q7", "¿Qué pasa si agoto mis tokens?"),
+                a: t("pricingPage.faq.a7", "Puedes comprar tokens adicionales o esperar a que se renueven el próximo mes."),
               },
               {
-                q: lang === "es" ? "¿Cómo funciona el plan Family?" : "How does the Family plan work?",
-                a: lang === "es"
-                  ? "Los 500 tokens se comparten entre hasta 6 miembros. Cada uno tiene su propia cuenta Rowi."
-                  : "The 500 tokens are shared among up to 6 members. Each has their own Rowi account.",
+                q: t("pricingPage.faq.q8", "¿Cómo funciona el plan Family?"),
+                a: t("pricingPage.faq.a8", "Los 500 tokens se comparten entre hasta 6 miembros. Cada uno tiene su propia cuenta Rowi."),
               },
             ].map((faq, i) => (
               <div key={i} className="p-5 rounded-2xl bg-[var(--rowi-card)] border border-[var(--rowi-border)]">
@@ -631,25 +602,23 @@ export default function PricingPage() {
           className="mt-16 text-center p-8 rounded-3xl bg-gradient-to-r from-blue-500 to-purple-500 text-white"
         >
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            {lang === "es" ? "¿Tienes preguntas?" : "Have questions?"}
+            {t("pricingPage.contact.title", "¿Tienes preguntas?")}
           </h2>
           <p className="text-white/80 mb-6 max-w-xl mx-auto">
-            {lang === "es"
-              ? "Nuestro equipo está listo para ayudarte a elegir el plan perfecto para ti o tu organización."
-              : "Our team is ready to help you choose the perfect plan for you or your organization."}
+            {t("pricingPage.contact.subtitle", "Nuestro equipo está listo para ayudarte a elegir el plan perfecto para ti o tu organización.")}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/contact"
               className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-white/90 transition-all"
             >
-              {lang === "es" ? "Contactar equipo" : "Contact team"}
+              {t("pricingPage.contact.contactTeam", "Contactar equipo")}
             </Link>
             <Link
               href="/register"
               className="px-6 py-3 bg-white/20 text-white font-semibold rounded-xl hover:bg-white/30 transition-all"
             >
-              {lang === "es" ? "Comenzar gratis" : "Start free"}
+              {t("pricingPage.contact.startFree", "Comenzar gratis")}
             </Link>
           </div>
         </motion.div>

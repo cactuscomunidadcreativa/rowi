@@ -30,7 +30,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
  */
 
 export default function HowItWorksPage() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
@@ -76,20 +76,18 @@ export default function HowItWorksPage() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-[var(--rowi-primary)]/20 to-[var(--rowi-secondary)]/20 text-[var(--rowi-primary)] mb-6">
                 <Zap className="w-4 h-4" />
-                {lang === "es" ? "Proceso simple" : "Simple Process"}
+                {t("howItWorksPage.hero.badge", "Proceso simple")}
               </span>
 
               <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                {lang === "es" ? "Cómo funciona" : "How it works"}{" "}
+                {t("howItWorksPage.hero.title", "Cómo funciona")}{" "}
                 <span className="bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] bg-clip-text text-transparent">
                   Rowi
                 </span>
               </h1>
 
               <p className="text-xl text-[var(--rowi-muted)] mb-8 leading-relaxed">
-                {lang === "es"
-                  ? "Tu viaje hacia la inteligencia emocional comienza con tres simples pasos. Basado en el modelo científico SEI de Six Seconds."
-                  : "Your journey towards emotional intelligence begins with three simple steps. Based on the scientific SEI model from Six Seconds."}
+                {t("howItWorksPage.hero.subtitle", "Tu viaje hacia la inteligencia emocional comienza con tres simples pasos. Basado en el modelo científico SEI de Six Seconds.")}
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -97,14 +95,14 @@ export default function HowItWorksPage() {
                   href="/register"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)] text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
                 >
-                  {lang === "es" ? "Comenzar ahora" : "Start now"}
+                  {t("howItWorksPage.hero.ctaStart", "Comenzar ahora")}
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <a
                   href="#steps"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 border-[var(--rowi-border)] hover:border-[var(--rowi-primary)] transition-colors font-medium"
                 >
-                  {lang === "es" ? "Ver los pasos" : "See the steps"}
+                  {t("howItWorksPage.hero.ctaSteps", "Ver los pasos")}
                 </a>
               </div>
             </motion.div>
@@ -160,8 +158,8 @@ export default function HowItWorksPage() {
               viewport={{ once: true }}
               className="text-3xl md:text-5xl font-bold mb-4"
             >
-              {lang === "es" ? "Tu viaje en" : "Your journey in"}{" "}
-              <span className="text-[var(--rowi-primary)]">3 {lang === "es" ? "pasos" : "steps"}</span>
+              {t("howItWorksPage.steps.titlePre", "Tu viaje en")}{" "}
+              <span className="text-[var(--rowi-primary)]">3 {t("howItWorksPage.steps.titleSteps", "pasos")}</span>
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -170,9 +168,7 @@ export default function HowItWorksPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-[var(--rowi-muted)] max-w-2xl mx-auto"
             >
-              {lang === "es"
-                ? "Un proceso diseñado para tu crecimiento personal y emocional"
-                : "A process designed for your personal and emotional growth"}
+              {t("howItWorksPage.steps.subtitle", "Un proceso diseñado para tu crecimiento personal y emocional")}
             </motion.p>
           </div>
 
@@ -195,18 +191,16 @@ export default function HowItWorksPage() {
                   <Image src="/rowivectors/Rowi-01.webp" alt="Rowi Challenge" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
-                  {lang === "es" ? "Conoce a tu Rowi" : "Meet your Rowi"}
+                  {t("howItWorksPage.step1.title", "Conoce a tu Rowi")}
                 </h3>
                 <p className="text-[var(--rowi-muted)] mb-4">
-                  {lang === "es"
-                    ? "Crea tu cuenta gratis y conoce a tu compañero de inteligencia emocional. Tu Rowi comienza como un huevo lleno de potencial."
-                    : "Create your free account and meet your emotional intelligence companion. Your Rowi starts as an egg full of potential."}
+                  {t("howItWorksPage.step1.desc", "Crea tu cuenta gratis y conoce a tu compañero de inteligencia emocional. Tu Rowi comienza como un huevo lleno de potencial.")}
                 </p>
                 <ul className="space-y-2">
                   {[
-                    lang === "es" ? "Registro rápido" : "Quick registration",
-                    lang === "es" ? "100% gratuito" : "100% free",
-                    lang === "es" ? "Tu Rowi te espera" : "Your Rowi awaits",
+                    t("howItWorksPage.step1.item1", "Registro rápido"),
+                    t("howItWorksPage.step1.item2", "100% gratuito"),
+                    t("howItWorksPage.step1.item3", "Tu Rowi te espera"),
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -231,18 +225,16 @@ export default function HowItWorksPage() {
                   <Image src="/rowivectors/Rowi-02.webp" alt="Rowi Emerging" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
-                  {lang === "es" ? "Evalúa y descubre" : "Assess and discover"}
+                  {t("howItWorksPage.step2.title", "Evalúa y descubre")}
                 </h3>
                 <p className="text-[var(--rowi-muted)] mb-4">
-                  {lang === "es"
-                    ? "Completa la evaluación SEI de Six Seconds para obtener tu perfil emocional detallado con las 8 competencias."
-                    : "Complete the Six Seconds SEI assessment to get your detailed emotional profile with all 8 competencies."}
+                  {t("howItWorksPage.step2.desc", "Completa la evaluación SEI de Six Seconds para obtener tu perfil emocional detallado con las 8 competencias.")}
                 </p>
                 <ul className="space-y-2">
                   {[
-                    lang === "es" ? "Evaluación científica" : "Scientific assessment",
-                    lang === "es" ? "8 competencias medidas" : "8 competencies measured",
-                    lang === "es" ? "Perfil personalizado" : "Personalized profile",
+                    t("howItWorksPage.step2.item1", "Evaluación científica"),
+                    t("howItWorksPage.step2.item2", "8 competencias medidas"),
+                    t("howItWorksPage.step2.item3", "Perfil personalizado"),
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-blue-500" />
@@ -267,18 +259,16 @@ export default function HowItWorksPage() {
                   <Image src="/rowivectors/Rowi-06.webp" alt="Rowi Expert" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
-                  {lang === "es" ? "Crece y evoluciona" : "Grow and evolve"}
+                  {t("howItWorksPage.step3.title", "Crece y evoluciona")}
                 </h3>
                 <p className="text-[var(--rowi-muted)] mb-4">
-                  {lang === "es"
-                    ? "Conversa con Rowi, cumple metas y observa cómo tu compañero evoluciona junto contigo en los 5 niveles SEI."
-                    : "Chat with Rowi, achieve goals and watch your companion evolve with you through the 5 SEI levels."}
+                  {t("howItWorksPage.step3.desc", "Conversa con Rowi, cumple metas y observa cómo tu compañero evoluciona junto contigo en los 5 niveles SEI.")}
                 </p>
                 <ul className="space-y-2">
                   {[
-                    lang === "es" ? "Coach IA 24/7" : "24/7 AI Coach",
-                    lang === "es" ? "5 niveles de evolución" : "5 evolution levels",
-                    lang === "es" ? "Progreso visible" : "Visible progress",
+                    t("howItWorksPage.step3.item1", "Coach IA 24/7"),
+                    t("howItWorksPage.step3.item2", "5 niveles de evolución"),
+                    t("howItWorksPage.step3.item3", "Progreso visible"),
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -308,9 +298,9 @@ export default function HowItWorksPage() {
               viewport={{ once: true }}
               className="text-3xl md:text-5xl font-bold mb-4"
             >
-              {lang === "es" ? "¿Qué hace" : "What makes"}{" "}
+              {t("howItWorksPage.features.titlePre", "¿Qué hace")}{" "}
               <span className="text-[var(--rowi-primary)]">
-                {lang === "es" ? "especial a Rowi?" : "Rowi special?"}
+                {t("howItWorksPage.features.titlePost", "especial a Rowi?")}
               </span>
             </motion.h2>
           </div>
@@ -319,34 +309,26 @@ export default function HowItWorksPage() {
             {[
               {
                 icon: MessageCircle,
-                title: lang === "es" ? "IA Conversacional" : "Conversational AI",
-                desc: lang === "es"
-                  ? "Rowi entiende el contexto emocional y responde con empatía real"
-                  : "Rowi understands emotional context and responds with real empathy",
+                title: t("howItWorksPage.features.f1.title", "IA Conversacional"),
+                desc: t("howItWorksPage.features.f1.desc", "Rowi entiende el contexto emocional y responde con empatía real"),
                 color: "from-pink-500 to-rose-500",
               },
               {
                 icon: Shield,
-                title: lang === "es" ? "Privacidad Total" : "Total Privacy",
-                desc: lang === "es"
-                  ? "Tus conversaciones son completamente privadas y seguras"
-                  : "Your conversations are completely private and secure",
+                title: t("howItWorksPage.features.f2.title", "Privacidad Total"),
+                desc: t("howItWorksPage.features.f2.desc", "Tus conversaciones son completamente privadas y seguras"),
                 color: "from-blue-500 to-cyan-500",
               },
               {
                 icon: TrendingUp,
-                title: lang === "es" ? "Aprendizaje Continuo" : "Continuous Learning",
-                desc: lang === "es"
-                  ? "Rowi aprende de ti para ofrecer recomendaciones más relevantes"
-                  : "Rowi learns from you to offer more relevant recommendations",
+                title: t("howItWorksPage.features.f3.title", "Aprendizaje Continuo"),
+                desc: t("howItWorksPage.features.f3.desc", "Rowi aprende de ti para ofrecer recomendaciones más relevantes"),
                 color: "from-green-500 to-emerald-500",
               },
               {
                 icon: Globe,
-                title: lang === "es" ? "Metodología Probada" : "Proven Methodology",
-                desc: lang === "es"
-                  ? "Basado en Six Seconds, líder mundial en inteligencia emocional"
-                  : "Based on Six Seconds, world leader in emotional intelligence",
+                title: t("howItWorksPage.features.f4.title", "Metodología Probada"),
+                desc: t("howItWorksPage.features.f4.desc", "Basado en Six Seconds, líder mundial en inteligencia emocional"),
                 color: "from-purple-500 to-violet-500",
               },
             ].map((feature, i) => (
@@ -385,18 +367,16 @@ export default function HowItWorksPage() {
             <div className="relative bg-gradient-to-br from-[var(--rowi-primary)] to-[var(--rowi-secondary)] rounded-3xl p-12 text-white">
               <Sparkles className="w-12 h-12 mx-auto mb-6 opacity-80" />
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                {lang === "es" ? "¿Listo para comenzar?" : "Ready to start?"}
+                {t("howItWorksPage.cta.title", "¿Listo para comenzar?")}
               </h2>
               <p className="text-xl mb-8 opacity-90">
-                {lang === "es"
-                  ? "Tu viaje hacia la inteligencia emocional empieza aquí. Es gratis."
-                  : "Your journey towards emotional intelligence starts here. It's free."}
+                {t("howItWorksPage.cta.subtitle", "Tu viaje hacia la inteligencia emocional empieza aquí. Es gratis.")}
               </p>
               <Link
                 href="/register"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-[var(--rowi-primary)] font-bold text-lg hover:bg-opacity-90 transition-all shadow-xl"
               >
-                {lang === "es" ? "Crear mi cuenta gratis" : "Create my free account"}
+                {t("howItWorksPage.cta.button", "Crear mi cuenta gratis")}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>

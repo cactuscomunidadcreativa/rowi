@@ -3,6 +3,8 @@ import { prisma } from "@/core/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/core/auth";
 import { getI18n } from "@/lib/i18n/getI18n";
+import { getEvolutionState } from "@/services/avatar-evolution";
+import { RowiStageImage, type RowiStage } from "@/domains/avatar/components/RowiStageImage";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -88,6 +90,16 @@ export default async function ProfileHomePage() {
 
   const latestEQ = user?.eqSnapshots?.[0];
   const hasEQ = latestEQ && (latestEQ.K || latestEQ.C || latestEQ.G);
+
+  // Estado de evolución del avatar (la identidad Becoming: en quién te conviertes).
+  let evo: Awaited<ReturnType<typeof getEvolutionState>> = null;
+  if (user?.id) {
+    try {
+      evo = await getEvolutionState(user.id);
+    } catch {
+      evo = null;
+    }
+  }
   const profileComplete = isProfileComplete(user);
   const seiRequested = user?.seiRequested || false;
   const seiRequestedAt = user?.seiRequestedAt;
@@ -307,18 +319,30 @@ export default async function ProfileHomePage() {
 
   return (
     <section className="p-6 max-w-4xl mx-auto">
-      {/* Header con avatar */}
+      {/* Identidad Becoming: el avatar = la cara de en quién te conviertes.
+          El perfil ya no es un dashboard de settings — es identidad. */}
       <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center overflow-hidden">
-          {user?.image ? (
-            <Image src={user.image} alt={user.name || ""} width={80} height={80} className="object-cover" />
-          ) : (
-            <span className="text-3xl font-bold text-white">{user?.name?.charAt(0) || "R"}</span>
-          )}
-        </div>
+        {evo ? (
+          <Link href="/becoming" className="shrink-0 group" title={lang === "es" ? "Ver mi evolución" : "View my growth"}>
+            <RowiStageImage stage={evo.currentStage as RowiStage} size="lg" float alt={user?.name || "Rowi"} />
+          </Link>
+        ) : (
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center overflow-hidden shrink-0">
+            {user?.image ? (
+              <Image src={user.image} alt={user.name || ""} width={80} height={80} className="object-cover" />
+            ) : (
+              <span className="text-3xl font-bold text-white">{user?.name?.charAt(0) || "R"}</span>
+            )}
+          </div>
+        )}
         <div className="flex-1">
           <h1 className="text-2xl font-bold mb-1">{user?.name || ""}</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          {evo && (
+            <p className="text-sm font-medium text-[var(--rowi-g2)] mb-1">
+              {evo.stageInfo.emoji} {lang === "es" ? evo.stageInfo.name.es : evo.stageInfo.name.en}
+            </p>
+          )}
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             {latestEQ.brainStyle && (
               <span className="inline-flex items-center gap-1.5 mr-3">
                 <Award className="w-4 h-4 text-purple-500" />
@@ -329,6 +353,10 @@ export default async function ProfileHomePage() {
           </p>
         </div>
         <div className="flex items-center gap-4 text-sm">
+          <Link href="/becoming" className="flex items-center gap-1.5 text-[var(--rowi-g2)] font-medium hover:opacity-80 transition-opacity">
+            <TrendingUp className="w-4 h-4" />
+            {lang === "es" ? "Mi evolución" : "My growth"}
+          </Link>
           <Link href="/settings/profile" className="flex items-center gap-1.5 text-gray-500 hover:text-[var(--rowi-g2)] transition-colors">
             <Edit className="w-4 h-4" />
             {lang === "es" ? "Editar" : "Edit"}

@@ -805,7 +805,7 @@ function RegisterPageContent() {
                         isSelected
                           ? "border-2 border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5 shadow-lg"
                           : isHighlighted
-                          ? "border-2 border-blue-500/50 bg-white dark:bg-zinc-900"
+                          ? "border-2 border-[var(--rowi-g2)]/40 bg-white dark:bg-zinc-900"
                           : "border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-[var(--rowi-g2)]/50"
                       }`}
                     >

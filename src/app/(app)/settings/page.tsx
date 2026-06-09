@@ -83,7 +83,7 @@ const T: Record<string, Record<string, string>> = {
 /* ====== Colores Rowi ====== */
 const COLORS = {
   purple: "#7a59c9",
-  blue: "#31a2e3",
+  blue: "#38bdf8",
   pink: "#d797cf",
   green: "#10b981",
   orange: "#f59e0b",

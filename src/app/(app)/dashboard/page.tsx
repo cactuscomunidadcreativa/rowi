@@ -43,6 +43,8 @@ const translations = {
   es: {
     welcome: "Bienvenido de vuelta",
     subtitle: "Tu espacio de crecimiento emocional",
+    deepView: "Vista completa",
+    backToToday: "Ir a mi día",
     loading: "Cargando tu perfil emocional...",
     dataSource: "Fuente de datos",
 
@@ -104,6 +106,8 @@ const translations = {
   en: {
     welcome: "Welcome back",
     subtitle: "Your emotional growth space",
+    deepView: "Full view",
+    backToToday: "Go to my day",
     loading: "Loading your emotional profile...",
     dataSource: "Data source",
 
@@ -165,6 +169,8 @@ const translations = {
   pt: {
     welcome: "Bem-vindo de volta",
     subtitle: "Seu espaço de crescimento emocional",
+    deepView: "Visão completa",
+    backToToday: "Ir ao meu dia",
     loading: "Carregando seu perfil emocional...",
     dataSource: "Fonte de dados",
     eqScore: "Sua Pontuação EQ",
@@ -204,6 +210,8 @@ const translations = {
   it: {
     welcome: "Bentornato",
     subtitle: "Il tuo spazio di crescita emotiva",
+    deepView: "Vista completa",
+    backToToday: "Vai alla mia giornata",
     loading: "Caricamento del tuo profilo emotivo...",
     dataSource: "Fonte dati",
     eqScore: "Il tuo punteggio EQ",
@@ -315,6 +323,10 @@ export default function ClientDashboard() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
+          {/* Kicker: el dashboard es la vista analítica profunda; TODAY es el home. */}
+          <span className="inline-block text-xs font-semibold uppercase tracking-wide text-[var(--rowi-g2)] mb-1">
+            {t.deepView}
+          </span>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t.welcome}, <span className="rowi-gradient-text">{userName}</span>
           </h1>
@@ -323,10 +335,18 @@ export default function ClientDashboard() {
           </p>
         </div>
 
-        <MoodChip
-          text={base.mood?.recentText ?? "—"}
-          emoji={base.mood?.recentEmoji ?? "🙂"}
-        />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/today"
+            className="rounded-xl border border-[var(--rowi-g2)]/40 px-4 py-2 text-sm font-medium text-[var(--rowi-g2)] hover:bg-[var(--rowi-g2)]/5 transition-colors whitespace-nowrap"
+          >
+            {t.backToToday}
+          </Link>
+          <MoodChip
+            text={base.mood?.recentText ?? "—"}
+            emoji={base.mood?.recentEmoji ?? "🙂"}
+          />
+        </div>
       </motion.div>
 
       {/* DAILY PULSE — 1 pregunta SEI por día */}

@@ -94,7 +94,7 @@ export default function ForYouPage() {
             },
             {
               icon: "star",
-              title: lang !== "es" ? "Gamification" : "Gamificación",
+              title: lang !== "es" ? "Your Becoming" : "Tu Becoming",
               description: lang === "en"
                 ? "Watch your Rowi evolve as you grow"
                 : "Observa a tu Rowi evolucionar mientras creces",

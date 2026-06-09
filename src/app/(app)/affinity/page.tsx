@@ -99,6 +99,9 @@ const PROJECT_MAP: Record<string, ProjectType> = {
   comunicacion: "conversation",
 };
 
+// Paleta CATEGÓRICA por contexto de afinidad (intencional, no es el color de
+// marca): cada una de las 6 dimensiones tiene su color para distinguirlas de un
+// vistazo. No se unifica a violeta a propósito — la diferenciación es la función.
 const PROJECT_COLORS: Record<ProjectType, string> = {
   relationship: "#E53935",    // Rojo - conexión emocional
   leadership: "#7B1FA2",      // Púrpura - influencia

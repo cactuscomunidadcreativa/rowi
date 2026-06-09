@@ -5,7 +5,7 @@ export default function ProductInsightsPage() {
   return (
     <div className="min-h-screen pt-16">
       <HeroSection
-        content={{ badge: "📊 Insights", title1: "Datos que impulsan", title2: "tu crecimiento", subtitle: "Visualiza tu progreso emocional con métricas claras, tendencias y recomendaciones personalizadas basadas en ciencia.", ctaPrimary: "Ver mi progreso", image: "/owl.png" }}
+        content={{ badge: "📊 Insights", title1: "Datos que impulsan", title2: "tu crecimiento", subtitle: "Visualiza tu progreso emocional con métricas claras, tendencias y recomendaciones personalizadas basadas en ciencia.", ctaPrimary: "Ver mi progreso", image: "/rowivectors/Rowi-06.webp" }}
         config={{ layout: "split", showBadge: true, gradient: true }}
       />
       <FeaturesSection

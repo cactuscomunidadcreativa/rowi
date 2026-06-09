@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -62,39 +62,80 @@ export function RowiStageImage({
     <motion.div
       className={cn("relative", className)}
       style={{ width: px, height: px }}
-      // Eclosión: el búho nace con un pop; el huevo solo aparece.
-      initial={
-        justHatched
-          ? { scale: 0.2, opacity: 0, rotate: -8 }
-          : { scale: 0.9, opacity: 0 }
-      }
-      animate={
-        justHatched
-          ? { scale: [0.2, 1.15, 1], opacity: 1, rotate: [-8, 6, 0] }
-          : { scale: 1, opacity: 1 }
-      }
-      transition={{ duration: justHatched ? 0.9 : 0.5, ease: "easeOut" }}
     >
+      {/* Flotación continua (vida) envuelve el cambio de etapa. */}
       <motion.div
         className="relative h-full w-full"
         animate={float ? { y: [0, -8, 0] } : undefined}
-        transition={
-          float
-            ? { duration: 3, repeat: Infinity, ease: "easeInOut" }
-            : undefined
-        }
+        transition={float ? { duration: 3, repeat: Infinity, ease: "easeInOut" } : undefined}
       >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes={`${px}px`}
-          className="object-contain drop-shadow-2xl"
-          priority={size === "lg" || size === "xl"}
-        />
+        {/* Crossfade entre etapas: al cambiar `stage`, la imagen anterior se
+            desvanece y la nueva entra. Si justHatched, entra con un pop celebratorio. */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={stage}
+            className="absolute inset-0"
+            initial={
+              justHatched
+                ? { scale: 0.2, opacity: 0, rotate: -8 }
+                : { scale: 0.85, opacity: 0 }
+            }
+            animate={
+              justHatched
+                ? { scale: [0.2, 1.18, 1], opacity: 1, rotate: [-8, 6, 0] }
+                : { scale: 1, opacity: 1 }
+            }
+            exit={{ scale: 0.85, opacity: 0 }}
+            transition={{ duration: justHatched ? 0.9 : 0.45, ease: "easeOut" }}
+          >
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              sizes={`${px}px`}
+              className="object-contain drop-shadow-2xl"
+              priority={size === "lg" || size === "xl"}
+            />
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
 
-      {/* Halo cálido cuando ya es búho (post-eclosión) */}
+      {/* Ráfaga de celebración al evolucionar/eclosionar. */}
+      <AnimatePresence>
+        {justHatched && (
+          <>
+            {Array.from({ length: 10 }).map((_, i) => {
+              const angle = (i / 10) * Math.PI * 2;
+              return (
+                <motion.span
+                  key={`burst-${i}`}
+                  className="absolute left-1/2 top-1/2 text-xl pointer-events-none"
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0, 1, 0.4],
+                    x: Math.cos(angle) * px * 0.6,
+                    y: Math.sin(angle) * px * 0.6,
+                  }}
+                  transition={{ duration: 1.1, ease: "easeOut", delay: 0.15 }}
+                >
+                  ✨
+                </motion.span>
+              );
+            })}
+            {/* Pulso de glow */}
+            <motion.div
+              className="absolute inset-0 -z-10 rounded-full blur-2xl"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: [0, 0.8, 0], scale: [0.6, 1.4, 1] }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              style={{ background: "radial-gradient(circle, #7c3aed66, transparent 70%)" }}
+            />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Halo cálido permanente cuando ya es búho (post-eclosión). */}
       {isOwl && (
         <div
           className="absolute inset-0 -z-10 rounded-full blur-2xl"

@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -90,6 +91,22 @@ export default function AvatarPage() {
     isAuthenticated ? `/api/daily-pulse/today?tz=${tzOffset}` : null,
     fetcher
   );
+
+  // Celebración: si la reflexión hizo evolucionar al Rowi (marca dejada por
+  // DailyPulseCard), reproducimos la animación de eclosión una sola vez.
+  const [justEvolved, setJustEvolved] = useState(false);
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("rowi_just_evolved")) {
+        sessionStorage.removeItem("rowi_just_evolved");
+        setJustEvolved(true);
+        const tmr = setTimeout(() => setJustEvolved(false), 2000);
+        return () => clearTimeout(tmr);
+      }
+    } catch {
+      /* sessionStorage no disponible */
+    }
+  }, []);
 
   if (status === "loading" || (isAuthenticated && avatarLoading)) {
     return (
@@ -248,6 +265,7 @@ export default function AvatarPage() {
               stage={state.currentStage as RowiStage}
               size="xl"
               float
+              justHatched={justEvolved}
               alt={t("avatar.becoming.hero.alt", "Tu Rowi")}
             />
 

@@ -38,6 +38,12 @@ interface AnswerResponse {
   streak?: { current: number; longest: number };
   feedback?: string;
   error?: string;
+  evolution?: {
+    evolved: boolean;
+    hatched: boolean;
+    previousStage: string;
+    newStage: string;
+  } | null;
 }
 
 export default function DailyPulseCard() {
@@ -87,6 +93,15 @@ export default function DailyPulseCard() {
       if (json.feedback) setFeedback(json.feedback);
       if (json.streak) setStreak(json.streak);
       if (json.pointsAdded) setPointsAdded(json.pointsAdded);
+      // Si la reflexión hizo evolucionar al Rowi, dejamos una marca para que la
+      // pantalla del avatar reproduzca la celebración la próxima vez que se abra.
+      if (json.evolution?.evolved || json.evolution?.hatched) {
+        try {
+          sessionStorage.setItem("rowi_just_evolved", json.evolution.newStage);
+        } catch {
+          /* sessionStorage no disponible: la celebración simplemente no se dispara */
+        }
+      }
       setData((d) => (d ? { ...d, answeredToday: { value: json.value ?? value, at: new Date().toISOString() } } : d));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Network error");

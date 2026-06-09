@@ -6420,5 +6420,8 @@
   "admin.common.processing": "Processando…",
   "admin.benchmarks.outcomePatterns.generate": "Padrões de outcome",
   "admin.benchmarks.outcomePatterns.generating": "Gerando…",
-  "admin.benchmarks.outcomePatterns.generated": "Padrões gerados"
+  "admin.benchmarks.outcomePatterns.generated": "Padrões gerados",
+  "admin.knowledgeLayer.newJobProfile": "Novo perfil de cargo (hiring)",
+  "admin.knowledgeLayer.roleNamePlaceholder": "Nome do cargo (ex. Sales Manager)",
+  "admin.knowledgeLayer.createProfile": "Criar perfil"
 }

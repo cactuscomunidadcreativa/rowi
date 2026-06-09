@@ -6420,5 +6420,8 @@
   "admin.common.processing": "Elaborazione…",
   "admin.benchmarks.outcomePatterns.generate": "Pattern di outcome",
   "admin.benchmarks.outcomePatterns.generating": "Generazione…",
-  "admin.benchmarks.outcomePatterns.generated": "Pattern generati"
+  "admin.benchmarks.outcomePatterns.generated": "Pattern generati",
+  "admin.knowledgeLayer.newJobProfile": "Nuovo profilo di ruolo (hiring)",
+  "admin.knowledgeLayer.roleNamePlaceholder": "Nome del ruolo (es. Sales Manager)",
+  "admin.knowledgeLayer.createProfile": "Crea profilo"
 }

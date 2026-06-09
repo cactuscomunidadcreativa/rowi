@@ -57,6 +57,7 @@ export default function KnowledgeLayerPage() {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState("");
+  const [roleName, setRoleName] = useState("");
 
   async function load() {
     setLoading(true);
@@ -356,6 +357,39 @@ export default function KnowledgeLayerPage() {
             {t("admin.knowledgeLayer.downloadDataset", "Descargar dataset (JSONL)")}
           </a>
         </div>
+        {/* Crear un JobProfile (hiring playbook — patrón objetivo de un rol) */}
+        <div className="mt-5 pt-5 border-t border-[var(--rowi-border)]">
+          <p className="text-sm font-medium text-[var(--rowi-foreground)] mb-3">
+            {t("admin.knowledgeLayer.newJobProfile", "Nuevo perfil de rol (hiring)")}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <input
+              type="text"
+              value={roleName}
+              onChange={(e) => setRoleName(e.target.value)}
+              placeholder={t("admin.knowledgeLayer.roleNamePlaceholder", "Nombre del rol (ej. Sales Manager)")}
+              className="flex-1 px-3 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-background)] text-sm text-[var(--rowi-foreground)]"
+            />
+            <AdminButton
+              variant="secondary"
+              icon={Target}
+              size="sm"
+              disabled={!roleName || acting === "jobProfile"}
+              onClick={async () => {
+                await runAction("jobProfile", "/api/admin/knowledge/job-profiles", {
+                  roleName,
+                  scope: "global",
+                });
+                setRoleName("");
+              }}
+            >
+              {acting === "jobProfile"
+                ? t("admin.common.processing", "Procesando…")
+                : t("admin.knowledgeLayer.createProfile", "Crear perfil")}
+            </AdminButton>
+          </div>
+        </div>
+
         <p className="mt-3 text-xs text-[var(--rowi-muted)]">
           {t(
             "admin.knowledgeLayer.actionsHint",

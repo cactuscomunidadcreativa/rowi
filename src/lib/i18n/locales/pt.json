@@ -6423,5 +6423,12 @@
   "admin.benchmarks.outcomePatterns.generated": "Padrões gerados",
   "admin.knowledgeLayer.newJobProfile": "Novo perfil de cargo (hiring)",
   "admin.knowledgeLayer.roleNamePlaceholder": "Nome do cargo (ex. Sales Manager)",
-  "admin.knowledgeLayer.createProfile": "Criar perfil"
+  "admin.knowledgeLayer.createProfile": "Criar perfil",
+  "becoming.heroQuestion": "Em quem você está se tornando?",
+  "becoming.progress.label": "Rumo à sua próxima etapa",
+  "becoming.signals.days": "dias com você",
+  "becoming.signals.active": "dias com registro",
+  "becoming.signals.xp": "experiência",
+  "becoming.contrastSection": "Seu contraste honesto",
+  "becoming.cta": "Continue crescendo hoje"
 }

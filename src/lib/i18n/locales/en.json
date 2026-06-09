@@ -6423,5 +6423,12 @@
   "admin.benchmarks.outcomePatterns.generated": "Patterns generated",
   "admin.knowledgeLayer.newJobProfile": "New role profile (hiring)",
   "admin.knowledgeLayer.roleNamePlaceholder": "Role name (e.g. Sales Manager)",
-  "admin.knowledgeLayer.createProfile": "Create profile"
+  "admin.knowledgeLayer.createProfile": "Create profile",
+  "becoming.heroQuestion": "Who are you becoming?",
+  "becoming.progress.label": "Toward your next stage",
+  "becoming.signals.days": "days with you",
+  "becoming.signals.active": "days with entries",
+  "becoming.signals.xp": "experience",
+  "becoming.contrastSection": "Your honest contrast",
+  "becoming.cta": "Keep growing today"
 }

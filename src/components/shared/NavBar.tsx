@@ -78,6 +78,13 @@ const translations = {
       markRead: "Marcar leído",
       viewAllNotifications: "Ver todas las notificaciones",
       currentContext: "Contexto actual",
+      jSee: "Conócete",
+      jPractice: "Practica",
+      jAffinity: "Afinidad",
+      jEco: "ECO",
+      jConnect: "Conecta",
+      jImpact: "Impacto",
+      jOps: "Cuenta",
       loading: "Cargando...",
     },
   },
@@ -137,6 +144,13 @@ const translations = {
       markRead: "Mark read",
       viewAllNotifications: "View all notifications",
       currentContext: "Current context",
+      jSee: "Know Yourself",
+      jPractice: "Practice",
+      jAffinity: "Affinity",
+      jEco: "ECO",
+      jConnect: "Connect",
+      jImpact: "Impact",
+      jOps: "Account",
       loading: "Loading...",
     },
   },
@@ -196,6 +210,13 @@ const translations = {
       markRead: "Marcar como lido",
       viewAllNotifications: "Ver todas as notificações",
       currentContext: "Contexto atual",
+      jSee: "Conheça-se",
+      jPractice: "Pratique",
+      jAffinity: "Afinidade",
+      jEco: "ECO",
+      jConnect: "Conecte",
+      jImpact: "Impacto",
+      jOps: "Conta",
       loading: "Carregando...",
     },
   },
@@ -255,6 +276,13 @@ const translations = {
       markRead: "Segna come letta",
       viewAllNotifications: "Vedi tutte le notifiche",
       currentContext: "Contesto attuale",
+      jSee: "Conosciti",
+      jPractice: "Pratica",
+      jAffinity: "Affinità",
+      jEco: "ECO",
+      jConnect: "Connetti",
+      jImpact: "Impatto",
+      jOps: "Account",
       loading: "Caricamento...",
     },
   },
@@ -331,6 +359,20 @@ const BASE_LINKS = [
   { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "impact" },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false, journey: "workspace" },
+];
+
+// Grupos del dropdown "Más", ordenados por etapa del Human Growth OS.
+// Cada grupo agrupa los journeys que le pertenecen; la clave `key` es la
+// etiqueta i18n del encabezado. El grupo "ops" recoge todo lo demás (perfil,
+// roles, workspace) como cierre operativo.
+const MORE_GROUPS = [
+  { key: "jSee", journeys: ["see"] },
+  { key: "jPractice", journeys: ["practice"] },
+  { key: "jAffinity", journeys: ["affinity"] },
+  { key: "jEco", journeys: ["eco"] },
+  { key: "jConnect", journeys: ["connect"] },
+  { key: "jImpact", journeys: ["impact"] },
+  { key: "jOps", journeys: ["ops", "workspace"] },
 ];
 
 // Social sub-links for the dropdown
@@ -592,26 +634,42 @@ export default function NavBar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-2 w-52 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-1 overflow-hidden z-50"
+                    className="absolute left-0 mt-2 w-56 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-xl py-1 z-50 max-h-[70vh] overflow-y-auto"
                   >
-                    {moreLinks.map((ml) => {
-                      const mlActive = pathname?.startsWith(ml.href);
-                      const MlIcon = ml.icon;
-                      const mlLabel = t[ml.key as keyof typeof t] || ml.key;
+                    {/* Agrupado por etapa del viaje (BECOMING es el hogar de
+                        SEE/PRACTICE/AFFINITY/ECO/CONNECT/IMPACT). Comunica la
+                        arquitectura Human Growth OS, no una lista plana. */}
+                    {MORE_GROUPS.map((group) => {
+                      const groupLinks = moreLinks.filter((ml) =>
+                        group.journeys.includes((ml as { journey?: string }).journey ?? "ops")
+                      );
+                      if (groupLinks.length === 0) return null;
                       return (
-                        <Link
-                          key={ml.href}
-                          href={ml.href}
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                            mlActive
-                              ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10 font-medium"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                          }`}
-                        >
-                          <MlIcon className="w-4 h-4" />
-                          {mlLabel}
-                        </Link>
+                        <div key={group.key} className="py-1">
+                          <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--rowi-muted)]">
+                            {t[group.key as keyof typeof t] || group.key}
+                          </p>
+                          {groupLinks.map((ml) => {
+                            const mlActive = pathname?.startsWith(ml.href);
+                            const MlIcon = ml.icon;
+                            const mlLabel = t[ml.key as keyof typeof t] || ml.key;
+                            return (
+                              <Link
+                                key={ml.href}
+                                href={ml.href}
+                                onClick={() => setMoreDropdownOpen(false)}
+                                className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                                  mlActive
+                                    ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10 font-medium"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                }`}
+                              >
+                                <MlIcon className="w-4 h-4" />
+                                {mlLabel}
+                              </Link>
+                            );
+                          })}
+                        </div>
                       );
                     })}
                   </motion.div>

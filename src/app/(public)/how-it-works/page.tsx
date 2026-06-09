@@ -259,16 +259,16 @@ export default function HowItWorksPage() {
                   <Image src="/rowivectors/Rowi-06.webp" alt="Rowi Expert" fill className="object-contain" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">
-                  {t("howItWorksPage.step3.title", "Crece y evoluciona")}
+                  {t("howItWorksPage.step3.title", "Mira tu evolución")}
                 </h3>
                 <p className="text-[var(--rowi-muted)] mb-4">
-                  {t("howItWorksPage.step3.desc", "Conversa con Rowi, cumple metas y observa cómo tu compañero evoluciona junto contigo en los 5 niveles SEI.")}
+                  {t("howItWorksPage.step3.desc", "Tu Rowi crece con tu práctica y ves el contraste honesto contigo mismo: en quién te estás convirtiendo, semana a semana.")}
                 </p>
                 <ul className="space-y-2">
                   {[
-                    t("howItWorksPage.step3.item1", "Coach IA 24/7"),
-                    t("howItWorksPage.step3.item2", "5 niveles de evolución"),
-                    t("howItWorksPage.step3.item3", "Progreso visible"),
+                    t("howItWorksPage.step3.item1", "Tu Rowi evoluciona"),
+                    t("howItWorksPage.step3.item2", "Contraste contigo mismo"),
+                    t("howItWorksPage.step3.item3", "Coach IA siempre"),
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-500" />

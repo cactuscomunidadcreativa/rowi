@@ -1,19 +1,25 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserCircle, Heart, Crown, Users, Compass, GraduationCap } from "lucide-react";
+import {
+  UserCircle, Heart, Home, Users, Crown, Sprout, Compass,
+  Handshake, GraduationCap, Globe2,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 
 // Rowi es relaciones. La primera y más importante: contigo mismo. Luego, en
-// orden de cercanía del vínculo. "relationships" reemplaza a "couples" (pareja
-// vive ahora en la descripción, junto a familia y amistades).
+// orden de cercanía del vínculo, 10 contextos relacionales.
 const CASES = [
   { key: "self", icon: UserCircle, gradient: "from-violet-500 to-fuchsia-500" },
   { key: "relationships", icon: Heart, gradient: "from-pink-500 to-rose-500" },
+  { key: "family", icon: Home, gradient: "from-rose-500 to-orange-500" },
   { key: "teams", icon: Users, gradient: "from-orange-500 to-amber-500" },
   { key: "leadership", icon: Crown, gradient: "from-indigo-500 to-blue-500" },
+  { key: "mentorship", icon: Sprout, gradient: "from-lime-500 to-green-500" },
   { key: "coaching", icon: Compass, gradient: "from-purple-500 to-violet-500" },
+  { key: "clients", icon: Handshake, gradient: "from-cyan-500 to-blue-500" },
   { key: "education", icon: GraduationCap, gradient: "from-green-500 to-emerald-500" },
+  { key: "community", icon: Globe2, gradient: "from-teal-500 to-cyan-500" },
 ];
 
 export default function UseCasesSection() {

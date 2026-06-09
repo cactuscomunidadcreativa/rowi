@@ -238,3 +238,26 @@ export function inferMemberChannel(member: any) {
   if (member?.website) return { channel: "email", style: "balanced" };
   return { channel: "unspecified", style: "balanced" };
 }
+
+/* =========================================================
+   ⚖️ Pesos inyectables (Fase 4/6 del knowledge layer)
+   ---------------------------------------------------------
+   Los CTX/COMP_WEIGHTS de arriba son la HIPÓTESIS v0 hardcoded
+   (la versión por defecto). Un loader de servidor puede cargar
+   pesos calibrados desde AffinityWeights / AffinityConfig y pasarlos
+   aquí. El motor sigue puro: solo mezcla el override sobre el default.
+========================================================= */
+export type AffinityWeightOverride = {
+  ctx?: Partial<Record<Project, { growth: number; collab: number; understand: number }>>;
+  compWeights?: Partial<Record<Project, Record<CompKey, number>>>;
+};
+
+/** Devuelve los pesos de dimensión para un contexto, aplicando override si lo hay. */
+export function resolveCtx(project: Project, override?: AffinityWeightOverride) {
+  return override?.ctx?.[project] ?? CTX[project];
+}
+
+/** Devuelve los pesos de competencia para un contexto, aplicando override si lo hay. */
+export function resolveCompWeights(project: Project, override?: AffinityWeightOverride) {
+  return override?.compWeights?.[project] ?? COMP_WEIGHTS[project];
+}

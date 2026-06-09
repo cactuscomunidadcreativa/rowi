@@ -1,6 +1,16 @@
 // src/ai/learning/affinityAutoRecalc.ts
 import { prisma } from "@/core/prisma";
 import { summarizeSignals, upsertAdaptiveSnapshot } from "./affinityLearning";
+import { loadAffinityWeights } from "./affinityWeightsLoader";
+import {
+  N as engineN,
+  compAffinity135,
+  collaboration135,
+  understanding135,
+  talentSynergyFactor,
+  resolveCtx,
+  type Project,
+} from "@/domains/affinity/lib/affinityEngine";
 
 /**
  * 🤖 Auto Recalc de Afinidad Inteligente (v1.4)
@@ -59,6 +69,10 @@ export async function autoRecalcAffinity({
 
     const results: any[] = [];
 
+    // Pesos calibrados (si existen) — fallback a hipótesis v0 hardcoded.
+    const weightOverride = await loadAffinityWeights("global");
+    const proj = context as Project;
+
     /* =========================================================
        🔁 Procesamiento iterativo de miembros
     ========================================================== */
@@ -89,21 +103,38 @@ export async function autoRecalcAffinity({
 
       if (!snapUser || !snapMember) continue; // si no hay datos EQ, se salta
 
-      // 3️⃣ Promedio normalizado 135 (0-135)
-      const compsUser = [
-        snapUser.EL, snapUser.RP, snapUser.ACT, snapUser.NE,
-        snapUser.IM, snapUser.OP, snapUser.EMP, snapUser.NG,
-      ];
-      const compsMember = [
-        snapMember.EL, snapMember.RP, snapMember.ACT, snapMember.NE,
-        snapMember.IM, snapMember.OP, snapMember.EMP, snapMember.NG,
-      ];
+      // 3️⃣ Cálculo con el MOTOR REAL (no fórmula paralela).
+      //     Carga outcomes + talentos para alimentar las 3 dimensiones.
+      const [outsUser, outsMember, talsUserRows, talsMemberRows] = await Promise.all([
+        prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: snapUser.id } }),
+        prisma.eqOutcomeSnapshot.findMany({ where: { snapshotId: snapMember.id } }),
+        prisma.talentSnapshot.findMany({ where: { snapshotId: snapUser.id } }),
+        prisma.talentSnapshot.findMany({ where: { snapshotId: snapMember.id } }),
+      ]);
 
-      const avgUser = avg135(compsUser);
-      const avgMember = avg135(compsMember);
+      const compUser = {
+        EL: engineN(snapUser.EL), RP: engineN(snapUser.RP), ACT: engineN(snapUser.ACT), NE: engineN(snapUser.NE),
+        IM: engineN(snapUser.IM), OP: engineN(snapUser.OP), EMP: engineN(snapUser.EMP), NG: engineN(snapUser.NG),
+      };
+      const compMember = {
+        EL: engineN(snapMember.EL), RP: engineN(snapMember.RP), ACT: engineN(snapMember.ACT), NE: engineN(snapMember.NE),
+        IM: engineN(snapMember.IM), OP: engineN(snapMember.OP), EMP: engineN(snapMember.EMP), NG: engineN(snapMember.NG),
+      };
+      const talsUser: Record<string, number | null> = {};
+      const talsMember: Record<string, number | null> = {};
+      talsUserRows.forEach((t) => (talsUser[t.key] = engineN(t.score)));
+      talsMemberRows.forEach((t) => (talsMember[t.key] = engineN(t.score)));
 
-      const baseHeat = ((avgUser + avgMember) / 2) * biasAdj;
-      const heat135 = Math.min(135, Math.round(baseHeat));
+      const { score: growth } = compAffinity135(compUser, compMember, proj);
+      const tFactor = talentSynergyFactor(proj, talsUser, talsMember);
+      const collab = collaboration135(snapUser.brainStyle, snapMember.brainStyle, compUser, compMember, tFactor);
+      const understand = understanding135(outsUser, outsMember, proj);
+
+      // Mezcla ponderada del contexto (pesos calibrados si existen).
+      const W = resolveCtx(proj, weightOverride);
+      // biasAdj = lo APRENDIDO de las interacciones reales (señal de aprendizaje).
+      const composite = (W.growth * growth + W.collab * collab + W.understand * understand) * biasAdj;
+      const heat135 = Math.min(135, Math.max(0, Math.round(composite)));
 
       // 4️⃣ Guardar snapshot adaptativo (aprendizaje incremental)
       await upsertAdaptiveSnapshot({
@@ -164,13 +195,4 @@ export async function autoRecalcAffinity({
     console.error("❌ [autoRecalcAffinity] Error:", e);
     return { ok: false, error: e?.message || "Error desconocido" };
   }
-}
-
-/* =========================================================
-   🔧 Utilidad interna — Promedio 135
-========================================================= */
-function avg135(xs: Array<number | null | undefined>): number {
-  const valid = xs.filter((x): x is number => typeof x === "number" && x > 0);
-  if (!valid.length) return 90; // valor neutral si no hay datos
-  return valid.reduce((a, b) => a + b, 0) / valid.length;
 }

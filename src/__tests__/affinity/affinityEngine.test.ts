@@ -21,6 +21,8 @@ import {
   collaboration135,
   understanding135,
   talentSynergyFactor,
+  resolveCtx,
+  resolveCompWeights,
   type CompKey,
 } from "@/domains/affinity/lib/affinityEngine";
 
@@ -171,5 +173,26 @@ describe("affinityEngine — dimensiones de afinidad", () => {
 
   it("sin datos de talentos comunes, el factor es neutro 1.0", () => {
     expect(talentSynergyFactor("execution", {}, {})).toBe(1.0);
+  });
+});
+
+describe("affinityEngine — pesos inyectables (Fase 4/6)", () => {
+  it("resolveCtx sin override devuelve el peso hardcoded del contexto", () => {
+    expect(resolveCtx("execution")).toEqual(CTX.execution);
+  });
+
+  it("resolveCtx con override usa los pesos calibrados", () => {
+    const override = { ctx: { execution: { growth: 0.5, collab: 0.3, understand: 0.2 } } };
+    expect(resolveCtx("execution", override)).toEqual({ growth: 0.5, collab: 0.3, understand: 0.2 });
+    // un contexto NO incluido en el override cae al hardcoded
+    expect(resolveCtx("leadership", override)).toEqual(CTX.leadership);
+  });
+
+  it("resolveCompWeights respeta override parcial por contexto", () => {
+    expect(resolveCompWeights("decision")).toEqual(COMP_WEIGHTS.decision);
+    const custom = { EL: 0.2, RP: 0.1, ACT: 0.1, NE: 0.1, IM: 0.1, OP: 0.1, EMP: 0.1, NG: 0.2 };
+    const override = { compWeights: { decision: custom } };
+    expect(resolveCompWeights("decision", override)).toEqual(custom);
+    expect(resolveCompWeights("execution", override)).toEqual(COMP_WEIGHTS.execution);
   });
 });

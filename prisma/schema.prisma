@@ -7332,3 +7332,152 @@ model SlackUserLink {
   @@index([userId])
   @@map("slack_user_link")
 }
+
+/// =========================================================
+/// 🧠 KNOWLEDGE LAYER — base de conocimiento propia de Rowi
+/// (responder sin IA + acumular dataset para Rowi LLM)
+/// Ver docs/entregables/ROWI_KNOWLEDGE_LAYER_AUDITORIA.md
+/// =========================================================
+
+/// 💾 AIResponseCache — Fase 1. Cachea respuestas de IA por hash de prompt
+/// para servirlas sin re-llamar a OpenAI (ahorro de costo + latencia) y
+/// para acumular corpus. Tablas nuevas → safe bajo `prisma db push`.
+model AIResponseCache {
+  id         String   @id @default(cuid())
+  promptHash String // sha256 del (kind + prompt normalizado + scope)
+  kind       String // "affinity_interpret" | "brain_style" | "insight" | ...
+  scope      String   @default("global") // global | tenant:<id> | user:<id>
+  model      String // modelo que generó la respuesta
+  response   String   @db.Text
+  hits       Int      @default(0) // veces servida desde cache
+  createdAt  DateTime @default(now())
+  lastHitAt  DateTime @default(now())
+
+  @@unique([promptHash, scope])
+  @@index([kind, scope])
+  @@index([createdAt])
+  @@map("ai_response_cache")
+}
+
+/// 🧩 Intervention — Fase 2. Catálogo de intervenciones accionables: qué
+/// práctica / micro-pulso / ritual / play de hiring mueve qué outcome.
+/// La columna vertebral del conocimiento causal. Empieza como hipótesis
+/// (effectSource: hypothesis_v0) y se calibra con InterventionOutcome.
+model Intervention {
+  id          String  @id @default(cuid())
+  key         String  @unique // "TRUST_ritual_weekly_checkin"
+  kind        String // micro_learning | ritual | challenge | practice | hiring_play
+  title       String
+  description String? @db.Text
+
+  // QUÉ MUEVE (el corazón causal)
+  targetOutcome String // effectiveness | relationships | wellbeing | quality_of_life
+  targetPulse   String? // pulse point afectado (BELONGING, TRUST...)
+  targetComp    String? // competencia SEI que entrena (EL, EMP...)
+
+  // PARA QUIÉN
+  segment Json? // { role?, sector?, brainStyle?, level? }
+
+  // EFECTO (hipótesis → calibrado con datos)
+  expectedEffect Float? // efecto esperado (Cohen's d o Δscore)
+  effectSource   String  @default("hypothesis_v0") // hypothesis_v0 | calibrated_v1 | six_seconds_case
+  measuredEffect Float? // efecto real medido (ground-truth acumulado)
+  sampleSize     Int     @default(0)
+  confidence     String  @default("low") // low | medium | high
+
+  active    Boolean  @default(true)
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  outcomes InterventionOutcome[]
+
+  @@index([targetOutcome, active])
+  @@index([kind, active])
+  @@map("intervention")
+}
+
+/// 📊 InterventionOutcome — Fase 2. Ground-truth: una persona hizo una
+/// intervención y se midió el cambio real en el outcome (before/after).
+/// Acumula los pares que calibran Intervention.measuredEffect.
+model InterventionOutcome {
+  id             String   @id @default(cuid())
+  interventionId String
+  userId         String? // null = agregado anónimo (privacidad)
+  outcomeKey     String
+  scoreBefore    Float?
+  scoreAfter     Float?
+  delta          Float?
+  measuredAt     DateTime @default(now())
+
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+
+  @@index([interventionId, outcomeKey])
+  @@index([userId])
+  @@map("intervention_outcome")
+}
+
+/// 🎯 JobProfile — Fase 5. Patrón objetivo de un rol para hiring por
+/// afinidad: "para Sales Manager, busca este patrón de competencias /
+/// talentos / brain style". Convierte el team-fit on-demand en playbook.
+model JobProfile {
+  id          String  @id @default(cuid())
+  scope       String // global | tenant:<id> | hub:<id>
+  scopeId     String?
+  roleName    String
+  description String? @db.Text
+
+  // El patrón ideal (objetivo de búsqueda)
+  idealCompetencies Json? // [{ key, min, weight }]
+  idealTalents      Json? // [{ key, weight }]
+  preferredStyles   Json? // ["Strategist", "Visionary"]
+  minOverall        Float? // umbral mínimo de EQ global
+
+  source    String   @default("hypothesis_v0") // hypothesis_v0 | calibrated_v1
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scope, scopeId, active])
+  @@map("job_profile")
+}
+
+/// 🤝 AffinityGroundTruth — Fase 4. Cuando dos personas colaboran y se
+/// reporta el resultado real, guarda (afinidad_predicha vs resultado_real).
+/// Calibra los pesos del motor de afinidad (matriz BBP, splits).
+model AffinityGroundTruth {
+  id           String   @id @default(cuid())
+  ownerUserId  String
+  memberId     String
+  context      String // execution | leadership | ...
+  predicted135 Float // lo que el motor predijo
+  outcomeReal  Float // resultado real reportado (0..1 o 0..135)
+  outcomeKind  String   @default("collaboration") // collaboration | conflict | success
+  notes        String?  @db.Text
+  measuredAt   DateTime @default(now())
+
+  @@index([context])
+  @@index([ownerUserId, memberId])
+  @@map("affinity_ground_truth")
+}
+
+/// ⚖️ AffinityWeights — Fase 4/6. Pesos versionados del motor de afinidad
+/// (espejo del patrón PulsePointWeights). v0 = hipótesis hardcoded actual;
+/// v1+ se calibra con AffinityGroundTruth. El motor lee la versión active.
+model AffinityWeights {
+  id        String   @id @default(cuid())
+  scope     String   @default("global") // global | tenant:<id> | hub:<id>
+  scopeId   String?
+  version   Int // v0 reservado para los hardcoded actuales
+  // Pesos serializados (CTX, COMP_WEIGHTS, COLL_BBP, splits...)
+  payload   Json
+  rSquared  Float?
+  sampleSize Int     @default(0)
+  active    Boolean  @default(false)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@unique([scope, scopeId, version])
+  @@index([scope, active])
+  @@map("affinity_weights")
+}

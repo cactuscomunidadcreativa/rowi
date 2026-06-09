@@ -95,7 +95,7 @@ function HubLoginContent() {
   );
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#31a2e3] via-[#7a59c9] to-[#d797cf] text-white p-6">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#7c3aed] via-[#7a59c9] to-[#d797cf] text-white p-6">
       <div className="max-w-sm w-full bg-black/40 backdrop-blur-xl rounded-2xl shadow-xl p-8 space-y-5 text-center">
         {/* Header */}
         <div>
@@ -273,7 +273,7 @@ export default function HubLoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#31a2e3] via-[#7a59c9] to-[#d797cf]">
+        <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#7c3aed] via-[#7a59c9] to-[#d797cf]">
           <div className="text-white text-lg">Loading...</div>
         </main>
       }

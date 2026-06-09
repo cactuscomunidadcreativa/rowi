@@ -29,7 +29,7 @@ export default function EQLine({
             <Line
               type="monotone"
               dataKey="avg"
-              stroke="#31a2e3"
+              stroke="#7c3aed"
               strokeWidth={2}
               dot={{ fill: '#7a59c9', strokeWidth: 1 }}
             />

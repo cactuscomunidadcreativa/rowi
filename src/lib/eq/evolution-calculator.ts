@@ -162,14 +162,27 @@ export function calculateProgressToNextStage(score: number, currentStage: Avatar
 }
 
 /**
- * Calcula el progreso de eclosion del huevo
- * Base: 1% por dia de antiguedad
- * Bonus: 0.5% por cada actividad (punto ganado)
+ * Calcula el progreso de eclosion del huevo.
+ *
+ * La "Regla del Huevo": el huevo crece por Becoming (reflexion), no solo por
+ * tiempo o actividad pasiva. Por eso la racha de reflexion diaria pesa más que
+ * la antiguedad de la cuenta.
+ *
+ * - Antiguedad:  0.5% por dia (presencia, peso bajo)
+ * - Actividad:   0.5% por punto ganado
+ * - Reflexion:   3% por dia consecutivo de reflexion (la señal de Becoming)
+ *
+ * `reflectionStreak` es opcional para compatibilidad con llamadas existentes.
  */
-export function calculateHatchProgress(daysActive: number, totalActivities: number): number {
-  const baseProgress = daysActive;
+export function calculateHatchProgress(
+  daysActive: number,
+  totalActivities: number,
+  reflectionStreak = 0
+): number {
+  const presence = daysActive * 0.5;
   const activityBonus = Math.floor(totalActivities * 0.5);
-  return Math.min(100, baseProgress + activityBonus);
+  const becoming = reflectionStreak * 3;
+  return Math.min(100, Math.round(presence + activityBonus + becoming));
 }
 
 /**

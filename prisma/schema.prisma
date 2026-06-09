@@ -194,6 +194,7 @@ model User {
   vsSignals           PulsePointSignal[]    @relation("VsSignalUser")
   preSeiSessions      PreSeiSession[]       @relation("PreSeiClaim")
   miniSeiSnapshots    MiniSeiSnapshot[]     @relation("MiniSeiUser")
+  dailyLoopEntries    DailyLoopEntry[]      @relation("DailyLoopUser")
   vsWeightsCreated    PulsePointWeights[]   @relation("PulsePointWeightsCreator")
   debriefsFacilitated DebriefSession[]      @relation("DebriefFacilitator")
   debriefsAsSubject   DebriefSession[]      @relation("DebriefSubject")
@@ -7024,6 +7025,49 @@ model MiniSeiSnapshot {
 
   @@index([userId, takenAt])
   @@map("mini_sei_snapshot")
+}
+
+/// 🌅 DailyLoopEntry — el loop diario de TODAY (un registro por usuario por día).
+/// Encarna el viaje SEE → BECOME → PRACTICE → REFLECT de la arquitectura:
+///  - MAÑANA (SEE):   morningMood / morningIntensity — "¿cómo llegas hoy?"
+///  - BECOME:         becomeSei + becomeIdentity — "tu mejor versión hoy"
+///                    (propuesta DETERMINISTA desde el perfil EQ, sin IA)
+///  - PRACTICE:       practiceText + practiceDone — una sola acción
+///  - NOCHE (REFLECT): reflectionText — "¿cuándo te pareciste más a esa persona?"
+///                     (siempre positiva; genera el Becoming Data)
+/// localDate (YYYY-MM-DD en la tz del usuario) garantiza idempotencia por día.
+model DailyLoopEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  localDate String // "YYYY-MM-DD" en la tz local del usuario (idempotencia diaria)
+
+  // MAÑANA — SEE
+  morningMood      String? // texto/emoción de "¿cómo llegas hoy?"
+  morningIntensity Int? // 1-5 opcional
+  morningAt        DateTime?
+
+  // BECOME — el sistema propone (no el usuario elige de un menú)
+  becomeSei      String? // SeiKey de la competencia foco del día (EL, RP, ...)
+  becomeIdentity String? // "tu mejor versión hoy" (frase propuesta)
+  becomeAt       DateTime?
+
+  // PRACTICE — una sola acción
+  practiceText String? // la práctica propuesta del día
+  practiceDone Boolean   @default(false)
+  practiceAt   DateTime?
+
+  // NOCHE — REFLECT (el sensor del foso / Becoming Data)
+  reflectionText String? // "¿cuándo te pareciste más a esa persona hoy?"
+  reflectionAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("DailyLoopUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, localDate])
+  @@index([userId, createdAt])
+  @@map("daily_loop_entry")
 }
 
 // =============================================================================

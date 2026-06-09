@@ -149,7 +149,7 @@ export default function PublicWorldMap() {
           {/* Reserve the same vertical space the loaded section occupies
               (header + stats + map) so there is no layout jump on load. */}
           <div className="flex items-center justify-center min-h-[700px] md:min-h-[800px]">
-            <div className="w-12 h-12 border-4 border-[var(--rowi-g2,#31a2e3)] border-t-transparent rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-[var(--rowi-g2,#7c3aed)] border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       </section>
@@ -160,7 +160,7 @@ export default function PublicWorldMap() {
     return (
       <section className="py-20 bg-gradient-to-b from-[var(--rowi-bg,#f7f9fb)] to-[var(--rowi-card,#ffffff)]">
         <div className="container mx-auto px-4 text-center">
-          <Globe2 className="w-16 h-16 mx-auto text-[var(--rowi-g2,#31a2e3)] opacity-50 mb-4" />
+          <Globe2 className="w-16 h-16 mx-auto text-[var(--rowi-g2,#7c3aed)] opacity-50 mb-4" />
           <h2 className="text-2xl font-bold text-[var(--rowi-fg,#1a1c1e)] mb-2">{text.title}</h2>
           <p className="text-[var(--rowi-muted,#5f6368)]">{text.subtitle}</p>
         </div>
@@ -180,7 +180,7 @@ export default function PublicWorldMap() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2,#31a2e3)]/10 text-[var(--rowi-g2,#31a2e3)] text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--rowi-g2,#7c3aed)]/10 text-[var(--rowi-g2,#7c3aed)] text-sm font-medium mb-4">
             <Globe2 className="w-4 h-4" />
             {formatNumber(summary.benchmarkBase)} · {text.benchmark}
           </div>

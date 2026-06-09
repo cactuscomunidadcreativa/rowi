@@ -47,6 +47,55 @@ export async function logAffinityInteraction(payload: InteractionInput) {
 }
 
 /* =========================================================
+   🔗 persistHeat135ToDyad()
+   ---------------------------------------------------------
+   Persiste la lectura de sintonía (heat135) en el RelationshipDyad para que
+   ECO salga de modo neutro. ecoBridge lee `dyad.lastGapSummary.heat135`; los
+   cálculos de affinity sí lo computan pero nunca lo escribían en la díada
+   (eslabón roto). Aquí lo cerramos.
+
+   El matching es conservador: solo cuando memberId es un usuario Rowi
+   ("user_<id>") podemos atar a la díada por otherUserId. Si no hay díada, es
+   un no-op silencioso (no rompe el cálculo de affinity). La heat135 NUNCA es
+   un veredicto de compatibilidad — es la escala de la BRECHA (sintonía).
+========================================================= */
+export async function persistHeat135ToDyad(params: {
+  ownerUserId: string;
+  memberId: string;
+  context: string;
+  heat135: number;
+}) {
+  try {
+    // Solo atamos a díada cuando el "miembro" es un usuario Rowi real.
+    if (!params.memberId.startsWith("user_")) return;
+    const otherUserId = params.memberId.replace("user_", "");
+
+    const dyad = await prisma.relationshipDyad.findFirst({
+      where: { ownerUserId: params.ownerUserId, otherUserId },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true },
+    });
+    if (!dyad) return; // no hay díada declarada: no-op
+
+    await prisma.relationshipDyad.update({
+      where: { id: dyad.id },
+      data: {
+        lastGapSummary: {
+          heat135: Math.round(params.heat135),
+          heat100: Math.round((params.heat135 / 135) * 100),
+          context: params.context,
+        },
+        lastGapAt: new Date(),
+      },
+    });
+  } catch (e) {
+    console.warn(
+      "[affinityLearning] ⚠️ No se pudo persistir heat135 en la díada (díada ausente o sin migrar)."
+    );
+  }
+}
+
+/* =========================================================
    📊 summarizeSignals()
    ---------------------------------------------------------
    Resume las señales emocionales recientes (últimos X días):

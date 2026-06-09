@@ -86,7 +86,7 @@ function UsageSummary({ t }: { t: (k: string, fallback?: string) => string }) {
     usage.plan === "enterprise"
       ? "#facc15"
       : usage.plan === "pro"
-      ? "#31a2e3"
+      ? "#7c3aed"
       : "#9ca3af";
 
   return (
@@ -248,7 +248,7 @@ export default function RowiCommunitySummary({ members }: { members: any[] }) {
         </h2>
         <button
           className="rowi-btn text-sm"
-          style={{ background: "#31a2e3", color: "#fff" }}
+          style={{ background: "#7c3aed", color: "#fff" }}
           onClick={recalcAffinity}
           disabled={loading}
         >

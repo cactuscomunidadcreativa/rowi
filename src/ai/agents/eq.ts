@@ -7,7 +7,7 @@ import { getOpenAIClient } from "@/lib/openai/client";
 export const EqAgent = {
   id: "eq",
   name: "Rowi EQ",
-  color: "#31a2e3",
+  color: "#7c3aed",
   model: "gpt-4o-mini",
 
   async run({

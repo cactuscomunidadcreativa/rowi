@@ -104,7 +104,7 @@ const translations = {
 
     // Footer
     footerText: "Datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados.",
-    footerPowered: "Powered by Rowi SIA × Six Seconds",
+    footerPowered: "Powered by Rowi × Six Seconds",
 
     // States
     loading: "Cargando datos del benchmark...",
@@ -202,7 +202,7 @@ const translations = {
 
     // Footer
     footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi SIA × Six Seconds",
+    footerPowered: "Powered by Rowi × Six Seconds",
 
     // States
     loading: "Loading benchmark data...",
@@ -300,7 +300,7 @@ const translations = {
 
     // Footer
     footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi SIA × Six Seconds",
+    footerPowered: "Powered by Rowi × Six Seconds",
 
     // States
     loading: "Loading benchmark data...",
@@ -398,7 +398,7 @@ const translations = {
 
     // Footer
     footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi SIA × Six Seconds",
+    footerPowered: "Powered by Rowi × Six Seconds",
 
     // States
     loading: "Loading benchmark data...",

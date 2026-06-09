@@ -133,7 +133,7 @@ function CenteredHero({ content, config }: { content: HeroContent; config?: Hero
         {[...Array(8)].map((_, i) => (
           <motion.div
             key={`spark-${i}`}
-            className="absolute w-1 h-1 rounded-full bg-[var(--rowi-g2,#31a2e3)]"
+            className="absolute w-1 h-1 rounded-full bg-[var(--rowi-g2,#7c3aed)]"
             style={{
               left: `${15 + Math.random() * 70}%`,
               top: `${10 + Math.random() * 80}%`,
@@ -166,7 +166,7 @@ function CenteredHero({ content, config }: { content: HeroContent; config?: Hero
               animate={{ rotate: [0, 15, -15, 0] }}
               transition={{ duration: 2, repeat: Infinity, delay: 1 }}
             >
-              <Sparkles className="w-4 h-4 text-[var(--rowi-g2,#31a2e3)]" />
+              <Sparkles className="w-4 h-4 text-[var(--rowi-g2,#7c3aed)]" />
             </motion.span>
             <span className="text-sm font-medium">{content.badge}</span>
           </motion.div>
@@ -233,7 +233,7 @@ function CenteredHero({ content, config }: { content: HeroContent; config?: Hero
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Link
                 href={content.ctaSecondaryHref || "/how-it-works"}
-                className="px-8 py-4 text-lg border-2 border-gray-300 dark:border-zinc-700 rounded-xl hover:border-[var(--rowi-g2,#31a2e3)] hover:text-[var(--rowi-g2,#31a2e3)] transition-colors"
+                className="px-8 py-4 text-lg border-2 border-gray-300 dark:border-zinc-700 rounded-xl hover:border-[var(--rowi-g2,#7c3aed)] hover:text-[var(--rowi-g2,#7c3aed)] transition-colors"
               >
                 {content.ctaSecondary}
               </Link>
@@ -255,7 +255,7 @@ function CenteredHero({ content, config }: { content: HeroContent; config?: Hero
                   whileHover={{ scale: 1.05, y: -2 }}
                   className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 px-3 py-2 rounded-lg hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-colors cursor-default"
                 >
-                  <Icon className="w-4 h-4 text-[var(--rowi-g2,#31a2e3)]" />
+                  <Icon className="w-4 h-4 text-[var(--rowi-g2,#7c3aed)]" />
                   <span>{badge.text}</span>
                 </motion.div>
               );
@@ -304,7 +304,7 @@ function SplitHero({ content, config }: { content: HeroContent; config?: HeroCon
                 animate={{ opacity: 1, x: 0 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-gray-200 dark:border-zinc-800 shadow-lg mb-6"
               >
-                <Sparkles className="w-4 h-4 text-[var(--rowi-g2,#31a2e3)]" />
+                <Sparkles className="w-4 h-4 text-[var(--rowi-g2,#7c3aed)]" />
                 <span className="text-sm font-medium">{content.badge}</span>
               </motion.div>
             )}
@@ -342,7 +342,7 @@ function SplitHero({ content, config }: { content: HeroContent; config?: HeroCon
                 </motion.div>
               )}
               {content.ctaSecondary && (
-                <Link href={content.ctaSecondaryHref || "/how-it-works"} className="px-8 py-4 text-lg border-2 border-gray-300 dark:border-zinc-700 rounded-xl hover:border-[var(--rowi-g2,#31a2e3)] transition-colors text-center">
+                <Link href={content.ctaSecondaryHref || "/how-it-works"} className="px-8 py-4 text-lg border-2 border-gray-300 dark:border-zinc-700 rounded-xl hover:border-[var(--rowi-g2,#7c3aed)] transition-colors text-center">
                   {content.ctaSecondary}
                 </Link>
               )}
@@ -359,7 +359,7 @@ function SplitHero({ content, config }: { content: HeroContent; config?: HeroCon
                   const Icon = iconMap[badge.icon] || Star;
                   return (
                     <div key={i} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Icon className="w-4 h-4 text-[var(--rowi-g2,#31a2e3)]" />
+                      <Icon className="w-4 h-4 text-[var(--rowi-g2,#7c3aed)]" />
                       <span>{badge.text}</span>
                     </div>
                   );

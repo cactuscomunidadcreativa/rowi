@@ -251,9 +251,9 @@ export default function MemberPickerDialog({
                                 width: `${m.affinityPercent}%`,
                                 background:
                                   m.affinityPercent >= 90
-                                    ? "linear-gradient(90deg,#31a2e3,#5be3a0)"
+                                    ? "linear-gradient(90deg,#7c3aed,#5be3a0)"
                                     : m.affinityPercent >= 70
-                                    ? "linear-gradient(90deg,#31a2e3,#d797cf)"
+                                    ? "linear-gradient(90deg,#7c3aed,#d797cf)"
                                     : "linear-gradient(90deg,#999,#ccc)",
                               }}
                             />

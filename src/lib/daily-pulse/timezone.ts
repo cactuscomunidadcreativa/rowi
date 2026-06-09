@@ -22,6 +22,15 @@ export function startOfLocalDay(
   return new Date(localDay.getTime() + tzOffsetMinutes * 60_000);
 }
 
+/** "YYYY-MM-DD" en la TZ local del usuario. Clave de idempotencia por día. */
+export function localDateString(now: Date, tzOffsetMinutes: number): string {
+  const localNow = new Date(now.getTime() - tzOffsetMinutes * 60_000);
+  const y = localNow.getUTCFullYear();
+  const m = String(localNow.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(localNow.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 /** dayOfYear en TZ local del usuario, para rotar la pregunta del día. */
 export function localDayOfYear(now: Date, tzOffsetMinutes: number): number {
   const localNow = new Date(now.getTime() - tzOffsetMinutes * 60_000);

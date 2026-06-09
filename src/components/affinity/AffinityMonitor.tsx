@@ -73,7 +73,7 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
   }, [dashURL, teamURL]);
 
   const colors = {
-    primary: "#31a2e3",
+    primary: "#7c3aed",
     secondary: "#d797cf",
     warm: "#f59f00",
     hot: "#22c55e",

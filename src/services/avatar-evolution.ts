@@ -21,10 +21,70 @@ import {
   getRowiLevelInfo,
 } from "@/lib/eq/evolution-calculator";
 
+/**
+ * De donde sale el nivel base (eje "donde estoy") del avatar:
+ * - "sei": SEI formal (EqSnapshot.overall4) — normado, definitivo.
+ * - "mini_sei": mini-SEI (MiniSeiSnapshot.totalEq) — normado pero INDICATIVO.
+ * - "none": sin evaluacion; nivel base por defecto del avatar.
+ *
+ * El protagonista del avatar es el Becoming (practica + reflexion diaria);
+ * el nivel base solo define el ESTADIO de partida.
+ */
+export type BaseLevelSource = "sei" | "mini_sei" | "none";
+
+interface BaseLevelResult {
+  sixSecondsLevel: number;
+  baseSource: BaseLevelSource;
+}
+
+/**
+ * Resuelve el nivel base (eje "donde estoy") con cascada:
+ * SEI formal (overall4) -> mini-SEI (totalEq, indicativo) -> avatar.sixSecondsLevel.
+ *
+ * No existe SEI formal para la mayoria de usuarios todavia: el mini-SEI normado
+ * cubre ese hueco y se muestra como indicativo. Centralizado aqui para que
+ * getEvolutionState / syncSeiLevel / checkAndEvolve compartan una sola verdad.
+ */
+async function resolveBaseLevel(
+  userId: string,
+  fallbackLevel: number
+): Promise<BaseLevelResult> {
+  const [latestSei, latestMiniSei] = await Promise.all([
+    prisma.eqSnapshot.findFirst({
+      where: { userId, overall4: { not: null } },
+      orderBy: { at: "desc" },
+      select: { overall4: true },
+    }),
+    prisma.miniSeiSnapshot.findFirst({
+      where: { userId },
+      orderBy: { takenAt: "desc" },
+      select: { totalEq: true },
+    }),
+  ]);
+
+  if (latestSei?.overall4) {
+    return {
+      sixSecondsLevel: calculateSixSecondsLevel(latestSei.overall4),
+      baseSource: "sei",
+    };
+  }
+
+  if (latestMiniSei?.totalEq) {
+    return {
+      sixSecondsLevel: calculateSixSecondsLevel(latestMiniSei.totalEq),
+      baseSource: "mini_sei",
+    };
+  }
+
+  return { sixSecondsLevel: fallbackLevel, baseSource: "none" };
+}
+
 export interface EvolutionState {
   // Niveles
   rowiLevel: number;
   sixSecondsLevel: number;
+  /** Origen del nivel base: "sei" (formal) | "mini_sei" (indicativo) | "none" */
+  baseSource: BaseLevelSource;
   evolutionScore: number;
 
   // Avatar
@@ -63,13 +123,13 @@ export interface EvolutionState {
  * Obtiene el estado completo de evolucion del usuario
  */
 export async function getEvolutionState(userId: string): Promise<EvolutionState | null> {
-  // Obtener avatar, nivel y ultimo SEI snapshot
-  const [avatar, userLevel, latestSei] = await Promise.all([
+  // Obtener avatar, nivel y racha de reflexion (la señal de Becoming)
+  const [avatar, userLevel, streak] = await Promise.all([
     prisma.avatarEvolution.findUnique({ where: { userId } }),
     prisma.userLevel.findUnique({ where: { userId } }),
-    prisma.eqSnapshot.findFirst({
+    prisma.userStreak.findUnique({
       where: { userId },
-      orderBy: { at: "desc" },
+      select: { currentStreak: true },
     }),
   ]);
 
@@ -78,17 +138,22 @@ export async function getEvolutionState(userId: string): Promise<EvolutionState 
   // Calcular niveles
   const totalXP = userLevel?.totalPoints ?? 0;
   const rowiLevel = userLevel?.level ?? calculateRowiLevel(totalXP);
-  const sixSecondsLevel = latestSei?.overall4
-    ? calculateSixSecondsLevel(latestSei.overall4)
-    : avatar.sixSecondsLevel;
+  const { sixSecondsLevel, baseSource } = await resolveBaseLevel(
+    userId,
+    avatar.sixSecondsLevel
+  );
 
   // Calcular dias activos desde registro
   const daysActive = Math.floor(
     (Date.now() - avatar.createdAt.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  // Calcular progreso de eclosion
-  const hatchProgress = calculateHatchProgress(daysActive, totalXP);
+  // Calcular progreso de eclosion — la reflexion diaria (streak) pesa más
+  const hatchProgress = calculateHatchProgress(
+    daysActive,
+    totalXP,
+    streak?.currentStreak ?? 0
+  );
 
   // Calcular score de evolucion
   const evolutionScore = calculateEvolutionScore(rowiLevel, sixSecondsLevel);
@@ -109,6 +174,7 @@ export async function getEvolutionState(userId: string): Promise<EvolutionState 
   return {
     rowiLevel,
     sixSecondsLevel,
+    baseSource,
     evolutionScore,
     currentStage,
     nextStage,
@@ -144,22 +210,15 @@ export async function syncSeiLevel(userId: string): Promise<{
   oldLevel: number;
   newLevel: number;
 }> {
-  const [avatar, latestSei] = await Promise.all([
-    prisma.avatarEvolution.findUnique({ where: { userId } }),
-    prisma.eqSnapshot.findFirst({
-      where: { userId },
-      orderBy: { at: "desc" },
-    }),
-  ]);
+  const avatar = await prisma.avatarEvolution.findUnique({ where: { userId } });
 
   if (!avatar) {
     return { updated: false, oldLevel: 1, newLevel: 1 };
   }
 
   const oldLevel = avatar.sixSecondsLevel;
-  const newLevel = latestSei?.overall4
-    ? calculateSixSecondsLevel(latestSei.overall4)
-    : oldLevel;
+  // Cascada SEI formal -> mini-SEI -> nivel actual (mismo origen que el avatar).
+  const { sixSecondsLevel: newLevel } = await resolveBaseLevel(userId, oldLevel);
 
   if (newLevel !== oldLevel) {
     await prisma.avatarEvolution.update({
@@ -197,9 +256,13 @@ export async function updateHatchProgress(userId: string): Promise<{
   hatchProgress: number;
   canHatchNow: boolean;
 }> {
-  const [avatar, userLevel] = await Promise.all([
+  const [avatar, userLevel, streak] = await Promise.all([
     prisma.avatarEvolution.findUnique({ where: { userId } }),
     prisma.userLevel.findUnique({ where: { userId } }),
+    prisma.userStreak.findUnique({
+      where: { userId },
+      select: { currentStreak: true },
+    }),
   ]);
 
   if (!avatar || avatar.hatched) {
@@ -212,7 +275,11 @@ export async function updateHatchProgress(userId: string): Promise<{
   const totalXP = userLevel?.totalPoints ?? 0;
   const rowiLevel = userLevel?.level ?? 1;
 
-  const hatchProgress = calculateHatchProgress(daysActive, totalXP);
+  const hatchProgress = calculateHatchProgress(
+    daysActive,
+    totalXP,
+    streak?.currentStreak ?? 0
+  );
   const canHatchNow = canHatch(hatchProgress, rowiLevel);
 
   // Actualizar en BD
@@ -237,12 +304,12 @@ export async function checkAndEvolve(userId: string): Promise<{
   newStage: AvatarStage;
   evolutionScore: number;
 }> {
-  const [avatar, userLevel, latestSei] = await Promise.all([
+  const [avatar, userLevel, streak] = await Promise.all([
     prisma.avatarEvolution.findUnique({ where: { userId } }),
     prisma.userLevel.findUnique({ where: { userId } }),
-    prisma.eqSnapshot.findFirst({
+    prisma.userStreak.findUnique({
       where: { userId },
-      orderBy: { at: "desc" },
+      select: { currentStreak: true },
     }),
   ]);
 
@@ -259,15 +326,17 @@ export async function checkAndEvolve(userId: string): Promise<{
   const previousStage = avatar.stage;
   const totalXP = userLevel?.totalPoints ?? 0;
   const rowiLevel = userLevel?.level ?? calculateRowiLevel(totalXP);
-  const sixSecondsLevel = latestSei?.overall4
-    ? calculateSixSecondsLevel(latestSei.overall4)
-    : avatar.sixSecondsLevel;
+  const { sixSecondsLevel } = await resolveBaseLevel(userId, avatar.sixSecondsLevel);
 
-  // Calcular dias activos y hatch progress
+  // Calcular dias activos y hatch progress (la reflexion diaria pesa más)
   const daysActive = Math.floor(
     (Date.now() - avatar.createdAt.getTime()) / (1000 * 60 * 60 * 24)
   );
-  const hatchProgress = calculateHatchProgress(daysActive, totalXP);
+  const hatchProgress = calculateHatchProgress(
+    daysActive,
+    totalXP,
+    streak?.currentStreak ?? 0
+  );
 
   // Verificar eclosion
   let hatched = avatar.hatched;

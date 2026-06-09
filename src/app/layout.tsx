@@ -21,16 +21,16 @@ export const metadata = {
     apple: "/owl.png?v=4",
   },
   openGraph: {
-    title: "Rowi SIA",
+    title: "Rowi",
     description: "App de Inteligencia Emocional - Desarrolla tu potencial",
     url: "https://www.rowiia.com",
-    siteName: "Rowi SIA",
+    siteName: "Rowi",
     images: [
       {
         url: "https://www.rowiia.com/rowi-logo.png",
         width: 512,
         height: 512,
-        alt: "Rowi SIA - Inteligencia Emocional",
+        alt: "Rowi - Inteligencia Emocional",
       },
     ],
     locale: "es_ES",
@@ -38,7 +38,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Rowi SIA",
+    title: "Rowi",
     description: "App de Inteligencia Emocional - Desarrolla tu potencial",
     images: ["https://www.rowiia.com/rowi-logo.png"],
   },

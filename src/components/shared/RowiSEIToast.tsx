@@ -45,7 +45,7 @@ export function useRowiSEIToast() {
         },
         optimism: {
           icon: "☀️",
-          color: "#31a2e3",
+          color: "#7c3aed",
           title: t("sei.optimism.title") || "Optimismo",
           desc: t("sei.optimism.desc") || "Ver posibilidades donde otros ven límites.",
         },

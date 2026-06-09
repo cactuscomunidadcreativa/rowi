@@ -86,7 +86,7 @@ export default function CookieConsent() {
           <button
             onClick={() => choose("all")}
             className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: "#31a2e3" }}
+            style={{ background: "#7c3aed" }}
           >
             {t("cookies.acceptAll", "Aceptar todas")}
           </button>

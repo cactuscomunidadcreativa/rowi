@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -24,6 +24,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const translations = {
   es: {
     nav: {
+      today: "Hoy",
+      myBecoming: "Mi Becoming",
       dashboard: "Dashboard",
       community: "Comunidad",
       affinity: "Afinidad",
@@ -81,6 +83,8 @@ const translations = {
   },
   en: {
     nav: {
+      today: "Today",
+      myBecoming: "My Becoming",
       dashboard: "Dashboard",
       community: "Community",
       affinity: "Affinity",
@@ -138,6 +142,8 @@ const translations = {
   },
   pt: {
     nav: {
+      today: "Hoje",
+      myBecoming: "Meu Becoming",
       dashboard: "Dashboard",
       community: "Comunidade",
       affinity: "Afinidade",
@@ -195,6 +201,8 @@ const translations = {
   },
   it: {
     nav: {
+      today: "Oggi",
+      myBecoming: "Il mio Becoming",
       dashboard: "Dashboard",
       community: "Comunità",
       affinity: "Affinità",
@@ -281,21 +289,33 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 // anchas (2xl) aparece también el texto.
 // `primary: true` = visible en la barra con texto (desde lg). El resto va al
 // dropdown "Más" para no saturar la barra. Orden = loop personal primero.
+// Navegación por VIAJE (arquitectura): TODAY · JOURNEY (SEE/PRACTICE/CONNECT/
+// IMPACT/MY BECOMING) · COACH · WORKSPACE. El campo `journey` agrupa cada
+// módulo en el dropdown "Más"; nada se borra, solo se reubica.
+//   today   = el loop diario (home)
+//   see     = autoconocimiento (perfil, vital signs, espejo)
+//   practice= acción diaria (weekflow)
+//   connect = relaciones (relationships, eco, affinity, community)
+//   impact  = propósito / org / benchmark
+//   coach   = Rowi, siempre disponible
+//   workspace = B2B (separado del viaje personal)
 const BASE_LINKS = [
-  // Espina SIA: Hoy · Relaciones · ECO · Perfil son los 4 primarios.
-  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: true },
-  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: true },
-  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: true },
-  { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: true },
-  // El resto vive en "Más" para no saturar la barra.
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false },
-  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false },
-  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: false },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false },
-  { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false },
-  { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false },
-  { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false },
-  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false },
+  // 4 primarios = la espina del viaje: TODAY · Relaciones · Coach · Perfil.
+  { href: "/today", key: "today", icon: Sun, roles: ["*"], primary: true, journey: "today" },
+  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: true, journey: "connect" },
+  { href: "/rowi", key: "rowicoach", icon: Bot, roles: ["*"], primary: true, journey: "coach" },
+  { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: true, journey: "see" },
+  // El resto vive en "Más", agrupado por etapa del viaje.
+  { href: "/becoming", key: "myBecoming", icon: TrendingUp, roles: ["*"], primary: false, journey: "impact" },
+  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: false, journey: "see" },
+  { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false, journey: "see" },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
+  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "connect" },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
+  { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
+  { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
+  { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "impact" },
+  { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false, journey: "workspace" },
 ];
 
 // Social sub-links for the dropdown

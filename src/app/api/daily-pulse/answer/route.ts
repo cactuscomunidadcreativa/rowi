@@ -24,6 +24,7 @@ import {
 } from "@/lib/daily-pulse/questions";
 import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 import { awardPoints } from "@/services/gamification";
+import { checkAndEvolve } from "@/services/avatar-evolution";
 
 const DAILY_POINTS = 5;
 
@@ -152,6 +153,28 @@ export async function POST(req: NextRequest) {
       description: `daily-pulse · ${q.sei} · ${value}`,
     });
 
+    // 4. La reflexión diaria MUEVE el avatar (la "Regla del Huevo": crece por
+    //    Becoming, no solo por logins). Tras sumar puntos, recalculamos la
+    //    evolución para que responder el pulse haga progresar/eclosionar al Rowi.
+    //    Resiliente: un fallo aquí no debe romper el guardado de la respuesta.
+    let evolution: {
+      evolved: boolean;
+      hatched: boolean;
+      previousStage: string;
+      newStage: string;
+    } | null = null;
+    try {
+      const r = await checkAndEvolve(user.id);
+      evolution = {
+        evolved: r.evolved,
+        hatched: r.hatched,
+        previousStage: r.previousStage,
+        newStage: r.newStage,
+      };
+    } catch (evoErr) {
+      console.error("/api/daily-pulse/answer · checkAndEvolve failed:", evoErr);
+    }
+
     return NextResponse.json({
       ok: true,
       already: false,
@@ -160,6 +183,7 @@ export async function POST(req: NextRequest) {
       balance: award.totalPoints,
       streak: { current: currentStreak, longest: longestStreak },
       feedback: feedbackForValue(q, value, lang),
+      evolution,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";

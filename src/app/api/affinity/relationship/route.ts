@@ -9,6 +9,7 @@ import {
   inferMemberChannel, CTX,
 } from "../utils";
 import { runAffinityRouter } from "@/ai/agents/affinity/router"; // ✅ subrouter IA
+import { persistHeat135ToDyad } from "@/ai/learning/affinityLearning";
 
 export const runtime = "nodejs";
 
@@ -270,6 +271,9 @@ export async function GET(req: NextRequest) {
         },
       });
     }
+
+    // Persistir la sintonía en la díada → ECO sale de modo neutro (resiliente).
+    await persistHeat135ToDyad({ ownerUserId: me.id, memberId, context: project, heat135: finalScore });
 
     /* =========================================================
        📦 Salida final con detalles completos

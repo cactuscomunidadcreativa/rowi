@@ -81,7 +81,7 @@ export default async function CommunityPage({
                   <div className="mt-1 h-2 w-full rounded-full bg-gray-800/30 overflow-hidden">
                     <div
                       className="h-full rounded-full"
-                      style={{ width: `${m.affinity}%`, background: "linear-gradient(90deg,#d797cf,#31a2e3,#7a59c9)" }}
+                      style={{ width: `${m.affinity}%`, background: "linear-gradient(90deg,#d797cf,#7c3aed,#7a59c9)" }}
                     />
                   </div>
                 </div>

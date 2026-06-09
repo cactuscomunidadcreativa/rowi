@@ -1,6 +1,6 @@
 export const homeTexts = {
   es: {
-    title: "Rowi SIA",
+    title: "Rowi",
     subtitle: "Conversa con Rowi, explora tu IE y conecta mejor con tu comunidad.",
     coach: "Hablar con Rowi Coach",
     dashboard: "Ir al Dashboard",
@@ -13,7 +13,7 @@ export const homeTexts = {
     eco_desc: "WhatsApp, email, 1:1 o speech — con buen tono."
   },
   en: {
-    title: "Rowi SIA",
+    title: "Rowi",
     subtitle: "Chat with Rowi, explore your EQ and connect better with your community.",
     coach: "Talk to Rowi Coach",
     dashboard: "Go to Dashboard",
@@ -26,7 +26,7 @@ export const homeTexts = {
     eco_desc: "WhatsApp, email, 1:1 or speech — with good tone."
   },
   pt: {
-    title: "Rowi SIA",
+    title: "Rowi",
     subtitle: "Converse com Rowi, explore sua IE e conecte-se melhor com sua comunidade.",
     coach: "Falar com Rowi Coach",
     dashboard: "Ir para o Painel",
@@ -39,7 +39,7 @@ export const homeTexts = {
     eco_desc: "WhatsApp, e-mail, 1:1 ou discurso — com bom tom."
   },
   it: {
-    title: "Rowi SIA",
+    title: "Rowi",
     subtitle: "Parla con Rowi, esplora la tua IE e connettiti meglio con la tua comunità.",
     coach: "Parla con Rowi Coach",
     dashboard: "Vai al Dashboard",

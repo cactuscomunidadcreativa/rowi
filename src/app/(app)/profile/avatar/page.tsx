@@ -5,198 +5,94 @@ import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Brain, TrendingUp, Award, Star } from "lucide-react";
+import { Sparkles, Flame, Moon, Info, ShieldCheck } from "lucide-react";
+import {
+  RowiStageImage,
+  type RowiStage,
+} from "@/domains/avatar/components/RowiStageImage";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 /**
- * Avatar Page — Tu Rowi evoluciona con tu Inteligencia Emocional
+ * Pantalla de Becoming — "En quién te estás convirtiendo".
  *
- * Basado en los 5 niveles SEI de Six Seconds:
- * - Desafío (65–81) → Rowi-01.png
- * - Emergente (82–91) → Rowi-02.png
- * - Funcional (92–107) → Rowi-04.png
- * - Diestro (108–117) → Rowi-05.png
- * - Experto (118–135) → Rowi-06.png
+ * El protagonista es el BECOMING (práctica + reflexión diaria): el progreso
+ * hacia la siguiente etapa del Rowi y la "vida" que le da la racha.
+ * El nivel base (SEI formal o mini-SEI INDICATIVO) solo define el ESTADIO de
+ * partida. Lee /api/avatar (sistema de dos ejes ya existente) y
+ * /api/daily-pulse/today (señal de reflexión + racha).
+ *
+ * Niveles Six Seconds → asset del Rowi:
+ *  1 Desafío → Rowi-01 · 2 Emergente → Rowi-02 · 3 Funcional → Rowi-04
+ *  4 Diestro → Rowi-05 · 5 Experto → Rowi-06
  */
 
-interface SeiLevel {
-  key: string;
-  image: string;
-  name: { es: string; en: string };
-  emoji: string;
-  color: string;
-  bgGradient: string;
-  glowColor: string;
-  particles: string[];
-  description: { es: string; en: string };
-  min: number;
-  max: number;
-}
-
-const SEI_LEVELS: SeiLevel[] = [
-  {
-    key: "challenge",
-    image: "/rowivectors/Rowi-01.webp",
-    name: { es: "Desafío", en: "Challenge" },
-    emoji: "🧩",
-    color: "#ef4444",
-    bgGradient: "from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30",
-    glowColor: "shadow-red-500/30",
-    particles: ["🧩", "✨", "💫"],
-    description: {
-      es: "Necesita desarrollar consciencia emocional y autogestión. Área de oportunidad significativa.",
-      en: "Needs to develop emotional awareness and self-management. Significant opportunity area.",
-    },
-    min: 65,
-    max: 81,
-  },
-  {
-    key: "emerging",
-    image: "/rowivectors/Rowi-02.webp",
-    name: { es: "Emergente", en: "Emerging" },
-    emoji: "🌱",
-    color: "#f59e0b",
-    bgGradient: "from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30",
-    glowColor: "shadow-amber-500/30",
-    particles: ["🌱", "💡", "💫"],
-    description: {
-      es: "Comienza a reconocer emociones y usarlas de forma funcional. En proceso de desarrollo.",
-      en: "Beginning to recognize emotions and use them functionally. In development process.",
-    },
-    min: 82,
-    max: 91,
-  },
-  {
-    key: "functional",
-    image: "/rowivectors/Rowi-04.webp",
-    name: { es: "Funcional", en: "Functional" },
-    emoji: "🧠",
-    color: "#3b82f6",
-    bgGradient: "from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30",
-    glowColor: "shadow-blue-500/30",
-    particles: ["🧠", "🎯", "✨"],
-    description: {
-      es: "Integra pensamiento y emoción con equilibrio consistente. Competencia estable.",
-      en: "Integrates thinking and emotion with consistent balance. Stable competence.",
-    },
-    min: 92,
-    max: 107,
-  },
-  {
-    key: "skilled",
-    image: "/rowivectors/Rowi-05.webp",
-    name: { es: "Diestro", en: "Skilled" },
-    emoji: "🎯",
-    color: "#8b5cf6",
-    bgGradient: "from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30",
-    glowColor: "shadow-purple-500/30",
-    particles: ["🎯", "🌟", "💪"],
-    description: {
-      es: "Maneja con fluidez las competencias emocionales clave. Alto desempeño.",
-      en: "Fluently manages key emotional competencies. High performance.",
-    },
-    min: 108,
-    max: 117,
-  },
-  {
-    key: "expert",
-    image: "/rowivectors/Rowi-06.webp",
-    name: { es: "Experto", en: "Expert" },
-    emoji: "🌟",
-    color: "#10b981",
-    bgGradient: "from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30",
-    glowColor: "shadow-emerald-500/30",
-    particles: ["🌟", "👑", "⭐"],
-    description: {
-      es: "Domina la inteligencia emocional con propósito y liderazgo. Nivel de excelencia.",
-      en: "Masters emotional intelligence with purpose and leadership. Level of excellence.",
-    },
-    min: 118,
-    max: 135,
-  },
-];
-
-function getSeiLevelFromScore(score: number): SeiLevel {
-  return SEI_LEVELS.find((l) => score >= l.min && score <= l.max) || SEI_LEVELS[0];
-}
-
-function getSeiLevelIndex(score: number): number {
-  const idx = SEI_LEVELS.findIndex((l) => score >= l.min && score <= l.max);
-  return idx >= 0 ? idx : 0;
-}
-
-const translations = {
-  es: {
-    title: "Tu Rowi",
-    subtitle: "Tu Rowi evoluciona contigo",
-    subtitleDesc: "A medida que desarrollas tu inteligencia emocional, tu Rowi crece y se transforma",
-    seiScore: "Puntaje SEI",
-    seiLevel: "Nivel de Inteligencia Emocional",
-    seiDesc: "Basado en la metodología Six Seconds (SEI)",
-    levels: "Niveles de Inteligencia Emocional (SEI)",
-    current: "Actual",
-    loading: "Cargando tu Rowi...",
-    noData: "Completa tu evaluación SEI para ver tu nivel",
-    scale: "Escala SEI",
-  },
-  en: {
-    title: "Your Rowi",
-    subtitle: "Your Rowi evolves with you",
-    subtitleDesc: "As you develop your emotional intelligence, your Rowi grows and transforms",
-    seiScore: "SEI Score",
-    seiLevel: "Emotional Intelligence Level",
-    seiDesc: "Based on Six Seconds methodology (SEI)",
-    levels: "Emotional Intelligence Levels (SEI)",
-    current: "Current",
-    loading: "Loading your Rowi...",
-    noData: "Complete your SEI assessment to see your level",
-    scale: "SEI Scale",
-  },
-  pt: {
-    title: "Seu Rowi",
-    subtitle: "Seu Rowi evolui com você",
-    subtitleDesc: "À medida que você desenvolve sua inteligência emocional, seu Rowi cresce e se transforma",
-    seiScore: "Pontuação SEI",
-    seiLevel: "Nível de Inteligência Emocional",
-    seiDesc: "Baseado na metodologia Six Seconds (SEI)",
-    levels: "Níveis de Inteligência Emocional (SEI)",
-    current: "Atual",
-    loading: "Carregando seu Rowi...",
-    noData: "Complete sua avaliação SEI para ver seu nível",
-    scale: "Escala SEI",
-  },
-  it: {
-    title: "Il tuo Rowi",
-    subtitle: "Il tuo Rowi evolve con te",
-    subtitleDesc: "Mentre sviluppi la tua intelligenza emotiva, il tuo Rowi cresce e si trasforma",
-    seiScore: "Punteggio SEI",
-    seiLevel: "Livello di Intelligenza Emotiva",
-    seiDesc: "Basato sulla metodologia Six Seconds (SEI)",
-    levels: "Livelli di Intelligenza Emotiva (SEI)",
-    current: "Attuale",
-    loading: "Caricamento del tuo Rowi...",
-    noData: "Completa la tua valutazione SEI per vedere il tuo livello",
-    scale: "Scala SEI",
-  },
+const LEVEL_ASSET: Record<number, string> = {
+  1: "/rowivectors/Rowi-01.webp",
+  2: "/rowivectors/Rowi-02.webp",
+  3: "/rowivectors/Rowi-04.webp",
+  4: "/rowivectors/Rowi-05.webp",
+  5: "/rowivectors/Rowi-06.webp",
 };
 
-export default function AvatarPage() {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
-  const { data: session, status } = useSession();
+type BaseSource = "sei" | "mini_sei" | "none";
 
+interface AvatarState {
+  rowiLevel: number;
+  sixSecondsLevel: number;
+  baseSource: BaseSource;
+  evolutionScore: number;
+  currentStage: string;
+  nextStage: string | null;
+  progressToNext: number;
+  hatchProgress: number;
+  isHatched: boolean;
+  canHatchNow: boolean;
+  sixSecondsLevelInfo: {
+    name: { es: string; en: string };
+    emoji: string;
+    color: string;
+    slug: string;
+  };
+  stageInfo: {
+    name: { es: string; en: string };
+    description: { es: string; en: string };
+    emoji: string;
+  };
+  totalXP: number;
+  daysActive: number;
+}
+
+const ALL_STAGES = ["EGG", "HATCHING", "BABY", "YOUNG", "ADULT", "WISE"] as const;
+
+/** Particle count grows with the streak — more daily practice = more life. */
+function lifeParticles(streak: number): number {
+  if (streak <= 0) return 0;
+  if (streak < 3) return 2;
+  if (streak < 7) return 4;
+  return 6;
+}
+
+export default function AvatarPage() {
+  const { t, lang } = useI18n();
+  const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && !!session?.user;
 
-  // Fetch EQ data to get the SEI score
-  const { data: eqData, isLoading: eqLoading } = useSWR(
-    isAuthenticated ? "/api/eq/me" : null,
+  const tzOffset =
+    typeof window !== "undefined" ? -new Date().getTimezoneOffset() : 0;
+
+  const { data: avatarRes, isLoading: avatarLoading } = useSWR(
+    isAuthenticated ? "/api/avatar" : null,
+    fetcher
+  );
+  const { data: pulseRes } = useSWR(
+    isAuthenticated ? `/api/daily-pulse/today?tz=${tzOffset}` : null,
     fetcher
   );
 
-  if (status === "loading" || (isAuthenticated && eqLoading)) {
+  if (status === "loading" || (isAuthenticated && avatarLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950">
         <div className="text-center">
           <motion.div
             animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
@@ -204,13 +100,15 @@ export default function AvatarPage() {
           >
             <Image
               src="/rowivectors/Rowi-01.webp"
-              alt="Loading Rowi"
+              alt={t("avatar.becoming.hero.alt", "Tu Rowi")}
               width={120}
               height={120}
               className="mx-auto drop-shadow-xl"
             />
           </motion.div>
-          <p className="text-gray-500 dark:text-gray-400 mt-4">{t.loading}</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-4">
+            {t("avatar.becoming.loading", "Cargando tu Rowi...")}
+          </p>
         </div>
       </div>
     );
@@ -219,377 +117,416 @@ export default function AvatarPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">{lang === "es" ? "Inicia sesión para ver tu avatar" : lang === "pt" ? "Entre para ver seu avatar" : lang === "it" ? "Accedi per vedere il tuo avatar" : "Sign in to see your avatar"}</p>
+        <p className="text-gray-500">
+          {t("avatar.becoming.signIn", "Inicia sesión para ver tu Rowi")}
+        </p>
       </div>
     );
   }
 
-  // Get SEI score from EQ data
-  const seiScore = eqData?.eq?.total ?? eqData?.outcomes?.overall4 ?? 0;
-  const hasSei = seiScore > 0;
-  const currentLevel = getSeiLevelFromScore(seiScore);
-  const currentIndex = getSeiLevelIndex(seiScore);
+  const state: AvatarState | null = avatarRes?.ok ? avatarRes.data : null;
 
-  // Calculate progress within current level
-  const progressInLevel = hasSei
-    ? Math.round(((seiScore - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100)
-    : 0;
+  if (!state) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 px-4">
+        <div className="text-center">
+          <Image
+            src="/rowivectors/Rowi-01.webp"
+            alt={t("avatar.becoming.hero.alt", "Tu Rowi")}
+            width={140}
+            height={140}
+            className="mx-auto drop-shadow-xl mb-4"
+          />
+          <p className="text-gray-500 dark:text-gray-400">
+            {t(
+              "avatar.becoming.foundation.none",
+              "Haz tu Emotional Mirror para ver tu punto de partida"
+            )}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const level = state.sixSecondsLevel;
+  const levelColor = state.sixSecondsLevelInfo?.color ?? "#7c3aed";
+  const levelName =
+    state.sixSecondsLevelInfo?.name?.[lang as "es" | "en"] ??
+    state.sixSecondsLevelInfo?.name?.es ??
+    "";
+  const heroAsset = LEVEL_ASSET[level] ?? LEVEL_ASSET[1];
+
+  const streak = pulseRes?.ok ? pulseRes.streak?.current ?? 0 : 0;
+  const reflectedToday = pulseRes?.ok ? !!pulseRes.answeredToday : false;
+  const particleCount = lifeParticles(streak);
+
+  const stageName =
+    state.stageInfo?.name?.[lang as "es" | "en"] ?? state.stageInfo?.name?.es ?? "";
+  const nextStageName = state.nextStage
+    ? (t(`avatar.stages.${state.nextStage}`, state.nextStage) as string)
+    : null;
+
+  // Lenguaje preciso (evita claims falsos de SEI):
+  // - Foundation = Emotional Mirror (baseline provisional, mini-SEI inferido)
+  // - Practice Energy = vida diaria (práctica + reflexión + streak)
+  // - "Validated by SEI" = solo aparece si hay SEI formal cargado
+  const hasFoundation = state.baseSource !== "none";
+  const isValidatedBySei = state.baseSource === "sei";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 py-8 px-4">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header — Becoming protagonista */}
+        <div className="text-center mb-2">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2"
+            className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-8 h-8 text-amber-500" />
-            {t.title}
+            <Sparkles className="w-7 h-7 text-violet-500" />
+            {t("avatar.becoming.title", "En quién te estás convirtiendo")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-gray-500 dark:text-gray-400 mt-1"
+            className="text-gray-500 dark:text-gray-400 mt-1 text-sm"
           >
-            {t.subtitle}
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="text-gray-400 dark:text-gray-500 text-sm mt-1"
-          >
-            {t.subtitleDesc}
+            {t(
+              "avatar.becoming.subtitle",
+              "Tu Rowi nace desde tu espejo inicial y evoluciona con tu práctica"
+            )}
           </motion.p>
         </div>
 
-        {!hasSei ? (
-          /* No SEI data */
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-zinc-800 rounded-3xl shadow-xl p-12 text-center"
-          >
-            <Image
-              src="/rowivectors/Rowi-01.webp"
-              alt="Rowi"
-              width={160}
-              height={160}
-              className="mx-auto drop-shadow-xl mb-6"
+        {/* HERO — el Rowi con vida proporcional a la racha */}
+        <motion.div
+          initial={{ scale: 0.92, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative rounded-3xl shadow-2xl p-8 overflow-hidden bg-white dark:bg-zinc-800"
+          style={{
+            boxShadow:
+              streak > 0
+                ? `0 20px 60px -15px ${levelColor}55`
+                : undefined,
+          }}
+        >
+          {/* Glow de vida (más fuerte con la racha) */}
+          {streak > 0 && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at 50% 35%, ${levelColor}22, transparent 60%)`,
+              }}
             />
-            <p className="text-gray-500 dark:text-gray-400">{t.noData}</p>
-          </motion.div>
-        ) : (
-          <>
-            {/* Main Avatar Card */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className={`relative bg-gradient-to-br ${currentLevel.bgGradient} rounded-3xl shadow-2xl ${currentLevel.glowColor} p-8 overflow-hidden`}
-            >
-              {/* Floating Particles */}
-              <AnimatePresence>
-                {currentLevel.particles.map((particle, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{
-                      opacity: [0, 1, 0],
-                      scale: [0.5, 1, 0.5],
-                      y: [0, -40, -80],
-                      x: [0, (i - 1) * 30, (i - 1) * 50],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      delay: i * 0.7,
-                    }}
-                    className="absolute text-3xl pointer-events-none"
-                    style={{
-                      left: `${25 + i * 25}%`,
-                      bottom: "20%",
-                    }}
-                  >
-                    {particle}
-                  </motion.span>
-                ))}
-              </AnimatePresence>
+          )}
 
-              {/* Rowi Image + Level Info */}
-              <div className="relative flex flex-col items-center">
+          {/* Partículas de vida */}
+          <AnimatePresence>
+            {Array.from({ length: particleCount }).map((_, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1, 0.5],
+                  y: [0, -50, -100],
+                }}
+                transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+                className="absolute text-2xl pointer-events-none"
+                style={{ left: `${15 + i * 13}%`, bottom: "25%" }}
+              >
+                ✨
+              </motion.span>
+            ))}
+          </AnimatePresence>
+
+          <div className="relative flex flex-col items-center">
+            {/* HÉROE: el huevo→búho real por etapa de Becoming (assets reales). */}
+            <RowiStageImage
+              stage={state.currentStage as RowiStage}
+              size="xl"
+              float
+              alt={t("avatar.becoming.hero.alt", "Tu Rowi")}
+            />
+
+            {/* Etapa actual del Rowi */}
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-5 text-xl md:text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-white"
+            >
+              <span>{state.stageInfo?.emoji}</span>
+              {stageName}
+            </motion.h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center max-w-sm">
+              {state.stageInfo?.description?.[lang as "es" | "en"] ??
+                state.stageInfo?.description?.es}
+            </p>
+
+            {/* Progreso de eclosión — solo antes de nacer. Crece por reflexión. */}
+            {!state.isHatched && (
+              <div className="w-full max-w-md mt-4">
+                {state.canHatchNow ? (
+                  <motion.p
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: [0.9, 1.05, 1], opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="text-center text-sm font-semibold text-violet-600 dark:text-violet-400"
+                  >
+                    {t("avatar.becoming.hatch.ready", "¡Tu Rowi está listo para nacer! ✨")}
+                  </motion.p>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                      <span>{t("avatar.becoming.hatch.progress", "Tu huevo está creciendo")}</span>
+                      <span>{Math.round(state.hatchProgress)}%</span>
+                    </div>
+                    <div className="h-2.5 bg-amber-100 dark:bg-zinc-700/60 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.max(3, Math.round(state.hatchProgress))}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+                      />
+                    </div>
+                    <p className="text-[11px] text-gray-400 mt-1.5 text-center">
+                      {t(
+                        "avatar.becoming.hatch.hint",
+                        "Cada reflexión diaria acerca a tu Rowi a nacer"
+                      )}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* BARRA DE BECOMING — el héroe del progreso */}
+            <div className="w-full max-w-md mt-6">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-semibold text-violet-600 dark:text-violet-400">
+                  {t("avatar.becoming.progressLabel", "Tu Becoming")}
+                </span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {state.nextStage && nextStageName
+                    ? (t("avatar.becoming.toNextStage", "Camino a {stage}") as string).replace(
+                        "{stage}",
+                        nextStageName
+                      )
+                    : t("avatar.becoming.maxStage", "Has alcanzado la etapa más alta de tu Rowi")}
+                </span>
+              </div>
+              <div className="h-4 bg-violet-100 dark:bg-zinc-700/60 rounded-full overflow-hidden">
                 <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative w-48 h-48 md:w-64 md:h-64"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.max(4, Math.round(state.progressToNext))}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                />
+              </div>
+            </div>
+
+            {/* Señal de reflexión de hoy */}
+            <div className="mt-4">
+              {reflectedToday ? (
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 dark:text-violet-400">
+                  {t("avatar.becoming.reflectedToday", "Hoy reflexionaste ✨")}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-sm text-gray-400">
+                  <Moon className="w-4 h-4" />
+                  {t("avatar.becoming.notReflectedToday", "Aún no reflexionas hoy")}
+                </span>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* VIDA — racha + días contigo */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-5"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              {t("avatar.becoming.practice.title", "Practice Energy")}
+            </h3>
+          </div>
+          <p className="text-xs text-gray-400 mb-2">
+            {t("avatar.becoming.practice.label", "Basado en tus prácticas y reflexiones")}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {streak <= 0
+              ? t(
+                  "avatar.becoming.life.none",
+                  "Empieza hoy: tu primera reflexión le da vida a tu Rowi"
+                )
+              : streak === 1
+              ? t("avatar.becoming.life.streakOne", "1 día de práctica")
+              : (t("avatar.becoming.life.streak", "{count} días de práctica") as string).replace(
+                  "{count}",
+                  String(streak)
+                )}
+          </p>
+          {state.daysActive > 0 && (
+            <p className="text-xs text-gray-400 mt-1">
+              {(t("avatar.becoming.life.daysActive", "{count} días contigo") as string).replace(
+                "{count}",
+                String(state.daysActive)
+              )}
+            </p>
+          )}
+        </motion.div>
+
+        {/* FOUNDATION — espejo inicial (baseline provisional). Nunca afirma "tu
+            nivel SEI es X": el sello "Validated by SEI" solo aparece con SEI formal. */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-5"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {t("avatar.becoming.foundation.title", "Foundation")}
+            </h3>
+            {isValidatedBySei && (
+              <span
+                className="text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                style={{ backgroundColor: "#10b98122", color: "#047857" }}
+              >
+                <ShieldCheck className="w-3 h-3" />
+                {t("avatar.becoming.validated.badge", "Validated by SEI")}
+              </span>
+            )}
+          </div>
+
+          {hasFoundation ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div
+                  className="relative h-12 w-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+                  style={{ backgroundColor: `${levelColor}15` }}
                 >
                   <Image
-                    src={currentLevel.image}
-                    alt="Tu Rowi"
-                    fill
-                    className="object-contain drop-shadow-2xl"
-                    priority
+                    src={heroAsset}
+                    alt={t("avatar.becoming.hero.alt", "Tu Rowi")}
+                    width={40}
+                    height={40}
+                    className="object-contain"
                   />
-
-                  {/* Special effects for Expert level */}
-                  {currentLevel.key === "expert" && (
-                    <>
-                      <motion.div
-                        animate={{ y: [-5, 0, -5], opacity: [0.8, 1, 0.8] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute -top-8 left-1/2 -translate-x-1/2 text-4xl drop-shadow-lg"
-                      >
-                        👑
-                      </motion.div>
-                      <motion.div
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute -right-4 top-1/4 text-2xl"
-                      >
-                        ⭐
-                      </motion.div>
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.6, 1, 0.6] }}
-                        transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
-                        className="absolute -left-4 top-1/4 text-2xl"
-                      >
-                        ⭐
-                      </motion.div>
-                    </>
-                  )}
-
-                  {/* Skilled level effects */}
-                  {currentLevel.key === "skilled" && (
-                    <>
-                      <motion.div
-                        animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute -right-2 top-1/3 text-xl"
-                      >
-                        💫
-                      </motion.div>
-                      <motion.div
-                        animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                        className="absolute -left-2 top-1/3 text-xl"
-                      >
-                        💫
-                      </motion.div>
-                    </>
-                  )}
-                </motion.div>
-
-                {/* Level Name */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-6 text-center"
-                >
-                  <h2
-                    className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2"
-                    style={{ color: currentLevel.color }}
-                  >
-                    {currentLevel.emoji} {currentLevel.name[lang as "es" | "en"]}
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-md mx-auto">
-                    {currentLevel.description[lang as "es" | "en"]}
-                  </p>
-                </motion.div>
-
-                {/* SEI Score Display */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="mt-6 flex items-center gap-4"
-                >
-                  <div className="text-center">
-                    <p className="text-xs text-gray-500 mb-1">{t.seiScore}</p>
-                    <div
-                      className="text-4xl font-bold"
-                      style={{ color: currentLevel.color }}
-                    >
-                      {Math.round(seiScore)}
-                    </div>
-                    <p className="text-xs text-gray-400">/135</p>
-                  </div>
-                </motion.div>
-
-                {/* Progress within level */}
-                <div className="w-full max-w-md mt-6">
-                  <div className="flex justify-between text-sm text-gray-500 mb-2">
-                    <span>{currentLevel.min}</span>
-                    <span className="font-medium" style={{ color: currentLevel.color }}>
-                      {currentLevel.name[lang as "es" | "en"]} ({currentLevel.min}–{currentLevel.max})
-                    </span>
-                    <span>{currentLevel.max}</span>
-                  </div>
-                  <div className="h-3 bg-white/50 dark:bg-zinc-700/50 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.max(5, progressInLevel)}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: currentLevel.color }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* SEI Level Card */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="p-3 rounded-xl"
-                  style={{ backgroundColor: `${currentLevel.color}20` }}
-                >
-                  <Brain className="w-6 h-6" style={{ color: currentLevel.color }} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {t.seiLevel}
-                  </h3>
-                  <p className="text-xs text-gray-500">{t.seiDesc}</p>
+                  {/* Si hay SEI formal, sí podemos nombrar el nivel validado.
+                      Si es espejo inicial, solo el lenguaje provisional. */}
+                  {isValidatedBySei ? (
+                    <>
+                      <p className="font-semibold" style={{ color: levelColor }}>
+                        {levelName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {t("avatar.becoming.foundation.label", "Basado en tu espejo inicial")}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-700 dark:text-gray-200">
+                      {t("avatar.becoming.foundation.label", "Basado en tu espejo inicial")}
+                    </p>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold" style={{ color: currentLevel.color }}>
-                    {currentLevel.emoji} {currentLevel.name[lang as "es" | "en"]}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {Math.round(seiScore)} / 135
-                  </p>
-                </div>
-                <div
-                  className="h-16 w-16 rounded-full flex items-center justify-center text-3xl"
-                  style={{ backgroundColor: `${currentLevel.color}15` }}
-                >
-                  {currentLevel.emoji}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* All 5 SEI Levels */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6"
-            >
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                <Star className="w-5 h-5 text-amber-500" />
-                {t.levels}
-              </h3>
-
-              <div className="space-y-3">
-                {SEI_LEVELS.map((level, index) => {
-                  const isActive = index <= currentIndex;
-                  const isCurrent = level.key === currentLevel.key;
-
-                  return (
-                    <motion.div
-                      key={level.key}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 * index }}
-                      className={`flex items-center gap-4 p-4 rounded-xl transition-all border-2 ${
-                        isCurrent
-                          ? "shadow-md"
-                          : isActive
-                          ? "bg-gray-50 dark:bg-zinc-700/50 border-transparent"
-                          : "opacity-50 border-transparent"
-                      }`}
-                      style={{
-                        backgroundColor: isCurrent ? `${level.color}10` : undefined,
-                        borderColor: isCurrent ? level.color : "transparent",
-                      }}
-                    >
-                      {/* Rowi Image */}
-                      <div
-                        className={`relative w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
-                          isActive ? "" : "grayscale"
-                        }`}
-                        style={{ backgroundColor: isActive ? `${level.color}15` : "#e5e7eb" }}
-                      >
-                        <Image
-                          src={level.image}
-                          alt={level.name.en}
-                          width={40}
-                          height={40}
-                          className="object-contain"
-                        />
-                        {isCurrent && (
-                          <motion.div
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                            style={{ backgroundColor: level.color }}
-                          >
-                            ✓
-                          </motion.div>
-                        )}
-                      </div>
-
-                      {/* Level Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{level.emoji}</span>
-                          <span
-                            className="font-semibold"
-                            style={{ color: isActive ? level.color : "#9ca3af" }}
-                          >
-                            {level.name[lang as "es" | "en"]}
-                          </span>
-                          {isCurrent && (
-                            <span
-                              className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                              style={{ backgroundColor: level.color }}
-                            >
-                              {t.current}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          {level.description[lang as "es" | "en"]}
-                        </p>
-                      </div>
-
-                      {/* Score Range */}
-                      <div className="text-right shrink-0">
-                        <p
-                          className="text-sm font-mono font-semibold"
-                          style={{ color: isActive ? level.color : "#9ca3af" }}
-                        >
-                          {level.min}–{level.max}
-                        </p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* SEI Scale footer */}
-              <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                  <Award className="w-4 h-4" />
-                  {t.scale}: Six Seconds Emotional Intelligence (SEI) · 65–135
+              {isValidatedBySei ? (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-3 flex items-start gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  {t(
+                    "avatar.becoming.validated.hint",
+                    "Tu baseline está validado por tu evaluación Six Seconds formal."
+                  )}
                 </p>
-              </div>
-            </motion.div>
-          </>
-        )}
+              ) : (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 flex items-start gap-1.5">
+                  <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  {t(
+                    "avatar.becoming.foundation.hint",
+                    "Tu punto de partida proviene de tu Emotional Mirror (mini-SEI inferido). Es un baseline provisional, no una evaluación formal."
+                  )}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">
+              {t(
+                "avatar.becoming.foundation.none",
+                "Haz tu Emotional Mirror para ver tu punto de partida"
+              )}
+            </p>
+          )}
+        </motion.div>
+
+        {/* ETAPAS DEL ROWI */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-5"
+        >
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+            {t("avatar.becoming.stagesTitle", "Las etapas de tu Rowi")}
+          </h3>
+          <div className="flex items-center justify-between gap-1">
+            {ALL_STAGES.map((stg) => {
+              const currentIdx = ALL_STAGES.indexOf(
+                state.currentStage as (typeof ALL_STAGES)[number]
+              );
+              const idx = ALL_STAGES.indexOf(stg);
+              const reached = currentIdx >= 0 && idx <= currentIdx;
+              const isCurrent = stg === state.currentStage;
+              return (
+                <div key={stg} className="flex flex-col items-center flex-1 min-w-0">
+                  <div
+                    className={`text-xl md:text-2xl transition-all ${
+                      reached ? "" : "opacity-30 grayscale"
+                    } ${isCurrent ? "scale-125" : ""}`}
+                  >
+                    {stageEmoji(stg)}
+                  </div>
+                  <span
+                    className={`text-[10px] mt-1 text-center truncate w-full ${
+                      isCurrent
+                        ? "font-bold text-violet-600 dark:text-violet-400"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {t(`avatar.stages.${stg}`, stg)}
+                  </span>
+                  {isCurrent && (
+                    <span className="text-[9px] font-bold text-violet-500">
+                      {t("avatar.becoming.current", "Actual")}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
+}
+
+/** Emoji por etapa (espejo del backend AVATAR_STAGES). */
+function stageEmoji(stage: string): string {
+  const map: Record<string, string> = {
+    EGG: "🥚",
+    HATCHING: "🐣",
+    BABY: "🐥",
+    YOUNG: "🦉",
+    ADULT: "🦅",
+    WISE: "🪶",
+  };
+  return map[stage] ?? "🥚";
 }

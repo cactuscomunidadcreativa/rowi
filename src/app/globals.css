@@ -24,8 +24,8 @@
   --rowi-chip: #e8eef3;               /* chips suaves */
 
   --rowi-g1: #d797cf;                 /* rosa Rowi */
-  --rowi-g2: #31a2e3;                 /* azul Rowi */
-  --rowi-g3: #7a59c9;                 /* violeta Rowi */
+  --rowi-g2: #7c3aed;                 /* violeta Rowi (primario) */
+  --rowi-g3: #7a59c9;                 /* violeta Rowi (secundario) */
 
   /* === Compatibilidad Shadcn === */
   --background: 0 0% 98%;
@@ -34,19 +34,19 @@
   --card-foreground: 0 0% 10%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 10%;
-  --primary: 208 73% 54%; /* Azul Rowi Día */
+  --primary: 262 83% 58%; /* Violeta Rowi Día (#7c3aed) */
   --primary-foreground: 0 0% 100%;
   --secondary: 333 65% 58%; /* Rosa Rowi Día */
   --secondary-foreground: 0 0% 100%;
   --muted: 0 0% 94%;
   --muted-foreground: 0 0% 45%;
-  --accent: 208 100% 97%;
+  --accent: 262 100% 97%;
   --accent-foreground: 0 0% 10%;
   --destructive: 0 75% 55%;
   --destructive-foreground: 0 0% 98%;
   --border: 0 0% 86%;
   --input: 0 0% 90%;
-  --ring: 208 73% 54%;
+  --ring: 262 83% 58%; /* Violeta Rowi Día */
   --radius: 0.75rem;
 }
 
@@ -72,7 +72,7 @@ html.dark {
   --card-foreground: 210 20% 96%;
   --popover: 220 13% 14%;
   --popover-foreground: 210 20% 96%;
-  --primary: 193 80% 67%; /* Azul Rowi noche */
+  --primary: 255 92% 76%; /* Violeta Rowi noche (#a78bfa) */
   --primary-foreground: 0 0% 10%;
   --secondary: 329 100% 75%; /* Rosa Rowi noche */
   --secondary-foreground: 0 0% 10%;
@@ -84,7 +84,7 @@ html.dark {
   --destructive-foreground: 0 0% 98%;
   --border: 220 13% 20%;
   --input: 220 13% 20%;
-  --ring: 193 80% 67%;
+  --ring: 255 92% 76%; /* Violeta Rowi noche */
 }
 
 /* =========================================================

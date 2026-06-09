@@ -117,7 +117,7 @@ export default function ChatDock({
       <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-20 [mask-image:linear-gradient(#000,transparent)]">
         <div
           className="absolute inset-0 rounded-2xl blur-md"
-          style={{ background: "linear-gradient(90deg,#d797cf33,#31a2e333)" }}
+          style={{ background: "linear-gradient(90deg,#d797cf33,#7c3aed33)" }}
         />
       </div>
 
@@ -125,7 +125,7 @@ export default function ChatDock({
         {/* header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="bg-gradient-to-r from-[#d797cf] to-[#31a2e3] bg-clip-text text-base font-semibold text-transparent">
+            <div className="bg-gradient-to-r from-[#d797cf] to-[#7c3aed] bg-clip-text text-base font-semibold text-transparent">
               {title ??
                 (scope === "super"
                   ? "Rowi Coach"
@@ -187,7 +187,7 @@ export default function ChatDock({
           />
           <button
             className="rounded-full px-4 py-2 text-xs text-white shadow-sm"
-            style={{ background: "linear-gradient(90deg,#d797cf,#31a2e3)" }}
+            style={{ background: "linear-gradient(90deg,#d797cf,#7c3aed)" }}
             onClick={() => send()}
           >
             {t("chat.send") || "Enviar"}

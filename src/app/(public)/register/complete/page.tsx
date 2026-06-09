@@ -105,7 +105,7 @@ export default function RegisterCompletePage() {
             <button
               onClick={() => router.push("/hub")}
               className="rowi-btn px-6 py-2 text-white font-medium"
-              style={{ background: "#31a2e3" }}
+              style={{ background: "#7c3aed" }}
             >
               {t("register.complete.goToHub", "Ir al panel")}
             </button>

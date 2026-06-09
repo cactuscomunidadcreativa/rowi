@@ -9,6 +9,7 @@ import {
   normCloseness, closenessMultiplier,
   inferMemberChannel, CTX,
 } from "../utils";
+import { persistHeat135ToDyad } from "@/ai/learning/affinityLearning";
 
 export const runtime = "nodejs";
 
@@ -157,6 +158,9 @@ export async function GET(req: NextRequest) {
         create: { userId: me.id, memberId: realMemberId, context: project, lastHeat135: Math.round(composite135), aiSummary: ai_summary, biasFactor: uPrefs.biasFactor, closeness: memberCloseness },
       });
     }
+
+    // Persistir la sintonía en la díada → ECO sale de modo neutro (resiliente).
+    await persistHeat135ToDyad({ ownerUserId: me.id, memberId, context: project, heat135: composite135 });
 
     // Calcular talentos y competencias compartidas
     const sharedTalents: string[] = [];

@@ -50,7 +50,7 @@ export default function PainSection() {
               transition={{ delay: i * 0.08 }}
               className="flex items-start gap-3 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800"
             >
-              <AlertCircle className="w-5 h-5 mt-0.5 shrink-0 text-[var(--rowi-g2,#31a2e3)]" />
+              <AlertCircle className="w-5 h-5 mt-0.5 shrink-0 text-[var(--rowi-g2,#7c3aed)]" />
               <span className="text-gray-700 dark:text-gray-300">{item}</span>
             </motion.div>
           ))}

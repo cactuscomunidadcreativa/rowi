@@ -34,7 +34,7 @@ export function EqTotalBar({ value, label, color }: Props) {
           style={{
             width: `${widthPercent}%`,
             background:
-              "linear-gradient(90deg,#d797cf,#31a2e3,#7a59c9)"
+              "linear-gradient(90deg,#d797cf,#7c3aed,#7a59c9)"
           }}
         />
       </div>

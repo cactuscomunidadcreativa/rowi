@@ -58,7 +58,7 @@ interface BrandingForm {
 }
 
 const DEFAULT_FORM: BrandingForm = {
-  primaryColor: "#31a2e3",
+  primaryColor: "#7c3aed",
   secondaryColor: "#f378a5",
   accentColor: "#8b5cf6",
   backgroundColor: "#ffffff",

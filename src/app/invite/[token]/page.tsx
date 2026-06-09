@@ -99,7 +99,7 @@ export default function AcceptInvitePage({
               onClick={acceptInvite}
               disabled={status === "loading"}
               className="rowi-btn w-full mt-4 py-2 font-semibold text-white"
-              style={{ background: "#31a2e3" }}
+              style={{ background: "#7c3aed" }}
             >
               {status === "loading" ? "Procesando..." : "Aceptar invitación"}
             </button>
@@ -115,7 +115,7 @@ export default function AcceptInvitePage({
             <div className="flex flex-col gap-2">
               <Link
                 className="rowi-btn text-white font-medium py-2"
-                style={{ background: "#31a2e3" }}
+                style={{ background: "#7c3aed" }}
                 href="/signup"
               >
                 Crear cuenta

@@ -97,7 +97,7 @@ export default function EQCompare({
                 <stop offset="100%" stopColor="#d797cf" />
               </linearGradient>
               <linearGradient id="gradFeedback" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#31a2e3" />
+                <stop offset="0%" stopColor="#7c3aed" />
                 <stop offset="100%" stopColor="#7ed6ff" />
               </linearGradient>
             </defs>

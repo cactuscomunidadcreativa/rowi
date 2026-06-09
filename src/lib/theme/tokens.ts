@@ -85,9 +85,9 @@ export interface ThemeTokens {
  */
 export const defaultTokens: ThemeTokens = {
   colors: {
-    primary: '#31a2e3',      // Azul Rowi
+    primary: '#7c3aed',      // Violeta Rowi (primario de marca)
     secondary: '#f378a5',    // Rosa Rowi
-    accent: '#7a59c9',       // Violeta
+    accent: '#7a59c9',       // Violeta secundario
 
     background: '#f7f9fb',
     backgroundAlt: '#ffffff',

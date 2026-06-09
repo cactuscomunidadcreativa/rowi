@@ -27,9 +27,9 @@ const ERROR_KEYS: Record<string, string> = {
 function FloatingBlobs() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#31a2e3]/30 to-[#7a59c9]/20 blur-3xl animate-pulse" />
+      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#7c3aed]/30 to-[#7a59c9]/20 blur-3xl animate-pulse" />
       <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#d797cf]/30 to-[#f378a5]/20 blur-3xl animate-pulse [animation-delay:2s]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-gradient-to-br from-[#7a59c9]/15 to-[#31a2e3]/10 blur-3xl animate-pulse [animation-delay:4s]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-gradient-to-br from-[#7a59c9]/15 to-[#7c3aed]/10 blur-3xl animate-pulse [animation-delay:4s]" />
     </div>
   );
 }

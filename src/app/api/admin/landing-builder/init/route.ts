@@ -419,7 +419,7 @@ export async function POST() {
         },
         content: {
           es: {
-            brand: "Rowi SIA",
+            brand: "Rowi",
             links: [
               { label: "Términos", href: "/terms" },
               { label: "Privacidad", href: "/privacy" },
@@ -428,7 +428,7 @@ export async function POST() {
             copyright: "Rowi. Todos los derechos reservados.",
           },
           en: {
-            brand: "Rowi SIA",
+            brand: "Rowi",
             links: [
               { label: "Terms", href: "/terms" },
               { label: "Privacy", href: "/privacy" },

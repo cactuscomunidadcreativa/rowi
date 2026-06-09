@@ -539,7 +539,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 dark:border-zinc-700">
         <p className="text-xs text-gray-500 dark:text-zinc-400 text-center">
-          Rowi SIA © {new Date().getFullYear()}
+          Rowi © {new Date().getFullYear()}
         </p>
       </div>
     </aside>

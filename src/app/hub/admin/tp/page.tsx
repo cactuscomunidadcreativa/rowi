@@ -177,8 +177,8 @@ const translations = {
 
     // Footer
     footerText:
-      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi SIA × Six Seconds.",
-    footerCopyright: "Rowi SIA — Plataforma de Inteligencia Emocional con IA",
+      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi × Six Seconds.",
+    footerCopyright: "Rowi — Plataforma de Inteligencia Emocional con IA",
     noData: "—",
   },
   en: {
@@ -320,8 +320,8 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
-    footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
+    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
     noData: "—",
   },
   pt: {
@@ -463,8 +463,8 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
-    footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
+    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
     noData: "—",
   },
   it: {
@@ -606,8 +606,8 @@ const translations = {
 
     // Footer
     footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi SIA × Six Seconds.",
-    footerCopyright: "Rowi SIA — Emotional Intelligence AI Platform",
+      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
+    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
     noData: "—",
   },
 
@@ -938,7 +938,7 @@ export default function TPAdminHub() {
         <div>
           <p>{t.footerText.replace("{count}", fmt(totalAssessments))}</p>
           <p className="text-xs mt-1 text-purple-400">
-            Rowi SIA &copy; {new Date().getFullYear()} &mdash; {t.footerCopyright}
+            Rowi &copy; {new Date().getFullYear()} &mdash; {t.footerCopyright}
           </p>
         </div>
       </motion.div>

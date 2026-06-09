@@ -22,10 +22,14 @@ const config: Config = {
          ========================================================= */
       colors: {
         rowi: {
-          blueDay: "#31a2e3",     // Azul Eléctrico Día [oai_citation:12‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
-          pinkDay: "#f378a5",     // Rosado Intenso Día [oai_citation:13‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
-          blueNight: "#5bc0eb",   // Azul Brillante Noche [oai_citation:14‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
-          pinkNight: "#ff8fd4",   // Rosado Intenso Noche [oai_citation:15‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
+          // Marca nueva: violeta primario. Se mantienen las claves blueDay/blueNight
+          // por compatibilidad con clases existentes, pero apuntan al violeta de marca.
+          primary: "#7c3aed",     // Violeta Rowi Día (primario de marca)
+          primaryNight: "#a78bfa",// Violeta Rowi Noche
+          blueDay: "#7c3aed",     // (legacy) ahora violeta primario
+          pinkDay: "#f378a5",     // Rosado Intenso Día
+          blueNight: "#a78bfa",   // (legacy) ahora violeta noche
+          pinkNight: "#ff8fd4",   // Rosado Intenso Noche
           bgDay: "#FFFFFF",       // Fondo Claro [oai_citation:16‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
           bgNight: "#1A1A2E",     // Fondo Oscuro [oai_citation:17‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
           fgDay: "#333333",       // Texto Día [oai_citation:18‡manual_identidad_visual_rowi.pdf](sediment://file_00000000b90461faa732368195807f6f)
@@ -43,11 +47,11 @@ const config: Config = {
           /* =============================
              🎯 Extensión Talentos (basado en Rowi)
              ============================= */
-          optimism: "#31a2e3", // derivado del azul Rowi (energía positiva)
+          optimism: "#7c3aed", // derivado del violeta Rowi (energía positiva)
           empathy: "#f378a5",  // derivado del rosado Rowi (conexión humana)
-          clarity: "#5bc0eb",  // derivado del azul noche (visión clara)
+          clarity: "#5bc0eb",  // visión clara
           drive: "#ff8fd4",    // derivado del rosado noche (impulso emocional)
-          innovation: "#31a2e3", // usa azul Rowi como base creativa
+          innovation: "#7c3aed", // usa violeta Rowi como base creativa
           balance: "#f378a5",    // usa rosado Rowi como estabilidad emocional
         },
 
@@ -113,7 +117,7 @@ const config: Config = {
          🔳 Sombras y efectos usados en las tarjetas Rowi
          ========================================================= */
       boxShadow: {
-        rowi: "0 2px 12px rgba(49, 162, 227, 0.2)", // sombra azul suave
+        rowi: "0 2px 12px rgba(124, 58, 237, 0.2)", // sombra violeta suave
         card: "0 4px 20px rgba(0,0,0,0.1)",
       },
     },

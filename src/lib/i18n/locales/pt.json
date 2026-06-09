@@ -5779,8 +5779,8 @@
   "landing.howItWorks.step4.description": "Quanto você se pareceu com essa pessoa? Aqui nasce seu Becoming Data.",
   "landing.howItWorks.step5.title": "Veja seu Becoming",
   "landing.howItWorks.step5.description": "Seu contraste honesto consigo mesmo: em quem você está se tornando, dia a dia.",
-  "landing.useCases.title": "Para cada parte da sua vida",
-  "landing.useCases.subtitle": "Uma mesma inteligência emocional, muitos contextos.",
+  "landing.useCases.title": "Para cada relação da sua vida",
+  "landing.useCases.subtitle": "Tudo começa com sua relação consigo mesmo. Uma mesma inteligência emocional, todos os seus vínculos.",
   "landing.useCases.leadership.title": "Liderança",
   "landing.useCases.leadership.description": "Lidere com clareza emocional e tome melhores decisões.",
   "landing.useCases.couples.title": "Casais",
@@ -6171,5 +6171,9 @@
   "becoming.practice.days": "dias com registro",
   "becoming.noScore": "Aqui não há pontuação. O Becoming não se mede com um número — vê-se no contraste honesto com você mesmo.",
   "becoming.loading": "Reunindo sua história…",
-  "becoming.signIn": "Entre para ver seu Becoming"
+  "becoming.signIn": "Entre para ver seu Becoming",
+  "landing.useCases.self.title": "Consigo mesmo",
+  "landing.useCases.self.description": "A relação que sustenta tudo: ver-se com clareza e tornar-se quem você quer ser.",
+  "landing.useCases.relationships.title": "Relações",
+  "landing.useCases.relationships.description": "Parceiro(a), família e amizades: comunique-se melhor e reduza os conflitos recorrentes."
 }

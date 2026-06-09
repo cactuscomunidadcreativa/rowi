@@ -5779,8 +5779,8 @@
   "landing.howItWorks.step4.description": "How much were you like that person? This is where your Becoming Data is born.",
   "landing.howItWorks.step5.title": "See your Becoming",
   "landing.howItWorks.step5.description": "Your honest contrast with yourself: who you're becoming, day by day.",
-  "landing.useCases.title": "For every part of your life",
-  "landing.useCases.subtitle": "One emotional intelligence, many contexts.",
+  "landing.useCases.title": "For every relationship in your life",
+  "landing.useCases.subtitle": "It all starts with your relationship with yourself. One emotional intelligence, all your bonds.",
   "landing.useCases.leadership.title": "Leadership",
   "landing.useCases.leadership.description": "Lead with emotional clarity and make better decisions.",
   "landing.useCases.couples.title": "Couples",
@@ -6171,5 +6171,9 @@
   "becoming.practice.days": "days with an entry",
   "becoming.noScore": "There's no score here. Becoming isn't measured with a number — it's seen in the honest contrast with yourself.",
   "becoming.loading": "Gathering your story…",
-  "becoming.signIn": "Sign in to see your Becoming"
+  "becoming.signIn": "Sign in to see your Becoming",
+  "landing.useCases.self.title": "With yourself",
+  "landing.useCases.self.description": "The relationship that holds everything: see yourself clearly and become who you want to be.",
+  "landing.useCases.relationships.title": "Relationships",
+  "landing.useCases.relationships.description": "Partner, family and friends: communicate better and reduce recurring conflicts."
 }

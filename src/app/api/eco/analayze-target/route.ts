@@ -1,7 +1,6 @@
 // src/app/api/eco/analyze-target/route.ts
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 
 export async function POST(req: Request) {
   try {
@@ -24,15 +23,25 @@ export async function POST(req: Request) {
       Clasifícalo como uno de: Strategist, Scientist, Guardian, Deliverer, Inventor, Energizer, Sage.
       Devuelve JSON con: { brainStyle, inferredTone, keywords }`;
 
-      const res = await ai.chat.completions.create({
+      const { text } = await cachedCompletion({
+        kind: "eco_brain_style",
+        prompt,
+        scope: "global",
         model: "gpt-4o-mini",
-        temperature: 0.5,
-        max_tokens: 400,
-        messages: [{ role: "system", content: prompt }],
-        response_format: { type: "json_object" },
+        fallback: "{}",
+        call: async (openai) => {
+          const res = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            temperature: 0.5,
+            max_tokens: 400,
+            messages: [{ role: "system", content: prompt }],
+            response_format: { type: "json_object" },
+          });
+          return res.choices[0].message?.content || "{}";
+        },
       });
 
-      const data = JSON.parse(res.choices[0].message?.content || "{}");
+      const data = JSON.parse(text || "{}");
       return NextResponse.json({ ok: true, ...data });
     }
 

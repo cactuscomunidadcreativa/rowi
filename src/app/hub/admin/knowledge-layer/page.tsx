@@ -11,6 +11,8 @@ import {
   Sparkles,
   GitBranch,
   Layers,
+  Play,
+  Download,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import {
@@ -53,6 +55,8 @@ export default function KnowledgeLayerPage() {
   const { t, ready } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState<string | null>(null);
+  const [tenantId, setTenantId] = useState("");
 
   async function load() {
     setLoading(true);
@@ -71,6 +75,32 @@ export default function KnowledgeLayerPage() {
   useEffect(() => {
     if (ready) load();
   }, [ready]);
+
+  // Disparar un endpoint de acción (writer) y refrescar stats.
+  async function runAction(key: string, url: string, body?: object) {
+    setActing(key);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(
+          t("admin.knowledgeLayer.actionOk", "Acción completada") +
+            (typeof data.created === "number" ? ` (${data.created})` : "")
+        );
+        await load();
+      } else {
+        toast.error(data.error || t("common.error", "Error"));
+      }
+    } catch {
+      toast.error(t("common.error", "Error"));
+    } finally {
+      setActing(null);
+    }
+  }
 
   const gt = stats?.groundTruth;
   const cat = stats?.catalog;
@@ -282,6 +312,57 @@ export default function KnowledgeLayerPage() {
           )}
         </AdminCard>
       </AdminGrid>
+
+      {/* Acciones — disparar writers + descargar dataset */}
+      <AdminCard className="mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Play className="w-4 h-4 text-[var(--rowi-primary)]" />
+          <h3 className="font-semibold text-[var(--rowi-foreground)]">
+            {t("admin.knowledgeLayer.actionsTitle", "Acciones")}
+          </h3>
+        </div>
+
+        {/* Detectar patrones colectivos de un tenant */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center mb-4">
+          <input
+            type="text"
+            value={tenantId}
+            onChange={(e) => setTenantId(e.target.value)}
+            placeholder={t("admin.knowledgeLayer.tenantIdPlaceholder", "ID del tenant")}
+            className="flex-1 px-3 py-2 rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-background)] text-sm text-[var(--rowi-foreground)]"
+          />
+          <AdminButton
+            variant="primary"
+            icon={Sparkles}
+            size="sm"
+            disabled={!tenantId || acting === "collective"}
+            onClick={() =>
+              runAction("collective", "/api/admin/knowledge/collective-patterns/generate", { tenantId })
+            }
+          >
+            {acting === "collective"
+              ? t("admin.common.processing", "Procesando…")
+              : t("admin.knowledgeLayer.detectPatterns", "Detectar patrones del tenant")}
+          </AdminButton>
+        </div>
+
+        {/* Descargar dataset (Fase 8 — recopilación) */}
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/api/admin/knowledge/dataset/export"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--rowi-border)] text-sm font-medium text-[var(--rowi-foreground)] hover:bg-[var(--rowi-primary)]/5 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            {t("admin.knowledgeLayer.downloadDataset", "Descargar dataset (JSONL)")}
+          </a>
+        </div>
+        <p className="mt-3 text-xs text-[var(--rowi-muted)]">
+          {t(
+            "admin.knowledgeLayer.actionsHint",
+            "Los patrones de outcome por benchmark se generan desde la página de cada benchmark."
+          )}
+        </p>
+      </AdminCard>
     </AdminPage>
   );
 }

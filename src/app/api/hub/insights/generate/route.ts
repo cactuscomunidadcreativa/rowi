@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { OpenAI } from "openai";
 import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 
 export const runtime = "nodejs";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /* =========================================================
    🧠 POST /api/hub/insights/generate
@@ -37,27 +35,36 @@ Genera interpretaciones sobre competencias EQ clave.`;
         break;
     }
 
-    // 🔮 Simulación con IA
-    const completion = await openai.chat.completions.create({
+    // 🔮 IA con cache (los insights por type son estables → se reutilizan)
+    const { text: result, cached } = await cachedCompletion({
+      kind: "hub_insight",
+      prompt: `${type ?? "general"}::${prompt}`,
+      scope: "global",
       model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Eres un analista cognitivo de datos emocionales. Usa lenguaje humano, breve y profesional.",
-        },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.6,
-      max_tokens: 500,
+      fallback: "Sin resultados disponibles.",
+      call: async (openai) => {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Eres un analista cognitivo de datos emocionales. Usa lenguaje humano, breve y profesional.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.6,
+          max_tokens: 500,
+        });
+        return completion.choices[0]?.message?.content || "Sin resultados disponibles.";
+      },
     });
-
-    const result = completion.choices[0]?.message?.content || "Sin resultados disponibles.";
 
     return NextResponse.json({
       ok: true,
       type,
       result,
+      cached,
       timestamp: new Date().toISOString(),
     });
   } catch (err: any) {

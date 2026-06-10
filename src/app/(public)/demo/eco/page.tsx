@@ -217,7 +217,7 @@ const translations = {
    Página principal
 ========================================================= */
 export default function DemoEcoPage() {
-  const { lang } = useI18n();
+  const { lang, t: tr } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
   const [selectedChannel, setSelectedChannel] = useState("email");
   const [copied, setCopied] = useState(false);
@@ -293,7 +293,7 @@ export default function DemoEcoPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-[var(--rowi-muted)]">{t.brainStyle}:</span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                      {lang === "es" ? DEMO_RECIPIENT.brainStyleEs : DEMO_RECIPIENT.brainStyle}
+                      {tr("demo.eco.brainStyles.innovator", DEMO_RECIPIENT.brainStyleEs)}
                     </span>
                   </div>
                 </div>
@@ -331,7 +331,7 @@ export default function DemoEcoPage() {
                         }`}
                       />
                       <span className={`text-sm font-medium ${isSelected ? "text-emerald-600 dark:text-emerald-400" : ""}`}>
-                        {lang === "es" ? channel.labelEs : channel.label}
+                        {tr(`demo.eco.channels.${channel.key}`, channel.labelEs)}
                       </span>
                     </button>
                   );

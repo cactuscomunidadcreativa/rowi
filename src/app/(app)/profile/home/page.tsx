@@ -242,7 +242,7 @@ export default async function ProfileHomePage() {
               {seiRequestedAt && (
                 <p className="text-sm text-gray-500 mb-4">
                   {t("profileHome.requestSent", "Solicitud enviada: ")}
-                  {new Date(seiRequestedAt).toLocaleDateString(lang === "es" ? "es-ES" : "en-US", {
+                  {new Date(seiRequestedAt).toLocaleDateString(t("profileHome.dateLocale", "es-ES"), {
                     year: "numeric",
                     month: "long",
                     day: "numeric"
@@ -298,7 +298,7 @@ export default async function ProfileHomePage() {
   // ============================================
   // ESTADO 3: Usuario con datos SEI - Experiencia completa
   // ============================================
-  const eqDate = latestEQ.at ? new Date(latestEQ.at).toLocaleDateString(lang === "es" ? "es-ES" : "en-US", {
+  const eqDate = latestEQ.at ? new Date(latestEQ.at).toLocaleDateString(t("profileHome.dateLocale", "es-ES"), {
     year: "numeric",
     month: "long",
     day: "numeric"

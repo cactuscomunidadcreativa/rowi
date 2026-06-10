@@ -176,6 +176,7 @@ const translations = {
    Componentes
 ========================================================= */
 function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: string }) {
+  const { t: tr } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   return (
@@ -221,7 +222,7 @@ function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: s
         <div className="flex items-center justify-between">
           <span className="text-sm text-[var(--rowi-muted)]">{t.brainStyle}</span>
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-            {lang === "es" ? member.brainStyleEs : member.brainStyle}
+            {tr(`demo.affinity.brainStyles.${member.brainStyle.toLowerCase()}`, member.brainStyleEs)}
           </span>
         </div>
       </div>
@@ -229,7 +230,8 @@ function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: s
   );
 }
 
-function BrainStyleCard({ style, lang }: { style: typeof BRAIN_STYLES[0]; lang: string }) {
+function BrainStyleCard({ style }: { style: typeof BRAIN_STYLES[0] }) {
+  const { t } = useI18n();
   const Icon = style.icon;
 
   return (
@@ -245,7 +247,7 @@ function BrainStyleCard({ style, lang }: { style: typeof BRAIN_STYLES[0]; lang: 
       >
         <Icon className="w-6 h-6" style={{ color: style.color }} />
       </div>
-      <h3 className="font-semibold">{lang === "es" ? style.nameEs : style.name}</h3>
+      <h3 className="font-semibold">{t(`demo.affinity.brainStyles.${style.key}`, style.nameEs)}</h3>
     </motion.div>
   );
 }
@@ -313,7 +315,7 @@ export default function DemoAffinityPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {BRAIN_STYLES.map((style) => (
-              <BrainStyleCard key={style.key} style={style} lang={lang} />
+              <BrainStyleCard key={style.key} style={style} />
             ))}
           </div>
         </div>

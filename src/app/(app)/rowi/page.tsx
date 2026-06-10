@@ -446,7 +446,6 @@ export default function RowiCoachPage() {
                   text={m.text}
                   timestamp={m.timestamp}
                   agentColor={currentAgent.color}
-                  lang={lang}
                 />
               ))}
             </AnimatePresence>
@@ -569,14 +568,13 @@ function RowiMessage({
   text,
   timestamp,
   agentColor,
-  lang,
 }: {
   role: "user" | "rowi";
   text: string;
   timestamp: Date;
   agentColor: string;
-  lang: string;
 }) {
+  const { t } = useI18n();
   const isUser = role === "user";
 
   return (
@@ -610,7 +608,7 @@ function RowiMessage({
       >
         <div className="text-sm whitespace-pre-wrap leading-relaxed">{text}</div>
         <div className={`mt-1.5 text-[10px] ${isUser ? "text-white/50" : "text-gray-400 dark:text-gray-500"}`}>
-          {timestamp.toLocaleTimeString(lang === "es" ? "es-ES" : "en-US", {
+          {timestamp.toLocaleTimeString(t("rowi.timeLocale", "es-ES"), {
             hour: "2-digit",
             minute: "2-digit",
           })}

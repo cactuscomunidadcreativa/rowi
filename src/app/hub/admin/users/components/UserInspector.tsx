@@ -35,7 +35,7 @@ export default function UserInspector({
   userId: string;
   onClose: () => void;
 }) {
-  const { lang, t } = useI18n();
+  const { t } = useI18n();
   const [user, setUser] = useState<any | null>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [hubs, setHubs] = useState<any[]>([]);
@@ -136,7 +136,7 @@ export default function UserInspector({
       <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
         <Card className="p-6 bg-white dark:bg-zinc-900 flex items-center gap-2">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <p>{lang === "es" ? t("admin.users.inspector.loadingUser") : t("admin.users.inspector.loadingUser")}</p>
+          <p>{t("admin.users.inspector.loadingUser", "Cargando usuario...")}</p>
         </Card>
       </div>
     );

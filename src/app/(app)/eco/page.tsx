@@ -646,7 +646,7 @@ export default function EcoPage() {
                           }`}
                         >
                           <Icon className="w-4 h-4" />
-                          {lang === "es" ? ch.label.es : ch.label.en}
+                          {t(`eco.channels.${ch.value}`, ch.label.es)}
                         </button>
                       );
                     })}

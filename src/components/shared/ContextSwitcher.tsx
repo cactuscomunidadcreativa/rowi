@@ -43,8 +43,8 @@ const CONTEXT_ICONS: Record<ContextType, React.ElementType> = {
 interface QuickLink {
   href: string;
   icon: React.ElementType;
+  labelKey: string;
   labelES: string;
-  labelEN: string;
   color: string;
   requiredRoles?: string[];
   requiredFlags?: ("isAdmin" | "isConsultant" | "isCoach")[];
@@ -54,45 +54,45 @@ const QUICK_LINKS: QuickLink[] = [
   {
     href: "/dashboard",
     icon: LayoutDashboard,
+    labelKey: "context.myDashboard",
     labelES: "Mi Dashboard",
-    labelEN: "My Dashboard",
     color: "#3b82f6",
   },
   {
     href: "/affinity",
     icon: Heart,
+    labelKey: "context.quickLinks.affinity",
     labelES: "Afinidad",
-    labelEN: "Affinity",
     color: "#ec4899",
   },
   {
     href: "/research",
     icon: FlaskConical,
+    labelKey: "context.quickLinks.research",
     labelES: "Investigación",
-    labelEN: "Research",
     color: "#7c3aed",
     requiredFlags: ["isAdmin"],
   },
   {
     href: "/hub/admin",
     icon: Shield,
+    labelKey: "context.quickLinks.adminPanel",
     labelES: "Admin Panel",
-    labelEN: "Admin Panel",
     color: "#ef4444",
     requiredFlags: ["isAdmin"],
   },
   {
     href: "/benchmark",
     icon: BarChart3,
+    labelKey: "context.quickLinks.benchmark",
     labelES: "Benchmark",
-    labelEN: "Benchmark",
     color: "#10b981",
   },
   {
     href: "/learning",
     icon: GraduationCap,
+    labelKey: "context.quickLinks.learning",
     labelES: "Aprendizaje",
-    labelEN: "Learning",
     color: "#f59e0b",
   },
 ];
@@ -330,7 +330,7 @@ export default function ContextSwitcher() {
                       >
                         <link.icon className="w-3.5 h-3.5" style={{ color: link.color }} />
                         <span className="truncate">
-                          {lang === "es" ? link.labelES : link.labelEN}
+                          {t(link.labelKey, link.labelES)}
                         </span>
                       </Link>
                     ))}
@@ -371,6 +371,7 @@ function ContextOption({
   onClick: () => void;
   lang: string;
 }) {
+  const { t } = useI18n();
   const Icon = CONTEXT_ICONS[context.type] || Users;
   const roleConfig = ROLE_CONFIG[context.role] || ROLE_CONFIG.USER;
 
@@ -413,7 +414,7 @@ function ContextOption({
           </span>
           {context.memberCount !== undefined && context.memberCount > 0 && (
             <span className="text-[10px] text-gray-400">
-              {context.memberCount} {lang === "es" ? "miembros" : "members"}
+              {context.memberCount} {t("context.members", "miembros")}
             </span>
           )}
         </div>
@@ -432,7 +433,7 @@ function ContextOption({
 ========================================================= */
 export function ContextSwitcherCompact() {
   const { currentContext, hasMultipleContexts, isConsultant } = useUserContext();
-  const { lang } = useI18n();
+  const { t } = useI18n();
 
   if (!hasMultipleContexts && !isConsultant) return null;
 
@@ -447,7 +448,7 @@ export function ContextSwitcherCompact() {
       <Icon className="w-3.5 h-3.5" style={{ color: roleConfig.color }} />
       <span className="text-xs font-medium truncate max-w-[100px]" style={{ color: roleConfig.color }}>
         {currentContext.type === "personal"
-          ? (lang === "es" ? "Personal" : "Personal")
+          ? t("context.personal", "Personal")
           : currentContext.name}
       </span>
     </div>

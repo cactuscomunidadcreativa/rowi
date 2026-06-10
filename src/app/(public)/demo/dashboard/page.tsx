@@ -30,9 +30,9 @@ const DEMO_USER = {
 };
 
 const DEMO_PURSUITS = {
-  know: { score: 38, max: 45, label: "Know Yourself", labelEs: "Conócete", color: "#3b82f6" },
-  choose: { score: 35, max: 45, label: "Choose Yourself", labelEs: "Elígete", color: "#ef4444" },
-  give: { score: 39, max: 45, label: "Give Yourself", labelEs: "Entrégate", color: "#10b981" },
+  know: { key: "know", score: 38, max: 45, label: "Know Yourself", labelEs: "Conócete", color: "#3b82f6" },
+  choose: { key: "choose", score: 35, max: 45, label: "Choose Yourself", labelEs: "Elígete", color: "#ef4444" },
+  give: { key: "give", score: 39, max: 45, label: "Give Yourself", labelEs: "Entrégate", color: "#10b981" },
 };
 
 const DEMO_COMPETENCIES = [
@@ -212,13 +212,14 @@ function EQCircle({ score, max, lang }: { score: number; max: number; lang: stri
   );
 }
 
-function PursuitBar({ pursuit, lang }: { pursuit: typeof DEMO_PURSUITS.know; lang: string }) {
+function PursuitBar({ pursuit }: { pursuit: typeof DEMO_PURSUITS.know }) {
+  const { t } = useI18n();
   const percentage = (pursuit.score / pursuit.max) * 100;
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="font-medium">{lang === "es" ? pursuit.labelEs : pursuit.label}</span>
+        <span className="font-medium">{t(`demo.dashboard.pursuits.${pursuit.key}`, pursuit.labelEs)}</span>
         <span className="text-[var(--rowi-muted)]">{pursuit.score}/{pursuit.max}</span>
       </div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -234,7 +235,8 @@ function PursuitBar({ pursuit, lang }: { pursuit: typeof DEMO_PURSUITS.know; lan
   );
 }
 
-function CompetencyCard({ comp, lang }: { comp: typeof DEMO_COMPETENCIES[0]; lang: string }) {
+function CompetencyCard({ comp }: { comp: typeof DEMO_COMPETENCIES[0] }) {
+  const { t } = useI18n();
   const percentage = (comp.score / comp.max) * 100;
   const pursuitColors: Record<string, string> = {
     know: "#3b82f6",
@@ -258,7 +260,7 @@ function CompetencyCard({ comp, lang }: { comp: typeof DEMO_COMPETENCIES[0]; lan
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-medium text-sm truncate">
-            {lang === "es" ? comp.nameEs : comp.name}
+            {t(`demo.dashboard.competencies.${comp.key.toLowerCase()}`, comp.nameEs)}
           </div>
           <div className="text-xs text-[var(--rowi-muted)]">{comp.score}/{comp.max}</div>
         </div>
@@ -276,7 +278,8 @@ function CompetencyCard({ comp, lang }: { comp: typeof DEMO_COMPETENCIES[0]; lan
   );
 }
 
-function OutcomeCard({ outcome, lang }: { outcome: typeof DEMO_OUTCOMES[0]; lang: string }) {
+function OutcomeCard({ outcome }: { outcome: typeof DEMO_OUTCOMES[0] }) {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -286,7 +289,7 @@ function OutcomeCard({ outcome, lang }: { outcome: typeof DEMO_OUTCOMES[0]; lang
     >
       <div className="text-3xl font-bold mb-1">{outcome.score}%</div>
       <div className="text-sm text-[var(--rowi-muted)]">
-        {lang === "es" ? outcome.nameEs : outcome.name}
+        {t(`demo.dashboard.outcomes.${outcome.key}`, outcome.nameEs)}
       </div>
       <div className="mt-3 h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <motion.div
@@ -391,9 +394,9 @@ export default function DemoDashboardPage() {
             </h2>
             <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.pursuitsDesc}</p>
             <div className="space-y-4">
-              <PursuitBar pursuit={DEMO_PURSUITS.know} lang={lang} />
-              <PursuitBar pursuit={DEMO_PURSUITS.choose} lang={lang} />
-              <PursuitBar pursuit={DEMO_PURSUITS.give} lang={lang} />
+              <PursuitBar pursuit={DEMO_PURSUITS.know} />
+              <PursuitBar pursuit={DEMO_PURSUITS.choose} />
+              <PursuitBar pursuit={DEMO_PURSUITS.give} />
             </div>
           </motion.div>
         </div>
@@ -408,8 +411,8 @@ export default function DemoDashboardPage() {
             <p className="text-[var(--rowi-muted)]">{t.competenciesDesc}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {DEMO_COMPETENCIES.map((comp, i) => (
-              <CompetencyCard key={comp.key} comp={comp} lang={lang} />
+            {DEMO_COMPETENCIES.map((comp) => (
+              <CompetencyCard key={comp.key} comp={comp} />
             ))}
           </div>
         </div>
@@ -425,7 +428,7 @@ export default function DemoDashboardPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {DEMO_OUTCOMES.map((outcome) => (
-              <OutcomeCard key={outcome.key} outcome={outcome} lang={lang} />
+              <OutcomeCard key={outcome.key} outcome={outcome} />
             ))}
           </div>
         </div>

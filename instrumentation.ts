@@ -31,3 +31,15 @@ export async function register() {
     });
   }
 }
+
+/**
+ * Captura errores de render del servidor (App Router) en Sentry: Server
+ * Components, route handlers y middleware. No-op si Sentry no está configurado.
+ */
+export async function onRequestError(
+  ...args: Parameters<typeof import("@sentry/nextjs")["captureRequestError"]>
+) {
+  if (!process.env.SENTRY_DSN) return;
+  const Sentry = await import("@sentry/nextjs");
+  Sentry.captureRequestError(...args);
+}

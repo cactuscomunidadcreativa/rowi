@@ -4,6 +4,69 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { summarizeSignals, upsertAdaptiveSnapshot } from "@/ai/learning/affinityLearning";
 
+export const runtime = "nodejs";
+export const maxDuration = 300; // recálculo batched puede tardar
+
+/**
+ * GET /api/affinity/recalculate?project=<context>
+ * ---------------------------------------------------------
+ * Entrada del CRON de Vercel (vercel.json). Antes la ruta solo tenía POST con
+ * sesión → los crons (GET, sin sesión) nunca corrían. Ahora autenticamos por
+ * CRON_SECRET (header Authorization: Bearer o x-cron-secret) y recalculamos la
+ * afinidad de cada usuario con relaciones, en lotes.
+ */
+export async function GET(req: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret && process.env.NODE_ENV === "production") {
+    console.error("[Cron Affinity] CRON_SECRET no configurado en producción");
+    return NextResponse.json({ ok: false, error: "Server misconfiguration" }, { status: 500 });
+  }
+  const authHeader = req.headers.get("authorization");
+  const provided =
+    req.headers.get("x-cron-secret") ||
+    (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null);
+  if (cronSecret && provided !== cronSecret) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const context = new URL(req.url).searchParams.get("project") || "execution";
+
+  try {
+    // Usuarios que tienen al menos un CommunityMember (dueños de relaciones).
+    const owners = await prisma.communityMember.findMany({
+      where: { ownerId: { not: null } },
+      select: { ownerId: true },
+      distinct: ["ownerId"],
+      take: 5000,
+    });
+    const ownerIds = owners
+      .map((o) => o.ownerId)
+      .filter((id): id is string => !!id);
+
+    let processed = 0;
+    let relations = 0;
+    for (const userId of ownerIds) {
+      const r = await autoRecalcAffinity({ userId, context, days: 30, force: true });
+      if (r.ok) {
+        processed++;
+        relations += r.count ?? 0;
+      }
+    }
+
+    console.log(`[Cron Affinity] ${context}: ${processed} usuarios, ${relations} relaciones`);
+    return NextResponse.json({
+      ok: true,
+      context,
+      users: processed,
+      relations,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e: unknown) {
+    console.error("[Cron Affinity] error:", e);
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
+  }
+}
+
 /**
  * =========================================================
  * 🔄 POST /api/affinity/recalculate

@@ -10,11 +10,82 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { validateAnswers, type PreSeiAnswers } from "@/lib/pre-sei/scoring";
+import { validateAnswers, scorePreSei, type PreSeiAnswers } from "@/lib/pre-sei/scoring";
 import { trackFunnel } from "@/domains/metrics/lib/funnel";
+import {
+  compAffinity135,
+  type CompKey,
+  type Project,
+} from "@/domains/affinity/lib/affinityEngine";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const PROJECTS: Project[] = [
+  "innovation", "execution", "leadership", "conversation", "relationship", "decision",
+];
+const COMP_KEYS: CompKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
+
+/** El contexto de la díada mapea a un Project del motor; default "relationship". */
+function toProject(context: string | null | undefined): Project {
+  return PROJECTS.includes(context as Project) ? (context as Project) : "relationship";
+}
+
+/** Perfil de competencias (0-135) del owner: SEI formal → mini-SEI → null. */
+async function ownerCompetencyProfile(
+  ownerUserId: string,
+): Promise<Record<CompKey, number | null> | null> {
+  const snap = await prisma.eqSnapshot.findFirst({
+    where: { userId: ownerUserId },
+    orderBy: { at: "desc" },
+    select: { EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true },
+  });
+  if (snap && COMP_KEYS.some((k) => typeof snap[k] === "number")) {
+    return snap as Record<CompKey, number | null>;
+  }
+  const mini = await prisma.miniSeiSnapshot.findFirst({
+    where: { userId: ownerUserId },
+    orderBy: { takenAt: "desc" },
+    select: { competencyProfile: true },
+  });
+  if (mini?.competencyProfile && typeof mini.competencyProfile === "object") {
+    return mini.competencyProfile as Record<CompKey, number | null>;
+  }
+  return null;
+}
+
+/**
+ * Cierra la cadena SIA: al aceptar la invitación, calcula la afinidad (heat135)
+ * entre el owner y el invitado y la persiste en la díada. Hasta hoy las
+ * respuestas del invitado se guardaban crudas y heat135 nunca se computaba — el
+ * efecto red (el corazón del "Social Interaction Algorithm") no se disparaba y
+ * ECO con dyadId caía siempre en modo neutro.
+ *
+ * Honesto sobre lo que es: el invitado responde un mini-test auto-percibido
+ * (no SEI normado) → scorePreSei lo lleva a las 8 competencias (70-130), el
+ * mismo formato que consume el motor. Es una lectura indicativa de la BRECHA,
+ * no un veredicto de compatibilidad. Se norma luego con SEI real.
+ *
+ * Resiliente: cualquier fallo aquí no rompe la aceptación de la invitación.
+ */
+async function computeInviteHeat(
+  ownerUserId: string,
+  dyadContext: string | null | undefined,
+  inviteeAnswers: PreSeiAnswers,
+): Promise<number | null> {
+  try {
+    const ownerComp = await ownerCompetencyProfile(ownerUserId);
+    if (!ownerComp) return null; // el owner aún no tiene perfil: no se puede calcular
+
+    const inviteeComp = scorePreSei(inviteeAnswers).competencies;
+    const project = toProject(dyadContext);
+    const { score } = compAffinity135(ownerComp, inviteeComp, project);
+    return Math.round(score);
+  } catch (e) {
+    console.warn("[invite] no se pudo calcular heat135:", e);
+    return null;
+  }
+}
 
 async function loadInvite(token: string) {
   return prisma.relationshipInvite.findUnique({
@@ -90,16 +161,41 @@ export async function POST(
     // El mini-test del invitado es opcional (puede aceptar solo por curiosidad),
     // pero si manda respuestas, deben ser válidas (8 claves SEI 1-5).
     let perceptionStored = false;
+    let heat135: number | null = null;
     if (body.answers) {
       const err = validateAnswers(body.answers);
       if (err) {
         return NextResponse.json({ ok: false, error: err }, { status: 400 });
       }
       const answers = body.answers as PreSeiAnswers;
-      // Guardar la percepción del invitado en la díada (no es SEI normado).
+
+      // Cierre de la cadena SIA: calcular la afinidad owner↔invitado.
+      const dyad = await prisma.relationshipDyad.findUnique({
+        where: { id: invite.dyadId },
+        select: { ownerUserId: true, context: true },
+      });
+      if (dyad) {
+        heat135 = await computeInviteHeat(dyad.ownerUserId, dyad.context, answers);
+      }
+
+      // Guardar la percepción del invitado + la lectura de afinidad en la díada.
+      // heat135/heat100 con la forma que lee ecoBridge (saca a ECO de modo neutro).
       await prisma.relationshipDyad.update({
         where: { id: invite.dyadId },
-        data: { lastGapSummary: { inviteeAnswers: answers, source: "invitee_mini_test" } },
+        data: {
+          lastGapSummary: {
+            inviteeAnswers: answers,
+            source: "invitee_mini_test",
+            ...(heat135 != null
+              ? {
+                  heat135,
+                  heat100: Math.round((heat135 / 135) * 100),
+                  context: dyad?.context ?? "relationship",
+                }
+              : {}),
+          },
+          ...(heat135 != null ? { lastGapAt: new Date(), otherJoined: true } : {}),
+        },
       });
       perceptionStored = true;
     }
@@ -109,13 +205,22 @@ export async function POST(
       data: { status: "accepted", acceptedAt: new Date() },
     });
     await trackFunnel("rel_invite_accepted", {
-      details: { dyadId: invite.dyadId, relationType: invite.relationType, perceptionStored },
+      details: {
+        dyadId: invite.dyadId,
+        relationType: invite.relationType,
+        perceptionStored,
+        heatComputed: heat135 != null,
+      },
     });
 
     return NextResponse.json({
       ok: true,
       perceptionStored,
       dyadId: invite.dyadId,
+      // Afinidad owner↔invitado (escala de sintonía, no veredicto). null si el
+      // owner aún no tiene perfil. El frontend lo usa para el momento WOW.
+      heat135,
+      heat100: heat135 != null ? Math.round((heat135 / 135) * 100) : null,
       // El frontend ofrece crear cuenta DESPUÉS de mostrar valor (captura suave).
       nextStep: "soft_register",
     });

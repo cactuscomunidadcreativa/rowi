@@ -29,6 +29,7 @@ export default function RelationshipInvitePage({
   const [relationType, setRelationType] = useState<string>("other");
   const [errorKey, setErrorKey] = useState<string>("relInvite.notFound");
   const [questions, setQuestions] = useState<QuestionView[]>([]);
+  const [heat100, setHeat100] = useState<number | null>(null);
 
   // Cargar el encuadre de la invitación (marca opened).
   useEffect(() => {
@@ -51,11 +52,15 @@ export default function RelationshipInvitePage({
   }
 
   async function handleComplete(answers: Record<string, number>, _demo: PreSeiDemographics) {
-    await fetch(`/api/public/relationships/invite/${token}`, {
+    const json = await fetch(`/api/public/relationships/invite/${token}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answers }),
-    });
+    })
+      .then((r) => r.json())
+      .catch(() => null);
+    // El WOW de la cadena SIA: la afinidad owner↔invitado, recién calculada.
+    if (json?.ok && typeof json.heat100 === "number") setHeat100(json.heat100);
     setPhase("done");
   }
 
@@ -103,6 +108,24 @@ export default function RelationshipInvitePage({
             <h2 className="text-2xl font-bold mb-2 text-[var(--rowi-fg)]">
               {t("relInvite.done.title")}
             </h2>
+
+            {/* WOW de afinidad: la sintonía owner↔invitado, recién calculada. */}
+            {heat100 != null && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="my-6 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white p-6"
+              >
+                <div className="text-5xl font-extrabold">{heat100}%</div>
+                <p className="text-sm text-violet-100 mt-2">
+                  {t(
+                    "relInvite.done.affinity",
+                    "Tu sintonía con {name} ahora mismo. Es un punto de partida — crece a medida que se conocen.",
+                  ).replace("{name}", inviter)}
+                </p>
+              </motion.div>
+            )}
+
             <p className="text-base text-[var(--rowi-muted)] mb-8">{t("relInvite.done.body")}</p>
             <a href="/register?source=rel_invite" className="rowi-btn-primary py-3 px-8 text-base inline-block">
               {t("relInvite.done.createAccount")}

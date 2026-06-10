@@ -5165,6 +5165,7 @@
   "register.successWelcome": "¡Bienvenido a Rowi! Completa tu perfil.",
   "register.title": "Únete a Rowi",
   "relInvite.done.body": "Guarda tu resultado y descubre cómo se comunican mejor los dos.",
+  "relInvite.done.affinity": "Tu sintonía con {name} ahora mismo. Es un punto de partida — crece a medida que se conocen.",
   "relInvite.done.createAccount": "Guardar y crear mi cuenta",
   "relInvite.done.title": "Listo — esta es tu primera lectura",
   "relInvite.expired": "Esta invitación expiró.",

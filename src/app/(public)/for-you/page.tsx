@@ -56,8 +56,8 @@ export default function ForYouPage() {
             },
             {
               icon: "heart",
-              title: t("forYou.features.matches.title", "Matches Emocionales"),
-              description: t("forYou.features.matches.desc", "Conecta con personas que vibran en tu misma frecuencia"),
+              title: t("forYou.features.matches.title", "Afinidad y ECO"),
+              description: t("forYou.features.matches.desc", "Ve la afinidad entre tú y quien te importa, y cierra la brecha paso a paso"),
               gradient: "from-purple-500 to-violet-500"
             },
             {

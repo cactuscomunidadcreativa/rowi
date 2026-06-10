@@ -409,14 +409,29 @@ export async function GET() {
           pendingLeaves,
           openReviews,
         },
-        eq: {
-          avgOverall: eqAvgAgg._avg.overall4
-            ? Math.round(eqAvgAgg._avg.overall4 * 10) / 10
-            : null,
-          avgK: eqAvgAgg._avg.K ? Math.round(eqAvgAgg._avg.K * 10) / 10 : null,
-          avgC: eqAvgAgg._avg.C ? Math.round(eqAvgAgg._avg.C * 10) / 10 : null,
-          avgG: eqAvgAgg._avg.G ? Math.round(eqAvgAgg._avg.G * 10) / 10 : null,
-        },
+        // Piso de anonimato N≥5: el promedio EQ del tenant solo se expone si al
+        // menos 5 personas tienen snapshot. En tenants pequeños un "promedio" de
+        // 2-3 personas es casi-individual y desanonimiza. (membersWithSEI = nº de
+        // miembros con snapshot EQ.) suppressed avisa al cliente del porqué.
+        eq:
+          membersWithSEI >= 5
+            ? {
+                suppressed: false,
+                avgOverall: eqAvgAgg._avg.overall4
+                  ? Math.round(eqAvgAgg._avg.overall4 * 10) / 10
+                  : null,
+                avgK: eqAvgAgg._avg.K ? Math.round(eqAvgAgg._avg.K * 10) / 10 : null,
+                avgC: eqAvgAgg._avg.C ? Math.round(eqAvgAgg._avg.C * 10) / 10 : null,
+                avgG: eqAvgAgg._avg.G ? Math.round(eqAvgAgg._avg.G * 10) / 10 : null,
+              }
+            : {
+                suppressed: true,
+                minSample: 5,
+                avgOverall: null,
+                avgK: null,
+                avgC: null,
+                avgG: null,
+              },
         workspaces: {
           total: workspaces.length,
           active: activeWorkspaces,

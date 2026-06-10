@@ -39,7 +39,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import { prisma } from "@/core/prisma";
 import { hashPersonId } from "@/lib/benchmarks/process-benchmark";
 
@@ -57,8 +57,8 @@ interface LeaderInput {
 }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
-  const admin = await requireAdminWithScope();
-  if (admin.error) return admin.error;
+  const gate = await requireCapability("consultant.cross");
+  if (gate.error) return gate.error;
 
   const { benchmarkId } = await params;
 
@@ -89,8 +89,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const admin = await requireAdminWithScope();
-  if (admin.error) return admin.error;
+  const gate = await requireCapability("consultant.cross");
+  if (gate.error) return gate.error;
 
   const { benchmarkId } = await params;
 
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       toPersist.set(hash, { personHash: hash, projectCohort: cohort, label });
     }
 
-    const createdById = admin.user?.id ?? null;
+    const createdById = gate.user?.id ?? null;
 
     // Upsert idempotente por (benchmarkId, personHash).
     for (const { personHash, projectCohort, label } of toPersist.values()) {

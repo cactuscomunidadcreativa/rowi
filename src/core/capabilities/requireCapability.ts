@@ -39,13 +39,20 @@ const PLAN_SELECT = {
   rowiTrainerAccess: true, rowiSalesAccess: true, superRowiAccess: true,
 } as const;
 
+type ScopedAdmin = Awaited<ReturnType<typeof requireAdminWithScope>>;
 type CapabilityGate =
-  | { ok: true; error: null; scope: NonNullable<Awaited<ReturnType<typeof requireAdminWithScope>>["scope"]>; caps: Set<Capability> }
-  | { ok: false; error: NextResponse; scope: null; caps: null };
+  | {
+      ok: true;
+      error: null;
+      scope: NonNullable<ScopedAdmin["scope"]>;
+      user: NonNullable<ScopedAdmin["user"]>;
+      caps: Set<Capability>;
+    }
+  | { ok: false; error: NextResponse; scope: null; user: null; caps: null };
 
 export async function requireCapability(capability: Capability): Promise<CapabilityGate> {
   const admin = await requireAdminWithScope();
-  if (admin.error) return { ok: false, error: admin.error, scope: null, caps: null };
+  if (admin.error) return { ok: false, error: admin.error, scope: null, user: null, caps: null };
 
   // Cargar el Plan del tenant del scope; fallback al plan del usuario.
   let plan: Record<string, unknown> | null = null;
@@ -74,9 +81,10 @@ export async function requireCapability(capability: Capability): Promise<Capabil
         { status: 403 },
       ),
       scope: null,
+      user: null,
       caps: null,
     };
   }
 
-  return { ok: true, error: null, scope: admin.scope, caps };
+  return { ok: true, error: null, scope: admin.scope, user: admin.user, caps };
 }

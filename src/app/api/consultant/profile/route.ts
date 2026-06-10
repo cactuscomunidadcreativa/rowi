@@ -22,7 +22,7 @@
  *   }
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import {
   generateIntegralProfile,
   type IntegralProfileInput,
@@ -32,8 +32,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const admin = await requireAdminWithScope();
-  if (admin.error) return admin.error;
+  // Capability: consultor con plan (benchmarkAccess) — scoped a sus clientes.
+  const gate = await requireCapability("consultant.profile");
+  if (gate.error) return gate.error;
 
   let body: Partial<IntegralProfileInput> & { withNarrative?: boolean };
   try {

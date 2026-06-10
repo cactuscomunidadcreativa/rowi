@@ -22,7 +22,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import { runMultiLeaderAnalysis } from "@/lib/consultant/cross-analysis";
 
 export const runtime = "nodejs";
@@ -33,8 +33,8 @@ interface RouteParams {
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const admin = await requireAdminWithScope();
-  if (admin.error) return admin.error;
+  const gate = await requireCapability("consultant.cross");
+  if (gate.error) return gate.error;
 
   const { benchmarkId } = await params;
   const { searchParams } = new URL(req.url);

@@ -40,10 +40,10 @@ import {
 const translations = {
   es: {
     // Header
-    pageTitle: "Teleperformance",
+    pageTitle: "Hub de Gestión",
     enterpriseBadge: "Enterprise",
     subtitle: "Plataforma de Inteligencia EQ — Powered by Rowi × Six Seconds",
-    protectedAccess: "Protegido — acceso solo @6seconds.org",
+    protectedAccess: "Acceso por plan + rol de administración",
 
     // Quick Stats
     statAvgEQ: "EQ Promedio",
@@ -183,10 +183,10 @@ const translations = {
   },
   en: {
     // Header
-    pageTitle: "Teleperformance",
+    pageTitle: "Manage Hub",
     enterpriseBadge: "Enterprise",
     subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Protected — @6seconds.org access only",
+    protectedAccess: "Access by plan + admin role",
 
     // Quick Stats
     statAvgEQ: "Avg EQ",
@@ -326,10 +326,10 @@ const translations = {
   },
   pt: {
     // Header
-    pageTitle: "Teleperformance",
+    pageTitle: "Manage Hub",
     enterpriseBadge: "Enterprise",
     subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Protected — @6seconds.org access only",
+    protectedAccess: "Access by plan + admin role",
 
     // Quick Stats
     statAvgEQ: "Avg EQ",
@@ -469,10 +469,10 @@ const translations = {
   },
   it: {
     // Header
-    pageTitle: "Teleperformance",
+    pageTitle: "Manage Hub",
     enterpriseBadge: "Enterprise",
     subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Protected — @6seconds.org access only",
+    protectedAccess: "Access by plan + admin role",
 
     // Quick Stats
     statAvgEQ: "Avg EQ",

@@ -1,54 +1,75 @@
 import { ReactNode } from "react";
 import Link from "next/link";
-import { Shield, Lock } from "lucide-react";
-import { getServerAuthUser } from "@/core/auth";
+import { Lock } from "lucide-react";
+import { prisma } from "@/core/prisma";
+import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { resolveCapabilities, type PlanFlags } from "@/core/capabilities/resolve";
 
 /**
- * Server-side gate for the Teleperformance demo. The previous gate was a
- * client component that checked `session.user.email` in JS — trivial to
- * bypass by editing the bundle or stubbing useSession. This version reads
- * the session on the server before the children ever render.
+ * Hub de Gestión (antes "TP / Teleperformance Hub") — vistas operativas del
+ * cliente: personas, equipos, alertas, ROI, ECO.
  *
- * Authorized callers:
- *   - SuperAdmins (Eduardo and any other rowiverse-scoped superadmin)
- *   - Anyone with @6seconds.org email
- *   - Anyone with @cactuscomunidadcreativa.com email
+ * Gate por CAPABILITIES (rol + suscripción), no por email hardcoded. El antiguo
+ * gate solo dejaba pasar @6seconds/@cactus/SuperAdmin; ahora cualquier admin de
+ * un tenant (HR) o hub (team-lead) cuyo plan tenga el módulo (benchmarkAccess)
+ * entra y ve su slice. SuperAdmin (rowiverse) ve todo sin gate de plan.
  */
-export default async function TPLayout({ children }: { children: ReactNode }) {
-  const user = await getServerAuthUser();
-  const email = (user?.email || "").toLowerCase();
-  const isAuthorized =
-    !!user?.isSuperAdmin ||
-    email.endsWith("@6seconds.org") ||
-    email.endsWith("@cactuscomunidadcreativa.com");
+const PLAN_SELECT = {
+  benchmarkAccess: true, apiAccess: true, weekflowAccess: true,
+  rowiECOAccess: true, rowiAffinityAccess: true, rowiEQAccess: true,
+  rowiTrainerAccess: true, rowiSalesAccess: true, superRowiAccess: true,
+} as const;
 
-  if (!isAuthorized) {
+function planToFlags(plan: Record<string, unknown> | null | undefined): PlanFlags {
+  if (!plan) return {};
+  return {
+    benchmarkAccess: !!plan.benchmarkAccess,
+    rowiECOAccess: !!plan.rowiECOAccess,
+    rowiAffinityAccess: !!plan.rowiAffinityAccess,
+    rowiEQAccess: !!plan.rowiEQAccess,
+    rowiTrainerAccess: !!plan.rowiTrainerAccess,
+    rowiSalesAccess: !!plan.rowiSalesAccess,
+    superRowiAccess: !!plan.superRowiAccess,
+    apiAccess: !!plan.apiAccess,
+    weekflowAccess: !!plan.weekflowAccess,
+  };
+}
+
+export default async function ManageHubLayout({ children }: { children: ReactNode }) {
+  const admin = await requireAdminWithScope();
+
+  let authorized = false;
+  if (!admin.error) {
+    let plan: Record<string, unknown> | null = null;
+    if (admin.scope.type !== "rowiverse" && admin.scope.id) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: admin.scope.id },
+        select: { plan: { select: PLAN_SELECT } },
+      });
+      plan = tenant?.plan ?? null;
+    }
+    const caps = resolveCapabilities(admin.scope.type, planToFlags(plan));
+    // Entra quien pueda ver al menos el dashboard del hub.
+    authorized = caps.has("tp.dashboard");
+  }
+
+  if (!authorized) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-md mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6">
             <Lock className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">Access Restricted</h2>
-          <p className="text-[var(--rowi-muted)] mb-2">
-            The Teleperformance Benchmark Demo is reserved for authorized Six
-            Seconds partners.
+          <h2 className="text-2xl font-bold mb-3">Acceso restringido</h2>
+          <p className="text-[var(--rowi-muted)] mb-6">
+            El Hub de Gestión requiere un plan con el módulo activado y un rol de
+            administración (RR.HH. o líder de equipo).
           </p>
-          <p className="text-sm text-[var(--rowi-muted)] mb-6">
-            Current email:{" "}
-            <span className="font-mono text-xs bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">
-              {email || "not signed in"}
-            </span>
-          </p>
-          <div className="flex items-center justify-center gap-2 text-xs text-[var(--rowi-muted)] mb-6">
-            <Shield className="w-4 h-4 text-purple-500" />
-            <span>Required: @6seconds.org email or SuperAdmin</span>
-          </div>
           <Link
             href="/hub/admin"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
           >
-            Back to Admin
+            Volver a Admin
           </Link>
         </div>
       </div>

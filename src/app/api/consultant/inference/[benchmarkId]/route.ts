@@ -10,7 +10,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import { runVsInferenceForBenchmark } from "@/lib/consultant/vs-inference";
 
 export const runtime = "nodejs";
@@ -21,8 +21,8 @@ interface RouteParams {
 }
 
 export async function POST(_req: Request, { params }: RouteParams) {
-  const admin = await requireAdminWithScope();
-  if (admin.error) return admin.error;
+  const gate = await requireCapability("consultant.cross");
+  if (gate.error) return gate.error;
 
   const { benchmarkId } = await params;
   if (!benchmarkId) {

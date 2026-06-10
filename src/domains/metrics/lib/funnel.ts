@@ -15,6 +15,8 @@ export type FunnelStep =
   | "comm_profile_seeded"
   | "comm_profile_edited"
   | "eco_used"
+  | "eco_sent"
+  | "eco_feedback"
   | "rel_invite_sent"
   | "rel_invite_opened"
   | "rel_invite_accepted"

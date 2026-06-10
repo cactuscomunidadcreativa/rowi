@@ -621,9 +621,11 @@ function RegisterPageContent() {
         toast.success(t.errors.accountCreated);
         router.push("/login");
       } else {
-        // Auto-login exitoso, ir a settings/profile para completar perfil y ver SEI
+        // Auto-login exitoso → al onboarding (mini-SEI = momento WOW), igual que
+        // el flujo OAuth. Antes iba a /settings/profile y se saltaba el mini-SEI:
+        // dos usuarios del mismo día vivían experiencias distintas (auditoría D1).
         toast.success(t.errors.welcomeToRowi);
-        router.push("/settings/profile");
+        router.push("/onboarding");
       }
     } catch (error: any) {
       const errorMsg = error.message === "email_already_exists"

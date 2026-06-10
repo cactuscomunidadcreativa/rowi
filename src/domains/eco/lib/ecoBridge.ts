@@ -138,6 +138,65 @@ export async function recordEcoTurn(args: {
 }
 
 /**
+ * Cierre del loop ECO → outcome. Registra que el usuario ENVIÓ un mensaje
+ * compuesto (por qué canal) y, más tarde, si FUNCIONÓ. Reusa EcoMessage con
+ * roles "sent"/"feedback" (sin migración de schema). El feedback alimenta el
+ * foso: "qué mensaje, con qué brecha, funcionó".
+ */
+export async function recordEcoSent(args: {
+  dyadId: string;
+  ownerUserId: string;
+  channel: string;
+  text: string;
+}): Promise<void> {
+  const thread = await prisma.ecoThread.findFirst({
+    where: { dyadId: args.dyadId, ownerUserId: args.ownerUserId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true },
+  });
+  if (!thread) return; // solo registramos envío de díadas con hilo (compose previo)
+  await prisma.ecoMessage.create({
+    data: {
+      threadId: thread.id,
+      role: "sent",
+      channel: args.channel,
+      text: args.text.slice(0, 4000),
+    },
+  });
+  await prisma.ecoThread.update({
+    where: { id: thread.id },
+    data: { messageCount: { increment: 1 } },
+  });
+}
+
+export async function recordEcoFeedback(args: {
+  dyadId: string;
+  ownerUserId: string;
+  worked: boolean;
+  note?: string | null;
+}): Promise<void> {
+  const thread = await prisma.ecoThread.findFirst({
+    where: { dyadId: args.dyadId, ownerUserId: args.ownerUserId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true },
+  });
+  if (!thread) return;
+  await prisma.ecoMessage.create({
+    data: {
+      threadId: thread.id,
+      role: "feedback",
+      text: args.note?.slice(0, 1000) ?? (args.worked ? "worked" : "did_not_work"),
+      // gapUsed guarda el resultado estructurado para el dataset del foso.
+      gapUsed: { worked: args.worked } as never,
+    },
+  });
+  await prisma.ecoThread.update({
+    where: { id: thread.id },
+    data: { messageCount: { increment: 1 } },
+  });
+}
+
+/**
  * Resumen de los últimos turnos para dar continuidad ("la última vez le
  * escribiste sobre…"). Acotado para no inflar tokens.
  */

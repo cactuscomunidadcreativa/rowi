@@ -22,10 +22,11 @@ import {
   UserRound,
   Building2,
   TrendingUp,
+  Award,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CONSENTS, type ConsentKey, titleFor, bodyFor } from "@/lib/privacy/consents";
-import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
+import MiniSeiWizard, { type MiniSeiQuestion } from "@/components/mini-sei/MiniSeiWizard";
 
 type Lang = "es" | "en" | "pt" | "it";
 
@@ -39,8 +40,11 @@ type Step = {
 const STEPS: Step[] = [
   { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-fuchsia-500" },
   { key: "consent", icon: ShieldCheck, gradient: "from-amber-500 to-orange-600" },
-  // Cadena SIA: el Rowi Test siembra el perfil bajo el capó (primer paso del valor).
+  // Cadena SIA: el mini-SEI normado es el ancla del onboarding.
   { key: "rowiTest", icon: Sparkles, gradient: "from-fuchsia-500 to-pink-600" },
+  // Cierre: ofrecer el SEI completo (Six Seconds, de pago). Opcional —
+  // "hazlo completo o sigue sin él". Handoff a /sei.
+  { key: "fullSei", icon: Award, gradient: "from-violet-600 to-indigo-600" },
   // Manager auto-link — solo aplica si el user tiene primaryTenantId.
   // En B2C el step se auto-saltea (ver useEffect más abajo).
   { key: "manager", icon: Users, gradient: "from-sky-500 to-blue-600" },
@@ -70,10 +74,9 @@ export default function OnboardingPage() {
   const L = lang as Lang;
   const [step, setStep] = useState(0);
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
-  // Rowi Test step (cadena SIA).
-  const [rowiTestQuestions, setRowiTestQuestions] = useState<
-    { sei: string; index: number; prompt: string }[]
-  >([]);
+  // Rowi Test step (cadena SIA) — el mini-SEI NORMADO (12 ítems short-form
+  // SEI 5.0), no el Pre-SEI. Es el instrumento ancla del onboarding.
+  const [rowiTestQuestions, setRowiTestQuestions] = useState<MiniSeiQuestion[]>([]);
   const [rowiTestSaving, setRowiTestSaving] = useState(false);
   const [rowiTestDone, setRowiTestDone] = useState(false);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
@@ -125,25 +128,23 @@ export default function OnboardingPage() {
     checkState();
   }, []);
 
-  // Cargar las preguntas del Rowi Test al entrar a ese step.
+  // Cargar las preguntas del mini-SEI al entrar a ese step.
   useEffect(() => {
     if (STEPS[step]?.key !== "rowiTest" || rowiTestQuestions.length > 0) return;
-    fetch(`/api/public/pre-sei/questions?lang=${lang}`)
+    fetch(`/api/mini-sei/questions?lang=${lang}`)
       .then((r) => r.json())
       .then((json) => { if (json.ok) setRowiTestQuestions(json.questions); })
       .catch(() => {});
   }, [step, lang, rowiTestQuestions.length]);
 
-  async function submitRowiTest(
-    answers: Record<string, number>,
-    demographics: PreSeiDemographics,
-  ) {
+  // answers indexado por posición opaca; source="onboarding" lo marca.
+  async function submitRowiTest(answers: Record<string, number>) {
     setRowiTestSaving(true);
     try {
-      await fetch("/api/pre-sei/intake", {
+      await fetch("/api/mini-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, ...demographics }),
+        body: JSON.stringify({ answers, source: "onboarding" }),
       });
       setRowiTestDone(true);
       // Avanzar al siguiente step tras un instante.
@@ -462,7 +463,7 @@ export default function OnboardingPage() {
                     {t("onboarding.rowiTest.done", "¡Listo! Tu perfil se está afinando.")}
                   </p>
                 ) : rowiTestQuestions.length > 0 ? (
-                  <PreSeiWizard
+                  <MiniSeiWizard
                     questions={rowiTestQuestions}
                     submitting={rowiTestSaving}
                     onComplete={submitRowiTest}
@@ -472,6 +473,32 @@ export default function OnboardingPage() {
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--rowi-g2)]" />
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Step: SEI completo — cierre opcional, handoff a Six Seconds */}
+            {current.key === "fullSei" && (
+              <div className="max-w-md mx-auto space-y-4 text-center">
+                <p className="text-sm text-[var(--rowi-muted)]">
+                  {t(
+                    "onboarding.fullSei.body",
+                    "Tu Rowi Test te da una primera lectura. El SEI completo de Six Seconds es la evaluación normada y profunda — opcional, cuando quieras ir más a fondo.",
+                  )}
+                </p>
+                <Link
+                  href="/sei"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-lg"
+                >
+                  {t("onboarding.fullSei.cta", "Hacer el SEI completo")}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={next}
+                  className="block w-full text-sm text-[var(--rowi-muted)] hover:underline"
+                >
+                  {t("onboarding.fullSei.skip", "Por ahora no, seguir")}
+                </button>
               </div>
             )}
 

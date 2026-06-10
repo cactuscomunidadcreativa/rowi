@@ -67,7 +67,7 @@ export function MiniSeiTrendCard() {
           {t("miniSei.empty", "Aún no has tomado tu primer Rowi Test. Tarda 2 minutos.")}
         </p>
         <a
-          href="/hub/vital-signs?mini-sei=1"
+          href="/mini-sei"
           className="inline-block mt-3 text-sm font-medium text-[var(--rowi-primary)] hover:underline"
         >
           {t("miniSei.cta", "Tomar el Rowi Test")}

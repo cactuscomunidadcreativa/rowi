@@ -10,22 +10,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Award, Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import MiniSeiWizard, { type MiniSeiQuestion } from "@/components/mini-sei/MiniSeiWizard";
+import MiniSeiWizard, {
+  type MiniSeiQuestion,
+  type MiniSeiPrefQuestion,
+} from "@/components/mini-sei/MiniSeiWizard";
 
 export default function MiniSeiPage() {
   const { t, lang } = useI18n();
   const router = useRouter();
   const [questions, setQuestions] = useState<MiniSeiQuestion[]>([]);
+  const [prefs, setPrefs] = useState<MiniSeiPrefQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/mini-sei/questions?lang=${lang}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (!cancelled && json.ok) setQuestions(json.questions);
+    Promise.all([
+      fetch(`/api/mini-sei/questions?lang=${lang}`).then((r) => r.json()),
+      fetch(`/api/mini-sei/preferences?lang=${lang}`).then((r) => r.json()),
+    ])
+      .then(([q, p]) => {
+        if (cancelled) return;
+        if (q.ok) setQuestions(q.questions);
+        if (p.ok) setPrefs(p.questions);
       })
       .catch(() => {})
       .finally(() => {
@@ -36,13 +44,16 @@ export default function MiniSeiPage() {
     };
   }, [lang]);
 
-  async function submit(answers: Record<string, number>) {
+  async function submit(
+    answers: Record<string, number>,
+    preferences: Record<string, number>,
+  ) {
     setSaving(true);
     try {
       await fetch("/api/mini-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, source: "adhoc" }),
+        body: JSON.stringify({ answers, preferences, source: "adhoc" }),
       });
       setDone(true);
       setTimeout(() => router.push("/hub/vital-signs"), 1200);
@@ -77,7 +88,12 @@ export default function MiniSeiPage() {
           <Loader2 className="w-5 h-5 animate-spin text-[var(--rowi-g2)]" />
         </div>
       ) : questions.length > 0 ? (
-        <MiniSeiWizard questions={questions} submitting={saving} onComplete={submit} />
+        <MiniSeiWizard
+          questions={questions}
+          preferenceQuestions={prefs}
+          submitting={saving}
+          onComplete={submit}
+        />
       ) : (
         <p className="text-center text-[var(--rowi-muted)] py-10">
           {t("common.error", "Error")}

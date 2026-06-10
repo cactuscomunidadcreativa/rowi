@@ -17,30 +17,63 @@ export interface MiniSeiQuestion {
   stem: string;
 }
 
-interface Props {
-  questions: MiniSeiQuestion[];
-  submitting?: boolean;
-  /** answers indexado por posición opaca: { "0": 4, "1": 3, ... } */
-  onComplete: (answers: Record<string, number>) => void;
+/** Pregunta de la capa de preferencias: escala 1-5 con polos izq/der. */
+export interface MiniSeiPrefQuestion {
+  pos: number;
+  axis: string;
+  promptKey: string;
+  leftKey: string;
+  rightKey: string;
 }
 
-export default function MiniSeiWizard({ questions, submitting, onComplete }: Props) {
+interface Props {
+  questions: MiniSeiQuestion[];
+  /** Capa de preferencias (opcional). Si viene, se pregunta tras el mini-SEI. */
+  preferenceQuestions?: MiniSeiPrefQuestion[];
+  submitting?: boolean;
+  /** answers + preferences, ambos indexados por posición opaca. */
+  onComplete: (
+    answers: Record<string, number>,
+    preferences: Record<string, number>,
+  ) => void;
+}
+
+export default function MiniSeiWizard({
+  questions,
+  preferenceQuestions = [],
+  submitting,
+  onComplete,
+}: Props) {
   const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [preferences, setPreferences] = useState<Record<string, number>>({});
 
-  const total = questions.length;
-  const current = questions[step];
-  const currentAnswer = current ? answers[String(current.pos)] : undefined;
+  const qCount = questions.length;
+  const prefCount = preferenceQuestions.length;
+  const total = qCount + prefCount;
+
+  // Primero las qCount preguntas del mini-SEI, luego las de preferencia.
+  const onPref = step >= qCount;
+  const current = onPref ? undefined : questions[step];
+  const currentPref = onPref ? preferenceQuestions[step - qCount] : undefined;
+  const currentAnswer = current
+    ? answers[String(current.pos)]
+    : currentPref
+      ? preferences[String(currentPref.pos)]
+      : undefined;
 
   function pick(value: number) {
-    if (!current) return;
-    setAnswers((a) => ({ ...a, [String(current.pos)]: value }));
+    if (current) {
+      setAnswers((a) => ({ ...a, [String(current.pos)]: value }));
+    } else if (currentPref) {
+      setPreferences((p) => ({ ...p, [String(currentPref.pos)]: value }));
+    }
   }
 
   function next() {
     if (step < total - 1) setStep((s) => s + 1);
-    else onComplete(answers);
+    else onComplete(answers, preferences);
   }
   function back() {
     if (step > 0) setStep((s) => s - 1);
@@ -62,9 +95,9 @@ export default function MiniSeiWizard({ questions, submitting, onComplete }: Pro
       </div>
 
       <AnimatePresence mode="wait">
-        {current && (
+        {(current || currentPref) && (
           <motion.div
-            key={`q-${current.pos}`}
+            key={`q-${current ? current.pos : `p${currentPref!.pos}`}`}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
@@ -76,7 +109,7 @@ export default function MiniSeiWizard({ questions, submitting, onComplete }: Pro
                 .replace("{total}", String(total))}
             </p>
             <h2 className="text-xl md:text-2xl font-semibold text-[var(--rowi-fg)] mb-8 leading-snug">
-              {current.stem}
+              {current ? current.stem : t(currentPref!.promptKey, currentPref!.promptKey)}
             </h2>
 
             {/* Escala 1-5 (patrón DailyPulseCard / PreSeiWizard) */}
@@ -98,9 +131,19 @@ export default function MiniSeiWizard({ questions, submitting, onComplete }: Pro
                 </button>
               ))}
             </div>
+            {/* Las preguntas de preferencia rotulan los POLOS (no frecuencia). */}
             <div className="flex justify-between text-xs text-[var(--rowi-muted-weak)] px-1 mb-8">
-              <span>{t("preSei.scale.low", "Casi nunca")}</span>
-              <span>{t("preSei.scale.high", "Casi siempre")}</span>
+              {currentPref ? (
+                <>
+                  <span>{t(currentPref.leftKey, currentPref.leftKey)}</span>
+                  <span>{t(currentPref.rightKey, currentPref.rightKey)}</span>
+                </>
+              ) : (
+                <>
+                  <span>{t("preSei.scale.low", "Casi nunca")}</span>
+                  <span>{t("preSei.scale.high", "Casi siempre")}</span>
+                </>
+              )}
             </div>
 
             <div className="flex items-center justify-between">

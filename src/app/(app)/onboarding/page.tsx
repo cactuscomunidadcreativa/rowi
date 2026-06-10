@@ -26,7 +26,10 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CONSENTS, type ConsentKey, titleFor, bodyFor } from "@/lib/privacy/consents";
-import MiniSeiWizard, { type MiniSeiQuestion } from "@/components/mini-sei/MiniSeiWizard";
+import MiniSeiWizard, {
+  type MiniSeiQuestion,
+  type MiniSeiPrefQuestion,
+} from "@/components/mini-sei/MiniSeiWizard";
 
 type Lang = "es" | "en" | "pt" | "it";
 
@@ -77,6 +80,7 @@ export default function OnboardingPage() {
   // Rowi Test step (cadena SIA) — el mini-SEI NORMADO (12 ítems short-form
   // SEI 5.0), no el Pre-SEI. Es el instrumento ancla del onboarding.
   const [rowiTestQuestions, setRowiTestQuestions] = useState<MiniSeiQuestion[]>([]);
+  const [rowiTestPrefs, setRowiTestPrefs] = useState<MiniSeiPrefQuestion[]>([]);
   const [rowiTestSaving, setRowiTestSaving] = useState(false);
   const [rowiTestDone, setRowiTestDone] = useState(false);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
@@ -128,23 +132,30 @@ export default function OnboardingPage() {
     checkState();
   }, []);
 
-  // Cargar las preguntas del mini-SEI al entrar a ese step.
+  // Cargar las preguntas del mini-SEI + la capa de preferencias al entrar.
   useEffect(() => {
     if (STEPS[step]?.key !== "rowiTest" || rowiTestQuestions.length > 0) return;
     fetch(`/api/mini-sei/questions?lang=${lang}`)
       .then((r) => r.json())
       .then((json) => { if (json.ok) setRowiTestQuestions(json.questions); })
       .catch(() => {});
+    fetch(`/api/mini-sei/preferences?lang=${lang}`)
+      .then((r) => r.json())
+      .then((json) => { if (json.ok) setRowiTestPrefs(json.questions); })
+      .catch(() => {});
   }, [step, lang, rowiTestQuestions.length]);
 
-  // answers indexado por posición opaca; source="onboarding" lo marca.
-  async function submitRowiTest(answers: Record<string, number>) {
+  // answers + preferences por posición opaca; source="onboarding" lo marca.
+  async function submitRowiTest(
+    answers: Record<string, number>,
+    preferences: Record<string, number>,
+  ) {
     setRowiTestSaving(true);
     try {
       await fetch("/api/mini-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, source: "onboarding" }),
+        body: JSON.stringify({ answers, preferences, source: "onboarding" }),
       });
       setRowiTestDone(true);
       // Avanzar al siguiente step tras un instante.
@@ -465,6 +476,7 @@ export default function OnboardingPage() {
                 ) : rowiTestQuestions.length > 0 ? (
                   <MiniSeiWizard
                     questions={rowiTestQuestions}
+                    preferenceQuestions={rowiTestPrefs}
                     submitting={rowiTestSaving}
                     onComplete={submitRowiTest}
                   />

@@ -42,7 +42,24 @@ interface TargetData {
   talents: string[];
   competencies: { key: string; score: number }[];
   bio?: string;
+  /** Estilo DECLARADO por el destinatario (mini-SEI preferences). Si existe,
+   *  se funde sobre el inferido del brain style — lo declarado manda. */
+  declaredStyle?: { prefers?: string; tone?: string; dataStyle?: string };
 }
+
+/**
+ * Texto ES corto para cada clave i18n de preferencia declarada (mini-SEI).
+ * ECO arma el prompt en ES; usar el texto directo evita acoplar el endpoint
+ * al provider de i18n. Si la clave no está, se ignora (cae al brain style).
+ */
+const DECLARED_STYLE_TEXT: Record<string, string> = {
+  "miniSei.pref.derived.prefers.analytic": "datos, lógica y método",
+  "miniSei.pref.derived.prefers.emotional": "lo emocional, el vínculo y el tono humano",
+  "miniSei.pref.derived.tone.open": "inspirador y abierto al cambio",
+  "miniSei.pref.derived.tone.cautious": "cauto y confiable, con pruebas antes de moverse",
+  "miniSei.pref.derived.data.short": "resultados concretos a corto plazo",
+  "miniSei.pref.derived.data.long": "visión y sentido a largo plazo",
+};
 
 /* =========================================================
    🧠 Brain Style Preferences — Cómo comunicarse con cada estilo
@@ -139,6 +156,33 @@ const EXCLUDED_TALENTS = ["brainAgility", "BrainAgility", "brain_agility"];
 /* =========================================================
    🔎 Helper — Resuelve un memberId a TargetData
 ========================================================= */
+/**
+ * Lee el CommunicationProfile declarado de un usuario y lo traduce al estilo
+ * que el prompt consume (prefers/tone/dataStyle), usando las claves que el
+ * mini-SEI guardó en commPref/tone. Devuelve undefined si no declaró nada.
+ */
+async function resolveDeclaredStyle(
+  userId: string,
+): Promise<{ prefers?: string; tone?: string; dataStyle?: string } | undefined> {
+  const profile = await prisma.communicationProfile.findUnique({
+    where: { userId },
+    select: { commPref: true, tone: true },
+  });
+  if (!profile) return undefined;
+
+  const prefKeys = Array.isArray(profile.commPref) ? (profile.commPref as string[]) : [];
+  const prefers = prefKeys
+    .map((k) => DECLARED_STYLE_TEXT[k])
+    .find((v) => v?.includes("datos") || v?.includes("emocional"));
+  const dataStyle = prefKeys
+    .map((k) => DECLARED_STYLE_TEXT[k])
+    .find((v) => v?.includes("corto") || v?.includes("largo"));
+  const tone = profile.tone ? DECLARED_STYLE_TEXT[profile.tone] : undefined;
+
+  if (!prefers && !tone && !dataStyle) return undefined;
+  return { prefers, tone, dataStyle };
+}
+
 async function getTargetForMember(memberId: string): Promise<TargetData | null> {
   // Caso 1: tenant user (memberId prefijado con "user_")
   if (memberId.startsWith("user_")) {
@@ -162,6 +206,7 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
       talents: snap?.talents?.map((t) => t.key) || [],
       competencies:
         snap?.competencies?.map((c) => ({ key: c.key, score: c.score || 0 })) || [],
+      declaredStyle: await resolveDeclaredStyle(realUserId),
     };
   }
 
@@ -200,6 +245,7 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
     brainStyle: member.brainStyle || "Strategist",
     talents,
     competencies,
+    declaredStyle: member.userId ? await resolveDeclaredStyle(member.userId) : undefined,
   };
 }
 
@@ -290,15 +336,25 @@ export async function POST(req: NextRequest) {
       const strongCompetencies = target.competencies
         .filter((c) => c.score >= 70)
         .map((c) => c.key);
+      // Fusión: el estilo DECLARADO (mini-SEI) manda donde existe; el inferido
+      // del brain style rellena el resto. Cuando ambos hablan, se combinan.
+      const d = target.declaredStyle;
+      const fusePrefers = d?.prefers
+        ? `${d.prefers} (y ${prefs.prefers})`
+        : prefs.prefers;
+      const fuseTone = d?.tone ?? prefs.tone;
+      const fuseDataStyle = d?.dataStyle
+        ? `${d.dataStyle}; ${prefs.dataStyle}`
+        : prefs.dataStyle;
       return {
         name: target.name,
         brainStyle: target.brainStyle,
         prefs: {
-          prefers: prefs.prefers,
-          tone: prefs.tone,
+          prefers: fusePrefers,
+          tone: fuseTone,
           approach: prefs.approach,
           avoid: prefs.avoid,
-          dataStyle: prefs.dataStyle,
+          dataStyle: fuseDataStyle,
         },
         sharedTalents: sharedTalentLabels,
         strongCompetencies,

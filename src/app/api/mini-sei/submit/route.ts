@@ -16,6 +16,8 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
 import { scoreMiniSei } from "@/lib/mini-sei/score";
 import { answersByPosition } from "@/lib/mini-sei/items";
+import { resolvePreferences, type PrefAnswers } from "@/lib/mini-sei/preferences";
+import { seedCommProfileFromPreferences } from "@/domains/profile/lib/seedCommunicationProfile";
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
     // mapping never leaves the back end.
     const body = (await req.json().catch(() => ({}))) as {
       answers?: Record<string, number>; // { "0": 4, "1": 3, ... } positional
+      preferences?: Record<string, number>; // capa de estilo, posicional 1-5
       source?: string;
     };
     const positional = body.answers;
@@ -66,6 +69,17 @@ export async function POST(req: NextRequest) {
       },
       select: { id: true, takenAt: true },
     });
+
+    // Capa de preferencias declaradas → siembra el CommunicationProfile (lo que
+    // ECO/Afinidad consumen). Best-effort: no rompe el submit si falla.
+    if (body.preferences && typeof body.preferences === "object") {
+      try {
+        const prefs = resolvePreferences(body.preferences as PrefAnswers);
+        await seedCommProfileFromPreferences(user.id, prefs);
+      } catch (e) {
+        console.error("/api/mini-sei/submit preferences seed error:", e);
+      }
+    }
 
     return NextResponse.json({
       ok: true,

@@ -11,6 +11,13 @@ export { authOptions };
    ✔ SIN req/res
    ✔ SIN getHeader
    ✔ FUNCIONA en API Route Handlers
+
+   SEGURIDAD (B5): el JWT solo aporta la identidad (user id);
+   roles y permisos se releen de la DB en CADA llamada. Revocar
+   SuperAdmin/permisos surte efecto en el siguiente request — no
+   esperes a que expire el token. No autorices nunca desde claims
+   del token (token.role / token.isSuperAdmin): usa este helper o
+   los guards de requireAdmin.ts, que pasan por aquí.
 ========================================================= */
 export async function getServerAuthUser() {
   // 1️⃣ App Router: obtener sesión directo

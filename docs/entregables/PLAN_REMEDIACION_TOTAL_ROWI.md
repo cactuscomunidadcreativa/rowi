@@ -116,3 +116,40 @@ Cada commit: tsc 0 errores · 496/496 tests · 4 locales JSON válidos.
 - E2 cachedCompletion en rowi/eco · E4 paginación — hot paths del chat, verificar en vivo.
 - F5 i18n hardcoded (48 ternarios) · F7 catch(e:any) (509) — volumen alto, bajo impacto.
 - B5 JWT 24h · B6 CSP nonces — el patrón seguro ya existe; endurecer es backlog.
+
+---
+
+## SESIÓN 6 (2026-06-10) — DIFERIDOS EJECUTADOS
+
+Todos los diferidos no bloqueados quedaron resueltos. Cada commit: tsc 0
+errores · 518 tests verdes · 4 locales JSON válidos.
+
+- ✅ **D3** — BECOMING memoria viva: `GET /api/becoming/timeline` (paginado
+  por localDate) + sección en `/becoming` con reflexiones, prácticas, emoción
+  de llegada e hitos del avatar intercalados.
+- ✅ **D5** — Plan tras el WOW: el resultado del mini-SEI (banda + fortalezas
+  + zona de crecimiento) se muestra en onboarding con el plan inmediato
+  (TODAY diario, avatar/BECOMING, invitar para afinidad).
+- ✅ **E2** — `cachedCompletion` en eco/compose (scope por usuario, 7 días,
+  cachea anonimizado). El chat de `/api/rowi` queda SIN caché a propósito:
+  conversacional/por-usuario, un cache serviría respuestas viejas.
+- ✅ **E4** — topes `take` en 5 listados sin límite (threads 100, family 200,
+  relationships 500, memberships 1000, six-seconds members 1000). El export
+  GDPR queda sin tope: Art. 20 exige completitud.
+- ✅ **F7** — los catch-all 500 ya no devuelven `error.message` al cliente
+  (~70 handlers → `"internal_error"`; el detalle sigue en logs/telemetría).
+  Los 4xx intencionales no se tocaron.
+- ✅ **F5 (lote 2)** — 13 ternarios `lang==="es"` convertidos a t() en 8
+  archivos + 38 claves nuevas en 4 locales. Quedan fuera (refactor de datos
+  aparte): `plans.ts` (features/featuresEN ~150 strings), `dictionary.ts` y
+  `eqLevels.ts` del dominio EQ, y el diccionario local de `register/page.tsx`.
+- ✅ **B5** — verificado y documentado en `src/core/auth.ts`: el JWT solo
+  aporta identidad; roles/permisos se releen de DB en cada request vía
+  `getServerAuthUser()`. Ningún endpoint autoriza por claims del token.
+- ➕ **ECO → envío directo** — `/api/eco/deliver` envía por Gmail (OAuth del
+  usuario) o WhatsApp (Twilio) cuando la integración está conectada, con
+  rate-limit por usuario y registro del outcome. La UI muestra los botones
+  directos solo si hay conexión; deep-links siguen de fallback. Se activa
+  solo cuando Eduardo pegue las credenciales.
+- ⬜ **B6** (CSP nonces) — sigue en backlog deliberadamente: tocar el
+  middleware CSP a semanas del lanzamiento es riesgo sin beneficio inmediato.

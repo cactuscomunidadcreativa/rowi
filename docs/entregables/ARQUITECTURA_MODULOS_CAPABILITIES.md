@@ -93,6 +93,21 @@ vez, filtrar el menú).
 
 ## ESTADO
 - [x] Base: catálogo + resolver + gate + 6 tests (commiteado)
-- [ ] Aplicar guards a TP Hub · Consultor · Plataforma (incremental)
-- [ ] Nav dinámica por capabilities
-- [ ] Mapear planFlags ↔ módulos vendibles en el panel de planes
+- [x] **Cap-1** Manage Hub (antes TP): layout con gate por capability (tp.dashboard) +
+      renombrado "Teleperformance" → "Hub de Gestión / Manage Hub" (UI, 4 idiomas; rutas intactas).
+- [x] **Cap-2** Consultor: las 7 rutas /api/consultant/* usan requireCapability (consultant.*).
+- [x] **Cap-3** Plataforma: los ~41 endpoints agents/benchmarks/cms/sales/knowledge YA estaban
+      blindados con requireSuperAdmin ≡ platform.* (solo rowiverse). No requieren migración.
+- [x] **Cap-4 (parcial)** Nav: secciones `aiAutomation` y `sales` marcadas `superOnly`
+      (eran visibles al cliente — la fuga que Eduardo señaló). Badge "TP" → "HUB".
+
+### Pendiente de Cap-4 (necesita verificación en browser)
+- El link de Manage Hub en el sidebar sigue `superOnly` (solo platform admin lo VE en el menú).
+  El gate real del layout YA está abierto a HR/team-lead, así que un HR que navegue directo a
+  /hub/admin/tp entra. Falta: pasar las capabilities reales (no solo isPlatformAdmin) al
+  AdminUserContext para que el link aparezca SOLO a quien su plan permite. Cambio de wiring del
+  contexto — conviene hacerlo verificando en navegador con logins de prueba (HR, team-lead).
+
+### Siguiente
+- [ ] Wiring de capabilities en AdminUserContext → nav muestra exactamente lo que cada rol+plan permite.
+- [ ] Mapear planFlags ↔ módulos vendibles en el panel de planes (monetización por módulo).

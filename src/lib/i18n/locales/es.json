@@ -2212,6 +2212,8 @@
   "admin.nav.workspaceSelection": "Seleccion",
   "admin.nav.workspaceTeam": "Mi Equipo",
   "admin.nav.workspaces": "Workspaces",
+  "admin.nav.tpDemo": "Hub de Gestión",
+  "admin.nav.tpHub": "Hub de Gestión",
   "admin.nav.workspacesAll": "Todos los workspaces",
   "admin.notifications.byChannel": "Por Canal",
   "admin.notifications.byType": "Por Tipo",

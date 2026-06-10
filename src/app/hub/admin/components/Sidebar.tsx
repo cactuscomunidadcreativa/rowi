@@ -106,7 +106,7 @@ export default function Sidebar() {
       priority: 96,
       superOnly: true,
       items: [
-        { href: "/hub/admin/tp", labelKey: "admin.nav.tpHub", icon: Building2, badge: "TP" },
+        { href: "/hub/admin/tp", labelKey: "admin.nav.tpHub", icon: Building2, badge: "HUB" },
         {
           href: "/hub/admin/tp/dashboard",
           labelKey: "admin.nav.tpDashboard",
@@ -327,6 +327,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.aiAutomation",
       icon: Bot,
       priority: 70,
+      superOnly: true, // agentes IA, knowledge layer, prompts: solo plataforma (tú)
       items: [
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
         { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain, badge: "NEW" },
@@ -345,6 +346,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.sales",
       icon: CreditCard,
       priority: 65,
+      superOnly: true, // ventas, cupones, suscripciones, clientes: solo plataforma (tú)
       items: [
         { href: "/hub/admin/sales/dashboard", labelKey: "admin.nav.salesDashboard", icon: TrendingUp },
         { href: "/hub/admin/sales/subscriptions", labelKey: "admin.nav.subscriptions", icon: CreditCard },

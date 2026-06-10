@@ -101,13 +101,23 @@ vez, filtrar el menú).
 - [x] **Cap-4 (parcial)** Nav: secciones `aiAutomation` y `sales` marcadas `superOnly`
       (eran visibles al cliente — la fuga que Eduardo señaló). Badge "TP" → "HUB".
 
-### Pendiente de Cap-4 (necesita verificación en browser)
-- El link de Manage Hub en el sidebar sigue `superOnly` (solo platform admin lo VE en el menú).
-  El gate real del layout YA está abierto a HR/team-lead, así que un HR que navegue directo a
-  /hub/admin/tp entra. Falta: pasar las capabilities reales (no solo isPlatformAdmin) al
-  AdminUserContext para que el link aparezca SOLO a quien su plan permite. Cambio de wiring del
-  contexto — conviene hacerlo verificando en navegador con logins de prueba (HR, team-lead).
+- [x] **Cap-4 (completo)** Nav dinámica REAL por capabilities:
+      - `GET /api/account/capabilities` resuelve scope+plan y lista lo concedido.
+      - `AdminUserContext` carga las caps y expone `can(cap)`.
+      - `Sidebar`: secciones/items aceptan `capability`; Manage Hub pasó de superOnly a
+        `capability:"tp.dashboard"` → un HR/team-lead con plan lo VE en el menú; el cliente
+        sigue sin ver platform.* (agentes/ventas/knowledge marcados superOnly).
 
-### Siguiente
-- [ ] Wiring de capabilities en AdminUserContext → nav muestra exactamente lo que cada rol+plan permite.
-- [ ] Mapear planFlags ↔ módulos vendibles en el panel de planes (monetización por módulo).
+### Estado: SISTEMA DE MÓDULOS COMPLETO Y EN PRODUCCIÓN
+Tú ves todo · HR ve Manage Hub si su plan lo activa · Consultor scoped a sus clientes ·
+lo de plataforma nunca aparece para el cliente. Cada ruta protegida por requireCapability;
+el menú refleja exactamente rol+plan.
+
+### Único pendiente (requiere a Eduardo — NO se aplicó para no romper el build)
+- **E1 directUrl Neon**: añadir `directUrl = env("DIRECT_URL")` al datasource de
+  `prisma/schema.prisma`. NO se commiteó porque si `DIRECT_URL` no existe en Vercel, el build
+  (`prisma db push`) falla. Acción de 1 línea cuando confirmes que la env está puesta.
+
+### Mejora futura opcional (no bloqueante)
+- Panel de planes: mapear cada `planFlag` ↔ módulo vendible ("este plan incluye Manage Hub")
+  para vender por módulo desde la UI de pricing.

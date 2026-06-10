@@ -107,6 +107,7 @@ export default function ConsultantReportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<ReportResult | null>(null);
+  const [view, setView] = useState<"report" | "confidential">("report");
 
   async function generate() {
     if (!seiFile) {
@@ -180,8 +181,78 @@ export default function ConsultantReportPage() {
         {error && <p className="text-rose-600 text-sm">{t("consultant.report.error", "No se pudo generar")}: {error}</p>}
       </div>
 
-      {/* Entregable */}
+      {/* Selector de entregable: informe (cliente) vs guía confidencial (partner) */}
       {report && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setView("report")}
+            className={`text-sm rounded-lg px-4 py-2 ${view === "report" ? "rowi-btn-primary" : "border border-[var(--rowi-card-border)] text-[var(--rowi-fg)]"}`}
+          >
+            📊 {t("consultant.report.viewReport", "Informe")}
+          </button>
+          <button
+            onClick={() => setView("confidential")}
+            className={`text-sm rounded-lg px-4 py-2 ${view === "confidential" ? "rowi-btn-primary" : "border border-[var(--rowi-card-border)] text-[var(--rowi-fg)]"}`}
+          >
+            🔒 {t("consultant.report.viewConfidential", "Guía confidencial")}
+          </button>
+        </div>
+      )}
+
+      {/* GUÍA CONFIDENCIAL DEL PARTNER (espejo del PDF confidencial de Bancolombia) */}
+      {report && view === "confidential" && (
+        <div id="rowi-confidential" className="rounded-2xl border border-amber-300 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-900/10 p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                Confidencial · solo para el partner facilitador
+              </p>
+              <h2 className="text-xl font-bold text-[var(--rowi-fg)]">{report.subjectLabel} — Guía de lectura e intervención</h2>
+            </div>
+            <button onClick={() => window.print()} className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)]">
+              {t("consultant.report.print", "Imprimir / PDF")}
+            </button>
+          </div>
+
+          <p className="text-sm text-[var(--rowi-muted)]">
+            Este documento contiene lecturas individuales que NO deben compartirse con el cliente ni
+            incluirse en la propuesta oficial. La data personal pertenece a cada persona; aquí se usa
+            solo para diseñar una conversación cuidadosa.
+          </p>
+
+          <section>
+            <h3 className="font-semibold text-[var(--rowi-fg)] mb-2">Lecturas individuales (motor)</h3>
+            <InsightList items={report.insights?.partner ?? []} />
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-[var(--rowi-fg)] mb-2">Cómo entrar (guion)</h3>
+            <ul className="space-y-1 text-sm text-[var(--rowi-fg)]">
+              <li>· El SEI es un espejo, no un veredicto. No defender el reporte.</li>
+              <li>· Empezar por lo que se fortaleció antes de explorar lo que se enfrió.</li>
+              <li>· Una emoción por vez. Curiosidad antes que juicio.</li>
+              <li>· Ante señales de bienestar (marcadas arriba): acompañar, no diagnosticar.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-[var(--rowi-fg)] mb-2">¿Tocar el SEI o no?</h3>
+            <div className="text-sm text-[var(--rowi-fg)] space-y-1">
+              <p>· Presentación/propuesta al cliente → <b>No</b>. Solo agregado, nunca perfiles individuales.</p>
+              <p>· Debrief de equipo → <b>No a nivel persona</b>. Patrones del grupo, sin señalar.</p>
+              <p>· Sesión 1:1 → <b>Sí, con su permiso</b>. Su SEI es de la persona; se trabaja como espejo.</p>
+            </div>
+          </section>
+
+          <p className="text-xs text-[var(--rowi-muted)] border-t border-amber-200 dark:border-amber-900/40 pt-3">
+            Regla raíz: lo agregado es del proyecto; lo individual es de la persona. Si una lectura no
+            ayuda a la persona, no se usa.
+          </p>
+        </div>
+      )}
+
+      {/* Entregable (informe de cliente) */}
+      {report && view === "report" && (
         <div id="rowi-report" className="rounded-2xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>

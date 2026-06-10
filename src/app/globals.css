@@ -237,15 +237,21 @@ html.dark .modal-content {
 /* Impresión / PDF del informe del Consultor: cuando se imprime una página que
    contiene #rowi-report, solo ese bloque sale en el PDF (sin nav ni controles). */
 @media print {
+  /* Informe de cliente */
   body:has(#rowi-report) * { visibility: hidden; }
   body:has(#rowi-report) #rowi-report,
   body:has(#rowi-report) #rowi-report * { visibility: visible; }
   body:has(#rowi-report) #rowi-report {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    border: none;
+    position: absolute; left: 0; top: 0; width: 100%; border: none;
   }
   #rowi-report button { display: none !important; }
+
+  /* Guía confidencial del partner (cuando es la vista activa) */
+  body:has(#rowi-confidential) * { visibility: hidden; }
+  body:has(#rowi-confidential) #rowi-confidential,
+  body:has(#rowi-confidential) #rowi-confidential * { visibility: visible; }
+  body:has(#rowi-confidential) #rowi-confidential {
+    position: absolute; left: 0; top: 0; width: 100%;
+  }
+  #rowi-confidential button { display: none !important; }
 }

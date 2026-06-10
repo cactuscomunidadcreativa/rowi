@@ -1,5 +1,7 @@
 {
-  "regions": ["iad1"],
+  "regions": [
+    "iad1"
+  ],
   "functions": {
     "src/app/api/admin/benchmarks/process-blob/route.ts": {
       "maxDuration": 300
@@ -60,6 +62,10 @@
     {
       "path": "/api/cron/mini-sei-reminder",
       "schedule": "0 6 1 * *"
+    },
+    {
+      "path": "/api/cron/pre-sei-followup",
+      "schedule": "0 13 * * *"
     }
   ]
 }

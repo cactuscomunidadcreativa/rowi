@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
 import PreSeiInsight from "@/components/pre-sei/PreSeiInsight";
+import PreSeiMirror from "@/components/pre-sei/PreSeiMirror";
 import PreSeiCTA from "@/components/pre-sei/PreSeiCTA";
 import type { PreSeiInsightData } from "@/components/pre-sei/types";
 
@@ -109,6 +110,8 @@ export default function PreSeiPage() {
 
         {phase === "result" && insight && (
           <div className="space-y-8">
+            {/* EL ESPEJO primero (el WOW del blueprint), el detalle después. */}
+            <PreSeiMirror insight={insight} token={token} />
             <PreSeiInsight insight={insight} />
             <PreSeiCTA token={token} />
           </div>

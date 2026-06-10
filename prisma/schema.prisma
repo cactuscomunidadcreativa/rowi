@@ -6996,6 +6996,12 @@ model PreSeiSession {
   claimedByUserId String?
   createdAt       DateTime  @default(now())
   claimedAt       DateTime?
+  // Compromiso de retorno del Emotional Mirror ("te escribo mañana"):
+  // email opt-in suave DESPUÉS del valor; el cron pre-sei-followup envía la
+  // micro-práctica al día siguiente. Nullable → db-push safe.
+  followUpEmail   String?
+  followUpOptInAt DateTime?
+  followUpSentAt  DateTime?
 
   claimedBy User? @relation("PreSeiClaim", fields: [claimedByUserId], references: [id], onDelete: SetNull)
 

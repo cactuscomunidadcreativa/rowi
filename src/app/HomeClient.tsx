@@ -69,8 +69,9 @@ function FallbackHomePage() {
             title2: t("landing.hero.title2"),
             subtitle: t("landing.hero.subtitle"),
             ctaPrimary: t("landing.hero.cta.primary"),
-            ctaSecondary: t("landing.hero.cta.secondary"),
-            ctaSecondaryHref: "/demo",
+            // El gancho del blueprint: el Emotional Mirror antes que el demo.
+            ctaSecondary: t("landing.hero.cta.mirror"),
+            ctaSecondaryHref: "/pre-sei",
             image: "/rowivectors/Rowi-06.webp",
             trustBadges: [
               { icon: "shield", text: t("landing.hero.trust.security") },

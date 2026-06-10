@@ -21,7 +21,8 @@ export type ContextNotificationKind =
   | "family.declined"
   | "service.proposed"
   | "service.accepted"
-  | "service.ended";
+  | "service.ended"
+  | "preSei.followup";
 
 export type Locale = "es" | "en" | "pt" | "it";
 
@@ -102,6 +103,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
       cta: "Ver servicios",
       footer: "Rowi · servicios",
     },
+    "preSei.followup": {
+      subject: () => `Tu micro-práctica de hoy`,
+      greeting: "¡Hola!",
+      body: (_a, d) =>
+        `Ayer te miraste al espejo. Hoy toca el paso pequeño:${d ? `\n\n${d}` : ""}\n\nNo necesitas más de 2 minutos. Lo que cuenta es hacerlo una vez.`,
+      cta: "Continuar mi camino en Rowi",
+      footer: "Te escribimos solo porque lo pediste tras tu Pre-SEI. No volveremos a escribirte si no creas tu cuenta.",
+    },
   },
   en: {
     "family.requested": {
@@ -151,6 +160,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
         `${a || "The counterpart"} marked the engagement${d ? ` (${d})` : ""} as ended on Rowi.`,
       cta: "View services",
       footer: "Rowi · services",
+    },
+    "preSei.followup": {
+      subject: () => `Your micro-practice for today`,
+      greeting: "Hi!",
+      body: (_a, d) =>
+        `Yesterday you looked in the mirror. Today comes the small step:${d ? `\n\n${d}` : ""}\n\nIt takes less than 2 minutes. What counts is doing it once.`,
+      cta: "Continue my path on Rowi",
+      footer: "We're writing only because you asked us to after your Pre-SEI. We won't write again unless you create your account.",
     },
   },
   pt: {
@@ -202,6 +219,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
       cta: "Ver serviços",
       footer: "Rowi · serviços",
     },
+    "preSei.followup": {
+      subject: () => `Sua micropráctica de hoje`,
+      greeting: "Olá!",
+      body: (_a, d) =>
+        `Ontem você se olhou no espelho. Hoje vem o pequeno passo:${d ? `\n\n${d}` : ""}\n\nLeva menos de 2 minutos. O que conta é fazer uma vez.`,
+      cta: "Continuar meu caminho no Rowi",
+      footer: "Escrevemos só porque você pediu após o seu Pre-SEI. Não escreveremos de novo se você não criar sua conta.",
+    },
   },
   it: {
     "family.requested": {
@@ -251,6 +276,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
         `${a || "La controparte"} ha contrassegnato l'engagement${d ? ` (${d})` : ""} come terminato su Rowi.`,
       cta: "Vedi servizi",
       footer: "Rowi · servizi",
+    },
+    "preSei.followup": {
+      subject: () => `La tua micro-pratica di oggi`,
+      greeting: "Ciao!",
+      body: (_a, d) =>
+        `Ieri ti sei guardato allo specchio. Oggi arriva il piccolo passo:${d ? `\n\n${d}` : ""}\n\nBastano 2 minuti. Quello che conta è farlo una volta.`,
+      cta: "Continuare il mio percorso su Rowi",
+      footer: "Ti scriviamo solo perché l'hai chiesto dopo il tuo Pre-SEI. Non ti scriveremo più se non crei il tuo account.",
     },
   },
 };

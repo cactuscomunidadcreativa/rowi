@@ -52,6 +52,13 @@ interface ScopeInfo {
   label: string;
 }
 
+type HealthState = "ok" | "warn" | "fail";
+
+interface SystemHealth {
+  status: "healthy" | "degraded" | "error";
+  modules: Record<string, HealthState>;
+}
+
 export default function AdminDashboard() {
   const { t, ready } = useI18n();
   const seiToast = useRowiSEIToast();
@@ -67,6 +74,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [scopeInfo, setScopeInfo] = useState<ScopeInfo | null>(null);
+  const [health, setHealth] = useState<SystemHealth | null>(null);
 
   async function loadStats() {
     setLoading(true);
@@ -85,8 +93,24 @@ export default function AdminDashboard() {
     }
   }
 
+  // System health is read from the real endpoint, never hardcoded.
+  async function loadHealth() {
+    try {
+      const res = await fetch("/api/hub/system-health");
+      const data = await res.json();
+      if (data?.modules) {
+        setHealth({ status: data.status, modules: data.modules });
+      }
+    } catch {
+      setHealth({ status: "error", modules: {} });
+    }
+  }
+
   useEffect(() => {
-    if (ready) loadStats();
+    if (ready) {
+      loadStats();
+      loadHealth();
+    }
   }, [ready]);
 
   // Build quick links based on scope
@@ -291,11 +315,16 @@ export default function AdminDashboard() {
             </Link>
           </AdminCard>
 
-          {/* System Health — SuperAdmin only */}
+          {/* System Health — SuperAdmin only · estado REAL desde /api/hub/system-health */}
           {isSuperAdmin && (
             <AdminCard>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${
+                  health?.status === "healthy" ? "from-green-500 to-emerald-600"
+                  : health?.status === "degraded" ? "from-amber-500 to-orange-600"
+                  : health?.status === "error" ? "from-red-500 to-rose-600"
+                  : "from-gray-400 to-gray-500"
+                } flex items-center justify-center flex-shrink-0`}>
                   <Activity className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -303,28 +332,32 @@ export default function AdminDashboard() {
                     {t("admin.dashboard.systemStatus")}
                   </h3>
                   <p className="text-xs text-[var(--rowi-muted)]">
-                    {t("admin.dashboard.allSystems")}
+                    {health
+                      ? t(`admin.dashboard.health.${health.status}`, health.status)
+                      : t("admin.dashboard.health.checking", "Verificando…")}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[var(--rowi-muted)]">API</span>
-                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[var(--rowi-muted)]">Database</span>
-                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[var(--rowi-muted)]">AI Services</span>
-                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[var(--rowi-muted)]">Auth</span>
-                  <AdminBadge variant="success">{t("admin.dashboard.operational")}</AdminBadge>
-                </div>
+                {health && Object.keys(health.modules).length > 0 ? (
+                  Object.entries(health.modules).map(([mod, state]) => (
+                    <div key={mod} className="flex items-center justify-between">
+                      <span className="text-xs text-[var(--rowi-muted)]">
+                        {t(`admin.dashboard.health.module.${mod}`, mod)}
+                      </span>
+                      <AdminBadge
+                        variant={state === "ok" ? "success" : state === "warn" ? "warning" : "danger"}
+                      >
+                        {t(`admin.dashboard.health.state.${state}`, state)}
+                      </AdminBadge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-[var(--rowi-muted)] py-2">
+                    {t("admin.dashboard.health.checking", "Verificando…")}
+                  </p>
+                )}
               </div>
 
               <Link href="/hub/admin/system-health" className="block mt-4">

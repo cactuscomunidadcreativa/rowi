@@ -5,9 +5,9 @@ import HubRolesClient from "./roles-client"; // 👈 referencia al archivo separ
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function HubRolesPageWrapper() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   return (
-    <Suspense fallback={<div className="p-4 text-muted-foreground">{lang === "es" ? "Cargando roles..." : lang === "pt" ? "Carregando funções..." : lang === "it" ? "Caricamento ruoli..." : "Loading roles..."}</div>}>
+    <Suspense fallback={<div className="p-4 text-muted-foreground">{t("admin.roles.loading", "Cargando roles...")}</div>}>
       <HubRolesClient />
     </Suspense>
   );

@@ -548,7 +548,7 @@ export default function AffinityPage() {
           >
             <span className="text-xs text-[var(--rowi-muted)] mr-1">
               <Filter className="w-3.5 h-3.5 inline-block mr-1" />
-              {lang === "es" ? "Comunidad" : "Community"}:
+              {t("affinity.community", "Comunidad")}:
             </span>
             <button
               onClick={() => setSelectedCommunity("")}
@@ -558,7 +558,7 @@ export default function AffinityPage() {
                   : "bg-[var(--rowi-surface)] text-[var(--rowi-muted)] border-[var(--rowi-border)] hover:text-[var(--rowi-foreground)]"
               }`}
             >
-              {lang === "es" ? "Todas" : "All"}
+              {t("affinity.allFilter", "Todas")}
             </button>
             {communities.map((c) => (
               <button

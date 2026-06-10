@@ -761,17 +761,17 @@ export default function AdminCommunitiesPage() {
             {/* Comunidad Padre (jerarquía de sub-comunidades) */}
             <div className="mt-3">
               <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted)] mb-2 font-medium">
-                {lang === "es" ? "Jerarquía de Comunidades" : "Community Hierarchy"}
+                {t("admin.communities.communityHierarchy", "Jerarquía de Comunidades")}
               </p>
               <div>
                 <label className="text-[10px] text-[var(--rowi-muted)] mb-1 block">
-                  {lang === "es" ? "Comunidad Padre" : "Parent Community"}
+                  {t("admin.communities.parentCommunity", "Comunidad Padre")}
                 </label>
                 <AdminSelect
                   value={editor.superId}
                   onChange={(v) => setEditor({ ...editor, superId: v })}
                   options={[
-                    { value: "", label: lang === "es" ? "— Ninguna (es raíz)" : "— None (root)" },
+                    { value: "", label: t("admin.communities.noneRoot", "— Ninguna (es raíz)") },
                     ...communities
                       .filter((c) => c.id !== editor.id)
                       .map((c) => ({
@@ -782,9 +782,10 @@ export default function AdminCommunitiesPage() {
                 />
                 {editor.superId && (
                   <p className="text-[10px] text-[var(--rowi-muted)] mt-1">
-                    {lang === "es"
-                      ? `Esta comunidad será sub-comunidad de "${communities.find(c => c.id === editor.superId)?.name}"`
-                      : `This community will be a sub-community of "${communities.find(c => c.id === editor.superId)?.name}"`}
+                    {t("admin.communities.willBeSubcommunity", 'Esta comunidad será sub-comunidad de "{name}"').replace(
+                      "{name}",
+                      communities.find(c => c.id === editor.superId)?.name || ""
+                    )}
                   </p>
                 )}
               </div>
@@ -991,7 +992,7 @@ export default function AdminCommunitiesPage() {
                 {(c._count?.subCommunities || 0) > 0 && (
                   <div className="flex items-center gap-1 mt-1 text-[10px] text-blue-500/80">
                     <Network className="w-3 h-3 flex-shrink-0" />
-                    <span>{c._count?.subCommunities} sub-{lang === "es" ? "comunidades" : "communities"}</span>
+                    <span>{c._count?.subCommunities} {t("admin.communities.subCommunities", "sub-comunidades")}</span>
                   </div>
                 )}
 

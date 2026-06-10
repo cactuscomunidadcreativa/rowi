@@ -42,12 +42,12 @@ const CHANNEL_OPTIONS = [
 ];
 
 export default function InvitesSettingsPage() {
-  const { lang } = useI18n();
+  const { lang, t: ti18n } = useI18n();
   const [contact, setContact] = useState("");
   const [name, setName] = useState("");
   const [channel, setChannel] = useState<Invite["channel"]>("email");
   const [message, setMessage] = useState(
-    lang === "es" ? "¡Te invito a mi comunidad en Rowi!" : "I invite you to my community on Rowi!"
+    ti18n("settings.invites.defaultMessage", "¡Te invito a mi comunidad en Rowi!")
   );
   const [list, setList] = useState<Invite[]>([]);
   const [stats, setStats] = useState<InviteStats | null>(null);

@@ -299,6 +299,52 @@ const translations = {
 };
 
 /* =========================================================
+   AI recommendation builders (per-language, interpolated)
+========================================================= */
+const RECOMMENDATIONS = {
+  es: {
+    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
+      `Excelente ajuste para ${role}. Supera el benchmark en ${exceeds || "todas las competencias"} que son críticas para el rol. ${dev ? `Desarrollo menor en ${dev}.` : "Sin brechas significativas."} EQ total (${eqTotal}) supera el ideal del rol (${idealEQ}).`,
+    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
+      `Buen ajuste para ${role}. ${exceeds ? `Fortalezas en ${exceeds}.` : ""} ${dev ? `Desarrollo necesario en ${dev}.` : ""} EQ total (${eqTotal}) ${meetsMin ? "cumple" : "no alcanza"} el mínimo del rol (${minEQ}).`,
+    moderate: (role: string, exceeds: string, dev: string) =>
+      `Ajuste moderado para ${role}. Brechas notables en ${dev || "varias competencias"}. ${exceeds ? `Potencial en ${exceeds}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`,
+    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
+      `Ajuste débil para ${role}. Brechas significativas en ${dev || "múltiples competencias"}. EQ total (${eqTotal}) debajo del mínimo del rol (${minEQ}). No se recomienda para esta posición.`,
+  },
+  en: {
+    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
+      `Excellent fit for ${role}. Exceeds benchmark in ${exceeds || "all competencies"} which are critical for the role. ${dev ? `Minor development in ${dev}.` : "No significant gaps."} Total EQ (${eqTotal}) exceeds role ideal (${idealEQ}).`,
+    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
+      `Good fit for ${role}. ${exceeds ? `Strengths in ${exceeds}.` : ""} ${dev ? `Development needed in ${dev}.` : ""} Total EQ (${eqTotal}) ${meetsMin ? "meets" : "falls below"} role minimum (${minEQ}).`,
+    moderate: (role: string, exceeds: string, dev: string) =>
+      `Moderate fit for ${role}. Notable gaps in ${dev || "several competencies"}. ${exceeds ? `Potential in ${exceeds}.` : ""} Requires additional evaluation and intensive development plan.`,
+    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
+      `Weak fit for ${role}. Significant gaps in ${dev || "multiple competencies"}. Total EQ (${eqTotal}) below role minimum (${minEQ}). Not recommended for this position.`,
+  },
+  pt: {
+    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
+      `Ótimo ajuste para ${role}. Supera o benchmark em ${exceeds || "todas as competências"} que são críticas para o cargo. ${dev ? `Desenvolvimento menor em ${dev}.` : "Sem lacunas significativas."} EQ total (${eqTotal}) supera o ideal do cargo (${idealEQ}).`,
+    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
+      `Bom ajuste para ${role}. ${exceeds ? `Pontos fortes em ${exceeds}.` : ""} ${dev ? `Desenvolvimento necessário em ${dev}.` : ""} EQ total (${eqTotal}) ${meetsMin ? "atende" : "não atinge"} o mínimo do cargo (${minEQ}).`,
+    moderate: (role: string, exceeds: string, dev: string) =>
+      `Ajuste moderado para ${role}. Lacunas notáveis em ${dev || "várias competências"}. ${exceeds ? `Potencial em ${exceeds}.` : ""} Requer avaliação adicional e plano de desenvolvimento intensivo.`,
+    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
+      `Ajuste fraco para ${role}. Lacunas significativas em ${dev || "múltiplas competências"}. EQ total (${eqTotal}) abaixo do mínimo do cargo (${minEQ}). Não recomendado para esta posição.`,
+  },
+  it: {
+    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
+      `Ottima corrispondenza per ${role}. Supera il benchmark in ${exceeds || "tutte le competenze"} che sono critiche per il ruolo. ${dev ? `Sviluppo minore in ${dev}.` : "Nessun divario significativo."} EQ totale (${eqTotal}) supera l'ideale del ruolo (${idealEQ}).`,
+    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
+      `Buona corrispondenza per ${role}. ${exceeds ? `Punti di forza in ${exceeds}.` : ""} ${dev ? `Sviluppo necessario in ${dev}.` : ""} EQ totale (${eqTotal}) ${meetsMin ? "soddisfa" : "non raggiunge"} il minimo del ruolo (${minEQ}).`,
+    moderate: (role: string, exceeds: string, dev: string) =>
+      `Corrispondenza moderata per ${role}. Divari notevoli in ${dev || "diverse competenze"}. ${exceeds ? `Potenziale in ${exceeds}.` : ""} Richiede una valutazione aggiuntiva e un piano di sviluppo intensivo.`,
+    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
+      `Corrispondenza debole per ${role}. Divari significativi in ${dev || "molteplici competenze"}. EQ totale (${eqTotal}) inferiore al minimo del ruolo (${minEQ}). Non raccomandato per questa posizione.`,
+  },
+};
+
+/* =========================================================
    Constants & Types
 ========================================================= */
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
@@ -674,34 +720,27 @@ export default function TPSelectionPage() {
     const fit = cand.fitScore;
     const exceedsList = strengths.map((s) => s.key).join(", ");
     const devList = devAreas.map((d) => d.key).join(", ");
+    const rec = RECOMMENDATIONS[lang as keyof typeof RECOMMENDATIONS] || RECOMMENDATIONS.en;
     if (fit >= 90) {
       return {
-        text: lang === "es"
-          ? `Excelente ajuste para ${selectedRole.displayName}. Supera el benchmark en ${exceedsList || "todas las competencias"} que son críticas para el rol. ${devList ? `Desarrollo menor en ${devList}.` : "Sin brechas significativas."} EQ total (${cand.eqTotal}) supera el ideal del rol (${selectedRole.idealEQ}).`
-          : `Excellent fit for ${selectedRole.displayName}. Exceeds benchmark in ${exceedsList || "all competencies"} which are critical for the role. ${devList ? `Minor development in ${devList}.` : "No significant gaps."} Total EQ (${cand.eqTotal}) exceeds role ideal (${selectedRole.idealEQ}).`,
+        text: rec.excellent(selectedRole.displayName, exceedsList, devList, cand.eqTotal, selectedRole.idealEQ),
         action: t.hire,
       };
     }
     if (fit >= 75) {
       return {
-        text: lang === "es"
-          ? `Buen ajuste para ${selectedRole.displayName}. ${exceedsList ? `Fortalezas en ${exceedsList}.` : ""} ${devList ? `Desarrollo necesario en ${devList}.` : ""} EQ total (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "cumple" : "no alcanza"} el mínimo del rol (${selectedRole.minEQ}).`
-          : `Good fit for ${selectedRole.displayName}. ${exceedsList ? `Strengths in ${exceedsList}.` : ""} ${devList ? `Development needed in ${devList}.` : ""} Total EQ (${cand.eqTotal}) ${cand.eqTotal >= selectedRole.minEQ ? "meets" : "falls below"} role minimum (${selectedRole.minEQ}).`,
+        text: rec.good(selectedRole.displayName, exceedsList, devList, cand.eqTotal, cand.eqTotal >= selectedRole.minEQ, selectedRole.minEQ),
         action: t.hireWithCoaching,
       };
     }
     if (fit >= 60) {
       return {
-        text: lang === "es"
-          ? `Ajuste moderado para ${selectedRole.displayName}. Brechas notables en ${devList || "varias competencias"}. ${exceedsList ? `Potencial en ${exceedsList}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`
-          : `Moderate fit for ${selectedRole.displayName}. Notable gaps in ${devList || "several competencies"}. ${exceedsList ? `Potential in ${exceedsList}.` : ""} Requires additional evaluation and intensive development plan.`,
+        text: rec.moderate(selectedRole.displayName, exceedsList, devList),
         action: t.consider,
       };
     }
     return {
-      text: lang === "es"
-        ? `Ajuste débil para ${selectedRole.displayName}. Brechas significativas en ${devList || "múltiples competencias"}. EQ total (${cand.eqTotal}) debajo del mínimo del rol (${selectedRole.minEQ}). No se recomienda para esta posición.`
-        : `Weak fit for ${selectedRole.displayName}. Significant gaps in ${devList || "multiple competencies"}. Total EQ (${cand.eqTotal}) below role minimum (${selectedRole.minEQ}). Not recommended for this position.`,
+      text: rec.weak(selectedRole.displayName, devList, cand.eqTotal, selectedRole.minEQ),
       action: t.notRecommended,
     };
   }

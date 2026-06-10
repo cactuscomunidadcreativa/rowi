@@ -191,7 +191,7 @@ export default function CompetenciesSpider({
   dateCompare?: string | null;
   max?: number;
 }) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const keys = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
 
   const data = keys.map((k) => ({
@@ -218,7 +218,7 @@ export default function CompetenciesSpider({
   if (!hasPresent && !hasCompare) {
     return (
       <div className="flex h-72 items-center justify-center text-sm text-gray-400 border rounded-xl">
-        <p>{lang === "es" ? "No hay datos para mostrar." : lang === "pt" ? "Não há dados para exibir." : lang === "it" ? "Nessun dato da mostrare." : "No data to display."}</p>
+        <p>{t("charts.noData", "No hay datos para mostrar.")}</p>
       </div>
     );
   }

@@ -35,6 +35,8 @@ const translations = {
     badge: "Afinidad de Equipo",
     title: "Afinidad de Equipo TP",
     subtitle: "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de {count} evaluaciones",
+    subtitleCountFragment: "datos reales de {count} evaluaciones",
+    subtitleNoCount: "datos reales del benchmark TP",
 
     // Brain styles section
     brainDistTitle: "Distribucion Real de Estilos Cerebrales",
@@ -78,6 +80,8 @@ const translations = {
     // Info box
     infoTitle: "Datos de Afinidad TP",
     infoDesc: "Datos basados en el benchmark real de Teleperformance con {count} evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.",
+    infoDescCountFragment: "benchmark real de Teleperformance con {count} evaluaciones SEI",
+    infoDescNoCount: "benchmark real de Teleperformance",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -190,6 +194,8 @@ const translations = {
     badge: "Team Affinity",
     title: "TP Team Affinity",
     subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
+    subtitleCountFragment: "real data from {count} assessments",
+    subtitleNoCount: "real TP benchmark data",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -233,6 +239,8 @@ const translations = {
     // Info box
     infoTitle: "TP Affinity Data",
     infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
+    infoDescNoCount: "real Teleperformance benchmark",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -345,6 +353,8 @@ const translations = {
     badge: "Team Affinity",
     title: "TP Team Affinity",
     subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
+    subtitleCountFragment: "real data from {count} assessments",
+    subtitleNoCount: "real TP benchmark data",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -388,6 +398,8 @@ const translations = {
     // Info box
     infoTitle: "TP Affinity Data",
     infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
+    infoDescNoCount: "real Teleperformance benchmark",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -500,6 +512,8 @@ const translations = {
     badge: "Team Affinity",
     title: "TP Team Affinity",
     subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
+    subtitleCountFragment: "real data from {count} assessments",
+    subtitleNoCount: "real TP benchmark data",
 
     // Brain styles section
     brainDistTitle: "Real Brain Style Distribution",
@@ -543,6 +557,8 @@ const translations = {
     // Info box
     infoTitle: "TP Affinity Data",
     infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
+    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
+    infoDescNoCount: "real Teleperformance benchmark",
 
     // Navigation
     navBenchmark: "Benchmark",
@@ -1116,10 +1132,7 @@ export default function TPAffinityPage() {
         <p className="text-[var(--rowi-muted)]">
           {totalAssessments > 0
             ? t.subtitle.replace("{count}", totalAssessments.toLocaleString())
-            : t.subtitle.replace(
-                lang === "es" ? "datos reales de {count} evaluaciones" : "real data from {count} assessments",
-                lang === "es" ? "datos reales del benchmark TP" : "real TP benchmark data"
-              )}
+            : t.subtitle.replace(t.subtitleCountFragment, t.subtitleNoCount)}
         </p>
       </div>
 
@@ -2442,10 +2455,7 @@ export default function TPAffinityPage() {
           <p className="text-sm text-pink-700 dark:text-pink-300">
             {totalAssessments > 0
               ? t.infoDesc.replace("{count}", totalAssessments.toLocaleString())
-              : t.infoDesc.replace(
-                  lang === "es" ? "benchmark real de Teleperformance con {count} evaluaciones SEI" : "real Teleperformance benchmark with {count} SEI assessments",
-                  lang === "es" ? "benchmark real de Teleperformance" : "real Teleperformance benchmark"
-                )}
+              : t.infoDesc.replace(t.infoDescCountFragment, t.infoDescNoCount)}
           </p>
         </div>
       </motion.div>

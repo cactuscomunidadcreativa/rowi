@@ -148,7 +148,7 @@ export default function PublicNavbar() {
               value={lang}
               onChange={(e) => setLang(e.target.value as "es" | "en" | "pt" | "it")}
               aria-label="Language"
-              title={lang === "es" ? "Cambiar idioma" : "Change language"}
+              title={t("common.changeLanguage", "Cambiar idioma")}
               className="appearance-none bg-transparent pl-1 pr-4 py-1 rounded-lg cursor-pointer text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]"
             >
               <option value="es">ES</option>

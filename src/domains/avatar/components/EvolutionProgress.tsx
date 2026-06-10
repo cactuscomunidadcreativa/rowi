@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/react";
 
 // Configuracion de stages
 const AVATAR_STAGES = {
@@ -56,6 +57,7 @@ export function EvolutionProgress({
   size = "md",
   className,
 }: EvolutionProgressProps) {
+  const { t } = useI18n();
   const stageConfig = AVATAR_STAGES[currentStage] || AVATAR_STAGES.EGG;
   const nextStageConfig = nextStage ? AVATAR_STAGES[nextStage] : null;
 
@@ -94,14 +96,14 @@ export function EvolutionProgress({
 
       {showLabel && nextStageConfig && (
         <p className={cn("mt-1 text-gray-400", sizeClasses[size].text)}>
-          {lang === "es" ? "Proxima:" : lang === "pt" ? "Próxima:" : lang === "it" ? "Prossima:" : "Next:"} {nextStageConfig.emoji}{" "}
+          {t("avatar.evolution.nextLabel", "Próxima:")} {nextStageConfig.emoji}{" "}
           {nextStageConfig.name[lang]}
         </p>
       )}
 
       {showLabel && !nextStageConfig && isHatched && (
         <p className={cn("mt-1 text-emerald-500 font-medium", sizeClasses[size].text)}>
-          {lang === "es" ? "Nivel maximo alcanzado!" : lang === "pt" ? "Nível máximo alcançado!" : lang === "it" ? "Livello massimo raggiunto!" : "Maximum level reached!"}
+          {t("avatar.evolution.maxReached", "¡Nivel máximo alcanzado!")}
         </p>
       )}
     </div>

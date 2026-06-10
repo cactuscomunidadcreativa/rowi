@@ -19,7 +19,7 @@ async function parseJsonSafe(res: Response) {
 }
 
 export default function AdminUIPage() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [ui, setUi] = useState<UIConfig>({ navigation: [], buttons: [], updatedAt: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -59,7 +59,7 @@ export default function AdminUIPage() {
     }
   }
 
-  if (loading) return <main className="p-6">{lang === "es" ? "Cargando…" : lang === "pt" ? "Carregando…" : lang === "it" ? "Caricamento…" : "Loading…"}</main>;
+  if (loading) return <main className="p-6">{t("common.loading", "Cargando...")}</main>;
 
   return (
     <main className="p-6 space-y-6">

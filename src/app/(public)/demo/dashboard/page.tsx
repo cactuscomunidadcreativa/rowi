@@ -157,6 +157,8 @@ const translations = {
    Componentes internos
 ========================================================= */
 function EQCircle({ score, max, lang }: { score: number; max: number; lang: string }) {
+  const { t } = useI18n();
+  void lang;
   const percentage = (score / max) * 100;
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -203,7 +205,7 @@ function EQCircle({ score, max, lang }: { score: number; max: number; lang: stri
           {score}
         </motion.span>
         <span className="text-sm text-[var(--rowi-muted)]">
-          {lang === "es" ? "de" : "of"} {max}
+          {t("demo.dashboard.of", "de")} {max}
         </span>
       </div>
     </div>

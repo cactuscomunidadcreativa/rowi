@@ -17,7 +17,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function UserTimelineProfile() {
   const { t } = useI18n();
-  const { lang } = useI18n();
   const { id } = useParams();
   const [user, setUser] = useState<any>(null);
   const [snapshots, setSnapshots] = useState<any[]>([]);
@@ -56,7 +55,7 @@ export default function UserTimelineProfile() {
   }, [id]);
 
   if (loading)
-    return <p className="p-6 text-sm text-muted-foreground">{lang === "es" ? "Cargando perfil..." : lang === "pt" ? "Carregando perfil..." : lang === "it" ? "Caricamento profilo..." : "Loading profile..."}</p>;
+    return <p className="p-6 text-sm text-muted-foreground">{t("admin.users.loadingProfile", "Cargando perfil...")}</p>;
   if (!user)
     return <p className="p-6 text-sm text-muted-foreground">{t("admin.users.detail.userNotFound")}</p>;
 

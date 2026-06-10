@@ -101,7 +101,7 @@ const QUICK_LINKS: QuickLink[] = [
    🎭 Componente Principal: ContextSwitcher
 ========================================================= */
 export default function ContextSwitcher() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const {
     contextGroups,
     currentContext,
@@ -202,7 +202,7 @@ export default function ContextSwitcher() {
         <div className="text-left min-w-0 flex-1">
           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
             {currentContext.type === "personal"
-              ? (lang === "es" ? "Mi Dashboard" : "My Dashboard")
+              ? t("context.myDashboard", "Mi Dashboard")
               : currentContext.name}
           </p>
           {currentContext.type !== "personal" && (
@@ -230,7 +230,7 @@ export default function ContextSwitcher() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={lang === "es" ? "Buscar contexto..." : "Search context..."}
+                  placeholder={t("context.searchPlaceholder", "Buscar contexto...")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
@@ -246,9 +246,9 @@ export default function ContextSwitcher() {
                 context={{
                   id: "personal",
                   type: "personal",
-                  name: lang === "es" ? "Mi Dashboard Personal" : "My Personal Dashboard",
+                  name: t("context.personalDashboard", "Mi Dashboard Personal"),
                   role: "USER",
-                  roleLabel: lang === "es" ? "Vista Personal" : "Personal View",
+                  roleLabel: t("context.personalView", "Vista Personal"),
                 }}
                 isSelected={currentContext.type === "personal"}
                 onClick={() => {
@@ -303,7 +303,7 @@ export default function ContextSwitcher() {
                 <div className="px-4 py-8 text-center text-gray-500">
                   <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">
-                    {lang === "es" ? "No se encontraron contextos" : "No contexts found"}
+                    {t("context.noResults", "No se encontraron contextos")}
                   </p>
                 </div>
               )}
@@ -315,7 +315,7 @@ export default function ContextSwitcher() {
                 <div className="border-t border-gray-200 dark:border-zinc-800" />
                 <div className="p-2">
                   <p className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">
-                    {lang === "es" ? "Accesos Rápidos" : "Quick Access"}
+                    {t("context.quickAccess", "Accesos Rápidos")}
                   </p>
                   <div className="grid grid-cols-2 gap-1">
                     {visibleQuickLinks.slice(0, 6).map((link) => (
@@ -345,9 +345,7 @@ export default function ContextSwitcher() {
                 <div className="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400">
                   <Sparkles className="w-4 h-4" />
                   <span>
-                    {lang === "es"
-                      ? "Modo Consultor activo"
-                      : "Consultant mode active"}
+                    {t("context.consultantMode", "Modo Consultor activo")}
                   </span>
                 </div>
               </div>

@@ -173,13 +173,14 @@ function getCorrelationColor(value: number): string {
   }
 }
 
-function getStrengthLabel(strength: string, lang: string): string {
-  const labels: Record<string, Record<string, string>> = {
-    strong: { es: "Fuerte", en: "Strong" },
-    moderate: { es: "Moderada", en: "Moderate" },
-    weak: { es: "Débil", en: "Weak" },
+function getStrengthLabel(strength: string, t: (k: string, fb?: string) => string): string {
+  const fallbacks: Record<string, string> = {
+    strong: "Fuerte",
+    moderate: "Moderada",
+    weak: "Débil",
   };
-  return labels[strength]?.[lang] || strength;
+  if (!fallbacks[strength]) return strength;
+  return t(`admin.benchmarks.correlations.strength.${strength}`, fallbacks[strength]);
 }
 
 /** Get display label for any competencyKey */
@@ -362,9 +363,7 @@ export default function CorrelationsPage() {
       const data = await res.json();
       if (data.ok) {
         toast.success(
-          lang === "es"
-            ? `${data.summary.totalCorrelations} correlaciones calculadas`
-            : `${data.summary.totalCorrelations} correlations calculated`
+          `${data.summary.totalCorrelations} ${t("admin.benchmarks.correlations.correlationsCalculated", "correlaciones calculadas")}`
         );
         // Reload
         const correlationsRes = await fetch(`/api/admin/benchmarks/${id}/correlations`);
@@ -390,43 +389,27 @@ export default function CorrelationsPage() {
   }, [dimension]);
 
   // Dimension labels
-  const dimensionLabels: Record<Dimension, Record<string, string>> = {
-    eq: { es: "EQ Competencias", en: "EQ Competencies" },
-    talents: { es: "Talentos Cerebrales", en: "Brain Talents" },
-    grouped: { es: "Análisis Agrupado", en: "Grouped Analysis" },
+  const dimensionLabels: Record<Dimension, string> = {
+    eq: t("admin.benchmarks.correlations.dimEq", "EQ Competencias"),
+    talents: t("admin.benchmarks.correlations.dimTalents", "Talentos Cerebrales"),
+    grouped: t("admin.benchmarks.correlations.dimGrouped", "Análisis Agrupado"),
   };
 
   // =========================================================
   // Explanation texts
   // =========================================================
-  const explanationTexts = {
-    es: {
-      title: "¿Qué son las correlaciones?",
-      description: "Las correlaciones muestran la relación estadística entre métricas (competencias EQ, talentos cerebrales) y los resultados de vida/trabajo. Un valor de correlación va de -1 a +1:",
-      positive: "Correlación positiva (+): Cuando la métrica aumenta, el outcome también tiende a aumentar.",
-      negative: "Correlación negativa (-): Cuando la métrica aumenta, el outcome tiende a disminuir.",
-      strength: "La fuerza indica qué tan confiable es la relación:",
-      strong: "Fuerte (|r| > 0.5): Relación muy confiable",
-      moderate: "Moderada (0.3 < |r| < 0.5): Relación notable",
-      weak: "Débil (|r| < 0.3): Relación ligera",
-      howToUse: "¿Cómo usar esto?",
-      howToUseDesc: "Identifica qué competencias o talentos tienen mayor impacto en los outcomes. El análisis agrupado revela patrones a nivel de categorías (Focus, Decisions, Drive).",
-    },
-    en: {
-      title: "What are correlations?",
-      description: "Correlations show the statistical relationship between metrics (EQ competencies, brain talents) and life/work outcomes. A correlation value ranges from -1 to +1:",
-      positive: "Positive correlation (+): When the metric increases, the outcome also tends to increase.",
-      negative: "Negative correlation (-): When the metric increases, the outcome tends to decrease.",
-      strength: "Strength indicates how reliable the relationship is:",
-      strong: "Strong (|r| > 0.5): Very reliable relationship",
-      moderate: "Moderate (0.3 < |r| < 0.5): Notable relationship",
-      weak: "Weak (|r| < 0.3): Slight relationship",
-      howToUse: "How to use this?",
-      howToUseDesc: "Identify which competencies or talents have the greatest impact on outcomes. Grouped analysis reveals patterns at category level (Focus, Decisions, Drive).",
-    },
+  const texts = {
+    title: t("admin.benchmarks.correlations.explain.title", "¿Qué son las correlaciones?"),
+    description: t("admin.benchmarks.correlations.explain.description", "Las correlaciones muestran la relación estadística entre métricas (competencias EQ, talentos cerebrales) y los resultados de vida/trabajo. Un valor de correlación va de -1 a +1:"),
+    positive: t("admin.benchmarks.correlations.explain.positive", "Correlación positiva (+): Cuando la métrica aumenta, el outcome también tiende a aumentar."),
+    negative: t("admin.benchmarks.correlations.explain.negative", "Correlación negativa (-): Cuando la métrica aumenta, el outcome tiende a disminuir."),
+    strength: t("admin.benchmarks.correlations.explain.strength", "La fuerza indica qué tan confiable es la relación:"),
+    strong: t("admin.benchmarks.correlations.explain.strong", "Fuerte (|r| > 0.5): Relación muy confiable"),
+    moderate: t("admin.benchmarks.correlations.explain.moderate", "Moderada (0.3 < |r| < 0.5): Relación notable"),
+    weak: t("admin.benchmarks.correlations.explain.weak", "Débil (|r| < 0.3): Relación ligera"),
+    howToUse: t("admin.benchmarks.correlations.explain.howToUse", "¿Cómo usar esto?"),
+    howToUseDesc: t("admin.benchmarks.correlations.explain.howToUseDesc", "Identifica qué competencias o talentos tienen mayor impacto en los outcomes. El análisis agrupado revela patrones a nivel de categorías (Focus, Decisions, Drive)."),
   };
-
-  const texts = explanationTexts[lang as keyof typeof explanationTexts] || explanationTexts.es;
 
   if (loading) {
     return (
@@ -451,8 +434,8 @@ export default function CorrelationsPage() {
           >
             <RefreshCcw className={`w-4 h-4 mr-1 ${recalculating ? "animate-spin" : ""}`} />
             {recalculating
-              ? (lang === "es" ? "Calculando..." : "Calculating...")
-              : (lang === "es" ? "Recalcular" : "Recalculate")}
+              ? t("admin.benchmarks.correlations.calculating", "Calculando...")
+              : t("admin.benchmarks.correlations.recalculate", "Recalcular")}
           </AdminButton>
           <AdminButton
             variant={viewMode === "heatmap" ? "primary" : "secondary"}
@@ -466,7 +449,7 @@ export default function CorrelationsPage() {
             size="sm"
             onClick={() => setViewMode("list")}
           >
-            {lang === "es" ? "Lista" : "List"}
+            {t("admin.benchmarks.correlations.list", "Lista")}
           </AdminButton>
         </div>
       }
@@ -480,8 +463,8 @@ export default function CorrelationsPage() {
             </h2>
             <p className="text-sm text-[var(--rowi-muted)]">
               {allCorrelations.filter((c) => c.year === null).length}{" "}
-              {lang === "es" ? "correlaciones calculadas" : "correlations calculated"} •{" "}
-              {benchmark?.totalRows.toLocaleString()} {lang === "es" ? "registros" : "records"}
+              {t("admin.benchmarks.correlations.correlationsCalculated", "correlaciones calculadas")} •{" "}
+              {benchmark?.totalRows.toLocaleString()} {t("admin.benchmarks.correlations.records", "registros")}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -490,7 +473,7 @@ export default function CorrelationsPage() {
                 {correlations.filter((c) => c.strength === "strong").length}
               </p>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang === "es" ? "Fuertes" : "Strong"}
+                {t("admin.benchmarks.correlations.strongPlural", "Fuertes")}
               </p>
             </div>
             <div className="text-center">
@@ -498,7 +481,7 @@ export default function CorrelationsPage() {
                 {correlations.filter((c) => c.strength === "moderate").length}
               </p>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang === "es" ? "Moderadas" : "Moderate"}
+                {t("admin.benchmarks.correlations.moderatePlural", "Moderadas")}
               </p>
             </div>
           </div>
@@ -527,7 +510,7 @@ export default function CorrelationsPage() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {dimensionLabels[dim][lang] || dimensionLabels[dim].en}
+              {dimensionLabels[dim]}
               {count > 0 && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                   isActive ? "bg-white/20" : "bg-[var(--rowi-card-border)]"
@@ -555,7 +538,7 @@ export default function CorrelationsPage() {
                 {texts.title}
               </h3>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang === "es" ? "Aprende a interpretar los datos" : "Learn to interpret the data"}
+                {t("admin.benchmarks.correlations.learnToInterpret", "Aprende a interpretar los datos")}
               </p>
             </div>
           </div>
@@ -575,7 +558,7 @@ export default function CorrelationsPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp className="w-4 h-4 text-green-600" />
                   <span className="font-medium text-green-700 dark:text-green-400">
-                    {lang === "es" ? "Positiva" : "Positive"}
+                    {t("admin.benchmarks.correlations.positive", "Positiva")}
                   </span>
                 </div>
                 <p className="text-xs text-green-600 dark:text-green-400">{texts.positive}</p>
@@ -585,7 +568,7 @@ export default function CorrelationsPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingDown className="w-4 h-4 text-red-600" />
                   <span className="font-medium text-red-700 dark:text-red-400">
-                    {lang === "es" ? "Negativa" : "Negative"}
+                    {t("admin.benchmarks.correlations.negative", "Negativa")}
                   </span>
                 </div>
                 <p className="text-xs text-red-600 dark:text-red-400">{texts.negative}</p>
@@ -621,13 +604,13 @@ export default function CorrelationsPage() {
             </div>
             <div>
               <h3 className="font-semibold text-[var(--rowi-foreground)]">
-                {lang === "es" ? "Correlaciones más fuertes" : "Strongest Correlations"}
+                {t("admin.benchmarks.correlations.strongest", "Correlaciones más fuertes")}
                 <span className="ml-2 text-sm font-normal text-[var(--rowi-muted)]">
-                  ({dimensionLabels[dimension][lang] || dimensionLabels[dimension].en})
+                  ({dimensionLabels[dimension]})
                 </span>
               </h3>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang === "es" ? "Las relaciones más significativas encontradas" : "The most significant relationships found"}
+                {t("admin.benchmarks.correlations.mostSignificant", "Las relaciones más significativas encontradas")}
               </p>
             </div>
           </div>
@@ -669,20 +652,16 @@ export default function CorrelationsPage() {
           <div className="text-center py-8">
             <Brain className="w-12 h-12 mx-auto text-[var(--rowi-muted)] mb-3" />
             <p className="text-[var(--rowi-foreground)] font-medium mb-2">
-              {lang === "es"
-                ? "No hay correlaciones calculadas para esta dimensión"
-                : "No correlations calculated for this dimension"}
+              {t("admin.benchmarks.correlations.noDataDimension", "No hay correlaciones calculadas para esta dimensión")}
             </p>
             <p className="text-sm text-[var(--rowi-muted)] mb-4">
-              {lang === "es"
-                ? "Presiona Recalcular para generar correlaciones de todas las dimensiones"
-                : "Press Recalculate to generate correlations for all dimensions"}
+              {t("admin.benchmarks.correlations.pressRecalculate", "Presiona Recalcular para generar correlaciones de todas las dimensiones")}
             </p>
             <AdminButton variant="primary" onClick={handleRecalculate} disabled={recalculating}>
               <RefreshCcw className={`w-4 h-4 mr-2 ${recalculating ? "animate-spin" : ""}`} />
               {recalculating
-                ? (lang === "es" ? "Calculando..." : "Calculating...")
-                : (lang === "es" ? "Calcular correlaciones" : "Calculate correlations")}
+                ? t("admin.benchmarks.correlations.calculating", "Calculando...")
+                : t("admin.benchmarks.correlations.calculateCorrelations", "Calcular correlaciones")}
             </AdminButton>
           </div>
         </AdminCard>
@@ -697,7 +676,7 @@ export default function CorrelationsPage() {
               <div className="flex items-center gap-3 mb-4">
                 <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
                 <h3 className="font-semibold text-[var(--rowi-foreground)]">
-                  {lang === "es" ? "Matriz: EQ Competencias → Outcomes" : "Matrix: EQ Competencies → Outcomes"}
+                  {t("admin.benchmarks.correlations.matrixEq", "Matriz: EQ Competencias → Outcomes")}
                 </h3>
               </div>
 
@@ -763,9 +742,7 @@ export default function CorrelationsPage() {
               </div>
 
               <p className="text-xs text-[var(--rowi-muted)] mt-4 text-center">
-                {lang === "es"
-                  ? "Haz clic en una celda para ver más detalles"
-                  : "Click on a cell to see more details"}
+                {t("admin.benchmarks.correlations.clickCell", "Haz clic en una celda para ver más detalles")}
               </p>
             </AdminCard>
           )}
@@ -776,7 +753,7 @@ export default function CorrelationsPage() {
               <div className="flex items-center gap-3 mb-4">
                 <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
                 <h3 className="font-semibold text-[var(--rowi-foreground)]">
-                  {lang === "es" ? "Matriz: Talentos Cerebrales → Outcomes" : "Matrix: Brain Talents → Outcomes"}
+                  {t("admin.benchmarks.correlations.matrixTalents", "Matriz: Talentos Cerebrales → Outcomes")}
                 </h3>
               </div>
 
@@ -848,9 +825,7 @@ export default function CorrelationsPage() {
               </div>
 
               <p className="text-xs text-[var(--rowi-muted)] mt-4 text-center">
-                {lang === "es"
-                  ? "18 talentos cerebrales agrupados por Focus · Decisions · Drive"
-                  : "18 brain talents grouped by Focus · Decisions · Drive"}
+                {t("admin.benchmarks.correlations.talentsFooter", "18 talentos cerebrales agrupados por Focus · Decisions · Drive")}
               </p>
             </AdminCard>
           )}
@@ -861,14 +836,12 @@ export default function CorrelationsPage() {
               <div className="flex items-center gap-3 mb-4">
                 <BarChart3 className="w-5 h-5 text-[var(--rowi-primary)]" />
                 <h3 className="font-semibold text-[var(--rowi-foreground)]">
-                  {lang === "es" ? "Matriz: Grupos Agregados → Outcomes" : "Matrix: Grouped Averages → Outcomes"}
+                  {t("admin.benchmarks.correlations.matrixGrouped", "Matriz: Grupos Agregados → Outcomes")}
                 </h3>
               </div>
 
               <p className="text-sm text-[var(--rowi-muted)] mb-4">
-                {lang === "es"
-                  ? "Promedio de talentos por categoría y orientación. Revela patrones a nivel macro."
-                  : "Average of talents by category and orientation. Reveals macro-level patterns."}
+                {t("admin.benchmarks.correlations.groupedDesc", "Promedio de talentos por categoría y orientación. Revela patrones a nivel macro.")}
               </p>
 
               <HeatmapLegend lang={lang} />
@@ -896,8 +869,8 @@ export default function CorrelationsPage() {
                               </span>
                               <span className="text-[8px] opacity-60">
                                 {isCategory
-                                  ? (lang === "es" ? "Categoría" : "Category")
-                                  : (lang === "es" ? "Orientación" : "Orientation")}
+                                  ? t("admin.benchmarks.correlations.category", "Categoría")
+                                  : t("admin.benchmarks.correlations.orientation", "Orientación")}
                               </span>
                             </div>
                           </th>
@@ -941,9 +914,7 @@ export default function CorrelationsPage() {
               </div>
 
               <p className="text-xs text-[var(--rowi-muted)] mt-4 text-center">
-                {lang === "es"
-                  ? "Categorías (3) muestran el efecto general. Orientaciones (6) revelan sub-patrones."
-                  : "Categories (3) show the general effect. Orientations (6) reveal sub-patterns."}
+                {t("admin.benchmarks.correlations.groupedFooter", "Categorías (3) muestran el efecto general. Orientaciones (6) revelan sub-patrones.")}
               </p>
             </AdminCard>
           )}
@@ -955,9 +926,9 @@ export default function CorrelationsPage() {
             <div className="flex items-center gap-3">
               <Filter className="w-5 h-5 text-[var(--rowi-primary)]" />
               <h3 className="font-semibold text-[var(--rowi-foreground)]">
-                {lang === "es" ? "Lista de Correlaciones" : "Correlation List"}
+                {t("admin.benchmarks.correlations.listTitle", "Lista de Correlaciones")}
                 <span className="ml-2 text-sm font-normal text-[var(--rowi-muted)]">
-                  ({dimensionLabels[dimension][lang] || dimensionLabels[dimension].en})
+                  ({dimensionLabels[dimension]})
                 </span>
               </h3>
             </div>
@@ -968,7 +939,7 @@ export default function CorrelationsPage() {
                 onChange={(e) => setSelectedOutcome(e.target.value || null)}
                 className="text-sm px-3 py-1.5 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)]"
               >
-                <option value="">{lang === "es" ? "Todos los outcomes" : "All outcomes"}</option>
+                <option value="">{t("admin.benchmarks.correlations.allOutcomes", "Todos los outcomes")}</option>
                 {OUTCOMES.map((o) => (
                   <option key={o} value={o}>
                     {t(`admin.benchmarks.outcomes.${o}`)}
@@ -982,7 +953,7 @@ export default function CorrelationsPage() {
                 className="text-sm px-3 py-1.5 rounded-lg border border-[var(--rowi-card-border)] bg-[var(--rowi-background)]"
               >
                 <option value="">
-                  {lang === "es" ? "Todas las métricas" : "All metrics"}
+                  {t("admin.benchmarks.correlations.allMetrics", "Todas las métricas")}
                 </option>
                 {availableMetrics.map((key) => (
                   <option key={key} value={key}>
@@ -1000,16 +971,14 @@ export default function CorrelationsPage() {
                     setSelectedCompetency(null);
                   }}
                 >
-                  {lang === "es" ? "Limpiar" : "Clear"}
+                  {t("admin.benchmarks.correlations.clear", "Limpiar")}
                 </AdminButton>
               )}
             </div>
           </div>
 
           <p className="text-sm text-[var(--rowi-muted)] mb-4">
-            {lang === "es"
-              ? `Mostrando ${filteredCorrelations.length} correlaciones ordenadas por fuerza`
-              : `Showing ${filteredCorrelations.length} correlations sorted by strength`}
+            {`${t("admin.benchmarks.correlations.showingPrefix", "Mostrando")} ${filteredCorrelations.length} ${t("admin.benchmarks.correlations.showingSuffix", "correlaciones ordenadas por fuerza")}`}
           </p>
 
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
@@ -1040,7 +1009,7 @@ export default function CorrelationsPage() {
                         </span>
                       </div>
                       <p className="text-xs text-[var(--rowi-muted)]">
-                        n = {corr.n.toLocaleString()} {lang === "es" ? "registros" : "records"}
+                        n = {corr.n.toLocaleString()} {t("admin.benchmarks.correlations.records", "registros")}
                         {corr.pValue && ` • p < ${corr.pValue.toFixed(4)}`}
                       </p>
                     </div>
@@ -1056,7 +1025,7 @@ export default function CorrelationsPage() {
                           : "neutral"
                       }
                     >
-                      {getStrengthLabel(corr.strength, lang)}
+                      {getStrengthLabel(corr.strength, t)}
                     </AdminBadge>
                     <span
                       className={`text-xl font-bold ${
@@ -1081,20 +1050,21 @@ export default function CorrelationsPage() {
 // Reusable sub-components
 // =========================================================
 
-function HeatmapLegend({ lang }: { lang: string }) {
+function HeatmapLegend({ lang: _lang }: { lang: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center justify-center gap-4 mb-4 text-xs">
       <div className="flex items-center gap-1">
         <div className="w-4 h-4 rounded bg-red-500"></div>
-        <span>{lang === "es" ? "Negativa fuerte" : "Strong negative"}</span>
+        <span>{t("admin.benchmarks.correlations.strongNegative", "Negativa fuerte")}</span>
       </div>
       <div className="flex items-center gap-1">
         <div className="w-4 h-4 rounded bg-gray-200"></div>
-        <span>{lang === "es" ? "Débil" : "Weak"}</span>
+        <span>{t("admin.benchmarks.correlations.weak", "Débil")}</span>
       </div>
       <div className="flex items-center gap-1">
         <div className="w-4 h-4 rounded bg-green-500"></div>
-        <span>{lang === "es" ? "Positiva fuerte" : "Strong positive"}</span>
+        <span>{t("admin.benchmarks.correlations.strongPositive", "Positiva fuerte")}</span>
       </div>
     </div>
   );
@@ -1103,7 +1073,7 @@ function HeatmapLegend({ lang }: { lang: string }) {
 function HeatmapCell({
   corr,
   label,
-  lang,
+  lang: _lang,
   onClick,
 }: {
   corr: Correlation;
@@ -1111,10 +1081,11 @@ function HeatmapCell({
   lang: string;
   onClick: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={`p-1.5 rounded cursor-pointer transition-transform hover:scale-110 ${getCorrelationColor(corr.correlation)}`}
-      title={`${label}: ${corr.correlation.toFixed(3)} (${getStrengthLabel(corr.strength, lang)}, n=${corr.n})`}
+      title={`${label}: ${corr.correlation.toFixed(3)} (${getStrengthLabel(corr.strength, t)}, n=${corr.n})`}
       onClick={onClick}
     >
       {corr.correlation.toFixed(2)}

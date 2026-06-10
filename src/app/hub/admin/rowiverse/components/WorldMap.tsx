@@ -89,7 +89,7 @@ function MapFallback({ mapData, message }: { mapData: CountryData[]; message: st
 }
 
 export default function WorldMap({ data, mapData }: Props) {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   const [tooltip, setTooltip] = useState<{
     show: boolean;
     x: number;
@@ -148,7 +148,7 @@ export default function WorldMap({ data, mapData }: Props) {
       <div className="relative w-full h-[60vh] border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center text-gray-500 dark:text-gray-400">
           <Globe2 className="w-12 h-12 mx-auto mb-2 animate-pulse" />
-          <p>{lang === "es" ? "Cargando mapa..." : lang === "pt" ? "Carregando mapa..." : lang === "it" ? "Caricamento mappa..." : "Loading map..."}</p>
+          <p>{t("admin.rowiverse.loadingMap", "Cargando mapa...")}</p>
         </div>
       </div>
     );

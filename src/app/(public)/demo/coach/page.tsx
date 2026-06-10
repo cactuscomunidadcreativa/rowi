@@ -288,7 +288,7 @@ export default function DemoCoachPage() {
                 <div className="text-white">
                   <h3 className="font-bold">{tFn("public.coach.rowiCoach")}</h3>
                   <p className="text-sm text-white/80">
-                    {lang === "es" ? "En línea" : "Online"}
+                    {tFn("demo.coach.online", "En línea")}
                   </p>
                 </div>
               </div>
@@ -421,12 +421,10 @@ export default function DemoCoachPage() {
               className="bg-gradient-to-br from-violet-500 to-purple-500 rounded-2xl p-6 text-white"
             >
               <h3 className="font-bold text-lg mb-2">
-                {lang === "es" ? "¿Listo para comenzar?" : "Ready to start?"}
+                {tFn("demo.coach.readyTitle", "¿Listo para comenzar?")}
               </h3>
               <p className="text-sm text-white/80 mb-4">
-                {lang === "es"
-                  ? "Crea tu cuenta gratis y conoce a tu Rowi personal"
-                  : "Create your free account and meet your personal Rowi"}
+                {tFn("demo.coach.readyDesc", "Crea tu cuenta gratis y conoce a tu Rowi personal")}
               </p>
               <Link
                 href="/register"

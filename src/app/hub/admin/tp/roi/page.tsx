@@ -118,6 +118,7 @@ const translations = {
     errorDesc: "No se pudieron cargar las correlaciones o estadísticas. Usando valores de referencia.",
     retry: "Reintentar",
     assessments: "evaluaciones",
+    dataBasedOn: "Datos basados en",
   },
   en: {
     backToHub: "TP Hub",
@@ -204,6 +205,7 @@ const translations = {
     errorDesc: "Could not load correlations or statistics. Using reference values.",
     retry: "Retry",
     assessments: "assessments",
+    dataBasedOn: "Data based on",
   },
   pt: {
     backToHub: "TP Hub",
@@ -290,6 +292,7 @@ const translations = {
     errorDesc: "Could not load correlations or statistics. Using reference values.",
     retry: "Retry",
     assessments: "assessments",
+    dataBasedOn: "Dados baseados em",
   },
   it: {
     backToHub: "TP Hub",
@@ -376,6 +379,7 @@ const translations = {
     errorDesc: "Could not load correlations or statistics. Using reference values.",
     retry: "Retry",
     assessments: "assessments",
+    dataBasedOn: "Dati basati su",
   },
 
 };
@@ -918,7 +922,7 @@ export default function TPROIPage() {
 
   /* ---- Dynamic info desc with real assessment count ---- */
   const infoDescWithCount = tpCurrent.totalAssessments > 0
-    ? `${t.infoDesc.replace(/\.$/, "")}. ${lang === "es" ? "Datos basados en" : "Data based on"} ${tpCurrent.totalAssessments.toLocaleString()} ${t.assessments}.`
+    ? `${t.infoDesc.replace(/\.$/, "")}. ${t.dataBasedOn} ${tpCurrent.totalAssessments.toLocaleString()} ${t.assessments}.`
     : t.infoDesc;
 
   /* ---- Loading state ---- */

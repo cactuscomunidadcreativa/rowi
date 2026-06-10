@@ -99,6 +99,7 @@ const translations = {
     lowCompAlertDesc: "tiene {comp} en {value}, por debajo del umbral de {threshold}",
     lowEQAlertDesc: "tiene un EQ promedio de {value}, por debajo del umbral de {threshold}",
     lowHealthAlertDesc: "tiene un score de salud de {value}, por debajo del umbral de {threshold}",
+    spread: "Rango",
   },
   en: {
     backToHub: "TP Hub",
@@ -168,6 +169,7 @@ const translations = {
     lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
     lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
     lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
+    spread: "Spread",
   },
   pt: {
     backToHub: "TP Hub",
@@ -237,6 +239,7 @@ const translations = {
     lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
     lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
     lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
+    spread: "Intervalo",
   },
   it: {
     backToHub: "TP Hub",
@@ -306,6 +309,7 @@ const translations = {
     lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
     lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
     lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
+    spread: "Intervallo",
   },
 
 };
@@ -928,7 +932,7 @@ export default function TPAlertsPage() {
                   })}
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 text-xs text-[var(--rowi-muted)]">
-                  <span className="font-medium">{lang === "es" ? "Rango" : "Spread"}: {spread.toFixed(1)}</span>{" "}
+                  <span className="font-medium">{t.spread}: {spread.toFixed(1)}</span>{" "}
                   ({minMean.toFixed(1)} — {maxMean.toFixed(1)})
                 </div>
               </motion.div>

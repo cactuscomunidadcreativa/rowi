@@ -200,7 +200,7 @@ const settingsCategories: { titleKey: string; items: SettingItem[] }[] = [
 ];
 
 export default function SettingsIndex() {
-  const { locale } = useI18n();
+  const { locale, t: ti18n } = useI18n();
   const lang = locale; // all 4 languages
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
 
@@ -283,9 +283,7 @@ export default function SettingsIndex() {
           </span>
         </div>
         <p>
-          {lang === "es"
-            ? "Tu copiloto de inteligencia emocional"
-            : "Your emotional intelligence copilot"}
+          {ti18n("settings.tagline", "Tu copiloto de inteligencia emocional")}
         </p>
       </motion.div>
     </main>

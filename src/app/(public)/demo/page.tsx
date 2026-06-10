@@ -224,7 +224,7 @@ const modules = [
 ];
 
 export default function DemoPage() {
-  const { lang } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
 
@@ -417,10 +417,10 @@ export default function DemoPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { icon: Brain, value: "8", label: lang === "es" ? "Competencias SEI" : lang === "pt" ? "Competências SEI" : lang === "it" ? "Competenze SEI" : "SEI Competencies" },
-              { icon: Users, value: "5", label: lang === "es" ? "Niveles de evolución" : lang === "pt" ? "Níveis de evolução" : lang === "it" ? "Livelli di evoluzione" : "Evolution levels" },
-              { icon: TrendingUp, value: "135", label: lang === "es" ? "Puntuación máxima EQ" : lang === "pt" ? "Pontuação máxima EQ" : lang === "it" ? "Punteggio EQ massimo" : "Max EQ score" },
-              { icon: Heart, value: "24/7", label: lang === "es" ? "Coach disponible" : lang === "pt" ? "Coach disponível" : lang === "it" ? "Coach disponibile" : "Coach available" },
+              { icon: Brain, value: "8", label: tFn("demo.stats.competencies", "Competencias SEI") },
+              { icon: Users, value: "5", label: tFn("demo.stats.evolutionLevels", "Niveles de evolución") },
+              { icon: TrendingUp, value: "135", label: tFn("demo.stats.maxEqScore", "Puntuación máxima EQ") },
+              { icon: Heart, value: "24/7", label: tFn("demo.stats.coachAvailable", "Coach disponible") },
             ].map((stat, i) => (
               <motion.div
                 key={i}

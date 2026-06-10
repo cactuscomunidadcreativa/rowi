@@ -4,9 +4,9 @@ import HubMembersClient from "./members-client"; // 👈 referencia al archivo s
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export default function HubMembersPageWrapper() {
-  const { lang } = useI18n();
+  const { t } = useI18n();
   return (
-    <Suspense fallback={<div className="p-4 text-muted-foreground">{lang === "es" ? "Cargando miembros..." : lang === "pt" ? "Carregando membros..." : lang === "it" ? "Caricamento membri..." : "Loading members..."}</div>}>
+    <Suspense fallback={<div className="p-4 text-muted-foreground">{t("admin.members.loading", "Cargando miembros...")}</div>}>
       <HubMembersClient />
     </Suspense>
   );

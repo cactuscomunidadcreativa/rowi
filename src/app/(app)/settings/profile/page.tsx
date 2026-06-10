@@ -364,7 +364,7 @@ type AffinityData = {
 
 /* ====== Componente Principal ====== */
 export default function ProfileSettingsPage() {
-  const { locale } = useI18n();
+  const { locale, t: ti18n } = useI18n();
   const lang = locale; // all 4 languages
   const langEsEn: "es" | "en" = (locale === "es" ? "es" : "en"); // for suggestion objects that only have es/en
   const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
@@ -793,9 +793,10 @@ export default function ProfileSettingsPage() {
                 <div className="text-center py-4">
                   <AlertCircle size={24} className="mx-auto text-orange-500 mb-2" />
                   <p className="text-sm rowi-muted">
-                    {lang === "es"
-                      ? "No hay links de SEI disponibles en este momento. Por favor contacta al administrador."
-                      : "No SEI links available at this time. Please contact the administrator."}
+                    {ti18n(
+                      "settings.profile.noSeiLinks",
+                      "No hay links de SEI disponibles en este momento. Por favor contacta al administrador."
+                    )}
                   </p>
                 </div>
               )}

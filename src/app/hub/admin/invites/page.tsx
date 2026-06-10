@@ -83,7 +83,7 @@ const CHANNEL_OPTIONS = [
 ];
 
 export default function InvitesAdminPage() {
-  const { t, ready, lang } = useI18n();
+  const { t, ready } = useI18n();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [stats, setStats] = useState<InviteStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,7 +151,7 @@ export default function InvitesAdminPage() {
     const link = inv.url || `${window.location.origin}/invite/${inv.token}`;
     navigator.clipboard.writeText(link).then(() => {
       setCopiedId(inv.id);
-      toast.success(lang === "es" ? "Link copiado" : "Link copied");
+      toast.success(t("admin.invites.linkCopied", "Link copiado"));
       setTimeout(() => setCopiedId(null), 2000);
     });
   }
@@ -178,21 +178,21 @@ export default function InvitesAdminPage() {
         return (
           <AdminBadge variant="warning">
             <Clock className="w-3 h-3" />
-            {lang === "es" ? "Pendiente" : "Pending"}
+            {t("admin.invites.status.pending", "Pendiente")}
           </AdminBadge>
         );
       case "accepted":
         return (
           <AdminBadge variant="success">
             <CheckCircle2 className="w-3 h-3" />
-            {lang === "es" ? "Aceptada" : "Accepted"}
+            {t("admin.invites.status.accepted", "Aceptada")}
           </AdminBadge>
         );
       case "expired":
         return (
           <AdminBadge variant="error">
             <XCircle className="w-3 h-3" />
-            {lang === "es" ? "Expirada" : "Expired"}
+            {t("admin.invites.status.expired", "Expirada")}
           </AdminBadge>
         );
       default:
@@ -214,10 +214,10 @@ export default function InvitesAdminPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-1.5 rounded-lg text-xs bg-[var(--rowi-background)] border border-[var(--rowi-border)]"
           >
-            <option value="all">{lang === "es" ? "Todos" : "All"}</option>
-            <option value="pending">{lang === "es" ? "Pendientes" : "Pending"}</option>
-            <option value="accepted">{lang === "es" ? "Aceptadas" : "Accepted"}</option>
-            <option value="expired">{lang === "es" ? "Expiradas" : "Expired"}</option>
+            <option value="all">{t("admin.invites.filter.all", "Todos")}</option>
+            <option value="pending">{t("admin.invites.filter.pending", "Pendientes")}</option>
+            <option value="accepted">{t("admin.invites.filter.accepted", "Aceptadas")}</option>
+            <option value="expired">{t("admin.invites.filter.expired", "Expiradas")}</option>
           </select>
           <AdminViewToggle view={viewMode} onChange={setViewMode} />
           <AdminButton
@@ -236,19 +236,19 @@ export default function InvitesAdminPage() {
         <AdminGrid cols={4} className="mb-6">
           <AdminCard className="text-center">
             <div className="text-2xl font-bold text-[var(--rowi-foreground)]">{stats.total}</div>
-            <div className="text-xs text-[var(--rowi-muted)]">{lang === "es" ? "Total" : "Total"}</div>
+            <div className="text-xs text-[var(--rowi-muted)]">{t("admin.invites.stats.total", "Total")}</div>
           </AdminCard>
           <AdminCard className="text-center">
             <div className="text-2xl font-bold text-yellow-500">{stats.pending}</div>
-            <div className="text-xs text-[var(--rowi-muted)]">{lang === "es" ? "Pendientes" : "Pending"}</div>
+            <div className="text-xs text-[var(--rowi-muted)]">{t("admin.invites.filter.pending", "Pendientes")}</div>
           </AdminCard>
           <AdminCard className="text-center">
             <div className="text-2xl font-bold text-green-500">{stats.accepted}</div>
-            <div className="text-xs text-[var(--rowi-muted)]">{lang === "es" ? "Aceptadas" : "Accepted"}</div>
+            <div className="text-xs text-[var(--rowi-muted)]">{t("admin.invites.filter.accepted", "Aceptadas")}</div>
           </AdminCard>
           <AdminCard className="text-center">
             <div className="text-2xl font-bold text-red-500">{stats.expired}</div>
-            <div className="text-xs text-[var(--rowi-muted)]">{lang === "es" ? "Expiradas" : "Expired"}</div>
+            <div className="text-xs text-[var(--rowi-muted)]">{t("admin.invites.filter.expired", "Expiradas")}</div>
           </AdminCard>
         </AdminGrid>
       )}
@@ -283,12 +283,12 @@ export default function InvitesAdminPage() {
                     )}
                   </span>
                 }
-                subtitle={inv.name ? contactDisplay : `${lang === "es" ? "Creada" : "Created"}: ${createdDate}`}
+                subtitle={inv.name ? contactDisplay : `${t("admin.invites.created", "Creada")}: ${createdDate}`}
                 badge={getStatusBadge(inv.status)}
                 meta={
                   <div className="flex items-center gap-2 text-xs text-[var(--rowi-muted)]">
                     {inv.invitedBy && (
-                      <span>{lang === "es" ? "Por" : "By"}: {inv.invitedBy.name || inv.invitedBy.email}</span>
+                      <span>{t("admin.invites.by", "Por")}: {inv.invitedBy.name || inv.invitedBy.email}</span>
                     )}
                   </div>
                 }
@@ -297,7 +297,7 @@ export default function InvitesAdminPage() {
                     <AdminIconButton
                       icon={copiedId === inv.id ? Check : Link2}
                       onClick={() => copyInviteLink(inv)}
-                      title={lang === "es" ? "Copiar link" : "Copy link"}
+                      title={t("admin.invites.copyLink", "Copiar link")}
                     />
                     {inv.status === "pending" && (
                       <AdminIconButton
@@ -363,14 +363,14 @@ export default function InvitesAdminPage() {
 
                 {/* Dates */}
                 <div className="text-xs text-[var(--rowi-muted)] space-y-1 mb-3">
-                  <p>{lang === "es" ? "Creada" : "Created"}: {createdDate}</p>
-                  <p>{lang === "es" ? "Expira" : "Expires"}: {expiresDate}</p>
+                  <p>{t("admin.invites.created", "Creada")}: {createdDate}</p>
+                  <p>{t("admin.invites.expires", "Expira")}: {expiresDate}</p>
                 </div>
 
                 {/* Invited by */}
                 {inv.invitedBy && (
                   <p className="text-xs text-[var(--rowi-muted)] mb-3">
-                    {lang === "es" ? "Por" : "By"}: {inv.invitedBy.name || inv.invitedBy.email}
+                    {t("admin.invites.by", "Por")}: {inv.invitedBy.name || inv.invitedBy.email}
                   </p>
                 )}
 

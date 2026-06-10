@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Brain, TreePine } from "lucide-react";
+import { useI18n } from "@/lib/i18n/react";
 
 // Colores Six Seconds
 const SIX_SECONDS_CONFIG: Record<number, { color: string; name: { es: string; en: string; pt: string; it: string } }> = {
@@ -55,6 +56,7 @@ export function LevelBadges({
   showLabels = true,
   className,
 }: LevelBadgesProps) {
+  const { t } = useI18n();
   const sixSecondsConfig = SIX_SECONDS_CONFIG[sixSecondsLevel] || SIX_SECONDS_CONFIG[1];
   const rowiLevelName = ROWI_LEVEL_NAMES[rowiLevel] || ROWI_LEVEL_NAMES[1];
 
@@ -89,7 +91,7 @@ export function LevelBadges({
         {showLabels && (
           <p className={cn("uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1", sizeClasses[size].text)}>
             <TreePine className="w-3 h-3" />
-            {lang === "es" ? "Nivel Rowi" : lang === "pt" ? "Nível Rowi" : lang === "it" ? "Livello Rowi" : "Rowi Level"}
+            {t("avatar.levels.rowi", "Nivel Rowi")}
           </p>
         )}
         <p className={cn("font-bold text-emerald-600 dark:text-emerald-400", sizeClasses[size].value)}>

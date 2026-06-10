@@ -21,7 +21,7 @@ interface Community {
 }
 
 export default function CommunitiesSummaryPage() {
-  const { lang, t } = useI18n();
+  const { t } = useI18n();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [totalCommunities, setTotalCommunities] = useState(0);
   const [totalMembers, setTotalMembers] = useState(0);
@@ -128,7 +128,7 @@ export default function CommunitiesSummaryPage() {
 
       {/* ESTADÍSTICAS PRINCIPALES */}
       {loading ? (
-        <p className="text-sm text-muted-foreground">{lang === "es" ? "Cargando información..." : lang === "pt" ? "Carregando informações..." : lang === "it" ? "Caricamento informazioni..." : "Loading information..."}</p>
+        <p className="text-sm text-muted-foreground">{t("admin.communities.loadingInfo", "Cargando información...")}</p>
       ) : (
         <>
           <div className="grid md:grid-cols-3 gap-5">

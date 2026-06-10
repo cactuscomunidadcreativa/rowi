@@ -35,6 +35,7 @@ import {
   formatPrice,
   getTokensText,
   getSupportLevelName,
+  localizedPlan,
   type RowiPlan,
   type PlanSlug,
 } from "@/domains/plans/lib/plans";
@@ -463,7 +464,9 @@ export default function RegisterPage() {
 function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { lang } = useI18n();
+  // OJO: `t` local es el objeto de traducciones de esta página; el t() global
+  // de i18n se renombra a tGlobal para los textos de planes (localizedPlan).
+  const { lang, t: tGlobal } = useI18n();
   const { data: session, status } = useSession();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
@@ -795,6 +798,8 @@ function RegisterPageContent() {
                   const isSelected = selectedPlan?.slug === plan.slug;
                   const isExpanded = expandedPlan === plan.slug;
                   const isHighlighted = plan.badge === "Popular" || plan.badge === "Recomendado";
+                  // Textos del plan resueltos vía i18n (pt/it incluidos).
+                  const lp = localizedPlan(plan, tGlobal);
 
                   return (
                     <motion.div
@@ -817,7 +822,7 @@ function RegisterPageContent() {
                           className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold text-white"
                           style={{ backgroundColor: plan.color }}
                         >
-                          {lang === "es" ? plan.badge : plan.badgeEN}
+                          {lp.badge}
                         </div>
                       )}
 
@@ -863,7 +868,7 @@ function RegisterPageContent() {
 
                       {/* Key Features (3) */}
                       <ul className="space-y-1.5 text-sm">
-                        {(lang === "es" ? plan.features : plan.featuresEN).slice(0, 3).map((feature, i) => (
+                        {lp.features.slice(0, 3).map((feature, i) => (
                           <li key={i} className="flex items-start gap-2">
                             <Check className="w-3.5 h-3.5 mt-0.5 text-green-500 shrink-0" />
                             <span className="text-xs">{feature}</span>
@@ -872,7 +877,7 @@ function RegisterPageContent() {
                       </ul>
 
                       {/* Expand/Collapse */}
-                      {(lang === "es" ? plan.features : plan.featuresEN).length > 3 && (
+                      {lp.features.length > 3 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -883,7 +888,7 @@ function RegisterPageContent() {
                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                           {isExpanded
                             ? t.planSelection.seeLess
-                            : `+${(lang === "es" ? plan.features : plan.featuresEN).length - 3} ${t.planSelection.more}`
+                            : `+${lp.features.length - 3} ${t.planSelection.more}`
                           }
                         </button>
                       )}
@@ -897,7 +902,7 @@ function RegisterPageContent() {
                             exit={{ height: 0, opacity: 0 }}
                             className="space-y-1.5 mt-2 overflow-hidden"
                           >
-                            {(lang === "es" ? plan.features : plan.featuresEN).slice(3).map((feature, i) => (
+                            {lp.features.slice(3).map((feature, i) => (
                               <li key={i} className="flex items-start gap-2">
                                 <Check className="w-3.5 h-3.5 mt-0.5 text-green-500 shrink-0" />
                                 <span className="text-xs">{feature}</span>

@@ -29,6 +29,7 @@ import {
   calculateYearlySavingsPercent,
   getTokensText,
   getSupportLevelName,
+  localizedPlan,
   relationalDepthForPlan,
   relationalDepthLabel,
   type RowiPlan,
@@ -228,6 +229,8 @@ export default function PricingPage() {
             const isExpanded = expandedPlan === plan.slug;
             const savings = calculateYearlySavingsPercent(plan);
             const isHighlighted = plan.badge === "Popular" || plan.badge === "Recomendado";
+            // Textos del plan resueltos vía i18n (pt/it incluidos).
+            const lp = localizedPlan(plan, t);
 
             return (
               <motion.div
@@ -247,7 +250,7 @@ export default function PricingPage() {
                     className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white"
                     style={{ backgroundColor: plan.color }}
                   >
-                    {lang === "es" ? plan.badge : plan.badgeEN}
+                    {lp.badge}
                   </div>
                 )}
 
@@ -277,7 +280,7 @@ export default function PricingPage() {
                       {relationalDepthLabel(relationalDepthForPlan(plan), lang)}
                     </span>
                     <p className="text-sm text-[var(--rowi-muted)]">
-                      {lang === "es" ? plan.description.split(".")[0] : plan.descriptionEN.split(".")[0]}
+                      {lp.description.split(".")[0]}
                     </p>
                   </div>
                 </div>
@@ -304,7 +307,7 @@ export default function PricingPage() {
 
                 {/* Key Features (collapsed) */}
                 <ul className="space-y-2 mb-4">
-                  {(lang === "es" ? plan.features : plan.featuresEN).slice(0, 4).map((feature, i) => (
+                  {lp.features.slice(0, 4).map((feature, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
                       <span>{feature}</span>
@@ -313,7 +316,7 @@ export default function PricingPage() {
                 </ul>
 
                 {/* Expand/Collapse */}
-                {(lang === "es" ? plan.features : plan.featuresEN).length > 4 && (
+                {lp.features.length > 4 && (
                   <button
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.slug)}
                     className="flex items-center gap-1 text-sm text-[var(--rowi-muted)] hover:text-[var(--rowi-text)] mb-4"
@@ -328,7 +331,7 @@ export default function PricingPage() {
                         <ChevronDown className="w-4 h-4" />
                         {t("pricingPage.features.seeMore", "Ver {n} más").replace(
                           "{n}",
-                          String((lang === "es" ? plan.features : plan.featuresEN).length - 4)
+                          String(lp.features.length - 4)
                         )}
                       </>
                     )}
@@ -342,7 +345,7 @@ export default function PricingPage() {
                     animate={{ height: "auto", opacity: 1 }}
                     className="space-y-2 mb-4"
                   >
-                    {(lang === "es" ? plan.features : plan.featuresEN).slice(4).map((feature, i) => (
+                    {lp.features.slice(4).map((feature, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
                         <Check className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
                         <span>{feature}</span>
@@ -350,12 +353,12 @@ export default function PricingPage() {
                     ))}
 
                     {/* Limitations */}
-                    {(lang === "es" ? plan.limitations : plan.limitationsEN).length > 0 && (
+                    {lp.limitations.length > 0 && (
                       <div className="pt-2 mt-2 border-t border-[var(--rowi-border)]">
                         <p className="text-xs font-semibold text-[var(--rowi-muted)] mb-2">
                           {t("pricingPage.limitations.title", "Limitaciones")}
                         </p>
-                        {(lang === "es" ? plan.limitations : plan.limitationsEN).map((limitation, i) => (
+                        {lp.limitations.map((limitation, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-[var(--rowi-muted)]">
                             <X className="w-4 h-4 mt-0.5 text-red-400 shrink-0" />
                             <span>{limitation}</span>

@@ -31,6 +31,12 @@ export type RelationalDepth =
 
 export interface RowiPlan {
   slug: PlanSlug;
+  /**
+   * Clave i18n estable del plan. Las claves de traducción se forman como
+   * `plans.<key>.description`, `plans.<key>.badge`, `plans.<key>.features.<i>`,
+   * `plans.<key>.limitations.<i>` (ver localizedPlan()).
+   */
+  key: string;
   name: string;
   nameEN: string;
   description: string;
@@ -129,6 +135,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   free: {
     slug: "free",
+    key: "free",
     name: "Free ROWI",
     nameEN: "Free ROWI",
     description: "Comienza tu viaje de inteligencia emocional. Ideal para explorar Rowi.",
@@ -221,6 +228,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   sei: {
     slug: "sei",
+    key: "sei",
     name: "ROWI SEI",
     nameEN: "ROWI SEI",
     description:
@@ -315,6 +323,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   plus: {
     slug: "plus",
+    key: "plus",
     name: "ROWI+",
     nameEN: "ROWI+",
     description: "Para tu crecimiento personal. Todo lo que necesitas para desarrollar tu inteligencia emocional.",
@@ -419,6 +428,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   family: {
     slug: "family",
+    key: "family",
     name: "ROWI Family",
     nameEN: "ROWI Family",
     description: "Inteligencia emocional para toda la familia. Comparte tokens y crece juntos.",
@@ -520,6 +530,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   pro: {
     slug: "pro",
+    key: "pro",
     name: "ROWI Pro",
     nameEN: "ROWI Pro",
     description: "Para profesionales y coaches. Herramientas avanzadas para tu práctica.",
@@ -625,6 +636,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   business: {
     slug: "business",
+    key: "business",
     name: "ROWI Business",
     nameEN: "ROWI Business",
     description: "Inteligencia emocional para tu organización. Transforma la cultura de tu empresa.",
@@ -733,6 +745,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
   // ============================================================
   enterprise: {
     slug: "enterprise",
+    key: "enterprise",
     name: "ROWI Enterprise",
     nameEN: "ROWI Enterprise",
     description: "Solución personalizada para grandes organizaciones. Máximo poder e integración.",
@@ -854,6 +867,35 @@ export function getB2BPlans(): RowiPlan[] {
 /** Obtener plan por slug */
 export function getPlanBySlug(slug: PlanSlug): RowiPlan | undefined {
   return ROWI_PLANS[slug];
+}
+
+/** Textos de un plan resueltos vía i18n (ver localizedPlan). */
+export interface LocalizedPlanTexts {
+  badge?: string;
+  description: string;
+  features: string[];
+  limitations: string[];
+}
+
+/**
+ * Resuelve los textos visibles de un plan a través de t() para que pt/it
+ * (y cualquier locale futuro) no caigan en inglés. Claves:
+ *   plans.<key>.badge / plans.<key>.description /
+ *   plans.<key>.features.<i> / plans.<key>.limitations.<i>
+ * Fallback siempre = texto ES del plan (fuente canónica en este archivo).
+ * Los campos *EN se mantienen solo para consumidores legacy.
+ */
+export function localizedPlan(
+  plan: RowiPlan,
+  t: (key: string, fallback?: string) => string,
+): LocalizedPlanTexts {
+  const k = plan.key;
+  return {
+    badge: plan.badge ? t(`plans.${k}.badge`, plan.badge) : undefined,
+    description: t(`plans.${k}.description`, plan.description),
+    features: plan.features.map((f, i) => t(`plans.${k}.features.${i}`, f)),
+    limitations: plan.limitations.map((l, i) => t(`plans.${k}.limitations.${i}`, l)),
+  };
 }
 
 /**

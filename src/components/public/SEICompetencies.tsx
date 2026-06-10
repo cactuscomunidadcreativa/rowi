@@ -52,7 +52,7 @@ export default function SEICompetencies({
   showDetails = true,
   layout = "vertical"
 }: SEICompetenciesProps) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [selectedPursuit, setSelectedPursuit] = useState<PursuitKey>("K");
   const [selectedCompetency, setSelectedCompetency] = useState<CompetencyKey | null>(null);
 
@@ -135,7 +135,7 @@ export default function SEICompetencies({
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-lg">
-                    {lang === "es" ? pursuit.labelES : pursuit.labelEN}
+                    {t(pursuit.labelKey, pursuit.labelES)}
                   </p>
                   <p className="text-sm text-[var(--rowi-muted)]">
                     {pursuit.competencies.length} {t("seiCompetencies.competenciesLabel", "competencias")}
@@ -163,7 +163,7 @@ export default function SEICompetencies({
           style={{ backgroundColor: `${currentPursuit.color}10` }}
         >
           <p className="text-lg" style={{ color: currentPursuit.color }}>
-            {currentPursuit.description}
+            {t(currentPursuit.descriptionKey, currentPursuit.description)}
           </p>
         </motion.div>
 
@@ -217,11 +217,11 @@ export default function SEICompetencies({
                     </div>
 
                     <h3 className="font-semibold text-lg mb-1">
-                      {lang === "es" ? competency.labelES : competency.labelEN}
+                      {t(competency.labelKey, competency.labelES)}
                     </h3>
 
                     <p className="text-sm text-[var(--rowi-muted)]">
-                      {lang === "es" ? competency.definitionES : competency.definitionEN}
+                      {t(competency.definitionKey, competency.definitionES)}
                     </p>
 
                     {/* Expanded Details */}
@@ -241,14 +241,16 @@ export default function SEICompetencies({
                                 {t("seiCompetencies.benefits", "Beneficios")}
                               </p>
                               <div className="flex flex-wrap gap-1">
-                                {competency.benefits.map((benefit, i) => (
-                                  <span
-                                    key={i}
-                                    className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                                  >
-                                    {benefit}
-                                  </span>
-                                ))}
+                                {t(`${competency.labelKey}.benefits`, competency.benefits.join(", "))
+                                  .split(",")
+                                  .map((benefit, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                                    >
+                                      {benefit.trim()}
+                                    </span>
+                                  ))}
                               </div>
                             </div>
 
@@ -259,14 +261,16 @@ export default function SEICompetencies({
                                 {t("seiCompetencies.risksIfNotDeveloped", "Riesgos si no se desarrolla")}
                               </p>
                               <div className="flex flex-wrap gap-1">
-                                {competency.risks.map((risk, i) => (
-                                  <span
-                                    key={i}
-                                    className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                                  >
-                                    {risk}
-                                  </span>
-                                ))}
+                                {t(`${competency.labelKey}.risks`, competency.risks.join(", "))
+                                  .split(",")
+                                  .map((risk, i) => (
+                                    <span
+                                      key={i}
+                                      className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                    >
+                                      {risk.trim()}
+                                    </span>
+                                  ))}
                               </div>
                             </div>
                           </div>
@@ -294,7 +298,7 @@ export default function SEICompetencies({
                 style={{ backgroundColor: pursuit.color }}
               />
               <span className="text-[var(--rowi-muted)]">
-                {lang === "es" ? pursuit.labelES : pursuit.labelEN}
+                {t(pursuit.labelKey, pursuit.labelES)}
               </span>
             </div>
           ))}

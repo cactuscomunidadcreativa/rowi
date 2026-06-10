@@ -798,7 +798,7 @@ function RadarChart({ personA, personB, t }: { personA: Person; personB: Person;
    Main Page
 ========================================================= */
 export default function TPPeopleComparator() {
-  const { lang } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   // API state
@@ -1105,7 +1105,7 @@ export default function TPPeopleComparator() {
                         const lvl = getEqLevel(personA.eqTotal);
                         return (
                           <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
-                            {lvl.emoji} {lang !== "es" ? lvl.labelEN : lvl.label}
+                            {lvl.emoji} {tFn(lvl.labelKey, lvl.label)}
                           </span>
                         );
                       })()}
@@ -1141,7 +1141,7 @@ export default function TPPeopleComparator() {
                         const lvl = getEqLevel(personB.eqTotal);
                         return (
                           <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${lvl.color}20`, color: lvl.color }}>
-                            {lvl.emoji} {lang !== "es" ? lvl.labelEN : lvl.label}
+                            {lvl.emoji} {tFn(lvl.labelKey, lvl.label)}
                           </span>
                         );
                       })()}

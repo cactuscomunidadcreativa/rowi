@@ -1007,7 +1007,7 @@ export default function TPEvolutionPage() {
                       <span className="text-lg">{lvl.emoji}</span>
                       <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
-                        {lang !== "es" ? lvl.labelEN : lvl.label}
+                        {tFn(lvl.labelKey, lvl.label)}
                       </span>
                     </div>
                   );
@@ -1076,7 +1076,7 @@ export default function TPEvolutionPage() {
                       <span className="text-lg">{lvl.emoji}</span>
                       <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
-                        {lang !== "es" ? lvl.labelEN : lvl.label}
+                        {tFn(lvl.labelKey, lvl.label)}
                       </span>
                     </div>
                   );

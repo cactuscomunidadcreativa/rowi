@@ -113,7 +113,7 @@ export default function RowiEvolution({
   compact = false,
   interactive = true
 }: RowiEvolutionProps) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const [activeStage, setActiveStage] = useState<EvolutionStage>("challenge");
   const [simulatedScore, setSimulatedScore] = useState(75);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -358,7 +358,7 @@ export default function RowiEvolution({
                   style={{ backgroundColor: currentStage.seiLevel.color }}
                 />
                 <span className="font-semibold">
-                  {currentStage.seiLevel.emoji} {lang !== "es" ? currentStage.seiLevel.labelEN : currentStage.seiLevel.label}
+                  {currentStage.seiLevel.emoji} {t(currentStage.seiLevel.labelKey, currentStage.seiLevel.label)}
                 </span>
                 <span className="text-sm text-[var(--rowi-muted)] font-mono">
                   {currentStage.seiLevel.min}-{currentStage.seiLevel.max}
@@ -380,7 +380,7 @@ export default function RowiEvolution({
                   crudo — un score sin medición real no es un claim de SEI.
                   El rango va como contexto secundario. */}
               <p className="text-3xl font-bold" style={{ color: currentStage.seiLevel.color }}>
-                {lang === "es" ? currentStage.seiLevel.label : currentStage.seiLevel.labelEN}
+                {t(currentStage.seiLevel.labelKey, currentStage.seiLevel.label)}
               </p>
               <p className="text-xs text-[var(--rowi-muted)] mt-1">
                 {t("rowiEvolution.seiRange", "Rango SEI")} {currentStage.seiLevel.min}–{currentStage.seiLevel.max}/{EQ_MAX}
@@ -424,7 +424,7 @@ export default function RowiEvolution({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-lg flex items-center gap-2">
-                        {lang !== "es" ? stage.seiLevel.labelEN : stage.seiLevel.label}
+                        {t(stage.seiLevel.labelKey, stage.seiLevel.label)}
                         {activeStage === stage.id && (
                           <motion.span
                             initial={{ scale: 0 }}
@@ -446,7 +446,7 @@ export default function RowiEvolution({
                       </span>
                     </div>
                     <p className="text-sm text-[var(--rowi-muted)] line-clamp-2">
-                      {lang !== "es" ? stage.seiLevel.descriptionEN : stage.seiLevel.description}
+                      {t(stage.seiLevel.descriptionKey, stage.seiLevel.description)}
                     </p>
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export default function RowiEvolution({
                     : "text-[var(--rowi-muted)]"
                 }`}
               >
-                {stage.seiLevel.emoji} {lang !== "es" ? stage.seiLevel.labelEN : stage.seiLevel.label}
+                {stage.seiLevel.emoji} {t(stage.seiLevel.labelKey, stage.seiLevel.label)}
               </span>
             ))}
           </div>
@@ -673,7 +673,7 @@ function CompactEvolution({
             className="w-2 h-2 rounded-full"
             style={{ backgroundColor: stage.seiLevel.color }}
           />
-          <span className="font-semibold">{stage.seiLevel.emoji} {stage.seiLevel.label}</span>
+          <span className="font-semibold">{stage.seiLevel.emoji} {t(stage.seiLevel.labelKey, stage.seiLevel.label)}</span>
         </div>
         <div className="h-2 bg-[var(--rowi-border)] rounded-full overflow-hidden">
           <div
@@ -685,7 +685,7 @@ function CompactEvolution({
           />
         </div>
         <p className="text-xs text-[var(--rowi-muted)] mt-1">
-          {score}/{EQ_MAX} • {stage.seiLevel.description.split(".")[0]}
+          {score}/{EQ_MAX} • {t(stage.seiLevel.descriptionKey, stage.seiLevel.description).split(".")[0]}
         </p>
       </div>
     </div>

@@ -564,7 +564,7 @@ function BrainStyleDonut({
    Main Page
 ========================================================= */
 export default function TPTeamsPage() {
-  const { lang } = useI18n();
+  const { lang, t: tFn } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   /* ---- API State ---- */
@@ -849,7 +849,7 @@ export default function TPTeamsPage() {
                       className="text-xs font-bold px-2 py-1 rounded-full"
                       style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                     >
-                      {group.eqLevel.emoji} {lang !== "es" ? group.eqLevel.labelEN : group.eqLevel.label}
+                      {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
                     </div>
                   </div>
 
@@ -893,7 +893,7 @@ export default function TPTeamsPage() {
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-sm">{group.eqLevel.emoji}</span>
                     <span className="font-medium" style={{ color: group.eqLevel.color }}>
-                      {lang !== "es" ? group.eqLevel.labelEN : group.eqLevel.label}
+                      {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
                     </span>
                   </div>
                 </motion.div>
@@ -1205,7 +1205,7 @@ export default function TPTeamsPage() {
                             className="text-[9px]"
                             fill={eqLvl.color}
                           >
-                            {eqLvl.emoji} {lang !== "es" ? eqLvl.labelEN : eqLvl.label}
+                            {eqLvl.emoji} {tFn(eqLvl.labelKey, eqLvl.label)}
                           </text>
                         </svg>
                         <div className="text-sm font-medium mt-2 text-center">
@@ -1254,7 +1254,7 @@ export default function TPTeamsPage() {
                     className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                   >
-                    {group.eqLevel.emoji} {lang !== "es" ? group.eqLevel.labelEN : group.eqLevel.label}
+                    {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
                   </span>
                   <span className="text-xs font-mono text-purple-600">{group.avgEQ.toFixed(1)}</span>
                 </div>
@@ -1401,7 +1401,7 @@ export default function TPTeamsPage() {
                     className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                   >
-                    {group.eqLevel.emoji} {lang !== "es" ? group.eqLevel.labelEN : group.eqLevel.label}
+                    {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-zinc-800">

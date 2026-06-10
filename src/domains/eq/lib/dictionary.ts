@@ -20,6 +20,10 @@ export type PursuitKey = "K" | "C" | "G";
 export interface Competency {
   key: CompetencyKey;
   pursuit: PursuitKey;
+  /** Clave i18n (existe en es/en/pt/it): "sei.competencies.{key}" */
+  labelKey: string;
+  /** Clave i18n (existe en es/en/pt/it): "sei.competencies.{key}.desc" */
+  definitionKey: string;
   labelEN: string;
   labelES: string;
   definitionES: string;
@@ -82,6 +86,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   EL: {
     key: "EL",
     pursuit: "K",
+    labelKey: "sei.competencies.EL",
+    definitionKey: "sei.competencies.EL.desc",
     labelEN: "Enhance Emotional Literacy",
     labelES: "Alfabetización Emocional",
     definitionES: "Identificar y comprender emociones con precisión.",
@@ -93,6 +99,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   RP: {
     key: "RP",
     pursuit: "K",
+    labelKey: "sei.competencies.RP",
+    definitionKey: "sei.competencies.RP.desc",
     labelEN: "Recognize Patterns",
     labelES: "Reconocer Patrones",
     definitionES: "Detectar hábitos emocionales y conductuales.",
@@ -104,6 +112,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   ACT: {
     key: "ACT",
     pursuit: "C",
+    labelKey: "sei.competencies.ACT",
+    definitionKey: "sei.competencies.ACT.desc",
     labelEN: "Apply Consequential Thinking",
     labelES: "Aplicar Pensamiento Consecuente",
     definitionES: "Evaluar costos y beneficios antes de actuar.",
@@ -115,6 +125,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   NE: {
     key: "NE",
     pursuit: "C",
+    labelKey: "sei.competencies.NE",
+    definitionKey: "sei.competencies.NE.desc",
     labelEN: "Navigate Emotions",
     labelES: "Navegar Emociones",
     definitionES: "Transformar emociones en un recurso.",
@@ -126,6 +138,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   IM: {
     key: "IM",
     pursuit: "C",
+    labelKey: "sei.competencies.IM",
+    definitionKey: "sei.competencies.IM.desc",
     labelEN: "Engage Intrinsic Motivation",
     labelES: "Motivación Intrínseca",
     definitionES: "Mover la energía desde valores internos.",
@@ -137,6 +151,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   OP: {
     key: "OP",
     pursuit: "C",
+    labelKey: "sei.competencies.OP",
+    definitionKey: "sei.competencies.OP.desc",
     labelEN: "Exercise Optimism",
     labelES: "Ejercitar Optimismo",
     definitionES: "Ver posibilidades y mantener esperanza.",
@@ -148,6 +164,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   EMP: {
     key: "EMP",
     pursuit: "G",
+    labelKey: "sei.competencies.EMP",
+    definitionKey: "sei.competencies.EMP.desc",
     labelEN: "Increase Empathy",
     labelES: "Incrementar Empatía",
     definitionES: "Comprender y responder a otros.",
@@ -159,6 +177,8 @@ export const COMPETENCIES: Record<CompetencyKey, Competency> = {
   NG: {
     key: "NG",
     pursuit: "G",
+    labelKey: "sei.competencies.NG",
+    definitionKey: "sei.competencies.NG.desc",
     labelEN: "Pursue Noble Goals",
     labelES: "Perseguir Metas Nobles",
     definitionES: "Vivir con propósito y coherencia.",
@@ -186,6 +206,8 @@ export const COLOR_CLUSTERS = {
 export const PURSUITS = {
   K: {
     key: "K",
+    labelKey: "sei.pursuits.K",
+    descriptionKey: "sei.pursuits.K.desc",
     labelEN: "Know Yourself",
     labelES: "Conócete",
     color: "#1E88E5",
@@ -194,6 +216,8 @@ export const PURSUITS = {
   },
   C: {
     key: "C",
+    labelKey: "sei.pursuits.C",
+    descriptionKey: "sei.pursuits.C.desc",
     labelEN: "Choose Yourself",
     labelES: "Elígete",
     color: "#E53935",
@@ -202,6 +226,8 @@ export const PURSUITS = {
   },
   G: {
     key: "G",
+    labelKey: "sei.pursuits.G",
+    descriptionKey: "sei.pursuits.G.desc",
     labelEN: "Give Yourself",
     labelES: "Entrégate",
     color: "#43A047",

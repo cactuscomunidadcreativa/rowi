@@ -87,3 +87,32 @@ Leyenda estado: ⬜ pendiente · 🔄 en curso · ✅ hecho · 🔑 bloqueado po
 
 ## ORDEN DE EJECUCIÓN
 A → B → C → D → E → F → G. Las 🔑 se dejan código-listo y se activan cuando Eduardo pegue credenciales. Commits atómicos por tarea; push a main por fase (cada fase es desplegable y verificada).
+
+---
+
+## ESTADO FINAL DE EJECUCIÓN (2026-06-10)
+
+Todas las fases ejecutadas y en `main` (producción). 18 commits en la sesión.
+Cada commit: tsc 0 errores · 496/496 tests · 4 locales JSON válidos.
+
+- ✅ **Fase A** — A1 N≥5 org/summary · A2 reposicionamiento (4 idiomas) · A3 for-you
+- ✅ **Fase B** — B1 reset-pw rate-limit · B2 IDOR eco · B3 path-injection affinity · B4 decrypt seguro · B5/B6 documentados
+- ✅ **Fase C** — C1 borrado GDPR Art.17 · C2 anonimizar PII a OpenAI · C3 documentado
+- ✅ **Fase D** — D1 registro→onboarding · D2 ECO /send+feedback · D3/D5 diferidos (UI extensa) · D4 🔑
+- ✅ **Fase E** — E3 cache por-usuario contexts · E2/E4 diferidos (riesgo en hot paths) · E1 🔑
+- ✅ **Fase F** — F1/F2 muertos borrados · F4 3 deps sin uso · F6 engines · F5/F7 diferidos
+- ✅ **Fase G** — G1 JSON-LD + OG alineado · G2 🔑
+
+### PENDIENTES QUE REQUIEREN A EDUARDO (credenciales en Vercel)
+| Tarea | Credencial | Estado |
+|---|---|---|
+| D4 cron afinidad GET+batching | `CRON_SECRET` | código-pendiente, listo para hacer al pegar secret |
+| E1 directUrl Neon | `DIRECT_URL` | 1 línea en schema al tener la URL |
+| G2 Sentry server-side | `SENTRY_DSN` | infra lista (log_only), solo pegar DSN |
+| (SEO) | `NEXT_PUBLIC_APP_URL=https://www.rowiia.com` | opcional, el fix ya es robusto |
+
+### DIFERIDOS POR RIESGO/ALCANCE (no bloqueados, decisión de producto)
+- D3 BECOMING memoria viva · D5 plan tras WOW — UI extensa, verificar en navegador con login.
+- E2 cachedCompletion en rowi/eco · E4 paginación — hot paths del chat, verificar en vivo.
+- F5 i18n hardcoded (48 ternarios) · F7 catch(e:any) (509) — volumen alto, bajo impacto.
+- B5 JWT 24h · B6 CSP nonces — el patrón seguro ya existe; endurecer es backlog.

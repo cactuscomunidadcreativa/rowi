@@ -82,12 +82,14 @@ const API_NAV_ENTRYPOINTS = [
 ========================================================= */
 
 const ADMIN_PATH = "/hub/admin";
+// Rutas de GENERACIÓN IA que validan auth/ownership en su propio handler. NO
+// incluir aquí rutas de CONFIGURACIÓN (p.ej. /api/hub/ai gestiona agentes y es
+// solo-SuperAdmin): el bypass salta el gate de rol del middleware.
 const IA_PATHS = [
   "/api/rowi",
   "/api/eco",
   "/api/affinity",
   "/api/emotions",
-  "/api/hub/ai",
 ];
 
 // Webhooks externos autenticados por FIRMA (no por sesión) que NO deben pasar

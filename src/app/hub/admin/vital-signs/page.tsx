@@ -17,7 +17,8 @@ const VS_TABS = [
   { href: "/hub/admin/vital-signs", es: "Ingesta", en: "Ingestion" },
   { href: "/hub/admin/vital-signs/benchmarks", es: "Benchmarks", en: "Benchmarks" },
   { href: "/hub/admin/vital-signs/cross-instrument", es: "VS↔SEI", en: "VS↔SEI" },
-  { href: "/hub/admin/vital-signs/consultant", es: "Consultor", en: "Consultant" },
+  { href: "/hub/admin/vital-signs/report", es: "Informe SEI↔VS", en: "SEI↔VS Report" },
+  { href: "/hub/admin/vital-signs/consultant", es: "Consultor (cohorte)", en: "Consultant (cohort)" },
   { href: "/hub/admin/vital-signs/lab", es: "Laboratorio", en: "Lab" },
 ];
 

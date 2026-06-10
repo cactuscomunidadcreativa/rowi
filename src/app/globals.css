@@ -233,3 +233,19 @@ html.dark .modal-content {
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
 }
+
+/* Impresión / PDF del informe del Consultor: cuando se imprime una página que
+   contiene #rowi-report, solo ese bloque sale en el PDF (sin nav ni controles). */
+@media print {
+  body:has(#rowi-report) * { visibility: hidden; }
+  body:has(#rowi-report) #rowi-report,
+  body:has(#rowi-report) #rowi-report * { visibility: visible; }
+  body:has(#rowi-report) #rowi-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+  }
+  #rowi-report button { display: none !important; }
+}

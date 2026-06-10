@@ -14,6 +14,12 @@
  */
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import {
+  exportClientPptx,
+  exportConfidentialPptx,
+  type ConsultantReportData,
+  type EngineInsightData,
+} from "@/lib/consultant/pptx-export";
 
 const SEI_LABEL: Record<string, string> = {
   EL: "Alfabetización Emocional", RP: "Reconocer Patrones", ACT: "Pensamiento Consecuente",
@@ -34,25 +40,9 @@ const STATE_STYLE: Record<string, { label: string; cls: string }> = {
   neutral: { label: "Neutral", cls: "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400" },
 };
 
-interface BlindspotRow { pulse: string; state: string; }
-interface EngineInsight {
-  kind: string;
-  label: string;
-  reading: string;
-  flags: { smallN: boolean; highDispersion: boolean; isWellbeing: boolean };
-}
-interface ReportResult {
-  subjectLabel: string;
-  scope: string;
-  vsInstrument: string;
-  blindspotMap: BlindspotRow[];
-  diagnosis: string | null;
-  sei: { competencies: Record<string, number>; talents: Record<string, number>; sampleSize: number };
-  pulses: Record<string, number>;
-  vsSource: "real" | "inferred";
-  vsSampleSize: number;
-  insights: { client: EngineInsight[]; partner: EngineInsight[] };
-}
+// Tipos del informe: viven en pptx-export.ts (los comparte página y export).
+type EngineInsight = EngineInsightData;
+type ReportResult = ConsultantReportData;
 
 /** Lista de insights con sus marcas de honestidad. */
 function InsightList({ items }: { items: EngineInsight[] }) {
@@ -108,6 +98,20 @@ export default function ConsultantReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<ReportResult | null>(null);
   const [view, setView] = useState<"report" | "confidential">("report");
+  const [exporting, setExporting] = useState<"client" | "confidential" | null>(null);
+
+  async function exportPptx(kind: "client" | "confidential") {
+    if (!report || exporting) return;
+    setExporting(kind);
+    try {
+      if (kind === "client") await exportClientPptx(report);
+      else await exportConfidentialPptx(report);
+    } catch {
+      setError("pptx_error");
+    } finally {
+      setExporting(null);
+    }
+  }
 
   async function generate() {
     if (!seiFile) {
@@ -209,9 +213,20 @@ export default function ConsultantReportPage() {
               </p>
               <h2 className="text-xl font-bold text-[var(--rowi-fg)]">{report.subjectLabel} — Guía de lectura e intervención</h2>
             </div>
-            <button onClick={() => window.print()} className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)]">
-              {t("consultant.report.print", "Imprimir / PDF")}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => window.print()} className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)]">
+                {t("consultant.report.print", "Imprimir / PDF")}
+              </button>
+              <button
+                onClick={() => exportPptx("confidential")}
+                disabled={exporting !== null}
+                className="text-sm rounded-lg border border-amber-300 dark:border-amber-900/40 px-3 py-1.5 text-amber-700 dark:text-amber-400 disabled:opacity-50"
+              >
+                {exporting === "confidential"
+                  ? t("consultant.report.exportingPptx", "Generando PPTX…")
+                  : t("consultant.report.pptxConfidential", "PPTX confidencial (partner)")}
+              </button>
+            </div>
           </div>
 
           <p className="text-sm text-[var(--rowi-muted)]">
@@ -263,9 +278,20 @@ export default function ConsultantReportPage() {
                 {report.vsSampleSize ? ` (n=${report.vsSampleSize})` : ""}
               </p>
             </div>
-            <button onClick={() => window.print()} className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)]">
-              {t("consultant.report.print", "Imprimir / PDF")}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => window.print()} className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)]">
+                {t("consultant.report.print", "Imprimir / PDF")}
+              </button>
+              <button
+                onClick={() => exportPptx("client")}
+                disabled={exporting !== null}
+                className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)] disabled:opacity-50"
+              >
+                {exporting === "client"
+                  ? t("consultant.report.exportingPptx", "Generando PPTX…")
+                  : t("consultant.report.pptxClient", "Exportar PPTX (cliente)")}
+              </button>
+            </div>
           </div>
 
           {/* SEI competencias */}

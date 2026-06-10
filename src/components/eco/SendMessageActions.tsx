@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   ExternalLink,
@@ -11,6 +11,8 @@ import {
   User,
   Inbox,
   MessageCircle,
+  Zap,
+  Loader2,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -19,6 +21,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
    ---------------------------------------------------------
    Permite enviar el mensaje generado por ECO a una persona
    elegida vía:
+     - Envío DIRECTO por Gmail / WhatsApp si la integración
+       está conectada (POST /api/eco/deliver)
      - Deep-link a Gmail compose (sale del Gmail real del usuario)
      - mailto: (clientes de correo no-Gmail)
      - Copiar el mensaje al portapapeles
@@ -30,6 +34,12 @@ type SendMessageActionsProps = {
   body: string;
   recipientEmail?: string;
   recipientName?: string;
+  dyadId?: string;
+};
+
+type DeliverChannels = {
+  gmail: { connected: boolean; email: string | null };
+  whatsapp: { connected: boolean };
 };
 
 export default function SendMessageActions({
@@ -37,12 +47,69 @@ export default function SendMessageActions({
   body,
   recipientEmail,
   recipientName,
+  dyadId,
 }: SendMessageActionsProps) {
   const { t } = useI18n();
 
   const [email, setEmail] = useState(recipientEmail ?? "");
   const [name, setName] = useState(recipientName ?? "");
+  const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
+  const [channels, setChannels] = useState<DeliverChannels | null>(null);
+  const [sending, setSending] = useState<"gmail" | "whatsapp" | null>(null);
+  const [sendResult, setSendResult] = useState<
+    { ok: boolean; channel: string; error?: string } | null
+  >(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/eco/deliver")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && data?.ok) {
+          setChannels({ gmail: data.gmail, whatsapp: data.whatsapp });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const deliverDirect = async (channel: "gmail" | "whatsapp") => {
+    const to = channel === "gmail" ? email.trim() : phone.trim();
+    if (!to || sending) return;
+    setSending(channel);
+    setSendResult(null);
+    try {
+      const res = await fetch("/api/eco/deliver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel, to, subject, text: body, dyadId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setSendResult(
+        data?.ok
+          ? { ok: true, channel }
+          : {
+              ok: false,
+              channel,
+              error:
+                res.status === 429
+                  ? t("eco.send.rateLimited", "Has alcanzado el límite de envíos por ahora")
+                  : t("eco.send.sendError", "No se pudo enviar el mensaje"),
+            },
+      );
+    } catch {
+      setSendResult({
+        ok: false,
+        channel,
+        error: t("eco.send.sendError", "No se pudo enviar el mensaje"),
+      });
+    } finally {
+      setSending(null);
+    }
+  };
 
   const trimmedEmail = email.trim();
   const subj = subject ?? "";
@@ -140,7 +207,94 @@ export default function SendMessageActions({
               />
             </div>
           </div>
+          {channels?.whatsapp.connected && (
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                {t("eco.send.phoneLabel", "WhatsApp del destinatario")}
+              </label>
+              <div className="relative">
+                <MessageCircle className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("eco.send.phonePlaceholder", "+593 99 999 9999")}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none transition-all"
+                />
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Envío directo — integraciones conectadas */}
+        {(channels?.gmail.connected || channels?.whatsapp.connected) && (
+          <div className="flex flex-wrap gap-2">
+            {channels?.gmail.connected && (
+              <button
+                type="button"
+                onClick={() => void deliverDirect("gmail")}
+                disabled={!canSend || sending !== null}
+                title={
+                  canSend
+                    ? `${t("eco.send.directGmailTip", "Rowi lo envía desde tu Gmail conectado")}${channels.gmail.email ? ` (${channels.gmail.email})` : ""}`
+                    : t("eco.send.needEmail", "Escribe un correo primero")
+                }
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  canSend && sending === null
+                    ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white hover:shadow-md hover:shadow-[var(--rowi-g2)]/25"
+                    : "bg-gray-200 dark:bg-zinc-700 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {sending === "gmail" ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4" />
+                )}
+                {t("eco.send.directGmail", "Enviar directo (Gmail)")}
+              </button>
+            )}
+
+            {channels?.whatsapp.connected && (
+              <button
+                type="button"
+                onClick={() => void deliverDirect("whatsapp")}
+                disabled={!phone.trim() || sending !== null}
+                title={
+                  phone.trim()
+                    ? t("eco.send.directWhatsappTip", "Rowi lo envía por WhatsApp al número indicado")
+                    : t("eco.send.needPhone", "Escribe el número de WhatsApp primero")
+                }
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  phone.trim() && sending === null
+                    ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-md hover:shadow-emerald-500/25"
+                    : "bg-gray-200 dark:bg-zinc-700 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {sending === "whatsapp" ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4" />
+                )}
+                {t("eco.send.directWhatsapp", "Enviar directo (WhatsApp)")}
+              </button>
+            )}
+          </div>
+        )}
+
+        {sendResult && (
+          <p
+            className={`text-sm ${
+              sendResult.ok
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400"
+            }`}
+          >
+            {sendResult.ok
+              ? t("eco.send.sentOk", "Mensaje enviado")
+              : sendResult.error}
+          </p>
+        )}
 
         {/* Acciones */}
         <div className="flex flex-wrap gap-2">

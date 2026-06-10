@@ -1,13 +1,16 @@
 /**
  * POST /api/consultant/profile
  * ---------------------------------------------------------
- * El "agente lee todo y da feedback": recibe el SEI (competencias + talentos) y
- * el Vital Signs (pulse points) de un sujeto — individuo o cohorte — y devuelve
- * el PERFIL INTEGRAL formato Rowi: mapa de puntos ciegos (cruce SEI↔VS) +
- * diagnóstico-espejo narrado por IA.
+ * Mapa de puntos ciegos SEI↔VS (cruce de autoconciencia) + diagnóstico-espejo.
  *
- * Solo admin con scope (consultor). El cruce individual es categoría especial:
- * el caller decide qué exponer (la guía del partner: cliente = solo agregado).
+ * ⚠️ ALCANCE: SOLO para el caso INDIVIDUAL con LVS de un líder IDENTIFICADO y
+ * con consentimiento (modelo: el perfil de un líder tipo "Carolina", que es un
+ * LVS de una persona). NO se usa para TVS/OVS: esos son CLIMA DE EQUIPO AGREGADO
+ * y ANÓNIMO — no hay "quién es quién", así que no existe perfil por persona. El
+ * análisis de TVS/OVS va por subir-CSV → análisis de cohorte agregado en
+ * /api/consultant/analysis (página /hub/admin/vital-signs/consultant).
+ *
+ * Solo admin con scope (consultor), consent del sujeto requerido para exponer.
  *
  * Body:
  *   {

@@ -49,9 +49,22 @@ async function resolveBaseLevel(
   userId: string,
   fallbackLevel: number
 ): Promise<BaseLevelResult> {
+  // Los SEI importados por CSV/xlsx a veces traen solo email (sin userId):
+  // buscar por ambos para que la lectura formal del usuario siempre se vea.
+  const u = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  const seiWhere = u?.email
+    ? {
+        OR: [{ userId }, { email: { equals: u.email, mode: "insensitive" as const } }],
+        overall4: { not: null },
+      }
+    : { userId, overall4: { not: null } };
+
   const [latestSei, latestMiniSei] = await Promise.all([
     prisma.eqSnapshot.findFirst({
-      where: { userId, overall4: { not: null } },
+      where: seiWhere,
       orderBy: { at: "desc" },
       select: { overall4: true },
     }),

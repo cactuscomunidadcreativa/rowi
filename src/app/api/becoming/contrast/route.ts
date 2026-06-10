@@ -54,16 +54,38 @@ export async function GET(req: NextRequest) {
 
     // Snapshots EQ que cruzan la ventana: el más reciente (now) y el más
     // cercano-anterior a `since` (past). Honesto: compara mismo usuario.
-    const [latestSnap, pastSnap, loopEntries] = await Promise.all([
+    //
+    // Cascada (misma que avatar-evolution): SEI formal → mini-SEI → lectura
+    // única. Nunca se mezclan fuentes en un mismo par (escalas distintas:
+    // SEI ~65-135, mini-SEI 1-5). El SEI formal se busca por userId O por el
+    // email de la sesión — los snapshots importados por CSV/xlsx a veces solo
+    // traen email.
+    const seiWhere = {
+      OR: [{ userId: user.id }, { email: { equals: email, mode: "insensitive" as const } }],
+    };
+    const seiSelect = {
+      at: true, EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+    } as const;
+    const [latestSnap, pastSnap, latestMini, pastMini, loopEntries] = await Promise.all([
       prisma.eqSnapshot.findFirst({
-        where: { userId: user.id },
+        where: seiWhere,
         orderBy: { at: "desc" },
-        select: { at: true, EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true },
+        select: seiSelect,
       }),
       prisma.eqSnapshot.findFirst({
-        where: { userId: user.id, at: { lte: since } },
+        where: { ...seiWhere, at: { lte: since } },
         orderBy: { at: "desc" },
-        select: { at: true, EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true },
+        select: seiSelect,
+      }),
+      prisma.miniSeiSnapshot.findFirst({
+        where: { userId: user.id },
+        orderBy: { takenAt: "desc" },
+        select: { takenAt: true, competencyProfile: true },
+      }),
+      prisma.miniSeiSnapshot.findFirst({
+        where: { userId: user.id, takenAt: { lte: since } },
+        orderBy: { takenAt: "desc" },
+        select: { takenAt: true, competencyProfile: true },
       }),
       prisma.dailyLoopEntry.findMany({
         where: { userId: user.id, createdAt: { gte: since } },
@@ -73,15 +95,39 @@ export async function GET(req: NextRequest) {
 
     const nowComp = compFrom(latestSnap);
     const pastComp = compFrom(pastSnap);
+    const nowMini = compFrom(latestMini?.competencyProfile as Partial<Record<SeiKey, number | null>> | null);
+    const pastMiniComp = compFrom(pastMini?.competencyProfile as Partial<Record<SeiKey, number | null>> | null);
+
+    const buildRows = (past: CompRow, now: CompRow) =>
+      SEI_KEYS.map((k) => {
+        const p = past[k];
+        const n = now[k];
+        const delta =
+          typeof p === "number" && typeof n === "number"
+            ? Math.round((n - p) * 10) / 10
+            : null;
+        return { sei: k, past: p, now: n, delta };
+      });
 
     let competencies: { sei: SeiKey; past: number | null; now: number | null; delta: number | null }[] | null = null;
+    let current: { sei: SeiKey; now: number | null }[] | null = null;
+    let source: "sei" | "mini_sei" | null = null;
+
     if (nowComp && pastComp && latestSnap && pastSnap && latestSnap.at > pastSnap.at) {
-      competencies = SEI_KEYS.map((k) => {
-        const past = pastComp[k];
-        const now = nowComp[k];
-        const delta = typeof past === "number" && typeof now === "number" ? now - past : null;
-        return { sei: k, past, now, delta };
-      });
+      // Par de SEI formales que cruza la ventana.
+      competencies = buildRows(pastComp, nowComp);
+      source = "sei";
+    } else if (nowMini && pastMiniComp && latestMini && pastMini && latestMini.takenAt > pastMini.takenAt) {
+      // Par de mini-SEI (Rowi Test mensual) — indicativo pero comparable.
+      competencies = buildRows(pastMiniComp, nowMini);
+      source = "mini_sei";
+    } else if (nowComp) {
+      // Solo UNA lectura formal: mostrarla sin delta en vez de pantalla vacía.
+      current = SEI_KEYS.map((k) => ({ sei: k, now: nowComp[k] }));
+      source = "sei";
+    } else if (nowMini) {
+      current = SEI_KEYS.map((k) => ({ sei: k, now: nowMini[k] }));
+      source = "mini_sei";
     }
 
     const reflections = loopEntries.filter((e) => !!e.reflectionText).length;
@@ -92,7 +138,9 @@ export async function GET(req: NextRequest) {
       ok: true,
       days,
       // Sin Becoming Score: solo contraste honesto + actividad de Becoming.
-      competencies, // null si no hay dos snapshots que crucen la ventana
+      competencies, // null si no hay dos snapshots comparables que crucen la ventana
+      current, // la lectura más reciente cuando aún no hay par para contrastar
+      source, // "sei" (formal) | "mini_sei" (indicativo) | null
       practice: { reflections, practicesDone, daysWithEntry },
       hasContrast: !!competencies || daysWithEntry > 0,
     });

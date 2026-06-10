@@ -56,6 +56,8 @@ interface ContrastRes {
   ok: boolean;
   days: number;
   competencies: CompContrast[] | null;
+  current: { sei: string; now: number | null }[] | null;
+  source: "sei" | "mini_sei" | null;
   practice: { reflections: number; practicesDone: number; daysWithEntry: number };
   hasContrast: boolean;
 }
@@ -224,6 +226,11 @@ export default function BecomingPage() {
               <p className="text-sm text-gray-400">{t("becoming.loading", "Reuniendo tu historia…")}</p>
             ) : c?.competencies ? (
               <div className="space-y-2.5">
+                {c.source === "mini_sei" && (
+                  <p className="text-[11px] text-gray-400">
+                    {t("becoming.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")}
+                  </p>
+                )}
                 <div className="flex items-center justify-end gap-6 text-[11px] text-gray-400 pr-1">
                   <span>{t("becoming.contrast.then", "Antes")}</span>
                   <span>{t("becoming.contrast.now", "Hoy")}</span>
@@ -255,6 +262,33 @@ export default function BecomingPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+            ) : c?.current ? (
+              <div className="space-y-2.5">
+                <p className="text-[11px] text-gray-400">
+                  {c.source === "mini_sei"
+                    ? t("becoming.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")
+                    : t("becoming.contrast.seiSource", "Basado en tu SEI de Six Seconds")}
+                </p>
+                <div className="flex items-center justify-end text-[11px] text-gray-400 pr-1">
+                  <span>{t("becoming.contrast.now", "Hoy")}</span>
+                </div>
+                {c.current.map((row) => (
+                  <div key={row.sei} className="flex items-center gap-3">
+                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-200 truncate">
+                      {SEI_LABEL[row.sei] ?? row.sei}
+                    </span>
+                    <span className="w-12 text-right text-sm font-semibold text-gray-900 dark:text-white">
+                      {row.now ?? "—"}
+                    </span>
+                  </div>
+                ))}
+                <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
+                  {t(
+                    "becoming.contrast.currentNote",
+                    "Esta es tu lectura más reciente. Cuando tengas una nueva (tu Rowi Test mensual o un SEI), verás aquí el contraste contigo mismo."
+                  )}
+                </p>
               </div>
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">

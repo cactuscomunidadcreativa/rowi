@@ -56,6 +56,7 @@ export default function TodayPage() {
   const [moodInput, setMoodInput] = useState("");
   const [reflectionInput, setReflectionInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [evolved, setEvolved] = useState<{ hatched: boolean; newStage: string } | null>(null);
 
   if (status === "loading" || (isAuth && isLoading)) {
     return (
@@ -78,12 +79,19 @@ export default function TodayPage() {
   async function post(step: string, payload: Record<string, unknown>) {
     setSaving(true);
     try {
-      await fetch(TODAY_URL, {
+      const res = await fetch(TODAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step, tzOffsetMinutes: tz, lang, ...payload }),
-      });
+      }).then((r) => r.json());
       await mutate(`${TODAY_URL}?tz=${tz}&lang=${lang}`);
+      // TODAY → Avatar → BECOMING: si la reflexión movió el avatar, refrescamos
+      // el avatar y mostramos la recompensa (antes no pasaba nada al cerrar el loop).
+      const ev = res?.reward?.evolution;
+      if (ev && (ev.evolved || ev.hatched)) {
+        await mutate("/api/avatar");
+        setEvolved({ hatched: ev.hatched, newStage: ev.newStage });
+      }
     } finally {
       setSaving(false);
     }
@@ -261,6 +269,27 @@ export default function TodayPage() {
           >
             {t("today.complete", "Cerraste tu día. Eso es evolución.")}
           </motion.p>
+        )}
+
+        {/* Recompensa visible: tu reflexión hizo crecer a tu Rowi (TODAY → BECOMING). */}
+        {evolved && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white text-center p-5 shadow-lg"
+          >
+            <p className="text-lg font-bold">
+              {evolved.hatched
+                ? t("today.evolved.hatched", "¡Tu Rowi ha nacido! 🐣")
+                : t("today.evolved.grew", "Tu Rowi evolucionó 🦉")}
+            </p>
+            <p className="text-sm text-violet-100 mt-1">
+              {t(
+                "today.evolved.caption",
+                "Tu reflexión de hoy hizo crecer a quien te estás convirtiendo."
+              )}
+            </p>
+          </motion.div>
         )}
       </div>
     </div>

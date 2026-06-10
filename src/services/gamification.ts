@@ -438,12 +438,17 @@ export async function recordActivity(
   // Actualizar racha
   const streakResult = await updateStreak(userId);
 
-  // Puntos base por tipo de actividad
+  // Puntos base por tipo de actividad.
+  // El avatar crece por EVIDENCIA de Becoming (práctica + reflexión), no por
+  // actividad vacía (ver ROWI_DOCUMENTO_TOTAL §9 y el comentario de
+  // calculateEvolutionScore). Por eso CHAT/DAILY_LOGIN pesan poco frente a la
+  // reflexión del loop diario (15) y el microlearning (25): chatear ya no es
+  // una vía rápida para evolucionar al Rowi.
   const basePoints: Record<string, number> = {
-    CHAT: 10,
+    CHAT: 2,
     MICROLEARNING: 25,
     EQ_CHECKIN: 15,
-    DAILY_LOGIN: 5,
+    DAILY_LOGIN: 2,
     SOCIAL_POST: 5,
     SOCIAL_COMMENT: 3,
     SOCIAL_REACTION: 1,

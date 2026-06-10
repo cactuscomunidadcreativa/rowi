@@ -18,19 +18,148 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
-import { parseTz, localDateString } from "@/lib/daily-pulse/timezone";
+import { parseTz, localDateString, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 import {
   proposeBecomingFromProfile,
   type BecomeLang,
   type CompetencyProfile,
 } from "@/lib/today/become";
 import { logAffinityInteraction } from "@/ai/learning/affinityLearning";
+import { awardPoints } from "@/services/gamification";
+import { checkAndEvolve } from "@/services/avatar-evolution";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 const SEI_KEYS: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
 
 function resolveLang(input: unknown): BecomeLang {
   return ["en", "pt", "it"].includes(String(input)) ? (input as BecomeLang) : "es";
+}
+
+function diffInDays(a: Date, b: Date): number {
+  return Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/** Puntos por cerrar la reflexión nocturna (logro de Becoming, no actividad vacía). */
+const REFLECTION_POINTS = 15;
+
+/**
+ * Cierra el loop TODAY → Avatar → BECOMING: la reflexión nocturna actualiza la
+ * racha de reflexión (la señal de Becoming que el huevo premia 6×), suma puntos
+ * por el camino canónico y recalcula la evolución del avatar.
+ *
+ * Hasta hoy SOLO el Daily Pulse movía el avatar; la reflexión del loop diario no
+ * recompensaba nada (la causa raíz de la retención débil, ver auditoría). Esto
+ * replica el patrón de /api/daily-pulse/answer, atado a la reflexión de TODAY.
+ *
+ * Resiliente: cualquier fallo aquí no debe romper el guardado de la reflexión.
+ */
+async function rewardReflection(
+  userId: string,
+  now: Date,
+  tz: number,
+  practiceDone: boolean
+): Promise<{
+  pointsAdded: number;
+  streak: { current: number; longest: number };
+  evolution: {
+    evolved: boolean;
+    hatched: boolean;
+    previousStage: string;
+    newStage: string;
+  } | null;
+} | null> {
+  try {
+    const today = startOfLocalDay(now, tz);
+
+    // 1. Racha de reflexión. Idempotente por día: si ya reflexionó hoy no
+    //    vuelve a sumar racha/puntos (evita doble conteo si el usuario reenvía).
+    const existingStreak = await prisma.userStreak.findUnique({
+      where: { userId },
+      select: {
+        currentStreak: true,
+        longestStreak: true,
+        lastActivityDate: true,
+        streakStartDate: true,
+      },
+    });
+    let currentStreak = 1;
+    let streakStartDate: Date | null = today;
+    let alreadyToday = false;
+    if (existingStreak?.lastActivityDate) {
+      const last = startOfLocalDay(existingStreak.lastActivityDate, tz);
+      const days = diffInDays(today, last);
+      if (days === 0) {
+        alreadyToday = true;
+        currentStreak = existingStreak.currentStreak;
+        streakStartDate = existingStreak.streakStartDate ?? today;
+      } else if (days === 1) {
+        currentStreak = existingStreak.currentStreak + 1;
+        streakStartDate = existingStreak.streakStartDate ?? last;
+      } else {
+        currentStreak = 1;
+        streakStartDate = today;
+      }
+    }
+    const longestStreak = Math.max(currentStreak, existingStreak?.longestStreak ?? 0);
+
+    if (!alreadyToday) {
+      await prisma.userStreak.upsert({
+        where: { userId },
+        create: {
+          userId,
+          currentStreak,
+          longestStreak,
+          lastActivityDate: today,
+          streakStartDate,
+        },
+        update: {
+          currentStreak,
+          longestStreak,
+          lastActivityDate: today,
+          streakStartDate,
+        },
+      });
+    }
+
+    // 2. Puntos por el camino canónico (mueve UserLevel.totalPoints, el total que
+    //    leen nivel/leaderboard/perfil). ACHIEVEMENT, no CHAT/DAILY_LOGIN: el
+    //    avatar crece por evidencia de Becoming, no por actividad pasiva.
+    let pointsAdded = 0;
+    if (!alreadyToday) {
+      const award = await awardPoints({
+        userId,
+        amount: REFLECTION_POINTS,
+        reason: "ACHIEVEMENT",
+        description: `today-reflection · practice=${practiceDone ? "done" : "skipped"}`,
+      });
+      pointsAdded = award.pointsAwarded;
+    }
+
+    // 3. Recalcular evolución: la racha de reflexión recién actualizada hace
+    //    progresar/eclosionar al Rowi (calculateHatchProgress pondera la racha 3%/día).
+    let evolution: {
+      evolved: boolean;
+      hatched: boolean;
+      previousStage: string;
+      newStage: string;
+    } | null = null;
+    const r = await checkAndEvolve(userId);
+    evolution = {
+      evolved: r.evolved,
+      hatched: r.hatched,
+      previousStage: r.previousStage,
+      newStage: r.newStage,
+    };
+
+    return {
+      pointsAdded,
+      streak: { current: currentStreak, longest: longestStreak },
+      evolution,
+    };
+  } catch (err) {
+    console.error("/api/today · rewardReflection failed:", err);
+    return null;
+  }
 }
 
 async function getUserId(req: NextRequest): Promise<string | null> {
@@ -185,6 +314,7 @@ export async function POST(req: NextRequest) {
     // honesta — la relación del usuario consigo mismo. Encendemos la captura de
     // aprendizaje (logAffinityInteraction hoy nunca se llamaba → tabla vacía).
     // Es la relación self↔self; resiliente (la función traga sus errores).
+    let reward: Awaited<ReturnType<typeof rewardReflection>> = null;
     if (body.step === "reflection") {
       await logAffinityInteraction({
         userId,
@@ -194,9 +324,13 @@ export async function POST(req: NextRequest) {
         effectiveness: updated.practiceDone ? 0.8 : 0.6,
         notes: "daily_loop_reflection",
       });
+
+      // TODAY → Avatar → BECOMING: la reflexión mueve el avatar (antes no pasaba
+      // nada al cerrar el loop → retención débil). Streak + puntos + evolución.
+      reward = await rewardReflection(userId, now, tz, updated.practiceDone === true);
     }
 
-    return NextResponse.json({ ok: true, entry: updated });
+    return NextResponse.json({ ok: true, entry: updated, reward });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/today POST error:", e);

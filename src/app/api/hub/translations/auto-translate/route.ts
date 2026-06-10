@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 import { requireSuperAdmin } from "@/core/auth/requireAdmin";
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max for large translations
@@ -35,16 +35,6 @@ export async function POST(req: NextRequest) {
     if (keys.length === 0) {
       return NextResponse.json({ translations: {} });
     }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "OPENAI_API_KEY no configurada" },
-        { status: 500 }
-      );
-    }
-
-    const client = new OpenAI({ apiKey });
 
     // Nombres de idiomas para mejor contexto
     const langNames: Record<string, string> = {
@@ -98,17 +88,25 @@ ${JSON.stringify(chunk, null, 2)}
 
 Output the translated JSON:`;
 
-      const response = await client.chat.completions.create({
+      // Cacheado por (sourceLang→targetLang + contenido del chunk): un
+      // chunk idéntico no se re-traduce — ahorra OpenAI en re-corridas.
+      const { text: content } = await cachedCompletion({
+        kind: "auto_translate",
+        prompt,
+        scope: `${sourceLang}->${targetLang}`,
         model: "gpt-4o",
-        max_tokens: 8000,
-        messages: [
-          { role: "system", content: "You are a professional translator. Output only valid JSON." },
-          { role: "user", content: prompt }
-        ],
+        call: async (openai) =>
+          (
+            await openai.chat.completions.create({
+              model: "gpt-4o",
+              max_tokens: 8000,
+              messages: [
+                { role: "system", content: "You are a professional translator. Output only valid JSON." },
+                { role: "user", content: prompt },
+              ],
+            })
+          ).choices[0]?.message?.content ?? "",
       });
-
-      // Extract text content
-      const content = response.choices[0]?.message?.content;
       if (!content) {
         throw new Error("Empty response from OpenAI");
       }

@@ -51,6 +51,16 @@ interface Stats {
   dataset: { total: number; byTask: Record<string, number> };
 }
 
+interface AffinityWeightVersion {
+  id: string;
+  version: number;
+  active: boolean;
+  rSquared: number | null;
+  sampleSize: number;
+  notes: string | null;
+  createdAt: string;
+}
+
 export default function KnowledgeLayerPage() {
   const { t, ready } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -58,6 +68,7 @@ export default function KnowledgeLayerPage() {
   const [acting, setActing] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState("");
   const [roleName, setRoleName] = useState("");
+  const [weights, setWeights] = useState<AffinityWeightVersion[]>([]);
 
   async function load() {
     setLoading(true);
@@ -73,8 +84,45 @@ export default function KnowledgeLayerPage() {
     }
   }
 
+  // Versiones de pesos de afinidad (scope global) para promover a producción.
+  async function loadWeights() {
+    try {
+      const res = await fetch("/api/admin/knowledge/affinity-weights?scope=global");
+      const data = await res.json();
+      if (data.ok) setWeights(data.versions || []);
+    } catch {
+      /* best-effort: la tabla puede estar vacía al nacer el sistema */
+    }
+  }
+
+  // Activar ("subir a main") una versión de pesos → invalida cache del motor.
+  async function activateWeights(id: string) {
+    setActing(`weights:${id}`);
+    try {
+      const res = await fetch("/api/admin/knowledge/affinity-weights", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, scope: "global" }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(t("admin.knowledgeLayer.weightsActivated", "Versión activada en producción"));
+        await Promise.all([load(), loadWeights()]);
+      } else {
+        toast.error(data.error || t("common.error", "Error"));
+      }
+    } catch {
+      toast.error(t("common.error", "Error"));
+    } finally {
+      setActing(null);
+    }
+  }
+
   useEffect(() => {
-    if (ready) load();
+    if (ready) {
+      load();
+      loadWeights();
+    }
   }, [ready]);
 
   // Disparar un endpoint de acción (writer) y refrescar stats.
@@ -285,6 +333,54 @@ export default function KnowledgeLayerPage() {
               "0 = usando hipótesis v0 hardcoded. Sube a v1+ cuando el ground-truth lo respalde."
             )}
           </p>
+
+          {/* Promover una versión de pesos de afinidad a producción */}
+          <div className="mt-5 pt-5 border-t border-[var(--rowi-border)]">
+            <p className="text-sm font-medium text-[var(--rowi-foreground)] mb-3">
+              {t("admin.knowledgeLayer.weightsVersionsTitle", "Versiones de pesos de afinidad (global)")}
+            </p>
+            {weights.length > 0 ? (
+              <div className="space-y-2">
+                {weights.map((w) => (
+                  <div
+                    key={w.id}
+                    className="flex items-center justify-between gap-3 text-sm rounded-lg border border-[var(--rowi-border)] px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <span className="font-medium text-[var(--rowi-foreground)]">v{w.version}</span>
+                      <span className="ml-2 text-xs text-[var(--rowi-muted)]">
+                        {t("admin.knowledgeLayer.weightsMeta", "R²")}{" "}
+                        {w.rSquared != null ? w.rSquared.toFixed(2) : "—"} · N {w.sampleSize}
+                      </span>
+                    </div>
+                    {w.active ? (
+                      <AdminBadge variant="success">
+                        {t("admin.knowledgeLayer.weightsActive", "Activa")}
+                      </AdminBadge>
+                    ) : (
+                      <AdminButton
+                        variant="secondary"
+                        size="sm"
+                        disabled={acting === `weights:${w.id}`}
+                        onClick={() => activateWeights(w.id)}
+                      >
+                        {acting === `weights:${w.id}`
+                          ? t("admin.common.processing", "Procesando…")
+                          : t("admin.knowledgeLayer.weightsActivate", "Promover a producción")}
+                      </AdminButton>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[var(--rowi-muted)]">
+                {t(
+                  "admin.knowledgeLayer.weightsEmpty",
+                  "Sin versiones aún. El calibrador las crea cuando el ground-truth basta."
+                )}
+              </p>
+            )}
+          </div>
         </AdminCard>
 
         <AdminCard>

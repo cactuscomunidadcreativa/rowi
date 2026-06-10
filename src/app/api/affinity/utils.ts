@@ -11,7 +11,7 @@
 ========================================================= */
 
 import { prisma } from "@/core/prisma";
-import OpenAI from "openai";
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 
 // Re-export del núcleo puro: tipos, pesos, fórmulas y utilidades.
 export {
@@ -68,8 +68,9 @@ export async function learnUserPrefs(userId: string) {
 
 /* =========================================================
    🤖 IA contextual (requiere OpenAI — capa servidor)
+   Cacheado por (locale + par + contexto): el mismo análisis no
+   se vuelve a pagar y alimenta el corpus Rowi LLM.
 ========================================================= */
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function generateAiAdvice({
   locale,
   aName,
@@ -81,19 +82,25 @@ export async function generateAiAdvice({
   bName: string;
   context: string;
 }) {
-  try {
-    const resp = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.5,
-      max_tokens: 400,
-      messages: [
-        { role: "system", content: "Eres Rowi, analista de afinidad emocional." },
-        { role: "user", content: `Analiza la relación entre ${aName} y ${bName} en ${context}.` },
-      ],
-    });
-    return resp.choices?.[0]?.message?.content?.trim() || "";
-  } catch (e) {
-    console.error("AI error:", e);
-    return "";
-  }
+  const userPrompt = `Analiza la relación entre ${aName} y ${bName} en ${context}.`;
+  const { text } = await cachedCompletion({
+    kind: "affinity_advice",
+    prompt: userPrompt,
+    scope: `locale:${locale}`,
+    model: "gpt-4o-mini",
+    fallback: "",
+    call: async (openai) =>
+      (
+        await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          temperature: 0.5,
+          max_tokens: 400,
+          messages: [
+            { role: "system", content: "Eres Rowi, analista de afinidad emocional." },
+            { role: "user", content: userPrompt },
+          ],
+        })
+      ).choices?.[0]?.message?.content?.trim() || "",
+  });
+  return text;
 }

@@ -1,15 +1,10 @@
 // src/app/api/hub/knowledge/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
-import { OpenAI } from "openai";
 import { requireAdminWithScope } from "@/core/auth/requireAdmin";
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 
 export const runtime = "nodejs";
-
-/* =========================================================
-   ⚙️ CONFIGURACIÓN IA
-   ========================================================= */
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const summarizePrompt = (title: string, content?: string, url?: string) => `
 Eres el asistente de conocimiento central de Rowi.
@@ -132,17 +127,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // IA resume si no hay contenido
+    // IA resume si no hay contenido. Cacheado: mismo título/url → mismo
+    // resumen, sin volver a pagar OpenAI, y alimenta el corpus Rowi LLM.
     let aiSummary = content;
     if (!content) {
       try {
-        const completion = await openai.chat.completions.create({
+        const { text } = await cachedCompletion({
+          kind: "knowledge_summary",
+          prompt: summarizePrompt(title, content, url),
+          scope: "global",
           model: "gpt-4o-mini",
-          messages: [{ role: "system", content: summarizePrompt(title, content, url) }],
-          temperature: 0.6,
-          max_tokens: 300,
+          fallback: "",
+          call: async (openai) =>
+            (
+              await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [{ role: "system", content: summarizePrompt(title, content, url) }],
+                temperature: 0.6,
+                max_tokens: 300,
+              })
+            ).choices[0]?.message?.content ?? "",
         });
-        aiSummary = completion.choices[0]?.message?.content ?? undefined;
+        aiSummary = text || undefined;
       } catch (err: any) {
         console.warn("⚠️ Error generando resumen IA:", err);
       }

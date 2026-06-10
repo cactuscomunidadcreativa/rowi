@@ -1575,6 +1575,7 @@ model AgentConfig {
   description    String?
   avatar         String?
   type           String   @default("CUSTOM")
+  provider       String?  @default("openai") // "openai" | "anthropic" — qué IA usa este agente
   model          String?
   prompt         String?
   tools          Json?

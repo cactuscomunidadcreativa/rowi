@@ -105,6 +105,7 @@ export type ConfigCategory =
 export const SYSTEM_CONFIG_KEYS = {
   // IA
   OPENAI_API_KEY: { category: "ai" as ConfigCategory, description: "API Key de OpenAI", isSecret: true },
+  ANTHROPIC_API_KEY: { category: "ai" as ConfigCategory, description: "API Key de Anthropic (Claude) — modelos pesados: consultor, reportes, presentaciones", isSecret: true },
 
   // Auth
   GOOGLE_CLIENT_ID: { category: "auth" as ConfigCategory, description: "Google OAuth Client ID", isSecret: false },

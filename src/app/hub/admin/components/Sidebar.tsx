@@ -144,6 +144,7 @@ export default function Sidebar() {
       icon: Brain,
       priority: 95,
       items: [
+        { href: "/hub/admin/eq", labelKey: "admin.nav.eqPanel", icon: LayoutDashboard },
         { href: "/hub/admin/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
         { href: "/hub/admin/eq-upload", labelKey: "admin.nav.eqUpload", icon: Upload, badge: "NEW" },
         { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
@@ -278,18 +279,12 @@ export default function Sidebar() {
             { href: "/hub/admin/communities/members", labelKey: "admin.nav.members", icon: Users2 },
           ],
         },
+        { href: "/hub/admin/members", labelKey: "admin.nav.hubMembers", icon: Users2 },
         { href: "/hub/admin/invites", labelKey: "admin.nav.invites", icon: Mail },
         { href: "/hub/admin/plans", labelKey: "admin.nav.plans", icon: Gauge },
-        {
-          href: "/hub/admin/permissions",
-          labelKey: "admin.nav.permissions",
-          icon: Shield,
-          badge: "NEW",
-          children: [
-            { href: "/hub/admin/permissions", labelKey: "admin.nav.permissionsFeatures", icon: ToggleRight },
-            { href: "/hub/admin/permissions/roles", labelKey: "admin.nav.permissionsRoles", icon: KeyRound },
-          ],
-        },
+        // permissions/roles era un redirect a /hub/admin/roles (ya listado
+        // arriba) — el subgrupo quedó redundante y volvió a item simple.
+        { href: "/hub/admin/permissions", labelKey: "admin.nav.permissions", icon: Shield, badge: "NEW" },
       ],
     },
 
@@ -335,6 +330,7 @@ export default function Sidebar() {
       items: [
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
         { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain, badge: "NEW" },
+        { href: "/hub/admin/knowledge", labelKey: "admin.nav.knowledgeBase", icon: BookOpenCheck },
         { href: "/hub/admin/insights", labelKey: "admin.nav.insights", icon: Sparkles },
         { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle, badge: "NEW" },
         { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },
@@ -412,6 +408,17 @@ export default function Sidebar() {
         { href: "/hub/admin/landing-builder", labelKey: "admin.nav.landingBuilder", icon: Sparkles },
         { href: "/hub/admin/cms", labelKey: "admin.nav.cms", icon: FileText },
         {
+          href: "/hub/admin/builder",
+          labelKey: "admin.nav.cmsAdvanced",
+          icon: Blocks,
+          children: [
+            { href: "/hub/admin/builder", labelKey: "admin.nav.cmsBuilder", icon: Wrench },
+            { href: "/hub/admin/pages", labelKey: "admin.nav.cmsPages", icon: FileText },
+            { href: "/hub/admin/layouts", labelKey: "admin.nav.cmsLayouts", icon: PanelLeft },
+            { href: "/hub/admin/components", labelKey: "admin.nav.cmsComponents", icon: Puzzle },
+          ],
+        },
+        {
           href: "/hub/admin/public-pages",
           labelKey: "admin.nav.publicPages",
           icon: PanelLeft,
@@ -458,6 +465,18 @@ export default function Sidebar() {
         { href: "/hub/admin/accounting/payouts", labelKey: "admin.nav.payouts", icon: Wallet },
         { href: "/hub/admin/accounting/payroll", labelKey: "admin.nav.payroll", icon: Calendar },
         { href: "/hub/admin/accounting/products", labelKey: "admin.nav.products", icon: Package, badge: "NEW" },
+        {
+          href: "/hub/admin/finance/dashboard",
+          labelKey: "admin.nav.financeOps",
+          icon: Wallet,
+          children: [
+            { href: "/hub/admin/finance/dashboard", labelKey: "admin.nav.financeDashboard", icon: LayoutDashboard },
+            { href: "/hub/admin/finance/budgets", labelKey: "admin.nav.financeBudgets", icon: Coins },
+            { href: "/hub/admin/finance/expenses", labelKey: "admin.nav.financeExpenses", icon: Receipt },
+            { href: "/hub/admin/finance/invoices", labelKey: "admin.nav.financeInvoices", icon: FileSpreadsheet },
+            { href: "/hub/admin/finance/transactions", labelKey: "admin.nav.financeTransactions", icon: Activity },
+          ],
+        },
       ],
     },
 
@@ -475,6 +494,7 @@ export default function Sidebar() {
         { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
         { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
         { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
+        { href: "/hub/admin/hr/vital-signs", labelKey: "admin.nav.hrVitalSigns", icon: Activity, badge: "NEW" },
         { href: "/hub/admin/community-members/orphans", labelKey: "admin.nav.orphans", icon: AlertTriangle },
         { href: "/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow, badge: "NEW" },
       ],

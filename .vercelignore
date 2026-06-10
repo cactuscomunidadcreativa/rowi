@@ -1,0 +1,13 @@
+# Datos de assessments / benchmark — NUNCA deben subirse al deploy.
+# La app los lee desde data/seed/ (privado) o Vercel Blob, no desde public/.
+# Sin esto, Vercel sirve cualquier cosa en public/ en URLs world-readable.
+public/*.csv
+public/*.xlsx
+public/*.xls
+public/TEST/
+public/test/
+data/seed/
+
+# Artefactos locales pesados que no aportan al runtime del deploy.
+uploads/
+.backups/

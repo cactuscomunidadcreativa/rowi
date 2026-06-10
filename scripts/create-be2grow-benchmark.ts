@@ -18,7 +18,7 @@ const toInt = (v: any): number | null => {
 };
 
 async function main() {
-  const csvPath = path.join(process.cwd(), "public/test/be2growplaning.csv");
+  const csvPath = path.join(process.cwd(), "data/seed/imports/be2growplaning.csv");
   const csvText = fs.readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
   const rows = parse(csvText, { columns: true, skip_empty_lines: true, trim: true });
 

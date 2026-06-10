@@ -77,7 +77,7 @@ async function main() {
   console.log("✅ Datos antiguos eliminados\n");
 
   // Leer CSV y procesar
-  const CSV_PATH = "/Users/eduardogonzalez/Desktop/rowi/public/SOH_benchmark_data.csv";
+  const CSV_PATH = "/Users/eduardogonzalez/Desktop/rowi/data/seed/benchmark/SOH_benchmark_data.csv";
 
   // Mapeo completo
   const FULL_MAPPING = {

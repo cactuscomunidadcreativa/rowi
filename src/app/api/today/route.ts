@@ -27,6 +27,7 @@ import {
 import { logAffinityInteraction } from "@/ai/learning/affinityLearning";
 import { awardPoints } from "@/services/gamification";
 import { checkAndEvolve } from "@/services/avatar-evolution";
+import { recordDailyIntervention } from "@/lib/today/intervention";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 const SEI_KEYS: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
@@ -328,6 +329,17 @@ export async function POST(req: NextRequest) {
       // TODAY → Avatar → BECOMING: la reflexión mueve el avatar (antes no pasaba
       // nada al cerrar el loop → retención débil). Streak + puntos + evolución.
       reward = await rewardReflection(userId, now, tz, updated.practiceDone === true);
+
+      // EL FOSO (causal): primer escritor de Intervention → InterventionOutcome.
+      // Cerrar el loop registra el par before/after de la práctica del día.
+      // Honesto: es adherencia+estado (hypothesis_v0), no efecto calibrado.
+      await recordDailyIntervention({
+        userId,
+        becomeSei: updated.becomeSei,
+        practiceText: updated.practiceText,
+        practiceDone: updated.practiceDone === true,
+        morningIntensity: updated.morningIntensity,
+      });
     }
 
     return NextResponse.json({ ok: true, entry: updated, reward });

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 import { useI18n } from "@/lib/i18n/react";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
   Shield,
   Loader2,
@@ -53,6 +55,33 @@ export default function PrivacyPage() {
   const [consents, setConsents] = useState<ConsentItem[]>([]);
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [auditsLoading, setAuditsLoading] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // GDPR Art. 17 — borrado de cuenta self-service. Confirma reescribiendo el
+  // email (el endpoint exige confirmEmail === email del token) y cierra sesión.
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      const sessionRes = await fetch("/api/auth/session").then((r) => r.json());
+      const email = sessionRes?.user?.email;
+      const res = await fetch("/api/account/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmEmail: email }),
+      }).then((r) => r.json());
+      if (res?.ok) {
+        await signOut({ callbackUrl: "/" });
+      } else {
+        alert(
+          t("privacy.rights.deleteError", "No se pudo eliminar la cuenta. Intenta de nuevo o escribe a privacy@rowiia.com"),
+        );
+      }
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  }
 
   async function loadConsents() {
     try {
@@ -207,7 +236,7 @@ export default function PrivacyPage() {
           </button>
 
           <button
-            onClick={() => alert(t("privacy.rights.deleteConfirm", "Pronto disponible. Por ahora envía solicitud a privacy@rowiia.com"))}
+            onClick={() => setDeleteOpen(true)}
             className="rowi-card text-left"
           >
             <div className="flex items-center gap-3 mb-2">
@@ -261,6 +290,21 @@ export default function PrivacyPage() {
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        variant="danger"
+        title={t("privacy.rights.deleteTitle", "¿Eliminar tu cuenta?")}
+        message={t(
+          "privacy.rights.deleteBody",
+          "Esto borra tu cuenta y tus datos personales de forma permanente. Lo ya agregado de forma anónima en benchmarks no es recuperable individualmente. Esta acción no se puede deshacer.",
+        )}
+        confirmLabel={t("privacy.rights.deleteConfirmBtn", "Eliminar definitivamente")}
+        cancelLabel={t("common.cancel", "Cancelar")}
+        loading={deleting}
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setDeleteOpen(false)}
+      />
     </div>
   );
 }

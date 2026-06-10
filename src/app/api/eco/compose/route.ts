@@ -584,7 +584,22 @@ Responde SOLO en JSON válido:
   "insight": "Insight privado de 2-4 frases sobre el grupo (solo si hay 2+ destinatarios; null si hay 1)"
 }`;
 
-      const userPrompt = generateAIPrompt();
+      // Privacidad: NO enviar nombres reales de los destinatarios al LLM.
+      // Mapeamos cada nombre a un placeholder antes de enviar y lo restauramos
+      // en la respuesta — el LLM nunca ve la PII, el mensaje final sí la lleva.
+      const nameMap: Array<{ real: string; ph: string }> = [];
+      targets.forEach((tg, i) => {
+        const real = (tg.name || "").trim();
+        if (real && real.toLowerCase() !== "tu contacto" && !nameMap.some((m) => m.real === real)) {
+          nameMap.push({ real, ph: `[Destinatario${targets.length > 1 ? ` ${i + 1}` : ""}]` });
+        }
+      });
+      const anonymize = (s: string) =>
+        nameMap.reduce((acc, m) => acc.split(m.real).join(m.ph), s);
+      const deAnonymize = (s: string) =>
+        nameMap.reduce((acc, m) => acc.split(m.ph).join(m.real), s);
+
+      const userPrompt = anonymize(generateAIPrompt());
 
       const ai = await getOpenAIClient();
       const completion = await ai.chat.completions.create({
@@ -600,6 +615,9 @@ Responde SOLO en JSON válido:
 
       const raw = completion.choices[0].message?.content || "{}";
       const parsed = JSON.parse(raw);
+      // Restaurar nombres reales en el mensaje y asunto.
+      if (typeof parsed.text === "string") parsed.text = deAnonymize(parsed.text);
+      if (typeof parsed.subject === "string") parsed.subject = deAnonymize(parsed.subject);
       const tokensUsed = completion.usage?.total_tokens || 0;
 
       // Cadena SIA: guardar el turno en la memoria del hilo de la díada.

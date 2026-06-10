@@ -162,6 +162,15 @@ export default function PreSeiInsight({ insight }: Props) {
             </div>
           ))}
         </div>
+        {/* Capacidad ≠ desempeño real (EQ Proposal Accelerator): inferido de
+            tus respuestas solo habla de lo que tienes para dar; el cómo se
+            vive lo dice el feedback real de tu gente. */}
+        <p className="text-xs text-[var(--rowi-muted)] mt-3">
+          {t(
+            "preSei.vs.capacityNote",
+            "Esto es tu capacidad — lo que tienes para dar. Cómo se vive de verdad (tu desempeño real) se ve cuando tu gente responde el Vital Signs y recibes feedback real.",
+          )}
+        </p>
       </div>
 
       {/* Top pulse points */}

@@ -42,6 +42,8 @@ interface NavItem {
   children?: NavItem[];
   /** True if this item should only be shown to platform-level admins (rowiverse/superhub). */
   superOnly?: boolean;
+  /** Si se define, el item se muestra cuando el usuario tiene esta capability. */
+  capability?: string;
 }
 
 interface NavSection {
@@ -51,6 +53,8 @@ interface NavSection {
   priority?: number; // Mayor = más arriba
   /** True if the whole section should only be shown to platform admins. */
   superOnly?: boolean;
+  /** Si se define, la sección se muestra cuando el usuario tiene esta capability. */
+  capability?: string;
 }
 
 import { useAdminUser } from "./AdminUserContext";
@@ -58,7 +62,7 @@ import { useAdminUser } from "./AdminUserContext";
 export default function Sidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
-  const { isPlatformAdmin, loading: userLoading } = useAdminUser();
+  const { isPlatformAdmin, loading: userLoading, can } = useAdminUser();
 
   const sections: NavSection[] = [
     // ═══════════════════════════════════════════════════════
@@ -104,7 +108,7 @@ export default function Sidebar() {
       titleKey: "admin.nav.tpDemo",
       icon: Building2,
       priority: 96,
-      superOnly: true,
+      capability: "tp.dashboard", // HR/team-lead con plan, o platform admin
       items: [
         { href: "/hub/admin/tp", labelKey: "admin.nav.tpHub", icon: Building2, badge: "HUB" },
         {
@@ -504,12 +508,19 @@ export default function Sidebar() {
   // Filter platform-admin-only sections + items based on the caller's scope.
   // While we're still loading the user we show everything (avoid layout flicker
   // for SuperAdmins who would see items pop in mid-paint).
+  // Una entrada es visible si: (mientras carga, todo) O es platform admin, Y
+  // — si declara `capability` — el usuario la tiene. superOnly sigue valiendo.
+  const showByScope = (superOnly?: boolean) =>
+    userLoading || isPlatformAdmin || !superOnly;
+  const showByCap = (capability?: string) =>
+    userLoading || !capability || isPlatformAdmin || can(capability);
+
   const visibleSections = sections
-    .filter((s) => userLoading || isPlatformAdmin || !s.superOnly)
+    .filter((s) => showByScope(s.superOnly) && showByCap(s.capability))
     .map((s) => ({
       ...s,
       items: s.items.filter(
-        (it) => userLoading || isPlatformAdmin || !it.superOnly,
+        (it) => showByScope(it.superOnly) && showByCap(it.capability),
       ),
     }))
     .filter((s) => s.items.length > 0);

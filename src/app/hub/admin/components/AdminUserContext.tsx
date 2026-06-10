@@ -17,6 +17,10 @@ export interface AdminUser {
   hasAnyAdminScope: boolean;
   /** Truthy when the user can administrate at superhub or rowiverse level. */
   isPlatformAdmin: boolean;
+  /** Capabilities concedidas (rol + suscripción), para filtrar la nav. */
+  capabilities: string[];
+  /** Helper: ¿tiene esta capability? */
+  can: (capability: string) => boolean;
 }
 
 const DEFAULT: AdminUser = {
@@ -29,6 +33,8 @@ const DEFAULT: AdminUser = {
   loading: true,
   hasAnyAdminScope: false,
   isPlatformAdmin: false,
+  capabilities: [],
+  can: () => false,
 };
 
 const AdminUserContext = createContext<AdminUser>(DEFAULT);
@@ -40,8 +46,12 @@ export function AdminUserProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/auth/me");
-        const data = await res.json();
+        const [meRes, capsRes] = await Promise.all([
+          fetch("/api/auth/me"),
+          fetch("/api/account/capabilities"),
+        ]);
+        const data = await meRes.json();
+        const capsData = await capsRes.json().catch(() => ({ capabilities: [] }));
         if (cancelled) return;
         if (!data.ok) {
           setState({ ...DEFAULT, loading: false });
@@ -60,6 +70,10 @@ export function AdminUserProvider({ children }: { children: ReactNode }) {
             (p) =>
               p.scopeType === "rowiverse" || p.scopeType === "superhub",
           );
+        const capabilities: string[] = Array.isArray(capsData?.capabilities)
+          ? capsData.capabilities
+          : [];
+        const capsSet = new Set(capabilities);
         setState({
           id: user.id,
           email: user.email,
@@ -70,6 +84,8 @@ export function AdminUserProvider({ children }: { children: ReactNode }) {
           loading: false,
           hasAnyAdminScope,
           isPlatformAdmin,
+          capabilities,
+          can: (cap: string) => capsSet.has(cap),
         });
       } catch {
         if (!cancelled) setState({ ...DEFAULT, loading: false });

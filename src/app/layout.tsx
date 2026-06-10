@@ -27,8 +27,9 @@ export const metadata = {
     apple: "/owl.png?v=4",
   },
   openGraph: {
-    title: "Rowi",
-    description: "App de Inteligencia Emocional - Desarrolla tu potencial",
+    title: "Rowi — Sé quien quieres ser",
+    description:
+      "La práctica diaria que transforma tus relaciones. Lee la afinidad con quien te importa y consigue las palabras para conectar. Sobre la ciencia de Six Seconds.",
     url: "https://www.rowiia.com",
     siteName: "Rowi",
     images: [
@@ -36,7 +37,7 @@ export const metadata = {
         url: "https://www.rowiia.com/rowi-logo.png",
         width: 512,
         height: 512,
-        alt: "Rowi - Inteligencia Emocional",
+        alt: "Rowi — Sé quien quieres ser",
       },
     ],
     locale: "es_ES",
@@ -44,8 +45,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Rowi",
-    description: "App de Inteligencia Emocional - Desarrolla tu potencial",
+    title: "Rowi — Sé quien quieres ser",
+    description:
+      "La práctica diaria que transforma tus relaciones. Sobre la ciencia de Six Seconds.",
     images: ["https://www.rowiia.com/rowi-logo.png"],
   },
 };
@@ -79,9 +81,26 @@ export default async function RootLayout({
    * - /(app)/* → usa NavBar como navegación principal
    */
 
+  // Structured data (JSON-LD) — Organization. Ayuda a Google a entender la marca
+  // y habilita rich results. Sin esto la home no tenía structured data (SEO).
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Rowi",
+    url: "https://www.rowiia.com",
+    logo: "https://www.rowiia.com/rowi-logo.png",
+    description:
+      "Rowi es la práctica diaria que lee la afinidad entre tú y quien te importa y te da las palabras para conectar. Sobre la metodología Six Seconds.",
+    sameAs: ["https://www.6seconds.org"],
+  };
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-zinc-950 dark:to-zinc-900 text-gray-900 dark:text-gray-100">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <I18nProvider>
           <BetaBanner />
           <ClientWrapper>{children}</ClientWrapper>

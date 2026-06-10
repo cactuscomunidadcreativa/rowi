@@ -33,6 +33,9 @@ export async function GET(req: NextRequest) {
         participants: { some: { userId: user.id } },
       },
       orderBy: { lastMessageAt: "desc" },
+      // E4: tope duro — sin él un usuario con miles de hilos descarga todo
+      // (la UI muestra los más recientes; el resto llega al buscar).
+      take: 100,
       include: {
         participants: {
           include: {

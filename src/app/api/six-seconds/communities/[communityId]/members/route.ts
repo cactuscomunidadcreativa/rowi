@@ -134,6 +134,7 @@ export async function GET(
         },
       },
       orderBy: { joinedAt: "desc" },
+      take: 1000, // E4: tope duro — una comunidad grande no debe volcar todo de golpe
     });
 
     return NextResponse.json({

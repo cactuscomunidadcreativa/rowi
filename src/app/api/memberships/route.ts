@@ -34,6 +34,7 @@ export async function GET() {
 
     const memberships = await prisma.membership.findMany({
       where: allowedTenantIds === null ? undefined : { tenantId: { in: allowedTenantIds } },
+      take: 1000, // E4: tope duro — el admin pagina/busca, no necesita el universo
       include: {
         user: { select: { id: true, name: true, email: true } },
         tenant: { select: { id: true, name: true, slug: true } },

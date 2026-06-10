@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const dyads = await prisma.relationshipDyad.findMany({
       where: { ownerUserId: user.id },
       orderBy: { updatedAt: "desc" },
+      take: 500, // E4: tope duro para respuesta acotada
       select: {
         id: true,
         otherName: true,

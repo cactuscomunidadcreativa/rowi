@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
     if (user.primaryTenantId) {
       const tenantMemberships = await prisma.membership.findMany({
         where: { tenantId: user.primaryTenantId },
+        orderBy: { createdAt: "desc" },
+        take: 200, // E4: un plan familiar real no pasa de decenas
         include: {
           user: {
             select: {

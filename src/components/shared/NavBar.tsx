@@ -354,7 +354,7 @@ const BASE_LINKS = [
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
   { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "affinity" },
   { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "eco" },
-  { href: "/relationships", key: "relationships", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
+  // Relaciones vive DENTRO de Comunidad (pestaña "Relaciones") — ya no es entrada propia.
   { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
   { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "see" },

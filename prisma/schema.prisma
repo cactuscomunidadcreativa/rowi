@@ -2694,6 +2694,7 @@ model RelationshipDyad {
   otherEmail     String?
   relationType   String    @default("other") // partner|child|parent|friend|colleague|boss|other
   context        String    @default("relationship") // mapea a los contextos de affinity
+  closeness      String? // cercanía declarada por el dueño: "Cercano"|"Neutral"|"Lejano" (editable desde Relaciones)
   toneOverride   String? // ajuste de tono por relación (no duplica el perfil base)
   otherJoined    Boolean   @default(false) // ¿B declaró su CommunicationProfile?
   otherSeiDone   Boolean   @default(false) // ¿B validó con SEI real?

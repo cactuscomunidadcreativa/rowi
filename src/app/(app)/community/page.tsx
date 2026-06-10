@@ -45,6 +45,7 @@ import {
   Shield,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import RelationshipsTab from "@/components/community/RelationshipsTab";
 
 /* =========================================================
    🌍 Traducciones
@@ -57,6 +58,7 @@ const translations = {
     // Tabs
     tabs: {
       myPeople: "Mi Gente",
+      relationships: "Relaciones",
       invited: "Invitados",
       rowiverse: "Rowiverse",
       communities: "Comunidades",
@@ -231,6 +233,7 @@ const translations = {
     // Tabs
     tabs: {
       myPeople: "My People",
+      relationships: "Relationships",
       invited: "Invited",
       rowiverse: "Rowiverse",
       communities: "Communities",
@@ -405,6 +408,7 @@ const translations = {
     // Tabs
     tabs: {
       myPeople: "My People",
+      relationships: "Relações",
       invited: "Invited",
       rowiverse: "Rowiverse",
       communities: "Communities",
@@ -579,6 +583,7 @@ const translations = {
     // Tabs
     tabs: {
       myPeople: "My People",
+      relationships: "Relazioni",
       invited: "Invited",
       rowiverse: "Rowiverse",
       communities: "Communities",
@@ -808,7 +813,17 @@ export default function CommunityPage() {
   const { lang, t: tx } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
-  const [activeTab, setActiveTab] = useState<"myPeople" | "invited" | "rowiverse" | "communities">("myPeople");
+  const [activeTab, setActiveTab] = useState<"myPeople" | "relationships" | "invited" | "rowiverse" | "communities">("myPeople");
+
+  // Permite abrir directo una pestaña por URL (?tab=relationships), p.ej. desde
+  // el redirect de la antigua /relationships.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (tab && ["myPeople", "relationships", "invited", "rowiverse", "communities"].includes(tab)) {
+      setActiveTab(tab as typeof activeTab);
+    }
+  }, []);
   const [members, setMembers] = useState<Member[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1310,7 +1325,7 @@ export default function CommunityPage() {
         transition={{ delay: 0.2 }}
         className="flex items-center gap-1 sm:gap-2 border-b border-gray-200 dark:border-zinc-800 overflow-x-auto"
       >
-        {(["myPeople", "invited", "communities", "rowiverse"] as const).map((tab) => (
+        {(["myPeople", "relationships", "invited", "communities", "rowiverse"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => { setActiveTab(tab); if (tab !== "communities") { setSelectedCommunity(null); } }}
@@ -1321,6 +1336,7 @@ export default function CommunityPage() {
             }`}
           >
             {tab === "myPeople" && <Users className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
+            {tab === "relationships" && <Heart className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {tab === "invited" && <Mail className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {tab === "communities" && <HeartHandshake className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
             {tab === "rowiverse" && <Globe className="w-4 h-4 inline mr-1.5 sm:mr-2" />}
@@ -1341,6 +1357,11 @@ export default function CommunityPage() {
 
       {/* TAB CONTENT */}
       <AnimatePresence mode="wait">
+        {activeTab === "relationships" && (
+          <motion.div key="relationships" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+            <RelationshipsTab />
+          </motion.div>
+        )}
         {activeTab === "myPeople" && (
           <motion.div
             key="myPeople"

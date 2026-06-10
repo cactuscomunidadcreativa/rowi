@@ -102,8 +102,7 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, item: updated });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/admin/workspaces/[id] PATCH error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

@@ -36,9 +36,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, sessions });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/debrief GET error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -85,8 +84,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, session });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/debrief POST error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

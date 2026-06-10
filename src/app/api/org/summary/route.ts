@@ -472,7 +472,7 @@ export async function GET() {
   } catch (e) {
     console.error("[api/org/summary] error:", e);
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "Internal error" },
+      { ok: false, error: "internal_error" },
       { status: 500 },
     );
   }

@@ -70,8 +70,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/research/calibration/promote error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

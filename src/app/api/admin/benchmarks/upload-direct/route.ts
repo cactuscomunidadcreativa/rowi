@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Error in direct upload:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error uploading file" },
+      { error: "internal_error" },
       { status: 500 }
     );
   }

@@ -328,10 +328,9 @@ export async function GET() {
       }, {} as Record<string, { count: number; avgEQ: number; avgAffinity: number; topEmotion: string; users: number; newUsers: number; benchmarks: number; communities: number }>),
     });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Error al generar insights";
     console.error("❌ Error RowiVerse Insights:", err);
     return NextResponse.json(
-      { ok: false, error: errorMessage },
+      { ok: false, error: "internal_error" },
       { status: 500 }
     );
   }

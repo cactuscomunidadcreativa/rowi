@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Error generating blob token:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error generating upload token" },
+      { error: "internal_error" },
       { status: 500 }
     );
   }

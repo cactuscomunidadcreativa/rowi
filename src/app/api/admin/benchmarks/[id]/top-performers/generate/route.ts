@@ -598,7 +598,7 @@ export async function POST(
   } catch (error) {
     console.error("❌ Error generating top performers:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "internal_error" },
       { status: 500 }
     );
   }

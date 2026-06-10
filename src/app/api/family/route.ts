@@ -159,10 +159,9 @@ export async function GET(req: NextRequest) {
       members: invitedMembers,
     });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : "Error obteniendo datos";
     console.error("❌ Error GET /api/family:", err);
     return NextResponse.json(
-      { ok: false, error: errorMessage },
+      { ok: false, error: "internal_error" },
       { status: 500 }
     );
   }

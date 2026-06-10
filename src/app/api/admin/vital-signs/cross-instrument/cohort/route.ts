@@ -114,8 +114,7 @@ export async function POST(req: NextRequest) {
       note: "Cohorte guardada. Ejecuta recompute para actualizar las correlaciones cruzadas.",
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Error interno";
     console.error("/api/admin/vital-signs/cross-instrument/cohort error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

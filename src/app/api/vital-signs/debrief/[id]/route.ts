@@ -55,9 +55,8 @@ export async function GET(
       feedbacks,
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/debrief/[id] GET error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -91,8 +90,7 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, session: updated });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/debrief/[id] PATCH error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

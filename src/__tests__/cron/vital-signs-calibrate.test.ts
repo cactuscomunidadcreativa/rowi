@@ -127,11 +127,11 @@ describe("calibration scan", () => {
     expect(data.status).toBe("completed");
   });
 
-  it("500s when the DB scan throws", async () => {
+  it("500s when the DB scan throws — without leaking the internal message", async () => {
     gtFindMany.mockRejectedValueOnce(new Error("connection reset"));
     const res = await POST(req("Bearer topsecret"));
     expect(res.status).toBe(500);
     expect((res as any).body.ok).toBe(false);
-    expect((res as any).body.error).toBe("connection reset");
+    expect((res as any).body.error).toBe("internal_error");
   });
 });

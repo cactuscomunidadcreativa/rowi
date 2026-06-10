@@ -148,10 +148,9 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Internal error";
     console.error("❌ Error GET /api/user/profile:", error);
     return NextResponse.json(
-      { ok: false, error: errorMessage },
+      { ok: false, error: "internal_error" },
       { status: 500 }
     );
   }
@@ -277,10 +276,9 @@ export async function PATCH(req: NextRequest) {
       user: updatedUser,
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Internal error";
     console.error("❌ Error PATCH /api/user/profile:", error);
     return NextResponse.json(
-      { ok: false, error: errorMessage },
+      { ok: false, error: "internal_error" },
       { status: 500 }
     );
   }

@@ -233,7 +233,7 @@ export async function GET(
       e,
     );
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Internal error" },
+      { error: "internal_error" },
       { status: 500 },
     );
   }

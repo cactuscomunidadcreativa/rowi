@@ -207,8 +207,7 @@ Tu tarea: responder con insights útiles y accionables, anclados en los datos. S
     try {
       openai = await getOpenAIClient();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "OpenAI not configured";
-      return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+      return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
     }
 
     const completion = await openai.chat.completions.create({
@@ -298,8 +297,7 @@ Tu tarea: responder con insights útiles y accionables, anclados en los datos. S
       usage: { tokensInput: tokensIn, tokensOutput: tokensOut, costUsd },
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/ask error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

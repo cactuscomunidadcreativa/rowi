@@ -196,7 +196,7 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     console.error("[api/people/lookup] error:", e);
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "Internal error" },
+      { ok: false, error: "internal_error" },
       { status: 500 },
     );
   }

@@ -151,7 +151,7 @@ export async function POST(
   } catch (e) {
     console.error("[POST /api/workspaces/[id]/candidates] error:", e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Internal error" },
+      { error: "internal_error" },
       { status: 500 },
     );
   }

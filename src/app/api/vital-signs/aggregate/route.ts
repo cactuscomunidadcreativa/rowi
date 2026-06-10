@@ -119,8 +119,7 @@ export async function GET(req: NextRequest) {
       scores: aggregated,
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/vital-signs/aggregate error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

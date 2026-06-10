@@ -72,8 +72,7 @@ export async function POST(req: NextRequest) {
       justifiedCount,
     });
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Internal error";
     console.error("/api/learning/play/emotion-match/complete error:", e);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

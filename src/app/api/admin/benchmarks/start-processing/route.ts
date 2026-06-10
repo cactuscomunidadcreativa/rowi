@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Error starting processing:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error starting processing" },
+      { error: "internal_error" },
       { status: 500 }
     );
   }

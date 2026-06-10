@@ -1,13 +1,14 @@
 "use client";
 
-import { Suspense } from "react";
-import useSWR from "swr";
+import { Suspense, useState } from "react";
+import useSWR, { mutate } from "swr";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   Slack,
   MessageCircle,
   Video,
+  Mail,
   CheckCircle2,
   AlertCircle,
   ExternalLink,
@@ -51,6 +52,19 @@ function IntegrationsInner() {
   const { data } = useSWR("/api/integrations/slack/status", fx);
   const slackConnected = slackJustConnected || data?.connected === true;
   const installations = data?.installations ?? [];
+
+  // WhatsApp: "conectado" = credenciales Twilio configuradas (no OAuth).
+  const { data: waData } = useSWR("/api/integrations/whatsapp/status", fx);
+  const whatsappConnected = waData?.connected === true;
+
+  // Teams: conectado si hay una IntegrationConnection activa de plataforma TEAMS.
+  const { data: teamsData } = useSWR("/api/integrations/teams/status", fx);
+  const teamsConnected = teamsData?.connected === true;
+
+  // Gmail: OAuth Google por usuario (para que ECO envíe desde su cuenta).
+  const gmailJustConnected = params.get("gmail") === "connected";
+  const { data: gmailData } = useSWR("/api/integrations/gmail/status", fx);
+  const gmailConnected = gmailJustConnected || gmailData?.connected === true;
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -122,7 +136,7 @@ function IntegrationsInner() {
               <MessageCircle className="w-6 h-6 text-green-600" />
               <span className="font-semibold">WhatsApp</span>
             </div>
-            <StatusBadge status="available" />
+            <StatusBadge status={whatsappConnected ? "connected" : "available"} />
           </div>
           <p className="text-sm text-gray-500 flex-1">
             {t(
@@ -130,6 +144,9 @@ function IntegrationsInner() {
               "Coach bidireccional por WhatsApp (vía Twilio): los usuarios escriben y Rowi responde con IA.",
             )}
           </p>
+          {whatsappConnected && waData?.number && (
+            <p className="text-xs text-gray-500">· {waData.number}</p>
+          )}
           <p className="text-xs text-gray-400">
             {t(
               "admin.integrations.whatsappHint",
@@ -147,27 +164,37 @@ function IntegrationsInner() {
           </a>
         </div>
 
-        {/* Teams */}
+        {/* Teams — real (Incoming Webhook) */}
+        <TeamsCard connected={teamsConnected} channelName={teamsData?.channelName ?? null} />
+
+        {/* Gmail — real (OAuth Google) */}
         <div className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-indigo-500" />
-              <span className="font-semibold">Microsoft Teams</span>
+              <Mail className="w-6 h-6 text-red-500" />
+              <span className="font-semibold">Gmail</span>
             </div>
-            <StatusBadge status="available" />
+            <StatusBadge status={gmailConnected ? "connected" : "available"} />
           </div>
           <p className="text-sm text-gray-500 flex-1">
             {t(
-              "admin.integrations.teamsDesc",
-              "Notificaciones del equipo en un canal de Teams.",
+              "admin.integrations.gmailDesc",
+              "Envía los mensajes de ECO directamente desde tu Gmail, sin copiar y pegar.",
             )}
           </p>
-          <p className="text-xs text-gray-400">
-            {t(
-              "admin.integrations.teamsHint",
-              "Configura el webhook del canal en la sección de canal de organización.",
-            )}
-          </p>
+          {gmailConnected && gmailData?.email && (
+            <p className="text-xs text-gray-500">· {gmailData.email}</p>
+          )}
+          <a
+            href="/api/integrations/gmail/install"
+            className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+            style={{ background: "#ea4335" }}
+          >
+            {gmailConnected
+              ? t("admin.integrations.gmailReconnect", "Reconectar Gmail")
+              : t("admin.integrations.gmailConnect", "Conectar Gmail")}
+            <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
 
         {/* Zoom */}
@@ -184,6 +211,92 @@ function IntegrationsInner() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TeamsCard({ connected, channelName }: { connected: boolean; channelName: string | null }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState("");
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function connect() {
+    setSaving(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/integrations/teams/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhookUrl: url.trim(), channelName: name.trim() || undefined }),
+      }).then((r) => r.json());
+      if (res?.ok) {
+        setMsg(t("admin.integrations.teamsSaved", "Teams conectado."));
+        setOpen(false);
+        mutate("/api/integrations/teams/status");
+      } else {
+        setMsg(t("admin.integrations.teamsInvalid", "URL de webhook inválida."));
+      }
+    } catch {
+      setMsg(t("admin.integrations.teamsError", "No se pudo conectar."));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-6 h-6 text-indigo-500" />
+          <span className="font-semibold">Microsoft Teams</span>
+        </div>
+        <StatusBadge status={connected ? "connected" : "available"} />
+      </div>
+      <p className="text-sm text-gray-500 flex-1">
+        {t("admin.integrations.teamsDesc", "Notificaciones del equipo en un canal de Teams.")}
+      </p>
+      {connected && channelName && <p className="text-xs text-gray-500">· {channelName}</p>}
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+          style={{ background: "#4b53bc" }}
+        >
+          {connected
+            ? t("admin.integrations.teamsReconnect", "Cambiar canal")
+            : t("admin.integrations.teamsConnect", "Conectar Teams")}
+        </button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={t("admin.integrations.teamsUrlPlaceholder", "URL del Incoming Webhook del canal")}
+            className="rounded-md border border-gray-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"
+          />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("admin.integrations.teamsNamePlaceholder", "Nombre del canal (opcional)")}
+            className="rounded-md border border-gray-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"
+          />
+          <div className="flex gap-2">
+            <button onClick={connect} disabled={saving} className="rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: "#4b53bc" }}>
+              {saving ? "…" : t("admin.integrations.teamsSave", "Guardar")}
+            </button>
+            <button onClick={() => setOpen(false)} className="rounded-lg px-4 py-2 text-sm text-gray-500">
+              {t("common.cancel", "Cancelar")}
+            </button>
+          </div>
+        </div>
+      )}
+      <p className="text-xs text-gray-400">
+        {t("admin.integrations.teamsHint", "En Teams: canal → ··· → Conectores/Workflows → Incoming Webhook → copia la URL.")}
+      </p>
+      {msg && <p className="text-xs text-gray-500">{msg}</p>}
     </div>
   );
 }

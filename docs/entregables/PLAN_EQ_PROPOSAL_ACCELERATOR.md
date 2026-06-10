@@ -76,6 +76,26 @@ honestidad de datos (etiquetar n pequeño, DE alta, identidad no confirmada) · 
 (lenguaje de acompañamiento ante bienestar) · solo herramientas/casos Six Seconds reales ·
 aprobación del partner antes de exportar.
 
-## ESTADO
-- [ ] MVP (fases 1-3 + borrador 6) ← en curso
-- [ ] v2 · [ ] v3
+## ESTADO DE EJECUCIÓN (2026-06-10)
+
+### ✅ MVP + v2 (sin pricing) — EN PRODUCCIÓN
+Página: `/hub/admin/vital-signs/report` (tab "Informe SEI↔VS").
+- Motor de reglas `diagnosis-engine.ts` (vs norma, dispersión, iceberg, bienestar) — 7 tests con datos reales de Bancolombia.
+- Endpoint `/api/consultant/report` stateless: SEI+VS CSV → insights segmentados.
+- DOS entregables con toggle: 📊 Informe (cliente, agregado) + 🔒 Guía confidencial (partner, individual). PDF por separado (@media print aísla cada uno).
+- Segmentación cliente/partner + guardarraíles (n pequeño, DE alta, bienestar) automáticos.
+
+### DOS FLUJOS, DOS CASOS (decisión Eduardo)
+- **`/report` (stateless, rápido):** sube SEI+VS → entregables. NO persiste (privacidad). Sin cruces avanzados.
+- **`/consultant` (con benchmark, persistido con consentimiento):** para los CRUCES AVANZADOS
+  (espejo líder↔equipo, deriva longitudinal, persona puente) que necesitan data a nivel persona.
+  Ya existe (`cross-analysis.ts`). **Los cruces avanzados viven aquí, no en /report** — así no se
+  rompe la promesa de "no persistir" del flujo rápido.
+
+### PENDIENTE (requiere contenido/decisión de Eduardo)
+- **Propuesta EAR + 3 opciones + pricing** (v2): necesita la estructura EAR real, las 3 opciones
+  (piloto/completa/expansión) y rangos de pricing por país. El blueprint prohíbe inventar → pendiente
+  de tu contenido.
+- **v3:** PPTX real (pptxgenjs), biblioteca de casos, narrativa IA extendida, pricing multi-país, EVS.
+
+### ✅ ESTADO: el 90% del recorrido manual de Bancolombia está automatizado.

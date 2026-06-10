@@ -35,6 +35,12 @@ const STATE_STYLE: Record<string, { label: string; cls: string }> = {
 };
 
 interface BlindspotRow { pulse: string; state: string; }
+interface EngineInsight {
+  kind: string;
+  label: string;
+  reading: string;
+  flags: { smallN: boolean; highDispersion: boolean; isWellbeing: boolean };
+}
 interface ReportResult {
   subjectLabel: string;
   scope: string;
@@ -45,6 +51,27 @@ interface ReportResult {
   pulses: Record<string, number>;
   vsSource: "real" | "inferred";
   vsSampleSize: number;
+  insights: { client: EngineInsight[]; partner: EngineInsight[] };
+}
+
+/** Lista de insights con sus marcas de honestidad. */
+function InsightList({ items }: { items: EngineInsight[] }) {
+  if (!items?.length) return <p className="text-sm text-[var(--rowi-muted)]">Sin señales en este nivel.</p>;
+  return (
+    <ul className="space-y-2">
+      {items.map((it, i) => (
+        <li key={i} className="text-sm text-[var(--rowi-fg)] flex gap-2">
+          <span className="text-[var(--rowi-muted)]">·</span>
+          <span>
+            {it.reading}
+            {it.flags.smallN && <span className="ml-1 text-xs text-amber-600">[n pequeño]</span>}
+            {it.flags.highDispersion && <span className="ml-1 text-xs text-amber-600">[DE alta]</span>}
+            {it.flags.isWellbeing && <span className="ml-1 text-xs text-rose-600">[bienestar]</span>}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 /** Barra 70-130 estilo Rowi (verde si alto, ámbar si medio/bajo). */
@@ -206,6 +233,20 @@ export default function ConsultantReportPage() {
                   </span>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* Dos canastas del blueprint: cliente (agregado) vs partner (confidencial) */}
+          <section className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-green-200 dark:border-green-900/40 p-4">
+              <h3 className="font-semibold text-[var(--rowi-fg)] mb-1">📊 Para el cliente (agregado)</h3>
+              <p className="text-xs text-[var(--rowi-muted)] mb-2">Insights de equipo — van a la propuesta oficial.</p>
+              <InsightList items={report.insights?.client ?? []} />
+            </div>
+            <div className="rounded-xl border border-amber-300 dark:border-amber-900/40 p-4 bg-amber-50/40 dark:bg-amber-900/10">
+              <h3 className="font-semibold text-[var(--rowi-fg)] mb-1">🔒 Confidencial del partner</h3>
+              <p className="text-xs text-[var(--rowi-muted)] mb-2">Individual/SEI — NUNCA en material de cliente. Solo en 1:1 con consentimiento.</p>
+              <InsightList items={report.insights?.partner ?? []} />
             </div>
           </section>
 

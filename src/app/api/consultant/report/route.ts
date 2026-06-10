@@ -25,8 +25,27 @@ import { parseOvsTvsCsv } from "@/lib/vital-signs/parsers/ovs";
 import { applyPulseMapCohort, applyPulseMap, hasSecretPulseMap } from "@/lib/vital-signs/secret-map";
 import { calculateVitalSigns } from "@/lib/vital-signs/calculate";
 import { generateIntegralProfile } from "@/lib/consultant/profile-generator";
+import {
+  readLayer,
+  readIceberg,
+  segment,
+  type Metric,
+} from "@/lib/consultant/diagnosis-engine";
 import type { SeiKey, PulsePointCode } from "@/lib/vital-signs/catalog";
 import Papa from "papaparse";
+
+const SEI_LABELS: Record<string, string> = {
+  EL: "Alfabetización Emocional", RP: "Reconocer Patrones", ACT: "Pensamiento Consecuente",
+  NE: "Navegar Emociones", IM: "Motivación Intrínseca", OP: "Optimismo",
+  EMP: "Empatía", NG: "Metas Nobles",
+};
+const PULSE_LABELS: Record<string, string> = {
+  TRUST_TRANSPARENCY: "Transparencia", TRUST_COHERENCE: "Coherencia", TRUST_CARE: "Cuidado",
+  MOTIVATION_MEANING: "Significado", MOTIVATION_MASTERY: "Maestría", MOTIVATION_AUTONOMY: "Autonomía",
+  CHANGE_IMAGINATION: "Imaginación", CHANGE_EXPLORATION: "Exploración", CHANGE_CELEBRATION: "Celebración",
+  TEAMWORK_DIVERGENCE: "Divergencia", TEAMWORK_CONNECTION: "Conexión", TEAMWORK_JOY: "Alegría",
+  EXECUTION_ACCOUNTABILITY: "Responsabilidad", EXECUTION_FEEDBACK: "Feedback", EXECUTION_FOCUS: "Enfoque",
+};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -186,6 +205,28 @@ export async function POST(req: NextRequest) {
       vs.source = "inferred";
     }
 
+    // 2b) Motor de reglas (fases 2-5): insights vs norma + dispersión + iceberg,
+    //     segmentados en canasta cliente (agregado) vs partner (individual/SEI).
+    const seiMetrics: Metric[] = SEI_8
+      .filter((k) => typeof sei.competencies[k] === "number")
+      .map((k) => ({ key: k, label: SEI_LABELS[k] ?? k, mean: sei.competencies[k]!, n: sei.sampleSize }));
+    // Pulse points como capa de "equipo" solo si el VS es agregado (TVS/OVS).
+    const teamMetrics: Metric[] =
+      scope === "LVS"
+        ? []
+        : Object.entries(vs.pulses).map(([code, mean]) => ({
+            key: code,
+            label: PULSE_LABELS[code] ?? code,
+            mean: mean as number,
+          }));
+
+    const insights = [
+      ...readLayer(teamMetrics, "team"),
+      ...readLayer(seiMetrics, "individual"),
+      ...readIceberg(teamMetrics, seiMetrics),
+    ];
+    const baskets = segment(insights);
+
     // 3) Entregable: mapa de puntos ciegos + diagnóstico IA.
     const scopeLevel = scope === "LVS" ? "individual" : "cohort";
     const profile = await generateIntegralProfile(
@@ -213,6 +254,11 @@ export async function POST(req: NextRequest) {
         pulses: vs.pulses,
         vsSource: vs.source, // "real" (secret map) | "inferred" (respaldo SEI)
         vsSampleSize: vs.sampleSize,
+        // Insights del motor de reglas, ya segmentados en dos canastas.
+        insights: {
+          client: baskets.client, // → propuesta oficial (agregado)
+          partner: baskets.partner, // → guía confidencial (individual/SEI)
+        },
       },
     });
   } catch (e: unknown) {

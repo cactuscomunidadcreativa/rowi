@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 /**
  * 🗺️ sitemap.xml generado por Next.js (App Router).
@@ -6,10 +7,11 @@ import type { MetadataRoute } from "next";
  * (hub, admin, onboarding) y las APIs se excluyen — viven detrás de login y
  * no deben indexarse. Mantener esta lista alineada con PUBLIC_PAGES en
  * middleware.ts cuando se añadan páginas públicas nuevas.
+ *
+ * Dominio canónico vía getServerAppBaseUrl (rechaza *.vercel.app).
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.rowiia.com";
+  const baseUrl = getServerAppBaseUrl();
 
   // Rutas públicas con su prioridad/frecuencia relativa.
   const routes: Array<{

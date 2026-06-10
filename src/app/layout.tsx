@@ -2,15 +2,16 @@ import "./globals.css";
 import ClientWrapper from "./ClientWrapper";
 import BetaBanner from "@/components/shared/BetaBanner";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
+import { getServerAppBaseUrl } from "@/core/utils/base-url";
 
 export const viewport = {
   themeColor: "#7c3aed",
 };
 
 export const metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.rowiia.com"
-  ),
+  // Canonical / og:url de todas las páginas. getServerAppBaseUrl rechaza
+  // *.vercel.app → nunca indexamos el dominio de deploy.
+  metadataBase: new URL(getServerAppBaseUrl()),
   title: {
     default: "Rowi — Inteligencia emocional con IA y metodología Six Seconds",
     template: "%s · Rowi",

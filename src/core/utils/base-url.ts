@@ -1,6 +1,6 @@
 // src/lib/base-url.ts
 
-const PROD_FALLBACK = "https://www.rowiia.com";
+export const PROD_FALLBACK = "https://www.rowiia.com";
 
 /**
  * Vercel's internal deploy hostnames (e.g. rowi.vercel.app) must never be used

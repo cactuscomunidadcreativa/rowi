@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { isEcoLLMEnabled } from "@/domains/eco/libAI";
-import { getOpenAIClient } from "@/lib/openai/client";
+import { cachedCompletion } from "@/lib/openai/cachedCompletion";
 import {
   buildDyadBridge,
   recordEcoTurn,
@@ -601,24 +601,37 @@ Responde SOLO en JSON válido:
 
       const userPrompt = anonymize(generateAIPrompt());
 
-      const ai = await getOpenAIClient();
-      const completion = await ai.chat.completions.create({
+      // E2 (knowledge layer): cache por (system+user prompt anonimizado), con
+      // scope por usuario. Mismo goal + mismos destinatarios + mismo refine →
+      // misma respuesta sin volver a pagar OpenAI. Lo cacheado lleva
+      // placeholders, nunca PII; el de-anonimizado ocurre después.
+      let tokensUsed = 0;
+      const { text: raw } = await cachedCompletion({
+        kind: "eco_compose",
+        prompt: `${systemPrompt}\n---\n${userPrompt}`,
+        scope: `user:${user.id}`,
         model: "gpt-4o-mini",
-        temperature: 0.7,
-        max_tokens: 800,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
+        maxAgeMs: 7 * 24 * 60 * 60 * 1000,
+        call: async (ai) => {
+          const completion = await ai.chat.completions.create({
+            model: "gpt-4o-mini",
+            temperature: 0.7,
+            max_tokens: 800,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            response_format: { type: "json_object" },
+          });
+          tokensUsed = completion.usage?.total_tokens || 0;
+          return completion.choices[0].message?.content || "{}";
+        },
       });
 
-      const raw = completion.choices[0].message?.content || "{}";
       const parsed = JSON.parse(raw);
       // Restaurar nombres reales en el mensaje y asunto.
       if (typeof parsed.text === "string") parsed.text = deAnonymize(parsed.text);
       if (typeof parsed.subject === "string") parsed.subject = deAnonymize(parsed.subject);
-      const tokensUsed = completion.usage?.total_tokens || 0;
 
       // Cadena SIA: guardar el turno en la memoria del hilo de la díada.
       if (bridge && body.dyadId) {

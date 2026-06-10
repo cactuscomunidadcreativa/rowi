@@ -60,15 +60,16 @@ export function encryptValue(plainText: string): string {
  * Desencripta un valor usando AES-256-GCM
  */
 export function decryptValue(encryptedText: string): string {
+  const parts = encryptedText.split(":");
+
+  // Path de migración legítimo: el valor nunca se encriptó (no tiene la forma
+  // iv:authTag:ciphertext). Devolverlo tal cual NO es un downgrade.
+  if (parts.length !== 3) {
+    return encryptedText;
+  }
+
   try {
     const key = getEncryptionKey();
-    const parts = encryptedText.split(":");
-
-    if (parts.length !== 3) {
-      // Si no está encriptado, devolver el valor original (migración)
-      return encryptedText;
-    }
-
     const iv = Buffer.from(parts[0], "hex");
     const authTag = Buffer.from(parts[1], "hex");
     const encrypted = parts[2];
@@ -81,8 +82,12 @@ export function decryptValue(encryptedText: string): string {
 
     return decrypted;
   } catch {
-    // Si falla la desencriptación, devolver el valor original
-    return encryptedText;
+    // El valor TENÍA forma de cifrado pero el descifrado falló: clave rotada,
+    // datos corruptos o authTag inválido. NUNCA devolver el ciphertext crudo
+    // (downgrade silencioso) — devolver vacío y registrar. Los callers tratan
+    // "" como "sin valor configurado", no como secreto válido.
+    console.error("[systemConfig] decryptValue failed — returning empty (no plaintext/ciphertext leak)");
+    return "";
   }
 }
 

@@ -3,11 +3,14 @@
  * ---------------------------------------------------------
  * Public endpoint. Body: { token, password }. Validates the
  * PasswordResetToken, hashes the new password with bcrypt, and
- * updates the user's `credentials` Account.access_token (the
- * NextAuth password-storage workaround used elsewhere in the
- * repo — see /api/auth/register).
+ * writes it to User.passwordHash (the dedicated field; the legacy
+ * Account.access_token is cleared to avoid duplicating the hash).
+ *
+ * Rate-limited (authStrict: 5 / 5 min) by BOTH client IP and token,
+ * so an attacker can't brute-force reset tokens or hammer the endpoint.
  *
  * Returns explicit error codes for the client UI:
+ *   - rate_limited     (too many attempts)
  *   - missing_fields   (token or password missing)
  *   - password_too_short  (<8 chars)
  *   - invalid_token    (no row found)
@@ -21,6 +24,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/core/prisma";
 import { secureLog } from "@/lib/logging";
+import { rateLimiters } from "@/lib/security/rateLimit";
 
 interface ResetBody {
   token?: string;
@@ -40,6 +44,30 @@ export async function POST(req: NextRequest) {
 
     const token = (body.token || "").trim();
     const password = body.password || "";
+
+    // Rate limit por IP y por token (5 intentos / 5 min). Frena fuerza bruta de
+    // tokens y abuso del endpoint. Con Upstash es distribuido; sin credenciales
+    // cae a in-memory (fail-open) — aceptable como capa adicional.
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const limited = await Promise.all([
+      rateLimiters.authStrict(`reset-pw-ip:${ip}`),
+      token ? rateLimiters.authStrict(`reset-pw-token:${token}`) : null,
+    ]);
+    const blocked = limited.find((r) => r && !r.success);
+    if (blocked) {
+      return NextResponse.json(
+        { ok: false, error: "rate_limited" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((blocked.resetAt - Date.now()) / 1000)),
+            ),
+          },
+        },
+      );
+    }
 
     if (!token || !password) {
       return NextResponse.json(

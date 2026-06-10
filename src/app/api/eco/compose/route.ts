@@ -252,6 +252,39 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
 /* =========================================================
    🧠 POST — Genera mensaje para 1 o varios destinatarios
 ========================================================= */
+/**
+ * Anti-IDOR: filtra los memberIds a los que el usuario PUEDE escribir.
+ * Autorizado = miembro de una comunidad que el usuario también integra, o el
+ * propio usuario. Sin esto, cualquiera podía pasar memberIds arbitrarios y
+ * extraer el perfil EQ (brain style / competencias / talentos) de terceros.
+ */
+async function authorizedMemberIds(userId: string, memberIds: string[]): Promise<string[]> {
+  if (!memberIds.length) return [];
+
+  // Comunidades a las que pertenece el usuario.
+  const myMemberships = await prisma.communityMember.findMany({
+    where: { userId, communityId: { not: null } },
+    select: { communityId: true },
+  });
+  const myCommunityIds = new Set(
+    myMemberships.map((m) => m.communityId).filter((c): c is string => !!c),
+  );
+
+  // Solo los memberIds solicitados que comparten comunidad con el usuario
+  // (o que ES el propio usuario).
+  const requested = await prisma.communityMember.findMany({
+    where: { id: { in: memberIds } },
+    select: { id: true, communityId: true, userId: true },
+  });
+  return requested
+    .filter(
+      (m) =>
+        m.userId === userId ||
+        (m.communityId != null && myCommunityIds.has(m.communityId)),
+    )
+    .map((m) => m.id);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -293,8 +326,10 @@ export async function POST(req: NextRequest) {
     const targets: TargetData[] = [];
 
     if (body.memberIds?.length) {
+      // Anti-IDOR: solo miembros con los que el usuario comparte comunidad.
+      const allowedIds = await authorizedMemberIds(user.id, body.memberIds);
       const memberTargets = await Promise.all(
-        body.memberIds.map((id) => getTargetForMember(id))
+        allowedIds.map((id) => getTargetForMember(id))
       );
       for (const t of memberTargets) if (t) targets.push(t);
     }

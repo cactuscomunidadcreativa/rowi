@@ -4,6 +4,25 @@ import { getServerAppBaseUrl } from "@/core/utils/base-url";
 export const runtime = "nodejs";
 
 /**
+ * Allowlist de subrutas válidas. `project` entra en una URL que se fetchea
+ * reenviando la cookie del usuario; sin allowlist, un `project` tipo
+ * "../admin/x" o con query extra haría path-injection hacia otra ruta interna
+ * autenticada con la cookie del propio usuario. memberId se sanea a [\w-].
+ */
+const VALID_PROJECTS = new Set([
+  "relationship", "leadership", "execution", "innovation",
+  "decision", "conversation", "composite", "snapshots",
+]);
+
+function isValidProject(p: string | null | undefined): p is string {
+  return !!p && VALID_PROJECTS.has(p);
+}
+
+function isValidMemberId(id: string | null | undefined): id is string {
+  return !!id && /^[\w-]{1,64}$/.test(id);
+}
+
+/**
  * 🌐 AFFINITY MODULE GATEWAY
  * ---------------------------------------------------------
  * Punto de entrada del motor modular de afinidad.
@@ -18,6 +37,13 @@ export async function GET(req: NextRequest) {
 
   // Si tenemos project y memberId, redirigimos internamente a la subruta
   if (project && memberId) {
+    // Anti path-injection: solo subrutas conocidas + memberId saneado.
+    if (!isValidProject(project) || !isValidMemberId(memberId)) {
+      return NextResponse.json(
+        { ok: false, error: "Parámetros inválidos (project/memberId)" },
+        { status: 400 },
+      );
+    }
     const baseUrl = getServerAppBaseUrl(req);
 
     const targetUrl = `${baseUrl}/api/affinity/${project}?memberId=${memberId}${force ? "&force=1" : ""}`;
@@ -116,6 +142,10 @@ export async function POST(req: Request) {
 
     if (!project || !memberId) {
       return NextResponse.json({ ok: false, error: "Faltan parámetros (project, memberId)" }, { status: 400 });
+    }
+    // Anti path-injection: solo subrutas conocidas + memberId saneado.
+    if (!isValidProject(project) || !isValidMemberId(memberId)) {
+      return NextResponse.json({ ok: false, error: "Parámetros inválidos (project/memberId)" }, { status: 400 });
     }
 
     // Redirigir dinámicamente a la subruta correspondiente

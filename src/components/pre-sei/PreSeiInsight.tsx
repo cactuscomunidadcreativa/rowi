@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getEqLevel, EQ_LEVELS } from "@/domains/eq/lib/eqLevels";
 import type { PreSeiInsightData } from "./types";
 
 interface Props {
@@ -81,6 +82,12 @@ export default function PreSeiInsight({ insight }: Props) {
             "Esto es una hipótesis a partir de tus respuestas, no un diagnóstico.",
           )}
         </p>
+        <p className="text-sm text-[var(--rowi-muted)] mt-1">
+          {t(
+            "preSei.insight.levelsNote",
+            "Con la información que tenemos, esto es lo que se asoma — no es lo que eres. Por eso verás niveles, no puntajes. Tu lectura real y normada es el SEI.",
+          )}
+        </p>
       </div>
 
       {/* Arquetipo dominante */}
@@ -103,25 +110,29 @@ export default function PreSeiInsight({ insight }: Props) {
           {t("preSei.insight.competencies", "Tus 8 competencias emocionales")}
         </h3>
         <div className="space-y-2">
-          {Object.entries(insight.competencies).map(([key, score]) => (
-            <div key={key} className="flex items-center gap-3">
-              <span className="w-40 shrink-0 text-xs text-[var(--rowi-muted)]">
-                {SEI_ES[key] ?? key}
-              </span>
-              <div className="flex-1 h-2 rounded-full bg-[var(--rowi-chip)] overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.max(0, Math.min(100, ((score - 70) / 60) * 100))}%`,
-                    background: "linear-gradient(90deg, var(--rowi-g2), var(--rowi-g1))",
-                  }}
-                />
+          {Object.entries(insight.competencies).map(([key, score]) => {
+            const level = getEqLevel(score);
+            const levelIdx = EQ_LEVELS.findIndex((l) => l.key === level.key);
+            return (
+              <div key={key} className="flex items-center gap-3">
+                <span className="w-40 shrink-0 text-xs text-[var(--rowi-muted)]">
+                  {t(`sei.competencies.${key}`, SEI_ES[key] ?? key)}
+                </span>
+                <div className="flex-1 h-2 rounded-full bg-[var(--rowi-chip)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${((levelIdx + 1) / EQ_LEVELS.length) * 100}%`,
+                      background: "linear-gradient(90deg, var(--rowi-g2), var(--rowi-g1))",
+                    }}
+                  />
+                </div>
+                <span className="w-24 text-right text-xs text-[var(--rowi-fg)]">
+                  {level.emoji} {t(level.labelKey, level.label)}
+                </span>
               </div>
-              <span className="w-10 text-right text-xs tabular-nums text-[var(--rowi-fg)]">
-                {Math.round(score)}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -140,8 +151,10 @@ export default function PreSeiInsight({ insight }: Props) {
               className="rounded-xl border border-[var(--rowi-card-border)] p-3 text-center"
             >
               <p className="text-xs text-[var(--rowi-muted)] mb-1">{t(v.lensKey, v.scope)}</p>
-              <p className="text-2xl font-bold" style={{ color: bandColor(v.band) }}>
-                {v.score !== null ? Math.round(v.score) : "—"}
+              <p className="text-lg font-bold" style={{ color: bandColor(v.band) }}>
+                {v.score !== null
+                  ? `${getEqLevel(v.score).emoji} ${t(getEqLevel(v.score).labelKey, getEqLevel(v.score).label)}`
+                  : "—"}
               </p>
               <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted-weak)]">
                 {v.scope}
@@ -160,8 +173,10 @@ export default function PreSeiInsight({ insight }: Props) {
           {insight.topPulsePoints.map((pp) => (
             <li key={pp.code} className="flex items-center justify-between text-sm">
               <span className="text-[var(--rowi-fg)]">{pp.esName}</span>
-              <span className="tabular-nums text-[var(--rowi-muted)]">
-                {pp.score !== null ? Math.round(pp.score) : "—"}
+              <span className="text-[var(--rowi-muted)]">
+                {pp.score !== null
+                  ? `${getEqLevel(pp.score).emoji} ${t(getEqLevel(pp.score).labelKey, getEqLevel(pp.score).label)}`
+                  : "—"}
               </span>
             </li>
           ))}

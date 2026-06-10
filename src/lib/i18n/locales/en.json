@@ -4783,6 +4783,7 @@
   "preSei.insight.band.below": "Below average",
   "preSei.insight.competencies": "Your 8 emotional competencies",
   "preSei.insight.disclaimer": "This is a hypothesis from your answers, not a diagnosis. The magic shows up when you cross it with someone who matters: that's where you see the gap and how to close it.",
+  "preSei.insight.levelsNote": "With the information we have, this is what shows up — it's not who you are. That's why you'll see levels, not scores. Your real, normed reading is the SEI.",
   "preSei.insight.normative.global": "Compared with the global average",
   "preSei.insight.normative.noData": "Internal read (no norm loaded yet for your segment)",
   "preSei.insight.normative.segment": "Compared with {segment} (n={n})",

@@ -4783,6 +4783,7 @@
   "preSei.insight.band.below": "Por debajo del promedio",
   "preSei.insight.competencies": "Tus 8 competencias emocionales",
   "preSei.insight.disclaimer": "Esto es una hipótesis a partir de tus respuestas, no un diagnóstico. La magia aparece cuando lo cruzas con alguien que te importa: ahí ves la brecha y cómo cerrarla.",
+  "preSei.insight.levelsNote": "Con la información que tenemos, esto es lo que se asoma — no es lo que eres. Por eso verás niveles, no puntajes. Tu lectura real y normada es el SEI.",
   "preSei.insight.normative.global": "Comparado con el promedio global",
   "preSei.insight.normative.noData": "Lectura interna (aún sin norma cargada para tu segmento)",
   "preSei.insight.normative.segment": "Comparado con {segment} (n={n})",

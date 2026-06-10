@@ -2,10 +2,23 @@
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Sparkles, Info, Flame, CalendarDays, Award } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
+  Info,
+  Flame,
+  CalendarDays,
+  Award,
+  CheckCircle2,
+  Circle,
+  Quote,
+  BookOpen,
+} from "lucide-react";
 import { RowiStageImage, type RowiStage } from "@/domains/avatar/components/RowiStageImage";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -168,6 +181,9 @@ export default function BecomingPage() {
           </motion.section>
         )}
 
+        {/* La memoria viva: tu historia día a día (reflexiones + hitos) */}
+        <MemoryTimeline />
+
         {/* ═══════════════════ 30% ACCIÓN ═══════════════════ */}
 
         <div className="pt-2">
@@ -270,5 +286,209 @@ export default function BecomingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ═══════════════════ MEMORIA VIVA ═══════════════════
+   La línea de tiempo real del usuario: lo que sintió, practicó y reflexionó
+   cada día (DailyLoopEntry) + los hitos del avatar intercalados. Es la parte
+   "viva" de la memoria: no métricas, sino la historia contada con sus propias
+   palabras. */
+
+interface TimelineEntry {
+  localDate: string;
+  morningMood: string | null;
+  morningIntensity: number | null;
+  becomeSei: string | null;
+  becomeIdentity: string | null;
+  practiceText: string | null;
+  practiceDone: boolean;
+  reflectionText: string | null;
+}
+
+interface TimelineMilestone {
+  date: string;
+  title: string;
+  description: string | null;
+  rarity: string;
+  xpReward: number;
+}
+
+const RARITY_STYLE: Record<string, string> = {
+  common: "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-gray-300",
+  uncommon: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+  rare: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  epic: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400",
+  legendary: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+};
+
+function MemoryTimeline() {
+  const { t, lang } = useI18n();
+  const [entries, setEntries] = useState<TimelineEntry[]>([]);
+  const [milestones, setMilestones] = useState<TimelineMilestone[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/becoming/timeline")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!alive || !data?.ok) return;
+        setEntries(data.entries ?? []);
+        setMilestones(data.milestones ?? []);
+        setNextCursor(data.nextCursor ?? null);
+      })
+      .catch(() => {})
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const loadMore = async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/becoming/timeline?cursor=${encodeURIComponent(nextCursor)}`);
+      const data = await res.json().catch(() => null);
+      if (data?.ok) {
+        setEntries((prev) => [...prev, ...(data.entries ?? [])]);
+        setNextCursor(data.nextCursor ?? null);
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  if (loading) return null;
+  if (entries.length === 0 && milestones.length === 0) {
+    return (
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm p-5"
+      >
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+          <BookOpen className="w-4 h-4 text-violet-500" />
+          {t("becoming.timeline.title", "Tu memoria viva")}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {t(
+            "becoming.timeline.empty",
+            "Tus reflexiones, prácticas y logros aparecerán aquí a medida que vivas tu día a día en Rowi."
+          )}
+        </p>
+      </motion.section>
+    );
+  }
+
+  // Intercalar hitos: los que caen en un día con entrada van junto a ese día;
+  // los demás se muestran como días propios en la línea de tiempo.
+  const entryDates = new Set(entries.map((e) => e.localDate));
+  const oldestLoaded = entries.length ? entries[entries.length - 1].localDate : "0000-00-00";
+  const byDate = new Map<string, TimelineMilestone[]>();
+  for (const m of milestones) {
+    // Hitos más antiguos que lo cargado se omiten hasta que el usuario pagine.
+    if (!entryDates.has(m.date) && nextCursor && m.date < oldestLoaded) continue;
+    const list = byDate.get(m.date) ?? [];
+    list.push(m);
+    byDate.set(m.date, list);
+  }
+  const standaloneDates = Array.from(byDate.keys()).filter((d) => !entryDates.has(d));
+  const days: { date: string; entry: TimelineEntry | null }[] = [
+    ...entries.map((e) => ({ date: e.localDate, entry: e as TimelineEntry | null })),
+    ...standaloneDates.map((d) => ({ date: d, entry: null })),
+  ].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  const fmtDate = (d: string) => {
+    const date = new Date(`${d}T12:00:00`);
+    return date.toLocaleDateString(lang, { weekday: "short", day: "numeric", month: "short" });
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm p-5"
+    >
+      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-1.5">
+        <BookOpen className="w-4 h-4 text-violet-500" />
+        {t("becoming.timeline.title", "Tu memoria viva")}
+      </p>
+
+      <div className="space-y-4">
+        {days.map(({ date, entry }) => (
+          <div key={date} className="relative pl-5 border-l-2 border-violet-100 dark:border-violet-900/40">
+            <span className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-violet-400" />
+            <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">{fmtDate(date)}</p>
+
+            {(byDate.get(date) ?? []).map((m, i) => (
+              <div key={i} className="flex items-start gap-2 mb-1.5">
+                <Award className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <div>
+                  <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${RARITY_STYLE[m.rarity] ?? RARITY_STYLE.common}`}>
+                    {m.title}
+                  </span>
+                  {m.description && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{m.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {entry && (
+              <div className="space-y-1.5">
+                {entry.morningMood && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t("becoming.timeline.mood", "Llegaste sintiendo")}{" "}
+                    <span className="font-medium text-gray-700 dark:text-gray-200">{entry.morningMood}</span>
+                  </p>
+                )}
+                {entry.becomeIdentity && (
+                  <p className="text-sm text-violet-700 dark:text-violet-300 italic">
+                    “{entry.becomeIdentity}”
+                    {entry.becomeSei && SEI_LABEL[entry.becomeSei] && (
+                      <span className="not-italic ml-2 text-[11px] text-gray-400">
+                        · {SEI_LABEL[entry.becomeSei]}
+                      </span>
+                    )}
+                  </p>
+                )}
+                {entry.practiceText && (
+                  <p className="flex items-start gap-1.5 text-sm text-gray-700 dark:text-gray-200">
+                    {entry.practiceDone ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-gray-300 mt-0.5 shrink-0" />
+                    )}
+                    {entry.practiceText}
+                  </p>
+                )}
+                {entry.reflectionText && (
+                  <p className="flex items-start gap-1.5 text-sm text-gray-600 dark:text-gray-300 bg-violet-50/60 dark:bg-violet-900/15 rounded-xl px-3 py-2">
+                    <Quote className="w-3.5 h-3.5 text-violet-400 mt-1 shrink-0" />
+                    {entry.reflectionText}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {nextCursor && (
+        <button
+          onClick={() => void loadMore()}
+          disabled={loadingMore}
+          className="mt-4 w-full rounded-xl border border-gray-200 dark:border-zinc-700 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:border-violet-400 hover:text-violet-600 transition disabled:opacity-50"
+        >
+          {loadingMore
+            ? t("becoming.loading", "Reuniendo tu historia…")
+            : t("becoming.timeline.more", "Ver más días")}
+        </button>
+      )}
+    </motion.section>
   );
 }

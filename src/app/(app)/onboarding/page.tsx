@@ -83,6 +83,12 @@ export default function OnboardingPage() {
   const [rowiTestPrefs, setRowiTestPrefs] = useState<MiniSeiPrefQuestion[]>([]);
   const [rowiTestSaving, setRowiTestSaving] = useState(false);
   const [rowiTestDone, setRowiTestDone] = useState(false);
+  // El WOW: el resultado del mini-SEI se muestra al usuario (no se descarta)
+  // junto con su plan inmediato en Rowi (D5 del plan de remediación).
+  const [rowiTestResult, setRowiTestResult] = useState<{
+    totalEqBand: string;
+    competencyProfile: Record<string, number>;
+  } | null>(null);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
   // + consultor + persona). El primer rol seleccionado define el template
   // del primer workspace en el step siguiente; los demás quedan declarados.
@@ -152,14 +158,23 @@ export default function OnboardingPage() {
   ) {
     setRowiTestSaving(true);
     try {
-      await fetch("/api/mini-sei/submit", {
+      const res = await fetch("/api/mini-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers, preferences, source: "onboarding" }),
       });
+      const json = await res.json().catch(() => null);
       setRowiTestDone(true);
-      // Avanzar al siguiente step tras un instante.
-      setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 800);
+      if (json?.ok && json.competencyProfile) {
+        // Mostrar el WOW (resultado + plan); el usuario continúa cuando quiera.
+        setRowiTestResult({
+          totalEqBand: json.totalEqBand ?? "unknown",
+          competencyProfile: json.competencyProfile,
+        });
+      } else {
+        // Sin resultado que mostrar: avanzar como antes.
+        setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 800);
+      }
     } finally {
       setRowiTestSaving(false);
     }
@@ -469,7 +484,12 @@ export default function OnboardingPage() {
             {/* Step: Rowi Test — siembra el perfil bajo el capó (cadena SIA) */}
             {current.key === "rowiTest" && (
               <div className="max-w-xl mx-auto">
-                {rowiTestDone ? (
+                {rowiTestDone && rowiTestResult ? (
+                  <RowiTestWow
+                    result={rowiTestResult}
+                    onContinue={() => setStep((s) => Math.min(s + 1, STEPS.length - 1))}
+                  />
+                ) : rowiTestDone ? (
                   <p className="text-center text-[var(--rowi-muted)] py-6">
                     {t("onboarding.rowiTest.done", "¡Listo! Tu perfil se está afinando.")}
                   </p>
@@ -742,6 +762,131 @@ export default function OnboardingPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ═══════════ El WOW del Rowi Test + el plan inmediato (D5) ═══════════
+   En vez de descartar el resultado del mini-SEI y saltar al siguiente step,
+   se lo mostramos al usuario (banda + fortalezas + foco) junto con su plan
+   concreto en Rowi. El WOW sin plan se evapora; esto lo aterriza. */
+
+function RowiTestWow({
+  result,
+  onContinue,
+}: {
+  result: { totalEqBand: string; competencyProfile: Record<string, number> };
+  onContinue: () => void;
+}) {
+  const { t } = useI18n();
+
+  const ranked = Object.entries(result.competencyProfile)
+    .filter(([, v]) => typeof v === "number")
+    .sort((a, b) => b[1] - a[1]);
+  const strengths = ranked.slice(0, 2).map(([k]) => k);
+  const focus = ranked.length > 2 ? ranked[ranked.length - 1][0] : null;
+  const bandLabel =
+    result.totalEqBand && result.totalEqBand !== "unknown"
+      ? t(`vs.band.${result.totalEqBand}`, result.totalEqBand)
+      : null;
+
+  const plan = [
+    {
+      icon: Target,
+      text: t(
+        "onboarding.rowiTest.plan.today",
+        "Practica 2 minutos al día en TODAY: una emoción, una intención, una práctica.",
+      ),
+    },
+    {
+      icon: Sparkles,
+      text: t(
+        "onboarding.rowiTest.plan.becoming",
+        "Tu avatar evoluciona con tu reflexión: cada noche, tu historia crece.",
+      ),
+    },
+    {
+      icon: Users,
+      text: t(
+        "onboarding.rowiTest.plan.invite",
+        "Invita a una persona importante para ti y descubre la afinidad entre ambos.",
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="text-center">
+        <p className="text-sm font-semibold text-[var(--rowi-g2)] uppercase tracking-wide">
+          {t("onboarding.rowiTest.wow.title", "Tu punto de partida")}
+        </p>
+        {bandLabel && (
+          <p className="text-xs text-[var(--rowi-muted)] mt-1">
+            {t("onboarding.rowiTest.wow.band", "Lectura general de tu inteligencia emocional:")}{" "}
+            <span className="font-semibold text-[var(--rowi-fg)]">{bandLabel}</span>
+          </p>
+        )}
+      </div>
+
+      {strengths.length > 0 && (
+        <div className="rounded-2xl border border-[var(--rowi-border)] p-4 space-y-2">
+          <p className="text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide">
+            {t("onboarding.rowiTest.wow.strengths", "Tus fortalezas de hoy")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {strengths.map((k) => (
+              <span
+                key={k}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                {t(`sei.competencies.${k}`, k)}
+              </span>
+            ))}
+          </div>
+          {focus && (
+            <p className="text-xs text-[var(--rowi-muted)] pt-1">
+              {t("onboarding.rowiTest.wow.focus", "Tu zona de crecimiento:")}{" "}
+              <span className="font-medium text-[var(--rowi-fg)]">
+                {t(`sei.competencies.${focus}`, focus)}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-500/10 dark:to-fuchsia-500/10 p-4 space-y-3">
+        <p className="text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide">
+          {t("onboarding.rowiTest.wow.planTitle", "Tu plan con Rowi")}
+        </p>
+        {plan.map((p, i) => {
+          const Icon = p.icon;
+          return (
+            <div key={i} className="flex items-start gap-3">
+              <span className="w-7 h-7 rounded-lg bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-[var(--rowi-g2)]" />
+              </span>
+              <p className="text-sm text-[var(--rowi-fg)] leading-relaxed">{p.text}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="text-[11px] text-[var(--rowi-muted-weak)] text-center">
+        {t(
+          "onboarding.rowiTest.wow.note",
+          "Esta es tu primera lectura — se afina con tu práctica diaria.",
+        )}
+      </p>
+
+      <button
+        type="button"
+        onClick={onContinue}
+        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+      >
+        {t("onboarding.rowiTest.wow.continue", "Empezar mi plan")}
+        <ArrowRight className="w-4 h-4" />
+      </button>
     </div>
   );
 }

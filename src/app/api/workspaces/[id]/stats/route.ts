@@ -23,42 +23,76 @@ export async function GET(
     const { allowed } = await canAccessWorkspace(token.sub, id);
     if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    // Recoger todos los snapshots SEI del workspace (via CommunityMember)
-    const members = await prisma.communityMember.findMany({
-      where: { communityId: id },
-      select: {
-        id: true,
-        name: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        country: true,
-        brainStyle: true,
-        role: true,
-        group: true,
-        snapshots: {
-          orderBy: { at: "desc" },
-          take: 1,
-          select: {
-            K: true,
-            C: true,
-            G: true,
-            EL: true,
-            RP: true,
-            ACT: true,
-            NE: true,
-            IM: true,
-            OP: true,
-            EMP: true,
-            NG: true,
-            overall4: true,
-            brainStyle: true,
+    // Mismas dos fuentes que /members: CommunityMember (CSV/manual) +
+    // RowiCommunityUser (usuarios con cuenta y sus EqSnapshots propios)
+    const snapshotSelect = {
+      K: true,
+      C: true,
+      G: true,
+      EL: true,
+      RP: true,
+      ACT: true,
+      NE: true,
+      IM: true,
+      OP: true,
+      EMP: true,
+      NG: true,
+      overall4: true,
+      brainStyle: true,
+    } as const;
+
+    const [communityMembers, rowiMembers] = await Promise.all([
+      prisma.communityMember.findMany({
+        where: { communityId: id },
+        select: {
+          id: true,
+          country: true,
+          brainStyle: true,
+          role: true,
+          snapshots: {
+            orderBy: { at: "desc" },
+            take: 1,
+            select: snapshotSelect,
           },
         },
-      },
-    });
+      }),
+      prisma.rowiCommunityUser.findMany({
+        where: { communityId: id },
+        select: {
+          id: true,
+          role: true,
+          user: {
+            select: {
+              country: true,
+              eqSnapshots: {
+                orderBy: { at: "desc" },
+                take: 1,
+                select: snapshotSelect,
+              },
+            },
+          },
+        },
+      }),
+    ]);
 
-    const withSei = members.filter((m) => m.snapshots[0]);
+    const members = [
+      ...communityMembers.map((m) => ({
+        country: m.country,
+        brainStyle: m.brainStyle,
+        role: m.role,
+        snapshot: m.snapshots[0] || null,
+      })),
+      ...rowiMembers
+        .filter((rm) => rm.user)
+        .map((rm) => ({
+          country: rm.user!.country,
+          brainStyle: rm.user!.eqSnapshots[0]?.brainStyle || null,
+          role: rm.role || "member",
+          snapshot: rm.user!.eqSnapshots[0] || null,
+        })),
+    ];
+
+    const withSei = members.filter((m) => m.snapshot);
     const total = members.length;
 
     if (withSei.length === 0) {
@@ -77,7 +111,7 @@ export async function GET(
     // Calcular promedios
     const avg = (key: string): number | null => {
       const vals = withSei
-        .map((m) => (m.snapshots[0] as any)[key])
+        .map((m) => (m.snapshot as any)[key])
         .filter((v): v is number => typeof v === "number" && v > 0);
       if (vals.length === 0) return null;
       return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
@@ -103,7 +137,7 @@ export async function GET(
     // Distribucion de brain styles
     const brainStyles: Record<string, number> = {};
     for (const m of withSei) {
-      const bs = m.snapshots[0].brainStyle || m.brainStyle;
+      const bs = m.snapshot!.brainStyle || m.brainStyle;
       if (bs) brainStyles[bs] = (brainStyles[bs] || 0) + 1;
     }
 

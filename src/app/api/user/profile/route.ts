@@ -56,18 +56,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "User not found" }, { status: 404 });
     }
 
-    // Obtener links SEI disponibles según idioma del usuario
+    // Obtener todos los links SEI activos, con el idioma del usuario primero
     const language = user.language || "es";
-    const seiLinks = await prisma.seiLink.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          { language },
-          { language: "es" }, // Fallback a español
-        ],
-      },
-      orderBy: [{ language: "desc" }, { isDefault: "desc" }],
-    });
+    const seiLinks = (
+      await prisma.seiLink.findMany({
+        where: { isActive: true },
+        orderBy: [{ language: "asc" }, { isDefault: "desc" }],
+      })
+    ).sort(
+      (a, b) =>
+        Number(b.language === language) - Number(a.language === language)
+    );
 
     // Calcular estado SEI
     const lastSei = user.eqSnapshots?.[0];

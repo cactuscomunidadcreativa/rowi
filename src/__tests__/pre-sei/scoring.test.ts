@@ -134,13 +134,20 @@ describe("scorePreSei", () => {
   });
 
   it("sesgar competencias hacia un driver inclina el arquetipo", () => {
-    // CHANGE se nutre de OP/NE/ACT/RP/NG → LINTERNA. Subir esas, bajar el resto.
-    const a = answersAll(2);
-    a.OP = 5; a.NE = 5; a.RP = 5; a.ACT = 5;
+    // CHANGE se nutre de OP/NE/ACT/RP/NG → LINTERNA. Subir TODAS esas al
+    // máximo y hundir el resto: con el desempate real (top-segundo ≥ 3,
+    // fix F7), el sesgo debe ser inequívoco para producir arquetipo.
+    const a = answersAll(1);
+    a.OP = 5; a.NE = 5; a.RP = 5; a.ACT = 5; a.NG = 5;
     const r = scorePreSei(a);
     // El cuadrante dominante NO debe ser BALANCED cuando hay sesgo claro.
     expect(r.archetype.quadrant).not.toBe("BALANCED");
     // Arquetipo con tagline/emoji presentes cuando hay cuadrante.
     expect(r.archetype.emoji).toBeTruthy();
+  });
+
+  it("respuestas PAREJAS → BALANCED honesto (regresión 'siempre Cartografía')", () => {
+    const r = scorePreSei(answersAll(3));
+    expect(r.archetype.quadrant).toBe("BALANCED");
   });
 });

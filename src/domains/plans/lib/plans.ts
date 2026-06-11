@@ -354,7 +354,9 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       rowiSales: false,
     },
 
-    seiIncluded: false,
+    // Decisión Eduardo (2026-06-11): ROWI+ SÍ incluye el SEI — alineado con
+    // la DB de prod (la fuente que Stripe cobra ya lo decía).
+    seiIncluded: true,
     seiAnnual: false,
     brainBriefIncluded: true,
     seiDiscountPercent: 20,
@@ -394,7 +396,7 @@ export const ROWI_PLANS: Record<PlanSlug, RowiPlan> = {
       "150 tokens IA / mes",
       "Todos los agentes Rowi",
       "Brain Brief Profile incluido",
-      "20% descuento en SEI",
+      "Evaluación SEI completa incluida",
       "WeekFlow (3 equipos)",
       "Hasta 3 comunidades",
       "Grupos privados",

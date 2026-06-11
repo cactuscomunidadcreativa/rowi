@@ -224,15 +224,18 @@ export function calculateVitalSigns(
   let dominant: Quadrant | "BALANCED" = "BALANCED";
   const entries = (Object.entries(quadrantScores) as [Quadrant, number | null][])
     .filter((e): e is [Quadrant, number] => typeof e[1] === "number");
-  if (entries.length > 0) {
+  if (entries.length === 1) {
+    // Un solo driver con datos: ese manda (no hay con qué empatar).
+    dominant = entries[0][0];
+  } else if (entries.length > 1) {
     entries.sort((a, b) => b[1] - a[1]);
     const [top, topScore] = entries[0];
-    const second = entries[1]?.[1] ?? topScore;
-    if (topScore - second >= 3) {
-      dominant = top;
-    } else {
-      dominant = top;
-    }
+    const second = entries[1][1];
+    // BUG histórico (Eduardo F7: "siempre me sale Rowi Cartografía"): ambas
+    // ramas asignaban `top`, así que BALANCED nunca ocurría y los empates
+    // los ganaba el orden de inserción del objeto — MAPA, siempre. Un perfil
+    // parejo ES equilibrado y debe decirlo con honestidad.
+    dominant = topScore - second >= 3 ? top : "BALANCED";
   }
 
   const quadrantNames: Record<Quadrant | "BALANCED", { es: string; en: string }> = {

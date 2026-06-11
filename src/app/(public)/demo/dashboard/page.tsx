@@ -17,6 +17,14 @@ import {
   Info,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { fiveBand } from "@/lib/vital-signs/sei-bands";
+
+/** NIVELES, no puntajes (regla de marca): % de avance → banda Rowi. */
+function levelKeyFromPct(pct: number): string {
+  // Mapea 0-100% al rango 70-130 que clasifica fiveBand.
+  const band = fiveBand(70 + (Math.min(100, Math.max(0, pct)) * 60) / 100);
+  return `seiBand.${band}`;
+}
 
 /* =========================================================
    Datos de ejemplo para el demo
@@ -195,17 +203,18 @@ function EQCircle({ score, max, lang }: { score: number; max: number; lang: stri
           </linearGradient>
         </defs>
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        {/* NIVELES, no puntajes (decisión Eduardo): la palabra, no el número */}
         <motion.span
-          className="text-4xl font-bold"
+          className="text-2xl font-bold rowi-gradient-text"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          {score}
+          {t(levelKeyFromPct(percentage), "Funcional")}
         </motion.span>
-        <span className="text-sm text-[var(--rowi-muted)]">
-          {t("demo.dashboard.of", "de")} {max}
+        <span className="text-xs text-[var(--rowi-muted)]">
+          {t("demo.dashboard.levelCaption", "Tu nivel Rowi")}
         </span>
       </div>
     </div>
@@ -220,7 +229,9 @@ function PursuitBar({ pursuit }: { pursuit: typeof DEMO_PURSUITS.know }) {
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span className="font-medium">{t(`demo.dashboard.pursuits.${pursuit.key}`, pursuit.labelEs)}</span>
-        <span className="text-[var(--rowi-muted)]">{pursuit.score}/{pursuit.max}</span>
+        <span className="text-[var(--rowi-muted)]">
+          {t(levelKeyFromPct(percentage), "Funcional")}
+        </span>
       </div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <motion.div
@@ -262,7 +273,9 @@ function CompetencyCard({ comp }: { comp: typeof DEMO_COMPETENCIES[0] }) {
           <div className="font-medium text-sm truncate">
             {t(`demo.dashboard.competencies.${comp.key.toLowerCase()}`, comp.nameEs)}
           </div>
-          <div className="text-xs text-[var(--rowi-muted)]">{comp.score}/{comp.max}</div>
+          <div className="text-xs text-[var(--rowi-muted)]">
+            {t(levelKeyFromPct(percentage), "Funcional")}
+          </div>
         </div>
       </div>
       <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -287,7 +300,9 @@ function OutcomeCard({ outcome }: { outcome: typeof DEMO_OUTCOMES[0] }) {
       viewport={{ once: true }}
       className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-sm text-center"
     >
-      <div className="text-3xl font-bold mb-1">{outcome.score}%</div>
+      <div className="text-xl font-bold mb-1 rowi-gradient-text">
+        {t(levelKeyFromPct(outcome.score), "Funcional")}
+      </div>
       <div className="text-sm text-[var(--rowi-muted)]">
         {t(`demo.dashboard.outcomes.${outcome.key}`, outcome.nameEs)}
       </div>

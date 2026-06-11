@@ -165,9 +165,11 @@ describe("calculateVitalSigns — quadrant", () => {
     expect(res.quadrant.scores.BOTAS).toBe(
       res.drivers.find((d) => d.code === "EXECUTION")!.score,
     );
-    // Uniform input → all driver scores equal → a dominant quadrant is still
-    // chosen (never BALANCED once there is numeric data).
-    expect(res.quadrant.code).not.toBe("BALANCED");
+    // Uniform input → all driver scores equal → BALANCED (un perfil parejo
+    // ES equilibrado). El comportamiento anterior ("siempre gana un cuadrante")
+    // era el bug F7: los empates los ganaba MAPA por orden de inserción y
+    // todo el mundo era "Rowi Cartografía".
+    expect(res.quadrant.code).toBe("BALANCED");
   });
 });
 
@@ -232,5 +234,33 @@ describe("calculateVitalSignsCalibrated", () => {
     const baseTransparency = baseline.pulsePoints.find((p) => p.code === "TRUST_TRANSPARENCY")!;
     const calTransparency = res.pulsePoints.find((p) => p.code === "TRUST_TRANSPARENCY")!;
     expect(calTransparency).toEqual(baseTransparency);
+  });
+});
+
+/**
+ * Regresión F7 (Eduardo: "siempre me sale Rowi Cartografía"): el desempate
+ * de cuadrante tenía ambas ramas idénticas — BALANCED nunca ocurría y los
+ * empates los ganaba MAPA por orden de inserción del objeto.
+ */
+describe("dominant quadrant tie-breaking", () => {
+  const { calculateVitalSigns } = require("@/lib/vital-signs/calculate");
+
+  it("perfil PAREJO (todas las competencias iguales) → BALANCED, no MAPA", () => {
+    const flat = { EL: 100, RP: 100, ACT: 100, NE: 100, IM: 100, OP: 100, EMP: 100, NG: 100 };
+    const res = calculateVitalSigns(flat, {});
+    expect(res.quadrant.code).toBe("BALANCED");
+  });
+
+  it("un driver claramente dominante (≥3 sobre el segundo) SÍ gana", () => {
+    // IM/NG altos empujan MOTIVATION (MAPA) muy por encima del resto.
+    const motivated = { EL: 95, RP: 95, ACT: 95, NE: 95, IM: 128, OP: 96, EMP: 95, NG: 128 };
+    const res = calculateVitalSigns(motivated, {});
+    expect(res.quadrant.code).not.toBe("BALANCED");
+    const scores = res.quadrant.scores;
+    const sorted = Object.entries(scores)
+      .filter(([, v]) => typeof v === "number")
+      .sort((a, b) => (b[1] as number) - (a[1] as number));
+    expect(res.quadrant.code).toBe(sorted[0][0]);
+    expect((sorted[0][1] as number) - (sorted[1][1] as number)).toBeGreaterThanOrEqual(3);
   });
 });

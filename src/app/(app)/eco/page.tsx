@@ -1062,8 +1062,10 @@ function EcoPageInner() {
                           </p>
                         </div>
                       )}
-                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700">
-                        <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                      {/* Estilo del demo (pedido Eduardo): el mensaje es el
+                          protagonista — tinte violeta, no gris plano. */}
+                      <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50/60 dark:from-violet-950/40 dark:to-fuchsia-950/20 border border-violet-200/70 dark:border-violet-800/50">
+                        <p className="text-[15px] text-gray-800 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
                           {out.refined?.text || out.base.text}
                         </p>
                       </div>

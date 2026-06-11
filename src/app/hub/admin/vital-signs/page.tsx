@@ -239,8 +239,8 @@ export default function AdminVitalSignsPage() {
         ) : (
           <div className="space-y-3">
             {assessments.map((a) => {
-              const drivers = a.scores.filter((s) => s.level === "driver");
-              const outcomes = a.scores.filter((s) => s.level === "outcome");
+              const drivers = (a.scores ?? []).filter((s) => s.level === "driver");
+              const outcomes = (a.scores ?? []).filter((s) => s.level === "outcome");
               return (
                 <div key={a.id} className="rowi-card">
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">

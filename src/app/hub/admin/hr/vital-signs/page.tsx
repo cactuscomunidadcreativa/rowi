@@ -53,6 +53,9 @@ export default function HrVitalSignsPage() {
       const r = await fetch(`/api/vital-signs/aggregate?scope=${scope}&dataset=sample`);
       const j = await r.json();
       setData(j);
+    } catch {
+      // Error de red/parse: la UI cae al estado vacío, no al error boundary.
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -62,8 +65,11 @@ export default function HrVitalSignsPage() {
     load();
   }, [scope]);
 
-  const drivers = data?.scores.filter((s) => s.level === "driver") ?? [];
-  const outcomes = data?.scores.filter((s) => s.level === "outcome") ?? [];
+  // OJO: la respuesta suprimida ({ok:true, suppressed:true, N<5}) NO trae
+  // `scores` — el ?. debe cubrir también esa propiedad o la página revienta
+  // antes de poder mostrar la card de privacidad (bug visto en prod 2026-06-10).
+  const drivers = data?.scores?.filter((s) => s.level === "driver") ?? [];
+  const outcomes = data?.scores?.filter((s) => s.level === "outcome") ?? [];
 
   return (
     <div className="space-y-6 p-6 max-w-6xl">

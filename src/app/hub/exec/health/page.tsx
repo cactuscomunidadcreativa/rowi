@@ -67,7 +67,7 @@ export default function ExecHealthPage() {
       en: "Change-averse · healthy Trust and Execution, critical Change",
       severity: "watch",
     };
-  } else if (teamwork < 95 && (data?.scores.filter((s) => s.level === "driver" && s.cohesionBand === "low").length ?? 0) >= 2) {
+  } else if (teamwork < 95 && (data?.scores?.filter((s) => s.level === "driver" && s.cohesionBand === "low").length ?? 0) >= 2) {
     pattern = {
       code: "FRAGMENTED",
       es: "Fragmentada · Teamwork bajo, subgrupos discrepan",

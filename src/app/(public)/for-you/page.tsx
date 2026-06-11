@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import CMSPageRenderer from "@/components/public/CMSPageRenderer";
-import { HeroSection, FeaturesSection, CTASection } from "@/components/public/sections";
+import { HeroSection, FeaturesSection, TestimonialsSection, CTASection } from "@/components/public/sections";
 import RowiEvolution from "@/components/public/RowiEvolution";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -88,9 +88,33 @@ export default function ForYouPage() {
         }}
         config={{ columns: 3, showIcons: true }}
       />
-      {/* Sin testimonios: la regla del proyecto (y la promesa pública de
-          /stories) es no inventar social proof. Cuando existan casos REALES
-          verificados, vuelven aquí vía CMS, no hardcodeados. */}
+      {/* Social proof REAL (decisión Eduardo 2026-06-10): solo la evidencia
+          publicada de Six Seconds — los testimonios de app inventados se
+          eliminaron y no vuelven. Mismas claves que /for-organizations. */}
+      <TestimonialsSection
+        content={{
+          title: t("forOrg.social.title", "Respaldado por la evidencia de Six Seconds"),
+          subtitle: t("forOrg.social.subtitle", "Más de dos décadas midiendo el impacto de la inteligencia emocional en el trabajo."),
+          testimonials: [
+            {
+              quote: t("forOrg.social.1.quote", "Un estudio de tres años en Amadori encontró que la inteligencia emocional predice el 47% de la varianza en el desempeño gerencial y el 76% del engagement organizacional."),
+              author: t("forOrg.social.1.author", "Caso Amadori"),
+              role: t("forOrg.social.1.role", "Estudio de Six Seconds"),
+            },
+            {
+              quote: t("forOrg.social.2.quote", "En una planta de Komatsu, el engagement pasó del 33% al 70% y el desempeño de la planta aumentó un 9,4%."),
+              author: t("forOrg.social.2.author", "Caso Komatsu"),
+              role: t("forOrg.social.2.role", "Estudio de Six Seconds"),
+            },
+            {
+              quote: t("forOrg.social.3.quote", "Las empresas que priorizan la inteligencia emocional tienen 22 veces más probabilidades de ser de alto desempeño."),
+              author: t("forOrg.social.3.author", "The Business Case for EQ"),
+              role: t("forOrg.social.3.role", "Investigación de Six Seconds"),
+            },
+          ]
+        }}
+        config={{ columns: 3, showRating: false }}
+      />
       <CTASection
         content={{
           title: t("forYou.cta.title", "Comienza tu viaje hoy"),

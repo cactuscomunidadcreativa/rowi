@@ -16,6 +16,7 @@ import {
   Target,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 
 /* =========================================================
    Datos de ejemplo
@@ -73,7 +74,7 @@ const translations = {
   es: {
     badge: "Demo Interactivo",
     title: "Affinity",
-    subtitle: "Descubre tu compatibilidad emocional con tu equipo y mejora tus relaciones",
+    subtitle: "Ve la sintonía con tu equipo y los puentes para cerrarla — nunca un veredicto",
     back: "Volver al tour",
     prev: "Anterior: Dashboard",
     next: "Siguiente: ECO",
@@ -81,7 +82,7 @@ const translations = {
     teamTitle: "Tu Equipo",
     teamDesc: "Miembros con los que tienes mayor afinidad emocional",
 
-    compatibility: "Compatibilidad",
+    compatibility: "Sintonía",
     brainStyle: "Estilo Cerebral",
 
     stylesTitle: "Estilos Cerebrales",
@@ -94,14 +95,14 @@ const translations = {
     insight3: "Tu estilo de liderazgo es colaborativo y empático",
 
     tipTitle: "Esto es un demo",
-    tipDesc: "En tu cuenta real, verás la compatibilidad real con los miembros de tu equipo basada en sus perfiles SEI.",
+    tipDesc: "En tu cuenta real, verás la sintonía real con tu gente basada en sus perfiles SEI — y cómo cerrarla con ECO.",
 
     createAccount: "Crear mi cuenta",
   },
   en: {
     badge: "Interactive Demo",
     title: "Affinity",
-    subtitle: "Discover your emotional compatibility with your team and improve your relationships",
+    subtitle: "See your attunement with your team and the bridges to close the gap — never a verdict",
     back: "Back to tour",
     prev: "Previous: Dashboard",
     next: "Next: ECO",
@@ -109,7 +110,7 @@ const translations = {
     teamTitle: "Your Team",
     teamDesc: "Members with whom you have the highest emotional affinity",
 
-    compatibility: "Compatibility",
+    compatibility: "Attunement",
     brainStyle: "Brain Style",
 
     stylesTitle: "Brain Styles",
@@ -122,20 +123,20 @@ const translations = {
     insight3: "Your leadership style is collaborative and empathetic",
 
     tipTitle: "This is a demo",
-    tipDesc: "In your real account, you'll see actual compatibility with your team members based on their SEI profiles.",
+    tipDesc: "In your real account, you will see real attunement with your people based on their SEI profiles — and how to close the gap with ECO.",
 
     createAccount: "Create my account",
   },
   pt: {
     badge: "Demo Interativo",
     title: "Affinity",
-    subtitle: "Descubra sua compatibilidade emocional com sua equipe e melhore seus relacionamentos",
+    subtitle: "Veja a sintonia com sua equipe e as pontes para fechá-la — nunca um veredito",
     back: "Voltar ao tour",
     prev: "Anterior: Dashboard",
     next: "Próximo: ECO",
     teamTitle: "Sua Equipe",
     teamDesc: "Membros com quem você tem maior afinidade emocional",
-    compatibility: "Compatibilidade",
+    compatibility: "Sintonia",
     brainStyle: "Estilo Cerebral",
     stylesTitle: "Estilos Cerebrais",
     stylesDesc: "O modelo Six Seconds identifica 4 estilos cerebrais baseados em seus padrões emocionais",
@@ -145,19 +146,19 @@ const translations = {
     insight2: "Você poderia fortalecer a comunicação com perfis Realistas",
     insight3: "Seu estilo de liderança é colaborativo e empático",
     tipTitle: "Isto é um demo",
-    tipDesc: "Na sua conta real, você verá a compatibilidade real com os membros da sua equipe baseada em seus perfis SEI.",
+    tipDesc: "Na sua conta real, você verá a sintonia real com as suas pessoas baseada em seus perfis SEI — e como fechá-la com o ECO.",
     createAccount: "Criar minha conta",
   },
   it: {
     badge: "Demo Interattivo",
     title: "Affinity",
-    subtitle: "Scopri la tua compatibilità emotiva con il tuo team e migliora le tue relazioni",
+    subtitle: "Vedi la sintonia con il tuo team e i ponti per colmare il divario — mai un verdetto",
     back: "Torna al tour",
     prev: "Precedente: Dashboard",
     next: "Avanti: ECO",
     teamTitle: "Il tuo Team",
     teamDesc: "Membri con cui hai la maggiore affinità emotiva",
-    compatibility: "Compatibilità",
+    compatibility: "Sintonia",
     brainStyle: "Stile Cerebrale",
     stylesTitle: "Stili Cerebrali",
     stylesDesc: "Il modello Six Seconds identifica 4 stili cerebrali basati sui tuoi pattern emotivi",
@@ -167,7 +168,7 @@ const translations = {
     insight2: "Potresti rafforzare la comunicazione con profili Realisti",
     insight3: "Il tuo stile di leadership è collaborativo ed empatico",
     tipTitle: "Questo è un demo",
-    tipDesc: "Nel tuo account reale, vedrai la compatibilità reale con i membri del tuo team basata sui loro profili SEI.",
+    tipDesc: "Nel tuo account reale, vedrai la sintonia reale con le tue persone basata sui loro profili SEI — e come colmare il divario con ECO.",
     createAccount: "Crea il mio account",
   },
 };
@@ -202,21 +203,37 @@ function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: s
       </div>
 
       <div className="space-y-4">
-        {/* Compatibility */}
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-[var(--rowi-muted)]">{t.compatibility}</span>
-            <span className="font-bold text-[var(--rowi-primary)]">{member.compatibility}%</span>
-          </div>
-          <div className="h-3 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-pink-500 to-rose-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${member.compatibility}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
-          </div>
-        </div>
+        {/* Sintonía como BRECHA (regla asGap.ts): escala 0-3, jamás un % */}
+        {(() => {
+          const gap = affinityAsGap({ heat100: member.compatibility });
+          if (!gap) return null;
+          return (
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-[var(--rowi-muted)]">{t.compatibility}</span>
+                <span className="font-bold text-[var(--rowi-primary)]">
+                  {tr(gap.labelKey, gap.level)}
+                </span>
+              </div>
+              <div className="flex gap-1" role="img" aria-label={tr(gap.labelKey, gap.level)}>
+                {[0, 1, 2, 3].map((i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.12 }}
+                    className={`h-3 flex-1 rounded-full ${
+                      i <= gap.step
+                        ? "bg-gradient-to-r from-violet-500 to-purple-500"
+                        : "bg-gray-200 dark:bg-zinc-800"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-[var(--rowi-muted)] mt-2">{tr(gap.hintKey, "")}</p>
+            </div>
+          );
+        })()}
 
         {/* Brain Style */}
         <div className="flex items-center justify-between">

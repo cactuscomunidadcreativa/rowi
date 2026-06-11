@@ -222,6 +222,9 @@ export default function DemoEcoPage() {
   const [selectedChannel, setSelectedChannel] = useState("email");
   const [copied, setCopied] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  // El paso que faltaba en el demo: enviar → ¿funcionó? → aprendizaje.
+  const [sent, setSent] = useState(false);
+  const [outcome, setOutcome] = useState<boolean | null>(null);
 
   const messages = DEMO_MESSAGES[lang as keyof typeof DEMO_MESSAGES] || DEMO_MESSAGES.es;
   const currentMessage = messages[selectedChannel as keyof typeof messages];
@@ -402,10 +405,48 @@ export default function DemoEcoPage() {
                 </motion.pre>
               </div>
 
-              <button className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+              <button
+                onClick={() => setSent(true)}
+                disabled={sent}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
                 <Send className="w-5 h-5" />
-                {t.send}
+                {sent ? tr("demo.eco.sentDone", "Enviado ✓") : t.send}
               </button>
+
+              {/* El loop de OUTCOME: lo que diferencia a ECO de un generador
+                  de textos — cada resultado calibra los próximos mensajes. */}
+              {sent && outcome === null && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-4"
+                >
+                  <p className="text-sm font-medium text-[var(--rowi-fg)] mb-3">
+                    {tr("demo.eco.outcomeQuestion", "Al día siguiente, Rowi te pregunta: ¿funcionó tu mensaje a Carlos?")}
+                  </p>
+                  <div className="flex gap-2">
+                    <button onClick={() => setOutcome(true)} className="rowi-btn-primary px-4 py-1.5 text-sm">
+                      {tr("eco.outcome.yes", "Sí, ayudó")}
+                    </button>
+                    <button
+                      onClick={() => setOutcome(false)}
+                      className="px-4 py-1.5 text-sm rounded-full border border-[var(--rowi-card-border)] text-[var(--rowi-muted)]"
+                    >
+                      {tr("eco.outcome.no", "No mucho")}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+              {outcome !== null && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-4 text-sm text-emerald-600 dark:text-emerald-400"
+                >
+                  {tr("demo.eco.outcomeThanks", "✓ Eso queda en la memoria de la relación: tus próximos mensajes salen mejor calibrados.")}
+                </motion.p>
+              )}
             </motion.div>
           </div>
         </div>

@@ -15,6 +15,8 @@ import {
   Brain,
   Users,
   TrendingUp,
+  Sun,
+  BookOpen,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -34,25 +36,40 @@ const translations = {
     modulesTitle: "Módulos de la plataforma",
     modulesSubtitle: "Haz clic en cualquier módulo para ver una demostración interactiva",
 
+    mirror: {
+      title: "El Espejo",
+      desc: "El diagnóstico real de 2 minutos. No es demo: pruébalo de verdad, sin cuenta.",
+      features: ["8 preguntas, 2 minutos", "Niveles, no puntajes", "Resultado al instante"],
+    },
+    today: {
+      title: "TODAY — el loop diario",
+      desc: "Elígete en la mañana, practica 2 minutos y cierra el día viendo a tu Rowi crecer.",
+      features: ["Intención de mañana", "Una práctica al día", "Recompensa al cerrar"],
+    },
+    becoming: {
+      title: "Mi evolución",
+      desc: "La memoria viva de tu viaje: quién eras, quién eres y en quién te estás convirtiendo.",
+      features: ["Memoria viva día a día", "Contraste honesto yo-vs-yo", "Hitos de tu Rowi"],
+    },
     dashboard: {
-      title: "Dashboard",
-      desc: "Tu centro de control emocional con métricas SEI, competencias y evolución de tu Rowi.",
-      features: ["Puntuación EQ total", "8 Competencias SEI", "Evolución del avatar"],
+      title: "Mírate",
+      desc: "Tu espejo emocional en profundidad: niveles claros (no puntajes) y tus 8 competencias SEI.",
+      features: ["Niveles, no puntajes", "8 competencias SEI", "Evolución del avatar"],
     },
     affinity: {
-      title: "Affinity",
-      desc: "Descubre tu compatibilidad emocional con otros miembros y mejora tus relaciones.",
-      features: ["Compatibilidad emocional", "Estilos cerebrales", "Recomendaciones"],
+      title: "Sintonía (Affinity)",
+      desc: "Ve la BRECHA entre dos estilos y cómo cerrarla — nunca un veredicto de compatibilidad.",
+      features: ["Escala de sintonía", "Estilos cerebrales", "Puentes concretos"],
     },
     eco: {
       title: "ECO",
-      desc: "Optimiza tu comunicación emocional con mensajes adaptados a cada persona.",
-      features: ["Comunicación adaptada", "Análisis de contexto", "Múltiples canales"],
+      desc: "Encuentra las palabras para cada persona — y aprende de cada resultado.",
+      features: ["Mensaje adaptado a la brecha", "Envío real", "¿Funcionó? — el outcome"],
     },
     coach: {
-      title: "Rowi Coach",
-      desc: "Tu coach de inteligencia emocional disponible 24/7 para guiarte en tu crecimiento.",
-      features: ["Chat con IA", "Consejos personalizados", "Seguimiento continuo"],
+      title: "Tu Guía",
+      desc: "Tu guía de inteligencia emocional disponible 24/7 para acompañar tu camino.",
+      features: ["Conversación con tu guía", "Consejos personalizados", "Acompañamiento continuo"],
     },
     tp: {
       title: "Benchmark TP",
@@ -78,25 +95,40 @@ const translations = {
     modulesTitle: "Platform modules",
     modulesSubtitle: "Click on any module to see an interactive demonstration",
 
+    mirror: {
+      title: "The Mirror",
+      desc: "The real 2-minute diagnostic. Not a demo: try it for real, no account needed.",
+      features: ["8 questions, 2 minutes", "Levels, not scores", "Instant result"],
+    },
+    today: {
+      title: "TODAY — the daily loop",
+      desc: "Choose yourself in the morning, practice for 2 minutes, and close the day watching your Rowi grow.",
+      features: ["Morning intention", "One practice a day", "Reward when you close"],
+    },
+    becoming: {
+      title: "My evolution",
+      desc: "The living memory of your journey: who you were, who you are, who you're becoming.",
+      features: ["Living day-by-day memory", "Honest you-vs-you contrast", "Your Rowi's milestones"],
+    },
     dashboard: {
-      title: "Dashboard",
-      desc: "Your emotional control center with SEI metrics, competencies and your Rowi's evolution.",
-      features: ["Total EQ score", "8 SEI Competencies", "Avatar evolution"],
+      title: "See yourself",
+      desc: "Your emotional mirror in depth: clear levels (not scores) and your 8 SEI competencies.",
+      features: ["Levels, not scores", "8 SEI competencies", "Avatar evolution"],
     },
     affinity: {
-      title: "Affinity",
-      desc: "Discover your emotional compatibility with other members and improve your relationships.",
-      features: ["Emotional compatibility", "Brain styles", "Recommendations"],
+      title: "Attunement (Affinity)",
+      desc: "See the GAP between two styles and how to close it — never a compatibility verdict.",
+      features: ["Attunement scale", "Brain styles", "Concrete bridges"],
     },
     eco: {
       title: "ECO",
-      desc: "Optimize your emotional communication with messages adapted to each person.",
-      features: ["Adapted communication", "Context analysis", "Multiple channels"],
+      desc: "Find the words for each person — and learn from every outcome.",
+      features: ["Gap-aware message", "Real sending", "Did it work? — the outcome"],
     },
     coach: {
-      title: "Rowi Coach",
-      desc: "Your emotional intelligence coach available 24/7 to guide you in your growth.",
-      features: ["AI Chat", "Personalized advice", "Continuous tracking"],
+      title: "Your Guide",
+      desc: "Your emotional intelligence guide, available 24/7 to walk alongside you.",
+      features: ["Talk with your guide", "Personalized advice", "Continuous companionship"],
     },
     tp: {
       title: "TP Benchmark",
@@ -119,25 +151,40 @@ const translations = {
     exploreModules: "Explorar módulos",
     modulesTitle: "Módulos da plataforma",
     modulesSubtitle: "Clique em qualquer módulo para ver uma demonstração interativa",
+    mirror: {
+      title: "O Espelho",
+      desc: "O diagnóstico real de 2 minutos. Não é demo: experimente de verdade, sem conta.",
+      features: ["8 perguntas, 2 minutos", "Níveis, não pontuações", "Resultado na hora"],
+    },
+    today: {
+      title: "TODAY — o loop diário",
+      desc: "Escolha quem ser pela manhã, pratique 2 minutos e feche o dia vendo seu Rowi crescer.",
+      features: ["Intenção da manhã", "Uma prática por dia", "Recompensa ao fechar"],
+    },
+    becoming: {
+      title: "Minha evolução",
+      desc: "A memória viva da sua jornada: quem você era, quem é e em quem está se tornando.",
+      features: ["Memória viva dia a dia", "Contraste honesto você-vs-você", "Marcos do seu Rowi"],
+    },
     dashboard: {
-      title: "Dashboard",
-      desc: "Seu centro de controle emocional com métricas SEI, competências e evolução do seu Rowi.",
-      features: ["Pontuação EQ total", "8 Competências SEI", "Evolução do avatar"],
+      title: "Olhe para você",
+      desc: "Seu espelho emocional em profundidade: níveis claros (não pontuações) e suas 8 competências SEI.",
+      features: ["Níveis, não pontuações", "8 competências SEI", "Evolução do avatar"],
     },
     affinity: {
-      title: "Affinity",
-      desc: "Descubra sua compatibilidade emocional com outros membros e melhore seus relacionamentos.",
-      features: ["Compatibilidade emocional", "Estilos cerebrais", "Recomendações"],
+      title: "Sintonia (Affinity)",
+      desc: "Veja a BRECHA entre dois estilos e como fechá-la — nunca um veredito de compatibilidade.",
+      features: ["Escala de sintonia", "Estilos cerebrais", "Pontes concretas"],
     },
     eco: {
       title: "ECO",
-      desc: "Otimize sua comunicação emocional com mensagens adaptadas a cada pessoa.",
-      features: ["Comunicação adaptada", "Análise de contexto", "Múltiplos canais"],
+      desc: "Encontre as palavras para cada pessoa — e aprenda com cada resultado.",
+      features: ["Mensagem adaptada à brecha", "Envio real", "Funcionou? — o outcome"],
     },
     coach: {
-      title: "Rowi Coach",
-      desc: "Seu coach de inteligência emocional disponível 24/7 para orientá-lo em seu crescimento.",
-      features: ["Chat com IA", "Conselhos personalizados", "Acompanhamento contínuo"],
+      title: "Seu Guia",
+      desc: "Seu guia de inteligência emocional disponível 24/7 para acompanhar seu caminho.",
+      features: ["Conversa com seu guia", "Conselhos personalizados", "Acompanhamento contínuo"],
     },
     tp: {
       title: "Benchmark TP",
@@ -158,25 +205,40 @@ const translations = {
     exploreModules: "Esplora i moduli",
     modulesTitle: "Moduli della piattaforma",
     modulesSubtitle: "Clicca su qualsiasi modulo per vedere una dimostrazione interattiva",
+    mirror: {
+      title: "Lo Specchio",
+      desc: "La diagnosi reale di 2 minuti. Non è una demo: provala davvero, senza account.",
+      features: ["8 domande, 2 minuti", "Livelli, non punteggi", "Risultato immediato"],
+    },
+    today: {
+      title: "TODAY — il loop quotidiano",
+      desc: "Scegli chi essere al mattino, pratica 2 minuti e chiudi la giornata vedendo crescere il tuo Rowi.",
+      features: ["Intenzione del mattino", "Una pratica al giorno", "Ricompensa alla chiusura"],
+    },
+    becoming: {
+      title: "La mia evoluzione",
+      desc: "La memoria viva del tuo viaggio: chi eri, chi sei e chi stai diventando.",
+      features: ["Memoria viva giorno per giorno", "Contrasto onesto te-vs-te", "Tappe del tuo Rowi"],
+    },
     dashboard: {
-      title: "Dashboard",
-      desc: "Il tuo centro di controllo emotivo con metriche SEI, competenze ed evoluzione del tuo Rowi.",
-      features: ["Punteggio EQ totale", "8 Competenze SEI", "Evoluzione dell'avatar"],
+      title: "Guardati",
+      desc: "Il tuo specchio emotivo in profondità: livelli chiari (non punteggi) e le tue 8 competenze SEI.",
+      features: ["Livelli, non punteggi", "8 competenze SEI", "Evoluzione dell'avatar"],
     },
     affinity: {
-      title: "Affinity",
-      desc: "Scopri la tua compatibilità emotiva con altri membri e migliora le tue relazioni.",
-      features: ["Compatibilità emotiva", "Stili cerebrali", "Raccomandazioni"],
+      title: "Sintonia (Affinity)",
+      desc: "Vedi il DIVARIO tra due stili e come colmarlo — mai un verdetto di compatibilità.",
+      features: ["Scala di sintonia", "Stili cerebrali", "Ponti concreti"],
     },
     eco: {
       title: "ECO",
-      desc: "Ottimizza la tua comunicazione emotiva con messaggi adattati a ogni persona.",
-      features: ["Comunicazione adattata", "Analisi del contesto", "Più canali"],
+      desc: "Trova le parole per ogni persona — e impara da ogni risultato.",
+      features: ["Messaggio adattato al divario", "Invio reale", "Ha funzionato? — l'outcome"],
     },
     coach: {
-      title: "Rowi Coach",
-      desc: "Il tuo coach di intelligenza emotiva disponibile 24/7 per guidarti nella tua crescita.",
-      features: ["Chat con IA", "Consigli personalizzati", "Monitoraggio continuo"],
+      title: "La tua Guida",
+      desc: "La tua guida di intelligenza emotiva disponibile 24/7 per accompagnare il tuo cammino.",
+      features: ["Conversazione con la tua guida", "Consigli personalizzati", "Accompagnamento continuo"],
     },
     tp: {
       title: "Benchmark TP",
@@ -190,12 +252,36 @@ const translations = {
   },
 };
 
+// Orden = el viaje del producto (Rowi Launch 1.0): el Espejo REAL primero
+// (no es demo — es el gancho vivo), luego el loop diario, la memoria, y las
+// herramientas relacionales.
 const modules = [
+  {
+    key: "mirror",
+    href: "/pre-sei",
+    icon: Sparkles,
+    gradient: "from-violet-500 to-fuchsia-600",
+    image: "/rowivectors/Rowi-06.webp",
+  },
+  {
+    key: "today",
+    href: "/demo/today",
+    icon: Sun,
+    gradient: "from-amber-500 to-orange-500",
+    image: "/rowivectors/Rowi-02.webp",
+  },
+  {
+    key: "becoming",
+    href: "/demo/becoming",
+    icon: BookOpen,
+    gradient: "from-violet-600 to-purple-600",
+    image: "/rowivectors/Rowi-01.webp",
+  },
   {
     key: "dashboard",
     href: "/demo/dashboard",
     icon: LayoutDashboard,
-    gradient: "from-violet-500 to-purple-600",
+    gradient: "from-blue-500 to-violet-600",
     image: "/rowivectors/Rowi-06.webp",
   },
   {
@@ -260,7 +346,7 @@ export default function DemoPage() {
 
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
-                href="/demo/dashboard"
+                href="/demo/today"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-purple-500 text-white font-semibold hover:opacity-90 transition-opacity shadow-lg"
               >
                 {t.startTour}

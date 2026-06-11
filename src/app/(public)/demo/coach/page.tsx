@@ -72,7 +72,7 @@ const SUGGESTED_PROMPTS = {
 const translations = {
   es: {
     badge: "Demo Interactivo",
-    title: "Rowi Coach",
+    title: "Tu Guía",
     subtitle: "Tu coach de inteligencia emocional disponible 24/7 para guiarte en tu crecimiento personal",
     back: "Volver al tour",
     prev: "Anterior: ECO",
@@ -95,7 +95,7 @@ const translations = {
   },
   en: {
     badge: "Interactive Demo",
-    title: "Rowi Coach",
+    title: "Your Guide",
     subtitle: "Your emotional intelligence coach available 24/7 to guide you in your personal growth",
     back: "Back to tour",
     prev: "Previous: ECO",
@@ -118,7 +118,7 @@ const translations = {
   },
   pt: {
     badge: "Demo Interativo",
-    title: "Rowi Coach",
+    title: "Seu Guia",
     subtitle: "Seu coach de inteligência emocional disponível 24/7 para guiá-lo em seu crescimento pessoal",
     back: "Voltar ao tour",
     prev: "Anterior: ECO",
@@ -137,7 +137,7 @@ const translations = {
   },
   it: {
     badge: "Demo Interattivo",
-    title: "Rowi Coach",
+    title: "La tua Guida",
     subtitle: "Il tuo coach di intelligenza emotiva disponibile 24/7 per guidarti nella tua crescita personale",
     back: "Torna al tour",
     prev: "Precedente: ECO",

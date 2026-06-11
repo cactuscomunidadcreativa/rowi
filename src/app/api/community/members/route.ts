@@ -303,6 +303,30 @@ export async function GET(req: NextRequest) {
         });
     }
 
+    // Fallback: usuarios sin EqSnapshot vinculado al User pero cuyo SEI sí
+    // existe por email (p.ej. importado por CSV en otra comunidad y todavía
+    // no reclamado). Sin esto aparecen como "Sin conexión" aunque tengan datos.
+    const missingSnap = teammates.filter((t) => t.affinityHeat135 === null && t.email);
+    if (missingSnap.length > 0) {
+      const snaps = await Promise.all(
+        missingSnap.map((t) =>
+          prisma.eqSnapshot.findFirst({
+            where: { email: { equals: t.email, mode: "insensitive" } },
+            orderBy: { at: "desc" },
+            select: { brainStyle: true, K: true, C: true, G: true },
+          })
+        )
+      );
+      missingSnap.forEach((t, i) => {
+        const snap = snaps[i];
+        if (!snap) return;
+        const avgScore = Math.round(((snap.K || 0) + (snap.C || 0) + (snap.G || 0)) / 3);
+        t.brainStyle = t.brainStyle || snap.brainStyle || undefined;
+        t.affinityHeat135 = avgScore || null;
+        t.affinityPercent = avgScore ? Math.round((avgScore / 135) * 100) : null;
+      });
+    }
+
     const allMembers = [...members, ...teammates];
 
     // Construir lista de comunidades disponibles para el filtro

@@ -7,6 +7,7 @@ import {
   understanding135, talentSynergyFactor,
   learnUserPrefs, normCloseness, closenessMultiplier,
   inferMemberChannel, CTX,
+  aiAffinityAllowed,
 } from "../utils";
 import { runAffinityRouter } from "@/ai/agents/affinity/router"; // ✅ subrouter IA
 import { persistHeat135ToDyad } from "@/ai/learning/affinityLearning";
@@ -223,7 +224,7 @@ export async function GET(req: NextRequest) {
        Usa el router interno de agentes (Affinity:relationship)
     ========================================================== */
     let ai_summary = "ℹ️ Afinidad numérica calculada (modo ahorro IA).";
-    if (me.plan?.name === "pro" || force) {
+    if (aiAffinityAllowed(auth, me.plan?.name, force)) {
       const result = await runAffinityRouter({
         subIntent: "relationship",
         locale: "es",

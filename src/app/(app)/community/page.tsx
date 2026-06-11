@@ -1076,7 +1076,12 @@ export default function CommunityPage() {
   ========================================================= */
   async function recalculateAffinity(memberId: string) {
     try {
-      await fetch(`/api/affinity?memberId=${memberId}`, { cache: "no-store" });
+      // Sin `project` el gateway solo devuelve metadata y no calcula nada.
+      // relationship es el contexto de la lista de comunidad; la IA corre
+      // según el gate del servidor (pro / SuperAdmin / allowAI).
+      await fetch(`/api/affinity?project=relationship&memberId=${memberId}`, {
+        cache: "no-store",
+      });
       fetchData(true);
     } catch (err) {
       console.error("Error recalculating affinity:", err);

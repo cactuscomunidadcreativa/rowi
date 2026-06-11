@@ -104,3 +104,18 @@ export async function generateAiAdvice({
   });
   return text;
 }
+
+/* =========================================================
+   🔓 Gate de IA contextual para afinidad
+   ---------------------------------------------------------
+   La IA corre para: plan pro, ?force=1, SuperAdmin (Eduardo)
+   o usuarios con el flag allowAI activado desde el admin.
+   El resto recibe el cálculo numérico (modo ahorro).
+========================================================= */
+export function aiAffinityAllowed(
+  auth: { isSuperAdmin?: boolean; allowAI?: boolean } | null | undefined,
+  planName?: string | null,
+  force?: boolean,
+): boolean {
+  return !!force || planName === "pro" || !!auth?.isSuperAdmin || !!auth?.allowAI;
+}

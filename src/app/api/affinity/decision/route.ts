@@ -7,6 +7,7 @@ import {
   understanding135, talentSynergyFactor,
   learnUserPrefs, generateAiAdvice,
   closenessMultiplier, inferMemberChannel, CTX,
+  aiAffinityAllowed,
 } from "../utils";
 import { persistHeat135ToDyad } from "@/ai/learning/affinityLearning";
 
@@ -140,7 +141,7 @@ export async function GET(req: NextRequest) {
     const band = composite135 >= 108 ? "hot" : composite135 >= 92 ? "warm" : "cold";
 
     let ai_summary = "ℹ️ Afinidad numérica calculada (modo ahorro IA).";
-    if (me.plan?.name === "pro" || force) {
+    if (aiAffinityAllowed(auth, me.plan?.name, force)) {
       ai_summary = await generateAiAdvice({
         locale: "es",
         aName: me.name || "Tú",

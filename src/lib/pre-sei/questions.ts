@@ -21,6 +21,7 @@ import {
   type DailyPulseQuestion,
   type PulseLang,
 } from "@/lib/daily-pulse/questions";
+import { localDayOfYear } from "@/lib/daily-pulse/timezone";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 export { SEI_ORDER };
@@ -93,6 +94,135 @@ export const PRE_SEI_INTAKE_PROMPTS: Record<
   },
 };
 
+/**
+ * Variantes ADICIONALES del enunciado intake (la de PRE_SEI_INTAKE_PROMPTS es
+ * la variante 0). El espejo ROTA la redacción por día: quien lo retoma otro
+ * día ve frases distintas que miden lo mismo (feedback Eduardo 2026-06-10:
+ * "me siguen saliendo las mismas preguntas en el mirror").
+ *
+ * Misma competencia, misma escala 1-5, misma polaridad. El scoring es por
+ * clave SEI, independiente de la redacción (scoring.ts no cambia).
+ *
+ * PENDIENTE DE APROBACIÓN (Eduardo): copy nuevo.
+ */
+export const PRE_SEI_INTAKE_EXTRA_VARIANTS: Record<
+  SeiKey,
+  Array<Record<PulseLang, string>>
+> = {
+  EL: [
+    {
+      es: "Cuando sientes algo intenso, ¿qué tan rápido puedes ponerle nombre?",
+      en: "When you feel something intense, how quickly can you name it?",
+      pt: "Quando você sente algo intenso, com que rapidez consegue dar um nome?",
+      it: "Quando provi qualcosa di intenso, quanto velocemente riesci a dargli un nome?",
+    },
+    {
+      es: "¿Qué tan rico es tu vocabulario para describir lo que sientes?",
+      en: "How rich is your vocabulary for describing what you feel?",
+      pt: "Quão rico é o seu vocabulário para descrever o que sente?",
+      it: "Quanto è ricco il tuo vocabolario per descrivere ciò che senti?",
+    },
+  ],
+  RP: [
+    {
+      es: "¿Qué tanto reconoces qué situaciones disparan tus reacciones?",
+      en: "How much do you recognize which situations trigger your reactions?",
+      pt: "O quanto você reconhece quais situações disparam suas reações?",
+      it: "Quanto riconosci quali situazioni innescano le tue reazioni?",
+    },
+    {
+      es: "¿Con qué frecuencia te descubres repitiendo la misma reacción emocional?",
+      en: "How often do you catch yourself repeating the same emotional reaction?",
+      pt: "Com que frequência você se descobre repetindo a mesma reação emocional?",
+      it: "Con quale frequenza ti scopri a ripetere la stessa reazione emotiva?",
+    },
+  ],
+  ACT: [
+    {
+      es: "¿Qué tan seguido pausas antes de reaccionar?",
+      en: "How often do you pause before reacting?",
+      pt: "Com que frequência você pausa antes de reagir?",
+      it: "Quanto spesso ti fermi prima di reagire?",
+    },
+    {
+      es: "Cuando algo te altera, ¿cuánto pesas el costo de tu reacción antes de actuar?",
+      en: "When something upsets you, how much do you weigh the cost of your reaction before acting?",
+      pt: "Quando algo lhe altera, o quanto você pesa o custo da sua reação antes de agir?",
+      it: "Quando qualcosa ti altera, quanto pesi il costo della tua reazione prima di agire?",
+    },
+  ],
+  NE: [
+    {
+      es: "Cuando una emoción te incomoda, ¿qué tan bien la usas a tu favor?",
+      en: "When an emotion makes you uncomfortable, how well do you use it in your favor?",
+      pt: "Quando uma emoção lhe incomoda, quão bem você a usa a seu favor?",
+      it: "Quando un'emozione ti mette a disagio, quanto bene la usi a tuo favore?",
+    },
+    {
+      es: "¿Qué tan capaz te sientes de cambiar tu estado emocional cuando lo necesitas?",
+      en: "How able do you feel to shift your emotional state when you need to?",
+      pt: "Quão capaz você se sente de mudar seu estado emocional quando precisa?",
+      it: "Quanto ti senti capace di cambiare il tuo stato emotivo quando ne hai bisogno?",
+    },
+  ],
+  IM: [
+    {
+      es: "¿Qué tanto de lo que haces nace de tus propias ganas y no del deber?",
+      en: "How much of what you do comes from your own desire rather than duty?",
+      pt: "O quanto do que você faz nasce da sua própria vontade e não do dever?",
+      it: "Quanto di ciò che fai nasce dalla tua volontà e non dal dovere?",
+    },
+    {
+      es: "Sin presión externa, ¿cuánta energía te queda para lo que importa?",
+      en: "Without external pressure, how much energy do you have left for what matters?",
+      pt: "Sem pressão externa, quanta energia lhe sobra para o que importa?",
+      it: "Senza pressione esterna, quanta energia ti resta per ciò che conta?",
+    },
+  ],
+  OP: [
+    {
+      es: "Cuando algo sale mal, ¿qué tan rápido ves caminos alternativos?",
+      en: "When something goes wrong, how quickly do you see alternative paths?",
+      pt: "Quando algo dá errado, com que rapidez você vê caminhos alternativos?",
+      it: "Quando qualcosa va storto, quanto velocemente vedi strade alternative?",
+    },
+    {
+      es: "¿Qué tanto sientes que tus acciones pueden cambiar un mal momento?",
+      en: "How much do you feel your actions can change a bad moment?",
+      pt: "O quanto você sente que suas ações podem mudar um momento ruim?",
+      it: "Quanto senti che le tue azioni possono cambiare un momento difficile?",
+    },
+  ],
+  EMP: [
+    {
+      es: "¿Qué tan bien captas lo que otros sienten aunque no lo digan?",
+      en: "How well do you pick up on what others feel even when they don't say it?",
+      pt: "Quão bem você capta o que os outros sentem mesmo quando não dizem?",
+      it: "Quanto bene cogli ciò che gli altri provano anche quando non lo dicono?",
+    },
+    {
+      es: "Cuando alguien te importa, ¿qué tanto sientes su emoción como propia?",
+      en: "When someone matters to you, how much do you feel their emotion as your own?",
+      pt: "Quando alguém importa para você, o quanto você sente a emoção dele como sua?",
+      it: "Quando qualcuno ti sta a cuore, quanto senti la sua emozione come tua?",
+    },
+  ],
+  NG: [
+    {
+      es: "¿Qué tan presente está tu propósito en tus decisiones cotidianas?",
+      en: "How present is your purpose in your everyday decisions?",
+      pt: "Quão presente está o seu propósito nas suas decisões cotidianas?",
+      it: "Quanto è presente il tuo scopo nelle tue decisioni quotidiane?",
+    },
+    {
+      es: "¿Qué tanto sientes que tu día a día deja huella en otros?",
+      en: "How much do you feel your day-to-day leaves a mark on others?",
+      pt: "O quanto você sente que o seu dia a dia deixa marca nos outros?",
+      it: "Quanto senti che la tua quotidianità lascia un segno negli altri?",
+    },
+  ],
+};
+
 export interface PreSeiQuestionView {
   /** Competencia SEI que mide esta pregunta. */
   sei: SeiKey;
@@ -105,14 +235,26 @@ export interface PreSeiQuestionView {
 }
 
 /**
- * Devuelve las 8 preguntas del Pre-SEI, localizadas, en orden `SEI_ORDER`,
- * usando la variante "intake" del enunciado.
+ * Devuelve las 8 preguntas del Pre-SEI, localizadas, en orden `SEI_ORDER`.
+ * La REDACCIÓN rota por día (UTC): retomar el espejo otro día muestra
+ * variantes distintas del enunciado que miden la misma competencia.
  */
-export function preSeiQuestions(lang: PulseLang): PreSeiQuestionView[] {
-  return SEI_ORDER.map((sei, index) => ({
-    sei,
-    index,
-    prompt: PRE_SEI_INTAKE_PROMPTS[sei][lang],
-    pulsePointCode: DAILY_PULSE_QUESTIONS[sei].pulsePointCode,
-  }));
+export function preSeiQuestions(
+  lang: PulseLang,
+  now: Date = new Date(),
+): PreSeiQuestionView[] {
+  const dayOfYear = localDayOfYear(now, 0);
+  return SEI_ORDER.map((sei, index) => {
+    const variants = [
+      PRE_SEI_INTAKE_PROMPTS[sei],
+      ...(PRE_SEI_INTAKE_EXTRA_VARIANTS[sei] ?? []),
+    ];
+    const variant = variants[dayOfYear % variants.length];
+    return {
+      sei,
+      index,
+      prompt: variant[lang],
+      pulsePointCode: DAILY_PULSE_QUESTIONS[sei].pulsePointCode,
+    };
+  });
 }

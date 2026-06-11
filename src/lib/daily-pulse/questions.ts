@@ -268,7 +268,138 @@ export const DAILY_PULSE_QUESTIONS: Record<SeiKey, DailyPulseQuestion> = {
 };
 
 /**
+ * Variantes ADICIONALES de enunciado por competencia (la base de
+ * DAILY_PULSE_QUESTIONS es la variante 0). Cada ciclo de 8 días rota a la
+ * siguiente redacción: misma competencia, misma escala 1-5, misma polaridad —
+ * solo cambia la frase para que el pulse no se sienta repetido (feedback
+ * Eduardo 2026-06-10: "la misma pregunta cada 8 días").
+ *
+ * PENDIENTE DE APROBACIÓN (Eduardo): copy nuevo. El feedback low/mid/high se
+ * reusa de la pregunta base (mide lo mismo).
+ */
+export const PULSE_PROMPT_EXTRA_VARIANTS: Record<
+  SeiKey,
+  Array<Record<PulseLang, string>>
+> = {
+  EL: [
+    {
+      es: "¿Qué tan claro tienes, ahora mismo, qué emoción te acompaña?",
+      en: "How clearly do you know, right now, which emotion is with you?",
+      pt: "Quão claro está, agora mesmo, qual emoção te acompanha?",
+      it: "Quanto ti è chiaro, in questo momento, quale emozione ti accompagna?",
+    },
+    {
+      es: "Hoy, ¿podrías ponerle nombre a tu emoción dominante sin dudar?",
+      en: "Today, could you name your dominant emotion without hesitating?",
+      pt: "Hoje, você conseguiria nomear sua emoção dominante sem hesitar?",
+      it: "Oggi, sapresti dare un nome alla tua emozione dominante senza esitare?",
+    },
+  ],
+  RP: [
+    {
+      es: "Hoy, ¿reconoces qué disparó tu última emoción intensa?",
+      en: "Today, do you recognize what triggered your last intense emotion?",
+      pt: "Hoje, você reconhece o que disparou sua última emoção intensa?",
+      it: "Oggi, riconosci cosa ha innescato la tua ultima emozione intensa?",
+    },
+    {
+      es: "¿Qué tanto viste venir hoy tus reacciones de siempre?",
+      en: "How much did you see your usual reactions coming today?",
+      pt: "O quanto você viu chegar hoje as suas reações de sempre?",
+      it: "Quanto hai visto arrivare oggi le tue solite reazioni?",
+    },
+  ],
+  ACT: [
+    {
+      es: "Antes de tu última decisión de hoy, ¿cuánto pesaste sus consecuencias?",
+      en: "Before your last decision today, how much did you weigh its consequences?",
+      pt: "Antes da sua última decisão de hoje, o quanto você pesou as consequências?",
+      it: "Prima della tua ultima decisione di oggi, quanto ne hai pesato le conseguenze?",
+    },
+    {
+      es: "Hoy, ¿cuánto pausaste antes de reaccionar?",
+      en: "Today, how much did you pause before reacting?",
+      pt: "Hoje, o quanto você pausou antes de reagir?",
+      it: "Oggi, quanto ti sei fermato prima di reagire?",
+    },
+  ],
+  NE: [
+    {
+      es: "Hoy, ¿pudiste transformar una emoción incómoda en algo útil?",
+      en: "Today, were you able to turn an uncomfortable emotion into something useful?",
+      pt: "Hoje, você conseguiu transformar uma emoção incômoda em algo útil?",
+      it: "Oggi, sei riuscito a trasformare un'emozione scomoda in qualcosa di utile?",
+    },
+    {
+      es: "¿Qué tan bien surfeaste hoy la emoción más difícil del día?",
+      en: "How well did you surf today's hardest emotion?",
+      pt: "Quão bem você surfou hoje a emoção mais difícil do dia?",
+      it: "Quanto bene hai cavalcato oggi l'emozione più difficile della giornata?",
+    },
+  ],
+  IM: [
+    {
+      es: "Hoy, ¿cuánta de tu energía salió de algo que te importa de verdad?",
+      en: "Today, how much of your energy came from something you truly care about?",
+      pt: "Hoje, quanta da sua energia veio de algo que importa de verdade para você?",
+      it: "Oggi, quanta della tua energia è venuta da qualcosa che ti sta davvero a cuore?",
+    },
+    {
+      es: "¿Qué tanto hiciste hoy por ganas propias, no por obligación?",
+      en: "How much of what you did today was by your own desire, not obligation?",
+      pt: "O quanto do que você fez hoje foi por vontade própria, não por obrigação?",
+      it: "Quanto di ciò che hai fatto oggi è stato per tua volontà, non per obbligo?",
+    },
+  ],
+  OP: [
+    {
+      es: "Ante el reto de hoy, ¿qué tan posible viste un buen desenlace?",
+      en: "Facing today's challenge, how possible did a good outcome seem?",
+      pt: "Diante do desafio de hoje, quão possível pareceu um bom desfecho?",
+      it: "Di fronte alla sfida di oggi, quanto ti è sembrato possibile un buon esito?",
+    },
+    {
+      es: "Hoy, ¿cuánto sentiste que tienes opciones frente a lo que pasa?",
+      en: "Today, how much did you feel you have options in the face of what happens?",
+      pt: "Hoje, o quanto você sentiu que tem opções diante do que acontece?",
+      it: "Oggi, quanto hai sentito di avere opzioni di fronte a ciò che accade?",
+    },
+  ],
+  EMP: [
+    {
+      es: "Hoy, ¿te detuviste a sentir lo que otra persona estaba sintiendo?",
+      en: "Today, did you pause to feel what another person was feeling?",
+      pt: "Hoje, você parou para sentir o que outra pessoa estava sentindo?",
+      it: "Oggi, ti sei fermato a sentire ciò che un'altra persona stava provando?",
+    },
+    {
+      es: "¿Qué tanto captaste hoy lo que alguien no dijo con palabras?",
+      en: "How much did you pick up today on what someone didn't say in words?",
+      pt: "O quanto você captou hoje o que alguém não disse com palavras?",
+      it: "Quanto hai colto oggi ciò che qualcuno non ha detto a parole?",
+    },
+  ],
+  NG: [
+    {
+      es: "Hoy, ¿lo que hiciste conectó con tu propósito más grande?",
+      en: "Today, did what you did connect with your larger purpose?",
+      pt: "Hoje, o que você fez conectou com o seu propósito maior?",
+      it: "Oggi, ciò che hai fatto si è collegato al tuo scopo più grande?",
+    },
+    {
+      es: "¿Cuánto de tu día de hoy sirvió a algo más grande que tú?",
+      en: "How much of your day served something bigger than you?",
+      pt: "Quanto do seu dia de hoje serviu a algo maior que você?",
+      it: "Quanto della tua giornata di oggi è servito a qualcosa di più grande di te?",
+    },
+  ],
+};
+
+/**
  * Devuelve la pregunta del día rotando por (dayOfYear LOCAL del usuario) % 8.
+ * La REDACCIÓN también rota: cada ciclo de 8 días usa la siguiente variante
+ * del enunciado (base → v2 → v3 → base…), así la misma competencia no se
+ * pregunta dos veces con la misma frase en ciclos consecutivos.
  * Si no se pasa tzOffsetMinutes, asume UTC (offset 0).
  */
 export function questionForToday(
@@ -277,7 +408,20 @@ export function questionForToday(
 ): DailyPulseQuestion {
   const dayOfYear = localDayOfYear(now, tzOffsetMinutes);
   const sei = SEI_ORDER[dayOfYear % SEI_ORDER.length];
-  return DAILY_PULSE_QUESTIONS[sei];
+  const base = DAILY_PULSE_QUESTIONS[sei];
+
+  const extras = PULSE_PROMPT_EXTRA_VARIANTS[sei] ?? [];
+  const cycle = Math.floor(dayOfYear / SEI_ORDER.length) % (1 + extras.length);
+  if (cycle === 0 || !extras[cycle - 1]) return base;
+
+  const v = extras[cycle - 1];
+  return {
+    ...base,
+    esQuestion: v.es,
+    enQuestion: v.en,
+    ptQuestion: v.pt,
+    itQuestion: v.it,
+  };
 }
 
 export function feedbackForValue(

@@ -34,6 +34,16 @@ type ComposeInput = {
   /** Cadena SIA: si se compone para una díada, ECO actúa como PUENTE sobre la
    *  brecha (inyecta sintonía + memoria + nivel general/profile/sei). */
   dyadId?: string;
+  /** Grupo heterogéneo: en vez de UN mensaje para todos, genera una versión
+   *  adaptada a cada destinatario (un mensaje por persona). */
+  personalized?: boolean;
+};
+
+const LOCALE_NAMES: Record<string, string> = {
+  es: "español",
+  en: "inglés",
+  pt: "portugués",
+  it: "italiano",
 };
 
 interface TargetData {
@@ -413,6 +423,9 @@ export async function POST(req: NextRequest) {
     }
 
     const isGroup = targets.length > 1;
+    // Mensajes por persona solo tienen sentido con 2+ destinatarios.
+    const isPersonalized = !!body.personalized && isGroup;
+    const locale = body.locale && LOCALE_NAMES[body.locale] ? body.locale : "es";
 
     /* =========================================================
        🧩 Mensaje estructurado (fallback sin IA)
@@ -525,6 +538,35 @@ export async function POST(req: NextRequest) {
       return prompt;
     };
 
+    /* =========================================================
+       📝 Prompt para IA — modo PERSONALIZADO: una versión por persona
+    ========================================================= */
+    const generatePersonalizedPrompt = () => {
+      const channelHint: Record<Channel, string> = {
+        email: "Cada versión es un email. Formal pero humano. Asunto breve + cuerpo en párrafos.",
+        whatsapp: "Cada versión es un WhatsApp. Casual, directo, máximo 200 caracteres. Sin saludo formal.",
+        sms: "Cada versión es un SMS. Muy breve, máximo 160 caracteres.",
+        call: "Cada versión es un guión de llamada. Conversacional, con transiciones naturales.",
+        speech: "Cada versión es un discurso breve. Lenguaje hablado, con pausas implícitas.",
+      };
+
+      let prompt = `Vas a escribir el MISMO mensaje de fondo en ${targets.length} VERSIONES, una adaptada a cada persona. ${channelHint[body.channel]}\n\nLo que quiero comunicar a cada uno: ${body.goal}\n\n`;
+      prompt += `Contexto interno de cada destinatario (no lo cites en los mensajes):\n`;
+      for (const pt of perTarget) {
+        prompt += `${pt.name} es ${pt.brainStyle.toLowerCase()}: prefiere ${pt.prefs.prefers}; tono ideal ${pt.prefs.tone}; evita ${pt.prefs.avoid.toLowerCase()}.`;
+        if (pt.sharedTalents.length > 0) {
+          prompt += ` Comparten: ${pt.sharedTalents.slice(0, 2).join(", ").toLowerCase()}.`;
+        }
+        if (pt.bio) prompt += ` Contexto: ${pt.bio}.`;
+        prompt += `\n`;
+      }
+      if (body.ask) {
+        prompt += `\nInstrucción específica del remitente: ${body.ask}\n`;
+      }
+      prompt += `\nCada versión debe sentirse escrita PARA esa persona (tono, apertura y ejemplos distintos), pero todas comunican lo mismo. Devuelve el JSON con messages (un objeto por destinatario, en el mismo orden, con su name exacto) e insight (2-4 frases para mí sobre en qué difieren y cómo abordé a cada uno).`;
+      return prompt;
+    };
+
     const baseMessage = generateStructuredMessage();
 
     // Para mantener compat con la UI existente, exponemos AMBAS formas:
@@ -555,34 +597,46 @@ export async function POST(req: NextRequest) {
            remitente sobre qué tienen en común y cómo abordarlos
     ========================================================= */
     try {
-      const systemPrompt = `Eres ECO, un experto en comunicación emocionalmente inteligente.
-Generas DOS cosas distintas: un MENSAJE para enviar, y un INSIGHT privado para el remitente.
-
-=== REGLAS DEL MENSAJE (text) ===
-- Suena como una persona escribiendo a otra(s), no como un template corporativo.
-- NO uses bullet points, NO uses "pros/contras", NO uses secciones marcadas con headers, NO uses asteriscos ni markdown.
-- Frases completas, párrafos breves (2-4 frases por párrafo).
-- Tono cálido, conversacional, adaptado al canal (email un poco más formal, WhatsApp casual, SMS muy breve).
-- Si hay varios destinatarios, escríbeles como si los conocieras a todos a la vez ("Hola Jaime, María y Daniela," / "Quiero plantearles..." / "¿qué les parece?").
-- NUNCA menciones explícitamente brain styles, "perfil cognitivo", talentos, ni el análisis. Eso es información tuya como redactor, no se cuela en el mensaje.
-- El mensaje cuenta la idea principal en lenguaje humano, no la formula como receta.
-
-=== REGLAS DEL INSIGHT (insight, solo si hay varios destinatarios) ===
-- 2-4 frases CORTAS, dirigidas al remitente (uso de "tú").
-- Aterriza qué tienen en común los destinatarios y dónde difieren.
-- Sugerencia ACCIONABLE de cómo abordarlos sin asumir nada.
-- Tono útil, no académico. No repitas la palabra "denominador común" — sé concreto.
-
-=== IDIOMA ===
-Escribe en español a menos que se indique otro idioma.
-
-=== FORMATO DE RESPUESTA ===
+      const formatSection = isPersonalized
+        ? `=== FORMATO DE RESPUESTA ===
+Responde SOLO en JSON válido:
+{
+  "messages": [
+    { "name": "nombre del destinatario EXACTO como aparece en el contexto", "subject": "Asunto del email, o null para otros canales", "text": "La versión para esa persona, sin markdown ni bullets" }
+  ],
+  "insight": "Insight privado de 2-4 frases sobre en qué difieren y cómo se adaptó cada versión"
+}
+Genera EXACTAMENTE un objeto en messages por cada destinatario, en el mismo orden del contexto.`
+        : `=== FORMATO DE RESPUESTA ===
 Responde SOLO en JSON válido:
 {
   "subject": "Asunto del email, o null para otros canales",
   "text": "El mensaje natural listo para enviar, sin markdown ni bullets",
   "insight": "Insight privado de 2-4 frases sobre el grupo (solo si hay 2+ destinatarios; null si hay 1)"
 }`;
+
+      const systemPrompt = `Eres ECO, un experto en comunicación emocionalmente inteligente.
+Generas DOS cosas distintas: ${isPersonalized ? "una VERSIÓN del mensaje por destinatario" : "un MENSAJE para enviar"}, y un INSIGHT privado para el remitente.
+
+=== REGLAS DEL MENSAJE (text) ===
+- Suena como una persona escribiendo a otra(s), no como un template corporativo.
+- NO uses bullet points, NO uses "pros/contras", NO uses secciones marcadas con headers, NO uses asteriscos ni markdown.
+- Frases completas, párrafos breves (2-4 frases por párrafo).
+- Tono cálido, conversacional, adaptado al canal (email un poco más formal, WhatsApp casual, SMS muy breve).
+${isPersonalized ? `- Cada versión va dirigida a UNA sola persona ("Hola Jaime,") y se adapta a su forma de recibir mensajes.` : `- Si hay varios destinatarios, escríbeles como si los conocieras a todos a la vez ("Hola Jaime, María y Daniela," / "Quiero plantearles..." / "¿qué les parece?").`}
+- NUNCA menciones explícitamente brain styles, "perfil cognitivo", talentos, ni el análisis. Eso es información tuya como redactor, no se cuela en el mensaje.
+- El mensaje cuenta la idea principal en lenguaje humano, no la formula como receta.
+
+=== REGLAS DEL INSIGHT (insight${isPersonalized ? "" : ", solo si hay varios destinatarios"}) ===
+- 2-4 frases CORTAS, dirigidas al remitente (uso de "tú").
+- Aterriza qué tienen en común los destinatarios y dónde difieren.
+- Sugerencia ACCIONABLE de cómo abordarlos sin asumir nada.
+- Tono útil, no académico. No repitas la palabra "denominador común" — sé concreto.
+
+=== IDIOMA ===
+Escribe los mensajes y el insight en ${LOCALE_NAMES[locale]}.
+
+${formatSection}`;
 
       // Privacidad: NO enviar nombres reales de los destinatarios al LLM.
       // Mapeamos cada nombre a un placeholder antes de enviar y lo restauramos
@@ -599,7 +653,13 @@ Responde SOLO en JSON válido:
       const deAnonymize = (s: string) =>
         nameMap.reduce((acc, m) => acc.split(m.ph).join(m.real), s);
 
-      const userPrompt = anonymize(generateAIPrompt());
+      const userPrompt = anonymize(
+        isPersonalized ? generatePersonalizedPrompt() : generateAIPrompt()
+      );
+      // Cost-control: el cap escala con el número de versiones pedidas.
+      const maxTokens = isPersonalized
+        ? Math.min(500 + 350 * targets.length, 3000)
+        : 800;
 
       // E2 (knowledge layer): cache por (system+user prompt anonimizado), con
       // scope por usuario. Mismo goal + mismos destinatarios + mismo refine →
@@ -607,7 +667,7 @@ Responde SOLO en JSON válido:
       // placeholders, nunca PII; el de-anonimizado ocurre después.
       let tokensUsed = 0;
       const { text: raw } = await cachedCompletion({
-        kind: "eco_compose",
+        kind: isPersonalized ? "eco_compose_personalized" : "eco_compose",
         prompt: `${systemPrompt}\n---\n${userPrompt}`,
         scope: `user:${user.id}`,
         model: "gpt-4o-mini",
@@ -616,7 +676,7 @@ Responde SOLO en JSON válido:
           const completion = await ai.chat.completions.create({
             model: "gpt-4o-mini",
             temperature: 0.7,
-            max_tokens: 800,
+            max_tokens: maxTokens,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },
@@ -632,6 +692,34 @@ Responde SOLO en JSON válido:
       // Restaurar nombres reales en el mensaje y asunto.
       if (typeof parsed.text === "string") parsed.text = deAnonymize(parsed.text);
       if (typeof parsed.subject === "string") parsed.subject = deAnonymize(parsed.subject);
+      if (typeof parsed.insight === "string") parsed.insight = deAnonymize(parsed.insight);
+
+      // Modo personalizado: restaurar nombres en cada versión y responder.
+      if (isPersonalized) {
+        const rawMessages = Array.isArray(parsed.messages) ? parsed.messages : [];
+        const personalizedMessages = rawMessages.map((m: any, i: number) => ({
+          name: typeof m?.name === "string" ? deAnonymize(m.name) : targets[i]?.name || "",
+          subject: typeof m?.subject === "string" ? deAnonymize(m.subject) : null,
+          text: typeof m?.text === "string" ? deAnonymize(m.text) : "",
+        }));
+
+        await trackFunnel("eco_used", {
+          userId: user.id,
+          details: { dyadId: null, ecoLevel: null, channel: body.channel, personalized: true },
+        });
+
+        return NextResponse.json({
+          ok: true,
+          mode: "ai-personalized",
+          base: baseMessage,
+          refined: { insight: parsed.insight ?? null },
+          personalized: personalizedMessages,
+          analysis: analysisData,
+          ecoLevel: null,
+          aiPrompt: null,
+          tokensUsed,
+        });
+      }
 
       // Cadena SIA: guardar el turno en la memoria del hilo de la díada.
       if (bridge && body.dyadId) {
@@ -669,11 +757,34 @@ Responde SOLO en JSON válido:
       });
     } catch (aiError) {
       console.warn("⚠️ ECO AI fallback — usando mensaje estructurado:", aiError);
+      // Fallback personalizado: una versión estructurada por destinatario,
+      // abriendo con el openWith de su brain style.
+      const personalizedFallback = isPersonalized
+        ? targets.map((tg) => {
+            const prefs = BRAIN_PREFS[tg.brainStyle] || BRAIN_PREFS.Strategist;
+            const greeting =
+              body.channel === "whatsapp" ? `¡Hola ${tg.name}! 👋` : `Hola ${tg.name}`;
+            const closing =
+              body.channel === "email"
+                ? `\n\nQuedo atento a tus comentarios.\n\nSaludos,\n${user.name || ""}`
+                : "\n\n¿Qué te parece?";
+            return {
+              name: tg.name,
+              subject:
+                body.channel === "email"
+                  ? `${body.goal.substring(0, 50)}${body.goal.length > 50 ? "..." : ""}`
+                  : null,
+              text: `${greeting},\n\n${prefs.openWith}\n\n${body.goal}${closing}`,
+            };
+          })
+        : null;
+
       return NextResponse.json({
         ok: true,
         mode: "smart-local",
         base: baseMessage,
         refined: null,
+        personalized: personalizedFallback,
         analysis: analysisData,
         aiPrompt: null,
         note: isGroup

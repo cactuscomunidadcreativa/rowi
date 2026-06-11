@@ -17,17 +17,14 @@ import {
   Check,
   Plus,
   X,
-  Zap,
   Brain,
   Target,
   AlertTriangle,
   Slack,
-  Globe,
   Link2,
   ChevronDown,
   User,
-  ArrowRight,
-  Radio,
+  RefreshCw,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import SendMessageActions from "@/components/eco/SendMessageActions";
@@ -35,21 +32,23 @@ import SendMessageActions from "@/components/eco/SendMessageActions";
 /* =========================================================
    📡 ECO - Emotional Communication Optimizer
    ---------------------------------------------------------
-   Diseña mensajes emocionalmente inteligentes usando tu perfil
-   cognitivo y el de tus destinatarios.
+   Mismo look & flujo que /demo/eco, sobre datos reales:
+   destinatarios múltiples, refinar con IA y versiones
+   personalizadas cuando el grupo es heterogéneo.
    =========================================================
 */
 
 type Member = { id: string; name: string; brainStyle?: string };
 type Free = { name: string; brainStyle?: string; bio?: string };
 type Channel = "email" | "whatsapp" | "sms" | "call" | "speech";
+type PersonalizedMessage = { name: string; subject: string | null; text: string };
 
-const CHANNELS: { value: Channel; icon: React.ElementType; label: { es: string; en: string }; color: string }[] = [
-  { value: "email", icon: Mail, label: { es: "Email", en: "Email" }, color: "from-blue-500 to-blue-600" },
-  { value: "whatsapp", icon: MessageSquare, label: { es: "WhatsApp", en: "WhatsApp" }, color: "from-green-500 to-green-600" },
-  { value: "sms", icon: MessageCircle, label: { es: "SMS", en: "SMS" }, color: "from-purple-500 to-purple-600" },
-  { value: "call", icon: Phone, label: { es: "Llamada", en: "Call Script" }, color: "from-amber-500 to-amber-600" },
-  { value: "speech", icon: Mic, label: { es: "Discurso", en: "Speech" }, color: "from-pink-500 to-pink-600" },
+const CHANNELS: { value: Channel; icon: React.ElementType; labelEs: string }[] = [
+  { value: "email", icon: Mail, labelEs: "Email" },
+  { value: "whatsapp", icon: MessageSquare, labelEs: "WhatsApp" },
+  { value: "sms", icon: MessageCircle, labelEs: "SMS" },
+  { value: "call", icon: Phone, labelEs: "Llamada" },
+  { value: "speech", icon: Mic, labelEs: "Discurso" },
 ];
 
 const BRAIN_STYLES = [
@@ -72,6 +71,17 @@ const INTEGRATIONS = [
   { id: "teams", name: "Teams", icon: MessageSquare },
 ];
 
+// Fallbacks ES de patrón/riesgo por brain style (mismos textos que el API).
+const PATTERN_FALLBACK: Record<string, { pattern: string; risk: string }> = {
+  Strategist: { pattern: "preciso y enfocado en lógica", risk: "puede sonar distante" },
+  Guardian: { pattern: "estructurado y seguro", risk: "evita riesgo o espontaneidad" },
+  Energizer: { pattern: "entusiasta y directo", risk: "puede saturar o distraer" },
+  Sage: { pattern: "profundo y reflexivo", risk: "puede extenderse o abstraerse" },
+  Deliverer: { pattern: "orientado a resultados", risk: "puede omitir lo emocional" },
+  Scientist: { pattern: "basado en evidencia", risk: "puede ser demasiado técnico" },
+  Inventor: { pattern: "creativo e inspirador", risk: "puede dispersarse" },
+};
+
 function EcoPageInner() {
   const { t, lang } = useI18n();
   // El puente Affinity→ECO: /eco?dyadId=... activa buildDyadBridge en compose
@@ -89,11 +99,16 @@ function EcoPageInner() {
   const [ask, setAsk] = useState("");
   const [out, setOut] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  // Regenerar = pedir una variación real (rompe el cache del compose).
+  const [variant, setVariant] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [loadingDash, setLoadingDash] = useState(true);
-  // Estado REAL de los canales de envío directo (antes hardcodeado a "Pronto"
-  // aunque Gmail/WhatsApp ya estuvieran conectados — panel deshonesto).
+  // Versiones personalizadas (grupo heterogéneo): un mensaje por persona.
+  const [pers, setPers] = useState<{ messages: PersonalizedMessage[]; insight: string | null } | null>(null);
+  const [loadingPers, setLoadingPers] = useState(false);
+  // Estado REAL de los canales de envío directo.
   const [deliverChannels, setDeliverChannels] = useState<{
     gmail?: { connected: boolean };
     whatsapp?: { connected: boolean };
@@ -150,121 +165,6 @@ function EcoPageInner() {
     setTimeout(() => setOutcomeSaved(false), 4000);
   }
 
-  const tr = {
-    es: {
-      title: "ECO",
-      subtitle: "Emotional Communication Optimizer",
-      description: "Diseña mensajes emocionalmente inteligentes basados en tu perfil cognitivo y emocional",
-      yourProfile: "Tu Perfil",
-      brainStyle: "Brain Style",
-      commPattern: "Patrón Comunicativo",
-      commRisk: "Riesgo Comunicativo",
-      eqStatus: "Estado EQ",
-      selectRecipients: "Destinatarios",
-      communityMembers: "Miembros de tu Comunidad",
-      externalContacts: "Contactos Externos",
-      addExternal: "Agregar Contacto",
-      namePlaceholder: "Nombre del contacto",
-      bioPlaceholder: "Contexto o notas sobre esta persona",
-      composeMessage: "Componer Mensaje",
-      goalLabel: "Objetivo de tu mensaje",
-      goalPlaceholder: "Describe qué quieres comunicar y qué resultado esperas...",
-      selectChannel: "Canal",
-      refineWithAI: "Refinar con IA",
-      refineDescription: "Mejora el mensaje con sugerencias inteligentes",
-      additionalContext: "Contexto adicional",
-      refinePlaceholder: "Instrucciones específicas para personalizar...",
-      generate: "Generar Mensaje",
-      generating: "Generando...",
-      result: "Tu Mensaje",
-      modePro: "Generado con IA Pro",
-      modeBase: "Generado con IA Base",
-      modeSmartLocal: "Generado con análisis de perfil",
-      copy: "Copiar",
-      copied: "Copiado",
-      subject: "Asunto",
-      noRecipients: "Selecciona al menos un destinatario",
-      noGoal: "Escribe el objetivo de tu mensaje",
-      integrations: "Integraciones",
-      integrationsDesc: "Conecta tus apps para enviar directamente",
-      comingSoon: "Pronto",
-      connect: "Conectar",
-      connected: "Conectado",
-      unknown: "Desconocido",
-      selected: "seleccionados",
-      noMembers: "No hay miembros en tu comunidad",
-      loadingProfile: "Cargando perfil...",
-      errorLoading: "Error cargando datos",
-      recipientAnalysis: "Análisis del Destinatario",
-      prefers: "Prefiere:",
-      idealTone: "Tono ideal:",
-      howToApproach: "Cómo abordar:",
-      avoid: "Evitar:",
-      sharedTalents: "Talentos en Común",
-      styleCompatibility: "Compatibilidad de Estilos",
-      advantage: "Ventaja:",
-      caution: "Cuidado:",
-      heroText: "Comunica con inteligencia emocional. Analiza perfiles, adapta tu mensaje y conecta mejor.",
-    },
-    en: {
-      title: "ECO",
-      subtitle: "Emotional Communication Optimizer",
-      description: "Design emotionally intelligent messages based on your cognitive and emotional profile",
-      yourProfile: "Your Profile",
-      brainStyle: "Brain Style",
-      commPattern: "Communication Pattern",
-      commRisk: "Communication Risk",
-      eqStatus: "EQ Status",
-      selectRecipients: "Recipients",
-      communityMembers: "Your Community Members",
-      externalContacts: "External Contacts",
-      addExternal: "Add Contact",
-      namePlaceholder: "Contact name",
-      bioPlaceholder: "Context or notes about this person",
-      composeMessage: "Compose Message",
-      goalLabel: "Your message goal",
-      goalPlaceholder: "Describe what you want to communicate and the expected outcome...",
-      selectChannel: "Channel",
-      refineWithAI: "Refine with AI",
-      refineDescription: "Enhance the message with smart suggestions",
-      additionalContext: "Additional context",
-      refinePlaceholder: "Specific instructions to personalize...",
-      generate: "Generate Message",
-      generating: "Generating...",
-      result: "Your Message",
-      modePro: "Generated with Pro AI",
-      modeBase: "Generated with Base AI",
-      modeSmartLocal: "Generated with profile analysis",
-      copy: "Copy",
-      copied: "Copied",
-      subject: "Subject",
-      noRecipients: "Select at least one recipient",
-      noGoal: "Write your message goal",
-      integrations: "Integrations",
-      integrationsDesc: "Connect your apps to send directly",
-      comingSoon: "Soon",
-      connect: "Connect",
-      connected: "Connected",
-      unknown: "Unknown",
-      selected: "selected",
-      noMembers: "No members in your community",
-      loadingProfile: "Loading profile...",
-      errorLoading: "Error loading data",
-      recipientAnalysis: "Recipient Analysis",
-      prefers: "Prefers:",
-      idealTone: "Ideal tone:",
-      howToApproach: "How to approach:",
-      avoid: "Avoid:",
-      sharedTalents: "Shared Talents",
-      styleCompatibility: "Style Compatibility",
-      advantage: "Advantage:",
-      caution: "Caution:",
-      heroText: "Communicate with emotional intelligence. Analyze profiles, adapt your message, and connect better.",
-    },
-  };
-
-  const tt = tr[lang as keyof typeof tr] || tr.es;
-
   useEffect(() => {
     (async () => {
       setLoadingDash(true);
@@ -285,34 +185,71 @@ function EcoPageInner() {
     })();
   }, []);
 
-  async function compose() {
+  function composeBody(extra?: Record<string, unknown>) {
+    return {
+      goal,
+      channel,
+      memberIds: picked,
+      freeTargets: free.filter((f) => f.name.trim()),
+      refine,
+      ask,
+      locale: lang,
+      // Con dyadId, compose usa la BRECHA real de la díada (buildDyadBridge).
+      dyadId: dyadId || undefined,
+      ...extra,
+    };
+  }
+
+  async function compose(nextVariant?: number) {
     if (!goal.trim()) return;
     if (picked.length === 0 && free.filter((f) => f.name.trim()).length === 0) return;
     setLoading(true);
     setOut(null);
+    setPers(null);
+    const v = nextVariant ?? variant;
     try {
-      const body = {
-        goal,
-        channel,
-        memberIds: picked,
-        freeTargets: free.filter((f) => f.name.trim()),
-        refine,
-        ask,
-        // Con dyadId, compose usa la BRECHA real de la díada (buildDyadBridge)
-        // en vez del modo neutro — antes la UI nunca lo enviaba.
-        dyadId: dyadId || undefined,
-      };
       const r = await fetch("/api/eco/compose", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(
+          composeBody(
+            v > 0
+              ? { ask: `${ask ? ask + ". " : ""}Variación ${v + 1}: escribe una versión distinta.` }
+              : undefined
+          )
+        ),
       });
       const j = await r.json();
       setOut(j);
     } catch {
-      setOut({ ok: false, error: tt.errorLoading });
+      setOut({ ok: false, error: t("eco.page.errorLoading", "Error cargando datos") });
     } finally {
       setLoading(false);
+    }
+  }
+
+  function regenerate() {
+    const v = variant + 1;
+    setVariant(v);
+    compose(v);
+  }
+
+  async function composePersonalized() {
+    setLoadingPers(true);
+    try {
+      const r = await fetch("/api/eco/compose", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(composeBody({ personalized: true })),
+      });
+      const j = await r.json();
+      if (j?.ok && Array.isArray(j.personalized)) {
+        setPers({ messages: j.personalized, insight: j.refined?.insight ?? null });
+      }
+    } catch {
+      /* el banner sigue disponible para reintentar */
+    } finally {
+      setLoadingPers(false);
     }
   }
 
@@ -320,6 +257,13 @@ function EcoPageInner() {
     navigator.clipboard.writeText(txt).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const copyPersonalized = (txt: string, idx: number) => {
+    navigator.clipboard.writeText(txt).then(() => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
     });
   };
 
@@ -338,49 +282,62 @@ function EcoPageInner() {
   const totalRecipients = picked.length + free.filter((f) => f.name.trim()).length;
   const canGenerate = goal.trim() && totalRecipients > 0 && !loading;
 
+  const styleCount = out?.analysis?.styleDistribution
+    ? Object.keys(out.analysis.styleDistribution).length
+    : 0;
+  const offerPersonalized = !!out?.ok && !!out?.analysis?.isGroup && styleCount >= 2;
+
+  // Traducción client-side del análisis por brain style (el API manda ES).
+  const prefsFor = (style: string | undefined | null, field: "prefers" | "tone" | "approach" | "avoid", apiValue?: string) => {
+    if (!style) return apiValue || "";
+    return t(`eco.prefs.${style}.${field}`, apiValue || "");
+  };
+
+  const modeLabel =
+    out?.mode === "ai-refined" || out?.mode === "ai-personalized"
+      ? t("eco.page.modePro", "Generado con IA Pro")
+      : out?.mode === "smart-local"
+        ? t("eco.page.modeSmartLocal", "Generado con análisis de perfil")
+        : t("eco.page.modeBase", "Generado con IA Base");
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-950">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-start md:justify-between gap-6"
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center shadow-lg shadow-[var(--rowi-g2)]/25 flex-shrink-0">
-              <Radio className="w-7 h-7 text-white" />
-            </div>
+    <main className="min-h-screen pb-24 bg-[var(--rowi-background)]">
+      {/* Header — mismo banner que /demo/eco */}
+      <div className="bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-transparent py-10 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tt.title}</h1>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--rowi-g2)]/10 text-[var(--rowi-g2)] font-medium">
-                  {tt.subtitle}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg">
-                {tt.heroText}
+              <h1 className="text-3xl md:text-4xl font-bold mb-1 flex items-center gap-3">
+                <MessageSquare className="w-8 h-8 text-emerald-500" />
+                {t("eco.page.title", "ECO")}
+              </h1>
+              <p className="text-lg text-emerald-600 dark:text-emerald-400 mb-2">
+                Emotional Communication Optimizer
+              </p>
+              <p className="text-[var(--rowi-muted)] max-w-2xl">
+                {t(
+                  "eco.page.heroText",
+                  "Comunica con inteligencia emocional. Analiza perfiles, adapta tu mensaje y conecta mejor."
+                )}
               </p>
             </div>
+            {totalRecipients > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 self-start"
+              >
+                <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  {totalRecipients} {t("eco.page.selected", "seleccionados")}
+                </span>
+              </motion.div>
+            )}
           </div>
-
-          {/* Recipients counter */}
-          {totalRecipients > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--rowi-g2)]/10 rounded-xl border border-[var(--rowi-g2)]/20"
-            >
-              <Users className="w-4 h-4 text-[var(--rowi-g2)]" />
-              <span className="text-sm font-medium text-[var(--rowi-g2)]">
-                {totalRecipients} {tt.selected}
-              </span>
-            </motion.div>
-          )}
-        </motion.div>
+        </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Outcome del último envío — el dato que calibra la brecha (foso) */}
         {pendingOutcome && (
           <motion.div
@@ -412,86 +369,139 @@ function EcoPageInner() {
             {t("eco.outcome.thanks", "Gracias — esto afina los próximos mensajes.")}
           </p>
         )}
+
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* ── Columna izquierda — Perfil ── */}
-          <div className="lg:col-span-1 space-y-5">
-            {/* Perfil Cognitivo */}
+          {/* ── Columna izquierda — Perfil, canal e integraciones ── */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Tu perfil */}
             <motion.section
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 }}
-              className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 overflow-hidden shadow-sm"
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl"
             >
-              <div className="p-4 bg-gradient-to-r from-[var(--rowi-g1)]/5 to-[var(--rowi-g2)]/5 border-b border-gray-200 dark:border-zinc-700">
-                <h2 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Brain className="w-5 h-5 text-[var(--rowi-g2)]" />
-                  {tt.yourProfile}
-                </h2>
-              </div>
-
-              <div className="p-4">
-                {loadingDash ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-g2)]" />
-                    <span className="ml-2 text-sm text-gray-500">{tt.loadingProfile}</span>
+              <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
+                <Brain className="w-5 h-5 text-emerald-500" />
+                {t("eco.page.yourProfile", "Tu perfil")}
+              </h2>
+              {loadingDash ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                  <span className="ml-2 text-sm text-[var(--rowi-muted)]">
+                    {t("eco.loadingProfile", "Cargando perfil...")}
+                  </span>
+                </div>
+              ) : dashboard?.ok ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
+                      {(dashboard.user.name || "U").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold truncate">{dashboard.user.name}</h3>
+                      {dashboard.user.brainStyle && (
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                          {dashboard.user.brainStyle}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                ) : dashboard?.ok ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-bold text-lg shadow-md">
-                        {(dashboard.user.name || "U").charAt(0).toUpperCase()}
+
+                  {dashboard.user.brainStyle && PATTERN_FALLBACK[dashboard.user.brainStyle] && (
+                    <div className="space-y-2.5">
+                      <div className="flex items-start justify-between gap-2 text-sm p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800">
+                        <span className="text-[var(--rowi-muted)]">
+                          {t("eco.page.commPattern", "Patrón comunicativo")}
+                        </span>
+                        <span className="font-medium text-right">
+                          {t(
+                            `eco.profile.pattern.${dashboard.user.brainStyle}`,
+                            PATTERN_FALLBACK[dashboard.user.brainStyle].pattern
+                          )}
+                        </span>
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {dashboard.user.name}
-                        </p>
-                        <p className="text-sm text-[var(--rowi-g2)] font-medium">{dashboard.user.brainStyle}</p>
+                      <div className="flex items-start justify-between gap-2 text-sm p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+                        <span className="text-[var(--rowi-muted)] flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                          {t("eco.page.commRisk", "Riesgo comunicativo")}
+                        </span>
+                        <span className="font-medium text-amber-600 dark:text-amber-400 text-right">
+                          {t(
+                            `eco.profile.risk.${dashboard.user.brainStyle}`,
+                            PATTERN_FALLBACK[dashboard.user.brainStyle].risk
+                          )}
+                        </span>
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-2.5 pt-2">
-                      {dashboard.user.commPattern && (
-                        <div className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800">
-                          <span className="text-gray-500 dark:text-gray-400">{tt.commPattern}</span>
-                          <span className="font-medium text-gray-900 dark:text-white text-right max-w-[150px] truncate">
-                            {dashboard.user.commPattern}
-                          </span>
-                        </div>
-                      )}
-                      {dashboard.user.commRisk && (
-                        <div className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/10">
-                          <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                            {tt.commRisk}
-                          </span>
-                          <span className="font-medium text-amber-600 dark:text-amber-400 text-right max-w-[150px] truncate">
-                            {dashboard.user.commRisk}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {dashboard.eqStatus && (
-                      <div className="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <p className="text-xs font-medium text-gray-500 mb-2">{tt.eqStatus}</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {Object.entries(dashboard.eqStatus).map(([k, v]) => (
+                  {dashboard.eqStatus && (
+                    <div className="pt-3 border-t border-gray-100 dark:border-zinc-800">
+                      <p className="text-xs font-medium text-[var(--rowi-muted)] mb-2">
+                        {t("eco.page.eqStatus", "Estado EQ")}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.entries(dashboard.eqStatus).map(([k, v]) =>
+                          v ? (
                             <span
                               key={k}
-                              className="px-2 py-1 text-xs rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300"
+                              className="px-2 py-1 text-xs rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300"
                             >
-                              {k}: <span className="font-semibold">{String(v)}</span>
+                              {k}:{" "}
+                              <span className="font-semibold">
+                                {t(`eco.profile.band.${String(v)}`, String(v))}
+                              </span>
                             </span>
-                          ))}
-                        </div>
+                          ) : null
+                        )}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 text-gray-500 text-sm">
-                    {tt.errorLoading}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-[var(--rowi-muted)] text-sm">
+                  {t("eco.page.errorLoading", "Error cargando datos")}
+                </div>
+              )}
+            </motion.section>
+
+            {/* Canal — selector tipo demo */}
+            <motion.section
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl"
+            >
+              <h2 className="text-lg font-bold mb-2">{t("eco.page.channel", "Canal")}</h2>
+              <p className="text-sm text-[var(--rowi-muted)] mb-4">
+                {t("eco.page.channelDesc", "Selecciona el canal y Rowi adapta el mensaje")}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {CHANNELS.map((ch) => {
+                  const Icon = ch.icon;
+                  const isSelected = channel === ch.value;
+                  return (
+                    <button
+                      key={ch.value}
+                      onClick={() => setChannel(ch.value)}
+                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                        isSelected
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                          : "border-transparent bg-gray-50 dark:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-6 h-6 ${isSelected ? "text-emerald-500" : "text-[var(--rowi-muted)]"}`}
+                      />
+                      <span
+                        className={`text-sm font-medium ${
+                          isSelected ? "text-emerald-600 dark:text-emerald-400" : ""
+                        }`}
+                      >
+                        {t(`eco.channels.${ch.value}`, ch.labelEs)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </motion.section>
 
@@ -499,20 +509,21 @@ function EcoPageInner() {
             <motion.section
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 overflow-hidden shadow-sm"
+              transition={{ delay: 0.15 }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl overflow-hidden"
             >
               <button
                 onClick={() => setShowIntegrations(!showIntegrations)}
-                className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-700/30 transition-colors"
+                className="w-full p-5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <Link2 className="w-5 h-5 text-[var(--rowi-g2)]" />
-                  <span className="font-semibold text-gray-900 dark:text-white">{tt.integrations}</span>
+                  <Link2 className="w-5 h-5 text-emerald-500" />
+                  <span className="font-bold">{t("eco.page.integrations", "Integraciones")}</span>
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showIntegrations ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-400 transition-transform ${showIntegrations ? "rotate-180" : ""}`}
+                />
               </button>
-
               <AnimatePresence>
                 {showIntegrations && (
                   <motion.div
@@ -521,8 +532,10 @@ function EcoPageInner() {
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 space-y-2">
-                      <p className="text-xs text-gray-500 mb-2">{tt.integrationsDesc}</p>
+                    <div className="px-5 pb-5 space-y-2">
+                      <p className="text-xs text-[var(--rowi-muted)] mb-2">
+                        {t("eco.page.integrationsDesc", "Conecta tus apps para enviar directamente")}
+                      </p>
                       {INTEGRATIONS.map((int) => {
                         const isConnected =
                           int.id === "gmail"
@@ -533,15 +546,13 @@ function EcoPageInner() {
                         return (
                           <div
                             key={int.id}
-                            className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50"
+                            className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-zinc-800"
                           >
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 flex items-center justify-center shadow-sm">
                                 <int.icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                               </div>
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {int.name}
-                              </span>
+                              <span className="text-sm font-medium">{int.name}</span>
                             </div>
                             <span
                               className={`text-xs px-2 py-1 rounded-full ${
@@ -550,7 +561,9 @@ function EcoPageInner() {
                                   : "bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400"
                               }`}
                             >
-                              {isConnected ? tt.connected : tt.comingSoon}
+                              {isConnected
+                                ? t("eco.page.connected", "Conectado")
+                                : t("eco.page.comingSoon", "Pronto")}
                             </span>
                           </div>
                         );
@@ -562,160 +575,172 @@ function EcoPageInner() {
             </motion.section>
           </div>
 
-          {/* ── Columna central y derecha — Compositor ── */}
-          <div className="lg:col-span-2 space-y-5">
-            {/* Selección de destinatarios */}
+          {/* ── Columna derecha — Destinatarios + compositor + resultado ── */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Destinatarios (multi-selección) */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08 }}
-              className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 overflow-hidden shadow-sm"
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl"
             >
-              <div className="p-4 border-b border-gray-100 dark:border-zinc-700 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[var(--rowi-g2)]" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{tt.selectRecipients}</h3>
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <Users className="w-5 h-5 text-emerald-500" />
+                  {t("eco.page.recipients", "Destinatarios")}
+                </h2>
                 {totalRecipients > 0 && (
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--rowi-g2)]/10 text-[var(--rowi-g2)] font-medium">
-                    {totalRecipients} {tt.selected}
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
+                    {totalRecipients} {t("eco.page.selected", "seleccionados")}
                   </span>
                 )}
               </div>
+              <p className="text-sm text-[var(--rowi-muted)] mb-4">
+                {t(
+                  "eco.page.recipientsDesc",
+                  "El mensaje se adapta al estilo cerebral y preferencias de cada persona"
+                )}
+              </p>
 
-              <div className="p-4 space-y-4">
-                {/* Community members */}
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{tt.communityMembers}</p>
-                  {members.length === 0 ? (
-                    <div className="py-4 text-center space-y-2">
-                      <p className="text-sm text-gray-400">{tt.noMembers}</p>
-                      {/* El vacío guía al siguiente paso, no abandona */}
-                      <a
-                        href="/community?tab=relationships"
-                        className="inline-block text-xs rowi-btn-primary px-4 py-2"
+              {/* Miembros de la comunidad */}
+              <p className="text-sm font-medium text-[var(--rowi-muted)] mb-3">
+                {t("eco.page.communityMembers", "Miembros de tu comunidad")}
+              </p>
+              {members.length === 0 ? (
+                <div className="py-4 text-center space-y-2">
+                  <p className="text-sm text-gray-400">
+                    {t("eco.page.noMembers", "No hay miembros en tu comunidad")}
+                  </p>
+                  {/* El vacío guía al siguiente paso, no abandona */}
+                  <a
+                    href="/community?tab=relationships"
+                    className="inline-block text-xs rowi-btn-primary px-4 py-2"
+                  >
+                    {t("relationships.empty.cta", "Invita a tu primera persona")}
+                  </a>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {members.map((m) => {
+                    const isSelected = picked.includes(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => toggleMember(m.id)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                            : "border-transparent bg-gray-50 dark:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
+                        }`}
                       >
-                        {t("relationships.empty.cta", "Invita a tu primera persona")}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="grid sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                      {members.map((m) => {
-                        const isSelected = picked.includes(m.id);
-                        return (
-                          <button
-                            key={m.id}
-                            onClick={() => toggleMember(m.id)}
-                            className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-                              isSelected
-                                ? "border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5 ring-1 ring-[var(--rowi-g2)]/20"
-                                : "border-gray-200 dark:border-zinc-700 hover:border-[var(--rowi-g2)]/40 bg-white dark:bg-zinc-800/50"
-                            }`}
-                          >
-                            <div
-                              className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                                isSelected
-                                  ? "bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white shadow-md"
-                                  : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-gray-300"
-                              }`}
-                            >
-                              {(m.name || "?").charAt(0).toUpperCase()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{m.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{m.brainStyle || tt.unknown}</p>
-                            </div>
-                            {isSelected && (
-                              <Check className="w-4 h-4 text-[var(--rowi-g2)] flex-shrink-0" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                            isSelected
+                              ? "bg-gradient-to-br from-emerald-500 to-green-500 text-white shadow-md"
+                              : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-gray-300"
+                          }`}
+                        >
+                          {(m.name || "?").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{m.name}</p>
+                          <p className="text-xs text-[var(--rowi-muted)] truncate">
+                            {m.brainStyle || t("eco.page.unknown", "Desconocido")}
+                          </p>
+                        </div>
+                        {isSelected && <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Contactos externos */}
+              <div className="pt-4 mt-4 border-t border-gray-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-[var(--rowi-muted)]">
+                    {t("eco.page.externalContacts", "Contactos externos")}
+                  </p>
+                  <button
+                    onClick={addExternal}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-dashed border-gray-300 dark:border-zinc-600 text-gray-500 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {t("eco.page.addExternal", "Agregar contacto")}
+                  </button>
                 </div>
 
-                {/* External contacts */}
-                <div className="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{tt.externalContacts}</p>
-                    <button
-                      onClick={addExternal}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-dashed border-gray-300 dark:border-zinc-600 text-gray-500 hover:border-[var(--rowi-g2)] hover:text-[var(--rowi-g2)] transition-colors"
+                <AnimatePresence>
+                  {free.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      {tt.addExternal}
-                    </button>
-                  </div>
-
-                  <AnimatePresence>
-                    {free.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-2"
-                      >
-                        {free.map((f, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            className="flex items-start gap-2 p-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50"
-                          >
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center flex-shrink-0">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1 space-y-2">
-                              <input
-                                type="text"
-                                placeholder={tt.namePlaceholder}
-                                value={f.name}
-                                onChange={(e) =>
-                                  setFree((v) =>
-                                    v.map((x, j) => (j === i ? { ...x, name: e.target.value } : x))
-                                  )
-                                }
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none transition-all"
-                              />
-                              <select
-                                value={f.brainStyle}
-                                onChange={(e) =>
-                                  setFree((v) =>
-                                    v.map((x, j) => (j === i ? { ...x, brainStyle: e.target.value } : x))
-                                  )
-                                }
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none"
-                              >
-                                {BRAIN_STYLES.map((b) => (
-                                  <option key={b} value={b}>{b}</option>
-                                ))}
-                              </select>
-                              <input
-                                type="text"
-                                placeholder={tt.bioPlaceholder}
-                                value={f.bio || ""}
-                                onChange={(e) =>
-                                  setFree((v) =>
-                                    v.map((x, j) => (j === i ? { ...x, bio: e.target.value } : x))
-                                  )
-                                }
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none"
-                              />
-                            </div>
-                            <button
-                              onClick={() => removeExternal(i)}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      {free.map((f, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="flex items-start gap-2 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800"
+                        >
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-400 flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <input
+                              type="text"
+                              placeholder={t("eco.page.namePlaceholder", "Nombre del contacto")}
+                              value={f.name}
+                              onChange={(e) =>
+                                setFree((v) =>
+                                  v.map((x, j) => (j === i ? { ...x, name: e.target.value } : x))
+                                )
+                              }
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                            />
+                            <select
+                              value={f.brainStyle}
+                              onChange={(e) =>
+                                setFree((v) =>
+                                  v.map((x, j) => (j === i ? { ...x, brainStyle: e.target.value } : x))
+                                )
+                              }
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                             >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                              {BRAIN_STYLES.map((b) => (
+                                <option key={b} value={b}>
+                                  {b}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="text"
+                              placeholder={t(
+                                "eco.page.bioPlaceholder",
+                                "Contexto o notas sobre esta persona"
+                              )}
+                              value={f.bio || ""}
+                              onChange={(e) =>
+                                setFree((v) =>
+                                  v.map((x, j) => (j === i ? { ...x, bio: e.target.value } : x))
+                                )
+                              }
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeExternal(i)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.section>
 
@@ -723,129 +748,104 @@ function EcoPageInner() {
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-              className="rounded-2xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 overflow-hidden shadow-sm"
+              transition={{ delay: 0.05 }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl space-y-5"
             >
-              <div className="p-4 border-b border-gray-100 dark:border-zinc-700">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-[var(--rowi-g2)]" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{tt.composeMessage}</h3>
-                </div>
-              </div>
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Target className="w-5 h-5 text-emerald-500" />
+                {t("eco.page.composeMessage", "Componer mensaje")}
+              </h2>
 
-              <div className="p-4 space-y-5">
-                {/* Goal */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {tt.goalLabel}
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={goal}
-                    onChange={(e) => setGoal(e.target.value)}
-                    placeholder={tt.goalPlaceholder}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none transition-all resize-none"
-                  />
-                </div>
-
-                {/* Channel */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {tt.selectChannel}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {CHANNELS.map((ch) => {
-                      const isSelected = channel === ch.value;
-                      const Icon = ch.icon;
-                      return (
-                        <button
-                          key={ch.value}
-                          onClick={() => setChannel(ch.value)}
-                          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                            isSelected
-                              ? `border-transparent bg-gradient-to-r ${ch.color} text-white shadow-md`
-                              : "border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-gray-300"
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          {t(`eco.channels.${ch.value}`, ch.label.es)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* AI Refine */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)]/5 to-[var(--rowi-g2)]/5 border border-[var(--rowi-g2)]/10">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        checked={refine}
-                        onChange={(e) => setRefine(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 dark:bg-zinc-700 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-[var(--rowi-g1)] peer-checked:to-[var(--rowi-g2)] transition-all" />
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm peer-checked:translate-x-5 transition-all" />
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[var(--rowi-g2)]" />
-                        {tt.refineWithAI}
-                      </span>
-                      <span className="text-xs text-gray-500">{tt.refineDescription}</span>
-                    </div>
-                  </label>
-
-                  <AnimatePresence>
-                    {refine && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 overflow-hidden"
-                      >
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {tt.additionalContext}
-                        </label>
-                        <textarea
-                          rows={2}
-                          value={ask}
-                          onChange={(e) => setAsk(e.target.value)}
-                          placeholder={tt.refinePlaceholder}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[var(--rowi-g2)]/20 focus:border-[var(--rowi-g2)] outline-none transition-all resize-none"
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Generate button */}
-                <button
-                  onClick={compose}
-                  disabled={!canGenerate}
-                  className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-all ${
-                    canGenerate
-                      ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] hover:shadow-lg hover:shadow-[var(--rowi-g2)]/25 hover:scale-[1.01] active:scale-[0.99]"
-                      : "bg-gray-300 dark:bg-zinc-700 cursor-not-allowed"
-                  }`}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      {tt.generating}
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      {tt.generate}
-                    </>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  {t("eco.page.goalLabel", "Objetivo de tu mensaje")}
+                </label>
+                <textarea
+                  rows={3}
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                  placeholder={t(
+                    "eco.page.goalPlaceholder",
+                    "Describe qué quieres comunicar y qué resultado esperas..."
                   )}
-                </button>
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all resize-none"
+                />
               </div>
+
+              {/* Refinar con IA */}
+              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/50">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={refine}
+                      onChange={(e) => setRefine(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 dark:bg-zinc-700 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-all" />
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm peer-checked:translate-x-5 transition-all" />
+                  </div>
+                  <div>
+                    <span className="font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-500" />
+                      {t("eco.page.refineWithAI", "Refinar con IA")}
+                    </span>
+                    <span className="text-xs text-[var(--rowi-muted)]">
+                      {t("eco.page.refineDescription", "Mejora el mensaje con sugerencias inteligentes")}
+                    </span>
+                  </div>
+                </label>
+
+                <AnimatePresence>
+                  {refine && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 overflow-hidden"
+                    >
+                      <label className="block text-sm font-medium mb-2">
+                        {t("eco.page.additionalContext", "Contexto adicional")}
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={ask}
+                        onChange={(e) => setAsk(e.target.value)}
+                        placeholder={t(
+                          "eco.page.refinePlaceholder",
+                          "Instrucciones específicas para personalizar..."
+                        )}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all resize-none"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <button
+                onClick={() => compose()}
+                disabled={!canGenerate}
+                className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-all ${
+                  canGenerate
+                    ? "bg-gradient-to-r from-emerald-500 to-green-500 hover:opacity-90 hover:scale-[1.01] active:scale-[0.99]"
+                    : "bg-gray-300 dark:bg-zinc-700 cursor-not-allowed"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {t("eco.page.generating", "Generando...")}
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    {t("eco.page.generate", "Generar mensaje")}
+                  </>
+                )}
+              </button>
             </motion.section>
 
-            {/* Result */}
+            {/* Resultado */}
             <AnimatePresence>
               {out?.ok && (
                 <motion.section
@@ -854,77 +854,112 @@ function EcoPageInner() {
                   exit={{ opacity: 0, y: -20, scale: 0.97 }}
                   className="space-y-4"
                 >
-                  {/* Group Analysis — visible solo cuando hay 2+ destinatarios */}
-                  {out.analysis?.isGroup && (
-                    <div className="rounded-2xl border border-blue-200 dark:border-blue-800/40 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/15 dark:to-zinc-900 p-5 shadow-sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                          <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  {/* Optimizaciones aplicadas — estilo demo, 1 destinatario */}
+                  {out.analysis && !out.analysis.isGroup && out.analysis.targetBrainStyle && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-bold text-emerald-800 dark:text-emerald-200">
+                          {t("eco.page.tipsTitle", "Optimizaciones aplicadas")}
+                        </h3>
+                        <span className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium">
+                          {out.analysis.targetBrainStyle}
+                        </span>
+                      </div>
+                      <ul className="space-y-2">
+                        {[
+                          `${t("eco.page.idealTone", "Tono ideal")}: ${prefsFor(out.analysis.targetBrainStyle, "tone", out.analysis.targetPrefs?.tone)}`,
+                          `${t("eco.page.prefers", "Prefiere")}: ${prefsFor(out.analysis.targetBrainStyle, "prefers", out.analysis.targetPrefs?.prefers)}`,
+                          `${t("eco.page.howToApproach", "Cómo abordar")}: ${prefsFor(out.analysis.targetBrainStyle, "approach", out.analysis.targetPrefs?.approach)}`,
+                          `${t("eco.page.avoid", "Evitar")}: ${prefsFor(out.analysis.targetBrainStyle, "avoid", out.analysis.targetPrefs?.avoid)}`,
+                        ].map((tip, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-sm text-emerald-700 dark:text-emerald-300"
+                          >
+                            <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                      {out.analysis.sharedTalents?.length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-800/50">
+                          <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-2">
+                            {t("eco.page.sharedTalents", "Talentos en común")}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {out.analysis.sharedTalents.map((talent: string) => (
+                              <span
+                                key={talent}
+                                className="px-2.5 py-1 text-xs rounded-full bg-white/70 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium"
+                              >
+                                {talent}
+                              </span>
+                            ))}
+                          </div>
                         </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Análisis del grupo — 2+ destinatarios */}
+                  {out.analysis?.isGroup && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <h4 className="font-bold text-emerald-800 dark:text-emerald-200">
                             {t("eco.groupAnalysis.title", "Análisis del grupo")}
                           </h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70">
                             {out.analysis.recipients?.length}{" "}
                             {t("eco.groupAnalysis.recipientsLabel", "destinatarios")}
                           </p>
                         </div>
                       </div>
 
-                      {/* Lista de destinatarios con sus brain styles */}
                       <div className="grid sm:grid-cols-2 gap-2 mb-4">
                         {out.analysis.recipients?.map((r: any) => (
                           <div
                             key={r.name}
-                            className="flex items-center justify-between p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/50 border border-blue-100 dark:border-blue-900/30"
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/50"
                           >
-                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {r.name}
-                            </span>
-                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium whitespace-nowrap ml-2">
+                            <span className="text-sm font-medium truncate">{r.name}</span>
+                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium whitespace-nowrap ml-2">
                               {r.brainStyle}
                             </span>
                           </div>
                         ))}
                       </div>
 
-                      {/* Distribución de estilos */}
                       {out.analysis.styleDistribution &&
                         Object.keys(out.analysis.styleDistribution).length > 1 && (
                           <div className="mb-3">
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-2">
                               {t("eco.groupAnalysis.styleMix", "Mezcla de estilos")}
                             </p>
                             <div className="flex flex-wrap gap-1.5">
-                              {Object.entries(out.analysis.styleDistribution).map(
-                                ([style, count]) => (
-                                  <span
-                                    key={style}
-                                    className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                                  >
-                                    {style} × {count as number}
-                                  </span>
-                                )
-                              )}
+                              {Object.entries(out.analysis.styleDistribution).map(([style, count]) => (
+                                <span
+                                  key={style}
+                                  className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                                >
+                                  {style} × {count as number}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         )}
 
-                      {/* Talentos comunes a TODOS */}
                       {out.analysis.commonAcrossAll?.length > 0 && (
-                        <div className="pt-3 border-t border-blue-200 dark:border-blue-800/40">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                            {t(
-                              "eco.groupAnalysis.commonTalents",
-                              "Talentos que compartes con TODOS"
-                            )}
+                        <div className="pt-3 border-t border-emerald-200 dark:border-emerald-800/50">
+                          <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-2">
+                            {t("eco.groupAnalysis.commonTalents", "Talentos que compartes con TODOS")}
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {out.analysis.commonAcrossAll.map((talent: string) => (
                               <span
                                 key={talent}
-                                className="px-2.5 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium"
+                                className="px-2.5 py-1 text-xs rounded-full bg-white/70 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium"
                               >
                                 {talent}
                               </span>
@@ -933,156 +968,200 @@ function EcoPageInner() {
                         </div>
                       )}
 
-                      {/* Insight de la IA — análisis privado del grupo */}
-                      {out.refined?.insight ? (
-                        <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40">
+                      {out.refined?.insight && !pers && (
+                        <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-800/50">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
                               {t("eco.groupAnalysis.aiInsight", "Para ti")}
                             </p>
                           </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                          <p className="text-sm text-emerald-900 dark:text-emerald-100 leading-relaxed">
                             {out.refined.insight}
                           </p>
                         </div>
-                      ) : (
-                        <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800/40 text-xs text-gray-600 dark:text-gray-400 italic">
-                          {t(
-                            "eco.groupAnalysis.aiNote",
-                            "El mensaje se adapta al perfil colectivo del grupo, buscando el denominador común y respetando las diferencias clave."
+                      )}
+                    </div>
+                  )}
+
+                  {/* Mensaje optimizado — estilo demo con Regenerar + Copiar */}
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h2 className="text-lg font-bold">
+                          {t("eco.page.result", "Mensaje optimizado")}
+                        </h2>
+                        <p className="text-sm text-[var(--rowi-muted)]">{modeLabel}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={regenerate}
+                          disabled={loading}
+                          title={t("eco.page.regenerate", "Regenerar")}
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                          <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+                        </button>
+                        <button
+                          onClick={() => copyText(out.refined?.text || out.base.text)}
+                          title={t("eco.send.copy", "Copiar")}
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                          {copied ? (
+                            <Check className="w-5 h-5 text-emerald-500" />
+                          ) : (
+                            <Copy className="w-5 h-5" />
                           )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Recipient Analysis — Solo cuando hay 1 destinatario */}
-                  {out.analysis && !out.analysis.isGroup && (
-                    <div className="rounded-2xl border border-purple-200 dark:border-purple-800/40 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/15 dark:to-zinc-900 p-5 shadow-sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                          <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white flex-1">{tt.recipientAnalysis}</h4>
-                        <span className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium">
-                          {out.analysis.targetBrainStyle}
-                        </span>
+                        </button>
                       </div>
-
-                      <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-lg bg-white/60 dark:bg-zinc-800/50">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{tt.prefers}</span>
-                            <p className="text-gray-800 dark:text-gray-200 mt-0.5">{out.analysis.targetPrefs?.prefers}</p>
-                          </div>
-                          <div className="p-3 rounded-lg bg-white/60 dark:bg-zinc-800/50">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{tt.idealTone}</span>
-                            <p className="text-gray-800 dark:text-gray-200 mt-0.5">{out.analysis.targetPrefs?.tone}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-lg bg-white/60 dark:bg-zinc-800/50">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{tt.howToApproach}</span>
-                            <p className="text-gray-800 dark:text-gray-200 mt-0.5">{out.analysis.targetPrefs?.approach}</p>
-                          </div>
-                          <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-900/10">
-                            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" />
-                              {tt.avoid}
-                            </span>
-                            <p className="text-amber-700 dark:text-amber-400 mt-0.5">{out.analysis.targetPrefs?.avoid}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {out.analysis.sharedTalents?.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-purple-200 dark:border-purple-800/40">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                            {tt.sharedTalents}
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {out.analysis.sharedTalents.map((talent: string) => (
-                              <span key={talent} className="px-2.5 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">
-                                {talent}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {out.analysis.compatibility && (
-                        <div className="mt-4 pt-3 border-t border-purple-200 dark:border-purple-800/40">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{tt.styleCompatibility}</p>
-                          <div className="grid sm:grid-cols-2 gap-2 text-xs">
-                            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/15 text-green-700 dark:text-green-400">
-                              <strong>{tt.advantage}</strong> {out.analysis.compatibility.tip}
-                            </div>
-                            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-400">
-                              <strong>{tt.caution}</strong> {out.analysis.compatibility.challenge}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Generated Message */}
-                  <div className="rounded-2xl border border-[var(--rowi-g2)]/25 bg-white dark:bg-zinc-800/80 overflow-hidden shadow-lg shadow-[var(--rowi-g2)]/10">
-                    <div className="p-4 border-b border-gray-100 dark:border-zinc-700 flex items-center justify-between bg-gradient-to-r from-[var(--rowi-g1)]/5 to-[var(--rowi-g2)]/5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center shadow-sm">
-                          <Sparkles className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{tt.result}</h3>
-                          <p className="text-xs text-gray-500">
-                            {out.mode === "ai-refined" ? tt.modePro : out.mode === "smart-local" ? tt.modeSmartLocal : tt.modeBase}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => copyText(out.refined?.text || out.base.text)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          copied
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                            : "bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600"
-                        }`}
-                      >
-                        {copied ? <><Check className="w-4 h-4" />{tt.copied}</> : <><Copy className="w-4 h-4" />{tt.copy}</>}
-                      </button>
                     </div>
 
-                    <div className="p-5 space-y-4">
-                      {(out.refined?.subject || out.base?.subject) && (
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 mb-1">{tt.subject}</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {out.refined?.subject || out.base.subject}
-                          </p>
-                        </div>
-                      )}
-                      {/* Estilo del demo (pedido Eduardo): el mensaje es el
-                          protagonista — tinte violeta, no gris plano. */}
-                      <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50/60 dark:from-violet-950/40 dark:to-fuchsia-950/20 border border-violet-200/70 dark:border-violet-800/50">
-                        <p className="text-[15px] text-gray-800 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
-                          {out.refined?.text || out.base.text}
+                    {(out.refined?.subject || out.base?.subject) && (
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-[var(--rowi-muted)] mb-1">
+                          {t("eco.page.subject", "Asunto")}
+                        </p>
+                        <p className="text-lg font-semibold">
+                          {out.refined?.subject || out.base.subject}
                         </p>
                       </div>
+                    )}
+
+                    <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-6 mb-4">
+                      <motion.pre
+                        key={out.refined?.text || out.base?.text}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="whitespace-pre-wrap font-sans text-sm leading-relaxed"
+                      >
+                        {out.refined?.text || out.base.text}
+                      </motion.pre>
                     </div>
+
+                    {/* Acciones de envío */}
+                    <SendMessageActions
+                      subject={out.refined?.subject || out.base?.subject || undefined}
+                      body={out.refined?.text || out.base?.text || ""}
+                      recipientName={
+                        out.analysis && !out.analysis.isGroup
+                          ? out.analysis.recipients?.[0]?.name
+                          : undefined
+                      }
+                      dyadId={dyadId || undefined}
+                    />
                   </div>
 
-                  {/* Acciones de envío */}
-                  <SendMessageActions
-                    subject={out.refined?.subject || out.base?.subject || undefined}
-                    body={out.refined?.text || out.base?.text || ""}
-                    recipientName={
-                      out.analysis && !out.analysis.isGroup
-                        ? out.analysis.recipients?.[0]?.name
-                        : undefined
-                    }
-                    dyadId={dyadId || undefined}
-                  />
+                  {/* Grupo heterogéneo → ofrecer versiones personalizadas */}
+                  {offerPersonalized && !pers && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-5"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="w-5 h-5 text-violet-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold mb-1">
+                            {t("eco.personalized.suggestTitle", "Tus destinatarios son muy distintos")}
+                          </h4>
+                          <p className="text-sm text-[var(--rowi-muted)] mb-3">
+                            {t(
+                              "eco.personalized.suggestDesc",
+                              "Hay {styles} estilos diferentes en este grupo. Rowi puede escribir una versión adaptada a cada persona."
+                            ).replace("{styles}", String(styleCount))}
+                          </p>
+                          <button
+                            onClick={composePersonalized}
+                            disabled={loadingPers}
+                            className="rowi-btn-primary px-5 py-2 text-sm inline-flex items-center gap-2 disabled:opacity-60"
+                          >
+                            {loadingPers ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {t("eco.personalized.generating", "Personalizando para cada persona...")}
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4" />
+                                {t("eco.personalized.suggestCta", "Generar versiones personalizadas")}
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Versiones personalizadas — una tarjeta por persona */}
+                  {pers && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-violet-500" />
+                          {t("eco.personalized.title", "Versiones personalizadas")}
+                        </h3>
+                        <p className="text-sm text-[var(--rowi-muted)]">
+                          {t(
+                            "eco.personalized.desc",
+                            "Cada mensaje está adaptado a cómo esa persona recibe mejor la comunicación."
+                          )}
+                        </p>
+                      </div>
+
+                      {pers.insight && (
+                        <div className="rounded-xl bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 p-4">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                            <p className="text-xs font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wide">
+                              {t("eco.groupAnalysis.aiInsight", "Para ti")}
+                            </p>
+                          </div>
+                          <p className="text-sm leading-relaxed">{pers.insight}</p>
+                        </div>
+                      )}
+
+                      {pers.messages.map((pm, i) => (
+                        <div
+                          key={`${pm.name}-${i}`}
+                          className="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-xl"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-sm font-bold">
+                                {(pm.name || "?").charAt(0).toUpperCase()}
+                              </div>
+                              <p className="font-semibold">
+                                {t("eco.personalized.for", "Para {name}").replace("{name}", pm.name)}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => copyPersonalized(pm.text, i)}
+                              title={t("eco.send.copy", "Copiar")}
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                            >
+                              {copiedIdx === i ? (
+                                <Check className="w-5 h-5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-5 h-5" />
+                              )}
+                            </button>
+                          </div>
+                          {pm.subject && (
+                            <p className="text-sm font-semibold mb-2">{pm.subject}</p>
+                          )}
+                          <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
+                            <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                              {pm.text}
+                            </pre>
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
                 </motion.section>
               )}
             </AnimatePresence>
@@ -1094,7 +1173,7 @@ function EcoPageInner() {
                 animate={{ opacity: 1 }}
                 className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm"
               >
-                {out.error || tt.errorLoading}
+                {out.error || t("eco.page.errorLoading", "Error cargando datos")}
               </motion.div>
             )}
           </div>
@@ -1110,7 +1189,7 @@ export default function EcoPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-g2)]" />
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
         </div>
       }
     >

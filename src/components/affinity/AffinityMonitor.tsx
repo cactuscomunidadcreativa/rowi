@@ -126,7 +126,7 @@ export default function AffinityMonitor({ baseUrl = "", compact = false }: { bas
         <div className="flex items-center gap-3">
           <BandPill band={meDash?.global?.band} t={t} />
           <span className="text-sm text-[var(--rowi-muted)]">
-            {meDash?.global?.relationships ?? 0} {t("monitor.relationshipsMonitored") || "relaciones monitoreadas"}
+            {meDash?.global?.relationships ?? 0} {t("monitor.relationshipsMonitored") || "relaciones acompañadas"}
           </span>
         </div>
       </div>
@@ -333,9 +333,9 @@ function KpiCard({ title, value, hint, band }: { title: string; value: string; h
 
 function BandPill({ band, t }: { band?: string; t: (key: string) => string }) {
   const map: Record<string, { labelKey: string; fallback: string; className: string }> = {
-    hot: { labelKey: "monitor.bandHot", fallback: "HOT", className: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" },
-    warm: { labelKey: "monitor.bandWarm", fallback: "WARM", className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
-    cold: { labelKey: "monitor.bandCold", fallback: "COLD", className: "bg-slate-400/15 text-slate-600 dark:text-slate-300 border-slate-400/30" },
+    hot: { labelKey: "monitor.bandHot", fallback: "Cercana", className: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30" },
+    warm: { labelKey: "monitor.bandWarm", fallback: "Tibia", className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+    cold: { labelKey: "monitor.bandCold", fallback: "Distante", className: "bg-slate-400/15 text-slate-600 dark:text-slate-300 border-slate-400/30" },
   };
   const cfg = band ? map[band] : map.cold;
   const label = t(cfg.labelKey) || cfg.fallback;

@@ -153,6 +153,9 @@ export default function Sidebar() {
         { href: "/hub/admin/emotions", labelKey: "admin.nav.emotions", icon: Heart },
         { href: "/hub/admin/vital-signs/benchmarks", labelKey: "admin.nav.vsBenchmark", icon: BarChart3, badge: "NEW", superOnly: true },
         { href: "/hub/admin/vital-signs/cross-instrument", labelKey: "admin.nav.vsSeiCross", icon: GitCompareArrows, badge: "NEW", superOnly: true },
+        // El consultor NO-superadmin entra por capability (antes el informe
+        // era inalcanzable sin ser SuperAdmin — auditoría jun-2026, flujo E).
+        { href: "/hub/admin/vital-signs/report", labelKey: "admin.nav.vsConsultantReport", icon: FileText, badge: "NEW", capability: "consultant.cross" },
         { href: "/hub/admin/eco", labelKey: "admin.nav.ecoEvents", icon: Heart, badge: "NEW" },
       ],
     },
@@ -189,7 +192,9 @@ export default function Sidebar() {
         { href: "/hub/admin/gamification/streaks", labelKey: "admin.nav.streaks", icon: Flame },
         { href: "/hub/admin/gamification/leaderboards", labelKey: "admin.nav.leaderboards", icon: Crown },
         { href: "/hub/admin/gamification/rewards", labelKey: "admin.nav.rewards", icon: Gift },
-        { href: "/hub/admin/gamification/coupons", labelKey: "admin.nav.coupons", icon: Ticket, badge: "NEW" },
+        // gamification/coupons es DEMO_COUPONS hardcodeado y duplica a
+        // sales/coupons (la real). Fuera del sidebar hasta que exista backend.
+        // { href: "/hub/admin/gamification/coupons", labelKey: "admin.nav.coupons", icon: Ticket, badge: "NEW" },
       ],
     },
 
@@ -201,8 +206,10 @@ export default function Sidebar() {
       icon: CheckSquare,
       priority: 89,
       items: [
-        { href: "/hub/admin/tasks", labelKey: "admin.nav.tasksDashboard", icon: CheckSquare },
-        { href: "/hub/admin/tasks/settings", labelKey: "admin.nav.tasksSettings", icon: Settings },
+        // tasks: dashboard 100% DEMO_STATS (cero fetches) — solo plataforma
+        // hasta que tenga datos reales (auditoría jun-2026, P1).
+        { href: "/hub/admin/tasks", labelKey: "admin.nav.tasksDashboard", icon: CheckSquare, superOnly: true },
+        { href: "/hub/admin/tasks/settings", labelKey: "admin.nav.tasksSettings", icon: Settings, superOnly: true },
         { href: "/hub/admin/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow },
         { href: "/hub/admin/weekflow/settings", labelKey: "admin.nav.weekflowSettings", icon: Settings },
       ],

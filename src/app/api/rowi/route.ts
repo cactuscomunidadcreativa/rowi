@@ -328,6 +328,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 💼 Gate de los agentes internos de venta/asesoría (mismo criterio que
+    // los layouts de /ventas y /asesor): antes cualquier autenticado podía
+    // usarlos por URL/intent directo (auditoría jun-2026, P2).
+    if (slug === "sales" || slug === "ventas" || slug === "asesor") {
+      const INTERNAL_AGENT_ROLES = new Set([
+        "CONSULTANT", "COACH", "MENTOR", "HR", "ADMIN", "OWNER",
+      ]);
+      const role = (auth?.organizationRole || "").toUpperCase();
+      if (!auth?.isSuperAdmin && !INTERNAL_AGENT_ROLES.has(role)) {
+        return NextResponse.json(
+          { ok: false, error: "agent_restricted" },
+          { status: 403 },
+        );
+      }
+    }
+
     let resolved = await resolveAgent(slug, auth);
 
     // Fallback: intents sin agente propio (relationship/community/router o

@@ -44,6 +44,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireCapability } from "@/core/capabilities/requireCapability";
+import { benchmarkInScope } from "@/lib/consultant/benchmarkAccess";
 import { prisma } from "@/core/prisma";
 import { hashPersonId } from "@/lib/benchmarks/process-benchmark";
 
@@ -74,6 +75,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   if (gate.error) return gate.error;
 
   const { benchmarkId } = await params;
+  // Anti-IDOR (F6): el benchmark debe pertenecer al scope del consultor.
+  if (!gate.scope || !(await benchmarkInScope(benchmarkId, gate.scope))) {
+    return NextResponse.json(
+      { ok: false, error: "benchmark_not_in_scope" },
+      { status: 403 },
+    );
+  }
   const { searchParams } = new URL(req.url);
   const search = (searchParams.get("search") || "").trim();
   // El search se hashea: solo email exacto coincide. El nombre no se guarda.

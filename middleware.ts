@@ -14,12 +14,12 @@ import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge, adminMfaEnabled } from "@/l
    Derivado de: ls src/app + src/app/(app) + src/app/(public).
 ========================================================= */
 const KNOWN_FIRST_SEGMENTS = new Set([
-  // top-level
-  "api", "about", "forgot-password", "hub", "invite", "landing-old", "me",
+  // top-level (me/landing-old/admin eliminados en F6 — limpieza de huérfanas)
+  "api", "about", "forgot-password", "hub", "invite",
   "p", "pitch", "register", "research", "reset-password", "settings",
   "signin", "start", "verify-email",
   // (app)
-  "admin", "affinity", "asesor", "becoming", "benchmark", "community",
+  "affinity", "asesor", "becoming", "benchmark", "community",
   "dashboard", "eco", "feed", "finance", "hr", "learning", "mini-sei",
   "onboarding", "org", "post", "profile", "progress", "relationships",
   "reports", "rowi", "sei", "setup-organization", "social", "studio",

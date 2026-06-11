@@ -132,6 +132,11 @@ export default function TodayPage() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           {t(`today.greeting.${greetingKey()}`, "Buenos días")}
         </h1>
+        {/* El usuario debe saber qué pasa con sus datos emocionales SIN ir a
+            buscar la política (auditoría jun-2026, P2 confianza). */}
+        <p className="text-[11px] text-gray-400 dark:text-gray-500 -mt-3">
+          🔒 {t("privacy.contextNote", "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).")}
+        </p>
 
         {/* Error del GET: nunca una card de práctica vacía con botón activo */}
         {isAuth && !isLoading && todayRes && todayRes.ok === false && (

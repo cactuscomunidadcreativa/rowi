@@ -32,16 +32,9 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
  *    (sin score falso) + tu práctica. La memoria invita; la acción está ahí.
  */
 
-const SEI_LABEL: Record<string, string> = {
-  EL: "Self-Awareness",
-  RP: "Pattern Recognition",
-  ACT: "Consequential Thinking",
-  NE: "Navigate Emotions",
-  IM: "Intrinsic Motivation",
-  OP: "Optimism",
-  EMP: "Empathy",
-  NG: "Noble Goal",
-};
+// Claves SEI válidas (las etiquetas localizadas viven en competencies.* de
+// los 4 locales — antes esto era un Record hardcodeado en inglés).
+const SEI_KEYS = new Set(["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"]);
 
 const WINDOWS = [30, 60, 90] as const;
 
@@ -106,7 +99,9 @@ export default function BecomingPage() {
   const c = data?.ok ? data : null;
   const av = avatarRes?.ok ? avatarRes.data : null;
   const stage: RowiStage = av?.currentStage ?? "EGG";
-  const stageName = av ? (lang === "es" ? av.stageInfo.name.es : av.stageInfo.name.en) : "";
+  // stageInfo viene del API solo en es/en; PT/IT caen a ES (idioma default),
+  // no a inglés.
+  const stageName = av ? (lang === "en" ? av.stageInfo.name.en : av.stageInfo.name.es) : "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 py-8 px-4">
@@ -122,6 +117,9 @@ export default function BecomingPage() {
           <p className="text-xs uppercase tracking-wide text-violet-500 font-semibold mb-1">
             {t("becoming.title", "Mi evolución")}
           </p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-2">
+            🔒 {t("privacy.contextNote", "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).")}
+          </p>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {t("becoming.heroQuestion", "¿En quién te estás convirtiendo?")}
           </h1>
@@ -136,7 +134,7 @@ export default function BecomingPage() {
                 {av.stageInfo.emoji} {stageName}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1">
-                {lang === "es" ? av.stageInfo.description.es : av.stageInfo.description.en}
+                {lang === "en" ? av.stageInfo.description.en : av.stageInfo.description.es}
               </p>
 
               {/* Progreso a la siguiente etapa — tu lugar en el viaje */}
@@ -238,7 +236,7 @@ export default function BecomingPage() {
                 {c.competencies.map((row) => (
                   <div key={row.sei} className="flex items-center gap-3">
                     <span className="w-40 shrink-0 text-sm text-gray-700 dark:text-gray-200 truncate">
-                      {SEI_LABEL[row.sei] ?? row.sei}
+                      {SEI_KEYS.has(row.sei) ? t(`competencies.${row.sei}`, row.sei) : row.sei}
                     </span>
                     <span className="w-10 text-right text-sm text-gray-400">{row.past ?? "—"}</span>
                     <span className="w-10 text-right text-sm font-semibold text-gray-900 dark:text-white">
@@ -276,7 +274,7 @@ export default function BecomingPage() {
                 {c.current.map((row) => (
                   <div key={row.sei} className="flex items-center gap-3">
                     <span className="flex-1 text-sm text-gray-700 dark:text-gray-200 truncate">
-                      {SEI_LABEL[row.sei] ?? row.sei}
+                      {SEI_KEYS.has(row.sei) ? t(`competencies.${row.sei}`, row.sei) : row.sei}
                     </span>
                     <span className="w-12 text-right text-sm font-semibold text-gray-900 dark:text-white">
                       {row.now ?? "—"}
@@ -483,9 +481,9 @@ function MemoryTimeline() {
                 {entry.becomeIdentity && (
                   <p className="text-sm text-violet-700 dark:text-violet-300 italic">
                     “{entry.becomeIdentity}”
-                    {entry.becomeSei && SEI_LABEL[entry.becomeSei] && (
+                    {entry.becomeSei && SEI_KEYS.has(entry.becomeSei) && (
                       <span className="not-italic ml-2 text-[11px] text-gray-400">
-                        · {SEI_LABEL[entry.becomeSei]}
+                        · {t(`competencies.${entry.becomeSei}`, entry.becomeSei)}
                       </span>
                     )}
                   </p>

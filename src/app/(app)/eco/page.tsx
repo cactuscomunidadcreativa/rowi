@@ -23,11 +23,11 @@ import {
   Slack,
   Link2,
   ChevronDown,
-  User,
   RefreshCw,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useI18n";
 import SendMessageActions from "@/components/eco/SendMessageActions";
+import RowiAvatar from "@/components/shared/RowiAvatar";
 
 /* =========================================================
    📡 ECO - Emotional Communication Optimizer
@@ -393,9 +393,7 @@ function EcoPageInner() {
               ) : dashboard?.ok ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                      {(dashboard.user.name || "U").charAt(0).toUpperCase()}
-                    </div>
+                    <RowiAvatar seed={dashboard.user.name || "U"} size={56} />
                     <div className="min-w-0">
                       <h3 className="font-bold truncate">{dashboard.user.name}</h3>
                       {dashboard.user.brainStyle && (
@@ -632,15 +630,7 @@ function EcoPageInner() {
                             : "border-transparent bg-gray-50 dark:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
                         }`}
                       >
-                        <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                            isSelected
-                              ? "bg-gradient-to-br from-emerald-500 to-green-500 text-white shadow-md"
-                              : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          {(m.name || "?").charAt(0).toUpperCase()}
-                        </div>
+                        <RowiAvatar seed={m.name || m.id} size={36} />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{m.name}</p>
                           <p className="text-xs text-[var(--rowi-muted)] truncate">
@@ -685,9 +675,7 @@ function EcoPageInner() {
                           exit={{ opacity: 0, x: -20 }}
                           className="flex items-start gap-2 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800"
                         >
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-400 flex items-center justify-center flex-shrink-0">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
+                          <RowiAvatar seed={f.name || `externo-${i}`} size={36} />
                           <div className="flex-1 space-y-2">
                             <input
                               type="text"
@@ -923,7 +911,10 @@ function EcoPageInner() {
                             key={r.name}
                             className="flex items-center justify-between p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/50"
                           >
-                            <span className="text-sm font-medium truncate">{r.name}</span>
+                            <span className="flex items-center gap-2 text-sm font-medium truncate">
+                              <RowiAvatar seed={r.name} size={24} />
+                              {r.name}
+                            </span>
                             <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium whitespace-nowrap ml-2">
                               {r.brainStyle}
                             </span>
@@ -1131,9 +1122,7 @@ function EcoPageInner() {
                         >
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-sm font-bold">
-                                {(pm.name || "?").charAt(0).toUpperCase()}
-                              </div>
+                              <RowiAvatar seed={pm.name || `p-${i}`} size={36} />
                               <p className="font-semibold">
                                 {t("eco.personalized.for", "Para {name}").replace("{name}", pm.name)}
                               </p>

@@ -27,6 +27,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import AffinityMonitor from "@/components/affinity/AffinityMonitor";
+import RowiAvatar from "@/components/shared/RowiAvatar";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 
 /* =========================================================
@@ -739,17 +740,7 @@ export default function AffinityPage() {
                         )}
 
                         <div className="flex items-start gap-3">
-                          {/* Avatar */}
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold text-sm shrink-0"
-                            style={{
-                              background: levelInfo
-                                ? `linear-gradient(135deg, ${levelInfo.color}, ${levelInfo.color}99)`
-                                : "linear-gradient(135deg, var(--rowi-primary), var(--rowi-secondary))",
-                            }}
-                          >
-                            {m.name.charAt(0).toUpperCase()}
-                          </div>
+                          <RowiAvatar seed={m.name} size={40} />
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">

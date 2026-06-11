@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import RowiAvatar from "@/components/shared/RowiAvatar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -2063,10 +2064,7 @@ function MemberCard({
       </div>
 
       <div className="flex items-start gap-3 sm:gap-4">
-        {/* Avatar */}
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center text-white font-semibold text-base sm:text-lg flex-shrink-0">
-          {member.name?.charAt(0).toUpperCase() || "?"}
-        </div>
+        <RowiAvatar seed={member.name || "?"} size={48} />
 
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">
@@ -2261,9 +2259,7 @@ function RowiverseCard({
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
           />
         ) : (
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
-            {profile.name?.charAt(0).toUpperCase() || "?"}
-          </div>
+          <RowiAvatar seed={profile.name || "?"} size={48} />
         )}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">

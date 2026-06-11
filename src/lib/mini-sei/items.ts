@@ -23,7 +23,8 @@
  * }
  */
 
-import { SEI_ORDER, DAILY_PULSE_QUESTIONS } from "@/lib/daily-pulse/questions";
+import { SEI_ORDER } from "@/lib/daily-pulse/questions";
+import { PRE_SEI_INTAKE_PROMPTS } from "@/lib/pre-sei/questions";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 export interface MiniSeiItem {
@@ -55,19 +56,21 @@ function fallbackSet(): MiniSeiItemSet {
   return {
     version: "competency-fallback-v1",
     items: SEI_ORDER.map((c) => {
-      const q = DAILY_PULSE_QUESTIONS[c];
+      const q = PRE_SEI_INTAKE_PROMPTS[c];
       return {
         id: `c_${c}`,
         competency: c,
         reverse: false,
         weight: 1,
-        // Fallback stems come from the public daily-pulse intake prompts (not
-        // secret), so the fallback questionnaire can render without an env.
+        // MISMOS stems que el espejo público (variante intake, atemporal).
+        // Decisión Eduardo F7: espejo y onboarding son EL MISMO cuestionario.
+        // Antes el fallback usaba los stems diarios ("Hoy, ¿...?") y se
+        // sentía como un test distinto/duplicado.
         stem: {
-          es: q.esQuestion,
-          en: q.enQuestion,
-          pt: q.ptQuestion,
-          it: q.itQuestion,
+          es: q.es,
+          en: q.en,
+          pt: q.pt,
+          it: q.it,
         },
       };
     }),

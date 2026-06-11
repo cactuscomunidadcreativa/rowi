@@ -11,7 +11,10 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
+import PreSeiWizard, {
+  type PreSeiDemographics,
+  type PreSeiPrefQuestion,
+} from "@/components/pre-sei/PreSeiWizard";
 import PreSeiInsight from "@/components/pre-sei/PreSeiInsight";
 import PreSeiMirror from "@/components/pre-sei/PreSeiMirror";
 import PreSeiCTA from "@/components/pre-sei/PreSeiCTA";
@@ -28,6 +31,7 @@ export default function PreSeiPage() {
   const { t, lang } = useI18n();
   const [phase, setPhase] = useState<Phase>("landing");
   const [questions, setQuestions] = useState<QuestionView[]>([]);
+  const [prefQuestions, setPrefQuestions] = useState<PreSeiPrefQuestion[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [insight, setInsight] = useState<PreSeiInsightData | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -43,8 +47,10 @@ export default function PreSeiPage() {
       .then((r) => r.json())
       .then((json) => {
         if (cancelled) return;
-        if (json.ok) setQuestions(json.questions);
-        else setError(t("preSei.errors.generic", "Algo salió mal."));
+        if (json.ok) {
+          setQuestions(json.questions);
+          setPrefQuestions(json.preferences ?? []);
+        } else setError(t("preSei.errors.generic", "Algo salió mal."));
       })
       .catch(() => {
         if (!cancelled) setError(t("preSei.errors.generic", "Algo salió mal."));
@@ -54,14 +60,18 @@ export default function PreSeiPage() {
     };
   }, [lang, retrySeq, t]);
 
-  async function handleComplete(answers: Record<string, number>, demographics: PreSeiDemographics) {
+  async function handleComplete(
+    answers: Record<string, number>,
+    demographics: PreSeiDemographics,
+    preferences?: Record<string, number>,
+  ) {
     setSubmitting(true);
     setError(null);
     try {
       const res = await fetch("/api/public/pre-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, lang, ...demographics }),
+        body: JSON.stringify({ answers, preferences, lang, ...demographics }),
       });
       const json = await res.json();
       if (res.status === 429) {
@@ -123,7 +133,12 @@ export default function PreSeiPage() {
         )}
 
         {phase === "wizard" && questions.length > 0 && (
-          <PreSeiWizard questions={questions} submitting={submitting} onComplete={handleComplete} />
+          <PreSeiWizard
+            questions={questions}
+            preferenceQuestions={prefQuestions}
+            submitting={submitting}
+            onComplete={handleComplete}
+          />
         )}
         {/* Nunca pantalla en blanco: si el prefetch aún no llegó, spinner. */}
         {phase === "wizard" && questions.length === 0 && !error && (

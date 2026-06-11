@@ -8,6 +8,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { preSeiQuestions, type PulseLang } from "@/lib/pre-sei/questions";
+import { PREF_AXES } from "@/lib/mini-sei/preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,16 @@ export async function GET(req: NextRequest) {
       index: q.index,
       prompt: q.prompt,
     }));
-    return NextResponse.json({ ok: true, lang, questions });
+    // Capa de preferencias (estilo): MISMO cuestionario que el Rowi Test del
+    // onboarding (decisión Eduardo F7). Solo claves i18n + posición — el
+    // mapeo de ejes vive server-side, igual que en /api/mini-sei/preferences.
+    const preferences = PREF_AXES.map((def, pos) => ({
+      pos,
+      promptKey: def.promptKey,
+      leftKey: def.leftKey,
+      rightKey: def.rightKey,
+    }));
+    return NextResponse.json({ ok: true, lang, questions, preferences });
   } catch (error) {
     console.error("❌ Error GET /api/public/pre-sei/questions:", error);
     return NextResponse.json({ ok: false, error: "Error loading questions" }, { status: 500 });

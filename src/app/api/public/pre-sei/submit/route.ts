@@ -57,6 +57,21 @@ export async function POST(req: NextRequest) {
     const answers = body.answers as PreSeiAnswers;
     const lang = resolveLang(body.lang);
 
+    // Capa de preferencias (estilo) — MISMO cuestionario que el Rowi Test.
+    // Posicional "0".."7" con valores 1-5; opcional y saneada (anti-abuso).
+    let preferences: Record<string, number> | null = null;
+    if (body.preferences && typeof body.preferences === "object") {
+      const clean: Record<string, number> = {};
+      for (const [k, v] of Object.entries(body.preferences as Record<string, unknown>)) {
+        const pos = Number(k);
+        const val = Number(v);
+        if (Number.isInteger(pos) && pos >= 0 && pos < 8 && Number.isInteger(val) && val >= 1 && val <= 5) {
+          clean[String(pos)] = val;
+        }
+      }
+      if (Object.keys(clean).length > 0) preferences = clean;
+    }
+
     const demographics = {
       ageRange: typeof body.ageRange === "string" ? body.ageRange : null,
       gender: typeof body.gender === "string" ? body.gender : null,
@@ -89,6 +104,7 @@ export async function POST(req: NextRequest) {
         token,
         locale: lang,
         answers,
+        preferences: preferences ?? undefined,
         result: insightJson,
         ageRange: demographics.ageRange,
         gender: demographics.gender,

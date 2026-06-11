@@ -6992,6 +6992,7 @@ model PreSeiSession {
   token           String    @unique // cuid opaco; cookie httpOnly + URL del resultado
   locale          String    @default("es")
   answers         Json // { EL:4, RP:3, ... } respuestas crudas 1-5
+  preferences     Json? // { "0":4, "1":2, ... } capa de estilo posicional (mismo cuestionario que el Rowi Test)
   result          Json? // PreSeiResult cacheado (competencias, arquetipo, etc.)
   // Demografía opcional autodeclarada para el segmento pre-normado (inclusivo).
   ageRange        String?

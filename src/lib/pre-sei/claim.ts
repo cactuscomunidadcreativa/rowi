@@ -136,6 +136,21 @@ export async function claimPreSeiSession(
     preSeiSessionId: session.id,
   });
 
+  // Capa de preferencias del espejo (mismo cuestionario que el Rowi Test):
+  // siembra el CommunicationProfile que consumen ECO/Afinidad. No crítico.
+  if (session.preferences && typeof session.preferences === "object") {
+    try {
+      const { resolvePreferences } = await import("@/lib/mini-sei/preferences");
+      const { seedCommProfileFromPreferences } = await import(
+        "@/domains/profile/lib/seedCommunicationProfile"
+      );
+      const prefs = resolvePreferences(session.preferences as Record<string, number>);
+      await seedCommProfileFromPreferences(userId, prefs);
+    } catch (e) {
+      console.warn("[claimPreSei] preferencias no sembradas (no crítico):", e);
+    }
+  }
+
   if (!session.claimedByUserId) {
     await prisma.preSeiSession.update({
       where: { id: session.id },

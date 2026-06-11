@@ -25,9 +25,11 @@ import {
   X,
   Brain,
   Lightbulb,
+  MapPin,
 } from "lucide-react";
 import AffinityMonitor from "@/components/affinity/AffinityMonitor";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 
 /* =========================================================
@@ -726,10 +728,10 @@ export default function AffinityPage() {
                             selected ? prev.filter((x) => x.id !== m.id) : [...prev, m]
                           )
                         }
-                        className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
+                        className={`relative cursor-pointer rounded-xl sm:rounded-2xl border p-4 sm:p-5 transition-all bg-white dark:bg-zinc-900 ${
                           selected
-                            ? "border-[var(--rowi-primary)] bg-[var(--rowi-primary)]/5 shadow-lg shadow-[var(--rowi-primary)]/10"
-                            : "border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 bg-[var(--rowi-background)]"
+                            ? "border-[var(--rowi-primary)] ring-1 ring-[var(--rowi-primary)]/30 shadow-lg shadow-[var(--rowi-primary)]/10"
+                            : "border-gray-200 dark:border-zinc-800 hover:border-[var(--rowi-primary)]/50"
                         }`}
                       >
                         {/* Selection indicator */}
@@ -739,23 +741,36 @@ export default function AffinityPage() {
                           </div>
                         )}
 
+                        {/* Mismo layout que las tarjetas de /community */}
                         <div className="flex items-start gap-3">
-                          <RowiAvatar seed={m.name} size={40} />
+                          <RowiAvatar seed={m.name} size={48} />
 
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <div className="font-semibold text-sm text-[var(--rowi-foreground)] truncate">
-                                {m.name}
-                              </div>
-                              {m.brainStyle && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] font-medium">
-                                  {m.brainStyle}
-                                </span>
+                            <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                              {m.name}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap">
+                              {m.group && <span>{m.group}</span>}
+                              {m.group && m.country && <span>·</span>}
+                              {m.country && (
+                                <>
+                                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{m.country}</span>
+                                </>
                               )}
+                              {!m.group && !m.country && <span>—</span>}
                             </div>
-                            <div className="text-xs text-[var(--rowi-muted)] truncate">
-                              {m.group || m.country || "—"}
-                            </div>
+                            {m.brainStyle && (
+                              <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mt-1.5">
+                                <Brain className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">
+                                  {t(
+                                    `sei.brainStyles.${normalizeBrainStyle(m.brainStyle)}`,
+                                    m.brainStyle
+                                  )}
+                                </span>
+                              </div>
+                            )}
 
                             {/* Affinity Score */}
                             <div className="flex items-center gap-2 mt-2">
@@ -763,8 +778,9 @@ export default function AffinityPage() {
                                 <Loader2 className="w-3 h-3 animate-spin text-[var(--rowi-muted)]" />
                               ) : affinityPct !== null ? (
                                 <>
+                                  <Heart className="w-3 h-3 text-[var(--rowi-muted)]" />
                                   <div
-                                    className="h-1.5 rounded-full flex-1 bg-[var(--rowi-border)]"
+                                    className="h-1.5 rounded-full flex-1 bg-gray-100 dark:bg-zinc-800"
                                     style={{ maxWidth: "80px" }}
                                   >
                                     <div
@@ -783,7 +799,9 @@ export default function AffinityPage() {
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-xs text-[var(--rowi-muted)]">Sin calcular</span>
+                                <span className="text-xs text-[var(--rowi-muted)]">
+                                  {t("affinity.notCalculated", "Sin calcular")}
+                                </span>
                               )}
                             </div>
 

@@ -11,6 +11,7 @@ import {
   type DyadBridgeContext,
 } from "@/domains/eco/lib/ecoBridge";
 import { trackFunnel } from "@/domains/metrics/lib/funnel";
+import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 
 export const dynamic = "force-dynamic";
 
@@ -138,7 +139,36 @@ const BRAIN_PREFS: Record<string, {
     openWith: "He estado reflexionando sobre algo importante...",
     dataStyle: "Prefiere contexto histórico y significado a largo plazo",
   },
+  Visionary: {
+    prefers: "visión, propósito e impacto futuro",
+    tone: "inspirador y apasionado",
+    approach: "Conecta con el panorama grande y el impacto futuro. Pinta la visión primero.",
+    avoid: "Frenarlo con detalles operativos o datos anti-riesgo",
+    openWith: "Quiero compartirte hacia dónde podría llevarnos esto...",
+    dataStyle: "Prefiere narrativas de futuro e impacto",
+  },
 };
+
+/**
+ * Normaliza cualquier brain style crudo (Excel, alias como "Superhero",
+ * minúsculas, etc.) al nombre canónico que usan BRAIN_PREFS y la UI.
+ * Los 8 reales: Scientist, Visionary, Inventor, Guardian, Strategist,
+ * Energizer, Deliverer (doer) y Sage.
+ */
+const CANONICAL_STYLE_NAME: Record<string, keyof typeof BRAIN_PREFS> = {
+  scientist: "Scientist",
+  visionary: "Visionary",
+  inventor: "Inventor",
+  guardian: "Guardian",
+  strategist: "Strategist",
+  energizer: "Energizer",
+  doer: "Deliverer",
+  sage: "Sage",
+};
+
+function canonicalStyle(raw?: string | null): keyof typeof BRAIN_PREFS {
+  return CANONICAL_STYLE_NAME[normalizeBrainStyle(raw || "")] || "Strategist";
+}
 
 const TALENT_LABELS: Record<string, string> = {
   prioritizing: "Priorización",
@@ -211,8 +241,8 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
     const snap = memberUser.eqSnapshots?.[0];
     return {
       name: memberUser.name || "Contacto",
-      // brainStyle lives on EqSnapshot, not User.
-      brainStyle: snap?.brainStyle || "Strategist",
+      // brainStyle lives on EqSnapshot, not User. Normalizado al canónico.
+      brainStyle: canonicalStyle(snap?.brainStyle),
       talents: snap?.talents?.map((t) => t.key) || [],
       competencies:
         snap?.competencies?.map((c) => ({ key: c.key, score: c.score || 0 })) || [],
@@ -252,7 +282,7 @@ async function getTargetForMember(memberId: string): Promise<TargetData | null> 
 
   return {
     name: member.name || "Contacto",
-    brainStyle: member.brainStyle || "Strategist",
+    brainStyle: canonicalStyle(member.brainStyle),
     talents,
     competencies,
     declaredStyle: member.userId ? await resolveDeclaredStyle(member.userId) : undefined,
@@ -316,7 +346,7 @@ export async function POST(req: NextRequest) {
 
     const body = (await req.json()) as ComposeInput;
     const userSnap = user.eqSnapshots?.[0];
-    const userBrainStyle = userSnap?.brainStyle || "Strategist";
+    const userBrainStyle = canonicalStyle(userSnap?.brainStyle);
     const userTalents = userSnap?.talents?.map((t) => t.key) || [];
 
     // Cadena SIA: si hay díada, ECO actúa como PUENTE (brecha + memoria + nivel).
@@ -349,7 +379,7 @@ export async function POST(req: NextRequest) {
         if (!ft.name?.trim()) continue;
         targets.push({
           name: ft.name,
-          brainStyle: ft.brainStyle || "Strategist",
+          brainStyle: canonicalStyle(ft.brainStyle),
           talents: [],
           competencies: [],
           bio: ft.bio,

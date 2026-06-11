@@ -91,6 +91,7 @@ export async function GET() {
       Deliverer: { pattern: "orientado a resultados", risk: "puede omitir lo emocional" },
       Scientist: { pattern: "basado en evidencia", risk: "puede ser demasiado técnico" },
       Inventor: { pattern: "creativo e inspirador", risk: "puede dispersarse" },
+      Visionary: { pattern: "inspirador y orientado al futuro", risk: "puede desconectarse del presente" },
     };
 
     const comm = brainStyle ? COMM_PREFS[brainStyle] : null;

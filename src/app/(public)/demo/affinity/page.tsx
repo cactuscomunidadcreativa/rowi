@@ -12,14 +12,14 @@ import {
   Sparkles,
   Info,
   Brain,
-  Zap,
-  Target,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
+import { BRAIN_STYLES } from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
-   Datos de ejemplo
+   Datos de ejemplo — los brain styles son los 8 REALES del
+   modelo Six Seconds (src/domains/eq/lib/dictionary.ts).
 ========================================================= */
 const DEMO_TEAM = [
   {
@@ -28,8 +28,8 @@ const DEMO_TEAM = [
     role: "Product Manager",
     avatar: "/rowivectors/Rowi-05.webp",
     compatibility: 92,
-    brainStyle: "Innovator",
-    brainStyleEs: "Innovador",
+    brainStyle: "inventor",
+    brainStyleEs: "Inventor",
   },
   {
     id: "2",
@@ -37,8 +37,8 @@ const DEMO_TEAM = [
     role: "UX Designer",
     avatar: "/rowivectors/Rowi-04.webp",
     compatibility: 87,
-    brainStyle: "Sentinel",
-    brainStyleEs: "Centinela",
+    brainStyle: "guardian",
+    brainStyleEs: "Guardián",
   },
   {
     id: "3",
@@ -46,8 +46,8 @@ const DEMO_TEAM = [
     role: "Developer",
     avatar: "/rowivectors/Rowi-03.webp",
     compatibility: 78,
-    brainStyle: "Realist",
-    brainStyleEs: "Realista",
+    brainStyle: "doer",
+    brainStyleEs: "Hacedor",
   },
   {
     id: "4",
@@ -55,17 +55,13 @@ const DEMO_TEAM = [
     role: "Marketing Lead",
     avatar: "/rowivectors/Rowi-02.webp",
     compatibility: 85,
-    brainStyle: "Visionary",
+    brainStyle: "visionary",
     brainStyleEs: "Visionario",
   },
 ];
 
-const BRAIN_STYLES = [
-  { key: "innovator", name: "Innovator", nameEs: "Innovador", color: "#8b5cf6", icon: Zap },
-  { key: "sentinel", name: "Sentinel", nameEs: "Centinela", color: "#3b82f6", icon: Target },
-  { key: "realist", name: "Realist", nameEs: "Realista", color: "#10b981", icon: Brain },
-  { key: "visionary", name: "Visionary", nameEs: "Visionario", color: "#f59e0b", icon: Sparkles },
-];
+// Los 8 estilos canónicos, con su color y emoji del diccionario.
+const STYLE_CARDS = Object.values(BRAIN_STYLES);
 
 /* =========================================================
    Traducciones
@@ -86,12 +82,12 @@ const translations = {
     brainStyle: "Estilo Cerebral",
 
     stylesTitle: "Estilos Cerebrales",
-    stylesDesc: "El modelo Six Seconds identifica 4 estilos cerebrales basados en tus patrones emocionales",
+    stylesDesc: "El modelo Six Seconds identifica 8 estilos cerebrales basados en tus patrones emocionales",
 
     insightTitle: "Insights de Afinidad",
     insightDesc: "Basado en tu perfil SEI y el de tu equipo",
-    insight1: "Tu mayor afinidad es con perfiles Innovadores y Centinelas",
-    insight2: "Podrías fortalecer la comunicación con perfiles Realistas",
+    insight1: "Tu mayor afinidad es con perfiles Inventores y Guardianes",
+    insight2: "Podrías fortalecer la comunicación con perfiles Hacedores",
     insight3: "Tu estilo de liderazgo es colaborativo y empático",
 
     tipTitle: "Esto es un demo",
@@ -114,12 +110,12 @@ const translations = {
     brainStyle: "Brain Style",
 
     stylesTitle: "Brain Styles",
-    stylesDesc: "The Six Seconds model identifies 4 brain styles based on your emotional patterns",
+    stylesDesc: "The Six Seconds model identifies 8 brain styles based on your emotional patterns",
 
     insightTitle: "Affinity Insights",
     insightDesc: "Based on your SEI profile and your team's",
-    insight1: "Your highest affinity is with Innovator and Sentinel profiles",
-    insight2: "You could strengthen communication with Realist profiles",
+    insight1: "Your highest affinity is with Inventor and Guardian profiles",
+    insight2: "You could strengthen communication with Doer profiles",
     insight3: "Your leadership style is collaborative and empathetic",
 
     tipTitle: "This is a demo",
@@ -139,11 +135,11 @@ const translations = {
     compatibility: "Sintonia",
     brainStyle: "Estilo Cerebral",
     stylesTitle: "Estilos Cerebrais",
-    stylesDesc: "O modelo Six Seconds identifica 4 estilos cerebrais baseados em seus padrões emocionais",
+    stylesDesc: "O modelo Six Seconds identifica 8 estilos cerebrais baseados em seus padrões emocionais",
     insightTitle: "Insights de Afinidade",
     insightDesc: "Baseado no seu perfil SEI e no da sua equipe",
-    insight1: "Sua maior afinidade é com perfis Inovadores e Sentinelas",
-    insight2: "Você poderia fortalecer a comunicação com perfis Realistas",
+    insight1: "Sua maior afinidade é com perfis Inventores e Guardiões",
+    insight2: "Você poderia fortalecer a comunicação com perfis Fazedores",
     insight3: "Seu estilo de liderança é colaborativo e empático",
     tipTitle: "Isto é um demo",
     tipDesc: "Na sua conta real, você verá a sintonia real com as suas pessoas baseada em seus perfis SEI — e como fechá-la com o ECO.",
@@ -161,11 +157,11 @@ const translations = {
     compatibility: "Sintonia",
     brainStyle: "Stile Cerebrale",
     stylesTitle: "Stili Cerebrali",
-    stylesDesc: "Il modello Six Seconds identifica 4 stili cerebrali basati sui tuoi pattern emotivi",
+    stylesDesc: "Il modello Six Seconds identifica 8 stili cerebrali basati sui tuoi pattern emotivi",
     insightTitle: "Insight di Affinità",
     insightDesc: "Basato sul tuo profilo SEI e su quello del tuo team",
-    insight1: "La tua maggiore affinità è con profili Innovatori e Sentinelle",
-    insight2: "Potresti rafforzare la comunicazione con profili Realisti",
+    insight1: "La tua maggiore affinità è con profili Inventori e Guardiani",
+    insight2: "Potresti rafforzare la comunicazione con profili Fattori",
     insight3: "Il tuo stile di leadership è collaborativo ed empatico",
     tipTitle: "Questo è un demo",
     tipDesc: "Nel tuo account reale, vedrai la sintonia reale con le tue persone basata sui loro profili SEI — e come colmare il divario con ECO.",
@@ -235,11 +231,11 @@ function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: s
           );
         })()}
 
-        {/* Brain Style */}
+        {/* Brain Style — siempre uno de los 8 reales (sei.brainStyles.*) */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-[var(--rowi-muted)]">{t.brainStyle}</span>
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-            {tr(`demo.affinity.brainStyles.${member.brainStyle.toLowerCase()}`, member.brainStyleEs)}
+            {tr(`sei.brainStyles.${member.brainStyle}`, member.brainStyleEs)}
           </span>
         </div>
       </div>
@@ -247,9 +243,8 @@ function TeamMemberCard({ member, lang }: { member: typeof DEMO_TEAM[0]; lang: s
   );
 }
 
-function BrainStyleCard({ style }: { style: typeof BRAIN_STYLES[0] }) {
+function BrainStyleCard({ style }: { style: (typeof STYLE_CARDS)[0] }) {
   const { t } = useI18n();
-  const Icon = style.icon;
 
   return (
     <motion.div
@@ -259,12 +254,12 @@ function BrainStyleCard({ style }: { style: typeof BRAIN_STYLES[0] }) {
       className="bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-sm text-center"
     >
       <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+        className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 text-2xl"
         style={{ backgroundColor: `${style.color}20` }}
       >
-        <Icon className="w-6 h-6" style={{ color: style.color }} />
+        {style.emoji}
       </div>
-      <h3 className="font-semibold">{t(`demo.affinity.brainStyles.${style.key}`, style.nameEs)}</h3>
+      <h3 className="font-semibold">{t(`sei.brainStyles.${style.key}`, style.labelES)}</h3>
     </motion.div>
   );
 }
@@ -331,7 +326,7 @@ export default function DemoAffinityPage() {
             <p className="text-[var(--rowi-muted)]">{t.stylesDesc}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {BRAIN_STYLES.map((style) => (
+            {STYLE_CARDS.map((style) => (
               <BrainStyleCard key={style.key} style={style} />
             ))}
           </div>

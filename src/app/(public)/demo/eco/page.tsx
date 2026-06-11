@@ -23,11 +23,12 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 /* =========================================================
    Datos de ejemplo
 ========================================================= */
+// El brain style es uno de los 8 REALES del modelo Six Seconds.
 const DEMO_RECIPIENT = {
   name: "Carlos Ruiz",
   avatar: "/rowivectors/Rowi-05.webp",
-  brainStyle: "Innovator",
-  brainStyleEs: "Innovador",
+  brainStyle: "inventor",
+  brainStyleEs: "Inventor",
   preferredChannel: "email",
 };
 
@@ -106,7 +107,7 @@ const translations = {
     send: "Enviar",
 
     tipsTitle: "Optimizaciones aplicadas",
-    tip1: "Tono entusiasta para perfil Innovador",
+    tip1: "Tono entusiasta para perfil Inventor",
     tip2: "Enfoque en nuevas ideas y posibilidades",
     tip3: "Invitación a colaborar creativamente",
     tip4: "Lenguaje que valora su perspectiva única",
@@ -142,7 +143,7 @@ const translations = {
     send: "Send",
 
     tipsTitle: "Optimizations applied",
-    tip1: "Enthusiastic tone for Innovator profile",
+    tip1: "Enthusiastic tone for Inventor profile",
     tip2: "Focus on new ideas and possibilities",
     tip3: "Invitation to collaborate creatively",
     tip4: "Language that values their unique perspective",
@@ -173,7 +174,7 @@ const translations = {
     copied: "Copiado",
     send: "Enviar",
     tipsTitle: "Otimizações aplicadas",
-    tip1: "Tom entusiasta para perfil Inovador",
+    tip1: "Tom entusiasta para perfil Inventor",
     tip2: "Foco em novas ideias e possibilidades",
     tip3: "Convite para colaborar criativamente",
     tip4: "Linguagem que valoriza sua perspectiva única",
@@ -202,7 +203,7 @@ const translations = {
     copied: "Copiato",
     send: "Invia",
     tipsTitle: "Ottimizzazioni applicate",
-    tip1: "Tono entusiasta per profilo Innovatore",
+    tip1: "Tono entusiasta per profilo Inventore",
     tip2: "Focus su nuove idee e possibilità",
     tip3: "Invito a collaborare creativamente",
     tip4: "Linguaggio che valorizza la sua prospettiva unica",
@@ -296,7 +297,7 @@ export default function DemoEcoPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-[var(--rowi-muted)]">{t.brainStyle}:</span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                      {tr("demo.eco.brainStyles.innovator", DEMO_RECIPIENT.brainStyleEs)}
+                      {tr(`sei.brainStyles.${DEMO_RECIPIENT.brainStyle}`, DEMO_RECIPIENT.brainStyleEs)}
                     </span>
                   </div>
                 </div>

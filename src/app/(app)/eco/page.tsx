@@ -28,6 +28,7 @@ import {
 import { useI18n } from "@/lib/i18n/useI18n";
 import SendMessageActions from "@/components/eco/SendMessageActions";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
    📡 ECO - Emotional Communication Optimizer
@@ -51,14 +52,17 @@ const CHANNELS: { value: Channel; icon: React.ElementType; labelEs: string }[] =
   { value: "speech", icon: Mic, labelEs: "Discurso" },
 ];
 
-const BRAIN_STYLES = [
-  "Strategist",
-  "Scientist",
-  "Guardian",
-  "Deliverer",
-  "Inventor",
-  "Energizer",
-  "Sage",
+// Los 8 estilos cerebrales REALES del modelo Six Seconds.
+// value = nombre canónico que entiende el API; key = clave i18n sei.brainStyles.*
+const BRAIN_STYLES: { value: string; key: string }[] = [
+  { value: "Strategist", key: "strategist" },
+  { value: "Scientist", key: "scientist" },
+  { value: "Guardian", key: "guardian" },
+  { value: "Deliverer", key: "doer" },
+  { value: "Inventor", key: "inventor" },
+  { value: "Energizer", key: "energizer" },
+  { value: "Visionary", key: "visionary" },
+  { value: "Sage", key: "sage" },
 ];
 
 // El estado real de conexión viene de /api/eco/deliver (gmail/whatsapp ya
@@ -80,6 +84,7 @@ const PATTERN_FALLBACK: Record<string, { pattern: string; risk: string }> = {
   Deliverer: { pattern: "orientado a resultados", risk: "puede omitir lo emocional" },
   Scientist: { pattern: "basado en evidencia", risk: "puede ser demasiado técnico" },
   Inventor: { pattern: "creativo e inspirador", risk: "puede dispersarse" },
+  Visionary: { pattern: "inspirador y orientado al futuro", risk: "puede desconectarse del presente" },
 };
 
 function EcoPageInner() {
@@ -398,7 +403,10 @@ function EcoPageInner() {
                       <h3 className="font-bold truncate">{dashboard.user.name}</h3>
                       {dashboard.user.brainStyle && (
                         <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                          {dashboard.user.brainStyle}
+                          {t(
+                            `sei.brainStyles.${normalizeBrainStyle(dashboard.user.brainStyle)}`,
+                            dashboard.user.brainStyle
+                          )}
                         </span>
                       )}
                     </div>
@@ -634,7 +642,9 @@ function EcoPageInner() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{m.name}</p>
                           <p className="text-xs text-[var(--rowi-muted)] truncate">
-                            {m.brainStyle || t("eco.page.unknown", "Desconocido")}
+                            {m.brainStyle
+                              ? t(`sei.brainStyles.${normalizeBrainStyle(m.brainStyle)}`, m.brainStyle)
+                              : t("eco.page.unknown", "Desconocido")}
                           </p>
                         </div>
                         {isSelected && <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
@@ -698,8 +708,8 @@ function EcoPageInner() {
                               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                             >
                               {BRAIN_STYLES.map((b) => (
-                                <option key={b} value={b}>
-                                  {b}
+                                <option key={b.value} value={b.value}>
+                                  {t(`sei.brainStyles.${b.key}`, b.value)}
                                 </option>
                               ))}
                             </select>
@@ -850,7 +860,10 @@ function EcoPageInner() {
                           {t("eco.page.tipsTitle", "Optimizaciones aplicadas")}
                         </h3>
                         <span className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium">
-                          {out.analysis.targetBrainStyle}
+                          {t(
+                            `sei.brainStyles.${normalizeBrainStyle(out.analysis.targetBrainStyle)}`,
+                            out.analysis.targetBrainStyle
+                          )}
                         </span>
                       </div>
                       <ul className="space-y-2">
@@ -916,7 +929,7 @@ function EcoPageInner() {
                               {r.name}
                             </span>
                             <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium whitespace-nowrap ml-2">
-                              {r.brainStyle}
+                              {t(`sei.brainStyles.${normalizeBrainStyle(r.brainStyle)}`, r.brainStyle)}
                             </span>
                           </div>
                         ))}
@@ -934,7 +947,8 @@ function EcoPageInner() {
                                   key={style}
                                   className="px-2.5 py-1 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
                                 >
-                                  {style} × {count as number}
+                                  {t(`sei.brainStyles.${normalizeBrainStyle(style)}`, style)} ×{" "}
+                                  {count as number}
                                 </span>
                               ))}
                             </div>

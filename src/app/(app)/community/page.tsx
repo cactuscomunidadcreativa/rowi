@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -1965,6 +1966,7 @@ function MemberCard({
   onDelete: () => void;
   onRecalculate: () => void;
 }) {
+  const { t: tx } = useI18n();
   const [showMenu, setShowMenu] = useState(false);
   const affinity = member.affinityPercent ?? null;
 
@@ -2104,11 +2106,13 @@ function MemberCard({
           <span className="text-gray-600 dark:text-gray-400">{member.closeness}</span>
         </div>
 
-        {/* Brain Style */}
+        {/* Brain Style — label traducido de los 8 estilos canónicos */}
         {member.brainStyle && (
           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
             <Brain className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{member.brainStyle}</span>
+            <span className="truncate">
+              {tx(`sei.brainStyles.${normalizeBrainStyle(member.brainStyle)}`, member.brainStyle)}
+            </span>
           </div>
         )}
       </div>

@@ -28,6 +28,7 @@ import {
 import { useI18n } from "@/lib/i18n/useI18n";
 import SendMessageActions from "@/components/eco/SendMessageActions";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import type { RowiStage } from "@/domains/avatar/components/RowiStageImage";
 import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
@@ -110,6 +111,8 @@ function EcoPageInner() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [loadingDash, setLoadingDash] = useState(true);
+  // Etapa REAL del avatar del usuario (la misma que ve en su perfil/TODAY).
+  const [myStage, setMyStage] = useState<RowiStage | null>(null);
   // Versiones personalizadas (grupo heterogéneo): un mensaje por persona.
   const [pers, setPers] = useState<{ messages: PersonalizedMessage[]; insight: string | null } | null>(null);
   const [loadingPers, setLoadingPers] = useState(false);
@@ -174,14 +177,19 @@ function EcoPageInner() {
     (async () => {
       setLoadingDash(true);
       try {
-        const [dashRes, membersRes] = await Promise.all([
+        const [dashRes, membersRes, avatarRes] = await Promise.all([
           fetch("/api/eco/dashboard", { cache: "no-store" }).catch(() => null),
           fetch("/api/community/members", { cache: "no-store" }).catch(() => null),
+          fetch("/api/avatar", { cache: "no-store" }).catch(() => null),
         ]);
         const dash = dashRes?.ok ? await dashRes.json() : null;
         setDashboard(dash);
         const membersData = membersRes?.ok ? await membersRes.json() : { members: [] };
         setMembers(Array.isArray(membersData.members) ? membersData.members : []);
+        const avatarData = avatarRes?.ok ? await avatarRes.json() : null;
+        if (avatarData?.ok && avatarData.data?.currentStage) {
+          setMyStage(avatarData.data.currentStage as RowiStage);
+        }
       } catch {
         /* silent */
       } finally {
@@ -398,7 +406,7 @@ function EcoPageInner() {
               ) : dashboard?.ok ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl">
-                    <RowiAvatar seed={dashboard.user.name || "U"} size={56} />
+                    <RowiAvatar seed={dashboard.user.name || "U"} stage={myStage} size={56} />
                     <div className="min-w-0">
                       <h3 className="font-bold truncate">{dashboard.user.name}</h3>
                       {dashboard.user.brainStyle && (

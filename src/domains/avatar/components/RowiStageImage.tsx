@@ -19,7 +19,7 @@ export type RowiStage = "EGG" | "HATCHING" | "BABY" | "YOUNG" | "ADULT" | "WISE"
  * Asset por etapa de Becoming: los 6 vectores Rowi en orden (01→06), uno por
  * etapa. La progresión del personaje ES la evolución 01→06; no se salta ninguno.
  */
-const STAGE_ASSET: Record<RowiStage, string> = {
+export const STAGE_ASSET: Record<RowiStage, string> = {
   EGG: "/rowivectors/Rowi-01.webp",
   HATCHING: "/rowivectors/Rowi-02.webp",
   BABY: "/rowivectors/Rowi-03.webp",

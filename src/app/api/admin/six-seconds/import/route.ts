@@ -14,6 +14,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { parse } from "csv-parse/sync";
 import { contributeBatchToRowiverse, ContributionInput } from "@/lib/rowiverse/contribution-service";
+import { filterByConsent } from "@/lib/privacy/checkConsent";
 import { syncSeiLevel, createInitialAvatar } from "@/services/avatar-evolution";
 
 // Mapeo de columnas del CSV de Six Seconds
@@ -252,8 +253,10 @@ export async function POST(req: NextRequest) {
           console.warn(`⚠️ Error syncing avatar for ${email}:`, avatarError);
         }
 
-        // Preparar contribución al RowiVerse
-        if (user.contributeToRowiverse !== false) {
+        // Preparar contribución al RowiVerse. El gate REAL es el consentimiento
+        // benchmarking_contribution, aplicado en batch antes de insertar (abajo);
+        // el flag legacy contributeToRowiverse ya no decide (nunca fue opt-in).
+        {
           const eqTotal =
             toFloat(data.K) && toFloat(data.C) && toFloat(data.G)
               ? Math.round(
@@ -312,12 +315,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Contribuir al RowiVerse en batch
+    // Contribuir al RowiVerse en batch — SOLO usuarios con el consentimiento
+    // benchmarking_contribution activo (opt-in real vía UserConsent).
+    // Promesa pública en /legal/research: la contribución es opcional.
     if (rowiverseContributions.length > 0) {
       try {
-        await contributeBatchToRowiverse(rowiverseContributions);
+        const userIds = rowiverseContributions
+          .map((c) => c.userId)
+          .filter((id): id is string => Boolean(id));
+        const consented = new Set(
+          await filterByConsent(userIds, "benchmarking_contribution"),
+        );
+        const allowed = rowiverseContributions.filter(
+          (c) => c.userId && consented.has(c.userId),
+        );
+        const skipped = rowiverseContributions.length - allowed.length;
+        if (allowed.length > 0) {
+          await contributeBatchToRowiverse(allowed);
+        }
         console.log(
-          `🌐 RowiVerse: ${rowiverseContributions.length} contribuciones desde Six Seconds import`
+          `🌐 RowiVerse: ${allowed.length} contribuciones desde Six Seconds import (${skipped} sin consentimiento, omitidas)`
         );
       } catch (err) {
         console.warn("⚠️ Error contribuyendo al RowiVerse:", err);

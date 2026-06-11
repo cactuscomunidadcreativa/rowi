@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useDbPlanOverrides } from "@/domains/plans/lib/useDbPlans";
 import Link from "next/link";
 import {
   ROWI_PLANS,
@@ -54,6 +55,7 @@ export default function PricingPage() {
   const [expandedPlan, setExpandedPlan] = useState<PlanSlug | null>(null);
   const [showB2B, setShowB2B] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const { withDbPrices } = useDbPlanOverrides();
 
   // Usuario YA logueado que mejora plan: ir directo a Stripe checkout, NO a
   // /register (que es el flujo de alta de cuenta nueva). Visitante anónimo:
@@ -85,7 +87,9 @@ export default function PricingPage() {
     }
   }
 
-  const plans = getAllPlans();
+  // Precios/entitlements reales desde la DB (lo que Stripe cobra); plans.ts
+  // aporta solo el copy. Cierra el P0 "precio anunciado ≠ precio cobrado".
+  const plans = getAllPlans().map(withDbPrices);
   const b2cPlans = plans.filter(p => p.targetAudience === "B2C" || (p.targetAudience === "B2C/B2B" && !showB2B));
   const b2bPlans = plans.filter(p => p.targetAudience === "B2B" || p.targetAudience === "B2C/B2B");
 
@@ -485,7 +489,7 @@ export default function PricingPage() {
                   <th className="py-4 px-4 text-left font-semibold">
                     {t("pricingPage.comparison.feature", "Característica")}
                   </th>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <th key={plan.slug} className="py-4 px-2 text-center">
                       <span className="text-lg">{plan.emoji}</span>
                       <br />
@@ -497,7 +501,7 @@ export default function PricingPage() {
               <tbody>
                 <tr className="border-b border-[var(--rowi-border)]">
                   <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.tokensMonth", "Tokens IA/mes")}</td>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.tokensOrganization || plan.tokensMonthly}
                       {plan.tokensShared && " 🔗"}
@@ -506,7 +510,7 @@ export default function PricingPage() {
                 </tr>
                 <tr className="border-b border-[var(--rowi-border)]">
                   <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.maxUsers", "Usuarios máx.")}</td>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.maxUsers >= 999 ? "∞" : plan.maxUsers}
                     </td>
@@ -514,7 +518,7 @@ export default function PricingPage() {
                 </tr>
                 <tr className="border-b border-[var(--rowi-border)]">
                   <td className="py-3 px-4 font-medium">SEI {t("pricingPage.comparison.seiIncluded", "incluido")}</td>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.seiIncluded ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />}
                     </td>
@@ -522,7 +526,7 @@ export default function PricingPage() {
                 </tr>
                 <tr className="border-b border-[var(--rowi-border)]">
                   <td className="py-3 px-4 font-medium">API</td>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.apiAccess ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />}
                     </td>
@@ -530,7 +534,7 @@ export default function PricingPage() {
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium">{t("pricingPage.comparison.integrations", "Integraciones")}</td>
-                  {getAllPlans().map(plan => (
+                  {plans.map(plan => (
                     <td key={plan.slug} className="py-3 px-2 text-center">
                       {plan.integrations.slack || plan.integrations.teams ? <Check className="w-5 h-5 text-green-500 mx-auto" /> : <X className="w-5 h-5 text-red-400 mx-auto" />}
                     </td>

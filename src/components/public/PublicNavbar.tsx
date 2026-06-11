@@ -233,9 +233,21 @@ export default function PublicNavbar() {
                     {t("nav.dashboard", "Dashboard")}
                   </Link>
                 ) : (
-                  <Link href="/signin" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-center text-gray-600 dark:text-gray-400">
-                    {t("nav.login", "Iniciar sesión")}
-                  </Link>
+                  <>
+                    {/* En <640px el CTA del header está oculto (hidden sm:block):
+                        sin este link, la nav móvil no ofrecía NINGUNA ruta de
+                        registro (auditoría jun-2026, conversión P1). */}
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 text-center rowi-btn-primary mb-2"
+                    >
+                      {t("nav.startFree", "Comenzar gratis")}
+                    </Link>
+                    <Link href="/signin" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-center text-gray-600 dark:text-gray-400">
+                      {t("nav.login", "Iniciar sesión")}
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

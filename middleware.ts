@@ -8,6 +8,28 @@ import { ADMIN_MFA_COOKIE, verifyAdminMfaCookieEdge, adminMfaEnabled } from "@/l
    🌍 CONFIG — Rutas públicas de promoción/landing
 ========================================================= */
 
+/* =========================================================
+   🧭 Primeros segmentos de ruta que EXISTEN en src/app.
+   Cualquier otro primer segmento es un 404 real (ver paso 1.5).
+   Derivado de: ls src/app + src/app/(app) + src/app/(public).
+========================================================= */
+const KNOWN_FIRST_SEGMENTS = new Set([
+  // top-level
+  "api", "about", "forgot-password", "hub", "invite", "landing-old", "me",
+  "p", "pitch", "register", "research", "reset-password", "settings",
+  "signin", "start", "verify-email",
+  // (app)
+  "admin", "affinity", "asesor", "becoming", "benchmark", "community",
+  "dashboard", "eco", "feed", "finance", "hr", "learning", "mini-sei",
+  "onboarding", "org", "post", "profile", "progress", "relationships",
+  "reports", "rowi", "sei", "setup-organization", "social", "studio",
+  "team", "today", "ventas", "weekflow", "workspace",
+  // (public)
+  "contact", "demo", "for-organizations", "for-you", "how-it-works",
+  "legal", "login", "pre-sei", "pricing", "product", "r", "resources",
+  "stories",
+]);
+
 const PUBLIC_PAGES = [
   "/",
   "/signin",
@@ -244,6 +266,22 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   /* =========================================================
+     0) Dominio canónico — *.vercel.app sirve un duplicado completo
+     indexable (auditoría jun-2026, SEO P1): 308 permanente al dominio
+     real. Solo en producción para no romper previews de Vercel.
+  ========================================================== */
+  const host = req.headers.get("host") || "";
+  if (
+    host.endsWith(".vercel.app") &&
+    process.env.VERCEL_ENV === "production"
+  ) {
+    const canonical = new URL(req.url);
+    canonical.host = "www.rowiia.com";
+    canonical.port = "";
+    return NextResponse.redirect(canonical, 308);
+  }
+
+  /* =========================================================
      1) Ignorar rutas de sistema (siempre públicas)
   ========================================================== */
   if (
@@ -251,6 +289,21 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/static") ||
     pathname === "/favicon.ico"
   ) {
+    return NextResponse.next();
+  }
+
+  /* =========================================================
+     1.5) 404 real para rutas inexistentes. Antes, cualquier typo
+     (/blog/x) redirigía a /signin como si fuera contenido protegido:
+     soft-404 para crawlers y login desconcertante para humanos.
+     Un primer segmento que no existe en src/app pasa directo a Next,
+     que renderiza not-found.tsx (no hay nada que proteger ahí).
+     ⚠️ MANTENER: al crear una nueva ruta top-level, añadir su primer
+     segmento aquí — si falta, la ruta se sirve SIN pasar por los gates
+     del middleware.
+  ========================================================== */
+  const firstSegment = pathname.split("/")[1] ?? "";
+  if (firstSegment && !pathname.startsWith("/api/") && !KNOWN_FIRST_SEGMENTS.has(firstSegment)) {
     return NextResponse.next();
   }
 

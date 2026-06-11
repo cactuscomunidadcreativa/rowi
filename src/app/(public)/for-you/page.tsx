@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import CMSPageRenderer from "@/components/public/CMSPageRenderer";
-import { HeroSection, FeaturesSection, TestimonialsSection, CTASection } from "@/components/public/sections";
+import { HeroSection, FeaturesSection, CTASection } from "@/components/public/sections";
 import RowiEvolution from "@/components/public/RowiEvolution";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -88,32 +88,9 @@ export default function ForYouPage() {
         }}
         config={{ columns: 3, showIcons: true }}
       />
-      <TestimonialsSection
-        content={{
-          title: t("forYou.testimonials.title", "Lo que dicen nuestros usuarios"),
-          testimonials: [
-            {
-              quote: t("forYou.testimonials.t1.quote", "Rowi me ha ayudado a entender mejor mis emociones y a comunicarme de manera más efectiva."),
-              author: "María García",
-              role: t("forYou.testimonials.t1.role", "Diseñadora"),
-              rating: 5
-            },
-            {
-              quote: t("forYou.testimonials.t2.quote", "Ver a mi Rowi evolucionar hace que mi crecimiento personal sea motivador. ¡Mi Rowi ya es un joven!"),
-              author: "Carlos López",
-              role: t("forYou.testimonials.t2.role", "Desarrollador"),
-              rating: 5
-            },
-            {
-              quote: t("forYou.testimonials.t3.quote", "Los matches emocionales me conectaron con personas increíbles que ahora son amigos cercanos."),
-              author: "Ana Martínez",
-              role: t("forYou.testimonials.t3.role", "Emprendedora"),
-              rating: 5
-            },
-          ]
-        }}
-        config={{ columns: 3, showRating: true }}
-      />
+      {/* Sin testimonios: la regla del proyecto (y la promesa pública de
+          /stories) es no inventar social proof. Cuando existan casos REALES
+          verificados, vuelven aquí vía CMS, no hardcodeados. */}
       <CTASection
         content={{
           title: t("forYou.cta.title", "Comienza tu viaje hoy"),

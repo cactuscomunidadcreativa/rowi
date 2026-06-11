@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -61,15 +62,22 @@ const BRAIN_STYLES = [
   "Sage",
 ];
 
+// El estado real de conexión viene de /api/eco/deliver (gmail/whatsapp ya
+// tienen envío directo implementado); el resto sigue "Pronto" de verdad.
 const INTEGRATIONS = [
-  { id: "slack", name: "Slack", icon: Slack, connected: false },
-  { id: "gmail", name: "Gmail", icon: Mail, connected: false },
-  { id: "outlook", name: "Outlook", icon: Mail, connected: false },
-  { id: "teams", name: "Teams", icon: MessageSquare, connected: false },
+  { id: "gmail", name: "Gmail", icon: Mail },
+  { id: "whatsapp", name: "WhatsApp", icon: MessageSquare },
+  { id: "slack", name: "Slack", icon: Slack },
+  { id: "outlook", name: "Outlook", icon: Mail },
+  { id: "teams", name: "Teams", icon: MessageSquare },
 ];
 
-export default function EcoPage() {
+function EcoPageInner() {
   const { t, lang } = useI18n();
+  // El puente Affinity→ECO: /eco?dyadId=... activa buildDyadBridge en compose
+  // y permite registrar sent/outcome sobre la díada (el foso de datos).
+  const searchParams = useSearchParams();
+  const dyadId = searchParams.get("dyadId");
 
   const [dashboard, setDashboard] = useState<any>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -84,6 +92,63 @@ export default function EcoPage() {
   const [copied, setCopied] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [loadingDash, setLoadingDash] = useState(true);
+  // Estado REAL de los canales de envío directo (antes hardcodeado a "Pronto"
+  // aunque Gmail/WhatsApp ya estuvieran conectados — panel deshonesto).
+  const [deliverChannels, setDeliverChannels] = useState<{
+    gmail?: { connected: boolean };
+    whatsapp?: { connected: boolean };
+  } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/eco/deliver")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && data?.ok) {
+          setDeliverChannels({ gmail: data.gmail, whatsapp: data.whatsapp });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // El loop de outcome (el foso): ¿funcionó el último mensaje enviado?
+  const [pendingOutcome, setPendingOutcome] = useState<{
+    dyadId: string;
+    otherName: string | null;
+  } | null>(null);
+  const [outcomeSaved, setOutcomeSaved] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/eco/send")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (alive && data?.ok && data.pending) setPendingOutcome(data.pending);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function submitOutcome(worked: boolean) {
+    if (!pendingOutcome) return;
+    try {
+      await fetch("/api/eco/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "feedback", dyadId: pendingOutcome.dyadId, worked }),
+      });
+    } catch {
+      /* el banner se cierra igual; el cron volverá a preguntar si hace falta */
+    }
+    setPendingOutcome(null);
+    setOutcomeSaved(true);
+    setTimeout(() => setOutcomeSaved(false), 4000);
+  }
 
   const tr = {
     es: {
@@ -233,6 +298,9 @@ export default function EcoPage() {
         freeTargets: free.filter((f) => f.name.trim()),
         refine,
         ask,
+        // Con dyadId, compose usa la BRECHA real de la díada (buildDyadBridge)
+        // en vez del modo neutro — antes la UI nunca lo enviaba.
+        dyadId: dyadId || undefined,
       };
       const r = await fetch("/api/eco/compose", {
         method: "POST",
@@ -313,6 +381,37 @@ export default function EcoPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        {/* Outcome del último envío — el dato que calibra la brecha (foso) */}
+        {pendingOutcome && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl border border-violet-200 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/30 p-4 flex flex-wrap items-center justify-between gap-3"
+          >
+            <p className="text-sm text-[var(--rowi-fg)]">
+              {t("eco.outcome.question", "¿Funcionó tu último mensaje{name}?").replace(
+                "{name}",
+                pendingOutcome.otherName ? ` a ${pendingOutcome.otherName}` : ""
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => submitOutcome(true)} className="rowi-btn-primary px-4 py-1.5 text-sm">
+                {t("eco.outcome.yes", "Sí, ayudó")}
+              </button>
+              <button
+                onClick={() => submitOutcome(false)}
+                className="px-4 py-1.5 text-sm rounded-full border border-[var(--rowi-card-border)] text-[var(--rowi-muted)]"
+              >
+                {t("eco.outcome.no", "No mucho")}
+              </button>
+            </div>
+          </motion.div>
+        )}
+        {outcomeSaved && (
+          <p className="mb-6 text-sm text-emerald-600 dark:text-emerald-400">
+            {t("eco.outcome.thanks", "Gracias — esto afina los próximos mensajes.")}
+          </p>
+        )}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* ── Columna izquierda — Perfil ── */}
           <div className="lg:col-span-1 space-y-5">
@@ -424,24 +523,38 @@ export default function EcoPage() {
                   >
                     <div className="px-4 pb-4 space-y-2">
                       <p className="text-xs text-gray-500 mb-2">{tt.integrationsDesc}</p>
-                      {INTEGRATIONS.map((int) => (
-                        <div
-                          key={int.id}
-                          className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 flex items-center justify-center shadow-sm">
-                              <int.icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                      {INTEGRATIONS.map((int) => {
+                        const isConnected =
+                          int.id === "gmail"
+                            ? !!deliverChannels?.gmail?.connected
+                            : int.id === "whatsapp"
+                              ? !!deliverChannels?.whatsapp?.connected
+                              : false;
+                        return (
+                          <div
+                            key={int.id}
+                            className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 flex items-center justify-center shadow-sm">
+                                <int.icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                              </div>
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {int.name}
+                              </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {int.name}
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                isConnected
+                                  ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                                  : "bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400"
+                              }`}
+                            >
+                              {isConnected ? tt.connected : tt.comingSoon}
                             </span>
                           </div>
-                          <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-400">
-                            {tt.comingSoon}
-                          </span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </motion.div>
                 )}
@@ -475,7 +588,16 @@ export default function EcoPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{tt.communityMembers}</p>
                   {members.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4 text-center">{tt.noMembers}</p>
+                    <div className="py-4 text-center space-y-2">
+                      <p className="text-sm text-gray-400">{tt.noMembers}</p>
+                      {/* El vacío guía al siguiente paso, no abandona */}
+                      <a
+                        href="/community?tab=relationships"
+                        className="inline-block text-xs rowi-btn-primary px-4 py-2"
+                      >
+                        {t("relationships.empty.cta", "Invita a tu primera persona")}
+                      </a>
+                    </div>
                   ) : (
                     <div className="grid sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                       {members.map((m) => {
@@ -957,6 +1079,7 @@ export default function EcoPage() {
                         ? out.analysis.recipients?.[0]?.name
                         : undefined
                     }
+                    dyadId={dyadId || undefined}
                   />
                 </motion.section>
               )}
@@ -976,5 +1099,20 @@ export default function EcoPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function EcoPage() {
+  // useSearchParams exige un boundary de Suspense en App Router.
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-g2)]" />
+        </div>
+      }
+    >
+      <EcoPageInner />
+    </Suspense>
   );
 }

@@ -9,6 +9,7 @@
  */
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
 import PreSeiInsight from "@/components/pre-sei/PreSeiInsight";
@@ -32,17 +33,26 @@ export default function PreSeiPage() {
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Cargar preguntas al entrar al wizard.
+  // Prefetch en el mount (pesan <1KB): el clic en "Empezar" no debe esperar
+  // a la red. retrySeq permite reintentar tras un error.
+  const [retrySeq, setRetrySeq] = useState(0);
   useEffect(() => {
-    if (phase !== "wizard" || questions.length > 0) return;
+    let cancelled = false;
+    setError(null);
     fetch(`/api/public/pre-sei/questions?lang=${lang}`)
       .then((r) => r.json())
       .then((json) => {
+        if (cancelled) return;
         if (json.ok) setQuestions(json.questions);
         else setError(t("preSei.errors.generic", "Algo salió mal."));
       })
-      .catch(() => setError(t("preSei.errors.generic", "Algo salió mal.")));
-  }, [phase, lang, questions.length, t]);
+      .catch(() => {
+        if (!cancelled) setError(t("preSei.errors.generic", "Algo salió mal."));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, retrySeq, t]);
 
   async function handleComplete(answers: Record<string, number>, demographics: PreSeiDemographics) {
     setSubmitting(true);
@@ -76,7 +86,15 @@ export default function PreSeiPage() {
     <div className="min-h-screen pt-20 pb-16 px-4 bg-[var(--rowi-bg)]">
       <div className="max-w-2xl mx-auto">
         {error && (
-          <p className="mb-4 text-sm text-center text-[var(--rowi-g1)]">{error}</p>
+          <div role="alert" className="mb-4 text-center space-y-2">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <button
+              onClick={() => setRetrySeq((s) => s + 1)}
+              className="rowi-btn-primary px-4 py-2 text-sm"
+            >
+              {t("common.retry", "Reintentar")}
+            </button>
+          </div>
         )}
 
         {phase === "landing" && (
@@ -106,6 +124,12 @@ export default function PreSeiPage() {
 
         {phase === "wizard" && questions.length > 0 && (
           <PreSeiWizard questions={questions} submitting={submitting} onComplete={handleComplete} />
+        )}
+        {/* Nunca pantalla en blanco: si el prefetch aún no llegó, spinner. */}
+        {phase === "wizard" && questions.length === 0 && !error && (
+          <div className="flex items-center justify-center py-16" aria-busy="true">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-g2)]" />
+          </div>
         )}
 
         {phase === "result" && insight && (

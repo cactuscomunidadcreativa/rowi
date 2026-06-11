@@ -75,7 +75,9 @@ export default async function StartPage() {
   const managerRoles = ["owner", "admin", "coach", "consultant", "hr_manager", "team_leader", "mentor"];
   const managed = communityUsers.filter((w) => !!w.role && managerRoles.includes(w.role));
 
-  if (managed.length === 0) redirect("/dashboard");
+  // Usuario personal (sin tenant ni workspaces gestionados): su casa es el
+  // loop diario, no el dashboard (TODAY = puerta de entrada).
+  if (managed.length === 0) redirect("/today");
 
   const types: string[] = [];
   for (const w of managed) {

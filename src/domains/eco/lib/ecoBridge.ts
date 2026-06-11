@@ -149,12 +149,24 @@ export async function recordEcoSent(args: {
   channel: string;
   text: string;
 }): Promise<void> {
-  const thread = await prisma.ecoThread.findFirst({
+  let thread = await prisma.ecoThread.findFirst({
     where: { dyadId: args.dyadId, ownerUserId: args.ownerUserId },
     orderBy: { updatedAt: "desc" },
     select: { id: true },
   });
-  if (!thread) return; // solo registramos envío de díadas con hilo (compose previo)
+  // Sin hilo previo (p.ej. compose sin dyadId): crearlo en vez de descartar
+  // el envío en silencio — cada "sent" perdido es una fila menos del foso.
+  if (!thread) {
+    thread = await prisma.ecoThread.create({
+      data: {
+        dyadId: args.dyadId,
+        ownerUserId: args.ownerUserId,
+        title: args.text.slice(0, 60) || "ECO",
+        channel: args.channel,
+      },
+      select: { id: true },
+    });
+  }
   await prisma.ecoMessage.create({
     data: {
       threadId: thread.id,

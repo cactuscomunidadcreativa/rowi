@@ -1,330 +1,98 @@
 "use client";
 
+/* =========================================================
+   🚀 Registro a 1 PASO (F2 · Rowi Launch 1.0)
+   ---------------------------------------------------------
+   Antes: wizard de 5 pasos que abría con selección de plan
+   (paywall psicológico) y cuyos pasos 2-4 eran inalcanzables
+   (auditoría jun-2026, P0-8/P1-23). Ahora: OAuth o
+   email+nombre+password, plan free implícito, términos con
+   links reales (timestamp server-side), y salida directa al
+   onboarding (mini-SEI = WOW).
+
+   Params que se preservan: ?preSeiToken= (el espejo se
+   reclama en el backend), ?intent=, ?plan= (si es de pago se
+   resuelve en /pricing DESPUÉS de activarse — nunca se asigna
+   sin checkout), ?ref=, ?coupon=, utm_*, ?source=.
+========================================================= */
+
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getProviders, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Check,
-  Sparkles,
-  Zap,
-  Users,
-  BarChart3,
-  Globe2,
-  Crown,
-  Clock,
-  CreditCard,
-  Mail,
-  Building2,
-  Loader2,
-  Star,
-  Rocket,
-  Cloud,
-  Brain,
-  MessageCircle,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Loader2, Mail, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import {
-  ROWI_PLANS,
-  getAllPlans,
-  formatPrice,
-  getTokensText,
-  getSupportLevelName,
-  localizedPlan,
-  type RowiPlan,
-  type PlanSlug,
-} from "@/domains/plans/lib/plans";
 
-/* =========================================================
-   🌍 Copy de la página vía i18n global (claves register.*)
-   ---------------------------------------------------------
-   Antes había un diccionario local es/en/pt/it. Ahora cada
-   hoja resuelve por tGlobal("register.x.y", fallback ES) y
-   las traducciones viven en src/lib/i18n/locales/*.json.
-   Se conserva el shape anidado para no tocar los usos t.x.y
-   del JSX.
-========================================================= */
-type TGlobal = (key: string, fallback?: string) => string;
-
-function buildRegisterCopy(t: TGlobal) {
-  return {
-    steps: {
-      plan: t("register.steps.plan", "Plan"),
-      account: t("register.steps.account", "Cuenta"),
-      profile: t("register.steps.profile", "Perfil"),
-      sei: t("register.steps.sei", "SEI"),
-      confirm: t("register.steps.confirm", "Confirmar"),
-    },
-    planSelection: {
-      title: t("register.planSelection.title", "Elige tu plan perfecto"),
-      description: t("register.planSelection.description", "Todos los planes incluyen tu Rowi personal con inteligencia artificial"),
-      personalFamily: t("register.planSelection.personalFamily", "👤 Personal y Familia"),
-      business: t("register.planSelection.business", "🏢 Empresas"),
-      monthly: t("register.planSelection.monthly", "Mensual"),
-      yearly: t("register.planSelection.yearly", "Anual"),
-      perUser: t("register.planSelection.perUser", "por usuario"),
-      min: t("register.planSelection.min", "mín."),
-      seeLess: t("register.planSelection.seeLess", "Ver menos"),
-      more: t("register.planSelection.more", "más"),
-      continue: t("register.planSelection.continue", "Continuar"),
-    },
-    account: {
-      title: t("register.account.title", "Crea tu cuenta"),
-      description: t("register.account.description", "Elige cómo quieres registrarte"),
-      continueWith: t("register.account.continueWith", "Continuar con"),
-      or: t("register.account.or", "o regístrate con email"),
-      namePlaceholder: t("register.account.namePlaceholder", "Tu nombre completo"),
-      emailPlaceholder: t("register.account.emailPlaceholder", "tu@email.com"),
-      createAccount: t("register.account.createAccount", "Crear cuenta"),
-      back: t("register.account.back", "Atrás"),
-    },
-    profile: {
-      title: t("register.profile.title", "Completa tu perfil"),
-      description: t("register.profile.description", "Cuéntanos un poco más sobre ti"),
-      selectCountry: t("register.profile.selectCountry", "Selecciona tu país"),
-      otherCountry: t("register.profile.otherCountry", "Otro"),
-      referralCode: t("register.profile.referralCode", "Código de referido"),
-      referralCodePlaceholder: t("register.profile.referralCodePlaceholder", "Ingresa código de referido"),
-      couponCode: t("register.profile.couponCode", "Código de cupón"),
-      couponCodePlaceholder: t("register.profile.couponCodePlaceholder", "Ingresa código de cupón"),
-      optional: t("register.profile.optional", "opcional"),
-      continue: t("register.profile.continue", "Continuar"),
-      back: t("register.profile.back", "Atrás"),
-    },
-    sei: {
-      title: t("register.sei.title", "Evaluación SEI"),
-      // OJO: clave "lead" (no "description") — register.sei.description ya
-      // existía en los locales con otro texto (página /register antigua).
-      description: t("register.sei.lead", "El SEI mide tu inteligencia emocional"),
-      included: t("register.sei.included", "¡SEI incluido en tu plan!"),
-      includedDescription: t("register.sei.includedDescription", "Tu plan incluye una evaluación SEI de Six Seconds"),
-      takeSeiNow: t("register.sei.takeSeiNow", "Quiero hacer el SEI ahora"),
-      takeSeiNowDescription: t("register.sei.takeSeiNowDescription", "Te guiaremos paso a paso después del registro"),
-      skipForNow: t("register.sei.skipForNow", "Lo haré más tarde"),
-      skipForNowDescription: t("register.sei.skipForNowDescription", "Puedes tomar el SEI cuando quieras desde tu dashboard"),
-      notIncluded: t("register.sei.notIncluded", "SEI no incluido"),
-      upgradeToInclude: t("register.sei.upgradeToInclude", "Mejora tu plan para incluirlo"),
-      continue: t("register.sei.continue", "Continuar"),
-      back: t("register.sei.back", "Atrás"),
-    },
-    confirm: {
-      title: t("register.confirm.title", "Confirma tu registro"),
-      description: t("register.confirm.description", "Revisa los detalles antes de continuar"),
-      orderSummary: t("register.confirm.orderSummary", "Resumen de tu pedido"),
-      // Claves planLabel / seiAnswer* / termsNotice: los nombres "naturales"
-      // (plan, seiYes, seiLater, terms) ya existían en los locales con otros
-      // textos heredados; se usan nombres nuevos para no pisarlos.
-      plan: t("register.confirm.planLabel", "Plan"),
-      billing: t("register.confirm.billing", "Facturación"),
-      aiTokens: t("register.confirm.aiTokens", "Tokens IA"),
-      name: t("register.confirm.name", "Nombre"),
-      email: t("register.confirm.email", "Email"),
-      seiYes: t("register.confirm.seiAnswerYes", "Sí, después del registro"),
-      seiLater: t("register.confirm.seiAnswerLater", "Más tarde"),
-      total: t("register.confirm.total", "Total"),
-      terms: t("register.confirm.termsNotice", "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad"),
-      startFree: t("register.confirm.startFree", "Comenzar gratis"),
-      proceedToPayment: t("register.confirm.proceedToPayment", "Ir al pago"),
-      contactSales: t("register.confirm.contactSales", "Contactar ventas"),
-      back: t("register.confirm.back", "Atrás"),
-    },
-    errors: {
-      oauth: t("register.errors.oauth", "Error al conectar con el proveedor"),
-      requiredFields: t("register.errors.requiredFields", "Por favor completa todos los campos requeridos"),
-      general: t("register.errors.general", "Ocurrió un error. Inténtalo de nuevo."),
-      checkout: t("register.errors.checkout", "Error al procesar el pago"),
-      passwordTooShort: t("register.errors.passwordTooShort", "La contraseña debe tener al menos 8 caracteres"),
-      emailExists: t("register.errors.emailExists", "Este email ya está registrado"),
-      passwordPlaceholder: t("register.errors.passwordPlaceholder", "Contraseña (mínimo 8 caracteres)"),
-      accountCreated: t("register.errors.accountCreated", "Cuenta creada. Por favor inicia sesión."),
-      welcomeToRowi: t("register.errors.welcomeToRowi", "¡Bienvenido a Rowi! Completa tu perfil."),
-      discountAvailable: t("register.errors.discountAvailable", "de descuento disponible"),
-    },
-    success: {
-      emailSent: t("register.success.emailSent", "¡Revisa tu email para confirmar tu cuenta!"),
-    },
-    price: {
-      custom: t("register.price.custom", "Personalizado"),
-      forever: t("register.price.forever", "/siempre"),
-      year: t("register.price.year", "/año"),
-      month: t("register.price.month", "/mes"),
-    },
-  };
-}
-
-/* =========================================================
-   🚀 Rowi Registration — Multi-step Onboarding
-   ---------------------------------------------------------
-   Step 0: Plan Selection
-   Step 1: Account Creation (OAuth or Email)
-   Step 2: Profile Setup
-   Step 3: SEI Decision
-   Step 4: Confirmation
-========================================================= */
-
-const STEPS = [
-  { key: "plan", icon: CreditCard },
-  { key: "account", icon: Mail },
-  { key: "profile", icon: Users },
-  { key: "sei", icon: Zap },
-  { key: "confirm", icon: Check },
-];
-
-const PLAN_ICONS: Record<PlanSlug, React.ElementType> = {
-  free: Sparkles,
-  sei: Star,
-  plus: Star,
-  family: Users,
-  pro: Rocket,
-  business: Building2,
-  enterprise: Cloud,
-};
-
-// Loading fallback for Suspense
-function RegisterLoading() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-[var(--rowi-g2)]" />
-        <p className="mt-4 text-gray-500 dark:text-gray-400">Loading...</p>
-      </div>
-    </div>
-  );
-}
-
-// Wrapper component with Suspense boundary
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={<RegisterLoading />}>
-      <RegisterPageContent />
-    </Suspense>
-  );
-}
-
-function RegisterPageContent() {
+function RegisterInner() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // OJO: `t` local es el objeto de copy de esta página (shape anidado t.x.y);
-  // se construye desde el t() global de i18n, renombrado a tGlobal.
-  const { lang, t: tGlobal } = useI18n();
   const { data: session, status } = useSession();
-  const t = buildRegisterCopy(tGlobal);
 
-  // Guard: un usuario YA logueado no debe ver el alta de cuenta. Si llega aquí
-  // (p.ej. desde un CTA viejo /register?plan=X para mejorar plan), lo mandamos
-  // a /pricing, donde el CTA logueado va directo al checkout de Stripe.
+  // Usuario ya logueado: esta página es solo para altas nuevas.
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
       const plan = searchParams.get("plan");
-      router.replace(plan ? `/pricing?plan=${plan}` : "/dashboard");
+      router.replace(plan ? `/pricing?plan=${plan}` : "/today");
     }
   }, [status, session, searchParams, router]);
 
-  const [step, setStep] = useState(0);
+  const [providers, setProviders] = useState<Record<
+    string,
+    { id: string; name: string }
+  > | null>(null);
   const [loading, setLoading] = useState(false);
-  const [providers, setProviders] = useState<any>(null);
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const [showB2B, setShowB2B] = useState(false);
-  const [expandedPlan, setExpandedPlan] = useState<PlanSlug | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
-  // Form data
-  const [selectedPlan, setSelectedPlan] = useState<RowiPlan | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    country: "",
-    language: lang,
-    wantsSei: true,
-    referralCode: searchParams.get("ref") || "",
-    couponCode: searchParams.get("coupon") || "",
-  });
+  const preSeiToken = searchParams.get("preSeiToken");
 
-  // Get plans from constants
-  const allPlans = getAllPlans();
-  const b2cPlans = allPlans.filter(p => p.targetAudience === "B2C" || (p.targetAudience === "B2C/B2B" && !showB2B));
-  const b2bPlans = allPlans.filter(p => p.targetAudience === "B2B" || p.targetAudience === "B2C/B2B");
-  const displayedPlans = showB2B ? b2bPlans : b2cPlans;
-
-  // Load providers and pre-select plan from URL
   useEffect(() => {
-    loadProviders();
+    getProviders()
+      .then((prov) => setProviders(prov as any))
+      .catch(() => setProviders(null));
+  }, []);
 
-    // Pre-select plan from URL if provided
-    const planSlug = searchParams.get("plan") as PlanSlug;
-    if (planSlug && ROWI_PLANS[planSlug]) {
-      setSelectedPlan(ROWI_PLANS[planSlug]);
-      // If B2B plan, show B2B section
-      if (ROWI_PLANS[planSlug].targetAudience === "B2B") {
-        setShowB2B(true);
-      }
-    }
-  }, [searchParams]);
+  const oauthProviders = providers
+    ? Object.values(providers).filter((p) => p.id !== "credentials")
+    : [];
 
-  // Update form language when app language changes
-  useEffect(() => {
-    setFormData(prev => ({ ...prev, language: lang }));
-  }, [lang]);
-
-  async function loadProviders() {
-    try {
-      const prov = await getProviders();
-      setProviders(prov);
-    } catch (error) {
-      console.error("Error loading providers:", error);
-    }
-  }
-
-  function nextStep() {
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    }
-  }
-
-  function prevStep() {
-    if (step > 0) {
-      setStep(step - 1);
-    }
-  }
-
-  async function handleOAuthSignIn(providerId: string) {
+  function handleOAuthSignIn(providerId: string) {
     setLoading(true);
     try {
-      // Store registration data in sessionStorage for after OAuth
+      // Los query params se pierden en el redirect de OAuth: viajan por
+      // sessionStorage y los reclama /register/complete → finalize-oauth.
       sessionStorage.setItem(
         "rowi_registration",
         JSON.stringify({
-          selectedPlan,
-          formData,
-          billingPeriod,
-          // Atribución: el query ?source= se pierde tras el redirect de OAuth,
-          // así que lo guardamos junto con los datos de registro.
+          selectedPlan: { slug: searchParams.get("plan") || undefined },
+          formData: {},
           source: searchParams.get("source"),
           utmSource: searchParams.get("utm_source"),
           utmMedium: searchParams.get("utm_medium"),
           utmCampaign: searchParams.get("utm_campaign"),
+          preSeiToken,
+          intent: searchParams.get("intent"),
+          relToken: searchParams.get("relToken"),
         })
       );
-      await signIn(providerId, { callbackUrl: "/register/complete" });
-    } catch (error) {
-      toast.error(t.errors.oauth);
+      void signIn(providerId, { callbackUrl: "/register/complete" });
+    } catch {
+      toast.error(t("register.errors.oauth", "Error al conectar con el proveedor"));
       setLoading(false);
     }
   }
 
-  async function handleEmailRegistration() {
-    if (!formData.email || !formData.name || !formData.password) {
-      toast.error(t.errors.requiredFields);
+  async function handleEmailRegistration(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!form.email || !form.name || !form.password) {
+      setError(t("register.errors.requiredFields", "Por favor completa todos los campos requeridos"));
       return;
     }
-
-    if (formData.password.length < 8) {
-      toast.error(t.errors.passwordTooShort);
+    if (form.password.length < 8) {
+      setError(t("register.errors.passwordTooShort", "La contraseña debe tener al menos 8 caracteres"));
       return;
     }
 
@@ -334,837 +102,207 @@ function RegisterPageContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.email,
-          name: formData.name,
-          password: formData.password,
-          planSlug: selectedPlan?.slug,
-          billingPeriod,
-          country: formData.country,
-          language: formData.language,
-          wantsSei: formData.wantsSei,
-          referralCode: formData.referralCode,
-          couponCode: formData.couponCode,
+          email: form.email,
+          name: form.name,
+          password: form.password,
+          planSlug: searchParams.get("plan") || undefined,
+          referralCode: searchParams.get("ref") || undefined,
+          couponCode: searchParams.get("coupon") || undefined,
           utmSource: searchParams.get("utm_source"),
           utmMedium: searchParams.get("utm_medium"),
           utmCampaign: searchParams.get("utm_campaign"),
           source: searchParams.get("source"),
+          // El diagnóstico anónimo del Pre-SEI viaja con el registro: el
+          // backend lo reclama (claimPreSeiSession) y el WOW sobrevive.
+          preSeiToken,
+          intent: searchParams.get("intent"),
+          // Invitación relacional (/r/[token]): vincula la díada al registrarse.
+          relToken: searchParams.get("relToken"),
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error);
+        setError(
+          data.error === "email_already_exists"
+            ? t("register.errors.emailExists", "Este email ya está registrado")
+            : t("register.errors.general", "Ocurrió un error. Inténtalo de nuevo.")
+        );
+        return;
       }
 
-      // Auto-login después del registro exitoso
+      // Auto-login y directo al onboarding (mini-SEI = momento WOW).
       const signInResult = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
+        email: form.email,
+        password: form.password,
         redirect: false,
       });
-
       if (signInResult?.error) {
-        // Si falla el auto-login, mostrar mensaje y redirigir a login
-        toast.success(t.errors.accountCreated);
-        router.push("/login");
+        toast.success(t("register.errors.accountCreated", "Cuenta creada. Por favor inicia sesión."));
+        router.push("/signin");
       } else {
-        // Auto-login exitoso → al onboarding (mini-SEI = momento WOW), igual que
-        // el flujo OAuth. Antes iba a /settings/profile y se saltaba el mini-SEI:
-        // dos usuarios del mismo día vivían experiencias distintas (auditoría D1).
-        toast.success(t.errors.welcomeToRowi);
+        toast.success(t("register.errors.welcomeToRowi", "¡Bienvenido a Rowi! Completa tu perfil."));
         router.push("/onboarding");
       }
-    } catch (error: any) {
-      const errorMsg = error.message === "email_already_exists"
-        ? t.errors.emailExists
-        : error.message || t.errors.general;
-      toast.error(errorMsg);
+    } catch {
+      setError(t("register.errors.general", "Ocurrió un error. Inténtalo de nuevo."));
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleCheckout() {
-    if (!selectedPlan || selectedPlan.priceMonthly === 0) {
-      // Plan gratuito - ir directo al dashboard
-      router.push("/dashboard");
-      return;
-    }
-
-    if (selectedPlan.isCustomPricing) {
-      // Enterprise - ir a contacto
-      router.push("/contact?plan=enterprise");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planSlug: selectedPlan.slug,
-          billingPeriod,
-          // Cupón: el usuario pudo ingresar un código de cupón o de referido.
-          // Se pasa al checkout; el backend lo aplica si tiene stripeCouponId.
-          couponCode: formData.couponCode || formData.referralCode || undefined,
-          successUrl: `${window.location.origin}/register/success`,
-          cancelUrl: `${window.location.origin}/register?step=plan`,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error: any) {
-      toast.error(t.errors.checkout);
-      setLoading(false);
-    }
-  }
-
-  const getPrice = (plan: RowiPlan) => {
-    if (plan.isCustomPricing) {
-      return t.price.custom;
-    }
-    const price = billingPeriod === "yearly" ? plan.priceYearly : plan.priceMonthly;
-    return formatPrice(price, plan.currency, lang);
-  };
-
-  const getPeriodText = (plan: RowiPlan) => {
-    if (plan.isCustomPricing) return "";
-    if (plan.priceMonthly === 0) return t.price.forever;
-    if (billingPeriod === "yearly") return t.price.year;
-    return t.price.month;
-  };
+  const inputClass =
+    "w-full rounded-xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-4 py-3 text-base text-[var(--rowi-fg)] placeholder:text-[var(--rowi-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-primary,#7c3aed)]";
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4">
-      {/* Step Indicator */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={s.key}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  i === step
-                    ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white"
-                    : i < step
-                    ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                    : "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-gray-500"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">
-                  {t.steps[s.key as keyof typeof t.steps]}
-                </span>
-              </div>
-            );
-          })}
+    <main className="min-h-screen flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[var(--rowi-fg)] mb-2">
+            {t("register.account.title", "Crea tu cuenta")}
+          </h1>
+          {preSeiToken ? (
+            <p className="text-sm text-[var(--rowi-primary,#7c3aed)] font-medium flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4" aria-hidden="true" />
+              {t("register.mirrorReady", "Tu espejo emocional está listo. Crea tu cuenta para guardarlo.")}
+            </p>
+          ) : (
+            <p className="text-sm text-[var(--rowi-muted)]">
+              {t("register.oneStep.subtitle", "Gratis, en menos de un minuto. Sin tarjeta.")}
+            </p>
+          )}
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto">
-        <AnimatePresence mode="wait">
-          {/* Step 0: Plan Selection */}
-          {step === 0 && (
-            <StepContainer key="plan">
-              <StepHeader
-                title={t.planSelection.title}
-                description={t.planSelection.description}
+        <div className="rounded-2xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] p-6 space-y-5">
+          {/* OAuth primero: el camino de menor fricción */}
+          {oauthProviders.length > 0 && (
+            <>
+              <div className="space-y-2">
+                {oauthProviders.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => handleOAuthSignIn(p.id)}
+                    disabled={loading}
+                    className="w-full rounded-xl border border-[var(--rowi-card-border)] px-4 py-3 text-sm font-medium text-[var(--rowi-fg)] hover:bg-[var(--rowi-card-hover)] transition-colors"
+                  >
+                    {t("register.account.continueWith", "Continuar con")} {p.name}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-[var(--rowi-card-border)]" />
+                <span className="text-xs text-[var(--rowi-muted)]">
+                  {t("register.account.or", "o regístrate con email")}
+                </span>
+                <div className="h-px flex-1 bg-[var(--rowi-card-border)]" />
+              </div>
+            </>
+          )}
+
+          <form onSubmit={handleEmailRegistration} className="space-y-4" noValidate>
+            <div>
+              <label htmlFor="reg-name" className="block text-sm font-medium text-[var(--rowi-fg)] mb-1.5">
+                {t("register.account.nameLabel", "Nombre")}
+              </label>
+              <input
+                id="reg-name"
+                type="text"
+                autoComplete="name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder={t("register.account.namePlaceholder", "Tu nombre completo")}
+                className={inputClass}
+                required
               />
+            </div>
+            <div>
+              <label htmlFor="reg-email" className="block text-sm font-medium text-[var(--rowi-fg)] mb-1.5">
+                {t("register.account.emailLabel", "Email")}
+              </label>
+              <input
+                id="reg-email"
+                type="email"
+                autoComplete="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder={t("register.account.emailPlaceholder", "tu@email.com")}
+                className={inputClass}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="reg-password" className="block text-sm font-medium text-[var(--rowi-fg)] mb-1.5">
+                {t("register.account.passwordLabel", "Contraseña")}
+              </label>
+              <input
+                id="reg-password"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                placeholder={t("register.errors.passwordPlaceholder", "Contraseña (mínimo 8 caracteres)")}
+                className={inputClass}
+                required
+              />
+            </div>
 
-              {/* Toggle B2C / B2B */}
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <button
-                  onClick={() => setShowB2B(false)}
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                    !showB2B
-                      ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white"
-                      : "bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700"
-                  }`}
-                >
-                  {t.planSelection.personalFamily}
-                </button>
-                <button
-                  onClick={() => setShowB2B(true)}
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                    showB2B
-                      ? "bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white"
-                      : "bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700"
-                  }`}
-                >
-                  {t.planSelection.business}
-                </button>
-              </div>
+            {error && (
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
 
-              {/* Billing Toggle */}
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <span className={`text-sm ${billingPeriod === "monthly" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
-                  {t.planSelection.monthly}
-                </span>
-                <button
-                  onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${
-                    billingPeriod === "yearly" ? "bg-green-500" : "bg-gray-300 dark:bg-zinc-700"
-                  }`}
-                >
-                  <motion.div
-                    className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                    animate={{ left: billingPeriod === "yearly" ? "calc(100% - 22px)" : "2px" }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                </button>
-                <span className={`text-sm ${billingPeriod === "yearly" ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
-                  {t.planSelection.yearly}
-                </span>
-                {billingPeriod === "yearly" && (
-                  <span className="ml-1 px-2 py-0.5 bg-green-500/20 text-green-600 text-xs font-medium rounded-full">
-                    -17%
-                  </span>
-                )}
-              </div>
-
-              {/* Plans Grid */}
-              <div className={`grid gap-4 mt-8 ${
-                displayedPlans.length <= 3
-                  ? "md:grid-cols-3"
-                  : "md:grid-cols-2 lg:grid-cols-4"
-              }`}>
-                {displayedPlans.map((plan, index) => {
-                  const Icon = PLAN_ICONS[plan.slug];
-                  const isSelected = selectedPlan?.slug === plan.slug;
-                  const isExpanded = expandedPlan === plan.slug;
-                  const isHighlighted = plan.badge === "Popular" || plan.badge === "Recomendado";
-                  // Textos del plan resueltos vía i18n (pt/it incluidos).
-                  const lp = localizedPlan(plan, tGlobal);
-
-                  return (
-                    <motion.div
-                      key={plan.slug}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 * index }}
-                      onClick={() => setSelectedPlan(plan)}
-                      className={`relative rounded-2xl p-5 cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-2 border-[var(--rowi-g2)] bg-[var(--rowi-g2)]/5 shadow-lg"
-                          : isHighlighted
-                          ? "border-2 border-[var(--rowi-g2)]/40 bg-white dark:bg-zinc-900"
-                          : "border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-[var(--rowi-g2)]/50"
-                      }`}
-                    >
-                      {/* Badge */}
-                      {plan.badge && (
-                        <div
-                          className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold text-white"
-                          style={{ backgroundColor: plan.color }}
-                        >
-                          {lp.badge}
-                        </div>
-                      )}
-
-                      {/* Selected Check */}
-                      {isSelected && (
-                        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[var(--rowi-g2)] flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-
-                      {/* Icon & Name */}
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
-                          style={{ backgroundColor: plan.color }}
-                        >
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold">{plan.name}</h3>
-                        </div>
-                      </div>
-
-                      {/* Price */}
-                      <div className="mb-3">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold">{getPrice(plan)}</span>
-                          <span className="text-sm text-gray-500">{getPeriodText(plan)}</span>
-                        </div>
-                        {plan.pricePerUser && plan.pricePerUser > 0 && (
-                          <p className="text-xs text-gray-500">
-                            {t.planSelection.perUser}
-                            {plan.minUsers > 1 && ` (${t.planSelection.min} ${plan.minUsers})`}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Tokens */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-zinc-800 mb-3">
-                        <Brain className="w-4 h-4" style={{ color: plan.color }} />
-                        <span className="text-xs font-medium">{getTokensText(plan, lang)}</span>
-                      </div>
-
-                      {/* Key Features (3) */}
-                      <ul className="space-y-1.5 text-sm">
-                        {lp.features.slice(0, 3).map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <Check className="w-3.5 h-3.5 mt-0.5 text-green-500 shrink-0" />
-                            <span className="text-xs">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Expand/Collapse */}
-                      {lp.features.length > 3 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedPlan(isExpanded ? null : plan.slug);
-                          }}
-                          className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mt-2"
-                        >
-                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                          {isExpanded
-                            ? t.planSelection.seeLess
-                            : `+${lp.features.length - 3} ${t.planSelection.more}`
-                          }
-                        </button>
-                      )}
-
-                      {/* Expanded Features */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.ul
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="space-y-1.5 mt-2 overflow-hidden"
-                          >
-                            {lp.features.slice(3).map((feature, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <Check className="w-3.5 h-3.5 mt-0.5 text-green-500 shrink-0" />
-                                <span className="text-xs">{feature}</span>
-                              </li>
-                            ))}
-                          </motion.ul>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Support */}
-                      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-zinc-800 flex items-center gap-1 text-xs text-gray-500">
-                        <MessageCircle className="w-3 h-3" />
-                        {getSupportLevelName(plan.supportLevel, lang)}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Selected Plan Summary */}
-              {selectedPlan && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-[var(--rowi-g1)]/10 to-[var(--rowi-g2)]/10 border border-[var(--rowi-g2)]/20"
-                >
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{selectedPlan.emoji}</span>
-                      <div>
-                        <p className="font-semibold">{selectedPlan.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {getPrice(selectedPlan)}{getPeriodText(selectedPlan)}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={nextStep}
-                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                    >
-                      {t.planSelection.continue}
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="rowi-btn-primary w-full py-3 text-base font-medium flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Mail className="w-4 h-4" aria-hidden="true" />
               )}
-            </StepContainer>
-          )}
+              {t("register.account.createAccount", "Crear cuenta")}
+            </button>
+          </form>
 
-          {/* Step 1: Account Creation */}
-          {step === 1 && (
-            <StepContainer key="account">
-              <StepHeader
-                title={t.account.title}
-                description={t.account.description}
-              />
+          {/* Términos con LINKS REALES (antes: texto plano sin enlaces en el
+              paso 4 de un wizard que nadie alcanzaba). El timestamp de
+              aceptación se registra server-side al crear la cuenta. */}
+          <p className="text-xs text-[var(--rowi-muted)] text-center leading-relaxed">
+            {t("register.terms.prefix", "Al crear tu cuenta aceptas los")}{" "}
+            <Link href="/legal/terms" className="underline hover:text-[var(--rowi-fg)]" target="_blank">
+              {t("register.terms.tos", "Términos de Servicio")}
+            </Link>{" "}
+            {t("register.terms.and", "y la")}{" "}
+            <Link href="/legal/privacy" className="underline hover:text-[var(--rowi-fg)]" target="_blank">
+              {t("register.terms.privacy", "Política de Privacidad")}
+            </Link>
+            .
+          </p>
+        </div>
 
-              <div className="max-w-md mx-auto mt-8 space-y-4">
-                {/* OAuth Providers */}
-                {providers &&
-                  Object.values(providers)
-                    .filter((p: any) => p.id !== "email")
-                    .map((provider: any) => (
-                      <button
-                        key={provider.id}
-                        onClick={() => handleOAuthSignIn(provider.id)}
-                        disabled={loading}
-                        className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-                      >
-                        {loading ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <>
-                            <ProviderIcon provider={provider.id} />
-                            {t.account.continueWith} {provider.name}
-                          </>
-                        )}
-                      </button>
-                    ))}
-
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="px-2 bg-gray-50 dark:bg-zinc-900 text-gray-500">
-                      {t.account.or}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Email Form */}
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder={t.account.namePlaceholder}
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20"
-                  />
-                  <input
-                    type="email"
-                    placeholder={t.account.emailPlaceholder}
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20"
-                  />
-                  <input
-                    type="password"
-                    placeholder={t.errors.passwordPlaceholder}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-between mt-8 max-w-md mx-auto">
-                <button
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t.account.back}
-                </button>
-                <button
-                  onClick={handleEmailRegistration}
-                  disabled={loading || !formData.email || !formData.name || !formData.password || formData.password.length < 8}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      {t.account.createAccount}
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </StepContainer>
-          )}
-
-          {/* Step 2: Profile Setup */}
-          {step === 2 && (
-            <StepContainer key="profile">
-              <StepHeader
-                title={t.profile.title}
-                description={t.profile.description}
-              />
-
-              <div className="max-w-md mx-auto mt-8 space-y-4">
-                <select
-                  value={formData.country}
-                  onChange={(e) =>
-                    setFormData({ ...formData, country: e.target.value })
-                  }
-                  className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none"
-                >
-                  <option value="">{t.profile.selectCountry}</option>
-                  <option value="PE">Peru</option>
-                  <option value="MX">Mexico</option>
-                  <option value="CO">Colombia</option>
-                  <option value="AR">Argentina</option>
-                  <option value="CL">Chile</option>
-                  <option value="ES">Spain</option>
-                  <option value="US">United States</option>
-                  <option value="other">{t.profile.otherCountry}</option>
-                </select>
-
-                {/* Referral Code */}
-                <div>
-                  <label className="block text-sm text-gray-500 mb-2">
-                    {t.profile.referralCode} ({t.profile.optional})
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t.profile.referralCodePlaceholder}
-                    value={formData.referralCode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, referralCode: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none"
-                  />
-                </div>
-
-                {/* Coupon Code */}
-                <div>
-                  <label className="block text-sm text-gray-500 mb-2">
-                    {t.profile.couponCode} ({t.profile.optional})
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t.profile.couponCodePlaceholder}
-                    value={formData.couponCode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, couponCode: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 focus:border-[var(--rowi-g2)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-between mt-8 max-w-md mx-auto">
-                <button
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t.profile.back}
-                </button>
-                <button
-                  onClick={nextStep}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                >
-                  {t.profile.continue}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </StepContainer>
-          )}
-
-          {/* Step 3: SEI Decision */}
-          {step === 3 && (
-            <StepContainer key="sei">
-              <StepHeader
-                title={t.sei.title}
-                description={t.sei.description}
-              />
-
-              <div className="max-w-lg mx-auto mt-8">
-                {selectedPlan?.seiIncluded ? (
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-[var(--rowi-g1)]/10 to-[var(--rowi-g2)]/10 border border-[var(--rowi-g2)]/20">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
-                        <Zap className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">
-                          {t.sei.included}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {t.sei.includedDescription}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 cursor-pointer hover:border-[var(--rowi-g2)] transition-colors">
-                        <input
-                          type="radio"
-                          name="sei"
-                          checked={formData.wantsSei}
-                          onChange={() =>
-                            setFormData({ ...formData, wantsSei: true })
-                          }
-                          className="w-4 h-4 text-[var(--rowi-g2)]"
-                        />
-                        <div>
-                          <p className="font-medium">
-                            {t.sei.takeSeiNow}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {t.sei.takeSeiNowDescription}
-                          </p>
-                        </div>
-                      </label>
-
-                      <label className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 cursor-pointer hover:border-[var(--rowi-g2)] transition-colors">
-                        <input
-                          type="radio"
-                          name="sei"
-                          checked={!formData.wantsSei}
-                          onChange={() =>
-                            setFormData({ ...formData, wantsSei: false })
-                          }
-                          className="w-4 h-4 text-[var(--rowi-g2)]"
-                        />
-                        <div>
-                          <p className="font-medium">
-                            {t.sei.skipForNow}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {t.sei.skipForNowDescription}
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-                        <Zap className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-500">
-                          {t.sei.notIncluded}
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          {selectedPlan?.seiDiscountPercent && selectedPlan.seiDiscountPercent > 0
-                            ? `${selectedPlan.seiDiscountPercent}% ${t.errors.discountAvailable}`
-                            : t.sei.upgradeToInclude}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between mt-8 max-w-lg mx-auto">
-                <button
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t.sei.back}
-                </button>
-                <button
-                  onClick={nextStep}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                >
-                  {t.sei.continue}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </StepContainer>
-          )}
-
-          {/* Step 4: Confirmation */}
-          {step === 4 && (
-            <StepContainer key="confirm">
-              <StepHeader
-                title={t.confirm.title}
-                description={t.confirm.description}
-              />
-
-              <div className="max-w-md mx-auto mt-8">
-                {/* Order Summary */}
-                <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <span className="text-xl">{selectedPlan?.emoji}</span>
-                    {t.confirm.orderSummary}
-                  </h3>
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">
-                        {t.confirm.plan}
-                      </span>
-                      <span className="font-medium">{selectedPlan?.name}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">
-                        {t.confirm.billing}
-                      </span>
-                      <span className="font-medium">
-                        {billingPeriod === "yearly"
-                          ? t.planSelection.yearly
-                          : t.planSelection.monthly}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">
-                        {t.confirm.aiTokens}
-                      </span>
-                      <span className="font-medium">
-                        {selectedPlan && getTokensText(selectedPlan, lang)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">
-                        {t.confirm.name}
-                      </span>
-                      <span className="font-medium">{formData.name}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">
-                        {t.confirm.email}
-                      </span>
-                      <span className="font-medium">{formData.email}</span>
-                    </div>
-
-                    {selectedPlan?.seiIncluded && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">SEI</span>
-                        <span className="font-medium">
-                          {formData.wantsSei
-                            ? t.confirm.seiYes
-                            : t.confirm.seiLater}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="pt-3 mt-3 border-t border-gray-200 dark:border-zinc-800">
-                      <div className="flex justify-between text-lg">
-                        <span className="font-semibold">
-                          {t.confirm.total}
-                        </span>
-                        <span className="font-bold text-[var(--rowi-g2)]">
-                          {selectedPlan && getPrice(selectedPlan)}
-                          {selectedPlan && getPeriodText(selectedPlan)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Terms */}
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  {t.confirm.terms}
-                </p>
-              </div>
-
-              <div className="flex justify-between mt-8 max-w-md mx-auto">
-                <button
-                  onClick={prevStep}
-                  className="flex items-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t.confirm.back}
-                </button>
-                <button
-                  onClick={handleCheckout}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      {selectedPlan?.isCustomPricing
-                        ? t.confirm.contactSales
-                        : selectedPlan?.priceMonthly === 0
-                        ? t.confirm.startFree
-                        : t.confirm.proceedToPayment}
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </StepContainer>
-          )}
-        </AnimatePresence>
+        <p className="text-center text-sm text-[var(--rowi-muted)] mt-6">
+          {t("register.haveAccount", "¿Ya tienes cuenta?")}{" "}
+          <Link href="/signin" className="text-[var(--rowi-primary,#7c3aed)] font-medium hover:underline">
+            {t("register.signInLink", "Inicia sesión")}
+          </Link>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }
 
-// =========================================================
-// Helper Components
-// =========================================================
-
-function StepContainer({ children }: { children: React.ReactNode }) {
+export default function RegisterPage() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--rowi-g2)]" />
+        </div>
+      }
     >
-      {children}
-    </motion.div>
+      <RegisterInner />
+    </Suspense>
   );
-}
-
-function StepHeader({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="text-center">
-      <h1 className="text-3xl font-bold rowi-gradient-text">
-        {title}
-      </h1>
-      <p className="text-gray-500 dark:text-gray-400 mt-2">{description}</p>
-    </div>
-  );
-}
-
-function ProviderIcon({ provider }: { provider: string }) {
-  switch (provider) {
-    case "google":
-      return (
-        <svg className="w-5 h-5" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-          />
-          <path
-            fill="currentColor"
-            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-          />
-          <path
-            fill="currentColor"
-            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-          />
-          <path
-            fill="currentColor"
-            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-          />
-        </svg>
-      );
-    default:
-      return <Mail className="w-5 h-5" />;
-  }
 }

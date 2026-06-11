@@ -68,10 +68,13 @@ function FallbackHomePage() {
             title1: t("landing.hero.title1"),
             title2: t("landing.hero.title2"),
             subtitle: t("landing.hero.subtitle"),
-            ctaPrimary: t("landing.hero.cta.primary"),
-            // El gancho del blueprint: el Emotional Mirror antes que el demo.
-            ctaSecondary: t("landing.hero.cta.mirror"),
-            ctaSecondaryHref: "/pre-sei",
+            // Jerarquía invertida (F2 Rowi Launch 1.0): el camino diseñado
+            // como WOW es el Espejo (/pre-sei) — valor antes de cuenta. El
+            // registro pasa a secundario.
+            ctaPrimary: t("landing.hero.cta.mirror"),
+            ctaPrimaryHref: "/pre-sei",
+            ctaSecondary: t("landing.hero.cta.primary"),
+            ctaSecondaryHref: "/register",
             image: "/rowivectors/Rowi-06.webp",
             trustBadges: [
               { icon: "shield", text: t("landing.hero.trust.security") },

@@ -567,7 +567,8 @@ export default function NavBar() {
       <div className="mx-auto max-w-screen-2xl h-16 px-4 flex items-center justify-between gap-2 lg:gap-4">
         {/* Logo + Context Switcher */}
         <div className="flex items-center gap-2 lg:gap-4 flex-shrink-0 min-w-0">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          {/* El logo lleva a casa — y casa es TODAY, no el dashboard. */}
+          <Link href="/today" className="flex items-center gap-2">
             <Image src="/rowi-logo.png" alt="Rowi" width={32} height={32} className="rounded-lg flex-shrink-0" />
             <span className="font-bold text-lg rowi-gradient-text hidden sm:block">Rowi</span>
           </Link>
@@ -1111,7 +1112,7 @@ export default function NavBar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800"
+            className="md:hidden bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800 max-h-[calc(100vh-4rem-var(--banner-height,0px))] overflow-y-auto"
           >
             {/* Context Switcher en Mobile */}
             {isLogged && hasMultipleContexts && (

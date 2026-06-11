@@ -43,7 +43,9 @@ export default function TodayPage() {
   const { data: session, status } = useSession();
   const isAuth = status === "authenticated" && !!session?.user;
 
-  const tz = typeof window !== "undefined" ? -new Date().getTimezoneOffset() : 0;
+  // Contrato de timezone.ts: el servidor espera Date.getTimezoneOffset() SIN
+  // negar (Ecuador UTC-5 → +300). Negado, el cierre nocturno caía en otro día.
+  const tz = typeof window !== "undefined" ? new Date().getTimezoneOffset() : 0;
   const lang =
     typeof window !== "undefined" ? localStorage.getItem("rowi.lang") ?? "es" : "es";
 
@@ -57,6 +59,10 @@ export default function TodayPage() {
   const [reflectionInput, setReflectionInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [evolved, setEvolved] = useState<{ hatched: boolean; newStage: string } | null>(null);
+  // La recompensa que el server ya calculaba y la UI descartaba (F3):
+  // puntos + racha al cerrar la reflexión.
+  const [reward, setReward] = useState<{ points: number; streak: number } | null>(null);
+  const [postError, setPostError] = useState(false);
 
   if (status === "loading" || (isAuth && isLoading)) {
     return (
@@ -78,13 +84,29 @@ export default function TodayPage() {
 
   async function post(step: string, payload: Record<string, unknown>) {
     setSaving(true);
+    setPostError(false);
     try {
-      const res = await fetch(TODAY_URL, {
+      const raw = await fetch(TODAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step, tzOffsetMinutes: tz, lang, ...payload }),
-      }).then((r) => r.json());
+      });
+      const res = await raw.json().catch(() => null);
+      // Antes: sin catch ni res.ok — una reflexión perdida parecía guardada.
+      if (!raw.ok || res?.ok === false) {
+        setPostError(true);
+        return;
+      }
       await mutate(`${TODAY_URL}?tz=${tz}&lang=${lang}`);
+      // Recompensa visible: puntos + racha que el server devuelve al cerrar
+      // la reflexión (antes se descartaban — la mitad del loop sin premio).
+      if (res?.reward?.pointsAdded) {
+        setReward({
+          points: res.reward.pointsAdded,
+          streak: res.reward.streak?.current ?? 0,
+        });
+        void mutate("/api/daily-pulse/today");
+      }
       // TODAY → Avatar → BECOMING: si la reflexión movió el avatar, refrescamos
       // el avatar y mostramos la recompensa (antes no pasaba nada al cerrar el loop).
       const ev = res?.reward?.evolution;
@@ -92,6 +114,8 @@ export default function TodayPage() {
         await mutate("/api/avatar");
         setEvolved({ hatched: ev.hatched, newStage: ev.newStage });
       }
+    } catch {
+      setPostError(true);
     } finally {
       setSaving(false);
     }
@@ -108,6 +132,50 @@ export default function TodayPage() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           {t(`today.greeting.${greetingKey()}`, "Buenos días")}
         </h1>
+
+        {/* Error del GET: nunca una card de práctica vacía con botón activo */}
+        {isAuth && !isLoading && todayRes && todayRes.ok === false && (
+          <div role="alert" className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-5 text-center space-y-3">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {t("today.loadError", "No pudimos cargar tu día. Revisa tu conexión.")}
+            </p>
+            <button
+              onClick={() => mutate(`${TODAY_URL}?tz=${tz}&lang=${lang}`)}
+              className="rowi-btn-primary px-4 py-2 text-sm"
+            >
+              {t("common.retry", "Reintentar")}
+            </button>
+          </div>
+        )}
+
+        {/* Error de guardado: la reflexión NO se perdió en silencio */}
+        {postError && (
+          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-sm flex items-center justify-between gap-3">
+            <p className="text-red-700 dark:text-red-300">
+              {t("today.saveError", "No se pudo guardar. Tu texto sigue aquí: vuelve a intentarlo.")}
+            </p>
+          </div>
+        )}
+
+        {/* Recompensa al cerrar el día: el server siempre la calculó; ahora se ve */}
+        {reward && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 text-white p-4 flex items-center gap-3"
+          >
+            <Sparkles className="w-5 h-5 shrink-0" aria-hidden="true" />
+            <p className="text-sm font-medium">
+              {t("today.reward.points", "+{points} puntos").replace("{points}", String(reward.points))}
+              {reward.streak > 1 && (
+                <>
+                  {" · "}
+                  {t("today.reward.streak", "racha de {days} días").replace("{days}", String(reward.streak))}
+                </>
+              )}
+            </p>
+          </motion.div>
+        )}
 
         {/* MAÑANA — SEE */}
         <motion.section

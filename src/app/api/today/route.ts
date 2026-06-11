@@ -28,6 +28,7 @@ import { logAffinityInteraction } from "@/ai/learning/affinityLearning";
 import { awardPoints } from "@/services/gamification";
 import { checkAndEvolve } from "@/services/avatar-evolution";
 import { recordDailyIntervention } from "@/lib/today/intervention";
+import { updateDailyStreak } from "@/lib/streak/updateDailyStreak";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 const SEI_KEYS: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
@@ -36,9 +37,6 @@ function resolveLang(input: unknown): BecomeLang {
   return ["en", "pt", "it"].includes(String(input)) ? (input as BecomeLang) : "es";
 }
 
-function diffInDays(a: Date, b: Date): number {
-  return Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
-}
 
 /** Puntos por cerrar la reflexión nocturna (logro de Becoming, no actividad vacía). */
 const REFLECTION_POINTS = 15;
@@ -70,57 +68,11 @@ async function rewardReflection(
   } | null;
 } | null> {
   try {
-    const today = startOfLocalDay(now, tz);
-
-    // 1. Racha de reflexión. Idempotente por día: si ya reflexionó hoy no
-    //    vuelve a sumar racha/puntos (evita doble conteo si el usuario reenvía).
-    const existingStreak = await prisma.userStreak.findUnique({
-      where: { userId },
-      select: {
-        currentStreak: true,
-        longestStreak: true,
-        lastActivityDate: true,
-        streakStartDate: true,
-      },
-    });
-    let currentStreak = 1;
-    let streakStartDate: Date | null = today;
-    let alreadyToday = false;
-    if (existingStreak?.lastActivityDate) {
-      const last = startOfLocalDay(existingStreak.lastActivityDate, tz);
-      const days = diffInDays(today, last);
-      if (days === 0) {
-        alreadyToday = true;
-        currentStreak = existingStreak.currentStreak;
-        streakStartDate = existingStreak.streakStartDate ?? today;
-      } else if (days === 1) {
-        currentStreak = existingStreak.currentStreak + 1;
-        streakStartDate = existingStreak.streakStartDate ?? last;
-      } else {
-        currentStreak = 1;
-        streakStartDate = today;
-      }
-    }
-    const longestStreak = Math.max(currentStreak, existingStreak?.longestStreak ?? 0);
-
-    if (!alreadyToday) {
-      await prisma.userStreak.upsert({
-        where: { userId },
-        create: {
-          userId,
-          currentStreak,
-          longestStreak,
-          lastActivityDate: today,
-          streakStartDate,
-        },
-        update: {
-          currentStreak,
-          longestStreak,
-          lastActivityDate: today,
-          streakStartDate,
-        },
-      });
-    }
+    // 1. Racha de actividad diaria — lógica CANÓNICA compartida con
+    //    /api/daily-pulse/answer (antes duplicada y divergente). Idempotente
+    //    por día local; dispara el hito 3/7/30/100 si corresponde.
+    const streakResult = await updateDailyStreak(userId, tz, now);
+    const { current: currentStreak, longest: longestStreak, alreadyToday } = streakResult;
 
     // 2. Puntos por el camino canónico (mueve UserLevel.totalPoints, el total que
     //    leen nivel/leaderboard/perfil). ACHIEVEMENT, no CHAT/DAILY_LOGIN: el

@@ -22,7 +22,9 @@ export type ContextNotificationKind =
   | "service.proposed"
   | "service.accepted"
   | "service.ended"
-  | "preSei.followup";
+  | "preSei.followup"
+  // Invitación de relación (HOOK SIA): el deep link /r/[token] al invitado.
+  | "relationship.invited";
 
 export type Locale = "es" | "en" | "pt" | "it";
 
@@ -111,6 +113,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
       cta: "Continuar mi camino en Rowi",
       footer: "Te escribimos solo porque lo pediste tras tu Pre-SEI. No volveremos a escribirte si no creas tu cuenta.",
     },
+    "relationship.invited": {
+      subject: (a) => `${a || "Alguien"} quiere entenderte mejor`,
+      greeting: "¡Hola!",
+      body: (a, d) =>
+        `${a || "Una persona que te aprecia"} te invitó a un espacio de 1 minuto para que ambos se comuniquen mejor${d ? ` (${d})` : ""}. No es una encuesta sobre ti: es para ver cómo se sintonizan.`,
+      cta: "Abrir la invitación (1 minuto)",
+      footer: "Recibes este correo porque alguien te invitó personalmente desde Rowi. Si no te interesa, puedes ignorarlo: el enlace expira solo.",
+    },
   },
   en: {
     "family.requested": {
@@ -168,6 +178,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
         `Yesterday you looked in the mirror. Today comes the small step:${d ? `\n\n${d}` : ""}\n\nIt takes less than 2 minutes. What counts is doing it once.`,
       cta: "Continue my path on Rowi",
       footer: "We're writing only because you asked us to after your Pre-SEI. We won't write again unless you create your account.",
+    },
+    "relationship.invited": {
+      subject: (a) => `${a || "Someone"} wants to understand you better`,
+      greeting: "Hi!",
+      body: (a, d) =>
+        `${a || "Someone who cares about you"} invited you to a 1-minute space to help you both communicate better${d ? ` (${d})` : ""}. It's not a survey about you: it's about how you tune in to each other.`,
+      cta: "Open the invitation (1 minute)",
+      footer: "You're receiving this because someone invited you personally from Rowi. Not interested? Just ignore it — the link expires on its own.",
     },
   },
   pt: {
@@ -227,6 +245,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
       cta: "Continuar meu caminho no Rowi",
       footer: "Escrevemos só porque você pediu após o seu Pre-SEI. Não escreveremos de novo se você não criar sua conta.",
     },
+    "relationship.invited": {
+      subject: (a) => `${a || "Alguém"} quer te entender melhor`,
+      greeting: "Olá!",
+      body: (a, d) =>
+        `${a || "Alguém que gosta de você"} convidou você para um espaço de 1 minuto para vocês se comunicarem melhor${d ? ` (${d})` : ""}. Não é uma pesquisa sobre você: é sobre como vocês se sintonizam.`,
+      cta: "Abrir o convite (1 minuto)",
+      footer: "Você recebeu este e-mail porque alguém te convidou pessoalmente pelo Rowi. Sem interesse? Pode ignorar — o link expira sozinho.",
+    },
   },
   it: {
     "family.requested": {
@@ -284,6 +310,14 @@ const STRINGS: Record<Locale, Record<ContextNotificationKind, StringSet>> = {
         `Ieri ti sei guardato allo specchio. Oggi arriva il piccolo passo:${d ? `\n\n${d}` : ""}\n\nBastano 2 minuti. Quello che conta è farlo una volta.`,
       cta: "Continuare il mio percorso su Rowi",
       footer: "Ti scriviamo solo perché l'hai chiesto dopo il tuo Pre-SEI. Non ti scriveremo più se non crei il tuo account.",
+    },
+    "relationship.invited": {
+      subject: (a) => `${a || "Qualcuno"} vuole capirti meglio`,
+      greeting: "Ciao!",
+      body: (a, d) =>
+        `${a || "Qualcuno che ci tiene a te"} ti ha invitato a uno spazio di 1 minuto per comunicare meglio tra voi${d ? ` (${d})` : ""}. Non è un sondaggio su di te: riguarda come vi sintonizzate.`,
+      cta: "Apri l'invito (1 minuto)",
+      footer: "Ricevi questa email perché qualcuno ti ha invitato personalmente da Rowi. Non ti interessa? Ignorala: il link scade da solo.",
     },
   },
 };

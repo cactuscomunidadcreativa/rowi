@@ -4,6 +4,7 @@ import { parse } from "csv-parse/sync";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { contributeBatchToRowiverse, ContributionInput } from "@/lib/rowiverse/contribution-service";
+import { filterByConsent } from "@/lib/privacy/checkConsent";
 import { propagateMemberToParents } from "@/lib/communities/propagate-member";
 
 export const runtime = "nodejs";
@@ -341,8 +342,9 @@ export async function POST(req: NextRequest) {
       /* =========================================================
          2.3.3.1 PREPARAR CONTRIBUCIÓN AL ROWIVERSE
       ========================================================== */
-      // Solo agregar si el usuario tiene habilitada la contribución (default: true)
-      if (user.contributeToRowiverse !== false) {
+      // El gate REAL es el consentimiento benchmarking_contribution, aplicado
+      // en batch antes de insertar (sección 3); el flag legacy ya no decide.
+      {
         rowiverseContributions.push({
           userId: user.id,
           memberId: legacyMember.id,
@@ -500,11 +502,27 @@ export async function POST(req: NextRequest) {
     /* =========================================================
        3️⃣ CONTRIBUIR AL ROWIVERSE EN BATCH
     ========================================================== */
+    // SOLO usuarios con consentimiento benchmarking_contribution activo
+    // (opt-in real vía UserConsent). Filas sin userId no pueden consentir →
+    // no contribuyen (default privacy-safe).
     if (rowiverseContributions.length > 0) {
       try {
-        const rowiverseResult = await contributeBatchToRowiverse(rowiverseContributions);
-        stats.rowiverseContributions = rowiverseResult.processed;
-        console.log(`🌐 RowiVerse: ${rowiverseResult.processed} contribuciones procesadas`);
+        const userIds = rowiverseContributions
+          .map((c) => c.userId)
+          .filter((id): id is string => Boolean(id));
+        const consented = new Set(
+          await filterByConsent(userIds, "benchmarking_contribution"),
+        );
+        const allowed = rowiverseContributions.filter(
+          (c) => c.userId && consented.has(c.userId),
+        );
+        if (allowed.length > 0) {
+          const rowiverseResult = await contributeBatchToRowiverse(allowed);
+          stats.rowiverseContributions = rowiverseResult.processed;
+        }
+        console.log(
+          `🌐 RowiVerse: ${stats.rowiverseContributions} contribuciones procesadas (${rowiverseContributions.length - allowed.length} sin consentimiento, omitidas)`
+        );
       } catch (err) {
         console.warn("⚠️ Error al contribuir al RowiVerse:", err);
       }

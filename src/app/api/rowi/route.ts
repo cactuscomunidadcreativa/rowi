@@ -228,6 +228,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 🔇 allowAI: el toggle "Análisis de IA" del usuario por fin gatea de
+    // verdad (antes no gateaba ninguna llamada — auditoría jun-2026, P2
+    // confianza). El usuario que lo apagó no recibe respuestas de IA.
+    if (auth && auth.allowAI === false) {
+      return NextResponse.json(
+        { ok: false, error: "ai_disabled" },
+        { status: 403 },
+      );
+    }
+
     // 🔐 SEGURIDAD: Acceso por HUB_ACCESS_KEY (solo para servicios internos)
     // ---------------------------------------------------------
     // Este método de acceso está DEPRECADO y será removido.
@@ -464,6 +474,49 @@ export async function POST(req: NextRequest) {
     ];
 
     /* =========================================================
+     🎟️ 4.9. CUOTA mensual de tokens IA por plan (F5 Rowi Launch 1.0).
+     /pricing vende los cupos (Free 10 / ROWI+ 150 / Pro 500) pero ningún
+     endpoint los aplicaba: Free tenía IA ilimitada y el costo OpenAI por
+     usuario gratuito no tenía tope (auditoría jun-2026, P1 conversión).
+     tokensMonthly = 0 en el plan significa "sin cuota" (ilimitado).
+    ========================================================== */
+    if (auth?.id && auth.id !== "hub-control-user") {
+      try {
+        const quotaUser = await prisma.user.findUnique({
+          where: { id: auth.id },
+          select: { plan: { select: { tokensMonthly: true, slug: true } } },
+        });
+        const tokensMonthly = quotaUser?.plan?.tokensMonthly ?? 0;
+        if (tokensMonthly > 0) {
+          const startOfMonth = new Date();
+          startOfMonth.setUTCDate(1);
+          startOfMonth.setUTCHours(0, 0, 0, 0);
+          const usage = await prisma.userUsage.aggregate({
+            where: { userId: auth.id, day: { gte: startOfMonth } },
+            _sum: { tokensInput: true, tokensOutput: true },
+          });
+          const used =
+            (usage._sum.tokensInput ?? 0) + (usage._sum.tokensOutput ?? 0);
+          if (used >= tokensMonthly) {
+            return NextResponse.json(
+              {
+                ok: false,
+                error: "quota_exceeded",
+                tokensMonthly,
+                tokensUsed: used,
+                upgradeUrl: "/pricing",
+              },
+              { status: 402 },
+            );
+          }
+        }
+      } catch (quotaErr) {
+        // La cuota nunca tumba el chat por un fallo de lectura propio.
+        console.warn("⚠️ Quota check falló (se permite la llamada):", quotaErr);
+      }
+    }
+
+    /* =========================================================
      🤖 5. Llamar a OpenAI
     ========================================================== */
     const openai = await getOpenAIClient();
@@ -480,6 +533,34 @@ export async function POST(req: NextRequest) {
     // Estimar tokens (opcional, aproximado)
     const tokensInput = estimateTokens(JSON.stringify(messages));
     const tokensOutput = estimateTokens(replyText);
+
+    // Registro PER-USER (la cuota del paso 4.9 lee de aquí). Antes solo se
+    // registraba por tenant y los usuarios sin tenant no contaban nada.
+    if (auth?.id && auth.id !== "hub-control-user") {
+      try {
+        const day = new Date();
+        day.setUTCHours(0, 0, 0, 0);
+        await prisma.userUsage.upsert({
+          where: {
+            userId_day_feature: { userId: auth.id, day, feature: "ROWI_CHAT" },
+          },
+          create: {
+            userId: auth.id,
+            tenantId: tenantFromBody || auth?.primaryTenantId || null,
+            day,
+            feature: "ROWI_CHAT",
+            tokensInput,
+            tokensOutput,
+          },
+          update: {
+            tokensInput: { increment: tokensInput },
+            tokensOutput: { increment: tokensOutput },
+          },
+        });
+      } catch (uErr) {
+        console.warn("⚠️ UserUsage no registrado (no crítico):", uErr);
+      }
+    }
 
     /* =========================================================
      📊 6. Registrar usage (ROWI_CHAT)

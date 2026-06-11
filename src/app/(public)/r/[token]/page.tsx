@@ -13,6 +13,7 @@ import { use } from "react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PreSeiWizard, { type PreSeiDemographics } from "@/components/pre-sei/PreSeiWizard";
+import { affinityAsGap, type AttunementGap } from "@/domains/affinity/lib/asGap";
 
 type Phase = "loading" | "intro" | "test" | "done" | "error";
 interface QuestionView { sei: string; index: number; prompt: string }
@@ -29,7 +30,9 @@ export default function RelationshipInvitePage({
   const [relationType, setRelationType] = useState<string>("other");
   const [errorKey, setErrorKey] = useState<string>("relInvite.notFound");
   const [questions, setQuestions] = useState<QuestionView[]>([]);
-  const [heat100, setHeat100] = useState<number | null>(null);
+  // BRECHA, no porcentaje (regla dura de asGap.ts): nivel de sintonía 0-3.
+  const [gap, setGap] = useState<AttunementGap | null>(null);
+  const [ownerHasProfile, setOwnerHasProfile] = useState(true);
 
   // Cargar el encuadre de la invitación (marca opened).
   useEffect(() => {
@@ -40,6 +43,7 @@ export default function RelationshipInvitePage({
         if (!json.ok) { setErrorKey("relInvite.notFound"); setPhase("error"); return; }
         setInviterName(json.inviterName);
         setRelationType(json.relationType || "other");
+        setOwnerHasProfile(json.ownerHasProfile !== false);
         setPhase("intro");
       })
       .catch(() => { setErrorKey("relInvite.notFound"); setPhase("error"); });
@@ -59,13 +63,16 @@ export default function RelationshipInvitePage({
     })
       .then((r) => r.json())
       .catch(() => null);
-    // El WOW de la cadena SIA: la afinidad owner↔invitado, recién calculada.
-    if (json?.ok && typeof json.heat100 === "number") setHeat100(json.heat100);
+    // El WOW de la cadena SIA: la BRECHA owner↔invitado, recién calculada.
+    // Nunca un % crudo (prohibido por asGap.ts): escala de sintonía.
+    if (json?.ok) {
+      setGap(affinityAsGap({ heat135: json.heat135, heat100: json.heat100 }));
+    }
     setPhase("done");
   }
 
   const framing = t(`relInvite.framing.${relationType}`, t("relInvite.framing.other"));
-  const inviter = inviterName || "Alguien";
+  const inviter = inviterName || t("relInvite.someone", "Alguien");
 
   return (
     <div className="min-h-screen pt-20 pb-16 px-4 bg-[var(--rowi-bg)]">
@@ -89,6 +96,14 @@ export default function RelationshipInvitePage({
             </h1>
             <p className="text-sm text-[var(--rowi-muted)] mb-2">{framing}</p>
             <p className="text-base text-[var(--rowi-muted)] mb-8">{t("relInvite.subtitle")}</p>
+            {!ownerHasProfile && (
+              <p className="text-xs text-[var(--rowi-muted)] mb-4 max-w-sm mx-auto">
+                {t(
+                  "relInvite.ownerPending",
+                  "{name} aún está completando su perfil: verás tu resultado hoy y la sintonía entre ambos en cuanto lo termine."
+                ).replace("{name}", inviter)}
+              </p>
+            )}
             <button onClick={startTest} className="rowi-btn-primary py-3 px-8 text-base">
               {t("relInvite.start", "Empezar (1 minuto)")}
             </button>
@@ -109,15 +124,26 @@ export default function RelationshipInvitePage({
               {t("relInvite.done.title")}
             </h2>
 
-            {/* WOW de afinidad: la sintonía owner↔invitado, recién calculada. */}
-            {heat100 != null && (
+            {/* WOW de afinidad: la BRECHA owner↔invitado como escala de
+                sintonía (termómetro 0-3), jamás un % crudo (regla asGap.ts). */}
+            {gap && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="my-6 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white p-6"
               >
-                <div className="text-5xl font-extrabold">{heat100}%</div>
-                <p className="text-sm text-violet-100 mt-2">
+                <div className="text-3xl font-extrabold">{t(gap.labelKey)}</div>
+                {/* Termómetro de sintonía: 4 pasos que se llenan */}
+                <div className="flex gap-1.5 justify-center mt-4" role="img" aria-label={t(gap.labelKey)}>
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-2 w-12 rounded-full ${i <= gap.step ? "bg-white" : "bg-white/25"}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-violet-100 mt-4">{t(gap.hintKey)}</p>
+                <p className="text-xs text-violet-200 mt-2">
                   {t(
                     "relInvite.done.affinity",
                     "Tu sintonía con {name} ahora mismo. Es un punto de partida — crece a medida que se conocen.",
@@ -127,7 +153,12 @@ export default function RelationshipInvitePage({
             )}
 
             <p className="text-base text-[var(--rowi-muted)] mb-8">{t("relInvite.done.body")}</p>
-            <a href="/register?source=rel_invite" className="rowi-btn-primary py-3 px-8 text-base inline-block">
+            {/* El token viaja al registro: al crear la cuenta se vincula la
+                díada (dyad.otherUserId) — sin esto la relación quedaba huérfana. */}
+            <a
+              href={`/register?source=rel_invite&relToken=${encodeURIComponent(token)}`}
+              className="rowi-btn-primary py-3 px-8 text-base inline-block"
+            >
               {t("relInvite.done.createAccount")}
             </a>
           </motion.div>

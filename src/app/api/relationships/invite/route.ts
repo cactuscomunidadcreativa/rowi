@@ -12,6 +12,7 @@ import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import crypto from "crypto";
 import { trackFunnel } from "@/domains/metrics/lib/funnel";
+import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -38,7 +39,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const inviteeName = (body.name as string)?.trim() || null;
+    // La UI (RelationshipsTab) envía `otherName`; clientes antiguos enviaban `name`.
+    const inviteeName =
+      ((body.otherName ?? body.name) as string)?.trim() || null;
     const inviteeEmail = (body.email as string)?.toLowerCase().trim() || null;
     const message = (body.message as string)?.trim()?.slice(0, 1000) || null;
     const relationType = RELATION_TYPES.includes(body.relationType) ? body.relationType : "other";
@@ -108,14 +111,32 @@ export async function POST(req: NextRequest) {
     const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "";
     const inviteUrl = `${base}/r/${inviteToken}`;
 
-    // TODO(email): enviar el deep link vía sendContextNotification si hay email.
-    // Por ahora devolvemos el link para compartir (WhatsApp-first, móvil).
+    // Email del deep link (si hay email). Fire-and-forget: un fallo de email
+    // jamás rompe la creación de la invitación — el link siempre se devuelve
+    // para compartir directo (WhatsApp-first, móvil).
+    let emailSent = false;
+    if (inviteeEmail) {
+      try {
+        const result = await sendContextNotification({
+          to: inviteeEmail,
+          kind: "relationship.invited",
+          actorName: user.name,
+          detail: null,
+          ctaUrl: inviteUrl,
+          locale,
+        });
+        emailSent = !!result.ok;
+      } catch {
+        /* el link compartible sigue siendo el camino principal */
+      }
+    }
 
     return NextResponse.json({
       ok: true,
       dyadId: dyad.id,
       token: inviteToken,
       inviteUrl,
+      emailSent,
       expiresAt,
     });
   } catch (e: any) {

@@ -305,6 +305,30 @@ export const NOTIFICATION_TEMPLATES: Templates = {
       emailSubject: "Your emotional intelligence assessment is ready",
     },
   },
+  DAILY_REFLECTION_REMINDER: {
+    es: {
+      title: "Cierra tu día con Rowi",
+      body: "Una frase sobre tu día basta. Tu racha y tu Rowi te esperan.",
+      emailSubject: "Tu reflexión de hoy te espera",
+    },
+    en: {
+      title: "Close your day with Rowi",
+      body: "One sentence about your day is enough. Your streak and your Rowi are waiting.",
+      emailSubject: "Today's reflection is waiting for you",
+    },
+  },
+  ECO_OUTCOME_REMINDER: {
+    es: {
+      title: "¿Funcionó tu mensaje?",
+      body: "Hace un par de días enviaste un mensaje con ECO{name}. Contarnos cómo fue afina los próximos.",
+      emailSubject: "¿Funcionó tu último mensaje?",
+    },
+    en: {
+      title: "Did your message work?",
+      body: "A couple of days ago you sent a message with ECO{name}. Telling us how it went sharpens the next ones.",
+      emailSubject: "Did your last message work?",
+    },
+  },
   EQ_INSIGHT_AVAILABLE: {
     es: {
       title: "Nuevo insight EQ",

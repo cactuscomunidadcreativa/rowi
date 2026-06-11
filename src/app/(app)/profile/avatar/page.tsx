@@ -80,8 +80,9 @@ export default function AvatarPage() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && !!session?.user;
 
+  // Contrato de timezone.ts: el offset viaja SIN negar (Ecuador UTC-5 → +300).
   const tzOffset =
-    typeof window !== "undefined" ? -new Date().getTimezoneOffset() : 0;
+    typeof window !== "undefined" ? new Date().getTimezoneOffset() : 0;
 
   const { data: avatarRes, isLoading: avatarLoading } = useSWR(
     isAuthenticated ? "/api/avatar" : null,

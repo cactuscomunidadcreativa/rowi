@@ -27,6 +27,57 @@ type Body = {
   note?: string;
 };
 
+/**
+ * GET /api/eco/send — díada pendiente de outcome ("¿funcionó?").
+ * Devuelve el envío más reciente SIN feedback posterior, para que la UI
+ * pregunte. El outcome es el dato que calibra la brecha (el foso).
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const email = token?.email?.toLowerCase();
+    if (!email) {
+      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    }
+    const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (!user) {
+      return NextResponse.json({ ok: false, error: "user_not_found" }, { status: 404 });
+    }
+
+    const threads = await prisma.ecoThread.findMany({
+      where: { ownerUserId: user.id },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+      select: {
+        dyadId: true,
+        dyad: { select: { otherName: true } },
+        messages: {
+          where: { role: { in: ["sent", "feedback"] } },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { role: true, createdAt: true },
+        },
+      },
+    });
+
+    // Pendiente = el último evento sent/feedback del hilo es un "sent".
+    const pendingThread = threads.find((t) => t.messages[0]?.role === "sent");
+    return NextResponse.json({
+      ok: true,
+      pending: pendingThread
+        ? {
+            dyadId: pendingThread.dyadId,
+            otherName: pendingThread.dyad?.otherName ?? null,
+            sentAt: pendingThread.messages[0]!.createdAt,
+          }
+        : null,
+    });
+  } catch (e: unknown) {
+    console.error("/api/eco/send GET error:", e);
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });

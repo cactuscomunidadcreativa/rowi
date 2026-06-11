@@ -47,7 +47,7 @@ interface AnswerResponse {
 }
 
 export default function DailyPulseCard() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const isEN = lang === "en";
 
   const [loading, setLoading] = useState(true);
@@ -57,6 +57,7 @@ export default function DailyPulseCard() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [streak, setStreak] = useState<{ current: number; longest: number } | null>(null);
   const [pointsAdded, setPointsAdded] = useState<number | null>(null);
+  const [evolvedInline, setEvolvedInline] = useState<{ hatched: boolean; newStage: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,9 +94,15 @@ export default function DailyPulseCard() {
       if (json.feedback) setFeedback(json.feedback);
       if (json.streak) setStreak(json.streak);
       if (json.pointsAdded) setPointsAdded(json.pointsAdded);
-      // Si la reflexión hizo evolucionar al Rowi, dejamos una marca para que la
-      // pantalla del avatar reproduzca la celebración la próxima vez que se abra.
+      // Si la reflexión hizo evolucionar al Rowi: celebración INLINE aquí
+      // mismo (antes solo se difería a /profile/avatar, una página enterrada
+      // en "Más" — la recompensa nunca se veía). La marca en sessionStorage
+      // se conserva para que la pantalla del avatar también celebre.
       if (json.evolution?.evolved || json.evolution?.hatched) {
+        setEvolvedInline({
+          hatched: !!json.evolution.hatched,
+          newStage: json.evolution.newStage,
+        });
         try {
           sessionStorage.setItem("rowi_just_evolved", json.evolution.newStage);
         } catch {
@@ -160,6 +167,14 @@ export default function DailyPulseCard() {
         {questionText}
       </p>
 
+      {evolvedInline && (
+        <div className="mb-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-500 text-white p-3 text-sm font-medium flex items-center gap-2">
+          <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" />
+          {evolvedInline.hatched
+            ? t("today.evolved.hatched", "¡Tu Rowi ha nacido! 🐣")
+            : t("today.evolved.grew", "Tu Rowi evolucionó 🦉")}
+        </div>
+      )}
       {answered || feedback ? (
         <div className="space-y-3">
           {feedback ? (

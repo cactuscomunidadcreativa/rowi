@@ -134,7 +134,7 @@ function VerifyEmailInner() {
             </p>
             <button
               type="button"
-              onClick={() => router.push("/hub")}
+              onClick={() => router.push("/today")}
               className="w-full py-3 px-4 rowi-btn-primary rounded-xl font-semibold text-sm"
             >
               {t("verifyEmail.goToHubCta", "Ir a mi panel")}

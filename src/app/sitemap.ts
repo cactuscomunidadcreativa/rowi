@@ -20,17 +20,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
   }> = [
     { path: "/", priority: 1.0, changeFrequency: "weekly" },
+    // El gancho de conversión del lanzamiento: prioridad alta.
+    { path: "/pre-sei", priority: 0.9, changeFrequency: "weekly" },
     { path: "/how-it-works", priority: 0.8, changeFrequency: "monthly" },
     { path: "/for-you", priority: 0.8, changeFrequency: "monthly" },
     { path: "/for-organizations", priority: 0.8, changeFrequency: "monthly" },
-    { path: "/product", priority: 0.8, changeFrequency: "monthly" },
+    // /product (índice) no existe como página: enlazamos la real.
+    { path: "/product/rowi", priority: 0.8, changeFrequency: "monthly" },
     { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
     { path: "/demo", priority: 0.7, changeFrequency: "monthly" },
     { path: "/about", priority: 0.6, changeFrequency: "monthly" },
     { path: "/stories", priority: 0.7, changeFrequency: "weekly" },
     { path: "/resources", priority: 0.7, changeFrequency: "weekly" },
     { path: "/contact", priority: 0.5, changeFrequency: "yearly" },
-    { path: "/legal", priority: 0.3, changeFrequency: "yearly" },
+    // /legal (índice) no existe: las páginas reales son los docs.
+    { path: "/legal/privacy", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/legal/terms", priority: 0.3, changeFrequency: "yearly" },
   ];
 
   return routes.map((r) => ({

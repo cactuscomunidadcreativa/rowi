@@ -23,6 +23,11 @@ export default function MiniSeiPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  const [lastAttempt, setLastAttempt] = useState<{
+    answers: Record<string, number>;
+    preferences: Record<string, number>;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,14 +54,25 @@ export default function MiniSeiPage() {
     preferences: Record<string, number>,
   ) {
     setSaving(true);
+    setSubmitError(false);
+    setLastAttempt({ answers, preferences });
     try {
-      await fetch("/api/mini-sei/submit", {
+      // El éxito solo se declara si el servidor lo confirma: un 500/401 con
+      // "¡Listo!" encima era un falso éxito que dejaba el perfil vacío.
+      const res = await fetch("/api/mini-sei/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers, preferences, source: "adhoc" }),
       });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        setSubmitError(true);
+        return;
+      }
       setDone(true);
       setTimeout(() => router.push("/hub/vital-signs"), 1200);
+    } catch {
+      setSubmitError(true);
     } finally {
       setSaving(false);
     }
@@ -74,6 +90,20 @@ export default function MiniSeiPage() {
         {t("miniSei.pageHint", "Una lectura corta de tu inteligencia emocional. Tarda 2 minutos.")}
       </p>
 
+      {submitError && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-sm">
+          <p className="text-red-700 dark:text-red-300 mb-2">
+            {t("miniSei.submitError", "No pudimos guardar tus respuestas. Tu test no se perdió: vuelve a intentarlo.")}
+          </p>
+          <button
+            onClick={() => lastAttempt && submit(lastAttempt.answers, lastAttempt.preferences)}
+            disabled={saving}
+            className="rowi-btn-primary px-4 py-2 text-sm"
+          >
+            {t("common.retry", "Reintentar")}
+          </button>
+        </div>
+      )}
       {done ? (
         <div className="flex flex-col items-center gap-3 py-10 text-center">
           <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">

@@ -20,6 +20,7 @@ export type FunnelStep =
   | "rel_invite_sent"
   | "rel_invite_opened"
   | "rel_invite_accepted"
+  | "rel_invite_linked"
   | "affinity_gap_viewed"
   | "eco_recurrent"
   | "returned_7d"

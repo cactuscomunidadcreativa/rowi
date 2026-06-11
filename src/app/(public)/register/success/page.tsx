@@ -225,7 +225,7 @@ function RegisterSuccessInner() {
 
         {/* Primary CTA → hub / onboarding */}
         <button
-          onClick={() => router.push("/hub")}
+          onClick={() => router.push("/today")}
           className="w-full flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl font-medium text-white transition-colors"
         >
           <Rocket className="w-5 h-5" />

@@ -138,27 +138,44 @@ export default function SendMessageActions({
 
   const canSend = trimmedEmail.length > 0;
 
+  // Registrar el "sent" en la díada (foso de datos): antes los deep-links
+  // solo hacían window.open() y el outcome jamás se capturaba (P0 auditoría).
+  // Fire-and-forget: nunca bloquea ni rompe el envío.
+  const recordSent = (sentChannel: string) => {
+    if (!dyadId) return;
+    void fetch("/api/eco/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "sent", dyadId, channel: sentChannel, text: body }),
+    }).catch(() => {});
+  };
+
   const openGmail = () => {
     if (!canSend) return;
+    recordSent("gmail_link");
     window.open(gmailUrl, "_blank", "noopener,noreferrer");
   };
 
   const openMailto = () => {
     if (!canSend) return;
+    recordSent("mailto");
     window.location.href = mailtoUrl;
   };
 
   const openOutlook = () => {
     if (!canSend) return;
+    recordSent("outlook_link");
     window.open(outlookUrl, "_blank", "noopener,noreferrer");
   };
 
   const openWhatsApp = () => {
+    recordSent("whatsapp_link");
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   const copyMessage = () => {
     void navigator.clipboard.writeText(body).then(() => {
+      recordSent("copy");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });

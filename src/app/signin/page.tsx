@@ -62,7 +62,9 @@ function SignInContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const error = searchParams.get("error");
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  // TODAY es la puerta de entrada (arquitectura maestra): todo login sin
+  // destino explícito aterriza en el loop diario, no en un dashboard.
+  const callbackUrl = searchParams.get("callbackUrl") || "/today";
 
   // ── Load providers ──────────────────────────────────────
   useEffect(() => {

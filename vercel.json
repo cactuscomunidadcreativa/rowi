@@ -66,6 +66,14 @@
     {
       "path": "/api/cron/pre-sei-followup",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/daily-reflection-reminder",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/eco-outcome-reminder",
+      "schedule": "0 16 * * *"
     }
   ]
 }

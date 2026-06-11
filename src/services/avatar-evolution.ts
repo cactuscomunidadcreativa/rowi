@@ -5,6 +5,7 @@
 
 import { prisma } from "@/core/prisma";
 import { AvatarStage, MilestoneType } from "@prisma/client";
+import { triggerAvatarEvolved } from "@/lib/notifications/triggers";
 import {
   calculateSixSecondsLevel,
   getSixSecondsLevelInfo,
@@ -411,6 +412,17 @@ export async function checkAndEvolve(userId: string): Promise<{
         rarity: newStage === "WISE" ? "legendary" : "uncommon",
       },
     });
+  }
+
+  // Notificación de evolución/eclosión — el trigger existía como dead code
+  // (nadie lo llamaba); aquí cubre a TODOS los callers (today, daily-pulse).
+  // Resiliente: un fallo de notificación no rompe la evolución.
+  if (evolved || (hatched && !avatar.hatched)) {
+    try {
+      await triggerAvatarEvolved(userId, newStage, previousStage);
+    } catch {
+      /* noop */
+    }
   }
 
   return {

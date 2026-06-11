@@ -90,7 +90,10 @@ async function computeInviteHeat(
 async function loadInvite(token: string) {
   return prisma.relationshipInvite.findUnique({
     where: { token },
-    include: { inviter: { select: { name: true } }, dyad: { select: { id: true } } },
+    include: {
+      inviter: { select: { name: true } },
+      dyad: { select: { id: true, ownerUserId: true } },
+    },
   });
 }
 
@@ -119,6 +122,13 @@ export async function GET(
       });
     }
 
+    // Honestidad ANTES de que el invitado invierta su minuto: si el owner aún
+    // no tiene perfil, la sintonía entre ambos no se podrá calcular todavía.
+    let ownerHasProfile = false;
+    if (invite.dyad?.ownerUserId) {
+      ownerHasProfile = !!(await ownerCompetencyProfile(invite.dyad.ownerUserId));
+    }
+
     return NextResponse.json({
       ok: true,
       inviterName: invite.inviter?.name ?? null,
@@ -126,6 +136,7 @@ export async function GET(
       message: invite.message,
       locale: invite.locale,
       inviteeName: invite.inviteeName,
+      ownerHasProfile,
       status: invite.status === "pending" ? "opened" : invite.status,
     });
   } catch (e: any) {

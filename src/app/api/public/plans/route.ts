@@ -23,6 +23,12 @@ export async function GET(req: NextRequest) {
         description: true,
         priceUsd: true,
         priceCents: true,
+        priceYearlyUsd: true,
+        priceYearlyCents: true,
+        minUsers: true,
+        pricePerUserMonthly: true,
+        pricePerUserYearly: true,
+        tokensMonthly: true,
         durationDays: true,
         aiEnabled: true,
         // Plan splits monthly + yearly into two columns; select both.

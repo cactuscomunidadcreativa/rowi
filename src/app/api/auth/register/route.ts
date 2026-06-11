@@ -11,6 +11,7 @@ import { sendVerificationEmail } from "@/lib/email/sendVerificationEmail";
 import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 import { getServerAppBaseUrl } from "@/core/utils/base-url";
 import { claimPreSeiSession } from "@/lib/pre-sei/claim";
+import { claimRelationshipInvite } from "@/lib/relationships/claimInvite";
 import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { rateLimiters } from "@/lib/security/rateLimit";
 import { verifyTurnstile } from "@/lib/security/turnstile";
@@ -20,6 +21,8 @@ interface RegisterBody {
   password: string;
   name?: string;
   planId?: string;
+  /** Slug del plan elegido en el wizard (la UI envía slug, no id). */
+  planSlug?: string;
   language?: string;
   country?: string;
   // Referral & UTM
@@ -33,6 +36,8 @@ interface RegisterBody {
   source?: string;
   // Pre-SEI: token de la sesión anónima a reclamar tras crear la cuenta.
   preSeiToken?: string;
+  // Invitación relacional: token de /r/[token] para vincular la díada.
+  relToken?: string;
   // Cloudflare Turnstile (captcha). Se verifica solo si está configurado.
   turnstileToken?: string;
 }
@@ -45,6 +50,7 @@ export async function POST(req: NextRequest) {
       password,
       name,
       planId,
+      planSlug,
       language = "es",
       country,
       referralCode,
@@ -212,28 +218,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Determinar plan inicial
-    let selectedPlanId = planId;
-    let onboardingStatus: "REGISTERED" | "PAYMENT_PENDING" = "REGISTERED";
+    // Determinar plan inicial. La UI envía planSlug (el wizard); planId queda
+    // por compatibilidad. Regla: aquí solo se asignan planes GRATUITOS — un
+    // plan de pago jamás se otorga sin checkout (antes esto creaba usuarios
+    // PAYMENT_PENDING con el plan pago ya puesto y sin cobro).
+    let selectedPlanId: string | undefined;
+    const onboardingStatus: "REGISTERED" | "PAYMENT_PENDING" = "REGISTERED";
     let trialEndsAt: Date | null = null;
 
-    if (planId) {
-      const plan = await prisma.plan.findUnique({
-        where: { id: planId },
-      });
+    const requestedPlan = planSlug
+      ? await prisma.plan.findFirst({ where: { slug: planSlug, isActive: true } })
+      : planId
+      ? await prisma.plan.findUnique({ where: { id: planId } })
+      : null;
 
-      if (plan) {
-        // Si el plan tiene precio, el usuario necesita pagar
-        if (plan.priceCents > 0) {
-          onboardingStatus = "PAYMENT_PENDING";
-        }
-
-        // Si el plan tiene trial, calcular fecha de fin
-        if (plan.trialDays > 0) {
-          trialEndsAt = new Date(
-            Date.now() + plan.trialDays * 24 * 60 * 60 * 1000
-          );
-        }
+    if (requestedPlan && requestedPlan.priceCents === 0) {
+      selectedPlanId = requestedPlan.id;
+      if (requestedPlan.trialDays > 0) {
+        trialEndsAt = new Date(
+          Date.now() + requestedPlan.trialDays * 24 * 60 * 60 * 1000
+        );
       }
     } else {
       // Buscar plan free por defecto
@@ -278,7 +282,13 @@ export async function POST(req: NextRequest) {
         onboardingStep: 0,
         trialStartedAt: trialEndsAt ? new Date() : null,
         trialEndsAt,
-        contributeToRowiverse: true,
+        // El form de registro muestra el aviso con links a /legal/terms y
+        // /legal/privacy; crear la cuenta = aceptación (con timestamp).
+        termsAcceptedAt: new Date(),
+        // Opt-in real: la contribución al Rowiverse nace APAGADA y solo se
+        // enciende con el consentimiento benchmarking_contribution del
+        // onboarding (promesa de /legal/research). Antes nacía en true.
+        contributeToRowiverse: false,
         organizationRole: "VIEWER", // Rol por defecto
         // 🔐 Hash en campo dedicado (no más Account.access_token)
         passwordHash: hashedPassword,
@@ -294,6 +304,12 @@ export async function POST(req: NextRequest) {
       } catch (claimErr) {
         console.warn("⚠️ Error reclamando sesión Pre-SEI (no crítico):", claimErr);
       }
+    }
+
+    // Invitación relacional: si el invitado se registra desde /r/[token],
+    // vincular la díada (dyad.otherUserId) — el eslabón del efecto red.
+    if (body.relToken) {
+      await claimRelationshipInvite(body.relToken, user.id);
     }
 
     // Crear registro de adquisición.
@@ -443,10 +459,11 @@ export async function POST(req: NextRequest) {
         planId: user.planId,
         trialEndsAt: user.trialEndsAt,
       },
-      nextStep:
-        onboardingStatus === "PAYMENT_PENDING"
-          ? "payment"
-          : "onboarding",
+      // Si pidió un plan de pago, el cliente lo resuelve en /pricing después
+      // de activarse — nunca se asigna sin pago.
+      desiredPlanSlug:
+        requestedPlan && requestedPlan.priceCents > 0 ? requestedPlan.slug : null,
+      nextStep: "onboarding",
     });
   } catch (error) {
     console.error("❌ Error registering user:", error);

@@ -9,6 +9,7 @@
  * /relationships; ahora es un tab — una sola entrada "Comunidad".
  */
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Heart, Send, Loader2, Pencil, Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -26,16 +27,19 @@ const RELATION_TYPES = ["partner", "child", "parent", "friend", "colleague", "bo
 const CLOSENESS = ["Cercano", "Neutral", "Lejano"];
 
 export default function RelationshipsTab() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [list, setList] = useState<Relationship[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
 
   // Invitar (el hook)
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [relationType, setRelationType] = useState("friend");
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -52,17 +56,35 @@ export default function RelationshipsTab() {
     if (!name.trim()) return;
     setSending(true);
     setInviteUrl(null);
+    setEmailSent(false);
+    setInviteError(null);
     try {
       const json = await fetch("/api/relationships/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otherName: name.trim(), relationType }),
+        body: JSON.stringify({
+          otherName: name.trim(),
+          email: email.trim() || undefined,
+          relationType,
+          locale: lang,
+        }),
       }).then((r) => r.json());
       if (json.ok && json.inviteUrl) {
         setInviteUrl(json.inviteUrl);
+        setEmailSent(!!json.emailSent);
         setName("");
+        setEmail("");
         load();
+      } else {
+        setInviteError(
+          json.error ||
+            t("relationships.invite.error", "No pudimos generar la invitación. Inténtalo de nuevo.")
+        );
       }
+    } catch {
+      setInviteError(
+        t("relationships.invite.error", "No pudimos generar la invitación. Inténtalo de nuevo.")
+      );
     } finally {
       setSending(false);
     }
@@ -92,7 +114,16 @@ export default function RelationshipsTab() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("relationships.invite.name", "Nombre")}
+            aria-label={t("relationships.invite.name", "Nombre")}
             className="rounded-md border border-[var(--rowi-card-border)] bg-transparent px-3 py-2 text-sm flex-1 min-w-[140px]"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t("relationships.invite.email", "Email (opcional — le enviamos la invitación)")}
+            aria-label={t("relationships.invite.email", "Email (opcional — le enviamos la invitación)")}
+            className="rounded-md border border-[var(--rowi-card-border)] bg-transparent px-3 py-2 text-sm flex-1 min-w-[180px]"
           />
           <select value={relationType} onChange={(e) => setRelationType(e.target.value)} className="rounded-md border border-[var(--rowi-card-border)] bg-transparent px-2 py-2 text-sm">
             {RELATION_TYPES.map((rt) => (
@@ -105,9 +136,19 @@ export default function RelationshipsTab() {
         </div>
         {inviteUrl && (
           <div className="mt-2 text-xs text-[var(--rowi-muted)] break-all">
+            {emailSent && (
+              <span className="block text-emerald-600 dark:text-emerald-400 mb-1">
+                {t("relationships.invite.emailSent", "✓ Invitación enviada por email.")}
+              </span>
+            )}
             {t("relationships.invite.share", "Comparte este enlace:")}{" "}
             <span className="font-mono">{inviteUrl}</span>
           </div>
+        )}
+        {inviteError && (
+          <p role="alert" className="mt-2 text-xs text-[var(--destructive,#dc2626)]">
+            {inviteError}
+          </p>
         )}
       </div>
 
@@ -134,7 +175,18 @@ export default function RelationshipsTab() {
                       {t(r.attunement.labelKey, r.attunement.level)}
                     </span>
                   )}
-                  <button onClick={() => setEditing(editing === r.id ? null : r.id)} className="text-[var(--rowi-muted)] hover:text-[var(--rowi-fg)]">
+                  {/* Affinity entiende; ECO actúa: el puente diagnóstico→acción */}
+                  <Link
+                    href={`/eco?dyadId=${encodeURIComponent(r.id)}`}
+                    className="text-xs rounded-full px-3 py-1 rowi-btn-primary"
+                  >
+                    {t("relationships.ecoCta", "Escríbele con ECO")}
+                  </Link>
+                  <button
+                    onClick={() => setEditing(editing === r.id ? null : r.id)}
+                    aria-label={t("common.edit", "Editar")}
+                    className="text-[var(--rowi-muted)] hover:text-[var(--rowi-fg)]"
+                  >
                     {editing === r.id ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
                   </button>
                 </div>

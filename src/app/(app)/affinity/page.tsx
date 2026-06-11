@@ -696,7 +696,14 @@ export default function AffinityPage() {
               ) : filteredMembers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" />
-                  <p className="text-[var(--rowi-muted)]">{t("affinity.noMembers") || "No se encontraron miembros"}</p>
+                  <p className="text-[var(--rowi-muted)] mb-4">{t("affinity.noMembers") || "No se encontraron miembros"}</p>
+                  {/* El vacío guía al siguiente paso, no abandona */}
+                  <a
+                    href="/community?tab=relationships"
+                    className="inline-block text-sm rowi-btn-primary px-5 py-2.5"
+                  >
+                    {t("relationships.empty.cta", "Invita a tu primera persona")}
+                  </a>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

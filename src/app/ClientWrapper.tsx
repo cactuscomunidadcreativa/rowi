@@ -4,6 +4,7 @@ import Providers from "../components/shared/Providers";
 import ThemeToggle from "../components/shared/ThemeToggle";
 import NavBar from "../components/shared/NavBar";
 import RowiCoach from "../components/rowi/RowiCoach";
+import PushManager from "../components/shared/PushManager";
 import { Toaster } from "sonner";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,10 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
 
       {/* 💬 Chat flotante Rowi Coach (disponible globalmente) */}
       <RowiCoach />
+
+      {/* 🔔 Push del loop diario (SW + suscripción VAPID; no-op sin
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY) */}
+      <PushManager />
 
       {/* 🔔 Notificaciones globales Rowi */}
       <Toaster

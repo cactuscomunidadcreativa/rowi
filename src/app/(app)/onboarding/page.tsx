@@ -89,6 +89,15 @@ export default function OnboardingPage() {
     totalEqBand: string;
     competencyProfile: Record<string, number>;
   } | null>(null);
+  const [rowiTestError, setRowiTestError] = useState(false);
+  const [rowiTestLastAttempt, setRowiTestLastAttempt] = useState<{
+    answers: Record<string, number>;
+    preferences: Record<string, number>;
+  } | null>(null);
+  // Si el usuario ya tiene un snapshot (p.ej. el Pre-SEI reclamado en el
+  // registro), el paso muestra ese resultado en vez de repetir el test.
+  const [rowiTestChecked, setRowiTestChecked] = useState(false);
+  const [rowiTestLoadError, setRowiTestLoadError] = useState(false);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
   // + consultor + persona). El primer rol seleccionado define el template
   // del primer workspace en el step siguiente; los demás quedan declarados.
@@ -138,18 +147,40 @@ export default function OnboardingPage() {
     checkState();
   }, []);
 
-  // Cargar las preguntas del mini-SEI + la capa de preferencias al entrar.
+  // Al entrar al paso: si ya existe un mini-SEI (p.ej. reclamado del Pre-SEI
+  // en el registro), mostrar ese WOW en vez de repetir el test. Si no,
+  // cargar las preguntas + la capa de preferencias.
   useEffect(() => {
-    if (STEPS[step]?.key !== "rowiTest" || rowiTestQuestions.length > 0) return;
-    fetch(`/api/mini-sei/questions?lang=${lang}`)
-      .then((r) => r.json())
-      .then((json) => { if (json.ok) setRowiTestQuestions(json.questions); })
-      .catch(() => {});
-    fetch(`/api/mini-sei/preferences?lang=${lang}`)
-      .then((r) => r.json())
-      .then((json) => { if (json.ok) setRowiTestPrefs(json.questions); })
-      .catch(() => {});
-  }, [step, lang, rowiTestQuestions.length]);
+    if (STEPS[step]?.key !== "rowiTest" || rowiTestChecked) return;
+    setRowiTestChecked(true);
+    (async () => {
+      try {
+        const series = await fetch("/api/mini-sei/series?limit=60").then((r) => r.json());
+        const latest = series?.ok && series.count > 0 ? series.series[series.series.length - 1] : null;
+        if (latest?.competencyProfile) {
+          setRowiTestResult({
+            totalEqBand: latest.totalEqBand ?? "unknown",
+            competencyProfile: latest.competencyProfile as Record<string, number>,
+          });
+          setRowiTestDone(true);
+          return;
+        }
+      } catch {
+        /* sin snapshot: cae al wizard */
+      }
+      fetch(`/api/mini-sei/questions?lang=${lang}`)
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.ok) setRowiTestQuestions(json.questions);
+          else setRowiTestLoadError(true);
+        })
+        .catch(() => setRowiTestLoadError(true));
+      fetch(`/api/mini-sei/preferences?lang=${lang}`)
+        .then((r) => r.json())
+        .then((json) => { if (json.ok) setRowiTestPrefs(json.questions); })
+        .catch(() => {});
+    })();
+  }, [step, lang, rowiTestChecked]);
 
   // answers + preferences por posición opaca; source="onboarding" lo marca.
   async function submitRowiTest(
@@ -157,6 +188,8 @@ export default function OnboardingPage() {
     preferences: Record<string, number>,
   ) {
     setRowiTestSaving(true);
+    setRowiTestError(false);
+    setRowiTestLastAttempt({ answers, preferences });
     try {
       const res = await fetch("/api/mini-sei/submit", {
         method: "POST",
@@ -164,8 +197,14 @@ export default function OnboardingPage() {
         body: JSON.stringify({ answers, preferences, source: "onboarding" }),
       });
       const json = await res.json().catch(() => null);
+      // Éxito SOLO si el servidor lo confirma: antes un 500 mostraba
+      // "¡Listo!" y el perfil quedaba vacío (el ancla de la cadena rota).
+      if (!res.ok || !json?.ok) {
+        setRowiTestError(true);
+        return;
+      }
       setRowiTestDone(true);
-      if (json?.ok && json.competencyProfile) {
+      if (json.competencyProfile) {
         // Mostrar el WOW (resultado + plan); el usuario continúa cuando quiera.
         setRowiTestResult({
           totalEqBand: json.totalEqBand ?? "unknown",
@@ -175,6 +214,8 @@ export default function OnboardingPage() {
         // Sin resultado que mostrar: avanzar como antes.
         setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 800);
       }
+    } catch {
+      setRowiTestError(true);
     } finally {
       setRowiTestSaving(false);
     }
@@ -484,6 +525,20 @@ export default function OnboardingPage() {
             {/* Step: Rowi Test — siembra el perfil bajo el capó (cadena SIA) */}
             {current.key === "rowiTest" && (
               <div className="max-w-xl mx-auto">
+                {rowiTestError && (
+                  <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-sm">
+                    <p className="text-red-700 dark:text-red-300 mb-2">
+                      {t("miniSei.submitError", "No pudimos guardar tus respuestas. Tu test no se perdió: vuelve a intentarlo.")}
+                    </p>
+                    <button
+                      onClick={() => rowiTestLastAttempt && submitRowiTest(rowiTestLastAttempt.answers, rowiTestLastAttempt.preferences)}
+                      disabled={rowiTestSaving}
+                      className="rowi-btn-primary px-4 py-2 text-sm"
+                    >
+                      {t("common.retry", "Reintentar")}
+                    </button>
+                  </div>
+                )}
                 {rowiTestDone && rowiTestResult ? (
                   <RowiTestWow
                     result={rowiTestResult}
@@ -500,6 +555,18 @@ export default function OnboardingPage() {
                     submitting={rowiTestSaving}
                     onComplete={submitRowiTest}
                   />
+                ) : rowiTestLoadError ? (
+                  <div role="alert" className="text-center py-6 space-y-3">
+                    <p className="text-sm text-[var(--rowi-muted)]">
+                      {t("onboarding.rowiTest.loadError", "No pudimos cargar las preguntas. Revisa tu conexión.")}
+                    </p>
+                    <button
+                      onClick={() => { setRowiTestLoadError(false); setRowiTestChecked(false); }}
+                      className="rowi-btn-primary px-4 py-2 text-sm"
+                    >
+                      {t("common.retry", "Reintentar")}
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center py-6">
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--rowi-g2)]" />
@@ -715,7 +782,7 @@ export default function OnboardingPage() {
           </button>
 
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/today")}
             disabled={current.key === "consent" && !consentMap.basic_processing}
             className="text-sm text-gray-500 hover:text-[var(--rowi-g2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-500"
             title={
@@ -753,7 +820,7 @@ export default function OnboardingPage() {
             </button>
           ) : (
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/today")}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
             >
               <Check className="w-4 h-4" />

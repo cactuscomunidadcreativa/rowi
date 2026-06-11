@@ -20,6 +20,10 @@ interface StoredRegistration {
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
+  // Pre-SEI: diagnóstico anónimo a reclamar tras crear la cuenta.
+  preSeiToken?: string | null;
+  intent?: string | null;
+  relToken?: string | null;
 }
 
 export default function RegisterCompletePage() {
@@ -58,6 +62,9 @@ export default function RegisterCompletePage() {
       utmSource: stored?.utmSource,
       utmMedium: stored?.utmMedium,
       utmCampaign: stored?.utmCampaign,
+      preSeiToken: stored?.preSeiToken,
+      intent: stored?.intent,
+      relToken: stored?.relToken,
     };
 
     (async () => {
@@ -76,11 +83,11 @@ export default function RegisterCompletePage() {
           return;
         }
 
-        if (data.nextStep === "payment") {
-          router.push("/onboarding?step=payment");
-        } else {
-          router.push("/hub");
-        }
+        // Mismo destino que el registro con credenciales: onboarding
+        // (mini-SEI = momento WOW). Antes OAuth iba a /hub y se saltaba el
+        // onboarding entero; el paso "payment" nunca existió — un plan de
+        // pago deseado se resuelve en /pricing después de activarse.
+        router.push("/onboarding");
       } catch (e: any) {
         setError(e?.message || "network_error");
       }

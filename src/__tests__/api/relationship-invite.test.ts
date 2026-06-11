@@ -68,6 +68,17 @@ describe("POST /api/relationships/invite", () => {
     expect(res.status).toBe(400);
   });
 
+  it("acepta el payload REAL de la UI ({ otherName }) — regresión del 400 silencioso", async () => {
+    // RelationshipsTab envía `otherName`; la API leía solo `name` y devolvía
+    // 400 SIEMPRE en producción mientras esta suite estaba verde con `name`.
+    const res = await POST(req({ otherName: "Ana", relationType: "friend" }));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.inviteUrl).toMatch(/\/r\//);
+    expect(mockDyadCreate.mock.calls[0][0].data.otherName).toBe("Ana");
+  });
+
   it("crea díada + invitación y devuelve deep link (sin gating de plan)", async () => {
     const res = await POST(req({ name: "Ana", relationType: "partner", locale: "es" }));
     expect(res.status).toBe(200);

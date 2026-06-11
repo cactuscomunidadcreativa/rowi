@@ -41,6 +41,7 @@ model User {
   seiExternalId    String? // ID externo en Six Seconds
   trialStartedAt   DateTime? // Inicio del trial
   trialEndsAt      DateTime? // Fin del trial
+  termsAcceptedAt  DateTime? // Aceptación de Términos+Privacidad al registrarse (con links visibles)
 
   // 🔐 Credenciales locales (bcrypt). Campo dedicado en vez del workaround
   // histórico de guardar el hash en Account.access_token (semántica peligrosa:
@@ -4082,6 +4083,12 @@ enum NotificationType {
   EQ_INSIGHT_AVAILABLE
   EMOTIONAL_PATTERN_DETECTED
   COACHING_SUGGESTION
+  // Loop diario (F3 Rowi Launch 1.0): recordatorio de reflexión nocturna —
+  // el único canal de retorno diario del producto.
+  DAILY_REFLECTION_REMINDER
+  // Loop de outcome ECO (F5): "¿funcionó tu último mensaje?" a las 48h —
+  // el dato que calibra la brecha (el foso).
+  ECO_OUTCOME_REMINDER
 
   // System
   WELCOME

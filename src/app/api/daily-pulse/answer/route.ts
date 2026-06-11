@@ -23,14 +23,11 @@ import {
   type PulseLang,
 } from "@/lib/daily-pulse/questions";
 import { parseTz, startOfLocalDay } from "@/lib/daily-pulse/timezone";
+import { updateDailyStreak } from "@/lib/streak/updateDailyStreak";
 import { awardPoints } from "@/services/gamification";
 import { checkAndEvolve } from "@/services/avatar-evolution";
 
 const DAILY_POINTS = 5;
-
-function diffInDays(a: Date, b: Date): number {
-  return Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -96,52 +93,10 @@ export async function POST(req: NextRequest) {
     });
 
     // 2. Actualizar streak (antes de los puntos para que el multiplicador
-    //    de awardPoints refleje la racha de hoy).
-    const existingStreak = await prisma.userStreak.findUnique({
-      where: { userId: user.id },
-      select: {
-        currentStreak: true,
-        longestStreak: true,
-        lastActivityDate: true,
-        streakStartDate: true,
-      },
-    });
-    let currentStreak = 1;
-    let streakStartDate: Date | null = today;
-    if (existingStreak?.lastActivityDate) {
-      const last = startOfLocalDay(existingStreak.lastActivityDate, tz);
-      const days = diffInDays(today, last);
-      if (days === 0) {
-        // Imposible llegar acá si pasó el check de idempotencia, pero por
-        // seguridad mantenemos la racha intacta.
-        currentStreak = existingStreak.currentStreak;
-        streakStartDate = existingStreak.streakStartDate ?? today;
-      } else if (days === 1) {
-        currentStreak = existingStreak.currentStreak + 1;
-        streakStartDate = existingStreak.streakStartDate ?? last;
-      } else {
-        currentStreak = 1;
-        streakStartDate = today;
-      }
-    }
-    const longestStreak = Math.max(currentStreak, existingStreak?.longestStreak ?? 0);
-
-    await prisma.userStreak.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        currentStreak,
-        longestStreak,
-        lastActivityDate: today,
-        streakStartDate,
-      },
-      update: {
-        currentStreak,
-        longestStreak,
-        lastActivityDate: today,
-        streakStartDate,
-      },
-    });
+    //    de awardPoints refleje la racha de hoy). Lógica CANÓNICA compartida
+    //    con /api/today (antes duplicada); dispara hitos 3/7/30/100.
+    const { current: currentStreak, longest: longestStreak } =
+      await updateDailyStreak(user.id, tz, now);
 
     // 3. Sumar puntos por el camino canónico: actualiza UserLevel.totalPoints
     //    (el total que leen nivel, leaderboard, perfil y canje de rewards) y

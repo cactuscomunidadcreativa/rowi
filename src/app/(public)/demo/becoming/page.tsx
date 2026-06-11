@@ -9,6 +9,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   CalendarDays,
   Flame,
   Award,
@@ -184,6 +185,24 @@ export default function DemoBecomingPage() {
           <p className="text-[11px] text-[var(--rowi-muted)] mt-2">
             🔒 {t("privacy.contextNote", "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).")}
           </p>
+        </div>
+
+        {/* Cadena del tour: cada demo lleva al siguiente módulo */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-between pt-8 border-t border-[var(--rowi-card-border)]">
+          <Link
+            href="/demo/today"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-[var(--rowi-card-border)] hover:border-[var(--rowi-primary)] transition-colors font-medium text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t("demo.becoming.prev", "Anterior: TODAY")}
+          </Link>
+          <Link
+            href="/demo/dashboard"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+          >
+            {t("demo.becoming.nextModule", "Siguiente: Mírate")}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </div>

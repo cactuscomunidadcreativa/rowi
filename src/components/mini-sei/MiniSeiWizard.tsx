@@ -131,20 +131,30 @@ export default function MiniSeiWizard({
                 </button>
               ))}
             </div>
-            {/* Las preguntas de preferencia rotulan los POLOS (no frecuencia). */}
-            <div className="flex justify-between text-xs text-[var(--rowi-muted-weak)] px-1 mb-8">
-              {currentPref ? (
-                <>
-                  <span>{t(currentPref.leftKey, currentPref.leftKey)}</span>
-                  <span>{t(currentPref.rightKey, currentPref.rightKey)}</span>
-                </>
-              ) : (
-                <>
-                  <span>{t("preSei.scale.low", "Casi nunca")}</span>
-                  <span>{t("preSei.scale.high", "Casi siempre")}</span>
-                </>
-              )}
-            </div>
+            {/* Las preguntas de preferencia rotulan los POLOS (no frecuencia).
+                Los polos son las OPCIONES: van como tarjetas legibles, no como
+                anclas diminutas en los extremos (feedback Eduardo F7). */}
+            {currentPref ? (
+              <div className="flex justify-between gap-3 mb-8">
+                <div className="flex-1 max-w-[45%] rounded-xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-3 py-2 text-center">
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted-weak)] mb-0.5">1–2</p>
+                  <p className="text-sm leading-snug text-[var(--rowi-fg)]">
+                    {t(currentPref.leftKey, currentPref.leftKey)}
+                  </p>
+                </div>
+                <div className="flex-1 max-w-[45%] rounded-xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-3 py-2 text-center">
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--rowi-muted-weak)] mb-0.5">4–5</p>
+                  <p className="text-sm leading-snug text-[var(--rowi-fg)]">
+                    {t(currentPref.rightKey, currentPref.rightKey)}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between text-xs text-[var(--rowi-muted-weak)] px-1 mb-8">
+                <span>{t("preSei.scale.low", "Casi nunca")}</span>
+                <span>{t("preSei.scale.high", "Casi siempre")}</span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <button

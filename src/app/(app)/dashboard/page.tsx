@@ -261,7 +261,7 @@ function talentLabel(k: string, lang: string): string {
 }
 
 export default function ClientDashboard() {
-  const { lang } = useI18n();
+  const { lang, t: tGlobal } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
 
   const [base, setBase] = useState<any>(null);
@@ -306,6 +306,49 @@ export default function ClientDashboard() {
   }
 
   const eqTotal = base.eq?.total ?? 0;
+
+  // SIN lectura aún: un dashboard en ceros no guía a nadie (bug Eduardo F7).
+  // Mostramos el camino: Rowi Test gratis → SEI completo → planes.
+  if (!eqTotal) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+        <Image
+          src="/rowivectors/Rowi-06.webp"
+          alt="Rowi"
+          width={120}
+          height={120}
+          className="object-contain mb-6"
+        />
+        <h1 className="text-2xl font-bold text-[var(--rowi-fg)] mb-2">
+          {tGlobal("dashboard.empty.title", "Tu espejo está esperando su primera lectura")}
+        </h1>
+        <p className="text-sm text-[var(--rowi-muted)] max-w-md mb-8">
+          {tGlobal(
+            "dashboard.empty.body",
+            "Este panel se llena con tu inteligencia emocional real. Empieza con el Rowi Test gratis (2 minutos) o ve directo al SEI completo de Six Seconds."
+          )}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href="/mini-sei" className="rowi-btn-primary px-6 py-3 text-sm font-medium">
+            {tGlobal("dashboard.empty.miniSei", "Hacer mi Rowi Test gratis · 2 min")}
+          </Link>
+          <Link
+            href="/sei"
+            className="px-6 py-3 text-sm font-medium rounded-full border border-[var(--rowi-card-border)] text-[var(--rowi-fg)] hover:border-[var(--rowi-primary)]"
+          >
+            {tGlobal("dashboard.empty.fullSei", "Quiero el SEI completo")}
+          </Link>
+        </div>
+        <Link
+          href="/pricing"
+          className="mt-4 text-xs text-[var(--rowi-muted)] underline hover:text-[var(--rowi-fg)]"
+        >
+          {tGlobal("dashboard.empty.plans", "Ver planes con SEI incluido")}
+        </Link>
+      </div>
+    );
+  }
+
   const eqLevel = getEqLevel(eqTotal);
   const userName = base.user?.name?.split(" ")[0] || "Usuario";
 

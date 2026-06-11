@@ -20,6 +20,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { RowiStageImage, type RowiStage } from "@/domains/avatar/components/RowiStageImage";
+import { fiveBand } from "@/lib/vital-signs/sei-bands";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -35,6 +36,14 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 // Claves SEI válidas (las etiquetas localizadas viven en competencies.* de
 // los 4 locales — antes esto era un Record hardcodeado en inglés).
 const SEI_KEYS = new Set(["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"]);
+
+/** NIVELES, no puntajes: 122 → "Experto", 92 → "Emergente" (fiveBand v5). */
+function bandLabel(score: number | null, t: (k: string, f?: string) => string): string {
+  if (score === null) return "—";
+  const band = fiveBand(score);
+  if (band === "unknown") return "—";
+  return t(`seiBand.${band}`, band);
+}
 
 const WINDOWS = [30, 60, 90] as const;
 
@@ -238,24 +247,20 @@ export default function BecomingPage() {
                     <span className="w-40 shrink-0 text-sm text-gray-700 dark:text-gray-200 truncate">
                       {SEI_KEYS.has(row.sei) ? t(`competencies.${row.sei}`, row.sei) : row.sei}
                     </span>
-                    <span className="w-10 text-right text-sm text-gray-400">{row.past ?? "—"}</span>
-                    <span className="w-10 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                      {row.now ?? "—"}
+                    {/* NIVELES, no puntajes (regla de marca; bug Eduardo F7) */}
+                    <span className="w-20 text-right text-xs text-gray-400">
+                      {bandLabel(row.past, t)}
                     </span>
-                    <span className="w-12 flex items-center justify-end">
-                      {row.delta === null ? (
+                    <span className="w-20 text-right text-xs font-semibold text-gray-900 dark:text-white">
+                      {bandLabel(row.now, t)}
+                    </span>
+                    <span className="w-8 flex items-center justify-end">
+                      {row.delta === null || row.delta === 0 ? (
                         <Minus className="w-4 h-4 text-gray-300" />
                       ) : row.delta > 0 ? (
-                        <span className="inline-flex items-center text-emerald-600 text-xs font-semibold">
-                          <TrendingUp className="w-4 h-4" />+{row.delta}
-                        </span>
-                      ) : row.delta < 0 ? (
-                        <span className="inline-flex items-center text-amber-600 text-xs font-semibold">
-                          <TrendingDown className="w-4 h-4" />
-                          {row.delta}
-                        </span>
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
                       ) : (
-                        <Minus className="w-4 h-4 text-gray-300" />
+                        <TrendingDown className="w-4 h-4 text-amber-600" />
                       )}
                     </span>
                   </div>
@@ -276,8 +281,9 @@ export default function BecomingPage() {
                     <span className="flex-1 text-sm text-gray-700 dark:text-gray-200 truncate">
                       {SEI_KEYS.has(row.sei) ? t(`competencies.${row.sei}`, row.sei) : row.sei}
                     </span>
-                    <span className="w-12 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                      {row.now ?? "—"}
+                    {/* NIVELES, no puntajes (regla de marca; bug Eduardo F7) */}
+                    <span className="text-right text-xs font-semibold text-gray-900 dark:text-white">
+                      {bandLabel(row.now, t)}
                     </span>
                   </div>
                 ))}

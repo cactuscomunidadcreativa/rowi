@@ -206,6 +206,24 @@ export default function DemoTodayPage() {
             </>
           )}
         </AnimatePresence>
+
+        {/* Cadena del tour: cada demo lleva al siguiente módulo */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-between pt-8 border-t border-[var(--rowi-card-border)]">
+          <Link
+            href="/pre-sei"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-[var(--rowi-card-border)] hover:border-[var(--rowi-primary)] transition-colors font-medium text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t("demo.today.prev", "Anterior: El Espejo")}
+          </Link>
+          <Link
+            href="/demo/becoming"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+          >
+            {t("demo.today.nextModule", "Siguiente: Mi evolución")}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );

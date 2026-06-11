@@ -155,6 +155,10 @@ export default function OnboardingPage() {
     setRowiTestChecked(true);
     (async () => {
       try {
+        // Cascada (bug Eduardo F7: "me volvió a salir el mismo cuestionario"):
+        // 1) mini-SEI normado; 2) CUALQUIER lectura existente — incluido el
+        // EqSnapshot(pre_sei) que materializa el espejo reclamado en el
+        // registro. Si ya hay perfil, mostramos el WOW, no el wizard.
         const series = await fetch("/api/mini-sei/series?limit=60").then((r) => r.json());
         const latest = series?.ok && series.count > 0 ? series.series[series.series.length - 1] : null;
         if (latest?.competencyProfile) {
@@ -164,6 +168,18 @@ export default function OnboardingPage() {
           });
           setRowiTestDone(true);
           return;
+        }
+        const contrast = await fetch("/api/becoming/contrast?days=30").then((r) => r.json());
+        if (contrast?.ok && Array.isArray(contrast.current) && contrast.current.length > 0) {
+          const profile: Record<string, number> = {};
+          for (const row of contrast.current) {
+            if (typeof row.now === "number") profile[row.sei] = row.now;
+          }
+          if (Object.keys(profile).length >= 4) {
+            setRowiTestResult({ totalEqBand: "unknown", competencyProfile: profile });
+            setRowiTestDone(true);
+            return;
+          }
         }
       } catch {
         /* sin snapshot: cae al wizard */

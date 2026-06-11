@@ -39,15 +39,16 @@ function greetingKey(): "morning" | "afternoon" | "evening" {
 }
 
 export default function TodayPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { data: session, status } = useSession();
   const isAuth = status === "authenticated" && !!session?.user;
 
   // Contrato de timezone.ts: el servidor espera Date.getTimezoneOffset() SIN
   // negar (Ecuador UTC-5 → +300). Negado, el cierre nocturno caía en otro día.
   const tz = typeof window !== "undefined" ? new Date().getTimezoneOffset() : 0;
-  const lang =
-    typeof window !== "undefined" ? localStorage.getItem("rowi.lang") ?? "es" : "es";
+  // El idioma viene del provider (que ya resuelve localStorage → navegador →
+  // es). Leer localStorage crudo aquí causaba UI en EN con contenido del
+  // servidor en ES cuando el idioma venía del navegador (bug Eduardo F7).
 
   const { data: todayRes, isLoading } = useSWR(
     isAuth ? `${TODAY_URL}?tz=${tz}&lang=${lang}` : null,

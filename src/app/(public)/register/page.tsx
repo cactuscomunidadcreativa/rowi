@@ -16,7 +16,7 @@
    sin checkout), ?ref=, ?coupon=, utm_*, ?source=.
 ========================================================= */
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, getProviders, useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -30,8 +30,13 @@ function RegisterInner() {
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
 
-  // Usuario ya logueado: esta página es solo para altas nuevas.
+  // Usuario YA logueado que llega a /register: mandarlo a su día. PERO si la
+  // sesión nace AQUÍ (auto-login post-registro), este efecto NO debe competir
+  // con la navegación a /onboarding — esa carrera mandaba al usuario nuevo a
+  // /today sin cookie estable → /signin?callbackUrl=/today (bug Eduardo F7).
+  const registering = useRef(false);
   useEffect(() => {
+    if (registering.current) return;
     if (status === "authenticated" && session?.user?.email) {
       const plan = searchParams.get("plan");
       router.replace(plan ? `/pricing?plan=${plan}` : "/today");
@@ -97,6 +102,7 @@ function RegisterInner() {
     }
 
     setLoading(true);
+    registering.current = true;
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -138,10 +144,13 @@ function RegisterInner() {
       });
       if (signInResult?.error) {
         toast.success(t("register.errors.accountCreated", "Cuenta creada. Por favor inicia sesión."));
-        router.push("/signin");
+        window.location.href = "/signin?callbackUrl=%2Fonboarding";
       } else {
         toast.success(t("register.errors.welcomeToRowi", "¡Bienvenido a Rowi! Completa tu perfil."));
-        router.push("/onboarding");
+        // Navegación COMPLETA (no client-side): garantiza que el middleware
+        // vea la cookie de sesión recién emitida — el push() de cliente
+        // corría antes de que la sesión se estabilizara.
+        window.location.href = "/onboarding";
       }
     } catch {
       setError(t("register.errors.general", "Ocurrió un error. Inténtalo de nuevo."));

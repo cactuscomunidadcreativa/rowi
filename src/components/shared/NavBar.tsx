@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, LayoutDashboard, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid, Sun } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -349,7 +349,9 @@ const BASE_LINKS = [
   { href: "/rowi", key: "guide", icon: Bot, roles: ["*"], primary: true, journey: "guide" },
   // El resto vive en "Más", agrupado por etapa del viaje (dentro de BECOMING).
   { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: false, journey: "see" },
-  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, roles: ["*"], primary: false, journey: "see" },
+  // /dashboard fuera de la nav (decisión Eduardo F7): la puerta es TODAY y la
+  // memoria es BECOMING. El dashboard sigue vivo para los flujos de Mírate
+  // (links contextuales y URL directa), pero no compite como "home".
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false, journey: "see" },
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
   { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "affinity" },

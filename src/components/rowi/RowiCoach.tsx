@@ -622,7 +622,7 @@ export default function RowiCoach() {
             >
               {/* Botón de Google */}
               <button
-                onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                onClick={() => signIn("google", { callbackUrl: "/today" })}
                 className="flex items-center justify-center gap-3 w-full py-3 px-4 bg-white dark:bg-zinc-800 text-gray-800 dark:text-white rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors border border-gray-200 dark:border-zinc-700 shadow-sm"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

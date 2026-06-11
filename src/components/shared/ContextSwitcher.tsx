@@ -52,11 +52,12 @@ interface QuickLink {
 
 const QUICK_LINKS: QuickLink[] = [
   {
-    href: "/dashboard",
+    // Casa = TODAY (arquitectura maestra), no el dashboard.
+    href: "/today",
     icon: LayoutDashboard,
-    labelKey: "context.myDashboard",
-    labelES: "Mi Dashboard",
-    color: "#3b82f6",
+    labelKey: "nav.myDay",
+    labelES: "Mi día",
+    color: "#7c3aed",
   },
   {
     href: "/affinity",

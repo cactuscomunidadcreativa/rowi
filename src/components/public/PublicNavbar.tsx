@@ -161,11 +161,11 @@ export default function PublicNavbar() {
           {/* Auth Buttons */}
           {isLoggedIn ? (
             <Link
-              href="/dashboard"
+              href="/today"
               className="rowi-btn-primary px-4 py-2 text-sm flex items-center gap-2"
             >
               <LayoutDashboard className="w-4 h-4" />
-              {t("nav.dashboard", "Dashboard")}
+              {t("nav.myDay", "Mi día")}
             </Link>
           ) : (
             <>
@@ -226,11 +226,11 @@ export default function PublicNavbar() {
               <div className="pt-4 border-t border-gray-200 dark:border-zinc-800">
                 {isLoggedIn ? (
                   <Link
-                    href="/dashboard"
+                    href="/today"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-4 py-3 text-center rowi-btn-primary"
                   >
-                    {t("nav.dashboard", "Dashboard")}
+                    {t("nav.myDay", "Mi día")}
                   </Link>
                 ) : (
                   <>

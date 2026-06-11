@@ -772,32 +772,12 @@ export default function AffinityPage() {
                               </div>
                             )}
 
-                            {/* Affinity Score */}
+                            {/* Sintonía como BRECHA (regla SIA): barritas + nivel, sin % */}
                             <div className="flex items-center gap-2 mt-2">
                               {isLoading ? (
                                 <Loader2 className="w-3 h-3 animate-spin text-[var(--rowi-muted)]" />
                               ) : affinityPct !== null ? (
-                                <>
-                                  <Heart className="w-3 h-3 text-[var(--rowi-muted)]" />
-                                  <div
-                                    className="h-1.5 rounded-full flex-1 bg-gray-100 dark:bg-zinc-800"
-                                    style={{ maxWidth: "80px" }}
-                                  >
-                                    <div
-                                      className="h-full rounded-full transition-all"
-                                      style={{
-                                        width: `${affinityPct}%`,
-                                        background: levelInfo?.color,
-                                      }}
-                                    />
-                                  </div>
-                                  <span
-                                    className="text-xs font-semibold"
-                                    style={{ color: levelInfo?.color }}
-                                  >
-                                    {affinityPct}%
-                                  </span>
-                                </>
+                                <AttunementBar piece={{ heat100: affinityPct }} t={t} />
                               ) : (
                                 <span className="text-xs text-[var(--rowi-muted)]">
                                   {t("affinity.notCalculated", "Sin calcular")}
@@ -1071,9 +1051,7 @@ export default function AffinityPage() {
                       if (!aff) return (
                         <div key={member.id} className="bg-[var(--rowi-background)] rounded-xl p-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-[var(--rowi-muted)]/20 flex items-center justify-center text-xs font-medium text-[var(--rowi-muted)]">
-                              {member.name.charAt(0)}
-                            </div>
+                            <RowiAvatar seed={member.name} size={32} />
                             <span className="text-sm text-[var(--rowi-foreground)]">{member.name}</span>
                           </div>
                           <span className="text-xs text-[var(--rowi-muted)]">{t("affinity.detail.notCalculated") || "Sin calcular"}</span>
@@ -1088,12 +1066,7 @@ export default function AffinityPage() {
                           {/* Header */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div
-                                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                                style={{ background: levelInfo.color }}
-                              >
-                                {member.name.charAt(0)}
-                              </div>
+                              <RowiAvatar seed={member.name} size={40} />
                               <div>
                                 <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{member.name}</span>
                                 <div className="text-[10px] text-[var(--rowi-muted)]">
@@ -1102,8 +1075,9 @@ export default function AffinityPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-xl font-bold" style={{ color: levelInfo.color }}>{heat}%</div>
-                              <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
+                              <div className="text-sm font-bold" style={{ color: levelInfo.color }}>
+                                {aff.affinityLevel}
+                              </div>
                             </div>
                           </div>
 

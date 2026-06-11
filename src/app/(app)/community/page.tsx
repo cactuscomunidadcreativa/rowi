@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import RowiAvatar from "@/components/shared/RowiAvatar";
 import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
+import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -2122,25 +2123,37 @@ function MemberCard({
         )}
       </div>
 
-      {/* Affinity Bar */}
+      {/* Sintonía como BRECHA (regla SIA): barritas de 4 pasos + nivel, sin % */}
       <div className="mt-3 sm:mt-4">
-        <div className="flex items-center justify-between text-[10px] sm:text-xs mb-1">
-          <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <Heart className="w-3 h-3" />
-            {affinityLabel}
-          </span>
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            {affinity !== null ? `${affinity}%` : "—"}
-          </span>
-        </div>
-        <div className="h-1.5 sm:h-2 w-full rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: affinity !== null ? `${affinity}%` : "0%" }}
-            transition={{ duration: 0.8, delay: index * 0.03 + 0.3 }}
-            className={`h-full rounded-full ${affinityColor}`}
-          />
-        </div>
+        {(() => {
+          const gap = affinityAsGap({ heat100: affinity });
+          return (
+            <>
+              <div className="flex items-center justify-between text-[10px] sm:text-xs mb-1">
+                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <Heart className="w-3 h-3" />
+                  {tx("affinity.attunement.title", "Sintonía")}
+                </span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  {gap ? tx(gap.labelKey, gap.level) : "—"}
+                </span>
+              </div>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.03 + i * 0.08 }}
+                    className={`h-1.5 sm:h-2 flex-1 rounded-full ${
+                      gap && i <= gap.step ? affinityColor : "bg-gray-100 dark:bg-zinc-800"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* AI Summary */}

@@ -40,7 +40,13 @@ import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
    =========================================================
 */
 
-type Member = { id: string; name: string; brainStyle?: string };
+type Member = {
+  id: string;
+  name: string;
+  brainStyle?: string;
+  /** Etapa real del avatar (AvatarEvolution) si la persona tiene cuenta. */
+  avatarStage?: string | null;
+};
 type Free = { name: string; brainStyle?: string; bio?: string };
 type Channel = "email" | "whatsapp" | "sms" | "call" | "speech";
 type PersonalizedMessage = { name: string; subject: string | null; text: string };
@@ -646,7 +652,11 @@ function EcoPageInner() {
                             : "border-transparent bg-gray-50 dark:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
                         }`}
                       >
-                        <RowiAvatar seed={m.name || m.id} size={36} />
+                        <RowiAvatar
+                          seed={m.name || m.id}
+                          stage={(m.avatarStage as RowiStage) || undefined}
+                          size={36}
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{m.name}</p>
                           <p className="text-xs text-[var(--rowi-muted)] truncate">

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import type { RowiStage } from "@/domains/avatar/components/RowiStageImage";
 import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 import { motion, AnimatePresence } from "framer-motion";
@@ -783,6 +784,8 @@ type Member = {
   aiSummary?: string | null;
   source?: string;
   updatedAt?: string;
+  /** Etapa real del avatar (AvatarEvolution) si la persona tiene cuenta. */
+  avatarStage?: string | null;
 };
 
 type Invite = {
@@ -2072,7 +2075,11 @@ function MemberCard({
       </div>
 
       <div className="flex items-start gap-3 sm:gap-4">
-        <RowiAvatar seed={member.name || "?"} size={48} />
+        <RowiAvatar
+          seed={member.name || "?"}
+          stage={(member.avatarStage as RowiStage) || undefined}
+          size={48}
+        />
 
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm sm:text-base">

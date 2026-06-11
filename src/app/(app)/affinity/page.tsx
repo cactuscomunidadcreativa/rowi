@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import AffinityMonitor from "@/components/affinity/AffinityMonitor";
 import RowiAvatar from "@/components/shared/RowiAvatar";
+import type { RowiStage } from "@/domains/avatar/components/RowiStageImage";
 import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
 
@@ -59,6 +60,8 @@ type Member = {
   hubId?: string;
   hubName?: string;
   tenantId?: string;
+  /** Etapa real del avatar (AvatarEvolution) si la persona tiene cuenta. */
+  avatarStage?: string | null;
 };
 
 type CommunityOption = {
@@ -743,7 +746,11 @@ export default function AffinityPage() {
 
                         {/* Mismo layout que las tarjetas de /community */}
                         <div className="flex items-start gap-3">
-                          <RowiAvatar seed={m.name} size={48} />
+                          <RowiAvatar
+                            seed={m.name}
+                            stage={(m.avatarStage as RowiStage) || undefined}
+                            size={48}
+                          />
 
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">
@@ -1051,7 +1058,11 @@ export default function AffinityPage() {
                       if (!aff) return (
                         <div key={member.id} className="bg-[var(--rowi-background)] rounded-xl p-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <RowiAvatar seed={member.name} size={32} />
+                            <RowiAvatar
+                              seed={member.name}
+                              stage={(member.avatarStage as RowiStage) || undefined}
+                              size={32}
+                            />
                             <span className="text-sm text-[var(--rowi-foreground)]">{member.name}</span>
                           </div>
                           <span className="text-xs text-[var(--rowi-muted)]">{t("affinity.detail.notCalculated") || "Sin calcular"}</span>
@@ -1066,7 +1077,11 @@ export default function AffinityPage() {
                           {/* Header */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <RowiAvatar seed={member.name} size={40} />
+                              <RowiAvatar
+                                seed={member.name}
+                                stage={(member.avatarStage as RowiStage) || undefined}
+                                size={40}
+                              />
                               <div>
                                 <span className="text-sm font-semibold text-[var(--rowi-foreground)]">{member.name}</span>
                                 <div className="text-[10px] text-[var(--rowi-muted)]">

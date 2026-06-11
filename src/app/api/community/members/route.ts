@@ -327,7 +327,25 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const allMembers = [...members, ...teammates];
+    const allMembers: any[] = [...members, ...teammates];
+
+    // Etapa REAL del avatar para miembros con cuenta: el búho de cada persona
+    // sale de su AvatarEvolution en la base, no de un placeholder.
+    const linkedIds = Array.from(
+      new Set(allMembers.map((m) => m.userId).filter(Boolean))
+    ) as string[];
+    if (linkedIds.length > 0) {
+      const avatars = await prisma.avatarEvolution.findMany({
+        where: { userId: { in: linkedIds } },
+        select: { userId: true, stage: true },
+      });
+      const stageByUser = new Map(avatars.map((a) => [a.userId, a.stage]));
+      for (const m of allMembers) {
+        if (m.userId && stageByUser.has(m.userId)) {
+          m.avatarStage = stageByUser.get(m.userId);
+        }
+      }
+    }
 
     // Construir lista de comunidades disponibles para el filtro
     const communityMap = new Map<string, { id: string; name: string; count: number }>();

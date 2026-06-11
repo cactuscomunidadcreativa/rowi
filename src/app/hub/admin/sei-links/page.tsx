@@ -87,6 +87,7 @@ const LANGUAGES = [
   { code: "es", name: "Español" },
   { code: "en", name: "English" },
   { code: "pt", name: "Português" },
+  { code: "it", name: "Italiano" },
   { code: "fr", name: "Français" },
   { code: "de", name: "Deutsch" },
 ];

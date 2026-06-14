@@ -15,6 +15,7 @@ import { claimRelationshipInvite } from "@/lib/relationships/claimInvite";
 import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { rateLimiters } from "@/lib/security/rateLimit";
 import { verifyTurnstile } from "@/lib/security/turnstile";
+import { telemetry } from "@/lib/telemetry";
 
 interface RegisterBody {
   email: string;
@@ -466,7 +467,7 @@ export async function POST(req: NextRequest) {
       nextStep: "onboarding",
     });
   } catch (error) {
-    console.error("❌ Error registering user:", error);
+    telemetry.captureException(error, { route: "/api/auth/register" });
     return NextResponse.json(
       { error: "registration_failed" },
       { status: 500 }

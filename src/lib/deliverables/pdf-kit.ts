@@ -303,6 +303,45 @@ export class RowiPdf {
     this.y += 70;
   }
 
+  /** Chip de banda de afinidad (hot/warm/cold) — escala 0-135. */
+  bandChip(x: number, y: number, band: "hot" | "warm" | "cold", label: string, w = 88, h = 16) {
+    const d = this.doc;
+    const color = band === "hot" ? C.violet : band === "warm" ? C.barMid : C.muted;
+    d.roundedRect(x, y, w, h, h / 2).fill(color);
+    d.font("Helvetica-Bold").fontSize(8).fillColor(C.white)
+      .text(label, x, y + 4, { width: w, align: "center", lineBreak: false });
+  }
+
+  /** Tarjeta de ranking: círculo numerado + nombre + sub + barra 0-135 + score + chip. */
+  rankCard(opts: {
+    rank: number; name: string; sub: string; value: number; max?: number;
+    band: "hot" | "warm" | "cold"; bandLabel: string;
+  }) {
+    const d = this.doc;
+    const max = opts.max ?? 135;
+    const h = 42;
+    this.ensure(h + 4);
+    const y = this.y;
+    d.roundedRect(MX, y, CW, h, 8).lineWidth(1).strokeColor(C.track).stroke();
+    const circleColor = opts.rank === 1 ? C.violet : opts.rank === 2 ? C.violetDark : C.muted;
+    d.circle(MX + 20, y + 21, 10).fill(circleColor);
+    d.fillColor(C.white).font("Helvetica-Bold").fontSize(10)
+      .text(String(opts.rank), MX + 10, y + 17, { width: 20, align: "center", lineBreak: false });
+    d.fillColor(C.ink).font("Helvetica-Bold").fontSize(10.5).text(opts.name, MX + 40, y + 8, { lineBreak: false });
+    d.fillColor(C.muted).font("Helvetica").fontSize(7.5).text(opts.sub, MX + 40, y + 22, { width: 280, lineBreak: false });
+    // barra
+    const barX = MX + 40, barW = 280, barY = y + 32;
+    const pct = Math.max(0.02, Math.min(1, opts.value / max));
+    d.roundedRect(barX, barY, barW, 6, 3).fill(C.track);
+    d.roundedRect(barX, barY, barW * pct, 6, 3).fill(opts.band === "hot" ? C.violet : opts.band === "warm" ? C.barMid : C.muted);
+    // score
+    d.fillColor(C.violetDark).font("Helvetica-Bold").fontSize(14)
+      .text(String(opts.value), PAGE_W - MX - 150, y + 12, { width: 60, align: "right", lineBreak: false });
+    d.fillColor(C.muted).font("Helvetica").fontSize(7).text(`/ ${max}`, PAGE_W - MX - 150, y + 27, { width: 60, align: "right", lineBreak: false });
+    this.bandChip(PAGE_W - MX - 92, y + 13, opts.band, opts.bandLabel);
+    this.y += h + 6;
+  }
+
   /** Cierra el documento y devuelve el Buffer. */
   finish(): Promise<Buffer> {
     this.footer();

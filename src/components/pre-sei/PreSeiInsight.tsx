@@ -79,7 +79,7 @@ export default function PreSeiInsight({ insight }: Props) {
         <p className="text-sm text-[var(--rowi-muted)]">
           {t(
             "preSei.insight.disclaimer",
-            "Esto es una hipótesis a partir de tus respuestas, no un diagnóstico.",
+            "Esto es tu reflejo emocional a partir de tus respuestas, una hipótesis, no un diagnóstico.",
           )}
         </p>
         <p className="text-sm text-[var(--rowi-muted)] mt-1">

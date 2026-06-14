@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { rateLimit, getUserIdentifier } from "@/lib/security/rateLimit";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
@@ -270,13 +271,13 @@ export async function POST(req: NextRequest) {
         ctaUrl,
         locale: recipient?.preferredLang || recipient?.language || "es",
       }).catch((e) => {
-        console.warn("⚠️ Could not send service.proposed notification:", e);
+        telemetry.captureException(e, { route: "/api/account/services", op: "notify_service_proposed", fatal: false });
       });
     }
 
     return NextResponse.json({ ok: true, engagement: created });
   } catch (err: any) {
-    console.error("❌ Error POST /api/account/services:", err);
+    telemetry.captureException(err, { route: "/api/account/services", op: "POST" });
     return NextResponse.json(
       { ok: false, error: err?.message || "Error interno" },
       { status: 500 },

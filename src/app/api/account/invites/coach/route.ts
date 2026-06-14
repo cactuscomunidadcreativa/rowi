@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 
 /**
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, sent, received });
   } catch (e: unknown) {
-    console.error("/api/account/invites/coach GET error:", e);
+    telemetry.captureException(e, { route: "/api/account/invites/coach", op: "GET" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, invite });
   } catch (e: unknown) {
-    console.error("/api/account/invites/coach POST error:", e);
+    telemetry.captureException(e, { route: "/api/account/invites/coach", op: "POST" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
@@ -172,7 +173,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
-    console.error("/api/account/invites/coach PATCH error:", e);
+    telemetry.captureException(e, { route: "/api/account/invites/coach", op: "PATCH" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

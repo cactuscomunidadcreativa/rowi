@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/members/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canAccessWorkspace, canManageWorkspace } from "@/lib/workspace/permissions";
 
@@ -100,7 +101,7 @@ export async function GET(
 
     return NextResponse.json({ members: shaped });
   } catch (err: any) {
-    console.error("GET /api/workspaces/[id]/members error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/members", op: "GET" });
     return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
   }
 }
@@ -138,7 +139,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("DELETE /api/workspaces/[id]/members error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/members", op: "DELETE" });
     return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
   }
 }

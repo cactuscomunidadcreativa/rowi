@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
@@ -177,16 +178,13 @@ export async function PATCH(
         ctaUrl,
         locale: ownerPrefs?.preferredLang || ownerPrefs?.language || "es",
       }).catch((e) => {
-        console.warn(
-          "⚠️ Could not send family consent notification:",
-          e,
-        );
+        telemetry.captureException(e, { route: "/api/account/family/[id]", op: "notify_family_consent", fatal: false });
       });
     }
 
     return NextResponse.json({ ok: true, relation: updated });
   } catch (err: any) {
-    console.error("❌ Error PATCH /api/account/family/[id]:", err);
+    telemetry.captureException(err, { route: "/api/account/family/[id]", op: "PATCH" });
     return NextResponse.json(
       { ok: false, error: err?.message || "Error interno" },
       { status: 500 },

@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/ai-analyze/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canAccessWorkspace } from "@/lib/workspace/permissions";
 
@@ -109,7 +110,7 @@ Pregunta:`;
         const answer = data?.choices?.[0]?.message?.content || "No response from AI.";
         return NextResponse.json({ answer, usage: data?.usage });
       } catch (aiErr: any) {
-        console.error("AI error:", aiErr);
+        telemetry.captureException(aiErr, { route: "/api/workspaces/[id]/ai-analyze", op: "openai_completion", fatal: false });
       }
     }
 
@@ -128,7 +129,7 @@ Para tu pregunta "${question}", te recomiendo:
 
     return NextResponse.json({ answer, fallback: true });
   } catch (err: any) {
-    console.error("POST /api/workspaces/[id]/ai-analyze error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/ai-analyze", op: "POST" });
     return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
   }
 }

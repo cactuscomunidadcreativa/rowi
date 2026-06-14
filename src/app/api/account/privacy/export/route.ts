@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 
 /**
@@ -114,7 +115,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (e: unknown) {
-    console.error("/api/account/privacy/export error:", e);
+    telemetry.captureException(e, { route: "/api/account/privacy/export", op: "GET" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

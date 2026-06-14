@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/stats/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canAccessWorkspace } from "@/lib/workspace/permissions";
 
@@ -164,7 +165,7 @@ export async function GET(
       roles,
     });
   } catch (err: any) {
-    console.error("GET /api/workspaces/[id]/stats error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/stats", op: "GET" });
     return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
   }
 }

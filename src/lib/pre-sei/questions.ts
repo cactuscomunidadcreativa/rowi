@@ -1,5 +1,7 @@
 /**
- * Pre-SEI — diagnóstico EQ rápido de 8 preguntas (una por competencia SEI).
+ * Pre-SEI — reflejo emocional rápido de 8 preguntas (una por competencia SEI).
+ * De cara al usuario es un "espejo / selfie emocional", nunca un diagnóstico
+ * (ese término queda reservado al módulo consultor).
  *
  * NO es un catálogo nuevo: reusa las 8 preguntas de `daily-pulse/questions.ts`
  * (una por competencia KCG, en 4 idiomas, con feedback low/mid/high y mapeo a
@@ -7,7 +9,7 @@
  * `SEI_ORDER`, en vez de una por día.
  *
  * Diferencia de framing: el Daily Pulse pregunta en tono "hoy/diario"
- * ("Hoy, ¿con qué precisión...?"). El Pre-SEI es un diagnóstico de una sola vez,
+ * ("Hoy, ¿con qué precisión...?"). El Pre-SEI es un reflejo de una sola vez,
  * así que ofrecemos una variante "intake" del enunciado en tono general
  * (presente atemporal). El contenido base —competencia, pulse point, feedback—
  * NO se duplica; solo el enunciado tiene una segunda redacción opcional.

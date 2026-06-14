@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/upload-csv/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
 import { parse } from "csv-parse/sync";
@@ -203,7 +204,7 @@ export async function POST(
           });
         }
       } catch (rowErr) {
-        console.error("Row error:", rowErr);
+        telemetry.captureException(rowErr, { route: "/api/workspaces/[id]/upload-csv", op: "row_import", fatal: false });
         errors++;
       }
     }
@@ -243,7 +244,7 @@ export async function POST(
       autoBenchmarkId,
     });
   } catch (err: any) {
-    console.error("POST /api/workspaces/[id]/upload-csv error:", err);
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/upload-csv", op: "POST" });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }

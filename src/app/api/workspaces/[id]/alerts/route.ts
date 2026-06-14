@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/alerts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
 
@@ -58,6 +59,7 @@ export async function PATCH(
     });
     return NextResponse.json({ alert });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/alerts" });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

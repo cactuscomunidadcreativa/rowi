@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { secureLog } from "@/lib/logging";
 
@@ -51,7 +52,7 @@ export async function DELETE(req: NextRequest) {
     secureLog.info(`[account-delete] GDPR Art.17 erasure user=${user.id}`);
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
-    console.error("[account-delete] failed:", err);
+    telemetry.captureException(err, { route: "/api/account/delete", op: "POST" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

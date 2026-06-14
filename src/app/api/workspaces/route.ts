@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { listUserWorkspaces, PROFESSIONAL_ROLES } from "@/lib/workspace/permissions";
 import { getTemplate, isValidTemplate } from "@/lib/workspace/templates";
@@ -55,9 +56,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ workspaces, activeContextFilter });
   } catch (err: any) {
-    console.error("GET /api/workspaces error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces", op: "GET" });
     return NextResponse.json(
-      { error: err?.message || "Error listing workspaces" },
+      { error: "Error listing workspaces" },
       { status: 500 }
     );
   }
@@ -163,9 +164,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ workspace }, { status: 201 });
   } catch (err: any) {
-    console.error("POST /api/workspaces error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces", op: "POST" });
     return NextResponse.json(
-      { error: err?.message || "Error creating workspace" },
+      { error: "Error creating workspace" },
       { status: 500 }
     );
   }

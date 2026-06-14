@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canAccessWorkspace, canManageWorkspace } from "@/lib/workspace/permissions";
 
@@ -52,9 +53,9 @@ export async function GET(
 
     return NextResponse.json({ workspace, role });
   } catch (err: any) {
-    console.error("GET /api/workspaces/[id] error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "GET" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }
@@ -114,9 +115,9 @@ export async function PATCH(
 
     return NextResponse.json({ workspace: updated });
   } catch (err: any) {
-    console.error("PATCH /api/workspaces/[id] error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "PATCH" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }
@@ -153,9 +154,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("DELETE /api/workspaces/[id] error:", err);
+    telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "DELETE" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
 export const runtime = "nodejs";
@@ -179,7 +180,7 @@ export async function PATCH(
           ctaUrl,
           locale: provider.preferredLang || provider.language || "es",
         }).catch((e) => {
-          console.warn("⚠️ Could not send service.accepted notification:", e);
+          telemetry.captureException(e, { route: "/api/account/services/[id]", op: "notify_service_accepted", fatal: false });
         });
       }
     }
@@ -204,7 +205,7 @@ export async function PATCH(
             locale:
               otherUser.preferredLang || otherUser.language || "es",
           }).catch((e) => {
-            console.warn("⚠️ Could not send service.ended notification:", e);
+            telemetry.captureException(e, { route: "/api/account/services/[id]", op: "notify_service_ended", fatal: false });
           });
         }
       }
@@ -212,9 +213,9 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, engagement: updated });
   } catch (err: any) {
-    console.error("❌ Error PATCH /api/account/services/[id]:", err);
+    telemetry.captureException(err, { route: "/api/account/services/[id]", op: "PATCH" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

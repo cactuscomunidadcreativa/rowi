@@ -19,6 +19,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { requireAuth } from "@/core/auth/requireAdmin";
 import { secureLog } from "@/lib/logging";
 import { cloneAgentsForContext } from "@/core/startup/cloneAgents";
@@ -134,7 +135,7 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       );
     }
-    console.error("[create-org] error:", err);
+    telemetry.captureException(err, { route: "/api/account/create-organization", op: "POST" });
     return NextResponse.json(
       { ok: false, error: "No se pudo crear la organización" },
       { status: 500 },

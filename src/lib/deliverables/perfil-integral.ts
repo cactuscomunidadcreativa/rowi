@@ -127,9 +127,9 @@ export async function buildPerfilIntegral(data: PerfilIntegralData, lang: Lang =
   pdf.header({ eyebrow: t.eyebrow, eyebrowColor: C.amberTxt, title: t.title, subtitle: data.subjectLabel });
 
   // Nombre + meta
-  pdf.doc.font("Helvetica-Bold").fontSize(20).fillColor(C.ink).text(data.subjectLabel, MX, pdf.y);
+  pdf.font("bold").fontSize(20).fillColor(C.ink).text(data.subjectLabel, MX, pdf.y);
   pdf.y = pdf.doc.y + 3;
-  pdf.doc.font("Helvetica").fontSize(9).fillColor(C.muted).text(data.meta, MX, pdf.y);
+  pdf.font("regular").fontSize(9).fillColor(C.muted).text(data.meta, MX, pdf.y);
   pdf.y = pdf.doc.y + 10;
 
   // Caja EQ Total + KCG
@@ -209,8 +209,8 @@ export async function buildPerfilIntegral(data: PerfilIntegralData, lang: Lang =
   pdf.para(t.crossIntro, { size: 8.5, color: C.muted });
   for (const r of data.blindspotMap) {
     pdf.ensure(20);
-    pdf.doc.font("Helvetica").fontSize(9).fillColor(C.ink)
-      .text(PULSE_LABEL[lang][r.pulse] ?? r.pulse, MX, pdf.y + 2, { width: pdf.doc.x ? 200 : 200, lineBreak: false });
+    pdf.font("regular").fontSize(9).fillColor(C.ink)
+      .text(PULSE_LABEL[lang][r.pulse] ?? r.pulse, MX, pdf.y + 2, { width: 200, lineBreak: false });
     pdf.stateChip(PAGE_W - MX - 90, pdf.y, r.state, t.state[r.state] ?? r.state);
     pdf.y += 20;
   }

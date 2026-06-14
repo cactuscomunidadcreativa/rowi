@@ -181,7 +181,7 @@ const PURSUIT_LABEL: Record<Lang, Record<string, string>> = {
   pt: { K: "Conheça-se", C: "Escolha-se", G: "Entregue-se", EQ: "EQ total" },
 };
 
-function lenteLabel(t: (typeof L)["es"], delta: number): string {
+function lenteLabel(t: (typeof L)[Lang], delta: number): string {
   if (delta >= 2) return t.lenteEleva;
   if (delta > -2) return t.lentePar;
   if (delta > -10) return t.lenteDelante;
@@ -193,7 +193,10 @@ export async function buildReporteFullHiring(data: HiringReportData, lang: Lang 
   const pdf = new RowiPdf({ lang, footerLeft: `${t.footer} · ${data.process} — ${t.footerTail}`, owl });
   const compL = (k: string) => (t.comps as Record<string, string>)[k] ?? k;
 
-  // ════ P1 · RESUMEN EJECUTIVO ════
+  const affSectionTitle = lang === "es" ? "Afinidad por contexto" : lang === "pt" ? "Afinidade por contexto" : "Affinity by context";
+  const relSectionTitle = lang === "es" ? "Capacidad relativa por contexto" : lang === "pt" ? "Capacidade relativa por contexto" : "Relative capability by context";
+
+  // ════ RESUMEN EJECUTIVO ════
   pdf.header({ eyebrow: t.eyebrowExec, title: t.title, subtitle: `${data.process} · ${data.meta}` });
   pdf.para(t.t1(data.leaderName), { size: 15, bold: true, color: C.ink });
   pdf.para(t.s1, { size: 9, color: C.muted });
@@ -212,14 +215,12 @@ export async function buildReporteFullHiring(data: HiringReportData, lang: Lang 
     [0.30, 0.16, 0.16, 0.18, 0.20],
   );
   pdf.note(t.anchor(data.leaderMeta));
-  pdf.callout(data.enrich?.execSummary ?? buildExecSummary(data, t), { lead: lang === "es" ? "Lectura de Rowi" : lang === "pt" ? "Leitura do Rowi" : "Rowi's read", bg: C.violet, leadColor: C.white });
+  pdf.callout(data.enrich?.execSummary ?? buildExecSummary(data, lang), { lead: lang === "es" ? "Lectura de Rowi" : lang === "pt" ? "Leitura do Rowi" : "Rowi's read", bg: C.violet, leadColor: C.white });
   pdf.callout(t.principle + " " + t.principle2, { bg: C.coralBg, leadColor: C.amberTxt });
-  pdf.newPage();
 
-  // ════ P2 · AFINIDAD: ranking + matriz ════
-  pdf.header({ eyebrow: t.eyebrowAff, title: t.benchTitle === "Benchmark Global" ? t.bridgeTitle.replace(t.bridgeTitle, "Afinidad por contexto") : "Afinidad por contexto", subtitle: "Motor Rowi · 0-135 · 6 contextos" });
-  // (título de sección afinidad fijo por idioma)
-  pdf.h2(t.affTitle(data.leaderName));
+  // ════ AFINIDAD: ranking + matriz ════
+  pdf.section({ eyebrow: t.eyebrowAff, title: t.affTitle(data.leaderName), need: 260,
+    headerOnNewPage: { title: affSectionTitle, subtitle: "Motor Rowi · 0-135 · 6 contextos" } });
   data.candidates.forEach((c, i) => {
     pdf.rankCard({
       rank: i + 1, name: c.name,
@@ -231,38 +232,40 @@ export async function buildReporteFullHiring(data: HiringReportData, lang: Lang 
   pdf.h2(t.ctxTitle);
   affinityMatrix(pdf, data, t);
   pdf.note(t.bandsNote);
-  pdf.newPage();
 
-  // ════ P3 · LENTE RELACIONAL (puentes) ════
-  pdf.header({ eyebrow: t.eyebrowBridge, title: t.bridgeTitle, subtitle: t.bridgeSub });
-  pdf.h2(lang === "es" ? "Capacidad relativa por contexto" : lang === "pt" ? "Capacidade relativa por contexto" : "Relative capability by context");
+  // ════ LENTE RELACIONAL (puentes) ════
+  pdf.section({ eyebrow: t.eyebrowBridge, title: relSectionTitle, need: 200,
+    headerOnNewPage: { title: t.bridgeTitle, subtitle: t.bridgeSub } });
   pdf.para(t.bridgeIntro, { size: 9, color: C.muted });
   relationalMatrix(pdf, data, t);
   pdf.note(t.bridgeLegend);
-  pdf.newPage();
 
-  // ════ P4 · BENCHMARK intro + ranking percentil ════
-  pdf.header({ eyebrow: t.eyebrowBench, title: t.benchTitle, subtitle: t.benchSub(data.benchmark.nTotal) });
-  pdf.h2(t.benchH);
+  // ════ BENCHMARK intro + ranking percentil ════
+  pdf.section({ eyebrow: t.eyebrowBench, title: t.benchH, need: 280,
+    headerOnNewPage: { title: t.benchTitle, subtitle: t.benchSub(data.benchmark.nTotal) } });
   benchStatsRow(pdf, data, t);
   pdf.h2(t.eqPctTitle);
   data.candidates.forEach((c) => {
     pdf.ensure(30);
     const y = pdf.y;
-    pdf.doc.font("Helvetica-Bold").fontSize(10).fillColor(C.ink).text(c.name, MX, y, { lineBreak: false });
-    pdf.doc.font("Helvetica").fontSize(7.5).fillColor(C.muted)
-      .text(`${c.role} · supera al ${c.eqPercentile}% del mundo · nivel top en ${c.compsAtTopLevel}/8 competencias`, MX, y + 12, { width: CW - 80, lineBreak: false });
+    const sub = lang === "es"
+      ? `${c.role} · supera al ${c.eqPercentile}% del mundo · nivel top en ${c.compsAtTopLevel}/8 competencias`
+      : lang === "pt"
+      ? `${c.role} · supera ${c.eqPercentile}% do mundo · nível top em ${c.compsAtTopLevel}/8 competências`
+      : `${c.role} · above ${c.eqPercentile}% of the world · top level in ${c.compsAtTopLevel}/8 competencies`;
+    pdf.font("bold").fontSize(10).fillColor(C.ink).text(c.name, MX, y, { lineBreak: false });
+    pdf.font("regular").fontSize(7.5).fillColor(C.muted)
+      .text(sub, MX, y + 12, { width: CW - 80, lineBreak: false });
     pdf.doc.roundedRect(MX + CW - 70, y, 60, 14, 7).fill(C.violet);
-    pdf.doc.fillColor(C.white).font("Helvetica-Bold").fontSize(11).text(`p${c.eqPercentile}`, MX + CW - 70, y + 2, { width: 60, align: "center", lineBreak: false });
+    pdf.font("bold").fontSize(11).fillColor(C.white).text(`p${c.eqPercentile}`, MX + CW - 70, y + 2, { width: 60, align: "center", lineBreak: false });
     pdf.y += 24;
     pdf.bar({ label: "", value: c.eqPercentile, min: 0, max: 100, norm: 90, labelW: 0, color: c.eqPercentile >= 90 ? C.violet : c.eqPercentile >= 70 ? C.greenDark : C.barMid });
     pdf.y += 4;
   });
-  pdf.newPage();
 
-  // ════ P5 · PERFIL TOP PERFORMER ════
-  pdf.header({ eyebrow: t.eyebrowBench, title: t.topTitle, subtitle: t.topSub });
-  pdf.h2(t.topH);
+  // ════ PERFIL TOP PERFORMER ════
+  pdf.section({ eyebrow: t.eyebrowBench, title: t.topH, need: 320,
+    headerOnNewPage: { title: t.topTitle, subtitle: t.topSub } });
   const rows: [string, string][] = [["EQ", PURSUIT_LABEL[lang].EQ], ...(["K", "C", "G"].map((k) => [k, PURSUIT_LABEL[lang][k]] as [string, string])), ...COMP_ORDER.map((k) => [k, compL(k)] as [string, string])];
   pdf.table(
     t.topCols as unknown as string[],
@@ -278,26 +281,28 @@ export async function buildReporteFullHiring(data: HiringReportData, lang: Lang 
     : lang === "pt" ? "A marca dos top performers: Metas nobres, Motivação intrínseca e Otimismo (+14 cada). Não se destacam em uma só habilidade: sobem nas 8 ao mesmo tempo."
     : "The top performers' hallmark: Noble Goals, Intrinsic Motivation and Optimism (+14 each). They don't stand out on one skill: they rise on all 8 at once.",
   );
-  pdf.newPage();
 
-  // ════ P6-P8 · FICHAS BENCHMARK por persona ════
-  for (let i = 0; i < data.candidates.length; i++) {
-    const c = data.candidates[i];
-    if (i > 0 && i % 2 === 0) pdf.newPage();
-    if (i === 0) pdf.header({ eyebrow: t.eyebrowBench, title: "Perfiles vs top performers", subtitle: lang === "es" ? "Detalle por persona" : lang === "pt" ? "Detalhe por pessoa" : "Detail per person" });
+  // ════ FICHAS BENCHMARK por persona ════
+  const fichasTitle = lang === "es" ? "Perfiles vs top performers" : lang === "pt" ? "Perfis vs top performers" : "Profiles vs top performers";
+  const fichasSub = lang === "es" ? "Detalle por persona" : lang === "pt" ? "Detalhe por pessoa" : "Detail per person";
+  pdf.section({ eyebrow: t.eyebrowBench, title: fichasTitle, need: 240,
+    headerOnNewPage: { title: fichasTitle, subtitle: fichasSub } });
+  for (const c of data.candidates) {
+    // cada ficha (h2 + ~8 barras) ocupa ~180pt; rompe página solo si no cabe.
+    pdf.ensure(190);
     benchCard(pdf, c, data, t, lang, compL);
   }
-  pdf.newPage();
 
-  // ════ P9 · HIPÓTESIS LVS ════
-  pdf.header({ eyebrow: t.eyebrowVs, title: t.vsTitle, subtitle: t.vsSub });
-  pdf.h2(t.vsH);
+  // ════ HIPÓTESIS LVS ════
+  pdf.section({ eyebrow: t.eyebrowVs, title: t.vsH, need: 220,
+    headerOnNewPage: { title: t.vsTitle, subtitle: t.vsSub } });
   pdf.para(t.vsIntro, { size: 9, color: C.muted });
   lvsDriverTable(pdf, data, t);
-  pdf.newPage();
 
-  // ════ P10 · ROLES (cómo apoya cada quien) ════
-  pdf.header({ eyebrow: t.eyebrowVs, title: t.rolesTitle, subtitle: lang === "es" ? "Rol natural según drivers y pulse points" : lang === "pt" ? "Papel natural segundo drivers e pulse points" : "Natural role by drivers and pulse points" });
+  // ════ ROLES (cómo apoya cada quien) ════
+  const rolesSub = lang === "es" ? "Rol natural según drivers y pulse points" : lang === "pt" ? "Papel natural segundo drivers e pulse points" : "Natural role by drivers and pulse points";
+  pdf.section({ eyebrow: t.eyebrowVs, title: t.rolesTitle, need: 260,
+    headerOnNewPage: { title: t.rolesTitle, subtitle: rolesSub } });
   for (const c of data.candidates) {
     const role = data.enrich?.roles?.[c.name];
     const roleText = role?.text ?? buildRoleText(c, t, lang);
@@ -315,13 +320,19 @@ export async function buildReporteFullHiring(data: HiringReportData, lang: Lang 
 }
 
 // ───────────────────────── plantillas deterministas ─────────────────────────
-function buildExecSummary(data: HiringReportData, t: (typeof L)["es"]): string {
+function buildExecSummary(data: HiringReportData, lang: Lang): string {
   const top = data.candidates[0];
   const last = data.candidates[data.candidates.length - 1];
+  if (lang === "en") {
+    return `${top.name} leads on affinity (${top.affinityAvg}/135) and sits at the ${top.eqPercentile}th world percentile. ${last.name} shows the widest gap (${last.affinityAvg}/135, p${last.eqPercentile}): a development relationship. Read each profile alongside the interview and the technical criteria.`;
+  }
+  if (lang === "pt") {
+    return `${top.name} lidera a afinidade (${top.affinityAvg}/135) e está no percentil ${top.eqPercentile} mundial. ${last.name} mostra a maior lacuna (${last.affinityAvg}/135, p${last.eqPercentile}): relação de desenvolvimento. Leia cada perfil junto com a entrevista e o critério técnico.`;
+  }
   return `${top.name} encabeza la afinidad (${top.affinityAvg}/135) y está en el percentil ${top.eqPercentile} mundial. ${last.name} muestra la mayor brecha (${last.affinityAvg}/135, p${last.eqPercentile}): relación de desarrollo. Lee cada ficha junto a la entrevista y el criterio técnico.`;
 }
 
-function buildRoleText(c: HiringCandidate, t: (typeof L)["es"], lang: Lang): string {
+function buildRoleText(c: HiringCandidate, t: (typeof L)[Lang], lang: Lang): string {
   const topDriver = [...c.lvsDrivers].sort((a, b) => b.score - a.score)[0];
   const dl = (t.drivers as Record<string, string>)[topDriver?.code] ?? topDriver?.code ?? "";
   const lvsBand = t.band[c.lvs.band];
@@ -331,7 +342,7 @@ function buildRoleText(c: HiringCandidate, t: (typeof L)["es"], lang: Lang): str
 }
 
 // ───────────────────────── bloques de maquetación ─────────────────────────
-function affinityMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"]) {
+function affinityMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)[Lang]) {
   const headers = ["", ...data.candidates.map((c) => c.name.split(" ")[0])];
   const rows = CTX_ORDER.map((ctx) => {
     const best = Math.max(...data.candidates.map((c) => c.affinityByContext[ctx] ?? 0));
@@ -347,7 +358,7 @@ function affinityMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"
   pdf.table(headers, rows, w, { fs: 8.5 });
 }
 
-function relationalMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"]) {
+function relationalMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)[Lang]) {
   const headers = ["", ...CTX_ORDER.map((c) => (t.ctx as Record<string, string>)[c])];
   const rows = data.candidates.map((c) => [
     c.name.split(" ")[0],
@@ -361,7 +372,7 @@ function relationalMatrix(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["e
   pdf.table(headers, rows, w, { fs: 8 });
 }
 
-function benchStatsRow(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"]) {
+function benchStatsRow(pdf: RowiPdf, data: HiringReportData, t: (typeof L)[Lang]) {
   const b = data.benchmark;
   const cards = [
     { n: b.nTotal, label: t.benchStats[0] },
@@ -375,27 +386,27 @@ function benchStatsRow(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"]
   cards.forEach((card, i) => {
     const x = MX + i * (cardW + gap);
     d.roundedRect(x, pdf.y, cardW, 48, 8).fill(C.violetBg);
-    d.font("Helvetica-Bold").fontSize(15).fillColor(C.violetDark)
+    pdf.font("bold").fontSize(15).fillColor(C.violetDark)
       .text(typeof card.n === "number" && card.n > 999 ? card.n.toLocaleString() : String(card.n), x, pdf.y + 8, { width: cardW, align: "center", lineBreak: false });
-    d.font("Helvetica").fontSize(7).fillColor(C.muted).text(card.label, x + 4, pdf.y + 28, { width: cardW - 8, align: "center" });
+    pdf.font("regular").fontSize(7).fillColor(C.muted).text(card.label, x + 4, pdf.y + 28, { width: cardW - 8, align: "center" });
   });
   pdf.y += 58;
 }
 
-function benchCard(pdf: RowiPdf, c: HiringCandidate, data: HiringReportData, t: (typeof L)["es"], lang: Lang, compL: (k: string) => string) {
-  pdf.h2(`${c.name} · p${c.eqPercentile} · ${t.band[c.lvs.band] === t.band.high ? "" : ""}`.trim().replace(/ · $/, ""));
+function benchCard(pdf: RowiPdf, c: HiringCandidate, data: HiringReportData, t: (typeof L)[Lang], lang: Lang, compL: (k: string) => string) {
+  pdf.h2(`${c.name} · p${c.eqPercentile}`);
   pdf.note(`${c.role} · EQ ${c.eq} · ${lang === "es" ? "supera al" : lang === "pt" ? "supera" : "above"} ${c.pctOfTopsBelow}% ${lang === "es" ? "de los tops" : lang === "pt" ? "dos tops" : "of the tops"} · ${lang === "es" ? "nivel top en" : lang === "pt" ? "nível top em" : "top level in"} ${c.compsAtTopLevel}/8`);
   const pop = data.benchmark.population; const top = data.benchmark.topPerformers;
   pdf.barsBlock(
     c.competencies.map((cm) => ({
-      label: `${compL(cm.key)}  (p${cm.pctl}, ${cm.vsTop >= 0 ? "+" : ""}${cm.vsTop.toFixed(0)} ${t.vsTop})`,
-      value: cm.score, min: 60, max: 135,
+      label: `${compL(cm.key)} (p${cm.pctl}, ${cm.vsTop >= 0 ? "+" : ""}${cm.vsTop.toFixed(0)} ${t.vsTop})`,
+      value: cm.score, min: 60, max: 135, labelW: 220,
       norm: pop[cm.key], color: cm.score >= (top[cm.key] ?? 999) ? C.violet : cm.score >= (pop[cm.key] ?? 0) ? C.barMid : C.muted,
     })),
   );
 }
 
-function lvsDriverTable(pdf: RowiPdf, data: HiringReportData, t: (typeof L)["es"]) {
+function lvsDriverTable(pdf: RowiPdf, data: HiringReportData, t: (typeof L)[Lang]) {
   const DRIVER_ORDER = ["TRUST", "MOTIVATION", "CHANGE", "TEAMWORK", "EXECUTION"];
   const headers = ["Driver", ...data.candidates.map((c) => c.name.split(" ")[0])];
   const rows = DRIVER_ORDER.map((code) => [

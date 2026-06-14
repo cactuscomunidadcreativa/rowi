@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { PREF_AXES } from "@/lib/mini-sei/preferences";
+import { telemetry } from "@/lib/telemetry";
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
     }));
     return NextResponse.json({ ok: true, questions });
   } catch (e: unknown) {
-    console.error("/api/mini-sei/preferences error:", e);
+    telemetry.captureException(e, { route: "/api/mini-sei/preferences" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

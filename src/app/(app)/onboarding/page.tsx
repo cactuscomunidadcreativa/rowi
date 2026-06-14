@@ -59,7 +59,9 @@ const STEPS: Step[] = [
 // Roles a usuario puede declarar al onboarding. Multi-select — un humano
 // suele tener varios sombreros (coach + mentor + consultor + persona).
 // El primer rol marcado decide el template del primer workspace que se
-// crea en el step siguiente; los demás quedan como atributos del perfil.
+// crea en el step siguiente; la selección COMPLETA se persiste en
+// User.onboardingData.selectedRoles vía /api/account/onboarding-data, así
+// sobrevive al cierre del tab y queda disponible para el resto del producto.
 const ROLE_PATHS = [
   { key: "coach", labelKey: "onboarding.role.coach", icon: Target, href: "/workspace/new?template=coaching" },
   { key: "mentor", labelKey: "onboarding.role.mentor", icon: GraduationCap, href: "/workspace/new?template=mentoring" },
@@ -100,7 +102,8 @@ export default function OnboardingPage() {
   const [rowiTestLoadError, setRowiTestLoadError] = useState(false);
   // Multi-select: un humano suele llevar varios sombreros (coach + mentor
   // + consultor + persona). El primer rol seleccionado define el template
-  // del primer workspace en el step siguiente; los demás quedan declarados.
+  // del primer workspace en el step siguiente; la selección completa se
+  // persiste en User.onboardingData.selectedRoles (ver persistRoles).
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   // Consent step state. Required consents start ON; user can toggle ON
@@ -145,7 +148,52 @@ export default function OnboardingPage() {
       }
     }
     checkState();
+    // Hidratar selectedRoles desde onboardingData: si el usuario ya declaró
+    // sus sombreros en una sesión previa, no se los volvemos a pedir en blanco.
+    (async () => {
+      try {
+        const res = await fetch("/api/account/onboarding-data");
+        const json = await res.json();
+        const saved = json?.data?.selectedRoles;
+        if (Array.isArray(saved) && saved.length > 0) {
+          setSelectedRoles(saved.filter((r): r is string => typeof r === "string"));
+        }
+      } catch {
+        /* sin datos previos: el wizard arranca en blanco */
+      }
+    })();
   }, []);
+
+  // Persistencia best-effort de la selección de roles. Se dispara al avanzar
+  // del paso welcome; un fallo de red no debe frenar el wizard.
+  function persistRoles(roles: string[]) {
+    fetch("/api/account/onboarding-data", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ selectedRoles: roles }),
+    }).catch(() => {});
+  }
+
+  // Registra el avance del onboarding (paso y/o cierre). /api/onboarding
+  // tolera llamadas parciales. Best-effort: no bloquea la navegación.
+  function persistOnboarding(payload: { step?: number; complete?: boolean }) {
+    const body: Record<string, unknown> = {};
+    if (payload.step !== undefined) body.step = payload.step;
+    if (payload.complete) body.data = { completeWithoutSei: true };
+    fetch("/api/onboarding", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(() => {});
+  }
+
+  // Cierre del onboarding: marca el estado ACTIVE (sale del estado REGISTERED
+  // en el que nace la cuenta) y manda al usuario a su día. Único punto de
+  // salida del wizard — lo usan tanto "Finalizar" como "Saltar".
+  function finishOnboarding() {
+    persistOnboarding({ step: STEPS.length - 1, complete: true });
+    router.push("/today");
+  }
 
   // Al entrar al paso: si ya existe un mini-SEI (p.ej. reclamado del Pre-SEI
   // en el registro), mostrar ese WOW en vez de repetir el test. Si no,
@@ -370,7 +418,11 @@ export default function OnboardingPage() {
       const ok = await saveManager();
       if (!ok) return;
     }
-    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    // Al salir de welcome, persistir los sombreros declarados.
+    if (STEPS[step]?.key === "welcome") persistRoles(selectedRoles);
+    const dest = Math.min(STEPS.length - 1, step + 1);
+    setStep(dest);
+    persistOnboarding({ step: dest });
   };
   const back = () => setStep((s) => Math.max(0, s - 1));
 
@@ -798,7 +850,7 @@ export default function OnboardingPage() {
           </button>
 
           <button
-            onClick={() => router.push("/today")}
+            onClick={finishOnboarding}
             disabled={current.key === "consent" && !consentMap.basic_processing}
             className="text-sm text-gray-500 hover:text-[var(--rowi-g2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-500"
             title={
@@ -836,7 +888,7 @@ export default function OnboardingPage() {
             </button>
           ) : (
             <button
-              onClick={() => router.push("/today")}
+              onClick={finishOnboarding}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
             >
               <Check className="w-4 h-4" />

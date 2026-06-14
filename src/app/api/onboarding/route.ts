@@ -6,8 +6,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 
 // =========================================================
 // GET - Obtener estado del onboarding
@@ -92,7 +94,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ Error getting onboarding status:", error);
+    telemetry.captureException(error, { route: "/api/onboarding", op: "GET" });
     return NextResponse.json(
       { error: "Error getting onboarding status" },
       { status: 500 }
@@ -113,7 +115,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const { step, data, requestSei, seiLanguage } = body;
 
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
 
     // Actualizar paso
     if (step !== undefined) {
@@ -127,9 +129,9 @@ export async function PATCH(req: NextRequest) {
         select: { onboardingData: true },
       });
 
-      updateData.onboardingData = {
-        ...(typeof user?.onboardingData === "object"
-          ? user.onboardingData
+      const mergedOnboarding: Record<string, unknown> = {
+        ...(user?.onboardingData && typeof user.onboardingData === "object"
+          ? (user.onboardingData as Record<string, unknown>)
           : {}),
         ...data,
       };
@@ -138,16 +140,10 @@ export async function PATCH(req: NextRequest) {
       if (data.name) updateData.name = data.name;
       if (data.country) updateData.country = data.country;
       if (data.language) updateData.language = data.language;
-      if (data.sector)
-        updateData.onboardingData = {
-          ...updateData.onboardingData,
-          sector: data.sector,
-        };
-      if (data.jobRole)
-        updateData.onboardingData = {
-          ...updateData.onboardingData,
-          jobRole: data.jobRole,
-        };
+      if (data.sector) mergedOnboarding.sector = data.sector;
+      if (data.jobRole) mergedOnboarding.jobRole = data.jobRole;
+
+      updateData.onboardingData = mergedOnboarding;
     }
 
     // Solicitar SEI
@@ -183,7 +179,7 @@ export async function PATCH(req: NextRequest) {
     // Actualizar usuario
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: updateData,
+      data: updateData as Prisma.UserUpdateInput,
       select: {
         onboardingStatus: true,
         onboardingStep: true,
@@ -197,7 +193,7 @@ export async function PATCH(req: NextRequest) {
       onboarding: updatedUser,
     });
   } catch (error) {
-    console.error("❌ Error updating onboarding:", error);
+    telemetry.captureException(error, { route: "/api/onboarding", op: "PATCH" });
     return NextResponse.json(
       { error: "Error updating onboarding" },
       { status: 500 }

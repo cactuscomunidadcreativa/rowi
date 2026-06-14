@@ -110,11 +110,11 @@ export default function RegisterCompletePage() {
               )}
             </p>
             <button
-              onClick={() => router.push("/hub")}
+              onClick={() => router.push("/onboarding")}
               className="rowi-btn px-6 py-2 text-white font-medium"
               style={{ background: "var(--rowi-g2)" }}
             >
-              {t("register.complete.goToHub", "Ir al panel")}
+              {t("register.complete.continueOnboarding", "Continuar configuración")}
             </button>
           </>
         ) : (

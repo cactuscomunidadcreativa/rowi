@@ -40,7 +40,7 @@ export async function GET() {
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/account/contexts", op: "GET" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno", contexts: [] },
+      { ok: false, error: "Error interno", contexts: [] },
       { status: 500 },
     );
   }

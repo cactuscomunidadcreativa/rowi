@@ -259,7 +259,7 @@ export async function POST(req: NextRequest) {
     }
     telemetry.captureException(err, { route: "/api/account/family", op: "POST" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

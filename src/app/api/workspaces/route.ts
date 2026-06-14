@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces", op: "GET" });
     return NextResponse.json(
-      { error: err?.message || "Error listing workspaces" },
+      { error: "Error listing workspaces" },
       { status: 500 }
     );
   }
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces", op: "POST" });
     return NextResponse.json(
-      { error: err?.message || "Error creating workspace" },
+      { error: "Error creating workspace" },
       { status: 500 }
     );
   }

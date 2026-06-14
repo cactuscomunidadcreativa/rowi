@@ -55,7 +55,7 @@ export async function GET(
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "GET" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }
@@ -117,7 +117,7 @@ export async function PATCH(
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "PATCH" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }
@@ -156,7 +156,7 @@ export async function DELETE(
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]", op: "DELETE" });
     return NextResponse.json(
-      { error: err?.message || "Error" },
+      { error: "Error" },
       { status: 500 }
     );
   }

@@ -102,7 +102,7 @@ export async function GET(
     return NextResponse.json({ members: shaped });
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]/members", op: "GET" });
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }
 
@@ -140,6 +140,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]/members", op: "DELETE" });
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }

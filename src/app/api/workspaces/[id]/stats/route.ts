@@ -166,6 +166,6 @@ export async function GET(
     });
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]/stats", op: "GET" });
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }

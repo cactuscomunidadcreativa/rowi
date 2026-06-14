@@ -177,7 +177,7 @@ export async function GET(req: NextRequest) {
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/account/services/lookup", op: "GET" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

@@ -121,6 +121,6 @@ export async function POST(
     });
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/workspaces/[id]/invite", op: "POST" });
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }

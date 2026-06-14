@@ -186,7 +186,7 @@ export async function PATCH(
   } catch (err: any) {
     telemetry.captureException(err, { route: "/api/account/family/[id]", op: "PATCH" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

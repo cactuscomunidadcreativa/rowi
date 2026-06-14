@@ -303,6 +303,34 @@ export class RowiPdf {
     this.y += h + 8;
   }
 
+  /**
+   * Fila con chip a la izquierda (etiqueta tipo "pág. 5") y texto que envuelve
+   * a la derecha, dentro de una tarjeta con borde. Para guiones página-por-
+   * página. El chip puede pintarse sólido (violeta) o suave (violetBg).
+   */
+  chipRow(chip: string, text: string, opts?: { soft?: boolean }) {
+    const d = this.doc;
+    const pad = 10;
+    const chipW = 52;
+    const textX = MX + pad + chipW + 10;
+    const textW = CW - pad - chipW - 10 - pad;
+    this.font("regular").fontSize(9);
+    const textH = d.heightOfString(text, { width: textW });
+    const boxH = Math.max(28, textH + pad * 2);
+    this.ensure(boxH + 6);
+    const y = this.y;
+    d.roundedRect(MX, y, CW, boxH, 8).lineWidth(1).strokeColor(C.track).stroke();
+    // chip
+    const chipBg = opts?.soft ? C.violetBg : C.violet;
+    const chipFg = opts?.soft ? C.violetDark : C.white;
+    const chipY = y + boxH / 2 - 8;
+    d.roundedRect(MX + pad, chipY, chipW, 16, 8).fill(chipBg);
+    this.font("bold").fontSize(8).fillColor(chipFg).text(chip, MX + pad, chipY + 4, { width: chipW, align: "center", lineBreak: false });
+    // texto
+    this.font("regular").fontSize(9).fillColor(C.ink).text(text, textX, y + pad, { width: textW });
+    this.y = y + boxH + 6;
+  }
+
   /** Barra horizontal con pista, relleno por valor y marca de norma punteada. */
   bar(opts: { label: string; value: number; min: number; max: number; norm?: number; color?: string; labelW?: number }) {
     const d = this.doc;

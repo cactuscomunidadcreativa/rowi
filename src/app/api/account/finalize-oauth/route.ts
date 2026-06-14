@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
       try {
         await claimPreSeiSession(preSeiToken, user.id);
       } catch (claimErr) {
-        console.warn("⚠️ Error reclamando sesión Pre-SEI (no crítico):", claimErr);
+        telemetry.captureException(claimErr, { route: "/api/account/finalize-oauth", op: "claim_pre_sei", fatal: false });
       }
     }
 

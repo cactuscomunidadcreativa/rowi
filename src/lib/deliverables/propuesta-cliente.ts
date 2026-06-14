@@ -18,27 +18,15 @@
  * consultor).
  */
 import type { Lang } from "./pdf-kit";
-
-// ── Marca (formato pptxgenjs, sin '#') ──
-const VIOLET = "7C3AED";
-const VIOLET_DARK = "5B21B6";
-const PINK = "D797CF";
-const CORAL = "C2410C";
-const FG = "1F2937";
-const MUTED = "6B7280";
-const BOX_BG = "F3EEFE";
-const WHITE = "FFFFFF";
-const FONT = "Arial"; // universal: PPTX no embebe fuentes de forma fiable
-const SLIDE_W = 10;
-const SLIDE_H = 5.625;
-
-type Pptx = InstanceType<typeof import("pptxgenjs").default>;
-type Slide = ReturnType<Pptx["addSlide"]>;
+import {
+  VIOLET, VIOLET_DARK, CORAL, FG, MUTED, BOX_BG, WHITE, FONT, SLIDE_W, SLIDE_H,
+  type Slide, type StatRow,
+  newDeck, deckToBuffer, coverSlide, contentSlide, bulletBox, statBox, quoteNote, numberedList, closingSlide,
+} from "./pptx-kit";
 
 // ── Entrada ──
 export interface InvestmentModel { title: string; desc: string }
 export interface PathOption { label: string; who: string; components: string; why: string; recommended?: boolean }
-export interface StatRow { label: string; value: string }
 export interface ResultItem { title: string; desc: string }
 
 export interface PropuestaData {
@@ -251,96 +239,39 @@ const L = {
 
 type LStrings = (typeof L)[Lang];
 
-// ── helpers de slide ──
-function footer(slide: Slide, t: LStrings, client: string, eyebrowLabel: string, n: number) {
-  slide.addText(`${client} · ${t.footerTail}`, { x: 0.5, y: SLIDE_H - 0.35, w: 6, h: 0.25, fontFace: FONT, fontSize: 7, color: MUTED });
-  slide.addText(`${eyebrowLabel} · ${n}`, { x: SLIDE_W - 3, y: SLIDE_H - 0.35, w: 2.5, h: 0.25, fontFace: FONT, fontSize: 7, color: MUTED, align: "right" });
-}
-
-function contentSlide(pptx: Pptx, t: LStrings, client: string, n: number, eyebrow: string, title: string, sub?: string): Slide {
-  const slide = pptx.addSlide();
-  slide.background = { color: WHITE };
-  slide.addText(eyebrow.toUpperCase(), { x: 0.5, y: 0.3, w: 9, h: 0.25, fontFace: FONT, fontSize: 9, bold: true, color: VIOLET, charSpacing: 2 });
-  slide.addText(title, { x: 0.5, y: 0.6, w: 9, h: 0.6, fontFace: FONT, fontSize: 22, bold: true, color: FG });
-  if (sub) slide.addText(sub, { x: 0.5, y: 1.25, w: 9, h: 0.5, fontFace: FONT, fontSize: 11, color: MUTED });
-  footer(slide, t, client, eyebrow, n);
-  return slide;
-}
-
-function bulletBox(slide: Slide, x: number, y: number, w: number, h: number, title: string, items: string[], accent: string) {
-  slide.addShape("rect", { x, y, w, h, fill: { color: BOX_BG } });
-  slide.addShape("rect", { x, y, w: 0.06, h, fill: { color: accent } });
-  slide.addText(title, { x: x + 0.25, y: y + 0.18, w: w - 0.5, h: 0.3, fontFace: FONT, fontSize: 12, bold: true, color: accent });
-  slide.addText(items.map((it) => ({ text: it, options: { bullet: { code: "2022" }, fontSize: 11, color: FG, paraSpaceAfter: 6 } })), { x: x + 0.25, y: y + 0.7, w: w - 0.5, h: h - 0.9, fontFace: FONT, valign: "top" });
-}
-
-function statBox(slide: Slide, x: number, y: number, w: number, h: number, title: string, rows: StatRow[], valueColor: string) {
-  slide.addShape("rect", { x, y, w, h, fill: { color: BOX_BG } });
-  slide.addText(title.toUpperCase(), { x: x + 0.25, y: y + 0.18, w: w - 0.5, h: 0.3, fontFace: FONT, fontSize: 10, bold: true, color: VIOLET, charSpacing: 1 });
-  const rowH = (h - 0.7) / Math.max(rows.length, 1);
-  rows.forEach((r, i) => {
-    const ry = y + 0.6 + i * rowH;
-    slide.addText(r.label, { x: x + 0.25, y: ry, w: w - 1.4, h: rowH, fontFace: FONT, fontSize: 11, color: FG, valign: "middle" });
-    slide.addText(r.value, { x: x + w - 1.3, y: ry, w: 1.1, h: rowH, fontFace: FONT, fontSize: 13, bold: true, color: valueColor, align: "right", valign: "middle" });
-  });
-}
-
-function quoteNote(slide: Slide, text: string) {
-  slide.addText(text, { x: 0.5, y: SLIDE_H - 0.95, w: 9, h: 0.5, fontFace: FONT, fontSize: 10, italic: true, color: VIOLET_DARK, valign: "top" });
-}
-
-function numberedList(slide: Slide, items: { title: string; desc: string }[], y0: number, dark: boolean) {
-  const rowH = Math.min(0.78, (SLIDE_H - y0 - 0.6) / items.length);
-  items.forEach((it, i) => {
-    const y = y0 + i * rowH;
-    slide.addShape("ellipse", { x: 0.5, y, w: 0.4, h: 0.4, fill: { color: dark ? "8B5CF6" : VIOLET } });
-    slide.addText(String(i + 1), { x: 0.5, y, w: 0.4, h: 0.4, fontFace: FONT, fontSize: 13, bold: true, color: WHITE, align: "center", valign: "middle" });
-    slide.addText(it.title, { x: 1.1, y: y - 0.02, w: 8, h: 0.3, fontFace: FONT, fontSize: 13, bold: true, color: dark ? WHITE : FG });
-    slide.addText(it.desc, { x: 1.1, y: y + 0.26, w: 8, h: 0.3, fontFace: FONT, fontSize: 10.5, color: dark ? "DDD6FE" : MUTED });
-  });
-}
-
 export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "es", owl?: Buffer): Promise<Buffer> {
   const t = L[lang];
-  const PptxGenJS = (await import("pptxgenjs")).default;
-  const pptx = new PptxGenJS();
-  pptx.defineLayout({ name: "ROWI_16x9", width: SLIDE_W, height: SLIDE_H });
-  pptx.layout = "ROWI_16x9";
+  const pptx = await newDeck();
   const client = data.client;
+  const fLeft = `${client} · ${t.footerTail}`;
+  const cs = (n: number, eyebrow: string, title: string, sub?: string): Slide =>
+    contentSlide(pptx, { eyebrow, title, sub, footerLeft: fLeft, footerLabel: eyebrow, n });
 
   // ── 1 · PORTADA ──
-  const cover = pptx.addSlide();
-  cover.background = { color: VIOLET };
-  // círculos de marca (decoración esquina derecha)
-  cover.addShape("ellipse", { x: 7.0, y: -1.2, w: 4.2, h: 4.2, fill: { color: "8B5CF6" } });
-  cover.addShape("ellipse", { x: 8.2, y: 2.4, w: 2.6, h: 2.6, fill: { color: PINK, transparency: 35 } });
-  cover.addText(t.coverKicker.toUpperCase(), { x: 0.5, y: 0.85, w: 6.5, h: 0.3, fontFace: FONT, fontSize: 11, bold: true, color: "DDD6FE", charSpacing: 2 });
-  cover.addText(t.coverType, { x: 0.5, y: 1.5, w: 7, h: 0.4, fontFace: FONT, fontSize: 16, italic: true, color: "DDD6FE" });
-  cover.addText(data.deckTitle ?? t.coverTitle, { x: 0.5, y: 2.1, w: 7.2, h: 1.0, fontFace: FONT, fontSize: 30, bold: true, color: WHITE });
-  cover.addText(data.subtitle ?? t.coverSub, { x: 0.5, y: 3.5, w: 6.8, h: 0.5, fontFace: FONT, fontSize: 12, color: "E9D5FF" });
-  if (owl) {
-    try { cover.addImage({ data: `image/png;base64,${owl.toString("base64")}`, x: 8.25, y: 3.55, w: 1.05, h: 1.05 }); } catch { /* búho opcional */ }
-  }
-  cover.addText(t.preparedFor(client), { x: 0.5, y: SLIDE_H - 0.7, w: 6, h: 0.3, fontFace: FONT, fontSize: 10, color: "C4B5FD" });
+  const cover = coverSlide(pptx, {
+    kicker: t.coverKicker, type: t.coverType, title: data.deckTitle ?? t.coverTitle,
+    subtitle: data.subtitle ?? t.coverSub, tail: t.preparedFor(client), owl,
+  });
+  void cover;
 
   // ── 2 · LO QUE ESCUCHAMOS ──
   {
-    const s = contentSlide(pptx, t, client, 2, t.eyebrowStart, t.whatHeard);
+    const s = cs(2, t.eyebrowStart, t.whatHeard);
     s.addText(data.whatWeHeard.lead, { x: 0.5, y: 1.5, w: 5.2, h: 1.1, fontFace: FONT, fontSize: 12.5, bold: true, color: FG, valign: "top" });
     s.addText(data.whatWeHeard.question, { x: 0.5, y: 2.7, w: 5.2, h: 1.6, fontFace: FONT, fontSize: 12, color: VIOLET_DARK, valign: "top" });
     // box derecho
     s.addShape("rect", { x: 6.1, y: 1.5, w: 3.4, h: 3.2, fill: { color: BOX_BG } });
     s.addText(t.onTable, { x: 6.35, y: 1.7, w: 2.9, h: 0.3, fontFace: FONT, fontSize: 11, bold: true, color: VIOLET });
     const rich = data.whatWeHeard.onTable.flatMap((o) => [
-      { text: o.title, options: { fontSize: 11, bold: true, color: VIOLET_DARK, paraSpaceBefore: 8 } },
-      { text: o.desc, options: { fontSize: 10, color: FG, paraSpaceAfter: 4 } },
+      { text: o.title + "\n", options: { fontSize: 11, bold: true, color: VIOLET_DARK, breakLine: true, paraSpaceBefore: 6 } },
+      { text: o.desc + "\n", options: { fontSize: 10, color: FG, breakLine: true, paraSpaceAfter: 4 } },
     ]);
     s.addText(rich, { x: 6.35, y: 2.15, w: 2.9, h: 2.4, fontFace: FONT, valign: "top" });
   }
 
   // ── 3 · LENTE 1 ──
   {
-    const s = contentSlide(pptx, t, client, 3, t.eyebrowLens1, t.lens1Title, t.lens1Sub);
+    const s = cs(3, t.eyebrowLens1, t.lens1Title, t.lens1Sub);
     statBox(s, 0.5, 1.95, 4.3, 2.5, data.lens1.climateTitle, data.lens1.climate, VIOLET);
     statBox(s, 5.2, 1.95, 4.3, 2.5, data.lens1.capsTitle, data.lens1.caps, CORAL);
     if (data.lens1.note) quoteNote(s, data.lens1.note);
@@ -348,7 +279,7 @@ export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "e
 
   // ── 4 · LENTE 2 ──
   {
-    const s = contentSlide(pptx, t, client, 4, t.eyebrowLens2, t.lens2Title);
+    const s = cs(4, t.eyebrowLens2, t.lens2Title);
     bulletBox(s, 0.5, 1.6, 4.3, 2.6, t.lens2Strengths, data.lens2.strengths, VIOLET);
     bulletBox(s, 5.2, 1.6, 4.3, 2.6, t.lens2Opps, data.lens2.opportunities, CORAL);
     if (data.lens2.note) quoteNote(s, data.lens2.note);
@@ -356,7 +287,7 @@ export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "e
 
   // ── 5 · EL ENFOQUE (Atraer·Activar·Reflexionar) ──
   {
-    const s = contentSlide(pptx, t, client, 5, t.eyebrowApproach, t.approachTitle);
+    const s = cs(5, t.eyebrowApproach, t.approachTitle);
     const cardW = 2.93, gap = 0.13, x0 = 0.5;
     t.phases.forEach((ph, i) => {
       const x = x0 + i * (cardW + gap);
@@ -371,7 +302,7 @@ export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "e
 
   // ── 6 · RUTAS DE IMPLEMENTACIÓN ──
   {
-    const s = contentSlide(pptx, t, client, 6, t.eyebrowPaths, t.pathsTitle);
+    const s = cs(6, t.eyebrowPaths, t.pathsTitle);
     const paths = data.paths ?? (t.defPaths as PathOption[]);
     const header = [{ text: "", options: { fill: { color: "F3F4F6" } } }, ...paths.map((p) => ({
       text: p.label, options: { fill: { color: p.recommended ? VIOLET_DARK : VIOLET }, color: WHITE, bold: true, align: "center" as const, fontSize: 10 },
@@ -389,7 +320,7 @@ export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "e
 
   // ── 7 · MODELOS DE INVERSIÓN ──
   {
-    const s = contentSlide(pptx, t, client, 7, t.eyebrowInvest, t.investTitle, t.investIntro);
+    const s = cs(7, t.eyebrowInvest, t.investTitle, t.investIntro);
     const inv = data.investment ?? (t.defInvest as InvestmentModel[]);
     const positions = [[0.5, 1.95], [5.2, 1.95], [0.5, 3.05], [5.2, 3.05]];
     inv.slice(0, 4).forEach((m, i) => {
@@ -404,22 +335,13 @@ export async function buildPropuestaCliente(data: PropuestaData, lang: Lang = "e
 
   // ── 8 · RESULTADOS ESPERADOS ──
   {
-    const s = contentSlide(pptx, t, client, 8, t.eyebrowResults, t.resultsTitle);
+    const s = cs(8, t.eyebrowResults, t.resultsTitle);
     numberedList(s, data.results ?? t.defResults, 1.55, false);
     quoteNote(s, t.resultsNote);
   }
 
   // ── 9 · PRÓXIMOS PASOS ──
-  {
-    const s = pptx.addSlide();
-    s.background = { color: VIOLET };
-    s.addShape("ellipse", { x: -1.5, y: 3.2, w: 4, h: 4, fill: { color: "8B5CF6" } });
-    s.addText(t.eyebrowNext.toUpperCase(), { x: 0.5, y: 0.5, w: 9, h: 0.3, fontFace: FONT, fontSize: 11, bold: true, color: "DDD6FE", charSpacing: 2 });
-    s.addText(t.nextTitle, { x: 0.5, y: 0.95, w: 9, h: 0.7, fontFace: FONT, fontSize: 30, bold: true, color: WHITE });
-    numberedList(s, t.nextSteps, 2.1, true);
-    s.addText(t.coverKicker, { x: 0.5, y: SLIDE_H - 0.45, w: 6, h: 0.3, fontFace: FONT, fontSize: 9, color: "C4B5FD" });
-  }
+  closingSlide(pptx, { eyebrow: t.eyebrowNext, title: t.nextTitle, steps: t.nextSteps, tail: t.coverKicker });
 
-  const out = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
-  return out;
+  return deckToBuffer(pptx);
 }

@@ -589,6 +589,10 @@ export default function WorkspaceSelectionPage({
         </div>
       )}
 
+      {members && members.length >= 2 && (
+        <HiringDeliverables members={members} communityId={communityId} t={t} />
+      )}
+
       <AddCandidateModal
         open={showModal}
         communityId={communityId}
@@ -598,6 +602,105 @@ export default function WorkspaceSelectionPage({
           loadMembers().then(() => selectCandidate(memberId));
         }}
       />
+    </div>
+  );
+}
+
+/** Panel de descarga de los entregables de Hiring (Reporte Full / Perfil /
+ * Guía del presentador) a partir de un líder elegido + el resto como candidatos. */
+function HiringDeliverables({
+  members,
+  communityId,
+  t,
+}: {
+  members: Member[];
+  communityId: string;
+  t: (k: string, fb?: string) => string;
+}) {
+  const eligible = members.filter((m) => m.type === "community_member" && m.snapshot);
+  const [leaderId, setLeaderId] = useState<string>(eligible[0]?.id ?? "");
+  const [dlLang, setDlLang] = useState<"es" | "en" | "pt">("es");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  if (eligible.length < 2) return null;
+
+  async function download(tipo: string) {
+    if (busy) return;
+    const candidateMemberIds = eligible.filter((m) => m.id !== leaderId).map((m) => m.id);
+    if (!leaderId || candidateMemberIds.length === 0) return;
+    setBusy(tipo);
+    try {
+      const res = await fetch(`/api/workspaces/${communityId}/hiring/deliverable/${tipo}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leaderMemberId: leaderId, candidateMemberIds, lang: dlLang }),
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const fname = cd.match(/filename="([^"]+)"/)?.[1] || `${tipo}-${dlLang}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] p-5 space-y-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="font-semibold text-[var(--rowi-fg)]">
+          {t("selection.deliverables.title", "Entregables del proceso")}
+        </h3>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-[var(--rowi-muted)]">
+            {t("selection.deliverables.leader", "Líder")}
+          </label>
+          <select
+            value={leaderId}
+            onChange={(e) => setLeaderId(e.target.value)}
+            className="rounded-md border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-2 py-1 text-sm text-[var(--rowi-fg)] max-w-[180px]"
+          >
+            {eligible.map((m) => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <select
+            value={dlLang}
+            onChange={(e) => setDlLang(e.target.value as "es" | "en" | "pt")}
+            className="rounded-md border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-2 py-1 text-sm text-[var(--rowi-fg)]"
+          >
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+            <option value="pt">PT</option>
+          </select>
+        </div>
+      </div>
+      <p className="text-xs text-[var(--rowi-muted)]">
+        {t("selection.deliverables.hint", "Lente de relación y desarrollo, no un veredicto. La IE no decide a quién contratar.")}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {[
+          { tipo: "reporte-full", label: t("selection.deliverables.reporteFull", "Reporte Full (PDF)") },
+          { tipo: "perfil-candidato", label: t("selection.deliverables.perfilCandidato", "Perfil por candidato (PDF)") },
+          { tipo: "guia-presentador", label: t("selection.deliverables.guiaPresentador", "Guía del presentador (PDF)") },
+        ].map((d) => (
+          <button
+            key={d.tipo}
+            onClick={() => download(d.tipo)}
+            disabled={busy !== null}
+            className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)] disabled:opacity-50"
+          >
+            {busy === d.tipo ? t("selection.deliverables.generating", "Generando…") : `⬇ ${d.label}`}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

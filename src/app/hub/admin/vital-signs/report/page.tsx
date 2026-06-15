@@ -99,6 +99,8 @@ export default function ConsultantReportPage() {
   const [report, setReport] = useState<ReportResult | null>(null);
   const [view, setView] = useState<"report" | "confidential">("report");
   const [exporting, setExporting] = useState<"client" | "confidential" | null>(null);
+  const [dlLang, setDlLang] = useState<"es" | "en" | "pt">("es");
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   async function exportPptx(kind: "client" | "confidential") {
     if (!report || exporting) return;
@@ -110,6 +112,31 @@ export default function ConsultantReportPage() {
       setError("pptx_error");
     } finally {
       setExporting(null);
+    }
+  }
+
+  /** Descarga un entregable Rowi (PDF/PPTX server-side) vía el endpoint. */
+  async function downloadDeliverable(tipo: string) {
+    if (!report || downloading) return;
+    setDownloading(tipo);
+    try {
+      const res = await fetch(`/api/consultant/deliverable/${tipo}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report, lang: dlLang, client: report.subjectLabel }),
+      });
+      if (!res.ok) { setError("deliverable_error"); return; }
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const fname = cd.match(/filename="([^"]+)"/)?.[1] || `${tipo}-${dlLang}`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+      a.remove(); URL.revokeObjectURL(url);
+    } catch {
+      setError("network_error");
+    } finally {
+      setDownloading(null);
     }
   }
 
@@ -200,6 +227,48 @@ export default function ConsultantReportPage() {
           >
             🔒 {t("consultant.report.viewConfidential", "Guía confidencial")}
           </button>
+        </div>
+      )}
+
+      {/* Descargar entregables Rowi (PDF/PPTX con la línea gráfica de marca) */}
+      {report && (
+        <div className="rounded-2xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] p-5 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h3 className="font-semibold text-[var(--rowi-fg)]">
+              {t("consultant.deliverables.title", "Descargar entregables")}
+            </h3>
+            <label className="text-sm text-[var(--rowi-muted)] flex items-center gap-2">
+              {t("consultant.deliverables.lang", "Idioma")}
+              <select
+                value={dlLang}
+                onChange={(e) => setDlLang(e.target.value as "es" | "en" | "pt")}
+                className="rounded-md border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-2 py-1 text-sm text-[var(--rowi-fg)]"
+              >
+                <option value="es">ES</option>
+                <option value="en">EN</option>
+                <option value="pt">PT</option>
+              </select>
+            </label>
+          </div>
+          <p className="text-xs text-[var(--rowi-muted)]">
+            {t("consultant.deliverables.hint", "Documentos profesionales con la línea gráfica de Rowi. La guía confidencial es solo para el partner, nunca para el cliente.")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { tipo: "perfil-integral", label: t("consultant.deliverables.perfil", "Perfil integral (PDF)") },
+              { tipo: "guia-confidencial", label: t("consultant.deliverables.guia", "Guía confidencial (PDF)") },
+              { tipo: "propuesta", label: t("consultant.deliverables.propuesta", "Propuesta al cliente (PPTX)") },
+            ].map((d) => (
+              <button
+                key={d.tipo}
+                onClick={() => downloadDeliverable(d.tipo)}
+                disabled={downloading !== null}
+                className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)] disabled:opacity-50"
+              >
+                {downloading === d.tipo ? t("consultant.deliverables.generating", "Generando…") : `⬇ ${d.label}`}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

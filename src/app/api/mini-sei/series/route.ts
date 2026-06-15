@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 
 export async function GET(req: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
       series: snapshots,
     });
   } catch (e: unknown) {
-    console.error("/api/mini-sei/series error:", e);
+    telemetry.captureException(e, { route: "/api/mini-sei/series" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

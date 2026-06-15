@@ -5460,6 +5460,7 @@
   "register.billing.discount": "Economize com faturamento anual",
   "register.complete.errorTitle": "Não foi possível concluir o teu registo",
   "register.complete.goToHub": "Ir para o painel",
+  "register.complete.continueOnboarding": "Continuar configuração",
   "register.complete.title": "A ativar a tua conta...",
   "register.confirm.afterTrial": "Após o teste",
   "register.confirm.aiTokens": "Tokens de IA",

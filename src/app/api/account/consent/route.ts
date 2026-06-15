@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getToken } from "next-auth/jwt";
 import { CONSENTS, type ConsentKey } from "@/lib/privacy/consents";
+import { telemetry } from "@/lib/telemetry";
 import crypto from "crypto";
 
 function hashConsentText(esBody: string, enBody: string, version: number): string {
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, consents });
   } catch (e: unknown) {
-    console.error("/api/account/consent GET error:", e);
+    telemetry.captureException(e, { route: "/api/account/consent", op: "GET" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }
@@ -123,7 +124,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, consentKey, granted });
   } catch (e: unknown) {
-    console.error("/api/account/consent POST error:", e);
+    telemetry.captureException(e, { route: "/api/account/consent", op: "POST" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

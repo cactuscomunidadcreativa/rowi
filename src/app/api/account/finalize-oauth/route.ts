@@ -10,6 +10,7 @@ import { getServerAuthUser } from "@/core/auth";
 import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { claimPreSeiSession } from "@/lib/pre-sei/claim";
 import { claimRelationshipInvite } from "@/lib/relationships/claimInvite";
+import { telemetry } from "@/lib/telemetry";
 
 export const runtime = "nodejs";
 
@@ -165,7 +166,7 @@ export async function POST(req: NextRequest) {
       try {
         await claimPreSeiSession(preSeiToken, user.id);
       } catch (claimErr) {
-        console.warn("⚠️ Error reclamando sesión Pre-SEI (no crítico):", claimErr);
+        telemetry.captureException(claimErr, { route: "/api/account/finalize-oauth", op: "claim_pre_sei", fatal: false });
       }
     }
 
@@ -183,7 +184,7 @@ export async function POST(req: NextRequest) {
       nextStep: "onboarding",
     });
   } catch (err) {
-    console.error("❌ Error finalizing OAuth registration:", err);
+    telemetry.captureException(err, { route: "/api/account/finalize-oauth" });
     return NextResponse.json(
       { ok: false, error: "finalize_failed" },
       { status: 500 },

@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/invite/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
 import { sendInviteEmail } from "@/lib/email/sendInviteEmail";
@@ -119,7 +120,7 @@ export async function POST(
       emailError: emailResult.ok ? undefined : emailResult.error,
     });
   } catch (err: any) {
-    console.error("POST /api/workspaces/[id]/invite error:", err);
-    return NextResponse.json({ error: err?.message || "Error" }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/invite", op: "POST" });
+    return NextResponse.json({ error: "Error" }, { status: 500 });
   }
 }

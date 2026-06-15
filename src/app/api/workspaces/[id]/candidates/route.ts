@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
 
@@ -149,7 +150,7 @@ export async function POST(
 
     return NextResponse.json({ ok: true, member, snapshotId, notes });
   } catch (e) {
-    console.error("[POST /api/workspaces/[id]/candidates] error:", e);
+    telemetry.captureException(e, { route: "/api/workspaces/[id]/candidates", op: "POST" });
     return NextResponse.json(
       { error: "internal_error" },
       { status: 500 },

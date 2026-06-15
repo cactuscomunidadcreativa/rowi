@@ -5460,6 +5460,7 @@
   "register.billing.discount": "Risparmia con fatturazione annuale",
   "register.complete.errorTitle": "Non è stato possibile completare la registrazione",
   "register.complete.goToHub": "Vai al pannello",
+  "register.complete.continueOnboarding": "Continua configurazione",
   "register.complete.title": "Attivazione del tuo account...",
   "register.confirm.afterTrial": "Dopo la prova",
   "register.confirm.aiTokens": "Token IA",

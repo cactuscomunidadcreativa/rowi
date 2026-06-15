@@ -5460,6 +5460,7 @@
   "register.billing.discount": "Save with yearly billing",
   "register.complete.errorTitle": "We could not complete your registration",
   "register.complete.goToHub": "Go to dashboard",
+  "register.complete.continueOnboarding": "Continue setup",
   "register.complete.title": "Activating your account...",
   "register.confirm.afterTrial": "After trial",
   "register.confirm.aiTokens": "AI Tokens",

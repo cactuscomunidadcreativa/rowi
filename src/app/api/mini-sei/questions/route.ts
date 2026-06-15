@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
 import { publicQuestions, type MiniSeiLang } from "@/lib/mini-sei/items";
+import { telemetry } from "@/lib/telemetry";
 
 const LANGS: MiniSeiLang[] = ["es", "en", "pt", "it"];
 function resolveLang(raw: string | null): MiniSeiLang {
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
     const questions = publicQuestions(lang);
     return NextResponse.json({ ok: true, lang, questions });
   } catch (e: unknown) {
-    console.error("/api/mini-sei/questions error:", e);
+    telemetry.captureException(e, { route: "/api/mini-sei/questions" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

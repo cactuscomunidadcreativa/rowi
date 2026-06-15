@@ -15,6 +15,7 @@ import { claimRelationshipInvite } from "@/lib/relationships/claimInvite";
 import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { rateLimiters } from "@/lib/security/rateLimit";
 import { verifyTurnstile } from "@/lib/security/turnstile";
+import { telemetry } from "@/lib/telemetry";
 
 interface RegisterBody {
   email: string;
@@ -198,7 +199,7 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (rvError) {
-        console.warn("⚠️ Error vinculando claim a RowiVerse (no crítico):", rvError);
+        telemetry.captureException(rvError, { route: "/api/auth/register", op: "claim_link_rowiverse", fatal: false });
       }
 
       console.log(`✅ Cuenta reclamada: ${normalizedEmail} (importada → registrada)`);
@@ -302,7 +303,7 @@ export async function POST(req: NextRequest) {
       try {
         await claimPreSeiSession(body.preSeiToken, user.id);
       } catch (claimErr) {
-        console.warn("⚠️ Error reclamando sesión Pre-SEI (no crítico):", claimErr);
+        telemetry.captureException(claimErr, { route: "/api/auth/register", op: "claim_pre_sei", fatal: false });
       }
     }
 
@@ -411,7 +412,7 @@ export async function POST(req: NextRequest) {
       }
     } catch (rvError) {
       // No fallar el registro si hay error vinculando a RowiVerse
-      console.warn("⚠️ Error vinculando a RowiVerse (no crítico):", rvError);
+      telemetry.captureException(rvError, { route: "/api/auth/register", op: "link_rowiverse", fatal: false });
     }
 
     // Verification email (no bloqueante — si falla, el usuario puede pedir
@@ -434,7 +435,7 @@ export async function POST(req: NextRequest) {
         locale: language,
       });
     } catch (verifyErr) {
-      console.warn("⚠️ Error enviando verification email (no crítico):", verifyErr);
+      telemetry.captureException(verifyErr, { route: "/api/auth/register", op: "send_verification_email", fatal: false });
     }
 
     // Welcome email — independiente del verification email. Va siempre.
@@ -446,7 +447,7 @@ export async function POST(req: NextRequest) {
         locale: language,
       });
     } catch (welcomeErr) {
-      console.warn("⚠️ Error enviando welcome email (no crítico):", welcomeErr);
+      telemetry.captureException(welcomeErr, { route: "/api/auth/register", op: "send_welcome_email", fatal: false });
     }
 
     return NextResponse.json({
@@ -466,7 +467,7 @@ export async function POST(req: NextRequest) {
       nextStep: "onboarding",
     });
   } catch (error) {
-    console.error("❌ Error registering user:", error);
+    telemetry.captureException(error, { route: "/api/auth/register" });
     return NextResponse.json(
       { error: "registration_failed" },
       { status: 500 }

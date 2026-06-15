@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
 import { getServerAuthUser } from "@/core/auth";
 import { wouldCreateCycle } from "@/lib/hr/manager-cycle";
+import { telemetry } from "@/lib/telemetry";
 
 export const runtime = "nodejs";
 
@@ -191,7 +192,7 @@ export async function PATCH(req: NextRequest) {
         },
       });
     } catch (logErr) {
-      console.warn("[PATCH /account/employee-profile] activity log fail:", logErr);
+      telemetry.captureException(logErr, { route: "/api/account/employee-profile", op: "activity_log", fatal: false });
     }
   }
 

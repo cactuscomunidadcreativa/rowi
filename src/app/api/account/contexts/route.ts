@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { getServerAuthUser } from "@/core/auth";
 import { getActiveContexts } from "@/lib/account/contexts";
+import { telemetry } from "@/lib/telemetry";
 
 export const runtime = "nodejs";
 
@@ -37,9 +38,9 @@ export async function GET() {
       contexts,
     });
   } catch (err: any) {
-    console.error("❌ Error GET /api/account/contexts:", err);
+    telemetry.captureException(err, { route: "/api/account/contexts", op: "GET" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno", contexts: [] },
+      { ok: false, error: "Error interno", contexts: [] },
       { status: 500 },
     );
   }

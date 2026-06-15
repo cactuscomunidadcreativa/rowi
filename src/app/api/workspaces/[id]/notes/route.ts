@@ -1,6 +1,7 @@
 // src/app/api/workspaces/[id]/notes/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { getToken } from "next-auth/jwt";
 import { canManageWorkspace } from "@/lib/workspace/permissions";
 
@@ -33,7 +34,8 @@ export async function GET(
     });
     return NextResponse.json({ notes });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/notes" });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -67,7 +69,8 @@ export async function POST(
     });
     return NextResponse.json({ note }, { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/notes" });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -90,6 +93,7 @@ export async function DELETE(
     await prisma.coachNote.delete({ where: { id: noteId } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message }, { status: 500 });
+    telemetry.captureException(err, { route: "/api/workspaces/[id]/notes" });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

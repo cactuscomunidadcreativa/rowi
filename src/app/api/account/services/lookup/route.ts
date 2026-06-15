@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 
 export const runtime = "nodejs";
 
@@ -174,9 +175,9 @@ export async function GET(req: NextRequest) {
       { status: 400 },
     );
   } catch (err: any) {
-    console.error("❌ Error /api/account/services/lookup:", err);
+    telemetry.captureException(err, { route: "/api/account/services/lookup", op: "GET" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

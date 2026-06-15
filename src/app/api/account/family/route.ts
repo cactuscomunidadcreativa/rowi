@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthUser } from "@/core/auth";
 import { prisma } from "@/core/prisma";
+import { telemetry } from "@/lib/telemetry";
 import { rateLimit, getUserIdentifier } from "@/lib/security/rateLimit";
 import { sendContextNotification } from "@/lib/email/sendContextNotification";
 
@@ -244,7 +245,7 @@ export async function POST(req: NextRequest) {
         ctaUrl,
         locale: recipientLocale,
       }).catch((e) => {
-        console.warn("⚠️ Could not send family.requested notification:", e);
+        telemetry.captureException(e, { route: "/api/account/family", op: "notify_family_requested", fatal: false });
       });
     }
 
@@ -256,9 +257,9 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       );
     }
-    console.error("❌ Error POST /api/account/family:", err);
+    telemetry.captureException(err, { route: "/api/account/family", op: "POST" });
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: "Error interno" },
       { status: 500 },
     );
   }

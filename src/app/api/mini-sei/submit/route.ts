@@ -18,6 +18,7 @@ import { scoreMiniSei } from "@/lib/mini-sei/score";
 import { answersByPosition } from "@/lib/mini-sei/items";
 import { resolvePreferences, type PrefAnswers } from "@/lib/mini-sei/preferences";
 import { seedCommProfileFromPreferences } from "@/domains/profile/lib/seedCommunicationProfile";
+import { telemetry } from "@/lib/telemetry";
 
 export async function POST(req: NextRequest) {
   try {
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
         const prefs = resolvePreferences(body.preferences as PrefAnswers);
         await seedCommProfileFromPreferences(user.id, prefs);
       } catch (e) {
-        console.error("/api/mini-sei/submit preferences seed error:", e);
+        telemetry.captureException(e, { route: "/api/mini-sei/submit", op: "seed_comm_profile", fatal: false });
       }
     }
 
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
       indicative: result.indicative,
     });
   } catch (e: unknown) {
-    console.error("/api/mini-sei/submit error:", e);
+    telemetry.captureException(e, { route: "/api/mini-sei/submit" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

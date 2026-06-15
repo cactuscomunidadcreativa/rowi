@@ -81,6 +81,7 @@ model User {
   communicationProfile    CommunicationProfile?
   dyadsOwned              RelationshipDyad[]       @relation("DyadOwner")
   dyadsAsOther            RelationshipDyad[]       @relation("DyadOther")
+  relationshipGroups      RelationshipGroup[]      @relation("GroupOwner")
   relInvitesSent          RelationshipInvite[]     @relation("RelInviteInviter")
   batches                 Batch[]                  @relation("UserBatches")
   caseStudyAuthor         CaseStudy[]              @relation("CaseStudyAuthor")
@@ -2759,6 +2760,89 @@ model EcoMessage {
 
   @@index([threadId])
   @@map("eco_message")
+}
+
+/// RelationshipGroup — un GRUPO de 3+ personas para escribir ECO a varios a la
+/// vez. Es el paralelo grupal de RelationshipDyad (que es 1:1): no la reemplaza
+/// ni la modifica. La brecha agregada se calcula por CENTROIDE (perfil promedio
+/// del grupo) y se cachea en lastGapSummary, NUNCA un veredicto de compatibilidad.
+model RelationshipGroup {
+  id             String    @id @default(cuid())
+  ownerUserId    String
+  name           String? // alias legible que dio el dueño ("Equipo de proyecto")
+  context        String    @default("relationship") // mapea a los contextos de affinity
+  // Cache de la BRECHA agregada por centroide (groupGapSummary). Hipótesis v0.
+  lastGapSummary Json?
+  lastGapAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  owner   User                      @relation("GroupOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members RelationshipGroupMember[]
+  threads EcoGroupThread[]
+
+  @@index([ownerUserId])
+  @@map("relationship_group")
+}
+
+/// Miembro de un RelationshipGroup. memberId es un CommunityMember.id o
+/// "user_<userId>" (mismo esquema de id que usa /api/eco/compose).
+model RelationshipGroupMember {
+  id          String   @id @default(cuid())
+  groupId     String
+  memberId    String
+  displayName String?
+  createdAt   DateTime @default(now())
+
+  group RelationshipGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, memberId])
+  @@index([groupId])
+  @@map("relationship_group_member")
+}
+
+/// EcoGroupThread — espejo de EcoThread para grupos. Agrupa los mensajes ECO que
+/// el dueño compuso para un RelationshipGroup.
+/// PRIVACIDAD DURA: el contenido NUNCA se contribuye al Rowiverse anónimo.
+model EcoGroupThread {
+  id           String   @id @default(cuid())
+  groupId      String
+  ownerUserId  String
+  title        String?
+  channel      String?
+  lastGoal     String?
+  messageCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  group    RelationshipGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  messages EcoGroupMessage[]
+
+  @@index([groupId])
+  @@index([ownerUserId])
+  @@map("eco_group_thread")
+}
+
+/// EcoGroupMessage — espejo de EcoMessage para grupos. `gapUsed` guarda la brecha
+/// agregada (centroide) aplicada.
+/// PRIVACIDAD DURA: texto/goal/insight NUNCA al Rowiverse anónimo.
+model EcoGroupMessage {
+  id            String   @id @default(cuid())
+  groupThreadId String
+  role          String // "input" (goal del usuario) | "bridge" (salida ECO)
+  goal          String?
+  channel       String?
+  text          String   @db.Text
+  insight       String?  @db.Text
+  gapUsed       Json? // snapshot de la brecha agregada (centroide) aplicada
+  ecoLevel      String? // "general" | "profile" | "sei"
+  tokensUsed    Int?
+  createdAt     DateTime @default(now())
+
+  thread EcoGroupThread @relation(fields: [groupThreadId], references: [id], onDelete: Cascade)
+
+  @@index([groupThreadId])
+  @@map("eco_group_message")
 }
 
 /// RelationshipInvite — el HOOK de la cadena: "invito a una persona a ver

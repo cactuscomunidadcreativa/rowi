@@ -1410,6 +1410,78 @@ function FindingsView({
           </div>
         )}
       </div>
+
+      {/* ── Descargar entregables (PPTX con la línea gráfica de Rowi) ── */}
+      <HallazgosDownload findings={findings} t={t} />
+    </div>
+  );
+}
+
+/** Botón de descarga del deck de Hallazgos preliminares (PPTX) desde findings. */
+function HallazgosDownload({
+  findings,
+  t,
+}: {
+  findings: Findings;
+  t: (k: string, fb?: string) => string;
+}) {
+  const [dlLang, setDlLang] = useState<"es" | "en" | "pt">("es");
+  const [busy, setBusy] = useState(false);
+
+  async function download() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/consultant/deliverable/hallazgos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ findings, lang: dlLang, client: findings.benchmarkId }),
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const fname = cd.match(/filename="([^"]+)"/)?.[1] || `hallazgos-${dlLang}.pptx`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] p-5 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h3 className="font-semibold text-[var(--rowi-fg)]">
+          {t("consultant.deliverables.title", "Descargar entregables")}
+        </h3>
+        <p className="text-xs text-[var(--rowi-muted)]">
+          {t("admin.consultant.deliverables.hallazgosHint", "Deck de hallazgos preliminares (lectura cruzada TVS+SEI) para la conversación interna.")}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={dlLang}
+          onChange={(e) => setDlLang(e.target.value as "es" | "en" | "pt")}
+          className="rounded-md border border-[var(--rowi-card-border)] bg-[var(--rowi-card)] px-2 py-1 text-sm text-[var(--rowi-fg)]"
+        >
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+          <option value="pt">PT</option>
+        </select>
+        <button
+          onClick={download}
+          disabled={busy}
+          className="text-sm rounded-lg border border-[var(--rowi-card-border)] px-3 py-1.5 text-[var(--rowi-fg)] disabled:opacity-50"
+        >
+          {busy ? t("consultant.deliverables.generating", "Generando…") : `⬇ ${t("consultant.deliverables.hallazgos", "Hallazgos preliminares (PPTX)")}`}
+        </button>
+      </div>
     </div>
   );
 }

@@ -105,6 +105,10 @@ function EcoPageInner() {
   const [members, setMembers] = useState<Member[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
   const [free, setFree] = useState<Free[]>([]);
+  // Grupos de relaciones guardados (3+ personas con brecha por centroide).
+  const [groups, setGroups] = useState<{ id: string; name: string | null; memberIds: string[] }[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [savingGroup, setSavingGroup] = useState(false);
   const [goal, setGoal] = useState("");
   const [channel, setChannel] = useState<Channel>("email");
   const [refine, setRefine] = useState(false);
@@ -183,15 +187,18 @@ function EcoPageInner() {
     (async () => {
       setLoadingDash(true);
       try {
-        const [dashRes, membersRes, avatarRes] = await Promise.all([
+        const [dashRes, membersRes, avatarRes, groupsRes] = await Promise.all([
           fetch("/api/eco/dashboard", { cache: "no-store" }).catch(() => null),
           fetch("/api/community/members", { cache: "no-store" }).catch(() => null),
           fetch("/api/avatar", { cache: "no-store" }).catch(() => null),
+          fetch("/api/relationships/groups", { cache: "no-store" }).catch(() => null),
         ]);
         const dash = dashRes?.ok ? await dashRes.json() : null;
         setDashboard(dash);
         const membersData = membersRes?.ok ? await membersRes.json() : { members: [] };
         setMembers(Array.isArray(membersData.members) ? membersData.members : []);
+        const groupsData = groupsRes?.ok ? await groupsRes.json() : { groups: [] };
+        setGroups(Array.isArray(groupsData.groups) ? groupsData.groups : []);
         const avatarData = avatarRes?.ok ? await avatarRes.json() : null;
         if (avatarData?.ok && avatarData.data?.currentStage) {
           setMyStage(avatarData.data.currentStage as RowiStage);
@@ -215,8 +222,48 @@ function EcoPageInner() {
       locale: lang,
       // Con dyadId, compose usa la BRECHA real de la díada (buildDyadBridge).
       dyadId: dyadId || undefined,
+      // Con groupId, compose usa la BRECHA AGREGADA del grupo (centroide).
+      groupId: selectedGroupId || undefined,
       ...extra,
     };
+  }
+
+  // ── Grupos de relaciones ──
+  async function loadGroups() {
+    try {
+      const r = await fetch("/api/relationships/groups", { cache: "no-store" });
+      const d = r?.ok ? await r.json() : { groups: [] };
+      setGroups(Array.isArray(d.groups) ? d.groups : []);
+    } catch {
+      setGroups([]);
+    }
+  }
+
+  async function saveGroup() {
+    if (picked.length < 2 || savingGroup) return;
+    setSavingGroup(true);
+    try {
+      const name = goal.trim().slice(0, 40) || null;
+      const r = await fetch("/api/relationships/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberIds: picked, name }),
+      });
+      const d = await r.json();
+      if (d?.ok) {
+        await loadGroups();
+        setSelectedGroupId(d.groupId);
+      }
+    } finally {
+      setSavingGroup(false);
+    }
+  }
+
+  function pickGroup(id: string) {
+    const g = groups.find((x) => x.id === id);
+    if (!g) { setSelectedGroupId(null); return; }
+    setSelectedGroupId(id);
+    setPicked(g.memberIds.filter((m) => !m.startsWith("user_")));
   }
 
   async function compose(nextVariant?: number) {
@@ -287,6 +334,8 @@ function EcoPageInner() {
   };
 
   const toggleMember = (id: string) => {
+    // Editar manualmente la selección desactiva el grupo guardado activo.
+    setSelectedGroupId(null);
     setPicked((v) => (v.includes(id) ? v.filter((x) => x !== id) : [...v, id]));
   };
 
@@ -620,6 +669,38 @@ function EcoPageInner() {
                   "El mensaje se adapta al estilo cerebral y preferencias de cada persona"
                 )}
               </p>
+
+              {/* Grupos guardados (3+ personas, brecha por centroide) */}
+              {(groups.length > 0 || picked.length >= 2) && (
+                <div className="mb-4 p-3 rounded-xl border border-[var(--rowi-border)] bg-[var(--rowi-surface)] flex flex-wrap items-center gap-2">
+                  {groups.length > 0 && (
+                    <select
+                      value={selectedGroupId ?? ""}
+                      onChange={(e) => pickGroup(e.target.value)}
+                      className="text-sm rounded-lg border border-[var(--rowi-border)] bg-[var(--rowi-surface)] px-2 py-1.5 text-[var(--rowi-foreground)]"
+                    >
+                      <option value="">{t("eco.groups.pick", "Grupo guardado…")}</option>
+                      {groups.map((g) => (
+                        <option key={g.id} value={g.id}>{g.name || t("eco.groups.unnamed", "Grupo")} ({g.memberIds.length})</option>
+                      ))}
+                    </select>
+                  )}
+                  {picked.length >= 2 && !selectedGroupId && (
+                    <button
+                      onClick={saveGroup}
+                      disabled={savingGroup}
+                      className="text-sm rounded-lg border border-emerald-500/40 px-3 py-1.5 text-emerald-600 dark:text-emerald-400 disabled:opacity-50"
+                    >
+                      {savingGroup ? t("eco.groups.saving", "Guardando…") : t("eco.groups.saveCta", "Guardar como grupo")}
+                    </button>
+                  )}
+                  {selectedGroupId && (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                      {t("eco.groups.active", "ECO usará la brecha del grupo (centroide)")}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Miembros de la comunidad */}
               <p className="text-sm font-medium text-[var(--rowi-muted)] mb-3">

@@ -10,6 +10,7 @@ import {
   recentThreadSummary,
   type DyadBridgeContext,
 } from "@/domains/eco/lib/ecoBridge";
+import { buildGroupBridge, recordEcoGroupTurn } from "@/domains/eco/lib/ecoGroupBridge";
 import { trackFunnel } from "@/domains/metrics/lib/funnel";
 import { normalizeBrainStyle } from "@/domains/eq/lib/dictionary";
 
@@ -35,6 +36,9 @@ type ComposeInput = {
   /** Cadena SIA: si se compone para una díada, ECO actúa como PUENTE sobre la
    *  brecha (inyecta sintonía + memoria + nivel general/profile/sei). */
   dyadId?: string;
+  /** Grupo de relaciones (3+): ECO actúa como puente sobre la brecha AGREGADA
+   *  por centroide. Persiste en el hilo del grupo. */
+  groupId?: string;
   /** Grupo heterogéneo: en vez de UN mensaje para todos, genera una versión
    *  adaptada a cada destinatario (un mensaje por persona). */
   personalized?: boolean;
@@ -358,6 +362,8 @@ export async function POST(req: NextRequest) {
         memoryHint = await recentThreadSummary(body.dyadId, user.id);
       }
     }
+    // Grupo de relaciones (3+): puente sobre la brecha AGREGADA por centroide.
+    const groupBridge = body.groupId ? await buildGroupBridge(body.groupId, user.id) : null;
 
     /* =========================================================
        👥 Resolver TODOS los destinatarios (no solo el primero)
@@ -558,6 +564,9 @@ export async function POST(req: NextRequest) {
         prompt += `Puente sobre la brecha (no lo cites): ${bridge.bridgeInstruction} La relación es de tipo ${bridge.relationType}. `;
         if (memoryHint) prompt += memoryHint + " ";
         prompt += "\n\n";
+      } else if (groupBridge) {
+        // Puente sobre la brecha AGREGADA del grupo (centroide).
+        prompt += `Puente sobre la brecha del grupo (no lo cites): ${groupBridge.bridgeInstruction}\n\n`;
       }
 
       prompt += `Devuelve el JSON con subject (o null), text (mensaje natural sin bullets) ${
@@ -751,7 +760,7 @@ ${formatSection}`;
         });
       }
 
-      // Cadena SIA: guardar el turno en la memoria del hilo de la díada.
+      // Cadena SIA: guardar el turno en la memoria del hilo (díada o grupo).
       if (bridge && body.dyadId) {
         try {
           await recordEcoTurn({
@@ -768,11 +777,27 @@ ${formatSection}`;
         } catch (memErr) {
           console.warn("⚠️ recordEcoTurn falló (no crítico):", memErr);
         }
+      } else if (groupBridge && body.groupId) {
+        try {
+          await recordEcoGroupTurn({
+            groupId: body.groupId,
+            ownerUserId: user.id,
+            goal: body.goal,
+            channel: body.channel,
+            text: parsed.text || "",
+            insight: parsed.insight ?? null,
+            level: groupBridge.level,
+            gapUsed: groupBridge.gapSummary,
+            tokensUsed,
+          });
+        } catch (memErr) {
+          console.warn("⚠️ recordEcoGroupTurn falló (no crítico):", memErr);
+        }
       }
 
       await trackFunnel("eco_used", {
         userId: user.id,
-        details: { dyadId: body.dyadId ?? null, ecoLevel: bridge?.level ?? null, channel: body.channel },
+        details: { dyadId: body.dyadId ?? null, groupId: body.groupId ?? null, ecoLevel: (bridge ?? groupBridge)?.level ?? null, channel: body.channel },
       });
 
       return NextResponse.json({
@@ -781,7 +806,7 @@ ${formatSection}`;
         base: baseMessage,
         refined: parsed,
         analysis: analysisData,
-        ecoLevel: bridge?.level ?? null,
+        ecoLevel: (bridge ?? groupBridge)?.level ?? null,
         aiPrompt: null,
         tokensUsed,
       });

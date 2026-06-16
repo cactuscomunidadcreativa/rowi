@@ -11,6 +11,7 @@
  */
 import { prisma } from "@/core/prisma";
 import { affinityAsGap } from "@/domains/affinity/lib/asGap";
+import { applyEcoOutcomeToAffinity } from "@/ai/learning/affinityLearning";
 
 export type EcoLevel = "general" | "profile" | "sei";
 
@@ -205,6 +206,15 @@ export async function recordEcoFeedback(args: {
   await prisma.ecoThread.update({
     where: { id: thread.id },
     data: { messageCount: { increment: 1 } },
+  });
+
+  // CIERRE DEL LOOP DEL MOAT: el outcome refina la lectura de la brecha
+  // (heat135) y entra al canal de aprendizaje. Sin esto, el "¿funcionó?" era
+  // un dato muerto. Resiliente: no rompe el guardado del feedback.
+  await applyEcoOutcomeToAffinity({
+    dyadId: args.dyadId,
+    ownerUserId: args.ownerUserId,
+    worked: args.worked,
   });
 }
 

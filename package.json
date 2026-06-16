@@ -103,6 +103,7 @@
     "tailwindcss-animate": "1.0.7",
     "topojson-client": "^3.1.0",
     "tslib": "2.8.1",
+    "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
     "zod": "^4.1.12"
   },
@@ -118,6 +119,7 @@
     "@types/pdfkit": "^0.17.6",
     "@types/react": "19.2.2",
     "@types/sortablejs": "^1.15.9",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "10.4.21",
     "dependency-cruiser": "17.0.2",
     "dotenv": "^17.2.3",

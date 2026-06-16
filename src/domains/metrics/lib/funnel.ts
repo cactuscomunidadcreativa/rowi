@@ -16,6 +16,9 @@ export type FunnelStep =
   | "registered"
   | "onboarding_completed"
   | "mini_sei_completed"
+  // Retención: cerró el loop diario de TODAY (reflexión nocturna guardada).
+  // Es la señal de retorno más honesta del producto (el huevo crece con esto).
+  | "today_completed"
   | "comm_profile_seeded"
   | "comm_profile_edited"
   | "eco_used"

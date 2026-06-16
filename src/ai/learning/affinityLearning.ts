@@ -96,6 +96,82 @@ export async function persistHeat135ToDyad(params: {
 }
 
 /* =========================================================
+   🔁 applyEcoOutcomeToAffinity()
+   ---------------------------------------------------------
+   CIERRA EL LOOP DEL FOSO: perfil → brecha → mensaje → OUTCOME → brecha refinada.
+   Hasta ahora el outcome de ECO ("¿funcionó tu mensaje?") se guardaba en
+   EcoMessage pero MORÍA ahí: nunca tocaba la lectura de sintonía. Este es el
+   último eslabón roto del moat. Aquí lo cerramos.
+
+   Qué hace con un { worked: true/false } sobre una díada:
+   1. Nudge pequeño y ACOTADO sobre heat135 (la escala de la BRECHA, 1-135):
+        worked=true  → +DELTA (hubo más sintonía real de la estimada)
+        worked=false → −DELTA (hubo menos)
+      Es un ajuste, NO un veredicto ni un reemplazo del motor de afinidad
+      (regla dura de asGap.ts). Un solo outcome no debe destruir la lectura:
+      por eso el delta es pequeño y se clampa a [1,135]. Ground truth ruidosa,
+      hypothesis_v0 — converge con volumen, no con un dato.
+   2. Registra la señal en AffinityInteraction (effectiveness 0..1) para que
+      summarizeSignals/el aprendizaje la vean por el canal que YA existe.
+
+   Conservador y resiliente: si no hay díada o el outcome no aplica, es no-op
+   silencioso. Nunca lanza (el caller no debe fallar por esto).
+========================================================= */
+/** Nudge por outcome sobre heat135. Pequeño a propósito: el moat aprende con volumen. */
+const ECO_OUTCOME_HEAT_DELTA = 6;
+
+export async function applyEcoOutcomeToAffinity(params: {
+  dyadId: string;
+  ownerUserId: string;
+  worked: boolean;
+}): Promise<void> {
+  try {
+    const dyad = await prisma.relationshipDyad.findFirst({
+      where: { id: params.dyadId, ownerUserId: params.ownerUserId },
+      select: { id: true, otherUserId: true, lastGapSummary: true, relationType: true },
+    });
+    if (!dyad) return; // sin díada declarada: no-op
+
+    // 1. Nudge sobre heat135 (si hay lectura previa; si no, no inventamos una).
+    const summary = (dyad.lastGapSummary ?? null) as
+      | { heat135?: number; heat100?: number; context?: string }
+      | null;
+    if (summary && typeof summary.heat135 === "number" && Number.isFinite(summary.heat135)) {
+      const delta = params.worked ? ECO_OUTCOME_HEAT_DELTA : -ECO_OUTCOME_HEAT_DELTA;
+      const nextHeat135 = Math.min(135, Math.max(1, Math.round(summary.heat135 + delta)));
+      await prisma.relationshipDyad.update({
+        where: { id: dyad.id },
+        data: {
+          lastGapSummary: {
+            heat135: nextHeat135,
+            heat100: Math.round((nextHeat135 / 135) * 100),
+            context: summary.context ?? "relationship",
+          },
+          lastGapAt: new Date(),
+        },
+      });
+    }
+
+    // 2. Señal de efectividad en el canal de aprendizaje que ya consume el
+    //    sistema (summarizeSignals). El "miembro" es el otro usuario Rowi si
+    //    existe; si no, la propia díada (clave estable para agrupar).
+    const memberId = dyad.otherUserId ? `user_${dyad.otherUserId}` : `dyad_${dyad.id}`;
+    await logAffinityInteraction({
+      userId: params.ownerUserId,
+      memberId,
+      context: dyad.relationType ?? "relationship",
+      emotionTag: params.worked ? "positiva" : "tensa",
+      effectiveness: params.worked ? 0.85 : 0.2,
+      notes: "eco_outcome",
+    });
+  } catch (e) {
+    console.warn(
+      "[affinityLearning] ⚠️ No se pudo aplicar el outcome de ECO a la afinidad (díada ausente o sin migrar)."
+    );
+  }
+}
+
+/* =========================================================
    📊 summarizeSignals()
    ---------------------------------------------------------
    Resume las señales emocionales recientes (últimos X días):

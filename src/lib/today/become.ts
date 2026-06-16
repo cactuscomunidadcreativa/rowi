@@ -174,6 +174,49 @@ export function pickFocusSei(
   return SEI_ORDER[dayOfYear % SEI_ORDER.length];
 }
 
+/**
+ * Señal de un día reciente del loop (subconjunto de DailyLoopEntry) que sirve
+ * para que la reflexión de ayer influya en la propuesta de hoy. Hasta ahora el
+ * foco salía SOLO del perfil EQ estático: lo que el usuario practicaba (o no)
+ * cada día no realimentaba el siguiente ciclo (Today escribía memoria, Becoming
+ * la mostraba, pero la memoria no cerraba el loop hacia la propuesta de mañana).
+ */
+export interface RecentLoopSignal {
+  becomeSei: string | null;
+  practiceDone: boolean;
+}
+
+/**
+ * Ajusta el foco del día con la memoria reciente del loop. Regla determinista,
+ * sin IA: si en los últimos días el sistema propuso una competencia y el usuario
+ * NO completó su práctica, esa competencia sigue siendo la oportunidad real —
+ * el sistema PERSISTE en ese foco en vez de saltar mecánicamente al siguiente
+ * score más bajo. Solo "suelta" el foco cuando hubo una práctica hecha (señal de
+ * que el usuario ya está trabajando ahí) o cuando no hay historia.
+ *
+ * Conservador: si las señales no apuntan a una SEI válida, cae al foco base.
+ */
+export function pickFocusWithMemory(
+  baseFocus: SeiKey,
+  recent: RecentLoopSignal[] | null | undefined
+): SeiKey {
+  if (!recent || recent.length === 0) return baseFocus;
+
+  // Foco propuesto más reciente con práctica NO hecha = oportunidad sin cerrar.
+  for (const day of recent) {
+    const sei = day.becomeSei;
+    if (!sei || !isSeiKey(sei)) continue;
+    // Si ya la trabajó (práctica hecha), no insistir: deja que el perfil decida.
+    if (day.practiceDone) break;
+    return sei;
+  }
+  return baseFocus;
+}
+
+function isSeiKey(v: string): v is SeiKey {
+  return v in BECOME_BY_SEI;
+}
+
 /** Devuelve la propuesta BECOME (identidad + práctica) para una competencia. */
 export function proposeBecoming(
   sei: SeiKey,
@@ -195,5 +238,23 @@ export function proposeBecomingFromProfile(
   tzOffsetMinutes = 0
 ): { sei: SeiKey; identity: string; practice: string } {
   const sei = pickFocusSei(profile, now, tzOffsetMinutes);
+  return proposeBecoming(sei, lang);
+}
+
+/**
+ * Como `proposeBecomingFromProfile`, pero deja que la MEMORIA reciente del loop
+ * (las últimas reflexiones/prácticas) influya en el foco: cierra el lazo
+ * Today → Becoming → Today. El perfil EQ da el foco base; la práctica no
+ * completada de días recientes lo mantiene hasta que el usuario avance ahí.
+ */
+export function proposeBecomingFromProfileAndMemory(
+  profile: CompetencyProfile | null | undefined,
+  recent: RecentLoopSignal[] | null | undefined,
+  lang: BecomeLang,
+  now: Date = new Date(),
+  tzOffsetMinutes = 0
+): { sei: SeiKey; identity: string; practice: string } {
+  const base = pickFocusSei(profile, now, tzOffsetMinutes);
+  const sei = pickFocusWithMemory(base, recent);
   return proposeBecoming(sei, lang);
 }

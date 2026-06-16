@@ -74,6 +74,7 @@ export default function Sidebar() {
       priority: 100,
       items: [
         { href: "/hub/admin", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
+        { href: "/hub/admin/ceo", labelKey: "admin.nav.ceo", icon: Activity, badge: "NEW" },
         { href: "/hub/admin/inventory", labelKey: "admin.nav.inventory", icon: Boxes, badge: "NEW" },
         { href: "/hub/admin/routes-map", labelKey: "admin.nav.routesMap", icon: Network },
         { href: "/hub/admin/user-roles", labelKey: "admin.nav.userRoles", icon: Shield, badge: "NEW" },

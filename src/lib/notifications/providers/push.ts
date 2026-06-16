@@ -3,9 +3,22 @@
 // Push Notifications Provider (Web Push)
 // ============================================================
 
+import webpush from "web-push";
 import { prisma } from "@/core/prisma";
 import { NotificationResult } from "../types";
 import { NotificationType } from "@prisma/client";
+
+/**
+ * web-push exige configurar las VAPID details una vez por proceso. Lo hacemos
+ * de forma perezosa e idempotente: la primera vez que hay claves, se aplica;
+ * si las claves no están, sendPush corta antes de llegar aquí.
+ */
+let vapidConfigured = false;
+function ensureVapid(publicKey: string, privateKey: string, subject: string): void {
+  if (vapidConfigured) return;
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+  vapidConfigured = true;
+}
 
 interface PushNotification {
   id: string;
@@ -53,8 +66,10 @@ export async function sendPush(
   const payload = JSON.stringify({
     title: title || "Rowi",
     body: message,
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/badge-72x72.png",
+    // Iconos que SÍ existen en public/ (los antiguos /icons/* daban 404; el SW
+    // ya cae a este mismo asset). Mantiene coherencia con public/sw.js.
+    icon: "/web-app-manifest-192x192.png",
+    badge: "/web-app-manifest-192x192.png",
     tag: type,
     data: {
       notificationId: id,
@@ -81,11 +96,13 @@ export async function sendPush(
 
   // Send to all subscriptions
   const results: boolean[] = [];
-  const failedSubscriptions: string[] = [];
+  // Solo desactivamos suscripciones MUERTAS (404/410). Un fallo transitorio
+  // (red, 5xx del push service) NO debe borrar la suscripción del usuario.
+  const goneSubscriptions: string[] = [];
 
   for (const subscription of subscriptions) {
     try {
-      const success = await sendWebPush(
+      const { sent, gone } = await sendWebPush(
         {
           endpoint: subscription.endpoint,
           keys: {
@@ -99,28 +116,27 @@ export async function sendPush(
         vapidSubject
       );
 
-      results.push(success);
+      results.push(sent);
 
-      if (!success) {
-        failedSubscriptions.push(subscription.id);
+      if (gone) {
+        goneSubscriptions.push(subscription.id);
+      } else if (sent) {
+        // Update last used (solo en éxito real)
+        await prisma.pushSubscription.update({
+          where: { id: subscription.id },
+          data: { lastUsedAt: new Date() },
+        });
       }
-
-      // Update last used
-      await prisma.pushSubscription.update({
-        where: { id: subscription.id },
-        data: { lastUsedAt: new Date() },
-      });
     } catch (error) {
       console.error("[Push] Error sending to subscription:", subscription.id, error);
       results.push(false);
-      failedSubscriptions.push(subscription.id);
     }
   }
 
-  // Deactivate failed subscriptions (likely unsubscribed)
-  if (failedSubscriptions.length > 0) {
+  // Desactivar solo las suscripciones que el push service reportó como muertas.
+  if (goneSubscriptions.length > 0) {
     await prisma.pushSubscription.updateMany({
-      where: { id: { in: failedSubscriptions } },
+      where: { id: { in: goneSubscriptions } },
       data: { active: false },
     });
   }
@@ -136,8 +152,18 @@ export async function sendPush(
 }
 
 /**
- * Send a single web push notification
- * Uses the Web Push protocol
+ * Resultado de un envío individual. `gone` distingue una suscripción muerta
+ * (404/410 del push service → desactivar) de un fallo transitorio (reintentable).
+ */
+interface WebPushResult {
+  sent: boolean;
+  gone: boolean;
+}
+
+/**
+ * Envía un push individual firmado con VAPID usando la librería web-push
+ * (cifrado aes128gcm + JWT VAPID). Reemplaza el antiguo stub de fetch sin firma,
+ * que los push services siempre rechazaban.
  */
 async function sendWebPush(
   subscription: {
@@ -148,42 +174,30 @@ async function sendWebPush(
   vapidPublicKey: string,
   vapidPrivateKey: string,
   vapidSubject: string
-): Promise<boolean> {
+): Promise<WebPushResult> {
   try {
-    // For production, you'd use a library like web-push
-    // This is a simplified implementation using fetch
-
-    // In production, use the web-push library:
-    // const webpush = require('web-push');
-    // webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-    // await webpush.sendNotification(subscription, payload);
-
-    // For now, we'll use a simple fetch implementation
-    // Note: This requires proper VAPID signing which is complex
-    // In production, use the web-push npm package
-
-    const response = await fetch(subscription.endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/octet-stream",
-        "Content-Encoding": "aes128gcm",
-        TTL: "86400",
-        // In production, add proper VAPID headers
-        // Authorization: `vapid t=${jwt}, k=${vapidPublicKey}`,
+    ensureVapid(vapidPublicKey, vapidPrivateKey, vapidSubject);
+    await webpush.sendNotification(
+      {
+        endpoint: subscription.endpoint,
+        keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
       },
-      body: payload,
-    });
-
-    // 201 = Success, 410 = Subscription gone
-    if (response.status === 410) {
-      console.log("[Push] Subscription expired:", subscription.endpoint);
-      return false;
-    }
-
-    return response.ok;
+      payload,
+      { TTL: 86400 }
+    );
+    return { sent: true, gone: false };
   } catch (error) {
+    // 404/410 = la suscripción ya no existe en el push service → desactivar.
+    const statusCode =
+      error && typeof error === "object" && "statusCode" in error
+        ? (error as { statusCode?: number }).statusCode
+        : undefined;
+    if (statusCode === 404 || statusCode === 410) {
+      console.log("[Push] Subscription gone:", subscription.endpoint);
+      return { sent: false, gone: true };
+    }
     console.error("[Push] Web push error:", error);
-    return false;
+    return { sent: false, gone: false };
   }
 }
 

@@ -20,15 +20,17 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/core/prisma";
 import { parseTz, localDateString, startOfLocalDay } from "@/lib/daily-pulse/timezone";
 import {
-  proposeBecomingFromProfile,
+  proposeBecomingFromProfileAndMemory,
   type BecomeLang,
   type CompetencyProfile,
+  type RecentLoopSignal,
 } from "@/lib/today/become";
 import { logAffinityInteraction } from "@/ai/learning/affinityLearning";
 import { awardPoints } from "@/services/gamification";
 import { checkAndEvolve } from "@/services/avatar-evolution";
 import { recordDailyIntervention } from "@/lib/today/intervention";
 import { updateDailyStreak } from "@/lib/streak/updateDailyStreak";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 const SEI_KEYS: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
@@ -144,6 +146,24 @@ async function getCompetencyProfile(userId: string): Promise<CompetencyProfile |
   return null;
 }
 
+/**
+ * Señales recientes del loop para realimentar la propuesta BECOME (cierra
+ * Today → Becoming → Today). Los últimos días con un BECOME propuesto, del más
+ * reciente al más antiguo. No incluye el día de hoy (aún sin crear).
+ */
+async function getRecentLoopSignals(
+  userId: string,
+  excludeLocalDate: string
+): Promise<RecentLoopSignal[]> {
+  const rows = await prisma.dailyLoopEntry.findMany({
+    where: { userId, localDate: { lt: excludeLocalDate } },
+    orderBy: { localDate: "desc" },
+    take: 5,
+    select: { becomeSei: true, practiceDone: true },
+  });
+  return rows.map((r) => ({ becomeSei: r.becomeSei, practiceDone: r.practiceDone }));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const userId = await getUserId(req);
@@ -164,7 +184,8 @@ export async function GET(req: NextRequest) {
     // Crear la entrada del día con la propuesta BECOME determinista.
     if (!entry) {
       const profile = await getCompetencyProfile(userId);
-      const become = proposeBecomingFromProfile(profile, lang, now, tz);
+      const recent = await getRecentLoopSignals(userId, localDate);
+      const become = proposeBecomingFromProfileAndMemory(profile, recent, lang, now, tz);
       entry = await prisma.dailyLoopEntry.create({
         data: {
           userId,
@@ -212,7 +233,8 @@ export async function POST(req: NextRequest) {
     });
     if (!entry) {
       const profile = await getCompetencyProfile(userId);
-      const become = proposeBecomingFromProfile(profile, lang, now, tz);
+      const recent = await getRecentLoopSignals(userId, localDate);
+      const become = proposeBecomingFromProfileAndMemory(profile, recent, lang, now, tz);
       entry = await prisma.dailyLoopEntry.create({
         data: {
           userId,
@@ -290,6 +312,14 @@ export async function POST(req: NextRequest) {
         practiceText: updated.practiceText,
         practiceDone: updated.practiceDone === true,
         morningIntensity: updated.morningIntensity,
+      });
+
+      // Embudo: cerrar el loop diario es la señal de retención más honesta.
+      // Lo emitimos al guardar la reflexión (paso final del loop). No crítico.
+      await trackFunnel("today_completed", {
+        userId,
+        req,
+        details: { localDate, practiceDone: updated.practiceDone === true },
       });
     }
 

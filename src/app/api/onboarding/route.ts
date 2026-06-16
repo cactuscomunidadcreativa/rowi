@@ -10,6 +10,7 @@ import { Prisma } from "@prisma/client";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
 import { telemetry } from "@/lib/telemetry";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 
 // =========================================================
 // GET - Obtener estado del onboarding
@@ -187,6 +188,11 @@ export async function PATCH(req: NextRequest) {
         seiRequested: true,
       },
     });
+
+    // Embudo de activación: el onboarding quedó completo (estado ACTIVE).
+    if (data?.completeWithoutSei === true) {
+      await trackFunnel("onboarding_completed", { userId: session.user.id, req });
+    }
 
     return NextResponse.json({
       ok: true,

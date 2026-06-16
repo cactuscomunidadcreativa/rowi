@@ -78,6 +78,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const L = lang as Lang;
   const [step, setStep] = useState(0);
+  const [finishing, setFinishing] = useState(false);
   const [hasWorkspace, setHasWorkspace] = useState<boolean | null>(null);
   // Rowi Test step (cadena SIA) — el mini-SEI NORMADO (12 ítems short-form
   // SEI 5.0), no el Pre-SEI. Es el instrumento ancla del onboarding.
@@ -176,23 +177,35 @@ export default function OnboardingPage() {
 
   // Registra el avance del onboarding (paso y/o cierre). /api/onboarding
   // tolera llamadas parciales. Best-effort: no bloquea la navegación.
-  function persistOnboarding(payload: { step?: number; complete?: boolean }) {
+  // Devuelve la promesa para que el cierre del wizard pueda ESPERAR a que el
+  // estado ACTIVE quede persistido antes de navegar (ver finishOnboarding).
+  function persistOnboarding(payload: { step?: number; complete?: boolean }): Promise<void> {
     const body: Record<string, unknown> = {};
     if (payload.step !== undefined) body.step = payload.step;
     if (payload.complete) body.data = { completeWithoutSei: true };
-    fetch("/api/onboarding", {
+    return fetch("/api/onboarding", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    }).catch(() => {});
+    })
+      .then(() => undefined)
+      .catch(() => undefined);
   }
 
   // Cierre del onboarding: marca el estado ACTIVE (sale del estado REGISTERED
   // en el que nace la cuenta) y manda al usuario a su día. Único punto de
   // salida del wizard — lo usan tanto "Finalizar" como "Saltar".
-  function finishOnboarding() {
-    persistOnboarding({ step: STEPS.length - 1, complete: true });
-    router.push("/today");
+  //
+  // Hay que ESPERAR el PATCH antes de navegar: si navegamos sin await, la
+  // navegación puede cortar el fetch y el usuario queda en REGISTERED pese a
+  // haber terminado (se rompe la activación). El fallback navega igual.
+  async function finishOnboarding() {
+    setFinishing(true);
+    try {
+      await persistOnboarding({ step: STEPS.length - 1, complete: true });
+    } finally {
+      router.push("/today");
+    }
   }
 
   // Al entrar al paso: si ya existe un mini-SEI (p.ej. reclamado del Pre-SEI
@@ -851,7 +864,7 @@ export default function OnboardingPage() {
 
           <button
             onClick={finishOnboarding}
-            disabled={current.key === "consent" && !consentMap.basic_processing}
+            disabled={finishing || (current.key === "consent" && !consentMap.basic_processing)}
             className="text-sm text-gray-500 hover:text-[var(--rowi-g2)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-500"
             title={
               current.key === "consent" && !consentMap.basic_processing
@@ -889,9 +902,10 @@ export default function OnboardingPage() {
           ) : (
             <button
               onClick={finishOnboarding}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              disabled={finishing}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
             >
-              <Check className="w-4 h-4" />
+              {finishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {t("onboarding.finish")}
             </button>
           )}

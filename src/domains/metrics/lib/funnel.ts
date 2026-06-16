@@ -11,6 +11,10 @@ import { logAuditAction } from "@/lib/audit/auditLog";
 
 /** Pasos del embudo, en orden de la cadena. */
 export type FunnelStep =
+  // Activación (Pre-SEI → Registro → mini-SEI ancla → onboarding completo).
+  // onboarding_completed = aterrizó en Today (finishOnboarding navega allí).
+  | "registered"
+  | "onboarding_completed"
   | "mini_sei_completed"
   | "comm_profile_seeded"
   | "comm_profile_edited"

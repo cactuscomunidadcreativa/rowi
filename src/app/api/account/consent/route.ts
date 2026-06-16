@@ -56,7 +56,9 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ ok: true, consents });
+    // onboardingStatus para que el guard (ConsentGate) pueda rebotar a
+    // /onboarding a quien aún no completó el ancla, sin un fetch extra.
+    return NextResponse.json({ ok: true, consents, onboardingStatus: user.onboardingStatus });
   } catch (e: unknown) {
     telemetry.captureException(e, { route: "/api/account/consent", op: "GET" });
     return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });

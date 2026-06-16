@@ -19,6 +19,7 @@ import { answersByPosition } from "@/lib/mini-sei/items";
 import { resolvePreferences, type PrefAnswers } from "@/lib/mini-sei/preferences";
 import { seedCommProfileFromPreferences } from "@/domains/profile/lib/seedCommunicationProfile";
 import { telemetry } from "@/lib/telemetry";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,6 +71,12 @@ export async function POST(req: NextRequest) {
       },
       select: { id: true, takenAt: true },
     });
+
+    // Embudo de activación: el ancla (mini-SEI) quedó completa. Solo se cuenta
+    // como hito de activación cuando viene del onboarding (no del mensual).
+    if (body.source === "onboarding") {
+      await trackFunnel("mini_sei_completed", { userId: user.id, req, details: { source: "onboarding" } });
+    }
 
     // Capa de preferencias declaradas → siembra el CommunicationProfile (lo que
     // ECO/Afinidad consumen). Best-effort: no rompe el submit si falla.

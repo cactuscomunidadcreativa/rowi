@@ -11,6 +11,7 @@ import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { claimPreSeiSession } from "@/lib/pre-sei/claim";
 import { claimRelationshipInvite } from "@/lib/relationships/claimInvite";
 import { telemetry } from "@/lib/telemetry";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 
 export const runtime = "nodejs";
 
@@ -74,6 +75,10 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
+
+    // ¿Es una finalización de registro nueva? (aún no activado). Gatea el evento
+    // de embudo "registered" para no contar logins OAuth de usuarios ya activos.
+    const isFreshRegistration = user.onboardingStatus !== "ACTIVE";
 
     // Resolver plan (solo si el usuario no tiene plan asignado todavía)
     let planId = user.planId;
@@ -173,6 +178,11 @@ export async function POST(req: NextRequest) {
     // Invitación relacional: vincular la díada si el OAuth nació en /r/[token].
     if (relToken) {
       await claimRelationshipInvite(relToken, user.id);
+    }
+
+    // Embudo de activación: cuenta creada vía OAuth (solo registros nuevos).
+    if (isFreshRegistration) {
+      await trackFunnel("registered", { userId: user.id, req, details: { provider: "oauth" } });
     }
 
     return NextResponse.json({

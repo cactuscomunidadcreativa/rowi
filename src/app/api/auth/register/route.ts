@@ -16,6 +16,7 @@ import { mapSourceToEnum } from "@/lib/acquisition/source";
 import { rateLimiters } from "@/lib/security/rateLimit";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import { telemetry } from "@/lib/telemetry";
+import { trackFunnel } from "@/domains/metrics/lib/funnel";
 
 interface RegisterBody {
   email: string;
@@ -449,6 +450,9 @@ export async function POST(req: NextRequest) {
     } catch (welcomeErr) {
       telemetry.captureException(welcomeErr, { route: "/api/auth/register", op: "send_welcome_email", fatal: false });
     }
+
+    // Embudo de activación: cuenta creada (inicio del flujo Registro→Today).
+    await trackFunnel("registered", { userId: user.id, req, details: { provider: "credentials" } });
 
     return NextResponse.json({
       ok: true,

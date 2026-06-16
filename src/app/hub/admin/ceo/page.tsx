@@ -199,7 +199,7 @@ export default function CeoDashboardPage() {
                     <div className="flex-1 h-2 rounded-full bg-[var(--rowi-border)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)]"
-                        style={{ width: `${pct}%` }}
+                        style={{ width: `${Math.min(100, pct)}%` }}
                       />
                     </div>
                     <span className="w-20 text-right text-sm font-semibold text-[var(--rowi-foreground)]">

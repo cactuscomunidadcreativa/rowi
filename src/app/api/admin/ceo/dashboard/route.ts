@@ -58,47 +58,34 @@ export async function GET(req: NextRequest) {
     const startDate = startDateFor(period, now);
 
     // =====================================================
-    // EMBUDO — conteo de cada paso en el período (ActivityLog).
-    // Distinct por usuario donde tiene sentido (un paso por persona).
+    // EMBUDO + DÍADAS + ECO — bloques independientes (solo dependen de
+    // startDate), los disparamos en paralelo: la latencia es el MAX de un
+    // round-trip, no la suma. groupBy cuenta EVENTOS por paso (no usuarios
+    // únicos): pasos re-emitibles como today_completed cuentan cada cierre.
     // =====================================================
-    const funnelRows = await prisma.activityLog.groupBy({
-      by: ["action"],
-      where: {
-        entity: "sia_funnel",
-        createdAt: { gte: startDate },
-      },
-      _count: { _all: true },
-    });
-    const funnelCountByAction = new Map(
-      funnelRows.map((r) => [r.action, r._count._all])
-    );
-    const funnel = FUNNEL_STEPS.map((step) => ({
-      step,
-      count: funnelCountByAction.get(`sia_funnel.${step}`) ?? 0,
-    }));
-
-    // =====================================================
-    // DÍADAS — el objeto del negocio (relaciones declaradas).
-    // Activa = con actividad de hilo ECO en el período.
-    // =====================================================
-    const [totalDyads, newDyads, dyadsWithJoinedOther] = await Promise.all([
+    const [
+      funnelRows,
+      totalDyads,
+      newDyads,
+      dyadsWithJoinedOther,
+      activeThreadDyads,
+      ecosSent,
+      outcomesPositive,
+      outcomesNegative,
+    ] = await Promise.all([
+      prisma.activityLog.groupBy({
+        by: ["action"],
+        where: { entity: "sia_funnel", createdAt: { gte: startDate } },
+        _count: { _all: true },
+      }),
       prisma.relationshipDyad.count(),
       prisma.relationshipDyad.count({ where: { createdAt: { gte: startDate } } }),
       prisma.relationshipDyad.count({ where: { otherJoined: true } }),
-    ]);
-
-    // Díadas activas = díadas con al menos un EcoThread actualizado en el período.
-    const activeThreadDyads = await prisma.ecoThread.findMany({
-      where: { updatedAt: { gte: startDate } },
-      distinct: ["dyadId"],
-      select: { dyadId: true },
-    });
-    const activeDyads = activeThreadDyads.length;
-
-    // =====================================================
-    // ECO — el motor de la acción + el OUTCOME (el moat).
-    // =====================================================
-    const [ecosSent, outcomesPositive, outcomesNegative] = await Promise.all([
+      prisma.ecoThread.findMany({
+        where: { updatedAt: { gte: startDate } },
+        distinct: ["dyadId"],
+        select: { dyadId: true },
+      }),
       prisma.ecoMessage.count({
         where: { role: "sent", createdAt: { gte: startDate } },
       }),
@@ -117,45 +104,76 @@ export async function GET(req: NextRequest) {
         },
       }),
     ]);
+
+    const funnelCountByAction = new Map(
+      funnelRows.map((r) => [r.action, r._count._all])
+    );
+    const funnel = FUNNEL_STEPS.map((step) => ({
+      step,
+      count: funnelCountByAction.get(`sia_funnel.${step}`) ?? 0,
+    }));
+
+    const activeDyads = activeThreadDyads.length;
     const outcomesTotal = outcomesPositive + outcomesNegative;
-    const outcomeRate = ecosSent > 0 ? (outcomesTotal / ecosSent) * 100 : 0;
+    // Cap a 100%: el feedback puede llegar para ECOs enviados ANTES de la
+    // ventana, así que outcomesTotal puede superar a ecosSent en el período.
+    // Mostrar ">100% capturado" confunde; lo acotamos.
+    const outcomeRate = ecosSent > 0 ? Math.min(100, (outcomesTotal / ecosSent) * 100) : 0;
     const workedRate = outcomesTotal > 0 ? (outcomesPositive / outcomesTotal) * 100 : 0;
 
     // =====================================================
     // RETENCIÓN — el corazón del producto: ¿vuelven a cerrar el loop?
-    // D7 = usuarios registrados hace ≥7d que cerraron un today_completed
-    // (o daily-pulse) entre el día 7 y hoy. Aproximación honesta con la data
-    // que existe: cohorte de registro vs señal de actividad reciente.
-    // =====================================================
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    // Cohorte CLÁSICA con denominador ACOTADO (no "todos los usuarios viejos",
+    // que haría caer la métrica solo por acumulación de base):
+    //  - D7  = de los registrados hace 7–14d, cuántos cerraron un today_completed
+    //          en los últimos 7d (volvieron en su semana).
+    //  - D30 = de los registrados hace 30–60d, cuántos cerraron un today_completed
+    //          en los últimos 30d.
+    // Cada horizonte usa su PROPIA ventana de actividad (antes ambas usaban 7d,
+    // y D30 no tenía cota inferior → métrica engañosa). Independiente de ?period:
+    // D7/D30 son horizontes fijos por definición, no afectados por el selector.
+    const DAY = 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = new Date(now.getTime() - 7 * DAY);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * DAY);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * DAY);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * DAY);
 
-    // Cohortes de registro.
+    // Cohortes de registro acotadas por ambos lados.
     const [cohort7, cohort30] = await Promise.all([
       prisma.user.count({
-        where: { createdAt: { lt: sevenDaysAgo, gte: thirtyDaysAgo } },
+        where: { createdAt: { lt: sevenDaysAgo, gte: fourteenDaysAgo } },
       }),
       prisma.user.count({
-        where: { createdAt: { lt: thirtyDaysAgo } },
+        where: { createdAt: { lt: thirtyDaysAgo, gte: sixtyDaysAgo } },
       }),
     ]);
 
-    // Usuarios de esas cohortes con un today_completed reciente (señal de retorno).
-    const recentReturnLogs = await prisma.activityLog.findMany({
-      where: {
-        action: "sia_funnel.today_completed",
-        createdAt: { gte: sevenDaysAgo },
-        userId: { not: null },
-      },
-      distinct: ["userId"],
-      select: { userId: true, user: { select: { createdAt: true } } },
-    });
-    const returned7 = recentReturnLogs.filter(
-      (r) => r.user && r.user.createdAt < sevenDaysAgo && r.user.createdAt >= thirtyDaysAgo
-    ).length;
-    const returned30 = recentReturnLogs.filter(
-      (r) => r.user && r.user.createdAt < thirtyDaysAgo
-    ).length;
+    // Señal de retorno: usuarios con today_completed dentro de cada ventana de
+    // actividad. Dos consultas (7d y 30d) porque los horizontes difieren.
+    const [active7Logs, active30Logs] = await Promise.all([
+      prisma.activityLog.findMany({
+        where: {
+          action: "sia_funnel.today_completed",
+          createdAt: { gte: sevenDaysAgo },
+          userId: { not: null },
+          user: { is: { createdAt: { lt: sevenDaysAgo, gte: fourteenDaysAgo } } },
+        },
+        distinct: ["userId"],
+        select: { userId: true },
+      }),
+      prisma.activityLog.findMany({
+        where: {
+          action: "sia_funnel.today_completed",
+          createdAt: { gte: thirtyDaysAgo },
+          userId: { not: null },
+          user: { is: { createdAt: { lt: thirtyDaysAgo, gte: sixtyDaysAgo } } },
+        },
+        distinct: ["userId"],
+        select: { userId: true },
+      }),
+    ]);
+    const returned7 = active7Logs.length;
+    const returned30 = active30Logs.length;
 
     const d7Retention = cohort7 > 0 ? (returned7 / cohort7) * 100 : 0;
     const d30Retention = cohort30 > 0 ? (returned30 / cohort30) * 100 : 0;

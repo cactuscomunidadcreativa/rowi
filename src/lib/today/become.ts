@@ -230,7 +230,11 @@ export function proposeBecoming(
   };
 }
 
-/** Atajo: propone directamente desde el perfil EQ. */
+/**
+ * Atajo: propone directamente desde el perfil EQ, SIN memoria del loop. El
+ * flujo de TODAY usa `proposeBecomingFromProfileAndMemory`; este se mantiene
+ * como la variante pura (sin realimentación) para callers que la necesiten.
+ */
 export function proposeBecomingFromProfile(
   profile: CompetencyProfile | null | undefined,
   lang: BecomeLang,

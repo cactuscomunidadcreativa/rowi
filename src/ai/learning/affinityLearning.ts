@@ -134,7 +134,7 @@ export async function applyEcoOutcomeToAffinity(params: {
 
     // 1. Nudge sobre heat135 (si hay lectura previa; si no, no inventamos una).
     const summary = (dyad.lastGapSummary ?? null) as
-      | { heat135?: number; heat100?: number; context?: string }
+      | (Record<string, unknown> & { heat135?: number; heat100?: number; context?: string })
       | null;
     if (summary && typeof summary.heat135 === "number" && Number.isFinite(summary.heat135)) {
       const delta = params.worked ? ECO_OUTCOME_HEAT_DELTA : -ECO_OUTCOME_HEAT_DELTA;
@@ -142,11 +142,15 @@ export async function applyEcoOutcomeToAffinity(params: {
       await prisma.relationshipDyad.update({
         where: { id: dyad.id },
         data: {
+          // MERGE, no overwrite: preserva otras claves del blob (p.ej.
+          // inviteeAnswers/source que escribe el flujo de invitación) en vez de
+          // destruirlas. Solo pisamos los campos de heat.
           lastGapSummary: {
+            ...summary,
             heat135: nextHeat135,
             heat100: Math.round((nextHeat135 / 135) * 100),
             context: summary.context ?? "relationship",
-          },
+          } as never,
           lastGapAt: new Date(),
         },
       });

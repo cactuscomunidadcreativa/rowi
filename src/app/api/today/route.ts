@@ -148,17 +148,29 @@ async function getCompetencyProfile(userId: string): Promise<CompetencyProfile |
 
 /**
  * Señales recientes del loop para realimentar la propuesta BECOME (cierra
- * Today → Becoming → Today). Los últimos días con un BECOME propuesto, del más
- * reciente al más antiguo. No incluye el día de hoy (aún sin crear).
+ * Today → Becoming → Today). Del más reciente al más antiguo, sin incluir hoy.
+ *
+ * CRÍTICO: solo cuenta días con ENGAGEMENT real (practiceAt o reflectionAt no
+ * nulos). La entrada del día se crea de forma EAGER en el GET con
+ * practiceDone=false por defecto; sin este filtro, un usuario que solo abre la
+ * app quedaría clavado para siempre en el primer foco (práctica "no hecha"
+ * indistinguible de "nunca tocada"). Con el filtro, "práctica saltada" (un POST
+ * step:practice done:false sí pone practiceAt) cuenta y persiste el foco; "día
+ * no tocado" se excluye y deja decidir al perfil. Lookback corto (2 días) para
+ * que un foco viejo no sobreviva a un SEI nuevo.
  */
 async function getRecentLoopSignals(
   userId: string,
   excludeLocalDate: string
 ): Promise<RecentLoopSignal[]> {
   const rows = await prisma.dailyLoopEntry.findMany({
-    where: { userId, localDate: { lt: excludeLocalDate } },
+    where: {
+      userId,
+      localDate: { lt: excludeLocalDate },
+      OR: [{ practiceAt: { not: null } }, { reflectionAt: { not: null } }],
+    },
     orderBy: { localDate: "desc" },
-    take: 5,
+    take: 2,
     select: { becomeSei: true, practiceDone: true },
   });
   return rows.map((r) => ({ becomeSei: r.becomeSei, practiceDone: r.practiceDone }));

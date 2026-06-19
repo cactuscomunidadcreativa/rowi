@@ -202,6 +202,9 @@ model User {
   debriefsAsSubject   DebriefSession[]      @relation("DebriefSubject")
   actionCommitments   ActionCommitment[]    @relation("ActionCommitmentOwner")
 
+  // 🧩 Hiring — casos de análisis archivados (no crean comunidad)
+  hiringCases HiringCase[] @relation("HiringCaseOwner")
+
   // 🔒 Privacy / Consent / Research lens
   researchAccessLevel ResearchAccessLevel      @default(none)
   consents            UserConsent[]            @relation("UserConsentOwner")
@@ -7137,7 +7140,7 @@ model MiniSeiSnapshot {
 ///                     (siempre positiva; genera el Becoming Data)
 /// localDate (YYYY-MM-DD en la tz del usuario) garantiza idempotencia por día.
 model DailyLoopEntry {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   userId    String
   localDate String // "YYYY-MM-DD" en la tz local del usuario (idempotencia diaria)
 
@@ -7480,10 +7483,10 @@ model Intervention {
 
   // EFECTO (hipótesis → calibrado con datos)
   expectedEffect Float? // efecto esperado (Cohen's d o Δscore)
-  effectSource   String  @default("hypothesis_v0") // hypothesis_v0 | calibrated_v1 | six_seconds_case
+  effectSource   String @default("hypothesis_v0") // hypothesis_v0 | calibrated_v1 | six_seconds_case
   measuredEffect Float? // efecto real medido (ground-truth acumulado)
-  sampleSize     Int     @default(0)
-  confidence     String  @default("low") // low | medium | high
+  sampleSize     Int    @default(0)
+  confidence     String @default("low") // low | medium | high
 
   active    Boolean  @default(true)
   version   Int      @default(0)
@@ -7565,19 +7568,51 @@ model AffinityGroundTruth {
 /// (espejo del patrón PulsePointWeights). v0 = hipótesis hardcoded actual;
 /// v1+ se calibra con AffinityGroundTruth. El motor lee la versión active.
 model AffinityWeights {
-  id        String   @id @default(cuid())
-  scope     String   @default("global") // global | tenant:<id> | hub:<id>
-  scopeId   String?
-  version   Int // v0 reservado para los hardcoded actuales
+  id         String   @id @default(cuid())
+  scope      String   @default("global") // global | tenant:<id> | hub:<id>
+  scopeId    String?
+  version    Int // v0 reservado para los hardcoded actuales
   // Pesos serializados (CTX, COMP_WEIGHTS, COLL_BBP, splits...)
-  payload   Json
-  rSquared  Float?
-  sampleSize Int     @default(0)
-  active    Boolean  @default(false)
-  notes     String?  @db.Text
-  createdAt DateTime @default(now())
+  payload    Json
+  rSquared   Float?
+  sampleSize Int      @default(0)
+  active     Boolean  @default(false)
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
 
   @@unique([scope, scopeId, version])
   @@index([scope, active])
   @@map("affinity_weights")
+}
+
+// =========================================================
+// 🧩 HIRING CASE — caso de análisis de selección, ARCHIVADO.
+// ---------------------------------------------------------
+// Un proceso de hiring (un manager + N candidatos analizados desde un CSV SEI)
+// se guarda completo para reabrirlo, re-renderizar el PDF en cualquier idioma y
+// comparar. NO crea comunidad, NO crea relaciones, NO crea CommunityMember: es
+// un documento de análisis, no un equipo. La data SEI anónima alimenta el
+// Rowiverse por separado; el linking persona→User pasa por EqSnapshot (email).
+// Ver docs/entregables/HIRING_PROCESO_Y_ROWIVERSE.md.
+// =========================================================
+model HiringCase {
+  id                     String   @id @default(cuid())
+  ownerUserId            String // quién corrió el análisis (consultor/manager)
+  tenantId               String? // opcional: en qué tenant/workspace se generó
+  process                String // "Recrutamento BDP"
+  managerName            String // a quién se marcó como manager/líder
+  lang                   String   @default("es") // es | pt | en — idioma con que se generó
+  reportData             Json // el HiringReportData COMPLETO (datos + resultados calculados)
+  candidateCount         Int      @default(0)
+  // trazabilidad de los efectos colaterales (no comunidad):
+  contributedToRowiverse Int      @default(0) // nº de perfiles enviados al pool global anónimo
+  snapshotsCreated       Int      @default(0) // nº de EqSnapshot puente (email, sin userId)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  owner User @relation("HiringCaseOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId])
+  @@index([tenantId])
+  @@map("hiring_cases")
 }

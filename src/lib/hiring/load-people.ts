@@ -93,6 +93,22 @@ export async function loadHiringPeople(input: LoadHiringInput): Promise<{
   const candidates = candData.map((d) => toPerson(d, "Candidata"));
   if (candidates.length === 0) return null;
 
+  const options = await buildOptionsFromPeople(leader, candidates, input.process, input.meta);
+  return { leader, candidates, options };
+}
+
+/**
+ * Calcula el BuildHiringOptions (percentiles EQ + benchmark + competencias vs
+ * top) a partir de personas YA cargadas — independiente de su origen
+ * (CommunityMember o CSV). Toca BenchmarkDataPoint (= pool Rowiverse), no PII.
+ * Lo reusan tanto loadHiringPeople (workspace) como /api/hiring/analyze (CSV).
+ */
+export async function buildOptionsFromPeople(
+  leader: HiringPerson,
+  candidates: HiringPerson[],
+  process: string,
+  meta?: string,
+): Promise<BuildHiringOptions> {
   // Percentiles EQ (líder + candidatos) contra el benchmark global.
   const eqPercentileByName: Record<string, number> = {};
   const all = [leader, ...candidates];
@@ -117,12 +133,9 @@ export async function loadHiringPeople(input: LoadHiringInput): Promise<{
   }
 
   return {
-    leader, candidates,
-    options: {
-      process: input.process,
-      meta: input.meta ?? `SEI · ${benchmark.nTotal.toLocaleString()} benchmark`,
-      benchmark, eqPercentileByName, competenciesByName, compsAtTopLevelByName, pctOfTopsBelowByName,
-    },
+    process,
+    meta: meta ?? `SEI · ${benchmark.nTotal.toLocaleString()} benchmark`,
+    benchmark, eqPercentileByName, competenciesByName, compsAtTopLevelByName, pctOfTopsBelowByName,
   };
 }
 

@@ -18,11 +18,16 @@ export async function GET() {
       );
     }
 
-    // Crear avatar si no existe
-    await createInitialAvatar(user.id);
+    // Obtener estado de evolucion. El avatar normalmente ya existe (se crea en
+    // onboarding), así que en el caso común esto es UNA query — antes había un
+    // createInitialAvatar (otro findUnique) en CADA carga solo para comprobar
+    // que existía. Solo si falta (usuario viejo) lo creamos perezosamente.
+    let evolutionState = await getEvolutionState(user.id);
 
-    // Obtener estado de evolucion
-    const evolutionState = await getEvolutionState(user.id);
+    if (!evolutionState) {
+      await createInitialAvatar(user.id);
+      evolutionState = await getEvolutionState(user.id);
+    }
 
     if (!evolutionState) {
       return NextResponse.json(

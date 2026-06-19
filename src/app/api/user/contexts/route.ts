@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/core/prisma";
@@ -31,16 +32,15 @@ interface ContextGroup {
   contexts: ContextItem[];
 }
 
-export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
+/**
+ * Construye el payload de contextos del usuario. Pesado (1 findUnique con 5
+ * includes anidados + 1 raw query), por eso el GET lo cachea por usuario.
+ * Devuelve null si el usuario no existe.
+ */
+async function buildUserContexts(email: string) {
     // Obtener usuario con todas sus membresías
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email },
       include: {
         // Membresías en Hubs
         hubMemberships: {
@@ -85,7 +85,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      return null;
     }
 
     // Construir grupos de contextos
@@ -167,8 +167,12 @@ export async function GET() {
         WHERE cc."consultantId" = ${user.id} AND cc."isActive" = true
       `;
 
+      // Set para la comprobación de duplicados — antes era Array.find dentro del
+      // loop (O(n²) con muchos tenants). Con Set es O(1) por iteración.
+      const tenantIds = new Set(tenantContexts.map((t) => t.id));
       for (const cc of consultantClients) {
-        if (!tenantContexts.find(t => t.id === cc.tenantId)) {
+        if (!tenantIds.has(cc.tenantId)) {
+          tenantIds.add(cc.tenantId);
           tenantContexts.push({
             id: cc.tenantId,
             type: "tenant",
@@ -250,7 +254,7 @@ export async function GET() {
     // Permisos agregados
     const allPermissions = user.permissions.map(p => `${p.scope}:${p.role}`);
 
-    return NextResponse.json({
+    return {
       groups,
       flags: {
         isConsultant,
@@ -266,7 +270,35 @@ export async function GET() {
         globalRole: user.organizationRole,
         primaryTenantId: user.primaryTenantId,
       },
-    });
+    };
+}
+
+/**
+ * Cache POR USUARIO (key = email, nunca global). El payload de contextos pega
+ * un findUnique pesado con 5 includes anidados + un raw query en cada page-load;
+ * cachear 60s por usuario quita ese coste de la ruta caliente. TTL corto: un
+ * cambio de membresía se refleja casi al instante. Mismo patrón que
+ * /api/account/contexts.
+ */
+const cachedUserContexts = (email: string) =>
+  unstable_cache(
+    () => buildUserContexts(email),
+    ["user-contexts", email],
+    { revalidate: 60, tags: [`user-contexts:${email}`] },
+  )();
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const payload = await cachedUserContexts(session.user.email);
+    if (!payload) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("[API] Error fetching user contexts:", error);
     return NextResponse.json(

@@ -479,7 +479,10 @@ export default function NavBar() {
   const { data: notificationsData, mutate: refreshNotifications } = useSWR(
     isLogged ? "/api/notifications?limit=10&unreadOnly=false" : null,
     fetcher,
-    { revalidateOnFocus: true, refreshInterval: 60000 } // Refresh cada minuto
+    // Poll cada 3 min (antes 60s): las notificaciones no son tiempo-real y el
+    // goteo de 1 fetch/min por pestaña abierta inflaba la carga de la DB.
+    // revalidateOnFocus sigue activo, así que al volver a la pestaña se refresca.
+    { revalidateOnFocus: true, refreshInterval: 180000 }
   );
   const notifications = notificationsData?.notifications || [];
   const unreadCount = notificationsData?.unreadCount || 0;

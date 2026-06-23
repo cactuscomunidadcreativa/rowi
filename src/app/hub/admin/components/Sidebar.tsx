@@ -95,6 +95,7 @@ export default function Sidebar() {
         { href: "/workspace/new", labelKey: "admin.nav.workspaceNew", icon: Sparkles },
         { href: "/hub/admin/workspaces?type=COACHING", labelKey: "admin.nav.workspaceCoaching", icon: Target },
         { href: "/hub/admin/workspaces?type=SELECTION", labelKey: "admin.nav.workspaceSelection", icon: UserCheck },
+        { href: "/hub/admin/hiring", labelKey: "admin.nav.hiring", icon: Target, badge: "NEW", capability: "consultant.hiring" },
         { href: "/hub/admin/workspaces?type=TEAM_UNIT", labelKey: "admin.nav.workspaceTeam", icon: Users2 },
         { href: "/hub/admin/workspaces?type=HR_COHORT", labelKey: "admin.nav.workspaceHr", icon: Building2 },
         { href: "/hub/admin/workspaces?type=CONSULTING", labelKey: "admin.nav.workspaceConsulting", icon: Briefcase },

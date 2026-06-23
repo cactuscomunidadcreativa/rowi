@@ -44,6 +44,7 @@ export type Capability =
   | "consultant.profile" // perfil integral SEI↔VS
   | "consultant.cross" // cross-analysis cohorte
   | "consultant.narrative"
+  | "consultant.hiring" // proceso de hiring/selección (CSV SEI → caso archivado)
   // ── Operación del cliente: TP Hub (HR + team-leads del tenant) ──
   | "tp.dashboard"
   | "tp.people"
@@ -87,6 +88,7 @@ export const CAPABILITY_CATALOG: Record<Capability, CapabilityRule> = {
   "consultant.profile": { scopes: ["rowiverse", "tenant", "superhub"], planFlag: "benchmarkAccess", desc: "Perfil integral SEI↔VS" },
   "consultant.cross": { scopes: ["rowiverse", "tenant", "superhub"], planFlag: "benchmarkAccess", desc: "Cross-analysis de cohorte" },
   "consultant.narrative": { scopes: ["rowiverse", "tenant", "superhub"], planFlag: "benchmarkAccess", desc: "Narrativa IA del consultor" },
+  "consultant.hiring": { scopes: ["rowiverse", "tenant", "superhub"], planFlag: "benchmarkAccess", desc: "Proceso de hiring/selección (CSV SEI)" },
 
   // TP Hub — operación del cliente: tenant/hub (HR + team-leads), gated por benchmark.
   "tp.dashboard": { scopes: ["rowiverse", "tenant", "hub"], planFlag: "benchmarkAccess", desc: "Dashboard TP" },

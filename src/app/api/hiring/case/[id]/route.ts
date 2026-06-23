@@ -5,14 +5,14 @@
  *       idioma pedido, SIN recalcular (usa el reportData guardado).
  * DELETE /api/hiring/case/[id]         → borra el caso (no afecta Rowiverse).
  *
- * Solo el owner del caso puede acceder. El caso es análisis archivado: no toca
- * comunidad ni relaciones.
+ * Acceso: capability "consultant.hiring" Y ser el owner del caso. El caso es
+ * análisis archivado: no toca comunidad ni relaciones.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/core/prisma";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import { buildReporteFullHiring, type HiringReportData } from "@/lib/deliverables/reporte-full-hiring";
 import { buildGuiaPresentador } from "@/lib/deliverables/guia-presentador";
 import type { Lang } from "@/lib/deliverables/pdf-kit";
@@ -35,10 +35,10 @@ async function loadOwned(caseId: string, userId: string) {
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token?.sub) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const gate = await requireCapability("consultant.hiring");
+  if (gate.error) return gate.error;
 
-  const c = await loadOwned(id, token.sub);
+  const c = await loadOwned(id, gate.user.id);
   if (!c) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
   const url = new URL(req.url);
@@ -88,10 +88,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token?.sub) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const gate = await requireCapability("consultant.hiring");
+  if (gate.error) return gate.error;
 
-  const c = await loadOwned(id, token.sub);
+  const c = await loadOwned(id, gate.user.id);
   if (!c) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
   await prisma.hiringCase.delete({ where: { id } });

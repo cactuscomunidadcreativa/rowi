@@ -16,12 +16,13 @@
  *
  * GET /api/hiring/analyze        → lista los HiringCase del usuario (su historial).
  *
- * Acceso: usuario autenticado (token). El caso queda bajo su propiedad.
+ * Acceso: capability "consultant.hiring" (rol consultor/tenant con plan
+ * benchmarkAccess, o SuperAdmin). El caso queda bajo la propiedad del usuario.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
 import Papa from "papaparse";
 import { prisma } from "@/core/prisma";
+import { requireCapability } from "@/core/capabilities/requireCapability";
 import { analyzeHiringCase } from "@/lib/hiring/analyze-case";
 
 export const runtime = "nodejs";
@@ -31,10 +32,9 @@ export const maxDuration = 60;
 const LANGS = new Set(["es", "en", "pt"]);
 
 export async function POST(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token?.sub) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-  }
+  const gate = await requireCapability("consultant.hiring");
+  if (gate.error) return gate.error;
+  const ownerUserId = gate.user.id;
 
   const body = (await req.json().catch(() => ({}))) as {
     seiCsv?: string;
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   // Tenant del usuario (opcional, para trazabilidad — NO crea workspace).
   const user = await prisma.user.findUnique({
-    where: { id: token.sub },
+    where: { id: ownerUserId },
     select: { primaryTenantId: true },
   });
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const result = await analyzeHiringCase({
       grid,
       managerName,
-      ownerUserId: token.sub,
+      ownerUserId,
       tenantId: user?.primaryTenantId ?? null,
       process: body.process,
       lang,
@@ -105,13 +105,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token?.sub) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-  }
+export async function GET() {
+  const gate = await requireCapability("consultant.hiring");
+  if (gate.error) return gate.error;
   const cases = await prisma.hiringCase.findMany({
-    where: { ownerUserId: token.sub },
+    where: { ownerUserId: gate.user.id },
     orderBy: { createdAt: "desc" },
     select: {
       id: true, process: true, managerName: true, lang: true,

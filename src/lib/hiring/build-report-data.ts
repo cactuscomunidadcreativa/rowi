@@ -97,6 +97,40 @@ function lvsOf(p: HiringPerson): { score: number; band: "low" | "mid" | "high"; 
 
 const COMP_ORDER: CompKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
 
+// Las 18 claves de talento del engine (camelCase) — para "talentos compartidos".
+const TALENT_KEYS = [
+  "dataMining", "modeling", "prioritizing", "connection", "emotionalInsight",
+  "collaboration", "reflecting", "adaptability", "criticalThinking", "resilience",
+  "riskTolerance", "imagination", "proactivity", "commitment", "problemSolving",
+  "vision", "design", "entrepreneurship",
+] as const;
+
+/** Dimensiones de la díada (growth/collab/understand) promediadas sobre los 6
+ * contextos — lo que la ficha de afinidad muestra como Crecimiento/Colaboración/
+ * Entendimiento. Reusa los mismos cálculos del engine que usa affinity(). */
+function dyadDims(a: HiringPerson, b: HiringPerson): { growth: number; collab: number; understand: number } {
+  let g = 0, co = 0, u = 0;
+  for (const project of CONTEXTS) {
+    const { score: growth } = compAffinity135(a.comp, b.comp, project);
+    const tFactor = talentSynergyFactor(project, a.tals, b.tals);
+    const collab = collaboration135(a.brain, b.brain, a.comp, b.comp, tFactor);
+    const understand = understanding135(a.outs, b.outs, project);
+    g += growth; co += collab; u += understand;
+  }
+  const n = CONTEXTS.length;
+  return { growth: Math.round(g / n), collab: Math.round(co / n), understand: Math.round(u / n) };
+}
+
+/** Talentos fuertes (>=108) que comparten líder y candidato (claves del engine). */
+function sharedStrongTalents(a: HiringPerson, b: HiringPerson): string[] {
+  return TALENT_KEYS.filter((k) => (a.tals[k] ?? 0) >= 108 && (b.tals[k] ?? 0) >= 108);
+}
+
+/** Competencias SEI (claves) donde ambos brillan (>=100). */
+function brightSharedComps(a: HiringPerson, b: HiringPerson): CompKey[] {
+  return COMP_ORDER.filter((k) => (a.comp[k] ?? 0) >= 100 && (b.comp[k] ?? 0) >= 100);
+}
+
 /** Capacidad ponderada de una persona en un contexto (para el delta relacional). */
 function weightedCapability(p: HiringPerson, project: Project): number {
   const W = CTX[project];
@@ -152,6 +186,11 @@ export function buildHiringReportData(leader: HiringPerson, candidates: HiringPe
       relationalDelta,
       lvs: { score: lvs.score, band: lvs.band },
       lvsDrivers: lvs.drivers,
+      // Detalle rico de la díada candidato↔líder.
+      dims: dyadDims(leader, c),
+      bbp: Math.round(collScoreBBP(leader.brain, c.brain)),
+      sharedTalents: sharedStrongTalents(leader, c),
+      brightComps: brightSharedComps(leader, c),
     };
   });
   cands.sort((a, b) => b.affinityAvg - a.affinityAvg);
@@ -161,11 +200,25 @@ export function buildHiringReportData(leader: HiringPerson, candidates: HiringPe
   const bandWord = leaderLvs.band === "high" ? "alta" : leaderLvs.band === "low" ? "baja" : "media";
   const leaderMeta = `EQ ${leader.eq} · percentil mundial ${leaderPct} · LVS inferido ${leaderLvs.score} (${bandWord}) · ${leader.brain ?? "—"} · ${leader.leadProfile ?? "—"} · ${leader.style ?? "—"}`;
 
+  // Líder como entrada de benchmark/LVS (sin díada — aparece junto a candidatos
+  // en el ranking EQ, fichas benchmark y tabla LVS).
+  const leaderEntry = {
+    name: leader.name, role: leader.role ?? "Líder del proceso", eq: leader.eq,
+    brain: leader.brain ?? "—", changeStyle: leader.style ?? "—", influence: leader.leadProfile ?? "—",
+    eqPercentile: leaderPct,
+    compsAtTopLevel: opts.compsAtTopLevelByName[leader.name] ?? 0,
+    pctOfTopsBelow: leaderPct,
+    competencies: opts.competenciesByName[leader.name] ?? COMP_ORDER.map((k) => ({ key: k, score: leader.comp[k] ?? 0, pctl: 50, vsTop: 0 })),
+    lvs: { score: leaderLvs.score, band: leaderLvs.band },
+    lvsDrivers: leaderLvs.drivers,
+  };
+
   return {
     process: opts.process,
     meta: opts.meta,
     leaderName: leader.name,
     leaderMeta,
+    leader: leaderEntry,
     candidates: cands,
     benchmark: opts.benchmark,
   };

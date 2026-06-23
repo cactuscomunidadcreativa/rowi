@@ -46,6 +46,13 @@ export const C = {
   barMid: "#ca8a04",
 } as const;
 
+// ── Paleta extra del "Reporte Full de Hiring" (port reportlab → pdfkit) ──
+// El generador Python usa estos hex literales, distintos de C.barMid/C.muted;
+// se exportan para que las secciones del reporte rico los reusen con fidelidad.
+export const GREEN = "#10b981"; // punto verde / marca top (Python GREEN)
+export const HIRING_WARM = "#f59e0b"; // Python WARM (ámbar, más vivo que C.barMid)
+export const HIRING_COLD = "#64748b"; // Python COLD (slate, distinto de C.muted)
+
 // Estados del cruce SEI↔VS (chips). Mismo set que blindspot-map.
 export const STATE_LABEL: Record<string, string> = {
   alineado: "Alineado", punto_ciego: "Punto ciego", oculto: "Oculto", neutral: "Neutral",
@@ -79,6 +86,23 @@ const TAGLINE: Record<Lang, string> = {
   pt: "Seja quem você quer ser",
 };
 const PAGE_WORD: Record<Lang, string> = { es: "pág.", en: "page", pt: "pág." };
+
+// ── Constantes del header/footer absolutos del Reporte Full de Hiring ──
+const HEADER_TAGLINE: Record<Lang, string> = {
+  es: "Sé quien quieres ser",
+  en: "Be who you want to be",
+  pt: "Seja quem você quer ser",
+};
+const PAGE_WORD_HIRING: Record<Lang, string> = { es: "pág.", en: "page", pt: "pág." };
+const FOOTER_GEN: Record<Lang, string> = { es: "Generado el", en: "Generated on", pt: "Gerado em" };
+// Fallback de fecha si la sección no inyecta una real vía genLeft.
+const FOOTER_DATE = "23-jun-2026";
+// Etiquetas por defecto del chip de banda (Python band_chip default labels).
+const BAND_CHIP_LABEL: Record<"hot" | "warm" | "cold", Record<Lang, string>> = {
+  hot: { es: "Alta sintonía", en: "High sync", pt: "Alta sintonia" },
+  warm: { es: "Sintonía media", en: "Mid sync", pt: "Sintonia média" },
+  cold: { es: "Baja sintonía", en: "Low sync", pt: "Baixa sintonia" },
+};
 
 // ─────────────────────── Fuentes de marca (Poppins) ───────────────────────
 // Pesos lógicos → nombre registrado en pdfkit; cae a Helvetica si no carga.
@@ -465,9 +489,191 @@ export class RowiPdf {
     this.y += h + 6;
   }
 
+  // ════════════════════════════════════════════════════════════════════
+  // HELPERS A COORDENADAS ABSOLUTAS (Reporte Full de Hiring) — portados de
+  // reportlab. NO usan this.y/ensure/section; cada uno pinta en (x, top)
+  // absolutos (top = distancia desde arriba). Coexisten con el flujo del kit.
+  // ════════════════════════════════════════════════════════════════════
+
+  /** c.drawString(x, y, s) — texto desde arriba-izquierda, sin salto de línea. */
+  absText(s: string, x: number, top: number, opts?: { width?: number; align?: "left" | "center" | "right" }) {
+    this.doc.text(s, x, top, { lineBreak: false, width: opts?.width, align: opts?.align });
+  }
+  /** c.drawCentredString(cx, y, s) — centrado en cx con un box [cx-half, cx+half]. */
+  absCentred(s: string, cx: number, top: number, halfSpan = 200) {
+    this.doc.text(s, cx - halfSpan, top, { lineBreak: false, width: halfSpan * 2, align: "center" });
+  }
+  /** c.drawRightString(xr, y, s) — alinea el borde derecho del texto en xr. */
+  absRight(s: string, xr: number, top: number, span = 300) {
+    this.doc.text(s, xr - span, top, { lineBreak: false, width: span, align: "right" });
+  }
+
+  /**
+   * Franja violeta SÓLIDA de 92px con óvalo violetDark arriba-derecha + marca
+   * "rowi"/tagline a la izquierda y eyebrow(#a78bfa)/título/subtítulo a la
+   * derecha. Réplica del header() de generate.py (franja H-92, no el gradiente
+   * de 64px del header() del flujo). INCREMENTA el contador de página (espejo
+   * exacto del Python, que numera dentro de header()).
+   */
+  headerAbs(opts: { title: string; subtitle?: string; section?: string }) {
+    const d = this.doc;
+    this.page += 1;
+    const HH = 92;
+    d.rect(0, 0, PAGE_W, HH).fill(C.violet);
+    d.save();
+    // Óvalo decorativo: en el Python (reportlab, Y desde abajo) el centro está
+    // a 30px del TOPE de la página → en pdfkit top=30 (NO HH-30, que lo bajaba
+    // hasta y=132 invadiendo el cuerpo).
+    d.circle(PAGE_W - 60, 30, 70).fill(C.violetDark);
+    d.restore();
+    // marca "rowi" (bold 26). Python baseline H-48 → ~18 top de glifo.
+    this.font("bold").fontSize(26).fillColor(C.white);
+    this.absText("rowi", MX, 18);
+    // tagline (regular 9), baseline H-62 → ~52 top
+    this.font("regular").fontSize(9).fillColor(C.white);
+    this.absText(HEADER_TAGLINE[this.lang], MX, 52);
+    // eyebrow (#a78bfa bold 8), baseline H-26 → ~22 top
+    if (opts.section) {
+      this.font("bold").fontSize(8).fillColor("#a78bfa");
+      this.absRight(opts.section, PAGE_W - MX, 22, CW);
+    }
+    // título (bold 15), baseline H-44 → ~33 top
+    this.font("bold").fontSize(15).fillColor(C.white);
+    this.absRight(opts.title, PAGE_W - MX, 33, CW);
+    // subtítulo (regular 9.5), baseline H-60 → ~52 top
+    if (opts.subtitle) {
+      this.font("regular").fontSize(9.5).fillColor(C.white);
+      this.absRight(opts.subtitle, PAGE_W - MX, 52, CW);
+    }
+  }
+
+  /**
+   * Pie fijo: foot gris a la izquierda + "Generado el <fecha> · pág. N" a la
+   * derecha (usa this.page) + línea track. NO toca el contador de página.
+   */
+  footerAbs(opts: { foot: string; genLeft?: string }) {
+    const d = this.doc;
+    const baseTop = PAGE_H - 28 - 8; // baseline 28 desde abajo, glifo 8px → top
+    this.font("regular").fontSize(8).fillColor(C.muted);
+    this.absText(opts.foot, MX, baseTop, { width: CW * 0.72 });
+    const gen = opts.genLeft ?? `${FOOTER_GEN[this.lang]} ${FOOTER_DATE}`;
+    const right = `${gen} · ${PAGE_WORD_HIRING[this.lang]} ${this.page}`;
+    this.font("regular").fontSize(8).fillColor(C.muted);
+    this.absRight(right, PAGE_W - MX, baseTop, CW);
+    d.save();
+    d.moveTo(MX, PAGE_H - 40).lineTo(PAGE_W - MX, PAGE_H - 40).lineWidth(1).strokeColor(C.track).stroke();
+    d.restore();
+  }
+
+  /** Chip redondeado con color por banda y texto blanco centrado. Auto-label
+   * por idioma si no se pasa `label` (port de band_chip de generate.py). */
+  bandChipAbs(x: number, top: number, band: "hot" | "warm" | "cold", w = 86, h = 16, label?: string) {
+    const d = this.doc;
+    const color = band === "hot" ? C.violet : band === "warm" ? HIRING_WARM : HIRING_COLD;
+    d.roundedRect(x, top, w, h, h / 2).fill(color);
+    const lbl = label ?? BAND_CHIP_LABEL[band][this.lang] ?? BAND_CHIP_LABEL[band].es;
+    this.font("bold").fontSize(8).fillColor(C.white);
+    this.doc.text(lbl, x, top + h / 2 - 4, { width: w, align: "center", lineBreak: false });
+  }
+
+  /** Pista track + relleno por valor (0..maxv) + marcas blancas verticales. */
+  scoreBarAbs(x: number, top: number, w: number, h: number, value: number, opts?: { maxv?: number; col?: string; marks?: number[] }) {
+    const d = this.doc;
+    const maxv = opts?.maxv ?? 135;
+    const col = opts?.col ?? C.violet;
+    const marks = opts?.marks ?? [92, 108];
+    d.roundedRect(x, top, w, h, h / 2).fill(C.track);
+    const fillW = Math.max(h, (w * Math.min(value, maxv)) / maxv);
+    d.roundedRect(x, top, fillW, h, h / 2).fill(col);
+    d.save();
+    for (const m of marks) {
+      const mx = x + (w * m) / maxv;
+      d.moveTo(mx, top).lineTo(mx, top + h).lineWidth(1).strokeColor(C.white).stroke();
+    }
+    d.restore();
+  }
+
+  /** Barra percentil 0-100 con marcas blancas en 25/50/75/90 y color por umbral. */
+  pctBarAbs(x: number, top: number, w: number, h: number, p: number) {
+    const d = this.doc;
+    d.roundedRect(x, top, w, h, h / 2).fill(C.track);
+    const col = p >= 90 ? C.violet : p >= 70 ? GREEN : p >= 40 ? HIRING_WARM : HIRING_COLD;
+    d.roundedRect(x, top, Math.max(h, (w * p) / 100), h, h / 2).fill(col);
+    d.save();
+    for (const m of [25, 50, 75, 90]) {
+      const mx = x + (w * m) / 100;
+      d.moveTo(mx, top).lineTo(mx, top + h).lineWidth(1).strokeColor(C.white).stroke();
+    }
+    d.restore();
+  }
+
+  /** Barra 60-135 con DOBLE marca: gris (#9ca3af) en popMark, verde (greenDark)
+   * en topMark. Relleno color por umbral (>=top violet / >=pop warm / else cold). */
+  compBarAbs(x: number, top: number, w: number, h: number, value: number, popMark: number, topMark: number) {
+    const d = this.doc;
+    const sc = (v: number) => x + (w * (Math.max(60, Math.min(135, v)) - 60)) / 75;
+    d.roundedRect(x, top, w, h, h / 2).fill(C.track);
+    const col = value >= topMark ? C.violet : value >= popMark ? HIRING_WARM : HIRING_COLD;
+    d.roundedRect(x, top, Math.max(h, sc(value) - x), h, h / 2).fill(col);
+    d.save();
+    d.moveTo(sc(popMark), top - 2.5).lineTo(sc(popMark), top + h + 2.5).lineWidth(1.4).strokeColor("#9ca3af").stroke();
+    d.moveTo(sc(topMark), top - 2.5).lineTo(sc(topMark), top + h + 2.5).lineWidth(1.6).strokeColor(C.greenDark).stroke();
+    d.restore();
+  }
+
+  /** Chips que ENVUELVEN en filas de 15px. Devuelve la Y (top) de la última
+   * fila dibujada (mismo punto que el `cy` que devolvía chips() en Python). */
+  chipsAbs(x: number, top: number, words: string[], maxw: number, opts?: { fill?: string; txt?: string; fs?: number }): number {
+    const d = this.doc;
+    const fill = opts?.fill ?? C.violetBg;
+    const txt = opts?.txt ?? C.violetDark;
+    const fs = opts?.fs ?? 8;
+    let cx = x;
+    let cy = top;
+    this.font("regular").fontSize(fs);
+    for (const wd of words) {
+      const tw = this.doc.widthOfString(wd) + 12;
+      if (cx + tw > x + maxw) {
+        cx = x;
+        cy += 15;
+      }
+      d.roundedRect(cx, cy, tw, 13, 6.5).fill(fill);
+      this.font("regular").fontSize(fs).fillColor(txt);
+      this.absText(wd, cx + 6, cy + 3);
+      cx += tw + 5;
+    }
+    return cy;
+  }
+
+  /** Caja VIOLETA con título blanco bold + líneas blancas. `top` = borde
+   * superior. Devuelve el bottom (top + h). */
+  lecturaAbs(x: number, top: number, w: number, lines: string[], title: string): number {
+    const d = this.doc;
+    const h = 26 + lines.length * 13 + 10;
+    d.roundedRect(x, top, w, h, 10).fill(C.violet);
+    this.font("bold").fontSize(11.5).fillColor(C.white);
+    this.absText(title, x + 16, top + 10);
+    this.font("regular").fontSize(9.5).fillColor(C.white);
+    lines.forEach((l, j) => {
+      this.absText(l, x + 16, top + 28 + j * 13);
+    });
+    return top + h;
+  }
+
+  /** Punto verde (#10b981) — marca de mayor afinidad del contexto. (cx, top) = centro. */
+  greenDot(cx: number, top: number, r = 3.5) {
+    this.doc.save();
+    this.doc.circle(cx, top, r).fill(GREEN);
+    this.doc.restore();
+  }
+
   /** Cierra el documento y devuelve el Buffer. */
-  finish(): Promise<Buffer> {
-    this.footer();
+  /** Cierra el documento. Por defecto pinta el footer de flujo en la última
+   * página; los generadores que ya dibujan su propio footer por página (p.ej.
+   * el reporte rico de hiring con footerAbs) pasan skipFooter:true para no
+   * duplicarlo. */
+  finish(opts?: { skipFooter?: boolean }): Promise<Buffer> {
+    if (!opts?.skipFooter) this.footer();
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
       this.doc.on("data", (c: Buffer) => chunks.push(c));

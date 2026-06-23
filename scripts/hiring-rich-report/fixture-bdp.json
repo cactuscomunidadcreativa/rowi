@@ -1,0 +1,168 @@
+{
+  "_note": "Golden fixture HiringReportData para verificar el reporte rico TS de 12 págs. Valores tomados del PDF aprobado ROWI_REPORTE_FULL_RECRUTAMENTO_BDP.pdf (Giselly Zanetti + 4 candidatos). NO se calcula desde DB: es maqueta de verificación visual.",
+  "process": "Recrutamento BDP",
+  "meta": "SEI Adult v4 · 23-jun-2026",
+  "leaderName": "Giselly Zanetti",
+  "leaderMeta": "EQ 104.75 · percentil mundial 73 · LVS inferido 104 (media) · Visionary · Generator · Balanced.",
+  "leader": {
+    "name": "Giselly Zanetti", "role": "Líder del proceso", "eq": 104.75,
+    "brain": "Visionary", "changeStyle": "Balanced", "influence": "Generator",
+    "eqPercentile": 73, "compsAtTopLevel": 1, "pctOfTopsBelow": 18,
+    "competencies": [
+      { "key": "EL", "score": 106, "pctl": 69, "vsTop": -4.7 },
+      { "key": "RP", "score": 98, "pctl": 47, "vsTop": -12.6 },
+      { "key": "ACT", "score": 103, "pctl": 55, "vsTop": -6.3 },
+      { "key": "NE", "score": 109, "pctl": 78, "vsTop": 1.0 },
+      { "key": "IM", "score": 108, "pctl": 73, "vsTop": -4.4 },
+      { "key": "OP", "score": 110, "pctl": 78, "vsTop": -2.3 },
+      { "key": "EMP", "score": 99, "pctl": 50, "vsTop": -8.6 },
+      { "key": "NG", "score": 110, "pctl": 77, "vsTop": -1.9 }
+    ],
+    "lvs": { "score": 104, "band": "mid" },
+    "lvsDrivers": [
+      { "code": "TRUST", "score": 104, "band": "mid" },
+      { "code": "MOTIVATION", "score": 104, "band": "mid" },
+      { "code": "CHANGE", "score": 105, "band": "mid" },
+      { "code": "TEAMWORK", "score": 104, "band": "mid" },
+      { "code": "EXECUTION", "score": 103, "band": "mid" }
+    ]
+  },
+  "candidates": [
+    {
+      "name": "Amanda Regina Pinatti Menezes", "role": "Candidata", "eq": 114.41,
+      "brain": "Sage", "changeStyle": "Balanced", "influence": "Connector",
+      "affinityAvg": 101,
+      "affinityByContext": { "leadership": 102, "execution": 96, "innovation": 101, "decision": 103, "conversation": 105, "relationship": 101 },
+      "affinityBands": { "leadership": "warm", "execution": "warm", "innovation": "warm", "decision": "warm", "conversation": "warm", "relationship": "warm" },
+      "eqPercentile": 95, "compsAtTopLevel": 6, "pctOfTopsBelow": 71,
+      "competencies": [
+        { "key": "EL", "score": 111, "pctl": 82, "vsTop": 0.4 },
+        { "key": "RP", "score": 110, "pctl": 78, "vsTop": -0.7 },
+        { "key": "ACT", "score": 114, "pctl": 84, "vsTop": 5.3 },
+        { "key": "NE", "score": 110, "pctl": 81, "vsTop": 2.4 },
+        { "key": "IM", "score": 116, "pctl": 89, "vsTop": 3.5 },
+        { "key": "OP", "score": 107, "pctl": 73, "vsTop": -5.0 },
+        { "key": "EMP", "score": 123, "pctl": 97, "vsTop": 15.2 },
+        { "key": "NG", "score": 118, "pctl": 100, "vsTop": 6.1 }
+      ],
+      "relationalDelta": { "leadership": 8, "execution": 8, "innovation": 7, "decision": 9, "conversation": 9, "relationship": 9 },
+      "lvs": { "score": 110, "band": "high" },
+      "lvsDrivers": [
+        { "code": "TRUST", "score": 112, "band": "high" },
+        { "code": "MOTIVATION", "score": 110, "band": "mid" },
+        { "code": "CHANGE", "score": 110, "band": "mid" },
+        { "code": "TEAMWORK", "score": 111, "band": "high" },
+        { "code": "EXECUTION", "score": 110, "band": "mid" }
+      ],
+      "dims": { "growth": 123, "collab": 114, "understand": 126 },
+      "bbp": 78,
+      "sharedTalents": ["dataMining", "modeling", "prioritizing", "connection", "emotionalInsight", "collaboration", "adaptability", "criticalThinking", "resilience", "riskTolerance", "imagination", "proactivity", "commitment", "problemSolving", "vision", "design", "entrepreneurship"],
+      "brightComps": ["EL", "ACT", "NE", "IM", "OP", "NG"]
+    },
+    {
+      "name": "Érika Araújo Nascimento", "role": "Candidata", "eq": 106.2,
+      "brain": "Sage", "changeStyle": "Balanced", "influence": "Advisor",
+      "affinityAvg": 101,
+      "affinityByContext": { "leadership": 102, "execution": 95, "innovation": 100, "decision": 102, "conversation": 105, "relationship": 101 },
+      "affinityBands": { "leadership": "warm", "execution": "warm", "innovation": "warm", "decision": "warm", "conversation": "warm", "relationship": "warm" },
+      "eqPercentile": 77, "compsAtTopLevel": 3, "pctOfTopsBelow": 23,
+      "competencies": [
+        { "key": "EL", "score": 102, "pctl": 61, "vsTop": -8.7 },
+        { "key": "RP", "score": 102, "pctl": 58, "vsTop": -8.8 },
+        { "key": "ACT", "score": 110, "pctl": 76, "vsTop": 1.5 },
+        { "key": "NE", "score": 103, "pctl": 66, "vsTop": -4.3 },
+        { "key": "IM", "score": 105, "pctl": 65, "vsTop": -7.6 },
+        { "key": "OP", "score": 93, "pctl": 37, "vsTop": -19.0 },
+        { "key": "EMP", "score": 112, "pctl": 82, "vsTop": 4.3 },
+        { "key": "NG", "score": 115, "pctl": 86, "vsTop": 2.7 }
+      ],
+      "relationalDelta": { "leadership": 0, "execution": 0, "innovation": 1, "decision": 0, "conversation": 1, "relationship": 0 },
+      "lvs": { "score": 104, "band": "mid" },
+      "lvsDrivers": [
+        { "code": "TRUST", "score": 107, "band": "mid" },
+        { "code": "MOTIVATION", "score": 103, "band": "mid" },
+        { "code": "CHANGE", "score": 103, "band": "mid" },
+        { "code": "TEAMWORK", "score": 104, "band": "mid" },
+        { "code": "EXECUTION", "score": 104, "band": "mid" }
+      ],
+      "dims": { "growth": 121, "collab": 111, "understand": 129 },
+      "bbp": 78,
+      "sharedTalents": ["prioritizing", "connection", "emotionalInsight", "collaboration", "adaptability", "criticalThinking", "problemSolving", "vision", "design", "entrepreneurship"],
+      "brightComps": ["EL", "ACT", "NE", "IM", "NG"]
+    },
+    {
+      "name": "Paloma Silva de Aguiar", "role": "Candidata", "eq": 99.54,
+      "brain": "Superhero", "changeStyle": "Ad Hoc", "influence": "Generator",
+      "affinityAvg": 96,
+      "affinityByContext": { "leadership": 97, "execution": 88, "innovation": 96, "decision": 96, "conversation": 103, "relationship": 97 },
+      "affinityBands": { "leadership": "warm", "execution": "cold", "innovation": "warm", "decision": "warm", "conversation": "warm", "relationship": "warm" },
+      "eqPercentile": 55, "compsAtTopLevel": 1, "pctOfTopsBelow": 6,
+      "competencies": [
+        { "key": "EL", "score": 99, "pctl": 52, "vsTop": -12.1 },
+        { "key": "RP", "score": 88, "pctl": 22, "vsTop": -22.5 },
+        { "key": "ACT", "score": 104, "pctl": 58, "vsTop": -5.0 },
+        { "key": "NE", "score": 105, "pctl": 70, "vsTop": -2.6 },
+        { "key": "IM", "score": 109, "pctl": 75, "vsTop": -3.6 },
+        { "key": "OP", "score": 111, "pctl": 80, "vsTop": -1.6 },
+        { "key": "EMP", "score": 113, "pctl": 84, "vsTop": 4.8 },
+        { "key": "NG", "score": 83, "pctl": 20, "vsTop": -29.0 }
+      ],
+      "relationalDelta": { "leadership": -4, "execution": -4, "innovation": -5, "decision": -4, "conversation": -5, "relationship": -5 },
+      "lvs": { "score": 101, "band": "mid" },
+      "lvsDrivers": [
+        { "code": "TRUST", "score": 102, "band": "mid" },
+        { "code": "MOTIVATION", "score": 101, "band": "mid" },
+        { "code": "CHANGE", "score": 101, "band": "mid" },
+        { "code": "TEAMWORK", "score": 105, "band": "mid" },
+        { "code": "EXECUTION", "score": 101, "band": "mid" }
+      ],
+      "dims": { "growth": 120, "collab": 95, "understand": 131 },
+      "bbp": 60,
+      "sharedTalents": ["connection", "emotionalInsight", "collaboration", "adaptability", "riskTolerance", "imagination", "proactivity", "commitment", "problemSolving"],
+      "brightComps": ["ACT", "NE", "IM", "OP"]
+    },
+    {
+      "name": "Kaue Ferreira Lisboa", "role": "Candidato", "eq": 88.42,
+      "brain": "Superhero", "changeStyle": "Transactional", "influence": "Generator",
+      "affinityAvg": 92,
+      "affinityByContext": { "leadership": 93, "execution": 85, "innovation": 92, "decision": 93, "conversation": 98, "relationship": 93 },
+      "affinityBands": { "leadership": "warm", "execution": "cold", "innovation": "warm", "decision": "warm", "conversation": "warm", "relationship": "warm" },
+      "eqPercentile": 17, "compsAtTopLevel": 0, "pctOfTopsBelow": 0,
+      "competencies": [
+        { "key": "EL", "score": 89, "pctl": 28, "vsTop": -22.0 },
+        { "key": "RP", "score": 75, "pctl": 7, "vsTop": -35.9 },
+        { "key": "ACT", "score": 75, "pctl": 5, "vsTop": -34.0 },
+        { "key": "NE", "score": 100, "pctl": 60, "vsTop": -7.1 },
+        { "key": "IM", "score": 101, "pctl": 58, "vsTop": -10.9 },
+        { "key": "OP", "score": 89, "pctl": 26, "vsTop": -23.5 },
+        { "key": "EMP", "score": 91, "pctl": 30, "vsTop": -17.0 },
+        { "key": "NG", "score": 93, "pctl": 37, "vsTop": -19.2 }
+      ],
+      "relationalDelta": { "leadership": -16, "execution": -17, "innovation": -16, "decision": -18, "conversation": -15, "relationship": -15 },
+      "lvs": { "score": 90, "band": "low" },
+      "lvsDrivers": [
+        { "code": "TRUST", "score": 92, "band": "mid" },
+        { "code": "MOTIVATION", "score": 90, "band": "mid" },
+        { "code": "CHANGE", "score": 92, "band": "mid" },
+        { "code": "TEAMWORK", "score": 96, "band": "mid" },
+        { "code": "EXECUTION", "score": 88, "band": "low" }
+      ],
+      "dims": { "growth": 117, "collab": 92, "understand": 124 },
+      "bbp": 60,
+      "sharedTalents": ["collaboration", "riskTolerance", "imagination", "proactivity"],
+      "brightComps": ["NE", "IM"]
+    }
+  ],
+  "benchmark": {
+    "nTotal": 273173, "nTop": 27318, "threshold": 110.33, "nHealthcare": 18222,
+    "population": {
+      "EQ": 98.2, "K": 98.2, "C": 97.9, "G": 97.9,
+      "EL": 97.8, "RP": 98.8, "ACT": 100.3, "NE": 96.5, "IM": 97.7, "OP": 97.9, "EMP": 98.5, "NG": 97.6
+    },
+    "topPerformers": {
+      "EQ": 110.4, "K": 110.7, "C": 110.1, "G": 109.9,
+      "EL": 110.8, "RP": 110.9, "ACT": 109.0, "NE": 107.6, "IM": 112.3, "OP": 112.3, "EMP": 107.9, "NG": 112.2
+    },
+    "distinctive": [["NG", 14.6], ["IM", 14.6], ["OP", 14.4]]
+  }
+}

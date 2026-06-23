@@ -119,7 +119,9 @@ export async function buildOptionsFromPeople(
   const competenciesByName: Record<string, HiringCandidate["competencies"]> = {};
   const compsAtTopLevelByName: Record<string, number> = {};
   const pctOfTopsBelowByName: Record<string, number> = {};
-  for (const c of candidates) {
+  // Líder + candidatos: el reporte rico muestra al líder en el ranking EQ, las
+  // fichas benchmark y la tabla LVS junto a los candidatos.
+  for (const c of all) {
     let atTop = 0;
     competenciesByName[c.name] = COMP_ORDER.map((k) => {
       const score = c.comp[k] ?? 0;
@@ -153,6 +155,7 @@ async function buildBenchmarkBlock(_candidates: HiringPerson[]): Promise<HiringR
     where: { eqTotal: { not: null } },
     select: {
       EL: true, RP: true, ACT: true, NE: true, IM: true, OP: true, EMP: true, NG: true,
+      eqTotal: true, K: true, C: true, G: true, sector: true,
       effectiveness: true, relationships: true, qualityOfLife: true, wellbeing: true,
     },
     take: 50000,
@@ -172,12 +175,22 @@ async function buildBenchmarkBlock(_candidates: HiringPerson[]): Promise<HiringR
     population[k] = mean(points.map((p) => p[k]).filter((v): v is number => v != null));
     topPerformers[k] = mean(tops.map((p) => p[k]).filter((v): v is number => v != null));
   }
+  // EQ total + las 3 búsquedas (Know/Choose/Give) — filas del perfil top performer.
+  const PURSUIT_KEYS = ["EQ", "K", "C", "G"] as const;
+  const fieldOf = (p: (typeof points)[number], k: string) =>
+    k === "EQ" ? p.eqTotal : k === "K" ? p.K : k === "C" ? p.C : p.G;
+  for (const k of PURSUIT_KEYS) {
+    population[k] = mean(points.map((p) => fieldOf(p, k)).filter((v): v is number => v != null));
+    topPerformers[k] = mean(tops.map((p) => fieldOf(p, k)).filter((v): v is number => v != null));
+  }
   const distinctive = COMP_ORDER
     .map((k) => [k, Math.round((topPerformers[k] - population[k]) * 10) / 10] as [string, number])
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
+  // Sector salud (referencia, n y EQ medio) — el reporte rico lo menciona.
+  const nHealthcare = points.filter((p) => /health|saúde|salud|sa[uú]de/i.test(p.sector ?? "")).length;
   return {
-    nTotal, nTop: tops.length, threshold: Math.round(threshold * 10) / 10,
+    nTotal, nTop: tops.length, threshold: Math.round(threshold * 10) / 10, nHealthcare,
     population, topPerformers, distinctive,
   };
 }

@@ -250,6 +250,60 @@ const translations = {
     ctaSubtitle: "Crea il tuo account gratuito e inizia il tuo viaggio verso l'intelligenza emotiva.",
     ctaButton: "Crea account gratis",
   },
+  zh: {
+    badge: "互动导览",
+    title: "探索 Rowi",
+    titleHighlight: "实际运作",
+    subtitle: "通过真实的示例数据，了解 Rowi 如何帮助您发展情商。",
+    startTour: "开始导览",
+    exploreModules: "探索模块",
+    modulesTitle: "平台模块",
+    modulesSubtitle: "点击任意模块查看互动演示",
+    mirror: {
+      title: "镜子",
+      desc: "真实的 2 分钟诊断。这不是演示：无需账户即可真实体验。",
+      features: ["8 个问题，2 分钟", "等级，而非分数", "即时出结果"],
+    },
+    today: {
+      title: "TODAY — 每日循环",
+      desc: "在清晨选择你自己，练习 2 分钟，在一天结束时看着你的 Rowi 成长。",
+      features: ["清晨的意图", "每天一次练习", "结束时的奖励"],
+    },
+    becoming: {
+      title: "我的进化",
+      desc: "你旅程的鲜活记忆：你曾是谁，你是谁，以及你正在成为谁。",
+      features: ["日复一日的鲜活记忆", "诚实的自我对照", "你的 Rowi 里程碑"],
+    },
+    dashboard: {
+      title: "看见自己",
+      desc: "深入的情绪镜像：清晰的等级（而非分数）以及你的 8 项 SEI 能力。",
+      features: ["等级，而非分数", "8 项 SEI 能力", "Becoming 的进化"],
+    },
+    affinity: {
+      title: "默契（Affinity）",
+      desc: "看见两种风格之间的差距，以及如何弥合它——绝非兼容性的评判。",
+      features: ["默契量表", "大脑风格", "具体的桥梁"],
+    },
+    eco: {
+      title: "ECO",
+      desc: "为每个人找到合适的话语——并从每一个结果中学习。",
+      features: ["针对差距的讯息", "真实发送", "奏效了吗？——结果"],
+    },
+    coach: {
+      title: "你的向导",
+      desc: "你的情商向导，全天候 24/7 陪伴你的旅程。",
+      features: ["与你的向导对话", "个性化建议", "持续的陪伴"],
+    },
+    tp: {
+      title: "TP 基准",
+      desc: "基于 Teleperformance 的 14,886 份真实 SEI 评估的真实演示。企业基准对标的实际运作。",
+      features: ["14,886 份真实评估", "按地区与角色的洞察", "大脑画像"],
+    },
+    viewDemo: "查看演示",
+    ctaTitle: "喜欢你所看到的吗？",
+    ctaSubtitle: "免费创建您的账户，开启您的情商之旅。",
+    ctaButton: "免费创建账户",
+  },
 };
 
 // Orden = el viaje del producto (Rowi Launch 1.0): el Espejo REAL primero

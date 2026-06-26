@@ -34,6 +34,12 @@ const DEMO_CONVERSATION = {
       content: "Hi! I'm Rowi, your emotional intelligence coach. I'm here to help you develop your emotional skills and achieve your goals. How are you feeling today?",
     },
   ],
+  zh: [
+    {
+      role: "assistant",
+      content: "您好！我是 Rowi，您的情商教练。我在这里帮助您发展情绪能力、实现目标。您今天感觉如何？",
+    },
+  ],
 };
 
 const DEMO_RESPONSES = {
@@ -49,6 +55,12 @@ const DEMO_RESPONSES = {
     "I see that your 'Consequential Thinking' competency is developing. This is a growth opportunity. I propose an exercise: before making decisions, ask yourself 'What are the possible consequences of this?' Shall we try it together?",
     "Your progress in the last few weeks has been impressive. You've improved 12% in 'Exercise Optimism'. Keep it up! What would you like to work on today?",
   ],
+  zh: [
+    "我理解您的感受。经历这些情绪是完全正常的。根据您的 SEI 档案，我看到您在同理心方面有优势。您想探索如何运用这项能力来应对这种情况吗？",
+    "好问题！您在「驾驭情绪」上的得分表明您具备很好的工具。我建议在做出反应前练习「六秒暂停」技巧。需要我来引导您吗？",
+    "我看到您的「后果思维」能力正在发展中。这是一个成长的机会。我给您提一个练习：在做决定之前，先问自己「这样做可能会带来哪些后果？」我们一起试试好吗？",
+    "您在过去几周的进步令人印象深刻。您在「保持乐观」上提升了 12%。继续保持！您今天想做些什么？",
+  ],
 };
 
 const SUGGESTED_PROMPTS = {
@@ -63,6 +75,12 @@ const SUGGESTED_PROMPTS = {
     { icon: Brain, text: "Explain my SEI competencies" },
     { icon: Target, text: "Help me set an emotional goal" },
     { icon: Lightbulb, text: "Give me an emotional intelligence exercise" },
+  ],
+  zh: [
+    { icon: Heart, text: "我如何更好地管理压力？" },
+    { icon: Brain, text: "解释一下我的 SEI 能力" },
+    { icon: Target, text: "帮我设定一个情绪目标" },
+    { icon: Lightbulb, text: "给我一个情商练习" },
   ],
 };
 
@@ -92,6 +110,11 @@ const translations = {
 
     createAccount: "Crear mi cuenta",
     finishTour: "Finalizar tour",
+
+    rowiCoach: "Rowi Coach",
+    online: "En línea",
+    readyTitle: "¿Listo para comenzar?",
+    readyDesc: "Crea tu cuenta gratis y conoce a tu Rowi personal",
   },
   en: {
     badge: "Interactive Demo",
@@ -115,6 +138,11 @@ const translations = {
 
     createAccount: "Create my account",
     finishTour: "Finish tour",
+
+    rowiCoach: "Rowi Coach",
+    online: "Online",
+    readyTitle: "Ready to get started?",
+    readyDesc: "Create your free account and meet your personal Rowi",
   },
   pt: {
     badge: "Demo Interativo",
@@ -134,6 +162,11 @@ const translations = {
     tipDesc: "Na sua conta real, o Rowi conhecerá seu perfil SEI completo e lhe dará recomendações verdadeiramente personalizadas baseadas em suas competências e áreas de melhoria.",
     createAccount: "Criar minha conta",
     finishTour: "Finalizar tour",
+
+    rowiCoach: "Rowi Coach",
+    online: "Online",
+    readyTitle: "Pronto para começar?",
+    readyDesc: "Crie sua conta gratuita e conheça o seu Rowi pessoal",
   },
   it: {
     badge: "Demo Interattivo",
@@ -153,6 +186,35 @@ const translations = {
     tipDesc: "Nel tuo account reale, Rowi conoscerà il tuo profilo SEI completo e ti darà raccomandazioni veramente personalizzate basate sulle tue competenze e aree di miglioramento.",
     createAccount: "Crea il mio account",
     finishTour: "Termina il tour",
+
+    rowiCoach: "Rowi Coach",
+    online: "Online",
+    readyTitle: "Pronto a iniziare?",
+    readyDesc: "Crea il tuo account gratuito e conosci il tuo Rowi personale",
+  },
+  zh: {
+    badge: "互动演示",
+    title: "你的向导",
+    subtitle: "您的情商教练全天候为您服务，引导您实现个人成长",
+    back: "返回导览",
+    prev: "上一步：ECO",
+    suggestedTitle: "试着这样问……",
+    inputPlaceholder: "输入您的消息……",
+    send: "发送",
+    featuresTitle: "教练的能力",
+    feature1: "基于您的 SEI 档案提供个性化回应",
+    feature2: "情商练习与技巧",
+    feature3: "跟踪您的进步与成长",
+    feature4: "全天候可用，对话无限制",
+    tipTitle: "这是一个演示",
+    tipDesc: "在您的真实账户中，Rowi 将了解您完整的 SEI 档案，并根据您的能力和待提升领域，为您提供真正个性化的建议。",
+    createAccount: "创建我的账户",
+    finishTour: "结束导览",
+
+    rowiCoach: "Rowi Coach",
+    online: "在线",
+    readyTitle: "准备好开始了吗？",
+    readyDesc: "免费创建您的账户，认识您专属的 Rowi",
   },
 };
 
@@ -202,7 +264,7 @@ function ChatMessage({ message, isUser }: { message: { role: string; content: st
    Página principal
 ========================================================= */
 export default function DemoCoachPage() {
-  const { lang, t: tFn } = useI18n();
+  const { lang } = useI18n();
   const t = translations[lang as keyof typeof translations] || translations.en;
   const [messages, setMessages] = useState(DEMO_CONVERSATION[lang as keyof typeof DEMO_CONVERSATION] || DEMO_CONVERSATION.es);
   const [input, setInput] = useState("");
@@ -286,9 +348,9 @@ export default function DemoCoachPage() {
                   />
                 </div>
                 <div className="text-white">
-                  <h3 className="font-bold">{tFn("public.coach.rowiCoach")}</h3>
+                  <h3 className="font-bold">{t.rowiCoach}</h3>
                   <p className="text-sm text-white/80">
-                    {tFn("demo.coach.online", "En línea")}
+                    {t.online}
                   </p>
                 </div>
               </div>
@@ -421,10 +483,10 @@ export default function DemoCoachPage() {
               className="bg-gradient-to-br from-violet-500 to-purple-500 rounded-2xl p-6 text-white"
             >
               <h3 className="font-bold text-lg mb-2">
-                {tFn("demo.coach.readyTitle", "¿Listo para comenzar?")}
+                {t.readyTitle}
               </h3>
               <p className="text-sm text-white/80 mb-4">
-                {tFn("demo.coach.readyDesc", "Crea tu cuenta gratis y conoce a tu Rowi personal")}
+                {t.readyDesc}
               </p>
               <Link
                 href="/register"

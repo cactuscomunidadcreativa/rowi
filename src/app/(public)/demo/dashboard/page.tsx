@@ -159,6 +159,26 @@ const translations = {
     tipDesc: "Nel tuo account reale, questi dati verranno dalla tua valutazione SEI di Six Seconds e si aggiorneranno con il tuo progresso.",
     createAccount: "Crea il mio account",
   },
+  zh: {
+    badge: "互动演示",
+    title: "Dashboard",
+    subtitle: "您的情绪控制中心，呈现所有 SEI 指标",
+    back: "返回导览",
+    next: "下一步：Affinity",
+    userGreeting: "您好",
+    userLevel: "等级",
+    eqScore: "EQ 总分",
+    eqOf: "/",
+    pursuitsTitle: "三大追求",
+    pursuitsDesc: "Six Seconds 的 SEI 模型将 8 项能力归纳为 3 大追求",
+    competenciesTitle: "8 项 SEI 能力",
+    competenciesDesc: "每项能力衡量您情商的一个特定方面",
+    outcomesTitle: "人生成果",
+    outcomesDesc: "您的情商如何影响生活的各个领域",
+    tipTitle: "这是一个演示",
+    tipDesc: "在您的真实账户中，这些数据将来自您的 Six Seconds SEI 评估，并随着您的进步而更新。",
+    createAccount: "创建我的账户",
+  },
 };
 
 /* =========================================================

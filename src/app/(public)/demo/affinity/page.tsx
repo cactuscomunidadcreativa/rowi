@@ -167,6 +167,28 @@ const translations = {
     tipDesc: "Nel tuo account reale, vedrai la sintonia reale con le tue persone basata sui loro profili SEI — e come colmare il divario con ECO.",
     createAccount: "Crea il mio account",
   },
+  zh: {
+    badge: "互动演示",
+    title: "Affinity",
+    subtitle: "看见你与团队之间的默契，以及弥合差距的桥梁——绝非评判",
+    back: "返回导览",
+    prev: "上一步：Dashboard",
+    next: "下一步：ECO",
+    teamTitle: "你的团队",
+    teamDesc: "与你情感契合度最高的成员",
+    compatibility: "默契度",
+    brainStyle: "脑力风格",
+    stylesTitle: "脑力风格",
+    stylesDesc: "Six Seconds 模型基于你的情绪模式识别出 8 种脑力风格",
+    insightTitle: "Affinity 洞察",
+    insightDesc: "基于你和团队的 SEI 测评结果",
+    insight1: "你与 Inventor（发明者）和 Guardian（守护者）类型最为契合",
+    insight2: "你可以加强与 Doer（行动者）类型的沟通",
+    insight3: "你的领导风格协作而富有同理心",
+    tipTitle: "这是一个演示",
+    tipDesc: "在你的真实账户中，你将看到基于团队成员 SEI 测评的真实默契度——以及如何借助 ECO 弥合差距。",
+    createAccount: "创建我的账户",
+  },
 };
 
 /* =========================================================

@@ -41,6 +41,9 @@ const T: Record<string, Record<string, string>> = {
   languageDesc: { es: "Selecciona el idioma de la aplicación", en: "Select the application language" },
   langES: { es: "Español", en: "Spanish" },
   langEN: { es: "English", en: "English" },
+  langPT: { es: "Português", en: "Portuguese" },
+  langIT: { es: "Italiano", en: "Italian" },
+  langZH: { es: "中文", en: "Chinese" },
 
   animations: { es: "Animaciones", en: "Animations" },
   animationsDesc: { es: "Activa o desactiva las animaciones de la interfaz", en: "Enable or disable interface animations" },
@@ -149,7 +152,7 @@ export default function AppearancePage() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  function handleLanguageChange(newLang: "es" | "en") {
+  function handleLanguageChange(newLang: "es" | "en" | "pt" | "it" | "zh") {
     setLocale(newLang);
   }
 
@@ -326,10 +329,13 @@ export default function AppearancePage() {
           {[
             { value: "es", label: "langES", flag: "🇪🇸" },
             { value: "en", label: "langEN", flag: "🇺🇸" },
+            { value: "pt", label: "langPT", flag: "🇧🇷" },
+            { value: "it", label: "langIT", flag: "🇮🇹" },
+            { value: "zh", label: "langZH", flag: "🇨🇳" },
           ].map(({ value, label, flag }) => (
             <button
               key={value}
-              onClick={() => handleLanguageChange(value as "es" | "en")}
+              onClick={() => handleLanguageChange(value as "es" | "en" | "pt" | "it" | "zh")}
               className={`p-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${
                 locale === value
                   ? "border-green-500 bg-green-50 dark:bg-green-900/20"

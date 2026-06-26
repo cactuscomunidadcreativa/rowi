@@ -17,9 +17,10 @@ const AVAILABLE_LANGS = [
   { code: "en", label: "EN", name: "English" },
   { code: "pt", label: "PT", name: "Português" },
   { code: "it", label: "IT", name: "Italiano" },
+  { code: "zh", label: "中文", name: "中文" },
 ] as const;
 
-export type SupportedLang = "es" | "en" | "pt" | "it" | "fr" | "de";
+export type SupportedLang = "es" | "en" | "pt" | "it" | "zh" | "fr" | "de";
 
 export default function LangToggle() {
   const { lang, setLang } = useI18n();

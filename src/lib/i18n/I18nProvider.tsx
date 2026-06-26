@@ -6,8 +6,9 @@ import esLocale from "./locales/es.json";
 import enLocale from "./locales/en.json";
 import ptLocale from "./locales/pt.json";
 import itLocale from "./locales/it.json";
+import zhLocale from "./locales/zh.json";
 
-type Lang = "es" | "en" | "pt" | "it";
+type Lang = "es" | "en" | "pt" | "it" | "zh";
 type Translations = Record<string, string>;
 
 // Diccionarios locales como fallback
@@ -16,6 +17,7 @@ const localDicts: Record<Lang, Translations> = {
   en: enLocale as Translations,
   pt: ptLocale as Translations,
   it: itLocale as Translations,
+  zh: zhLocale as Translations,
 };
 
 type I18nContextType = {
@@ -59,7 +61,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
     const stored = localStorage.getItem("rowi.lang") as Lang | null;
     const browserLang = navigator.language.slice(0, 2);
-    const supportedLangs: Lang[] = ["es", "en", "pt", "it"];
+    const supportedLangs: Lang[] = ["es", "en", "pt", "it", "zh"];
     const detectedLang =
       stored || (supportedLangs.includes(browserLang as Lang) ? browserLang : "es");
     const safe: Lang = supportedLangs.includes(detectedLang as Lang)
@@ -85,7 +87,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
-      const supportedLangs: Lang[] = ["es", "en", "pt", "it"];
+      const supportedLangs: Lang[] = ["es", "en", "pt", "it", "zh"];
       if (detail && supportedLangs.includes(detail as Lang) && detail !== lang) {
         const next = detail as Lang;
         setDict(localDicts[next]);

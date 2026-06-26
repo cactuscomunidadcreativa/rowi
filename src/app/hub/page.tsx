@@ -205,9 +205,9 @@ export default function HubDashboardPage() {
           eq: { total: null, hasData: false },
           communities: [],
           agents: [
-            { id: "1", slug: "super-rowi", name: "Super Rowi", description: ({ es: "Tu asistente principal de EQ", en: "Your main EQ assistant", pt: "Seu assistente principal de EQ", it: "Il tuo assistente principale EQ" })[locale] || "Tu asistente principal de EQ" },
-            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: ({ es: "Coach de inteligencia emocional", en: "Emotional intelligence coach", pt: "Coach de inteligência emocional", it: "Coach di intelligenza emotiva" })[locale] || "Coach de inteligencia emocional" },
-            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: ({ es: "Experto en relaciones", en: "Relationships expert", pt: "Especialista em relacionamentos", it: "Esperto in relazioni" })[locale] || "Experto en relaciones" },
+            { id: "1", slug: "super-rowi", name: "Super Rowi", description: ({ es: "Tu asistente principal de EQ", en: "Your main EQ assistant", pt: "Seu assistente principal de EQ", it: "Il tuo assistente principale EQ", zh: "您的主要情商助手" })[locale] || "Tu asistente principal de EQ" },
+            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: ({ es: "Coach de inteligencia emocional", en: "Emotional intelligence coach", pt: "Coach de inteligência emocional", it: "Coach di intelligenza emotiva", zh: "情商教练" })[locale] || "Coach de inteligencia emocional" },
+            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: ({ es: "Experto en relaciones", en: "Relationships expert", pt: "Especialista em relacionamentos", it: "Esperto in relazioni", zh: "人际关系专家" })[locale] || "Experto en relaciones" },
           ],
         });
       }

@@ -2,9 +2,10 @@ import es from "./locales/es.json";
 import en from "./locales/en.json";
 import pt from "./locales/pt.json";
 import it from "./locales/it.json";
+import zh from "./locales/zh.json";
 
 export const defaultLocale = "es" as const;
-export const locales = ["es","en","pt","it"] as const;
+export const locales = ["es","en","pt","it","zh"] as const;
 export type Locale = typeof locales[number];
 
 const dictionaries: Record<Locale, Record<string,string>> = {
@@ -12,6 +13,7 @@ const dictionaries: Record<Locale, Record<string,string>> = {
   en: en as Record<string, any>,
   pt: pt as Record<string, any>,
   it: it as Record<string, any>,
+  zh: zh as Record<string, any>,
 };
 
 export function normalizeLocale(s?: string|null): Locale {
@@ -19,6 +21,7 @@ export function normalizeLocale(s?: string|null): Locale {
   if (v.startsWith("pt")) return "pt";
   if (v.startsWith("en")) return "en";
   if (v.startsWith("it")) return "it";
+  if (v.startsWith("zh")) return "zh";
   return defaultLocale;
 }
 

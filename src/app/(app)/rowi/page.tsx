@@ -73,6 +73,7 @@ export default function RowiCoachPage() {
         level: "Nivel",
         greeting: "¡Hola! ¿En qué te puedo ayudar hoy?",
         poweredBy: "Potenciado por IA",
+        errorMsg: "Lo siento, hubo un error. Intenta de nuevo.",
         sugSuper1: "¿Cómo puedo mejorar mi día?",
         sugSuper2: "Ayúdame a reflexionar",
         sugSuper3: "Dame un consejo motivacional",
@@ -122,6 +123,7 @@ export default function RowiCoachPage() {
         level: "Level",
         greeting: "Hi! How can I help you today?",
         poweredBy: "Powered by AI",
+        errorMsg: "Sorry, something went wrong. Please try again.",
         sugSuper1: "How can I improve my day?",
         sugSuper2: "Help me reflect",
         sugSuper3: "Give me motivational advice",
@@ -147,6 +149,56 @@ export default function RowiCoachPage() {
           "Hi! I'm Rowi Affinity. Together we can work on improving your personal relationships.",
         welcomeEco:
           "Hi! I'm Rowi ECO. I help you communicate more effectively and empathetically.",
+      },
+      zh: {
+        title: "Rowi Coach",
+        subtitle: "您的情商助手",
+        selectAgent: "切换助手",
+        agentSuper: "Super Rowi",
+        agentSuperDesc: "适用于任何主题的通用助手",
+        agentEq: "Rowi 情商",
+        agentEqDesc: "情商专家",
+        agentCommunity: "Rowi 社区",
+        agentCommunityDesc: "帮助您的团队和社区",
+        agentAffinity: "Rowi 亲和力",
+        agentAffinityDesc: "改善您的人际关系",
+        agentEco: "Rowi ECO",
+        agentEcoDesc: "有效的情感沟通",
+        online: "在线",
+        thinking: "Rowi 正在思考…",
+        inputPlaceholder: "在此输入您的消息…",
+        send: "发送",
+        clearChat: "清空对话",
+        model: "模型",
+        level: "等级",
+        greeting: "您好！今天我能为您做些什么？",
+        poweredBy: "由 AI 驱动",
+        errorMsg: "抱歉，出现了错误。请重试。",
+        sugSuper1: "我如何让今天过得更好？",
+        sugSuper2: "帮我反思",
+        sugSuper3: "给我一些激励性的建议",
+        sugEq1: "如何管理压力？",
+        sugEq2: "我想了解我的情绪",
+        sugEq3: "什么是情商？",
+        sugCommunity1: "如何改善团队沟通？",
+        sugCommunity2: "解决冲突的策略",
+        sugCommunity3: "如何给予建设性反馈？",
+        sugAffinity1: "如何更好地与他人建立联系？",
+        sugAffinity2: "改善我的人际关系",
+        sugAffinity3: "如何培养同理心？",
+        sugEco1: "如何进行自信的沟通？",
+        sugEco2: "撰写一条棘手的消息",
+        sugEco3: "改善我的书面沟通",
+        welcomeSuper:
+          "您好！我是 Super Rowi，您的情商助手。今天我能为您做些什么？",
+        welcomeEq:
+          "您好！我是 Rowi 情商专家。我在这里帮助您理解和管理您的情绪。",
+        welcomeCommunity:
+          "您好！我是 Rowi 社区。我帮助您改善团队和社区的协作。",
+        welcomeAffinity:
+          "您好！我是 Rowi 亲和力。让我们一起改善您的人际关系。",
+        welcomeEco:
+          "您好！我是 Rowi ECO。我帮助您更有效、更有同理心地沟通。",
       },
     };
     return t[lang] || t.es;
@@ -255,7 +307,7 @@ export default function RowiCoachPage() {
     } catch {
       setMsgs((m) => [
         ...m,
-        { role: "rowi", text: "Lo siento, hubo un error. Intenta de nuevo.", timestamp: new Date() },
+        { role: "rowi", text: tr.errorMsg, timestamp: new Date() },
       ]);
     } finally {
       setLoading(false);

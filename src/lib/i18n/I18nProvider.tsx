@@ -162,10 +162,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     // 1. Diccionario actual
     if (dict[key]) return dict[key];
 
-    // 2. Fallback a otros idiomas (en orden de preferencia)
-    const fallbackLangs: Lang[] =
-      lang === "es" ? ["en", "pt", "it"] : ["es", "en", "pt", "it"];
-    for (const l of fallbackLangs) {
+    // 2. Fallback a otros idiomas. Orden: inglés primero (más universal),
+    //    luego el resto. Se excluye el idioma actual. Esto evita que un idioma
+    //    como zh caiga a español por una clave faltante puntual.
+    const FALLBACK_ORDER: Lang[] = ["en", "es", "pt", "it", "zh"];
+    for (const l of FALLBACK_ORDER) {
       if (l === lang) continue;
       const otherDict = localDicts[l];
       if (otherDict && otherDict[key]) return otherDict[key];

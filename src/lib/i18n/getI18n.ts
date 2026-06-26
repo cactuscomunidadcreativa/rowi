@@ -30,7 +30,8 @@ export async function getI18n(lang: string = "es") {
    */
   function t(key: string, fallback?: string): string {
     if (!key) return "";
-    const order = [lang, "es", "en", "pt", "it"];
+    // Idioma actual primero, luego inglés (más universal), luego el resto.
+    const order = [lang, "en", "es", "pt", "it", "zh"];
     for (const l of order) {
       if (dicts[l]?.[key]) return dicts[l][key];
     }

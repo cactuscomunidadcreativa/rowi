@@ -9,7 +9,7 @@ export type Dict = Record<string, string>;
  * 🔹 Soporta fallback entre idiomas (es → en → pt → it)
  */
 export async function getI18n(lang: string = "es") {
-  const langs = ["es", "en", "pt", "it"];
+  const langs = ["es", "en", "pt", "it", "zh"];
   const dicts: Record<string, Dict> = {};
 
   // 📁 Ruta base de los JSON locales

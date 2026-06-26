@@ -141,12 +141,12 @@ export default function PublicNavbar() {
             )}
           </button>
 
-          {/* Language Switcher (ES / EN / PT / IT) */}
+          {/* Language Switcher (ES / EN / PT / IT / 中文) */}
           <div className="relative flex items-center gap-1 text-sm">
             <Globe className="w-4 h-4 text-gray-600 dark:text-gray-300" />
             <select
               value={lang}
-              onChange={(e) => setLang(e.target.value as "es" | "en" | "pt" | "it")}
+              onChange={(e) => setLang(e.target.value as "es" | "en" | "pt" | "it" | "zh")}
               aria-label="Language"
               title={t("common.changeLanguage", "Cambiar idioma")}
               className="appearance-none bg-transparent pl-1 pr-4 py-1 rounded-lg cursor-pointer text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]"
@@ -155,6 +155,7 @@ export default function PublicNavbar() {
               <option value="en">EN</option>
               <option value="pt">PT</option>
               <option value="it">IT</option>
+              <option value="zh">中文</option>
             </select>
           </div>
 

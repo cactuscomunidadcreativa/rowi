@@ -265,6 +265,9 @@ export default function CmsAdminPage() {
             <option value="">{t("admin.cms.allLanguages")}</option>
             <option value="es">Español</option>
             <option value="en">English</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+            <option value="zh">中文</option>
           </select>
           <button
             onClick={() => setShowInactive(!showInactive)}

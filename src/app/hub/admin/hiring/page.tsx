@@ -402,6 +402,7 @@ export default function HiringPage() {
               <option value="es">Español</option>
               <option value="pt">Português</option>
               <option value="en">English</option>
+              <option value="zh">中文</option>
             </select>
           </div>
         </div>

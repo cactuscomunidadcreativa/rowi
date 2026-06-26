@@ -679,6 +679,7 @@ function HiringDeliverables({
             <option value="es">ES</option>
             <option value="en">EN</option>
             <option value="pt">PT</option>
+            <option value="zh">中文</option>
           </select>
         </div>
       </div>

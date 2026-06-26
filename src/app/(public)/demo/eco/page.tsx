@@ -76,6 +76,24 @@ Do you have a moment this week for a quick call? I'd love to hear your opinion a
     sms: `Hi Carlos! I have project ideas you'll like. Can we talk this week?`,
     chat: `Hey Carlos! 🙌 I have some innovative ideas for the project. Since you're always thinking of new ways to do things, I think you'll be interested. Do you have 15 min for a call?`,
   },
+  zh: {
+    email: `你好，Carlos：
+
+希望你今天一切顺利。我想和你分享一些关于新项目的创新想法，相信会让你眼前一亮。
+
+我一直在思考，我们如何引入与你的创新愿景相契合的新技术。这周你有空一起通个电话，共同探讨这些可能性吗？
+
+我认为你富有创意的视角，对于塑造这些想法将是无价的。
+
+期待你的回复！`,
+    whatsapp: `你好，Carlos！👋
+
+我有一些关于这个项目的好点子，相信你一定会喜欢 💡
+
+这周你有时间快速通个电话吗？很想听听你作为团队创新者的看法 🚀`,
+    sms: `你好，Carlos！我有一些你会喜欢的项目想法。这周聊聊好吗？`,
+    chat: `嘿，Carlos！🙌 我有一些关于这个项目的创新想法。你总是在琢磨新的做事方式，所以我想你一定会感兴趣。有 15 分钟通个电话吗？`,
+  },
 };
 
 /* =========================================================
@@ -211,6 +229,35 @@ const translations = {
     tipDesc: "Nel tuo account reale, ECO analizzerà il profilo SEI reale dei tuoi contatti per generare messaggi veramente personalizzati.",
     createAccount: "Crea il mio account",
     tryReal: "Prova con il mio profilo reale",
+  },
+  zh: {
+    badge: "示意示例",
+    title: "ECO",
+    titleFull: "Emotional Communication Optimizer",
+    subtitle: "用为每个人量身定制的消息，优化你的情感沟通",
+    back: "返回导览",
+    prev: "上一个：Affinity",
+    next: "下一个：Rowi Coach",
+    recipientTitle: "收件人",
+    recipientDesc: "消息会根据脑力风格和沟通偏好自动调整",
+    brainStyle: "脑力风格",
+    channelTitle: "沟通渠道",
+    channelDesc: "选择渠道，看看 Rowi 如何调整消息",
+    messageTitle: "优化后的消息",
+    messageDesc: "由 AI 生成，根据 Carlos 的情感画像量身定制",
+    regenerate: "重新生成",
+    copy: "复制",
+    copied: "已复制",
+    send: "发送",
+    tipsTitle: "已应用的优化",
+    tip1: "针对 Inventor 风格的热情语气",
+    tip2: "聚焦于新想法与新可能",
+    tip3: "邀请进行创意协作",
+    tip4: "重视其独特视角的措辞",
+    tipTitle: "这是一个演示",
+    tipDesc: "在你的真实账户中，ECO 会分析你联系人真实的 SEI 画像，生成真正个性化的消息。",
+    createAccount: "创建我的账户",
+    tryReal: "用我的真实画像试试",
   },
 };
 

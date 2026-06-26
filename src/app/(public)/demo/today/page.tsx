@@ -15,8 +15,101 @@ import { Sun, Target, Moon, Check, Sparkles, ArrowRight, ArrowLeft } from "lucid
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { RowiStageImage } from "@/domains/avatar/components/RowiStageImage";
 
+/* ---- i18n: diccionario inline (es / en / zh) ----
+   "Rowi", "Six Seconds", "SEI", "ECO" son marcas y no se traducen. */
+const TR: Record<string, Record<string, string>> = {
+  es: {
+    backToTour: "Volver al tour",
+    sampleData: "Demo con datos de ejemplo",
+    title: "Así se vive un día en Rowi",
+    subtitle: "Completa el loop — mañana, práctica y noche — y mira qué pasa.",
+    morning: "¿Quién quieres ser hoy?",
+    morningPlaceholder: "En una palabra: paciente, presente, valiente…",
+    save: "Guardar",
+    practiceTitle: "Tu práctica de hoy",
+    practiceOne: "Una sola cosa. No cinco. Una.",
+    practiceText:
+      "Antes de tu próxima conversación, respira tres veces y nómbrate en silencio la emoción con la que llegas.",
+    practiceDoneLabel: "Hecho",
+    practiceMarkDone: "Marcar como hecho",
+    evening: "Cierra tu día",
+    eveningPlaceholder: "Una frase sobre tu día basta…",
+    close: "Cerrar el día",
+    rewardPoints: "+15 puntos",
+    rewardStreak: "racha de 3 días",
+    hatched: "¡Tu Rowi ha nacido! 🐣",
+    evolvedNote:
+      "Cada día que cierras, tu Rowi crece contigo. Tu historia completa vive en Mi evolución.",
+    seeBecoming: "Ver la memoria viva",
+    cta: "Empezar mi historia real",
+    privacyNote:
+      "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).",
+    prev: "Anterior: El Espejo",
+    nextModule: "Siguiente: Mi evolución",
+  },
+  en: {
+    backToTour: "Back to the tour",
+    sampleData: "Demo with sample data",
+    title: "This is what a day in Rowi feels like",
+    subtitle: "Complete the loop — morning, practice and night — and see what happens.",
+    morning: "Who do you want to be today?",
+    morningPlaceholder: "In one word: patient, present, brave…",
+    save: "Save",
+    practiceTitle: "Your practice for today",
+    practiceOne: "Just one thing. Not five. One.",
+    practiceText:
+      "Before your next conversation, take three breaths and silently name the emotion you arrive with.",
+    practiceDoneLabel: "Done",
+    practiceMarkDone: "Mark as done",
+    evening: "Close your day",
+    eveningPlaceholder: "One sentence about your day is enough…",
+    close: "Close the day",
+    rewardPoints: "+15 points",
+    rewardStreak: "3-day streak",
+    hatched: "Your Rowi has been born! 🐣",
+    evolvedNote:
+      "Every day you close, your Rowi grows with you. Your full story lives in My evolution.",
+    seeBecoming: "See the living memory",
+    cta: "Start my real story",
+    privacyNote:
+      "Private: only you can see it. Your organization only sees anonymous aggregates (minimum 5 people).",
+    prev: "Previous: The Mirror",
+    nextModule: "Next: My evolution",
+  },
+  zh: {
+    backToTour: "返回导览",
+    sampleData: "示例数据演示",
+    title: "在 Rowi 度过的一天是这样的",
+    subtitle: "完成这个循环——早晨、练习和夜晚——看看会发生什么。",
+    morning: "今天你想成为谁？",
+    morningPlaceholder: "用一个词：耐心、专注、勇敢……",
+    save: "保存",
+    practiceTitle: "你今天的练习",
+    practiceOne: "只做一件事。不是五件。一件。",
+    practiceText:
+      "在你的下一次对话之前，深呼吸三次，并在心中默默说出你此刻带来的情绪。",
+    practiceDoneLabel: "已完成",
+    practiceMarkDone: "标记为已完成",
+    evening: "结束你的一天",
+    eveningPlaceholder: "一句话总结你的一天就够了……",
+    close: "结束这一天",
+    rewardPoints: "+15 积分",
+    rewardStreak: "连续 3 天",
+    hatched: "你的 Rowi 已经诞生啦！🐣",
+    evolvedNote:
+      "你每结束一天，你的 Rowi 都会与你一起成长。你的完整故事都在“我的进化”中。",
+    seeBecoming: "查看活的记忆",
+    cta: "开始我真实的故事",
+    privacyNote:
+      "私密：只有你能看到。你的组织只能看到匿名汇总数据（至少 5 人）。",
+    prev: "上一步：镜子",
+    nextModule: "下一步：我的进化",
+  },
+};
+
 export default function DemoTodayPage() {
-  const { t } = useI18n();
+  const { lang } = useI18n();
+  const tr = TR[lang] || TR.es;
   const [mood, setMood] = useState("");
   const [moodSaved, setMoodSaved] = useState(false);
   const [practiceDone, setPracticeDone] = useState(false);
@@ -31,19 +124,19 @@ export default function DemoTodayPage() {
         {/* Marco honesto: es una demo */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <Link href="/demo" className="text-sm text-[var(--rowi-muted)] inline-flex items-center gap-1 hover:text-[var(--rowi-fg)]">
-            <ArrowLeft className="w-4 h-4" /> {t("demo.backToTour", "Volver al tour")}
+            <ArrowLeft className="w-4 h-4" /> {tr.backToTour}
           </Link>
           <span className="text-[11px] px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-medium">
-            {t("demo.sampleData", "Demo con datos de ejemplo")}
+            {tr.sampleData}
           </span>
         </div>
 
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            {t("demo.today.title", "Así se vive un día en Rowi")}
+            {tr.title}
           </h1>
           <p className="text-sm text-[var(--rowi-muted)] mt-1">
-            {t("demo.today.subtitle", "Completa el loop — mañana, práctica y noche — y mira qué pasa.")}
+            {tr.subtitle}
           </p>
         </div>
 
@@ -56,7 +149,7 @@ export default function DemoTodayPage() {
           <div className="flex items-center gap-2 mb-3">
             <Sun className="w-5 h-5 text-amber-500" />
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {t("demo.today.morning", "¿Quién quieres ser hoy?")}
+              {tr.morning}
             </h2>
           </div>
           {moodSaved ? (
@@ -69,8 +162,8 @@ export default function DemoTodayPage() {
               <input
                 value={mood}
                 onChange={(e) => setMood(e.target.value)}
-                placeholder={t("demo.today.morningPlaceholder", "En una palabra: paciente, presente, valiente…")}
-                aria-label={t("demo.today.morning", "¿Quién quieres ser hoy?")}
+                placeholder={tr.morningPlaceholder}
+                aria-label={tr.morning}
                 className="flex-1 rounded-xl border border-[var(--rowi-card-border)] bg-transparent px-4 py-2.5 text-sm"
               />
               <button
@@ -78,7 +171,7 @@ export default function DemoTodayPage() {
                 disabled={!mood.trim()}
                 className="rowi-btn-primary px-4 py-2 text-sm disabled:opacity-40"
               >
-                {t("demo.today.save", "Guardar")}
+                {tr.save}
               </button>
             </div>
           )}
@@ -94,23 +187,21 @@ export default function DemoTodayPage() {
           <div className="flex items-center gap-2 mb-3">
             <Target className="w-5 h-5 text-violet-500" />
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {t("today.practice.title", "Tu práctica de hoy")}
+              {tr.practiceTitle}
             </h2>
           </div>
           <p className="text-xs text-[var(--rowi-muted)] mb-2">
-            {t("today.practice.one", "Una sola cosa. No cinco. Una.")}
+            {tr.practiceOne}
           </p>
           <p className="text-sm text-gray-700 dark:text-gray-200 mb-4">
-            {t("demo.today.practiceText", "Antes de tu próxima conversación, respira tres veces y nómbrate en silencio la emoción con la que llegas.")}
+            {tr.practiceText}
           </p>
           <button
             onClick={() => setPracticeDone(true)}
             disabled={practiceDone}
             className={practiceDone ? "px-4 py-2 text-sm rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium" : "rowi-btn-primary px-4 py-2 text-sm"}
           >
-            {practiceDone
-              ? t("today.practice.done", "Hecho")
-              : t("today.practice.markdone", "Marcar como hecho")}
+            {practiceDone ? tr.practiceDoneLabel : tr.practiceMarkDone}
           </button>
         </motion.section>
 
@@ -124,7 +215,7 @@ export default function DemoTodayPage() {
           <div className="flex items-center gap-2 mb-3">
             <Moon className="w-5 h-5 text-indigo-400" />
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {t("demo.today.evening", "Cierra tu día")}
+              {tr.evening}
             </h2>
           </div>
           {closed ? (
@@ -134,8 +225,8 @@ export default function DemoTodayPage() {
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                placeholder={t("demo.today.eveningPlaceholder", "Una frase sobre tu día basta…")}
-                aria-label={t("demo.today.evening", "Cierra tu día")}
+                placeholder={tr.eveningPlaceholder}
+                aria-label={tr.evening}
                 rows={2}
                 className="w-full rounded-xl border border-[var(--rowi-card-border)] bg-transparent px-4 py-2.5 text-sm"
               />
@@ -144,7 +235,7 @@ export default function DemoTodayPage() {
                 disabled={!reflection.trim()}
                 className="rowi-btn-primary px-4 py-2 text-sm disabled:opacity-40"
               >
-                {t("demo.today.close", "Cerrar el día")}
+                {tr.close}
               </button>
             </div>
           )}
@@ -161,9 +252,9 @@ export default function DemoTodayPage() {
               >
                 <Sparkles className="w-5 h-5 shrink-0" aria-hidden="true" />
                 <p className="text-sm font-medium">
-                  {t("today.reward.points", "+{points} puntos").replace("{points}", "15")}
+                  {tr.rewardPoints}
                   {" · "}
-                  {t("today.reward.streak", "racha de {days} días").replace("{days}", "3")}
+                  {tr.rewardStreak}
                 </p>
               </motion.div>
 
@@ -177,16 +268,16 @@ export default function DemoTodayPage() {
                   <RowiStageImage stage={loopComplete ? "HATCHING" : "EGG"} size="lg" float alt="Rowi" />
                 </div>
                 <p className="font-bold text-gray-900 dark:text-white">
-                  {t("today.evolved.hatched", "¡Tu Rowi ha nacido! 🐣")}
+                  {tr.hatched}
                 </p>
                 <p className="text-sm text-[var(--rowi-muted)] mt-1 max-w-sm mx-auto">
-                  {t("demo.today.evolvedNote", "Cada día que cierras, tu Rowi crece contigo. Tu historia completa vive en Mi evolución.")}
+                  {tr.evolvedNote}
                 </p>
                 <Link
                   href="/demo/becoming"
                   className="inline-flex items-center gap-1.5 mt-4 text-sm text-[var(--rowi-primary,#7c3aed)] font-medium hover:underline"
                 >
-                  {t("demo.today.seeBecoming", "Ver la memoria viva")} <ArrowRight className="w-4 h-4" />
+                  {tr.seeBecoming} <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>
 
@@ -197,10 +288,10 @@ export default function DemoTodayPage() {
                 className="text-center pt-2"
               >
                 <Link href="/register" className="rowi-btn-primary px-8 py-3 text-base inline-block">
-                  {t("demo.today.cta", "Empezar mi historia real")}
+                  {tr.cta}
                 </Link>
                 <p className="text-[11px] text-[var(--rowi-muted)] mt-2">
-                  🔒 {t("privacy.contextNote", "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).")}
+                  🔒 {tr.privacyNote}
                 </p>
               </motion.div>
             </>
@@ -214,13 +305,13 @@ export default function DemoTodayPage() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-[var(--rowi-card-border)] hover:border-[var(--rowi-primary)] transition-colors font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            {t("demo.today.prev", "Anterior: El Espejo")}
+            {tr.prev}
           </Link>
           <Link
             href="/demo/becoming"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
           >
-            {t("demo.today.nextModule", "Siguiente: Mi evolución")}
+            {tr.nextModule}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

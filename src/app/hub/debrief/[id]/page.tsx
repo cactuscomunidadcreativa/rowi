@@ -51,39 +51,41 @@ interface Feedback {
   verdict: Verdict;
 }
 
-const STEP_LABELS: Array<{ es: string; en: string; icon: typeof Flag }> = [
-  { es: "Contexto", en: "Set the Context", icon: Flag },
-  { es: "Overview", en: "Overview", icon: Eye },
-  { es: "Orientación", en: "Orientation", icon: Target },
-  { es: "Engagement & Scores", en: "Engagement & Scores", icon: ThumbsUp },
-  { es: "Drivers & Outcomes", en: "Drivers & Outcomes", icon: Target },
-  { es: "Pulse Points", en: "Pulse Points", icon: CheckCircle2 },
-  { es: "Comparaciones", en: "Comparisons", icon: Eye },
-  { es: "Action Plan", en: "Action Plan", icon: Flag },
+const STEP_LABELS: Array<{ key: string; fallback: string; icon: typeof Flag }> = [
+  { key: "debriefPg.step.context", fallback: "Contexto", icon: Flag },
+  { key: "debriefPg.step.overview", fallback: "Overview", icon: Eye },
+  { key: "debriefPg.step.orientation", fallback: "Orientación", icon: Target },
+  { key: "debriefPg.step.engagement", fallback: "Engagement & Scores", icon: ThumbsUp },
+  { key: "debriefPg.step.drivers", fallback: "Drivers & Outcomes", icon: Target },
+  { key: "debriefPg.step.pulsePoints", fallback: "Pulse Points", icon: CheckCircle2 },
+  { key: "debriefPg.step.comparisons", fallback: "Comparaciones", icon: Eye },
+  { key: "debriefPg.step.actionPlan", fallback: "Action Plan", icon: Flag },
 ];
 
-const VERDICT_STYLE: Record<Verdict, { bg: string; label: { es: string; en: string }; icon: typeof ThumbsUp }> = {
+const VERDICT_STYLE: Record<Verdict, { bg: string; labelKey: string; labelFallback: string; icon: typeof ThumbsUp }> = {
   OWN: {
     bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300",
-    label: { es: "Acepto", en: "Own" },
+    labelKey: "debriefPg.verdict.own",
+    labelFallback: "Acepto",
     icon: ThumbsUp,
   },
   CONSIDER: {
     bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300",
-    label: { es: "Considero", en: "Consider" },
+    labelKey: "debriefPg.verdict.consider",
+    labelFallback: "Considero",
     icon: Eye,
   },
   REJECT: {
     bg: "bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-300",
-    label: { es: "Rechazo", en: "Reject" },
+    labelKey: "debriefPg.verdict.reject",
+    labelFallback: "Rechazo",
     icon: XIcon,
   },
 };
 
 export default function DebriefWizardPage() {
   const { id } = useParams<{ id: string }>();
-  const { t, locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const { t } = useI18n();
 
   const [session, setSession] = useState<Session | null>(null);
   const [feedbacks, setFeedbacks] = useState<Map<string, Verdict>>(new Map());
@@ -216,7 +218,7 @@ export default function DebriefWizardPage() {
               {t("debrief.title", "Debrief")} {session.scope}
             </h1>
             <p className="text-xs text-[var(--rowi-muted)]">
-              {t("debrief.step", "Paso")} {step + 1} / 8 · {lang === "en" ? stepData.en : stepData.es}
+              {t("debrief.step", "Paso")} {step + 1} / 8 · {t(stepData.key, stepData.fallback)}
             </p>
           </div>
         </div>
@@ -361,7 +363,7 @@ export default function DebriefWizardPage() {
                             }`}
                           >
                             <VIcon className="w-3 h-3" />
-                            {lang === "en" ? VStyle.label.en : VStyle.label.es}
+                            {t(VStyle.labelKey, VStyle.labelFallback)}
                           </button>
                         );
                       })}
@@ -425,13 +427,13 @@ export default function DebriefWizardPage() {
               />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {([
-                  { key: "importance", label: { es: "Importancia", en: "Importance" } },
-                  { key: "clarity", label: { es: "Claridad", en: "Clarity" } },
-                  { key: "believability", label: { es: "Creencia", en: "Believability" } },
+                  { key: "importance", labelKey: "debriefPg.field.importance", labelFallback: "Importancia" },
+                  { key: "clarity", labelKey: "debriefPg.field.clarity", labelFallback: "Claridad" },
+                  { key: "believability", labelKey: "debriefPg.field.believability", labelFallback: "Creencia" },
                 ] as const).map((f) => (
                   <div key={f.key}>
                     <label className="block text-xs text-[var(--rowi-muted)] mb-1">
-                      {lang === "en" ? f.label.en : f.label.es}: {newCommitment[f.key]}
+                      {t(f.labelKey, f.labelFallback)}: {newCommitment[f.key]}
                     </label>
                     <input
                       type="range"

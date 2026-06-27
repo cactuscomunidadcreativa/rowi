@@ -202,11 +202,12 @@ function HubLoginContent() {
 }
 
 export default function HubLoginPage() {
+  const { t } = useI18n();
   return (
     <Suspense
       fallback={
         <main className="min-h-screen flex items-center justify-center bg-[var(--rowi-bg)]">
-          <div className="text-[var(--rowi-muted)] text-lg">Loading…</div>
+          <div className="text-[var(--rowi-muted)] text-lg">{t("hubLogin.loading", "Cargando…")}</div>
         </main>
       }
     >

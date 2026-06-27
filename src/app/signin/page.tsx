@@ -320,13 +320,10 @@ function SignInContent() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            {lang === "en"
-              ? "Your data is protected and never shared"
-              : lang === "pt"
-              ? "Seus dados estão protegidos e nunca são compartilhados"
-              : lang === "it"
-              ? "I tuoi dati sono protetti e mai condivisi"
-              : "Tus datos están protegidos y nunca se comparten"}
+            {t(
+              "signinPg.trustBadge",
+              "Tus datos están protegidos y nunca se comparten"
+            )}
           </p>
         </div>
       </div>

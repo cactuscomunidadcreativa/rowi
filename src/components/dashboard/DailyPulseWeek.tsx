@@ -36,7 +36,7 @@ function bandColor(value: number | null): string {
 }
 
 export default function DailyPulseWeek() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const isEN = lang === "en";
   const labels = isEN ? DAY_LABELS_EN : DAY_LABELS_ES;
 
@@ -60,11 +60,11 @@ export default function DailyPulseWeek() {
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-[var(--rowi-muted)]" />
           <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-            {isEN ? "Your last 7 days" : "Tu semana"}
+            {t("dailyPulseWeek.title", "Tu semana")}
           </h3>
         </div>
         <span className="text-xs text-[var(--rowi-muted)]">
-          {data.answered}/{data.days} {isEN ? "answered" : "respondidos"}
+          {data.answered}/{data.days} {t("dailyPulseWeek.answered", "respondidos")}
         </span>
       </div>
       <div className="flex items-stretch justify-between gap-1.5 h-24">
@@ -72,7 +72,7 @@ export default function DailyPulseWeek() {
           const heightPct = it.value === null ? 8 : (it.value / 5) * 100;
           const dow = it.dow;
           const tooltip = it.value === null
-            ? isEN ? "No answer" : "Sin respuesta"
+            ? t("dailyPulseWeek.noAnswer", "Sin respuesta")
             : `${it.sei ?? "—"} · ${it.value}/5`;
           return (
             <div key={it.date} className="flex-1 flex flex-col items-center gap-1 min-w-0 h-full">
@@ -92,9 +92,10 @@ export default function DailyPulseWeek() {
         })}
       </div>
       <div className="text-[10px] text-[var(--rowi-muted-weak)] mt-2 text-center">
-        {isEN
-          ? "Each bar = your Daily Pulse answer of that day (1-5)."
-          : "Cada barra = tu respuesta del Pulso de ese día (1-5)."}
+        {t(
+          "dailyPulseWeek.caption",
+          "Cada barra = tu respuesta del Pulso de ese día (1-5).",
+        )}
       </div>
     </div>
   );

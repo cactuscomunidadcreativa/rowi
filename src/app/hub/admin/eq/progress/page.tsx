@@ -49,22 +49,22 @@ interface StatsData {
 }
 
 export default function EQProgressAdminPage() {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<StatsData | null>(null);
 
   const txt = {
-    title: locale === "en" ? "EQ Progress" : "Progreso EQ",
-    subtitle: locale === "en" ? "Global progress tracking across ROWI" : "Seguimiento de progreso global en ROWI",
-    loading: locale === "en" ? "Loading progress data..." : "Cargando datos de progreso...",
-    totalSnapshots: locale === "en" ? "Total Snapshots" : "Total Snapshots",
-    totalUsers: locale === "en" ? "Users with EQ" : "Usuarios con EQ",
-    avgEQ: locale === "en" ? "Average EQ" : "EQ Promedio",
-    monthlyTrend: locale === "en" ? "Monthly Progress Trend" : "Tendencia de Progreso Mensual",
-    competencyScores: locale === "en" ? "Competency Scores" : "Puntuaciones por Competencia",
-    kcgProgress: locale === "en" ? "K-C-G Averages" : "Promedios K-C-G",
-    noData: locale === "en" ? "No data available yet" : "Sin datos disponibles aún",
-    recent30d: locale === "en" ? "Recent (30d)" : "Recientes (30d)",
+    title: t("adminEqProgress.title", "Progreso EQ"),
+    subtitle: t("adminEqProgress.subtitle", "Seguimiento de progreso global en ROWI"),
+    loading: t("adminEqProgress.loading", "Cargando datos de progreso..."),
+    totalSnapshots: t("adminEqProgress.totalSnapshots", "Total Snapshots"),
+    totalUsers: t("adminEqProgress.totalUsers", "Usuarios con EQ"),
+    avgEQ: t("adminEqProgress.avgEQ", "EQ Promedio"),
+    monthlyTrend: t("adminEqProgress.monthlyTrend", "Tendencia de Progreso Mensual"),
+    competencyScores: t("adminEqProgress.competencyScores", "Puntuaciones por Competencia"),
+    kcgProgress: t("adminEqProgress.kcgProgress", "Promedios K-C-G"),
+    noData: t("adminEqProgress.noData", "Sin datos disponibles aún"),
+    recent30d: t("adminEqProgress.recent30d", "Recientes (30d)"),
   };
 
   const COMP_LABELS: Record<string, Record<string, string>> = {
@@ -159,7 +159,7 @@ export default function EQProgressAdminPage() {
                   <XAxis dataKey="month" tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "var(--rowi-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: "var(--rowi-surface)", border: "1px solid var(--rowi-border)", borderRadius: 8, color: "var(--rowi-foreground)" }} />
-                  <Area type="monotone" dataKey="avg" stroke={ROWI_BLUE} strokeWidth={2} fill="url(#totalGradient)" name="EQ Avg" />
+                  <Area type="monotone" dataKey="avg" stroke={ROWI_BLUE} strokeWidth={2} fill="url(#totalGradient)" name={t("adminEqProgress.eqAvg", "EQ Prom.")} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -176,9 +176,9 @@ export default function EQProgressAdminPage() {
           </h3>
           {stats ? (
             <div className="space-y-6 py-4">
-              <KCGBar label="Know Yourself" value={stats.avgKnow} color={ROWI_BLUE} />
-              <KCGBar label="Choose Yourself" value={stats.avgChoose} color={ROWI_PURPLE} />
-              <KCGBar label="Give Yourself" value={stats.avgGive} color={ROWI_PINK} />
+              <KCGBar label={t("adminEqProgress.knowYourself", "Conócete")} value={stats.avgKnow} color={ROWI_BLUE} />
+              <KCGBar label={t("adminEqProgress.chooseYourself", "Elígete")} value={stats.avgChoose} color={ROWI_PURPLE} />
+              <KCGBar label={t("adminEqProgress.giveYourself", "Entrégate")} value={stats.avgGive} color={ROWI_PINK} />
             </div>
           ) : (
             <NoData text={txt.noData} />

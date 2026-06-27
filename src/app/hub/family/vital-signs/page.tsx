@@ -207,7 +207,11 @@ export default function FamilyVitalSignsPage() {
               </h3>
               <div className="rowi-card">
                 <p className="text-xs text-[var(--rowi-muted)] mb-3">
-                  Promedio sobre {data!.acceptedCount + 1} {data!.acceptedCount === 0 ? "persona" : "personas"} con datos disponibles
+                  {t("familyVs.aggregate.averageOver", "Promedio sobre")} {data!.acceptedCount + 1}{" "}
+                  {data!.acceptedCount === 0
+                    ? t("familyVs.aggregate.personSingular", "persona")
+                    : t("familyVs.aggregate.personPlural", "personas")}{" "}
+                  {t("familyVs.aggregate.withDataAvailable", "con datos disponibles")}
                 </p>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                   {data!.aggregate.slice(0, 15).map((agg) => {

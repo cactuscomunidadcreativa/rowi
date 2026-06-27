@@ -98,34 +98,34 @@ const EMOTIONAL_INSIGHTS = [
 ];
 
 export default function TasksAdminPage() {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<TaskStats>(DEMO_STATS);
   const [selectedPeriod, setSelectedPeriod] = useState("month");
 
   const txt = {
-    title: locale === "en" ? "Tasks Management" : "Gestión de Tareas",
-    subtitle: locale === "en" ? "Task metrics and emotional insights" : "Métricas de tareas e insights emocionales",
-    loading: locale === "en" ? "Loading task data..." : "Cargando datos de tareas...",
-    totalTasks: locale === "en" ? "Total Tasks" : "Total Tareas",
-    completed: locale === "en" ? "Completed" : "Completadas",
-    pending: locale === "en" ? "Pending" : "Pendientes",
-    overdue: locale === "en" ? "Overdue" : "Vencidas",
-    completionRate: locale === "en" ? "Completion Rate" : "Tasa de Completado",
-    avgTime: locale === "en" ? "Avg. Completion Time" : "Tiempo Promedio",
-    activeUsers: locale === "en" ? "Active Users" : "Usuarios Activos",
-    weeklyTrend: locale === "en" ? "Weekly Trend" : "Tendencia Semanal",
-    priorityDist: locale === "en" ? "Priority Distribution" : "Distribución por Prioridad",
-    topContributors: locale === "en" ? "Top Contributors" : "Principales Contribuidores",
-    emotionalInsights: locale === "en" ? "Emotional Insights" : "Insights Emocionales",
-    configuration: locale === "en" ? "Configuration" : "Configuración",
-    export: locale === "en" ? "Export" : "Exportar",
-    days: locale === "en" ? "days" : "días",
-    tasks: locale === "en" ? "tasks" : "tareas",
-    week: locale === "en" ? "Week" : "Semana",
-    month: locale === "en" ? "Month" : "Mes",
-    quarter: locale === "en" ? "Quarter" : "Trimestre",
-    created: locale === "en" ? "Created" : "Creadas",
+    title: t("adminTasks.title", "Gestión de Tareas"),
+    subtitle: t("adminTasks.subtitle", "Métricas de tareas e insights emocionales"),
+    loading: t("adminTasks.loading", "Cargando datos de tareas..."),
+    totalTasks: t("adminTasks.totalTasks", "Total Tareas"),
+    completed: t("adminTasks.completed", "Completadas"),
+    pending: t("adminTasks.pending", "Pendientes"),
+    overdue: t("adminTasks.overdue", "Vencidas"),
+    completionRate: t("adminTasks.completionRate", "Tasa de Completado"),
+    avgTime: t("adminTasks.avgTime", "Tiempo Promedio"),
+    activeUsers: t("adminTasks.activeUsers", "Usuarios Activos"),
+    weeklyTrend: t("adminTasks.weeklyTrend", "Tendencia Semanal"),
+    priorityDist: t("adminTasks.priorityDist", "Distribución por Prioridad"),
+    topContributors: t("adminTasks.topContributors", "Principales Contribuidores"),
+    emotionalInsights: t("adminTasks.emotionalInsights", "Insights Emocionales"),
+    configuration: t("adminTasks.configuration", "Configuración"),
+    export: t("adminTasks.export", "Exportar"),
+    days: t("adminTasks.days", "días"),
+    tasks: t("adminTasks.tasks", "tareas"),
+    week: t("adminTasks.week", "Semana"),
+    month: t("adminTasks.month", "Mes"),
+    quarter: t("adminTasks.quarter", "Trimestre"),
+    created: t("adminTasks.created", "Creadas"),
   };
 
   useEffect(() => {

@@ -118,7 +118,7 @@ const CATEGORIES = [
 ];
 
 export default function CoursesAdminPage() {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,45 +141,45 @@ export default function CoursesAdminPage() {
   });
 
   const txt = {
-    title: locale === "en" ? "Courses" : "Cursos",
-    subtitle: locale === "en" ? "Manage emotional intelligence courses" : "Gestiona los cursos de inteligencia emocional",
-    loading: locale === "en" ? "Loading courses..." : "Cargando cursos...",
-    search: locale === "en" ? "Search courses..." : "Buscar cursos...",
-    newCourse: locale === "en" ? "New Course" : "Nuevo Curso",
-    totalCourses: locale === "en" ? "Total Courses" : "Total Cursos",
-    enrollments: locale === "en" ? "Enrollments" : "Inscripciones",
-    avgCompletion: locale === "en" ? "Avg. Completion" : "Completado Prom.",
-    avgRating: locale === "en" ? "Avg. Rating" : "Rating Promedio",
-    all: locale === "en" ? "All" : "Todos",
-    published: locale === "en" ? "Published" : "Publicados",
-    draft: locale === "en" ? "Draft" : "Borrador",
-    archived: locale === "en" ? "Archived" : "Archivados",
-    lessons: locale === "en" ? "lessons" : "lecciones",
-    min: locale === "en" ? "min" : "min",
-    students: locale === "en" ? "students" : "estudiantes",
-    completion: locale === "en" ? "completion" : "completado",
-    edit: locale === "en" ? "Edit" : "Editar",
-    view: locale === "en" ? "View" : "Ver",
-    delete: locale === "en" ? "Delete" : "Eliminar",
+    title: t("elearningCourses.title", "Cursos"),
+    subtitle: t("elearningCourses.subtitle", "Gestiona los cursos de inteligencia emocional"),
+    loading: t("elearningCourses.loading", "Cargando cursos..."),
+    search: t("elearningCourses.search", "Buscar cursos..."),
+    newCourse: t("elearningCourses.newCourse", "Nuevo Curso"),
+    totalCourses: t("elearningCourses.totalCourses", "Total Cursos"),
+    enrollments: t("elearningCourses.enrollments", "Inscripciones"),
+    avgCompletion: t("elearningCourses.avgCompletion", "Completado Prom."),
+    avgRating: t("elearningCourses.avgRating", "Rating Promedio"),
+    all: t("elearningCourses.all", "Todos"),
+    published: t("elearningCourses.published", "Publicados"),
+    draft: t("elearningCourses.draft", "Borrador"),
+    archived: t("elearningCourses.archived", "Archivados"),
+    lessons: t("elearningCourses.lessons", "lecciones"),
+    min: t("elearningCourses.min", "min"),
+    students: t("elearningCourses.students", "estudiantes"),
+    completion: t("elearningCourses.completion", "completado"),
+    edit: t("elearningCourses.edit", "Editar"),
+    view: t("elearningCourses.view", "Ver"),
+    delete: t("elearningCourses.delete", "Eliminar"),
     // Modal texts
-    createTitle: locale === "en" ? "Create New Course" : "Crear Nuevo Curso",
-    editTitle: locale === "en" ? "Edit Course" : "Editar Curso",
-    viewTitle: locale === "en" ? "Course Details" : "Detalles del Curso",
-    courseTitle: locale === "en" ? "Course Title" : "Título del Curso",
-    description: locale === "en" ? "Description" : "Descripción",
-    category: locale === "en" ? "Category" : "Categoría",
-    duration: locale === "en" ? "Duration (minutes)" : "Duración (minutos)",
-    numLessons: locale === "en" ? "Number of Lessons" : "Número de Lecciones",
-    status: locale === "en" ? "Status" : "Estado",
-    save: locale === "en" ? "Save" : "Guardar",
-    cancel: locale === "en" ? "Cancel" : "Cancelar",
-    close: locale === "en" ? "Close" : "Cerrar",
-    created: locale === "en" ? "Course created successfully" : "Curso creado exitosamente",
-    updated: locale === "en" ? "Course updated successfully" : "Curso actualizado exitosamente",
-    deleted: locale === "en" ? "Course deleted successfully" : "Curso eliminado exitosamente",
-    confirmDelete: locale === "en" ? "Are you sure you want to delete this course?" : "¿Estás seguro de que quieres eliminar este curso?",
-    titlePlaceholder: locale === "en" ? "Enter course title..." : "Ingresa el título del curso...",
-    descPlaceholder: locale === "en" ? "Describe what students will learn..." : "Describe lo que los estudiantes aprenderán...",
+    createTitle: t("elearningCourses.createTitle", "Crear Nuevo Curso"),
+    editTitle: t("elearningCourses.editTitle", "Editar Curso"),
+    viewTitle: t("elearningCourses.viewTitle", "Detalles del Curso"),
+    courseTitle: t("elearningCourses.courseTitle", "Título del Curso"),
+    description: t("elearningCourses.description", "Descripción"),
+    category: t("elearningCourses.category", "Categoría"),
+    duration: t("elearningCourses.duration", "Duración (minutos)"),
+    numLessons: t("elearningCourses.numLessons", "Número de Lecciones"),
+    status: t("elearningCourses.status", "Estado"),
+    save: t("elearningCourses.save", "Guardar"),
+    cancel: t("elearningCourses.cancel", "Cancelar"),
+    close: t("elearningCourses.close", "Cerrar"),
+    created: t("elearningCourses.created", "Curso creado exitosamente"),
+    updated: t("elearningCourses.updated", "Curso actualizado exitosamente"),
+    deleted: t("elearningCourses.deleted", "Curso eliminado exitosamente"),
+    confirmDelete: t("elearningCourses.confirmDelete", "¿Estás seguro de que quieres eliminar este curso?"),
+    titlePlaceholder: t("elearningCourses.titlePlaceholder", "Ingresa el título del curso..."),
+    descPlaceholder: t("elearningCourses.descPlaceholder", "Describe lo que los estudiantes aprenderán..."),
   };
 
   useEffect(() => {
@@ -215,9 +215,9 @@ export default function CoursesAdminPage() {
       archived: "bg-[var(--rowi-muted)]/20 text-[var(--rowi-muted)]",
     };
     const labels = {
-      published: locale === "en" ? "Published" : "Publicado",
-      draft: locale === "en" ? "Draft" : "Borrador",
-      archived: locale === "en" ? "Archived" : "Archivado",
+      published: t("elearningCourses.statusPublished", "Publicado"),
+      draft: t("elearningCourses.statusDraft", "Borrador"),
+      archived: t("elearningCourses.statusArchived", "Archivado"),
     };
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status]}`}>
@@ -262,7 +262,7 @@ export default function CoursesAdminPage() {
 
   async function handleSave() {
     if (!form.title.trim()) {
-      toast.error(locale === "en" ? "Title is required" : "El título es requerido");
+      toast.error(t("elearningCourses.titleRequired", "El título es requerido"));
       return;
     }
 
@@ -499,7 +499,7 @@ export default function CoursesAdminPage() {
         <div className="text-center py-12">
           <GraduationCap className="w-16 h-16 mx-auto text-[var(--rowi-muted)] mb-4" />
           <p className="text-[var(--rowi-muted)]">
-            {locale === "en" ? "No courses found" : "No se encontraron cursos"}
+            {t("elearningCourses.noCourses", "No se encontraron cursos")}
           </p>
         </div>
       )}
@@ -565,7 +565,7 @@ export default function CoursesAdminPage() {
                     <div className="bg-[var(--rowi-background)] rounded-xl p-4 text-center">
                       <Star className="w-6 h-6 mx-auto mb-2 text-[var(--rowi-warning)]" />
                       <p className="text-2xl font-bold text-[var(--rowi-foreground)]">{selectedCourse.rating}</p>
-                      <p className="text-xs text-[var(--rowi-muted)]">Rating</p>
+                      <p className="text-xs text-[var(--rowi-muted)]">{t("elearningCourses.ratingLabel", "Rating")}</p>
                     </div>
                   </div>
 

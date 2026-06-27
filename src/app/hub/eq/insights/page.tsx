@@ -56,7 +56,7 @@ interface MicroLearning {
 
 function EQInsightsContent() {
   const router = useRouter();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const focusCompetency = searchParams.get("focus");
 
@@ -67,66 +67,66 @@ function EQInsightsContent() {
 
   // Traducciones
   const txt = {
-    loading: t("insights.loading", locale === "en" ? "Generating insights..." : "Generando insights..."),
-    title: t("insights.title", locale === "en" ? "Personalized Insights" : "Insights Personalizados"),
-    subtitle: t("insights.subtitle", locale === "en" ? "Recommendations based on your EQ profile" : "Recomendaciones basadas en tu perfil EQ"),
-    priorityAreas: t("insights.priorityAreas", locale === "en" ? "Priority Development Areas" : "Áreas Prioritarias de Desarrollo"),
-    completeAssessment: t("insights.completeAssessment", locale === "en" ? "Complete a SEI assessment to receive personalized recommendations" : "Completa una evaluación SEI para recibir recomendaciones personalizadas"),
-    priority: t("insights.priority", locale === "en" ? "Priority" : "Prioridad"),
-    score: t("insights.score", locale === "en" ? "Score" : "Puntuación"),
-    tipsToImprove: t("insights.tipsToImprove", locale === "en" ? "Tips to Improve" : "Consejos para Mejorar"),
-    recommendedActions: t("insights.recommendedActions", locale === "en" ? "Recommended Micro-Actions" : "Micro-Acciones Recomendadas"),
-    noMicroActions: t("insights.noMicroActions", locale === "en" ? "No micro-actions available for this competency yet" : "No hay micro-acciones disponibles para esta competencia aún"),
-    viewAllMicroActions: t("insights.viewAllMicroActions", locale === "en" ? "View all micro-actions" : "Ver todas las micro-acciones"),
-    allCompetencies: t("insights.allCompetencies", locale === "en" ? "All Competencies" : "Todas las Competencias"),
-    talkToRowi: t("insights.talkToRowi", locale === "en" ? "Talk to Rowi Coach" : "Hablar con Rowi Coach"),
-    talkToRowiDesc: t("insights.talkToRowiDesc", locale === "en" ? "Get personalized AI coaching" : "Recibe coaching personalizado de IA"),
-    recordProgress: t("insights.recordProgress", locale === "en" ? "Record Progress" : "Registrar Progreso"),
-    recordProgressDesc: t("insights.recordProgressDesc", locale === "en" ? "Document your EQ development" : "Documenta tu desarrollo EQ"),
-    min: t("insights.min", "min"),
-    pts: t("insights.pts", "pts"),
+    loading: t("eqInsights.loading", "Generando insights..."),
+    title: t("eqInsights.title", "Insights Personalizados"),
+    subtitle: t("eqInsights.subtitle", "Recomendaciones basadas en tu perfil EQ"),
+    priorityAreas: t("eqInsights.priorityAreas", "Áreas Prioritarias de Desarrollo"),
+    completeAssessment: t("eqInsights.completeAssessment", "Completa una evaluación SEI para recibir recomendaciones personalizadas"),
+    priority: t("eqInsights.priority", "Prioridad"),
+    score: t("eqInsights.score", "Puntuación"),
+    tipsToImprove: t("eqInsights.tipsToImprove", "Consejos para Mejorar"),
+    recommendedActions: t("eqInsights.recommendedActions", "Micro-Acciones Recomendadas"),
+    noMicroActions: t("eqInsights.noMicroActions", "No hay micro-acciones disponibles para esta competencia aún"),
+    viewAllMicroActions: t("eqInsights.viewAllMicroActions", "Ver todas las micro-acciones"),
+    allCompetencies: t("eqInsights.allCompetencies", "Todas las Competencias"),
+    talkToRowi: t("eqInsights.talkToRowi", "Hablar con Rowi Coach"),
+    talkToRowiDesc: t("eqInsights.talkToRowiDesc", "Recibe coaching personalizado de IA"),
+    recordProgress: t("eqInsights.recordProgress", "Registrar Progreso"),
+    recordProgressDesc: t("eqInsights.recordProgressDesc", "Documenta tu desarrollo EQ"),
+    min: t("eqInsights.min", "min"),
+    pts: t("eqInsights.pts", "pts"),
     // Competencies
-    compEL: t("insights.comp.EL.name", locale === "en" ? "Emotional Literacy" : "Alfabetización Emocional"),
-    compELDesc: t("insights.comp.EL.desc", locale === "en" ? "Ability to identify and name emotions accurately" : "Capacidad de identificar y nombrar emociones con precisión"),
-    compRP: t("insights.comp.RP.name", locale === "en" ? "Recognize Patterns" : "Reconocer Patrones"),
-    compRPDesc: t("insights.comp.RP.desc", locale === "en" ? "Identify habitual reactions and behaviors" : "Identificar reacciones y comportamientos habituales"),
-    compACT: t("insights.comp.ACT.name", locale === "en" ? "Consequential Thinking" : "Pensamiento Consecuente"),
-    compACTDesc: t("insights.comp.ACT.desc", locale === "en" ? "Evaluate consequences of decisions before acting" : "Evaluar las consecuencias de las decisiones antes de actuar"),
-    compNE: t("insights.comp.NE.name", locale === "en" ? "Navigate Emotions" : "Navegar Emociones"),
-    compNEDesc: t("insights.comp.NE.desc", locale === "en" ? "Manage emotions in ways that lead toward goals" : "Manejar emociones de forma que te lleven hacia tus metas"),
-    compIM: t("insights.comp.IM.name", locale === "en" ? "Intrinsic Motivation" : "Motivación Intrínseca"),
-    compIMDesc: t("insights.comp.IM.desc", locale === "en" ? "Connect with deep internal motivations" : "Conectar con motivaciones internas profundas"),
-    compOP: t("insights.comp.OP.name", locale === "en" ? "Exercise Optimism" : "Ejercitar Optimismo"),
-    compOPDesc: t("insights.comp.OP.desc", locale === "en" ? "Maintain a positive reality-based perspective" : "Mantener una perspectiva positiva basada en la realidad"),
-    compEMP: t("insights.comp.EMP.name", locale === "en" ? "Increase Empathy" : "Incrementar Empatía"),
-    compEMPDesc: t("insights.comp.EMP.desc", locale === "en" ? "Understand others' emotions and perspectives" : "Comprender las emociones y perspectivas de otros"),
-    compNG: t("insights.comp.NG.name", locale === "en" ? "Noble Goals" : "Nobles Metas"),
-    compNGDesc: t("insights.comp.NG.desc", locale === "en" ? "Define and pursue meaningful purposes" : "Definir y perseguir propósitos significativos"),
+    compEL: t("eqInsights.comp.EL.name", "Alfabetización Emocional"),
+    compELDesc: t("eqInsights.comp.EL.desc", "Capacidad de identificar y nombrar emociones con precisión"),
+    compRP: t("eqInsights.comp.RP.name", "Reconocer Patrones"),
+    compRPDesc: t("eqInsights.comp.RP.desc", "Identificar reacciones y comportamientos habituales"),
+    compACT: t("eqInsights.comp.ACT.name", "Pensamiento Consecuente"),
+    compACTDesc: t("eqInsights.comp.ACT.desc", "Evaluar las consecuencias de las decisiones antes de actuar"),
+    compNE: t("eqInsights.comp.NE.name", "Navegar Emociones"),
+    compNEDesc: t("eqInsights.comp.NE.desc", "Manejar emociones de forma que te lleven hacia tus metas"),
+    compIM: t("eqInsights.comp.IM.name", "Motivación Intrínseca"),
+    compIMDesc: t("eqInsights.comp.IM.desc", "Conectar con motivaciones internas profundas"),
+    compOP: t("eqInsights.comp.OP.name", "Ejercitar Optimismo"),
+    compOPDesc: t("eqInsights.comp.OP.desc", "Mantener una perspectiva positiva basada en la realidad"),
+    compEMP: t("eqInsights.comp.EMP.name", "Incrementar Empatía"),
+    compEMPDesc: t("eqInsights.comp.EMP.desc", "Comprender las emociones y perspectivas de otros"),
+    compNG: t("eqInsights.comp.NG.name", "Nobles Metas"),
+    compNGDesc: t("eqInsights.comp.NG.desc", "Definir y perseguir propósitos significativos"),
     // Tips
-    tipEL1: t("insights.tip.EL.1", locale === "en" ? "Practice naming your emotions specifically (e.g., frustrated vs. angry)" : "Practica nombrar tus emociones específicamente (ej: frustrado vs. enojado)"),
-    tipEL2: t("insights.tip.EL.2", locale === "en" ? "Keep a brief daily emotional journal" : "Lleva un diario emocional breve cada día"),
-    tipEL3: t("insights.tip.EL.3", locale === "en" ? "Observe physical sensations associated with each emotion" : "Observa las sensaciones físicas asociadas a cada emoción"),
-    tipRP1: t("insights.tip.RP.1", locale === "en" ? "Identify your most common emotional triggers" : "Identifica tus triggers emocionales más comunes"),
-    tipRP2: t("insights.tip.RP.2", locale === "en" ? "Reflect on situations that repeat" : "Reflexiona sobre situaciones que se repiten"),
-    tipRP3: t("insights.tip.RP.3", locale === "en" ? "Ask yourself: What patterns did I inherit from my family?" : "Pregúntate: ¿Qué patrones heredé de mi familia?"),
-    tipACT1: t("insights.tip.ACT.1", locale === "en" ? "Before deciding, ask: What are the long-term consequences?" : "Antes de decidir, pregunta: ¿Cuáles son las consecuencias a largo plazo?"),
-    tipACT2: t("insights.tip.ACT.2", locale === "en" ? "Practice the 10-10-10 technique (10 min, 10 months, 10 years)" : "Practica la técnica 10-10-10 (10 min, 10 meses, 10 años)"),
-    tipACT3: t("insights.tip.ACT.3", locale === "en" ? "Consider the impact on other people" : "Considera el impacto en otras personas"),
-    tipNE1: t("insights.tip.NE.1", locale === "en" ? "Use breathing techniques when feeling intense emotions" : "Usa técnicas de respiración cuando sientas emociones intensas"),
-    tipNE2: t("insights.tip.NE.2", locale === "en" ? "Transform difficult emotion energy into constructive action" : "Transforma la energía de emociones difíciles en acción constructiva"),
-    tipNE3: t("insights.tip.NE.3", locale === "en" ? "Practice the 6-second pause before reacting" : "Practica la pausa de 6 segundos antes de reaccionar"),
-    tipIM1: t("insights.tip.IM.1", locale === "en" ? "Identify what makes you feel truly alive" : "Identifica qué te hace sentir verdaderamente vivo"),
-    tipIM2: t("insights.tip.IM.2", locale === "en" ? "Connect routine tasks with your personal values" : "Conecta tareas rutinarias con tus valores personales"),
-    tipIM3: t("insights.tip.IM.3", locale === "en" ? "Celebrate small achievements to maintain motivation" : "Celebra pequeños logros para mantener la motivación"),
-    tipOP1: t("insights.tip.OP.1", locale === "en" ? "Practice gratitude: name 3 good things each day" : "Practica gratitud: nombra 3 cosas buenas cada día"),
-    tipOP2: t("insights.tip.OP.2", locale === "en" ? "Reframe difficult situations by looking for opportunities" : "Reenmarca situaciones difíciles buscando oportunidades"),
-    tipOP3: t("insights.tip.OP.3", locale === "en" ? "Surround yourself with optimistic people" : "Rodéate de personas optimistas"),
-    tipEMP1: t("insights.tip.EMP.1", locale === "en" ? "Listen actively without interrupting" : "Escucha activamente sin interrumpir"),
-    tipEMP2: t("insights.tip.EMP.2", locale === "en" ? "Ask yourself: How would this person feel?" : "Pregúntate: ¿Cómo se sentiría esta persona?"),
-    tipEMP3: t("insights.tip.EMP.3", locale === "en" ? "Practice genuine curiosity about others" : "Practica la curiosidad genuina por los demás"),
-    tipNG1: t("insights.tip.NG.1", locale === "en" ? "Define what legacy you want to leave" : "Define qué legado quieres dejar"),
-    tipNG2: t("insights.tip.NG.2", locale === "en" ? "Connect daily actions with your greater purpose" : "Conecta tus acciones diarias con tu propósito mayor"),
-    tipNG3: t("insights.tip.NG.3", locale === "en" ? "Find ways to contribute to something bigger than yourself" : "Encuentra formas de contribuir a algo más grande que tú"),
+    tipEL1: t("eqInsights.tip.EL.1", "Practica nombrar tus emociones específicamente (ej: frustrado vs. enojado)"),
+    tipEL2: t("eqInsights.tip.EL.2", "Lleva un diario emocional breve cada día"),
+    tipEL3: t("eqInsights.tip.EL.3", "Observa las sensaciones físicas asociadas a cada emoción"),
+    tipRP1: t("eqInsights.tip.RP.1", "Identifica tus triggers emocionales más comunes"),
+    tipRP2: t("eqInsights.tip.RP.2", "Reflexiona sobre situaciones que se repiten"),
+    tipRP3: t("eqInsights.tip.RP.3", "Pregúntate: ¿Qué patrones heredé de mi familia?"),
+    tipACT1: t("eqInsights.tip.ACT.1", "Antes de decidir, pregunta: ¿Cuáles son las consecuencias a largo plazo?"),
+    tipACT2: t("eqInsights.tip.ACT.2", "Practica la técnica 10-10-10 (10 min, 10 meses, 10 años)"),
+    tipACT3: t("eqInsights.tip.ACT.3", "Considera el impacto en otras personas"),
+    tipNE1: t("eqInsights.tip.NE.1", "Usa técnicas de respiración cuando sientas emociones intensas"),
+    tipNE2: t("eqInsights.tip.NE.2", "Transforma la energía de emociones difíciles en acción constructiva"),
+    tipNE3: t("eqInsights.tip.NE.3", "Practica la pausa de 6 segundos antes de reaccionar"),
+    tipIM1: t("eqInsights.tip.IM.1", "Identifica qué te hace sentir verdaderamente vivo"),
+    tipIM2: t("eqInsights.tip.IM.2", "Conecta tareas rutinarias con tus valores personales"),
+    tipIM3: t("eqInsights.tip.IM.3", "Celebra pequeños logros para mantener la motivación"),
+    tipOP1: t("eqInsights.tip.OP.1", "Practica gratitud: nombra 3 cosas buenas cada día"),
+    tipOP2: t("eqInsights.tip.OP.2", "Reenmarca situaciones difíciles buscando oportunidades"),
+    tipOP3: t("eqInsights.tip.OP.3", "Rodéate de personas optimistas"),
+    tipEMP1: t("eqInsights.tip.EMP.1", "Escucha activamente sin interrumpir"),
+    tipEMP2: t("eqInsights.tip.EMP.2", "Pregúntate: ¿Cómo se sentiría esta persona?"),
+    tipEMP3: t("eqInsights.tip.EMP.3", "Practica la curiosidad genuina por los demás"),
+    tipNG1: t("eqInsights.tip.NG.1", "Define qué legado quieres dejar"),
+    tipNG2: t("eqInsights.tip.NG.2", "Conecta tus acciones diarias con tu propósito mayor"),
+    tipNG3: t("eqInsights.tip.NG.3", "Encuentra formas de contribuir a algo más grande que tú"),
   };
 
   const competencyInfo: Record<string, {
@@ -482,14 +482,14 @@ function EQInsightsContent() {
 }
 
 export default function EQInsightsPage() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
 
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{locale === "en" ? "Loading insights..." : "Cargando insights..."}</span>
+          <span>{t("eqInsights.loadingPage", "Cargando insights...")}</span>
         </div>
       </div>
     }>

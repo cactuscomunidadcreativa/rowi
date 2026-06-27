@@ -134,7 +134,7 @@ const GAMIFICATION_TRIGGERS = [
 ];
 
 export default function CouponsPage() {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [coupons, setCoupons] = useState<Coupon[]>(DEMO_COUPONS);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
@@ -151,42 +151,42 @@ export default function CouponsPage() {
   });
 
   const txt = {
-    title: locale === "en" ? "Coupons & Promo Codes" : "Cupones y Códigos Promocionales",
-    subtitle: locale === "en" ? "Manage promotional codes and gamification rewards" : "Gestiona códigos promocionales y recompensas de gamificación",
-    createCoupon: locale === "en" ? "Create Coupon" : "Crear Cupón",
-    search: locale === "en" ? "Search coupons..." : "Buscar cupones...",
-    all: locale === "en" ? "All" : "Todos",
-    percentage: locale === "en" ? "Percentage" : "Porcentaje",
-    fixed: locale === "en" ? "Fixed Amount" : "Monto Fijo",
-    freeMonths: locale === "en" ? "Free Months" : "Meses Gratis",
-    freeTrial: locale === "en" ? "Free Trial" : "Prueba Gratis",
-    code: locale === "en" ? "Code" : "Código",
-    type: locale === "en" ? "Type" : "Tipo",
-    value: locale === "en" ? "Value" : "Valor",
-    description: locale === "en" ? "Description" : "Descripción",
-    maxUses: locale === "en" ? "Max Uses" : "Usos Máx",
-    usedCount: locale === "en" ? "Used" : "Usados",
-    validFrom: locale === "en" ? "Valid From" : "Válido Desde",
-    validUntil: locale === "en" ? "Valid Until" : "Válido Hasta",
-    status: locale === "en" ? "Status" : "Estado",
-    active: locale === "en" ? "Active" : "Activo",
-    inactive: locale === "en" ? "Inactive" : "Inactivo",
-    expired: locale === "en" ? "Expired" : "Expirado",
-    gamificationTrigger: locale === "en" ? "Gamification Trigger" : "Trigger de Gamificación",
-    none: locale === "en" ? "None (Manual)" : "Ninguno (Manual)",
-    copiedToClipboard: locale === "en" ? "Copied to clipboard!" : "¡Copiado al portapapeles!",
-    confirmDelete: locale === "en" ? "Are you sure you want to delete this coupon?" : "¿Estás seguro de eliminar este cupón?",
-    totalCoupons: locale === "en" ? "Total Coupons" : "Total Cupones",
-    activeCoupons: locale === "en" ? "Active" : "Activos",
-    totalRedemptions: locale === "en" ? "Total Redemptions" : "Total Canjes",
-    gamificationCoupons: locale === "en" ? "Gamification Linked" : "Vinculados a Gamificación",
-    months: locale === "en" ? "months" : "meses",
-    days: locale === "en" ? "days" : "días",
-    off: locale === "en" ? "off" : "descuento",
-    uses: locale === "en" ? "uses" : "usos",
-    generate: locale === "en" ? "Generate Code" : "Generar Código",
-    save: locale === "en" ? "Save" : "Guardar",
-    cancel: locale === "en" ? "Cancel" : "Cancelar",
+    title: t("gamCoupons.title", "Cupones y Códigos Promocionales"),
+    subtitle: t("gamCoupons.subtitle", "Gestiona códigos promocionales y recompensas de gamificación"),
+    createCoupon: t("gamCoupons.createCoupon", "Crear Cupón"),
+    search: t("gamCoupons.search", "Buscar cupones..."),
+    all: t("gamCoupons.all", "Todos"),
+    percentage: t("gamCoupons.percentage", "Porcentaje"),
+    fixed: t("gamCoupons.fixed", "Monto Fijo"),
+    freeMonths: t("gamCoupons.freeMonths", "Meses Gratis"),
+    freeTrial: t("gamCoupons.freeTrial", "Prueba Gratis"),
+    code: t("gamCoupons.code", "Código"),
+    type: t("gamCoupons.type", "Tipo"),
+    value: t("gamCoupons.value", "Valor"),
+    description: t("gamCoupons.description", "Descripción"),
+    maxUses: t("gamCoupons.maxUses", "Usos Máx"),
+    usedCount: t("gamCoupons.usedCount", "Usados"),
+    validFrom: t("gamCoupons.validFrom", "Válido Desde"),
+    validUntil: t("gamCoupons.validUntil", "Válido Hasta"),
+    status: t("gamCoupons.status", "Estado"),
+    active: t("gamCoupons.active", "Activo"),
+    inactive: t("gamCoupons.inactive", "Inactivo"),
+    expired: t("gamCoupons.expired", "Expirado"),
+    gamificationTrigger: t("gamCoupons.gamificationTrigger", "Trigger de Gamificación"),
+    none: t("gamCoupons.none", "Ninguno (Manual)"),
+    copiedToClipboard: t("gamCoupons.copiedToClipboard", "¡Copiado al portapapeles!"),
+    confirmDelete: t("gamCoupons.confirmDelete", "¿Estás seguro de eliminar este cupón?"),
+    totalCoupons: t("gamCoupons.totalCoupons", "Total Cupones"),
+    activeCoupons: t("gamCoupons.activeCoupons", "Activos"),
+    totalRedemptions: t("gamCoupons.totalRedemptions", "Total Canjes"),
+    gamificationCoupons: t("gamCoupons.gamificationCoupons", "Vinculados a Gamificación"),
+    months: t("gamCoupons.months", "meses"),
+    days: t("gamCoupons.days", "días"),
+    off: t("gamCoupons.off", "descuento"),
+    uses: t("gamCoupons.uses", "usos"),
+    generate: t("gamCoupons.generate", "Generar Código"),
+    save: t("gamCoupons.save", "Guardar"),
+    cancel: t("gamCoupons.cancel", "Cancelar"),
   };
 
   const filteredCoupons = coupons.filter((c) => {
@@ -237,7 +237,7 @@ export default function CouponsPage() {
       validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       gamificationTrigger: "",
     });
-    toast.success(locale === "en" ? "Coupon created successfully!" : "¡Cupón creado exitosamente!");
+    toast.success(t("gamCoupons.couponCreated", "¡Cupón creado exitosamente!"));
   }
 
   function toggleCouponStatus(id: string) {
@@ -247,7 +247,7 @@ export default function CouponsPage() {
   function deleteCoupon(id: string) {
     if (confirm(txt.confirmDelete)) {
       setCoupons(coupons.filter(c => c.id !== id));
-      toast.success(locale === "en" ? "Coupon deleted" : "Cupón eliminado");
+      toast.success(t("gamCoupons.couponDeleted", "Cupón eliminado"));
     }
   }
 
@@ -420,7 +420,7 @@ export default function CouponsPage() {
                 {coupon.gamificationTrigger && (
                   <span className="text-xs px-2 py-1 rounded-full bg-violet-500/20 text-violet-300">
                     <Sparkles className="w-3 h-3 inline mr-1" />
-                    Gamification
+                    {t("gamCoupons.gamificationBadge", "Gamificación")}
                   </span>
                 )}
                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -435,7 +435,7 @@ export default function CouponsPage() {
                 <button
                   onClick={() => toggleCouponStatus(coupon.id)}
                   className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  title={coupon.isActive ? "Desactivar" : "Activar"}
+                  title={coupon.isActive ? t("gamCoupons.deactivate", "Desactivar") : t("gamCoupons.activate", "Activar")}
                 >
                   {coupon.isActive ? (
                     <XCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -519,7 +519,7 @@ export default function CouponsPage() {
                   value={newCoupon.description}
                   onChange={(e) => setNewCoupon({ ...newCoupon, description: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  placeholder={locale === "en" ? "Coupon description..." : "Descripción del cupón..."}
+                  placeholder={t("gamCoupons.descriptionPlaceholder", "Descripción del cupón...")}
                 />
               </div>
 
@@ -570,14 +570,12 @@ export default function CouponsPage() {
                   <option value="">{txt.none}</option>
                   {GAMIFICATION_TRIGGERS.map((trigger) => (
                     <option key={trigger.value} value={trigger.value}>
-                      {trigger.label}
+                      {t(`gamCoupons.trigger.${trigger.value}`, trigger.label)}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  {locale === "en"
-                    ? "Link this coupon to a gamification achievement. Users will receive it automatically when they reach the goal."
-                    : "Vincula este cupón a un logro de gamificación. Los usuarios lo recibirán automáticamente al alcanzar la meta."}
+                  {t("gamCoupons.gamificationTriggerHelp", "Vincula este cupón a un logro de gamificación. Los usuarios lo recibirán automáticamente al alcanzar la meta.")}
                 </p>
               </div>
             </div>

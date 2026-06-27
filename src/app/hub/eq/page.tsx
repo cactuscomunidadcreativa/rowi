@@ -46,54 +46,54 @@ interface EQData {
 
 export default function EQDashboardPage() {
   const router = useRouter();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<EQData | null>(null);
 
   // Traducciones
   const txt = {
-    loading: t("eq.loading", locale === "en" ? "Loading EQ profile..." : "Cargando perfil EQ..."),
-    title: t("eq.title", locale === "en" ? "My Emotional Intelligence" : "Mi Inteligencia Emocional"),
-    subtitle: t("eq.subtitle", locale === "en" ? "Your EQ profile based on Six Seconds model" : "Tu perfil EQ basado en el modelo Six Seconds"),
-    noData: t("eq.noData", locale === "en" ? "You don't have EQ data yet" : "Aún no tienes datos EQ"),
-    noDataDesc: t("eq.noDataDesc", locale === "en" ? "To see your emotional intelligence profile, you need to complete a Six Seconds SEI assessment." : "Para ver tu perfil de inteligencia emocional, necesitas completar una evaluación SEI de Six Seconds."),
-    linkSEI: t("eq.linkSEI", locale === "en" ? "Link SEI Assessment" : "Vincular SEI Assessment"),
-    eqTotal: t("eq.eqTotal", "EQ Total"),
-    generalScore: t("eq.generalScore", locale === "en" ? "Overall emotional intelligence score" : "Puntuación general de inteligencia emocional"),
-    pursuits: t("eq.pursuits", "Pursuits"),
-    competencies: t("eq.competencies", locale === "en" ? "EQ Competencies" : "Competencias EQ"),
-    viewDetails: t("eq.viewDetails", locale === "en" ? "View details" : "Ver detalles"),
-    lifeOutcomes: t("eq.lifeOutcomes", locale === "en" ? "Life Outcomes" : "Outcomes de Vida"),
-    overall: t("eq.overall", "Overall"),
+    loading: t("eqHome.loading", "Cargando perfil EQ..."),
+    title: t("eqHome.title", "Mi Inteligencia Emocional"),
+    subtitle: t("eqHome.subtitle", "Tu perfil EQ basado en el modelo Six Seconds"),
+    noData: t("eqHome.noData", "Aún no tienes datos EQ"),
+    noDataDesc: t("eqHome.noDataDesc", "Para ver tu perfil de inteligencia emocional, necesitas completar una evaluación SEI de Six Seconds."),
+    linkSEI: t("eqHome.linkSEI", "Vincular SEI Assessment"),
+    eqTotal: t("eqHome.eqTotal", "EQ Total"),
+    generalScore: t("eqHome.generalScore", "Puntuación general de inteligencia emocional"),
+    pursuits: t("eqHome.pursuits", "Pursuits"),
+    competencies: t("eqHome.competencies", "Competencias EQ"),
+    viewDetails: t("eqHome.viewDetails", "Ver detalles"),
+    lifeOutcomes: t("eqHome.lifeOutcomes", "Outcomes de Vida"),
+    overall: t("eqHome.overall", "Overall"),
     // Competencies
-    compEL: t("eq.comp.EL", locale === "en" ? "Emotional Literacy" : "Alfabetización Emocional"),
-    compRP: t("eq.comp.RP", locale === "en" ? "Recognize Patterns" : "Reconocer Patrones"),
-    compACT: t("eq.comp.ACT", locale === "en" ? "Apply Consequential Thinking" : "Pensamiento Consecuente"),
-    compNE: t("eq.comp.NE", locale === "en" ? "Navigate Emotions" : "Navegar Emociones"),
-    compIM: t("eq.comp.IM", locale === "en" ? "Engage Intrinsic Motivation" : "Motivación Intrínseca"),
-    compOP: t("eq.comp.OP", locale === "en" ? "Exercise Optimism" : "Ejercitar Optimismo"),
-    compEMP: t("eq.comp.EMP", locale === "en" ? "Increase Empathy" : "Incrementar Empatía"),
-    compNG: t("eq.comp.NG", locale === "en" ? "Pursue Noble Goals" : "Nobles Metas"),
+    compEL: t("eqHome.compEL", "Alfabetización Emocional"),
+    compRP: t("eqHome.compRP", "Reconocer Patrones"),
+    compACT: t("eqHome.compACT", "Pensamiento Consecuente"),
+    compNE: t("eqHome.compNE", "Navegar Emociones"),
+    compIM: t("eqHome.compIM", "Motivación Intrínseca"),
+    compOP: t("eqHome.compOP", "Ejercitar Optimismo"),
+    compEMP: t("eqHome.compEMP", "Incrementar Empatía"),
+    compNG: t("eqHome.compNG", "Nobles Metas"),
     // Pursuits
-    pursKnow: t("eq.purs.know", "Know Yourself"),
-    pursChoose: t("eq.purs.choose", "Choose Yourself"),
-    pursGive: t("eq.purs.give", "Give Yourself"),
+    pursKnow: t("eqHome.pursKnow", "Know Yourself"),
+    pursChoose: t("eqHome.pursChoose", "Choose Yourself"),
+    pursGive: t("eqHome.pursGive", "Give Yourself"),
     // Outcomes
-    outEffectiveness: t("eq.out.effectiveness", locale === "en" ? "Effectiveness" : "Efectividad"),
-    outRelationships: t("eq.out.relationships", locale === "en" ? "Relationships" : "Relaciones"),
-    outWellbeing: t("eq.out.wellbeing", locale === "en" ? "Wellbeing" : "Bienestar"),
-    outQuality: t("eq.out.quality", locale === "en" ? "Quality of Life" : "Calidad de Vida"),
+    outEffectiveness: t("eqHome.outEffectiveness", "Efectividad"),
+    outRelationships: t("eqHome.outRelationships", "Relaciones"),
+    outWellbeing: t("eqHome.outWellbeing", "Bienestar"),
+    outQuality: t("eqHome.outQuality", "Calidad de Vida"),
     // Quick actions
-    brainTalents: t("eq.brainTalents", "Brain Talents"),
-    brainTalentsDesc: t("eq.brainTalentsDesc", locale === "en" ? "Your 18 brain talents" : "Tus 18 talentos cerebrales"),
-    successFactors: t("eq.successFactors", "Success Factors"),
-    successFactorsDesc: t("eq.successFactorsDesc", locale === "en" ? "The 8 success factors" : "Los 8 factores de éxito"),
-    seiHistory: t("eq.seiHistory", locale === "en" ? "SEI History" : "Historial SEI"),
-    seiHistoryDesc: t("eq.seiHistoryDesc", locale === "en" ? "View your previous snapshots" : "Ver tus snapshots anteriores"),
-    myProgress: t("eq.myProgress", locale === "en" ? "My Progress" : "Mi Progreso"),
-    myProgressDesc: t("eq.myProgressDesc", locale === "en" ? "Your EQ evolution" : "Evolución de tu EQ"),
-    insights: t("eq.insights", "Insights"),
-    insightsDesc: t("eq.insightsDesc", locale === "en" ? "Personalized recommendations" : "Recomendaciones personalizadas"),
+    brainTalents: t("eqHome.brainTalents", "Brain Talents"),
+    brainTalentsDesc: t("eqHome.brainTalentsDesc", "Tus 18 talentos cerebrales"),
+    successFactors: t("eqHome.successFactors", "Factores de Éxito"),
+    successFactorsDesc: t("eqHome.successFactorsDesc", "Los 8 factores de éxito"),
+    seiHistory: t("eqHome.seiHistory", "Historial SEI"),
+    seiHistoryDesc: t("eqHome.seiHistoryDesc", "Ver tus snapshots anteriores"),
+    myProgress: t("eqHome.myProgress", "Mi Progreso"),
+    myProgressDesc: t("eqHome.myProgressDesc", "Evolución de tu EQ"),
+    insights: t("eqHome.insights", "Insights"),
+    insightsDesc: t("eqHome.insightsDesc", "Recomendaciones personalizadas"),
   };
 
   const competencyLabels: Record<string, { name: string; color: string }> = {

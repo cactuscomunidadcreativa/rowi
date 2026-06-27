@@ -149,7 +149,7 @@ const DEMO_RECENT: RecentSnapshot[] = [
 
 export default function EQSnapshotsRowiversePage() {
   const router = useRouter();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<RowiverseStats | null>(null);
   const [trends, setTrends] = useState<SnapshotTrend[]>([]);
@@ -159,43 +159,43 @@ export default function EQSnapshotsRowiversePage() {
   const [selectedPeriod, setSelectedPeriod] = useState("all");
 
   const txt = {
-    loading: locale === "en" ? "Loading Rowiverse data..." : "Cargando datos del Rowiverse...",
-    title: locale === "en" ? "EQ Snapshots" : "EQ Snapshots",
-    subtitle: locale === "en" ? "Global Rowiverse Overview" : "Resumen Global del Rowiverse",
-    totalSnapshots: locale === "en" ? "Total Snapshots" : "Total Snapshots",
-    activeUsers: locale === "en" ? "Users with EQ" : "Usuarios con EQ",
-    avgEQ: locale === "en" ? "Average EQ" : "EQ Promedio",
-    recentActivity: locale === "en" ? "Last 30 Days" : "Últimos 30 Días",
-    kcgTitle: locale === "en" ? "Know • Choose • Give" : "Conocer • Elegir • Dar",
-    know: locale === "en" ? "Know" : "Conocer",
-    choose: locale === "en" ? "Choose" : "Elegir",
-    give: locale === "en" ? "Give" : "Dar",
-    competenciesTitle: locale === "en" ? "8 SEI Competencies - Global Average" : "8 Competencias SEI - Promedio Global",
-    trendsTitle: locale === "en" ? "Monthly Evaluations Trend" : "Tendencia Mensual de Evaluaciones",
-    countriesTitle: locale === "en" ? "Top Countries" : "Países con más Evaluaciones",
-    brainStylesTitle: locale === "en" ? "Brain Styles Distribution" : "Distribución de Estilos Cerebrales",
-    recentTitle: locale === "en" ? "Recent Evaluations" : "Evaluaciones Recientes",
-    snapshots: locale === "en" ? "evaluations" : "evaluaciones",
-    score: locale === "en" ? "Score" : "Puntuación",
-    evaluations: locale === "en" ? "evaluations" : "evaluaciones",
-    all: locale === "en" ? "All time" : "Todo el tiempo",
-    lastMonth: locale === "en" ? "Last month" : "Último mes",
-    lastQuarter: locale === "en" ? "Last quarter" : "Último trimestre",
-    lastYear: locale === "en" ? "Last year" : "Último año",
-    export: locale === "en" ? "Export" : "Exportar",
-    noData: locale === "en" ? "No data available" : "Sin datos disponibles",
-    hoursAgo: locale === "en" ? "hours ago" : "horas atrás",
+    loading: t("eqSnapshots.loading", "Cargando datos del Rowiverse..."),
+    title: t("eqSnapshots.title", "EQ Snapshots"),
+    subtitle: t("eqSnapshots.subtitle", "Resumen Global del Rowiverse"),
+    totalSnapshots: t("eqSnapshots.totalSnapshots", "Total Snapshots"),
+    activeUsers: t("eqSnapshots.activeUsers", "Usuarios con EQ"),
+    avgEQ: t("eqSnapshots.avgEQ", "EQ Promedio"),
+    recentActivity: t("eqSnapshots.recentActivity", "Últimos 30 Días"),
+    kcgTitle: t("eqSnapshots.kcgTitle", "Conocer • Elegir • Dar"),
+    know: t("eqSnapshots.know", "Conocer"),
+    choose: t("eqSnapshots.choose", "Elegir"),
+    give: t("eqSnapshots.give", "Dar"),
+    competenciesTitle: t("eqSnapshots.competenciesTitle", "8 Competencias SEI - Promedio Global"),
+    trendsTitle: t("eqSnapshots.trendsTitle", "Tendencia Mensual de Evaluaciones"),
+    countriesTitle: t("eqSnapshots.countriesTitle", "Países con más Evaluaciones"),
+    brainStylesTitle: t("eqSnapshots.brainStylesTitle", "Distribución de Estilos Cerebrales"),
+    recentTitle: t("eqSnapshots.recentTitle", "Evaluaciones Recientes"),
+    snapshots: t("eqSnapshots.snapshots", "evaluaciones"),
+    score: t("eqSnapshots.score", "Puntuación"),
+    evaluations: t("eqSnapshots.evaluations", "evaluaciones"),
+    all: t("eqSnapshots.all", "Todo el tiempo"),
+    lastMonth: t("eqSnapshots.lastMonth", "Último mes"),
+    lastQuarter: t("eqSnapshots.lastQuarter", "Último trimestre"),
+    lastYear: t("eqSnapshots.lastYear", "Último año"),
+    export: t("eqSnapshots.export", "Exportar"),
+    noData: t("eqSnapshots.noData", "Sin datos disponibles"),
+    hoursAgo: t("eqSnapshots.hoursAgo", "horas atrás"),
   };
 
-  const competencyLabelsES: Record<string, string> = {
-    EL: "Alfabetización Emocional",
-    RP: "Reconocer Patrones",
-    ACT: "Pensamiento Consecuente",
-    NE: "Navegar Emociones",
-    IM: "Motivación Intrínseca",
-    OP: "Ejercitar Optimismo",
-    EMP: "Incrementar Empatía",
-    NG: "Nobles Metas",
+  const competencyLabels: Record<string, string> = {
+    EL: t("eqSnapshots.competency.EL", "Alfabetización Emocional"),
+    RP: t("eqSnapshots.competency.RP", "Reconocer Patrones"),
+    ACT: t("eqSnapshots.competency.ACT", "Pensamiento Consecuente"),
+    NE: t("eqSnapshots.competency.NE", "Navegar Emociones"),
+    IM: t("eqSnapshots.competency.IM", "Motivación Intrínseca"),
+    OP: t("eqSnapshots.competency.OP", "Ejercitar Optimismo"),
+    EMP: t("eqSnapshots.competency.EMP", "Incrementar Empatía"),
+    NG: t("eqSnapshots.competency.NG", "Nobles Metas"),
   };
 
   useEffect(() => {
@@ -246,7 +246,7 @@ export default function EQSnapshotsRowiversePage() {
   function formatTimeAgo(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();
     const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return locale === "en" ? "Just now" : "Ahora mismo";
+    if (hours < 1) return t("eqSnapshots.justNow", "Ahora mismo");
     return `${hours} ${txt.hoursAgo}`;
   }
 
@@ -396,7 +396,7 @@ export default function EQSnapshotsRowiversePage() {
                   }}
                   formatter={(value: number, name: string, props: any) => [
                     `${value} / 135`,
-                    locale === "es" ? competencyLabelsES[props.payload.key] || props.payload.label : props.payload.label
+                    competencyLabels[props.payload.key] || props.payload.label
                   ]}
                 />
                 <defs>
@@ -542,7 +542,7 @@ export default function EQSnapshotsRowiversePage() {
                 <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${ROWI_COLORS[idx % ROWI_COLORS.length]}30`, color: ROWI_COLORS[idx % ROWI_COLORS.length] }}>{comp.key}</span>
                 <span className={`text-lg font-bold ${getScoreColor(comp.score)}`}>{comp.score}</span>
               </div>
-              <p className="text-xs text-gray-400 truncate mb-2">{locale === "es" ? competencyLabelsES[comp.key] : comp.label}</p>
+              <p className="text-xs text-gray-400 truncate mb-2">{competencyLabels[comp.key] || comp.label}</p>
               <div className="h-1.5 bg-gray-600 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"

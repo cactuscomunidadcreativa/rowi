@@ -72,41 +72,39 @@ interface GlobalStats {
 }
 
 export default function EQDashboardGlobal() {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<GlobalStats | null>(null);
 
   const txt = {
-    title: locale === "en" ? "EQ Global Dashboard" : "Dashboard EQ Global",
-    subtitle: locale === "en"
-      ? "Emotional intelligence metrics across ROWI"
-      : "Métricas de inteligencia emocional en ROWI",
-    loading: locale === "en" ? "Loading statistics..." : "Cargando estadísticas...",
-    totalSnapshots: locale === "en" ? "Total Snapshots" : "Snapshots Totales",
-    totalUsers: locale === "en" ? "Users with EQ" : "Usuarios con EQ",
-    avgEQ: locale === "en" ? "Average EQ" : "EQ Promedio",
-    recentActivity: locale === "en" ? "Recent (30d)" : "Recientes (30d)",
-    pursuits: "Pursuits K-C-G",
-    know: "Know Yourself",
-    choose: "Choose Yourself",
-    give: "Give Yourself",
-    competencies: locale === "en" ? "EQ Competencies" : "Competencias EQ",
-    monthlyTrend: locale === "en" ? "Monthly Trend" : "Tendencia Mensual",
-    brainStyles: locale === "en" ? "Brain Styles Distribution" : "Distribución Estilos Cerebrales",
-    topCountries: locale === "en" ? "Top Countries" : "Principales Países",
-    noData: locale === "en" ? "No data available" : "Sin datos disponibles",
-    viewSnapshots: locale === "en" ? "View All Snapshots" : "Ver Todos los Snapshots",
+    title: t("adminEqDashboard.title", "Dashboard EQ Global"),
+    subtitle: t("adminEqDashboard.subtitle", "Métricas de inteligencia emocional en ROWI"),
+    loading: t("adminEqDashboard.loading", "Cargando estadísticas..."),
+    totalSnapshots: t("adminEqDashboard.totalSnapshots", "Snapshots Totales"),
+    totalUsers: t("adminEqDashboard.totalUsers", "Usuarios con EQ"),
+    avgEQ: t("adminEqDashboard.avgEQ", "EQ Promedio"),
+    recentActivity: t("adminEqDashboard.recentActivity", "Recientes (30d)"),
+    pursuits: t("adminEqDashboard.pursuits", "Pursuits K-C-G"),
+    know: t("adminEqDashboard.know", "Know Yourself"),
+    choose: t("adminEqDashboard.choose", "Choose Yourself"),
+    give: t("adminEqDashboard.give", "Give Yourself"),
+    competencies: t("adminEqDashboard.competencies", "Competencias EQ"),
+    monthlyTrend: t("adminEqDashboard.monthlyTrend", "Tendencia Mensual"),
+    brainStyles: t("adminEqDashboard.brainStyles", "Distribución Estilos Cerebrales"),
+    topCountries: t("adminEqDashboard.topCountries", "Principales Países"),
+    noData: t("adminEqDashboard.noData", "Sin datos disponibles"),
+    viewSnapshots: t("adminEqDashboard.viewSnapshots", "Ver Todos los Snapshots"),
   };
 
-  const COMPETENCY_LABELS: Record<string, Record<string, string>> = {
-    EL: { en: "Emotional Literacy", es: "Alfabetización Emocional" },
-    RP: { en: "Recognize Patterns", es: "Reconocer Patrones" },
-    ACT: { en: "Consequential Thinking", es: "Pensamiento Consecuente" },
-    NE: { en: "Navigate Emotions", es: "Navegar Emociones" },
-    IM: { en: "Intrinsic Motivation", es: "Motivación Intrínseca" },
-    OP: { en: "Exercise Optimism", es: "Ejercitar Optimismo" },
-    EMP: { en: "Increase Empathy", es: "Incrementar Empatía" },
-    NG: { en: "Noble Goals", es: "Metas Nobles" },
+  const COMPETENCY_LABELS: Record<string, string> = {
+    EL: t("adminEqDashboard.competencyEL", "Alfabetización Emocional"),
+    RP: t("adminEqDashboard.competencyRP", "Reconocer Patrones"),
+    ACT: t("adminEqDashboard.competencyACT", "Pensamiento Consecuente"),
+    NE: t("adminEqDashboard.competencyNE", "Navegar Emociones"),
+    IM: t("adminEqDashboard.competencyIM", "Motivación Intrínseca"),
+    OP: t("adminEqDashboard.competencyOP", "Ejercitar Optimismo"),
+    EMP: t("adminEqDashboard.competencyEMP", "Incrementar Empatía"),
+    NG: t("adminEqDashboard.competencyNG", "Metas Nobles"),
   };
 
   useEffect(() => {
@@ -131,7 +129,7 @@ export default function EQDashboardGlobal() {
   const competencyData = stats?.competencies
     ? Object.entries(stats.competencies).map(([key, value]) => ({
         name: key,
-        fullName: COMPETENCY_LABELS[key]?.[locale === "en" ? "en" : "es"] || key,
+        fullName: COMPETENCY_LABELS[key] || key,
         value: Math.round(Number(value) || 0),
       }))
     : [];

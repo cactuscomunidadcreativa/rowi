@@ -4,53 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { FamilyRelationsSection } from "./_FamilyRelationsSection";
 
-const FAMILY_T = {
-  es: {
-    loadError: "Error cargando datos",
-    connError: "Error de conexión",
-    enterEmail: "Ingresa un email",
-    invitationSent: "Invitación enviada ✅",
-    inviteError: "Error enviando invitación",
-    networkError: "Error de red",
-    confirmRemove: "¿Estás seguro de remover a este miembro?",
-    removeError: "Error removiendo miembro",
-    loading: "Cargando...",
-  },
-  en: {
-    loadError: "Error loading data",
-    connError: "Connection error",
-    enterEmail: "Enter an email",
-    invitationSent: "Invitation sent ✅",
-    inviteError: "Error sending invitation",
-    networkError: "Network error",
-    confirmRemove: "Are you sure you want to remove this member?",
-    removeError: "Error removing member",
-    loading: "Loading...",
-  },
-  pt: {
-    loadError: "Erro ao carregar dados",
-    connError: "Erro de conexão",
-    enterEmail: "Digite um e-mail",
-    invitationSent: "Convite enviado ✅",
-    inviteError: "Erro ao enviar convite",
-    networkError: "Erro de rede",
-    confirmRemove: "Tem certeza de que deseja remover este membro?",
-    removeError: "Erro ao remover membro",
-    loading: "Carregando...",
-  },
-  it: {
-    loadError: "Errore nel caricamento dei dati",
-    connError: "Errore di connessione",
-    enterEmail: "Inserisci un'email",
-    invitationSent: "Invito inviato ✅",
-    inviteError: "Errore nell'invio dell'invito",
-    networkError: "Errore di rete",
-    confirmRemove: "Sei sicuro di voler rimuovere questo membro?",
-    removeError: "Errore nella rimozione del membro",
-    loading: "Caricamento...",
-  },
-};
-
 type FamilyMember = {
   id: string;
   name: string;
@@ -73,8 +26,7 @@ type FamilyPlanInfo = {
 };
 
 export default function FamilySettingsPage() {
-  const { lang } = useI18n();
-  const t = FAMILY_T[lang as keyof typeof FAMILY_T] || FAMILY_T.en;
+  const { t } = useI18n();
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [planInfo, setPlanInfo] = useState<FamilyPlanInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,10 +48,10 @@ export default function FamilySettingsPage() {
         setMembers(data.members || []);
         setPlanInfo(data.planInfo || null);
       } else {
-        setError(data.error || t.loadError);
+        setError(data.error || t("settingsFamily.loadError", "Error cargando datos"));
       }
     } catch {
-      setError(t.connError);
+      setError(t("settingsFamily.connError", "Error de conexión"));
     } finally {
       setLoading(false);
     }
@@ -111,7 +63,7 @@ export default function FamilySettingsPage() {
 
   async function inviteMember() {
     if (!email.trim()) {
-      setInviteMsg(t.enterEmail);
+      setInviteMsg(t("settingsFamily.enterEmail", "Ingresa un email"));
       return;
     }
 
@@ -131,22 +83,22 @@ export default function FamilySettingsPage() {
       const data = await res.json();
 
       if (data.ok) {
-        setInviteMsg(t.invitationSent);
+        setInviteMsg(t("settingsFamily.invitationSent", "Invitación enviada ✅"));
         setEmail("");
         setName("");
         loadFamilyData(); // Recargar lista
       } else {
-        setInviteMsg(data.error || t.inviteError);
+        setInviteMsg(data.error || t("settingsFamily.inviteError", "Error enviando invitación"));
       }
     } catch {
-      setInviteMsg(t.networkError);
+      setInviteMsg(t("settingsFamily.networkError", "Error de red"));
     } finally {
       setInviting(false);
     }
   }
 
   async function removeMember(memberId: string) {
-    if (!confirm(t.confirmRemove)) return;
+    if (!confirm(t("settingsFamily.confirmRemove", "¿Estás seguro de remover a este miembro?"))) return;
 
     try {
       const res = await fetch("/api/family/members", {
@@ -160,7 +112,7 @@ export default function FamilySettingsPage() {
         loadFamilyData();
       }
     } catch {
-      alert(t.removeError);
+      alert(t("settingsFamily.removeError", "Error removiendo miembro"));
     }
   }
 
@@ -168,7 +120,7 @@ export default function FamilySettingsPage() {
     return (
       <main className="space-y-4">
         <div className="rowi-card">
-          <div className="text-center py-8 text-gray-500">{t.loading}</div>
+          <div className="text-center py-8 text-gray-500">{t("settingsFamily.loading", "Cargando...")}</div>
         </div>
       </main>
     );
@@ -194,19 +146,18 @@ export default function FamilySettingsPage() {
         <section className="rowi-card text-center py-8">
           <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
           <span className="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wide mb-2">
-            Plan / Suscripción
+            {t("settingsFamily.planBadge", "Plan / Suscripción")}
           </span>
-          <h2 className="text-xl font-medium mb-2">Plan Familiar</h2>
+          <h2 className="text-xl font-medium mb-2">{t("settingsFamily.planTitle", "Plan Familiar")}</h2>
           <p className="text-gray-500 mb-4 max-w-md mx-auto">
-            <strong>Esto NO son los vínculos de arriba.</strong> El Plan Familiar es
-            una suscripción pagada que te permite compartir Rowi con hasta 6
-            personas con un pool de tokens compartido.
+            <strong>{t("settingsFamily.notLinksAbove", "Esto NO son los vínculos de arriba.")}</strong>{" "}
+            {t("settingsFamily.planExplainer", "El Plan Familiar es una suscripción pagada que te permite compartir Rowi con hasta 6 personas con un pool de tokens compartido.")}
           </p>
           <a
             href="/pricing"
             className="rowi-btn-primary inline-block"
           >
-            Ver Plan Familiar - $40/mes
+            {t("settingsFamily.viewPlanCta", "Ver Plan Familiar - $40/mes")}
           </a>
         </section>
       </main>
@@ -232,10 +183,10 @@ export default function FamilySettingsPage() {
       {/* SECCIÓN B — Plan Familiar (suscripción) */}
       <header className="rowi-card">
         <span className="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase tracking-wide mb-2">
-          Plan / Suscripción
+          {t("settingsFamily.planBadge", "Plan / Suscripción")}
         </span>
-        <h1 className="text-2xl font-semibold">Plan Familiar</h1>
-        <p className="rowi-muted text-sm">Suscripción compartida — gestiona los miembros con acceso a tu plan.</p>
+        <h1 className="text-2xl font-semibold">{t("settingsFamily.planTitle", "Plan Familiar")}</h1>
+        <p className="rowi-muted text-sm">{t("settingsFamily.planSubtitle", "Suscripción compartida — gestiona los miembros con acceso a tu plan.")}</p>
       </header>
 
       {/* Resumen del plan */}
@@ -245,23 +196,23 @@ export default function FamilySettingsPage() {
             <div className="text-3xl font-bold text-blue-600">
               {planInfo.currentMembers}/{planInfo.maxMembers}
             </div>
-            <div className="text-sm text-gray-500">Miembros</div>
+            <div className="text-sm text-gray-500">{t("settingsFamily.statMembers", "Miembros")}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-green-600">{spotsLeft}</div>
-            <div className="text-sm text-gray-500">Espacios disponibles</div>
+            <div className="text-sm text-gray-500">{t("settingsFamily.statSpotsAvailable", "Espacios disponibles")}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-purple-600">
               {planInfo.tokensRemaining}
             </div>
-            <div className="text-sm text-gray-500">Tokens restantes</div>
+            <div className="text-sm text-gray-500">{t("settingsFamily.statTokensRemaining", "Tokens restantes")}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-orange-600">
               {planInfo.tokensUsed}
             </div>
-            <div className="text-sm text-gray-500">Tokens usados</div>
+            <div className="text-sm text-gray-500">{t("settingsFamily.statTokensUsed", "Tokens usados")}</div>
           </div>
         </div>
       </section>
@@ -269,19 +220,19 @@ export default function FamilySettingsPage() {
       {/* Formulario de invitación */}
       {planInfo.canInvite && spotsLeft > 0 && (
         <section className="rowi-card space-y-3">
-          <h2 className="font-medium">Invitar familiar</h2>
+          <h2 className="font-medium">{t("settingsFamily.inviteHeading", "Invitar familiar")}</h2>
           <div className="grid gap-2 sm:grid-cols-3">
             <input
               type="email"
               className="rounded-md border px-3 py-2 bg-transparent"
-              placeholder="Email del familiar"
+              placeholder={t("settingsFamily.emailPlaceholder", "Email del familiar")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
               type="text"
               className="rounded-md border px-3 py-2 bg-transparent"
-              placeholder="Nombre (opcional)"
+              placeholder={t("settingsFamily.namePlaceholder", "Nombre (opcional)")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -290,7 +241,7 @@ export default function FamilySettingsPage() {
               onClick={inviteMember}
               disabled={inviting}
             >
-              {inviting ? "Enviando..." : "Enviar invitación"}
+              {inviting ? t("settingsFamily.sending", "Enviando...") : t("settingsFamily.sendInvite", "Enviar invitación")}
             </button>
           </div>
           {inviteMsg && (
@@ -304,16 +255,18 @@ export default function FamilySettingsPage() {
       {spotsLeft === 0 && (
         <section className="rowi-card bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200">
           <p className="text-yellow-700 dark:text-yellow-300">
-            ⚠️ Has alcanzado el límite de {planInfo.maxMembers} miembros familiares.
+            {t("settingsFamily.limitReachedPrefix", "⚠️ Has alcanzado el límite de")}{" "}
+            {planInfo.maxMembers}{" "}
+            {t("settingsFamily.limitReachedSuffix", "miembros familiares.")}
           </p>
         </section>
       )}
 
       {/* Lista de miembros */}
       <section className="rowi-card">
-        <h2 className="font-medium mb-4">Miembros de la familia</h2>
+        <h2 className="font-medium mb-4">{t("settingsFamily.membersHeading", "Miembros de la familia")}</h2>
         {members.length === 0 ? (
-          <p className="text-gray-500">Aún no hay miembros. ¡Invita a tu familia!</p>
+          <p className="text-gray-500">{t("settingsFamily.noMembers", "Aún no hay miembros. ¡Invita a tu familia!")}</p>
         ) : (
           <div className="space-y-3">
             {members.map((member) => (
@@ -341,10 +294,10 @@ export default function FamilySettingsPage() {
                     }`}
                   >
                     {member.status === "active"
-                      ? "Activo"
+                      ? t("settingsFamily.statusActive", "Activo")
                       : member.status === "invited"
-                      ? "Invitado"
-                      : "Pendiente"}
+                      ? t("settingsFamily.statusInvited", "Invitado")
+                      : t("settingsFamily.statusPending", "Pendiente")}
                   </span>
                   <span className="text-xs text-gray-400 capitalize">{member.role}</span>
                   {planInfo.isOwner && member.role !== "owner" && (
@@ -352,7 +305,7 @@ export default function FamilySettingsPage() {
                       className="text-red-500 text-sm hover:underline"
                       onClick={() => removeMember(member.id)}
                     >
-                      Remover
+                      {t("settingsFamily.remove", "Remover")}
                     </button>
                   )}
                 </div>

@@ -68,102 +68,30 @@ const rarityColors: Record<string, string> = {
   LEGENDARY: "bg-amber-500",
 };
 
-const t = {
-  es: {
-    title: "Achievements",
-    subtitle: "Gestiona logros y recompensas para los usuarios",
-    search: "Buscar logros...",
-    addNew: "Nuevo Logro",
-    filters: {
-      all: "Todos",
-      general: "General",
-      chat: "Chat",
-      eq: "EQ",
-      community: "Comunidad",
-      learning: "Aprendizaje",
-      social: "Social",
-      streak: "Rachas",
-      special: "Especial",
-    },
-    columns: {
-      achievement: "Logro",
-      category: "Categoría",
-      requirement: "Requisito",
-      points: "Puntos",
-      rarity: "Rareza",
-      users: "Usuarios",
-      status: "Estado",
-      actions: "Acciones",
-    },
-    rarity: {
-      COMMON: "Común",
-      UNCOMMON: "Poco común",
-      RARE: "Raro",
-      EPIC: "Épico",
-      LEGENDARY: "Legendario",
-    },
-    active: "Activo",
-    inactive: "Inactivo",
-    edit: "Editar",
-    delete: "Eliminar",
-    back: "Volver",
-    loading: "Cargando...",
-    noResults: "No se encontraron logros",
-  },
-  en: {
-    title: "Achievements",
-    subtitle: "Manage achievements and rewards for users",
-    search: "Search achievements...",
-    addNew: "New Achievement",
-    filters: {
-      all: "All",
-      general: "General",
-      chat: "Chat",
-      eq: "EQ",
-      community: "Community",
-      learning: "Learning",
-      social: "Social",
-      streak: "Streaks",
-      special: "Special",
-    },
-    columns: {
-      achievement: "Achievement",
-      category: "Category",
-      requirement: "Requirement",
-      points: "Points",
-      rarity: "Rarity",
-      users: "Users",
-      status: "Status",
-      actions: "Actions",
-    },
-    rarity: {
-      COMMON: "Common",
-      UNCOMMON: "Uncommon",
-      RARE: "Rare",
-      EPIC: "Epic",
-      LEGENDARY: "Legendary",
-    },
-    active: "Active",
-    inactive: "Inactive",
-    edit: "Edit",
-    delete: "Delete",
-    back: "Back",
-    loading: "Loading...",
-    noResults: "No achievements found",
-  },
+const rarityKeys: Record<string, string> = {
+  COMMON: "gamAchievements.rarity.common",
+  UNCOMMON: "gamAchievements.rarity.uncommon",
+  RARE: "gamAchievements.rarity.rare",
+  EPIC: "gamAchievements.rarity.epic",
+  LEGENDARY: "gamAchievements.rarity.legendary",
+};
+
+const rarityFallbacks: Record<string, string> = {
+  COMMON: "Común",
+  UNCOMMON: "Poco común",
+  RARE: "Raro",
+  EPIC: "Épico",
+  LEGENDARY: "Legendario",
 };
 
 export default function AchievementsPage() {
   const router = useRouter();
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [stats, setStats] = useState<any>(null);
-
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
 
   useEffect(() => {
     loadAchievements();
@@ -217,15 +145,15 @@ export default function AchievementsPage() {
   });
 
   const categories = [
-    { key: "all", label: labels.filters.all },
-    { key: "general", label: labels.filters.general },
-    { key: "chat", label: labels.filters.chat },
-    { key: "eq", label: labels.filters.eq },
-    { key: "community", label: labels.filters.community },
-    { key: "learning", label: labels.filters.learning },
-    { key: "social", label: labels.filters.social },
-    { key: "streak", label: labels.filters.streak },
-    { key: "special", label: labels.filters.special },
+    { key: "all", label: t("gamAchievements.filters.all", "Todos") },
+    { key: "general", label: t("gamAchievements.filters.general", "General") },
+    { key: "chat", label: t("gamAchievements.filters.chat", "Chat") },
+    { key: "eq", label: t("gamAchievements.filters.eq", "EQ") },
+    { key: "community", label: t("gamAchievements.filters.community", "Comunidad") },
+    { key: "learning", label: t("gamAchievements.filters.learning", "Aprendizaje") },
+    { key: "social", label: t("gamAchievements.filters.social", "Social") },
+    { key: "streak", label: t("gamAchievements.filters.streak", "Rachas") },
+    { key: "special", label: t("gamAchievements.filters.special", "Especial") },
   ];
 
   if (loading) {
@@ -233,7 +161,7 @@ export default function AchievementsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("gamAchievements.loading", "Cargando...")}</span>
         </div>
       </div>
     );
@@ -255,15 +183,15 @@ export default function AchievementsPage() {
               <Trophy className="w-6 h-6 text-yellow-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">{labels.subtitle}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamAchievements.title", "Achievements")}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t("gamAchievements.subtitle", "Gestiona logros y recompensas para los usuarios")}</p>
             </div>
           </div>
         </div>
 
         <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" />
-          {labels.addNew}
+          {t("gamAchievements.addNew", "Nuevo Logro")}
         </button>
       </div>
 
@@ -272,7 +200,7 @@ export default function AchievementsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-yellow-500" />
-            Total Logros
+            {t("gamAchievements.stats.totalAchievements", "Total Logros")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalAchievements || 0}
@@ -281,7 +209,7 @@ export default function AchievementsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
-            Usuarios con Logros
+            {t("gamAchievements.stats.usersWithAchievements", "Usuarios con Logros")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.usersWithAchievements || 0}
@@ -290,7 +218,7 @@ export default function AchievementsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Zap className="w-4 h-4 text-purple-500" />
-            Categorías
+            {t("gamAchievements.stats.categories", "Categorías")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.categories?.length || 0}
@@ -299,7 +227,7 @@ export default function AchievementsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Award className="w-4 h-4 text-green-500" />
-            Logros Activos
+            {t("gamAchievements.stats.activeAchievements", "Logros Activos")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {achievements.filter((a) => a.isActive).length}
@@ -314,7 +242,7 @@ export default function AchievementsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder={labels.search}
+            placeholder={t("gamAchievements.search", "Buscar logros...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500/50"
@@ -346,25 +274,25 @@ export default function AchievementsPage() {
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700/50">
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.achievement}
+                  {t("gamAchievements.columns.achievement", "Logro")}
                 </th>
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.category}
+                  {t("gamAchievements.columns.category", "Categoría")}
                 </th>
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.points}
+                  {t("gamAchievements.columns.points", "Puntos")}
                 </th>
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.rarity}
+                  {t("gamAchievements.columns.rarity", "Rareza")}
                 </th>
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.users}
+                  {t("gamAchievements.columns.users", "Usuarios")}
                 </th>
                 <th className="text-left p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.status}
+                  {t("gamAchievements.columns.status", "Estado")}
                 </th>
                 <th className="text-right p-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {labels.columns.actions}
+                  {t("gamAchievements.columns.actions", "Acciones")}
                 </th>
               </tr>
             </thead>
@@ -372,7 +300,7 @@ export default function AchievementsPage() {
               {filteredAchievements.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-gray-500">
-                    {labels.noResults}
+                    {t("gamAchievements.noResults", "No se encontraron logros")}
                   </td>
                 </tr>
               ) : (
@@ -425,7 +353,12 @@ export default function AchievementsPage() {
                             rarityColors[achievement.rarity]
                           }`}
                         >
-                          {labels.rarity[achievement.rarity as keyof typeof labels.rarity]}
+                          {rarityKeys[achievement.rarity]
+                            ? t(
+                                rarityKeys[achievement.rarity],
+                                rarityFallbacks[achievement.rarity],
+                              )
+                            : achievement.rarity}
                         </span>
                       </td>
                       <td className="p-4">
@@ -445,12 +378,12 @@ export default function AchievementsPage() {
                           {achievement.isActive ? (
                             <>
                               <Check className="w-3 h-3" />
-                              {labels.active}
+                              {t("gamAchievements.active", "Activo")}
                             </>
                           ) : (
                             <>
                               <X className="w-3 h-3" />
-                              {labels.inactive}
+                              {t("gamAchievements.inactive", "Inactivo")}
                             </>
                           )}
                         </button>

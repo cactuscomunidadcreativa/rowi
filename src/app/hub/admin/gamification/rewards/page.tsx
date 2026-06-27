@@ -65,68 +65,9 @@ const typeColors: Record<string, string> = {
   TOKENS: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400",
 };
 
-const t = {
-  es: {
-    title: "Recompensas",
-    subtitle: "Gestiona las recompensas canjeables",
-    newReward: "Nueva Recompensa",
-    loading: "Cargando recompensas...",
-    search: "Buscar recompensas...",
-    filters: {
-      all: "Todos",
-    },
-    stats: {
-      total: "Total Recompensas",
-      active: "Activas",
-      totalClaims: "Total Canjes",
-      featured: "Destacadas",
-    },
-    card: {
-      featured: "Destacado",
-      pts: "pts",
-      stock: "Stock",
-      unlimited: "Ilimitado",
-      active: "Activo",
-      inactive: "Inactivo",
-      maxPerUser: "Máx",
-      perUser: "/usuario",
-    },
-    noResults: "No se encontraron recompensas",
-  },
-  en: {
-    title: "Rewards",
-    subtitle: "Manage redeemable rewards",
-    newReward: "New Reward",
-    loading: "Loading rewards...",
-    search: "Search rewards...",
-    filters: {
-      all: "All",
-    },
-    stats: {
-      total: "Total Rewards",
-      active: "Active",
-      totalClaims: "Total Claims",
-      featured: "Featured",
-    },
-    card: {
-      featured: "Featured",
-      pts: "pts",
-      stock: "Stock",
-      unlimited: "Unlimited",
-      active: "Active",
-      inactive: "Inactive",
-      maxPerUser: "Max",
-      perUser: "/user",
-    },
-    noResults: "No rewards found",
-  },
-};
-
 export default function RewardsPage() {
   const router = useRouter();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [search, setSearch] = useState("");
@@ -175,7 +116,7 @@ export default function RewardsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("gamRewards.loading", "Cargando recompensas...")}</span>
         </div>
       </div>
     );
@@ -197,9 +138,9 @@ export default function RewardsPage() {
               <Gift className="w-6 h-6 text-green-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamRewards.title", "Recompensas")}</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {labels.subtitle}
+                {t("gamRewards.subtitle", "Gestiona las recompensas canjeables")}
               </p>
             </div>
           </div>
@@ -207,7 +148,7 @@ export default function RewardsPage() {
 
         <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" />
-          {labels.newReward}
+          {t("gamRewards.newReward", "Nueva Recompensa")}
         </button>
       </div>
 
@@ -216,28 +157,28 @@ export default function RewardsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Gift className="w-4 h-4 text-green-500" />
-            {labels.stats.total}
+            {t("gamRewards.statsTotal", "Total Recompensas")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Check className="w-4 h-4 text-blue-500" />
-            {labels.stats.active}
+            {t("gamRewards.statsActive", "Activas")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.active}</p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Coins className="w-4 h-4 text-amber-500" />
-            {labels.stats.totalClaims}
+            {t("gamRewards.statsTotalClaims", "Total Canjes")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.totalClaims}</p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Crown className="w-4 h-4 text-purple-500" />
-            {labels.stats.featured}
+            {t("gamRewards.statsFeatured", "Destacadas")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.featured}</p>
         </div>
@@ -250,7 +191,7 @@ export default function RewardsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder={labels.search}
+            placeholder={t("gamRewards.search", "Buscar recompensas...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
@@ -272,7 +213,7 @@ export default function RewardsPage() {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {type === "all" ? labels.filters.all : type}
+                {type === "all" ? t("gamRewards.filtersAll", "Todos") : type}
               </button>
             );
           })}
@@ -283,7 +224,7 @@ export default function RewardsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredRewards.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
-            {labels.noResults}
+            {t("gamRewards.noResults", "No se encontraron recompensas")}
           </div>
         ) : (
           filteredRewards.map((reward) => {
@@ -301,7 +242,7 @@ export default function RewardsPage() {
                 {/* Featured Badge */}
                 {reward.isFeatured && (
                   <div className="absolute -top-2 -right-2 px-2 py-1 bg-amber-500 text-gray-900 dark:text-white text-xs font-medium rounded-full">
-                    {labels.card.featured}
+                    {t("gamRewards.cardFeatured", "Destacado")}
                   </div>
                 )}
 
@@ -352,13 +293,13 @@ export default function RewardsPage() {
                     <span className="font-bold text-gray-900 dark:text-white">
                       {reward.cost.toLocaleString()}
                     </span>
-                    <span className="text-xs text-gray-500">{labels.card.pts}</span>
+                    <span className="text-xs text-gray-500">{t("gamRewards.cardPts", "pts")}</span>
                   </div>
                   <div className="text-sm text-gray-500">
                     {reward.stock !== null && reward.stock !== undefined ? (
-                      <span>{labels.card.stock}: {reward.stock}</span>
+                      <span>{t("gamRewards.cardStock", "Stock")}: {reward.stock}</span>
                     ) : (
-                      <span>{labels.card.unlimited}</span>
+                      <span>{t("gamRewards.cardUnlimited", "Ilimitado")}</span>
                     )}
                   </div>
                 </div>
@@ -373,17 +314,17 @@ export default function RewardsPage() {
                     {reward.isActive ? (
                       <>
                         <Check className="w-3 h-3" />
-                        {labels.card.active}
+                        {t("gamRewards.cardActive", "Activo")}
                       </>
                     ) : (
                       <>
                         <X className="w-3 h-3" />
-                        {labels.card.inactive}
+                        {t("gamRewards.cardInactive", "Inactivo")}
                       </>
                     )}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {labels.card.maxPerUser}: {reward.maxPerUser}{labels.card.perUser}
+                    {t("gamRewards.cardMaxPerUser", "Máx")}: {reward.maxPerUser}{t("gamRewards.cardPerUser", "/usuario")}
                   </span>
                 </div>
               </div>

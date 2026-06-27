@@ -36,80 +36,9 @@ interface LevelDefinition {
   userCount?: number;
 }
 
-const t = {
-  es: {
-    title: "Niveles",
-    subtitle: "Define la progresión y títulos de cada nivel",
-    newLevel: "Nuevo Nivel",
-    loading: "Cargando niveles...",
-    stats: {
-      totalLevels: "Total Niveles",
-      totalUsers: "Usuarios Totales",
-      avgLevel: "Nivel Promedio",
-      maxReached: "Máximo Alcanzado",
-      level: "Nivel",
-    },
-    card: {
-      points: "pts",
-      multiplier: "puntos",
-      users: "Usuarios",
-      ofTotal: "del total",
-    },
-    chart: {
-      title: "Progresión de Niveles",
-      levelAbbr: "Nv.",
-    },
-    modal: {
-      editTitle: "Editar Nivel",
-      titleES: "Título (ES)",
-      titleEN: "Título (EN)",
-      minPoints: "Puntos Mínimos",
-      multiplier: "Multiplicador",
-      color: "Color",
-      cancel: "Cancelar",
-      save: "Guardar",
-    },
-  },
-  en: {
-    title: "Levels",
-    subtitle: "Define progression and titles for each level",
-    newLevel: "New Level",
-    loading: "Loading levels...",
-    stats: {
-      totalLevels: "Total Levels",
-      totalUsers: "Total Users",
-      avgLevel: "Average Level",
-      maxReached: "Max Reached",
-      level: "Level",
-    },
-    card: {
-      points: "pts",
-      multiplier: "points",
-      users: "Users",
-      ofTotal: "of total",
-    },
-    chart: {
-      title: "Level Progression",
-      levelAbbr: "Lv.",
-    },
-    modal: {
-      editTitle: "Edit Level",
-      titleES: "Title (ES)",
-      titleEN: "Title (EN)",
-      minPoints: "Min Points",
-      multiplier: "Multiplier",
-      color: "Color",
-      cancel: "Cancel",
-      save: "Save",
-    },
-  },
-};
-
 export default function LevelsPage() {
   const router = useRouter();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [levels, setLevels] = useState<LevelDefinition[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -160,7 +89,7 @@ export default function LevelsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("gamLevels.loading", "Cargando niveles...")}</span>
         </div>
       </div>
     );
@@ -182,9 +111,9 @@ export default function LevelsPage() {
               <Crown className="w-6 h-6 text-purple-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamLevels.title", "Niveles")}</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {labels.subtitle}
+                {t("gamLevels.subtitle", "Define la progresión y títulos de cada nivel")}
               </p>
             </div>
           </div>
@@ -206,7 +135,7 @@ export default function LevelsPage() {
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
-          {labels.newLevel}
+          {t("gamLevels.newLevel", "Nuevo Nivel")}
         </button>
       </div>
 
@@ -215,21 +144,21 @@ export default function LevelsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Crown className="w-4 h-4 text-purple-500" />
-            {labels.stats.totalLevels}
+            {t("gamLevels.stats.totalLevels", "Total Niveles")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{levels.length}</p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
-            {labels.stats.totalUsers}
+            {t("gamLevels.stats.totalUsers", "Usuarios Totales")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalUsers}</p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            {labels.stats.avgLevel}
+            {t("gamLevels.stats.avgLevel", "Nivel Promedio")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.avgLevel || 1}
@@ -238,10 +167,10 @@ export default function LevelsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Star className="w-4 h-4 text-amber-500" />
-            {labels.stats.maxReached}
+            {t("gamLevels.stats.maxReached", "Máximo Alcanzado")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {labels.stats.level} {stats?.maxLevelReached || 1}
+            {t("gamLevels.stats.level", "Nivel")} {stats?.maxLevelReached || 1}
           </p>
         </div>
       </div>
@@ -298,21 +227,21 @@ export default function LevelsPage() {
                 ) : (
                   <span className="text-gray-500"> +</span>
                 )}
-                <span className="text-gray-500"> pts</span>
+                <span className="text-gray-500"> {t("gamLevels.card.points", "pts")}</span>
               </div>
 
               {/* Multiplier */}
               {level.multiplier > 1 && (
                 <div className="flex items-center gap-1 text-sm text-amber-400 mb-3">
                   <Zap className="w-4 h-4" />
-                  <span>x{level.multiplier} {labels.card.multiplier}</span>
+                  <span>x{level.multiplier} {t("gamLevels.card.multiplier", "puntos")}</span>
                 </div>
               )}
 
               {/* User Count */}
               <div className="pt-3 border-t border-gray-200 dark:border-gray-700/50">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">{labels.card.users}</span>
+                  <span className="text-gray-500">{t("gamLevels.card.users", "Usuarios")}</span>
                   <span className="text-gray-900 dark:text-white font-medium">
                     {level.userCount || 0}
                   </span>
@@ -326,7 +255,7 @@ export default function LevelsPage() {
                     }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{userPercent}% {labels.card.ofTotal}</p>
+                <p className="text-xs text-gray-500 mt-1">{userPercent}% {t("gamLevels.card.ofTotal", "del total")}</p>
               </div>
             </div>
           );
@@ -337,7 +266,7 @@ export default function LevelsPage() {
       <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-green-500" />
-          {labels.chart.title}
+          {t("gamLevels.chart.title", "Progresión de Niveles")}
         </h3>
         <div className="relative h-24">
           <div className="absolute inset-0 flex items-end justify-between gap-1">
@@ -357,7 +286,7 @@ export default function LevelsPage() {
                     }}
                   />
                   <span className="text-xs text-gray-500 mt-2">
-                    {labels.chart.levelAbbr}{level.level}
+                    {t("gamLevels.chart.levelAbbr", "Nv.")}{level.level}
                   </span>
                 </div>
               );
@@ -371,13 +300,13 @@ export default function LevelsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {labels.modal.editTitle} {editingLevel.level}
+              {t("gamLevels.modal.editTitle", "Editar Nivel")} {editingLevel.level}
             </h3>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  {labels.modal.titleES}
+                  {t("gamLevels.modal.titleES", "Título (ES)")}
                 </label>
                 <input
                   type="text"
@@ -391,7 +320,7 @@ export default function LevelsPage() {
 
               <div>
                 <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  {labels.modal.titleEN}
+                  {t("gamLevels.modal.titleEN", "Título (EN)")}
                 </label>
                 <input
                   type="text"
@@ -406,7 +335,7 @@ export default function LevelsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                    {labels.modal.minPoints}
+                    {t("gamLevels.modal.minPoints", "Puntos Mínimos")}
                   </label>
                   <input
                     type="number"
@@ -422,7 +351,7 @@ export default function LevelsPage() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                    {labels.modal.multiplier}
+                    {t("gamLevels.modal.multiplier", "Multiplicador")}
                   </label>
                   <input
                     type="number"
@@ -440,7 +369,7 @@ export default function LevelsPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{labels.modal.color}</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">{t("gamLevels.modal.color", "Color")}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -467,13 +396,13 @@ export default function LevelsPage() {
                 onClick={() => setEditingLevel(null)}
                 className="flex-1 px-4 py-2 bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
               >
-                {labels.modal.cancel}
+                {t("gamLevels.modal.cancel", "Cancelar")}
               </button>
               <button
                 onClick={() => updateLevel(editingLevel)}
                 className="flex-1 px-4 py-2 bg-purple-500 text-gray-900 dark:text-white rounded-lg hover:bg-purple-600 transition-colors"
               >
-                {labels.modal.save}
+                {t("gamLevels.modal.save", "Guardar")}
               </button>
             </div>
           </div>

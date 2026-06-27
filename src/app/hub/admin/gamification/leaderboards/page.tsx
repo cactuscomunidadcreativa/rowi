@@ -34,75 +34,18 @@ interface LeaderboardEntry {
   isCurrentUser?: boolean;
 }
 
-const t = {
-  es: {
-    title: "Leaderboards",
-    subtitle: "Rankings y competencias de usuarios",
-    tabs: {
-      points: "Puntos",
-      streak: "Rachas",
-      achievements: "Logros",
-    },
-    stats: {
-      totalUsers: "Usuarios Totales",
-      globalPoints: "Puntos Globales",
-      achievementsUnlocked: "Logros Desbloqueados",
-      avgStreak: "Racha Promedio",
-      days: "días",
-    },
-    table: {
-      rank: "Rank",
-      user: "Usuario",
-      points: "Puntos",
-      streak: "Racha",
-      achievements: "Logros",
-      level: "Nivel",
-      days: "Días",
-    },
-    noData: "No hay datos en el leaderboard aún",
-  },
-  en: {
-    title: "Leaderboards",
-    subtitle: "User rankings and competitions",
-    tabs: {
-      points: "Points",
-      streak: "Streaks",
-      achievements: "Achievements",
-    },
-    stats: {
-      totalUsers: "Total Users",
-      globalPoints: "Global Points",
-      achievementsUnlocked: "Achievements Unlocked",
-      avgStreak: "Average Streak",
-      days: "days",
-    },
-    table: {
-      rank: "Rank",
-      user: "User",
-      points: "Points",
-      streak: "Streak",
-      achievements: "Achievements",
-      level: "Level",
-      days: "Days",
-    },
-    noData: "No leaderboard data yet",
-  },
-};
-
 export default function LeaderboardsPage() {
   const router = useRouter();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("points");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [stats, setStats] = useState<any>(null);
 
   const tabs = [
-    { id: "points", label: labels.tabs.points, icon: Trophy },
-    { id: "streak", label: labels.tabs.streak, icon: Flame },
-    { id: "achievements", label: labels.tabs.achievements, icon: Award },
+    { id: "points", label: t("gamLeaderboards.tabs.points", "Puntos"), icon: Trophy },
+    { id: "streak", label: t("gamLeaderboards.tabs.streak", "Rachas"), icon: Flame },
+    { id: "achievements", label: t("gamLeaderboards.tabs.achievements", "Logros"), icon: Award },
   ];
 
   useEffect(() => {
@@ -155,9 +98,9 @@ export default function LeaderboardsPage() {
             <BarChart3 className="w-6 h-6 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamLeaderboards.title", "Leaderboards")}</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {labels.subtitle}
+              {t("gamLeaderboards.subtitle", "Rankings y competencias de usuarios")}
             </p>
           </div>
         </div>
@@ -168,7 +111,7 @@ export default function LeaderboardsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
-            {labels.stats.totalUsers}
+            {t("gamLeaderboards.stats.totalUsers", "Usuarios Totales")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalUsers || 0}
@@ -177,7 +120,7 @@ export default function LeaderboardsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-yellow-500" />
-            {labels.stats.globalPoints}
+            {t("gamLeaderboards.stats.globalPoints", "Puntos Globales")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {(stats?.totalPointsGlobal || 0).toLocaleString()}
@@ -186,7 +129,7 @@ export default function LeaderboardsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Award className="w-4 h-4 text-purple-500" />
-            {labels.stats.achievementsUnlocked}
+            {t("gamLeaderboards.stats.achievementsUnlocked", "Logros Desbloqueados")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.totalAchievementsUnlocked || 0}
@@ -195,10 +138,10 @@ export default function LeaderboardsPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Flame className="w-4 h-4 text-orange-500" />
-            {labels.stats.avgStreak}
+            {t("gamLeaderboards.stats.avgStreak", "Racha Promedio")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {stats?.averageStreak || 0} {labels.stats.days}
+            {stats?.averageStreak || 0} {t("gamLeaderboards.stats.days", "días")}
           </p>
         </div>
       </div>
@@ -229,7 +172,7 @@ export default function LeaderboardsPage() {
           </div>
         ) : leaderboard.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
-            {labels.noData}
+            {t("gamLeaderboards.noData", "No hay datos en el leaderboard aún")}
           </div>
         ) : (
           <div className="divide-y divide-gray-700/30">
@@ -257,9 +200,9 @@ export default function LeaderboardsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {activeTab === "points" && labels.table.points}
-                      {activeTab === "streak" && labels.table.days}
-                      {activeTab === "achievements" && labels.table.achievements}
+                      {activeTab === "points" && t("gamLeaderboards.table.points", "Puntos")}
+                      {activeTab === "streak" && t("gamLeaderboards.table.days", "Días")}
+                      {activeTab === "achievements" && t("gamLeaderboards.table.achievements", "Logros")}
                     </span>
                     <span className="text-xl font-bold text-gray-900 dark:text-white">
                       {entry.score.toLocaleString()}
@@ -274,12 +217,12 @@ export default function LeaderboardsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-gray-500 text-sm">
-                    <th className="pb-3 pl-4">{labels.table.rank}</th>
-                    <th className="pb-3">{labels.table.user}</th>
+                    <th className="pb-3 pl-4">{t("gamLeaderboards.table.rank", "Rank")}</th>
+                    <th className="pb-3">{t("gamLeaderboards.table.user", "Usuario")}</th>
                     <th className="pb-3 text-right pr-4">
-                      {activeTab === "points" && labels.table.points}
-                      {activeTab === "streak" && labels.table.streak}
-                      {activeTab === "achievements" && labels.table.achievements}
+                      {activeTab === "points" && t("gamLeaderboards.table.points", "Puntos")}
+                      {activeTab === "streak" && t("gamLeaderboards.table.streak", "Racha")}
+                      {activeTab === "achievements" && t("gamLeaderboards.table.achievements", "Logros")}
                     </th>
                   </tr>
                 </thead>
@@ -303,7 +246,7 @@ export default function LeaderboardsPage() {
                             <p className="font-medium text-gray-900 dark:text-white">{entry.name}</p>
                             {entry.level && (
                               <p className="text-xs text-gray-500">
-                                {labels.table.level} {entry.level}
+                                {t("gamLeaderboards.table.level", "Nivel")} {entry.level}
                               </p>
                             )}
                           </div>

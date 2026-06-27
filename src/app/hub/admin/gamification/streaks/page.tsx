@@ -37,104 +37,21 @@ interface UserStreak {
   multiplier: number;
 }
 
-const t = {
-  es: {
-    title: "Rachas",
-    subtitle: "Configura multiplicadores y bonificaciones",
-    loading: "Cargando rachas...",
-    stats: {
-      usersWithStreak: "Usuarios con Racha",
-      avgStreak: "Racha Promedio",
-      highestStreak: "Racha Más Alta",
-      streaks7Days: "Rachas +7 días",
-      days: "días",
-    },
-    tiers: {
-      title: "Niveles de Racha y Multiplicadores",
-      days: "días",
-      bonus: "pts bonus",
-      tierNames: {
-        3: "Inicio de Racha",
-        7: "Semana Completa",
-        14: "Quincena Activa",
-        30: "Mes Imparable",
-        60: "Dedicación Total",
-        100: "Leyenda Constante",
-      },
-    },
-    topStreaks: {
-      title: "Top Rachas Actuales",
-      days: "días",
-      noData: "No hay rachas activas aún",
-    },
-    distribution: {
-      title: "Distribución de Rachas",
-      noStreak: "Sin racha (0 días)",
-      starting: "Inicio (1-2 días)",
-      inProgress: "En progreso (3-6 días)",
-      weekPlus: "Semana+ (7-29 días)",
-      monthPlus: "Mes+ (30+ días)",
-      users: "usuarios",
-    },
-  },
-  en: {
-    title: "Streaks",
-    subtitle: "Configure multipliers and bonuses",
-    loading: "Loading streaks...",
-    stats: {
-      usersWithStreak: "Users with Streak",
-      avgStreak: "Average Streak",
-      highestStreak: "Highest Streak",
-      streaks7Days: "Streaks 7+ days",
-      days: "days",
-    },
-    tiers: {
-      title: "Streak Tiers and Multipliers",
-      days: "days",
-      bonus: "pts bonus",
-      tierNames: {
-        3: "Streak Start",
-        7: "Full Week",
-        14: "Active Fortnight",
-        30: "Unstoppable Month",
-        60: "Total Dedication",
-        100: "Constant Legend",
-      },
-    },
-    topStreaks: {
-      title: "Top Current Streaks",
-      days: "days",
-      noData: "No active streaks yet",
-    },
-    distribution: {
-      title: "Streak Distribution",
-      noStreak: "No streak (0 days)",
-      starting: "Starting (1-2 days)",
-      inProgress: "In progress (3-6 days)",
-      weekPlus: "Week+ (7-29 days)",
-      monthPlus: "Month+ (30+ days)",
-      users: "users",
-    },
-  },
-};
-
 export default function StreaksPage() {
   const router = useRouter();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [topStreaks, setTopStreaks] = useState<UserStreak[]>([]);
 
   // Configuración de multiplicadores por racha
   const streakTiers: StreakConfig[] = [
-    { days: 3, multiplier: 1.1, bonus: 5, name: labels.tiers.tierNames[3] },
-    { days: 7, multiplier: 1.25, bonus: 15, name: labels.tiers.tierNames[7] },
-    { days: 14, multiplier: 1.4, bonus: 30, name: labels.tiers.tierNames[14] },
-    { days: 30, multiplier: 1.6, bonus: 75, name: labels.tiers.tierNames[30] },
-    { days: 60, multiplier: 1.8, bonus: 150, name: labels.tiers.tierNames[60] },
-    { days: 100, multiplier: 2.0, bonus: 300, name: labels.tiers.tierNames[100] },
+    { days: 3, multiplier: 1.1, bonus: 5, name: t("gamStreaks.tierName3", "Inicio de Racha") },
+    { days: 7, multiplier: 1.25, bonus: 15, name: t("gamStreaks.tierName7", "Semana Completa") },
+    { days: 14, multiplier: 1.4, bonus: 30, name: t("gamStreaks.tierName14", "Quincena Activa") },
+    { days: 30, multiplier: 1.6, bonus: 75, name: t("gamStreaks.tierName30", "Mes Imparable") },
+    { days: 60, multiplier: 1.8, bonus: 150, name: t("gamStreaks.tierName60", "Dedicación Total") },
+    { days: 100, multiplier: 2.0, bonus: 300, name: t("gamStreaks.tierName100", "Leyenda Constante") },
   ];
 
   useEffect(() => {
@@ -172,7 +89,7 @@ export default function StreaksPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("gamStreaks.loading", "Cargando rachas...")}</span>
         </div>
       </div>
     );
@@ -193,9 +110,9 @@ export default function StreaksPage() {
             <Flame className="w-6 h-6 text-orange-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamStreaks.title", "Rachas")}</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {labels.subtitle}
+              {t("gamStreaks.subtitle", "Configura multiplicadores y bonificaciones")}
             </p>
           </div>
         </div>
@@ -206,7 +123,7 @@ export default function StreaksPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Users className="w-4 h-4 text-blue-500" />
-            {labels.stats.usersWithStreak}
+            {t("gamStreaks.statsUsersWithStreak", "Usuarios con Racha")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {topStreaks.filter((s) => s.currentStreak > 0).length}
@@ -215,25 +132,25 @@ export default function StreaksPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            {labels.stats.avgStreak}
+            {t("gamStreaks.statsAvgStreak", "Racha Promedio")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {stats?.averageStreak || 0} {labels.stats.days}
+            {stats?.averageStreak || 0} {t("gamStreaks.statsDays", "días")}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Trophy className="w-4 h-4 text-amber-500" />
-            {labels.stats.highestStreak}
+            {t("gamStreaks.statsHighestStreak", "Racha Más Alta")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {topStreaks[0]?.currentStreak || 0} {labels.stats.days}
+            {topStreaks[0]?.currentStreak || 0} {t("gamStreaks.statsDays", "días")}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Calendar className="w-4 h-4 text-purple-500" />
-            {labels.stats.streaks7Days}
+            {t("gamStreaks.statsStreaks7Days", "Rachas +7 días")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {topStreaks.filter((s) => s.currentStreak >= 7).length}
@@ -245,7 +162,7 @@ export default function StreaksPage() {
       <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-amber-500" />
-          {labels.tiers.title}
+          {t("gamStreaks.tiersTitle", "Niveles de Racha y Multiplicadores")}
         </h3>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -270,12 +187,12 @@ export default function StreaksPage() {
                 <Flame className="w-4 h-4 text-gray-900 dark:text-white" />
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{tier.days}+ {labels.tiers.days}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{tier.days}+ {t("gamStreaks.tiersDays", "días")}</p>
               <p className="font-semibold text-gray-900 dark:text-white text-lg mb-2">
                 x{tier.multiplier}
               </p>
               <p className="text-xs text-gray-500">{tier.name}</p>
-              <p className="text-xs text-amber-400 mt-1">+{tier.bonus} {labels.tiers.bonus}</p>
+              <p className="text-xs text-amber-400 mt-1">+{tier.bonus} {t("gamStreaks.tiersBonus", "pts bonus")}</p>
             </div>
           ))}
         </div>
@@ -287,7 +204,7 @@ export default function StreaksPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-500" />
-            {labels.topStreaks.title}
+            {t("gamStreaks.topStreaksTitle", "Top Rachas Actuales")}
           </h3>
 
           <div className="space-y-3">
@@ -325,14 +242,14 @@ export default function StreaksPage() {
                   <span className="font-bold text-gray-900 dark:text-white">
                     {streak.currentStreak}
                   </span>
-                  <span className="text-xs text-gray-500">{labels.topStreaks.days}</span>
+                  <span className="text-xs text-gray-500">{t("gamStreaks.topStreaksDays", "días")}</span>
                 </div>
               </div>
             ))}
 
             {topStreaks.length === 0 && (
               <p className="text-center text-gray-500 py-8">
-                {labels.topStreaks.noData}
+                {t("gamStreaks.topStreaksNoData", "No hay rachas activas aún")}
               </p>
             )}
           </div>
@@ -342,16 +259,16 @@ export default function StreaksPage() {
         <div className="bg-white dark:bg-gray-800/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-5 h-5 text-blue-500" />
-            {labels.distribution.title}
+            {t("gamStreaks.distributionTitle", "Distribución de Rachas")}
           </h3>
 
           <div className="space-y-4">
             {[
-              { label: labels.distribution.noStreak, min: 0, max: 0, color: "bg-gray-500" },
-              { label: labels.distribution.starting, min: 1, max: 2, color: "bg-amber-500" },
-              { label: labels.distribution.inProgress, min: 3, max: 6, color: "bg-orange-500" },
-              { label: labels.distribution.weekPlus, min: 7, max: 29, color: "bg-red-500" },
-              { label: labels.distribution.monthPlus, min: 30, max: Infinity, color: "bg-purple-500" },
+              { label: t("gamStreaks.distributionNoStreak", "Sin racha (0 días)"), min: 0, max: 0, color: "bg-gray-500" },
+              { label: t("gamStreaks.distributionStarting", "Inicio (1-2 días)"), min: 1, max: 2, color: "bg-amber-500" },
+              { label: t("gamStreaks.distributionInProgress", "En progreso (3-6 días)"), min: 3, max: 6, color: "bg-orange-500" },
+              { label: t("gamStreaks.distributionWeekPlus", "Semana+ (7-29 días)"), min: 7, max: 29, color: "bg-red-500" },
+              { label: t("gamStreaks.distributionMonthPlus", "Mes+ (30+ días)"), min: 30, max: Infinity, color: "bg-purple-500" },
             ].map((range) => {
               const count = topStreaks.filter(
                 (s) => s.currentStreak >= range.min && s.currentStreak <= range.max
@@ -363,7 +280,7 @@ export default function StreaksPage() {
                 <div key={range.label}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-gray-500 dark:text-gray-400">{range.label}</span>
-                    <span className="text-gray-900 dark:text-white font-medium">{count} {labels.distribution.users}</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{count} {t("gamStreaks.distributionUsers", "usuarios")}</span>
                   </div>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div

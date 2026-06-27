@@ -13,19 +13,13 @@ import {
   Handshake, Rss
 } from "lucide-react";
 
-// Nombres descriptivos para las competencias EQ
-const EQ_LABELS = {
-  es: {
-    K: { name: "Conocerse", desc: "Autoconocimiento emocional", icon: Brain, color: "#8B5CF6" },
-    C: { name: "Elegirse", desc: "Autogestión y decisiones", icon: Target, color: "#06B6D4" },
-    G: { name: "Entregarse", desc: "Conexión con otros", icon: Heart, color: "#EC4899" },
-  },
-  en: {
-    K: { name: "Know Yourself", desc: "Emotional self-awareness", icon: Brain, color: "#8B5CF6" },
-    C: { name: "Choose Yourself", desc: "Self-management & decisions", icon: Target, color: "#06B6D4" },
-    G: { name: "Give Yourself", desc: "Connection with others", icon: Heart, color: "#EC4899" },
-  }
-};
+// Icono y color por competencia EQ (no traducible). El nombre y la
+// descripción se resuelven con t() dentro del componente.
+const EQ_META = {
+  K: { icon: Brain, color: "#8B5CF6" },
+  C: { icon: Target, color: "#06B6D4" },
+  G: { icon: Heart, color: "#EC4899" },
+} as const;
 
 // Función para verificar si el perfil está completo
 function isProfileComplete(user: any): boolean {
@@ -38,7 +32,11 @@ export default async function ProfileHomePage() {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email ?? null;
   const { t, lang } = await getI18n();
-  const labels = EQ_LABELS[lang as keyof typeof EQ_LABELS] || EQ_LABELS.es;
+  const labels = {
+    K: { ...EQ_META.K, name: t("profileHomePg.eqKName", "Conocerse"), desc: t("profileHomePg.eqKDesc", "Autoconocimiento emocional") },
+    C: { ...EQ_META.C, name: t("profileHomePg.eqCName", "Elegirse"), desc: t("profileHomePg.eqCDesc", "Autogestión y decisiones") },
+    G: { ...EQ_META.G, name: t("profileHomePg.eqGName", "Entregarse"), desc: t("profileHomePg.eqGDesc", "Conexión con otros") },
+  };
 
   // Usuario no logueado
   if (!email) {
@@ -49,16 +47,16 @@ export default async function ProfileHomePage() {
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold mb-3">
-            {t("profileHome.guestTitle", "Descubre tu Inteligencia Emocional")}
+            {t("profileHomePg.guestTitle", "Descubre tu Inteligencia Emocional")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t("profileHome.guestSubtitle", "Inicia sesión para ver tu perfil EQ y comenzar tu viaje de desarrollo emocional.")}
+            {t("profileHomePg.guestSubtitle", "Inicia sesión para ver tu perfil EQ y comenzar tu viaje de desarrollo emocional.")}
           </p>
           <Link
             href="/login"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
           >
-            {t("profileHome.signIn", "Iniciar sesión")}
+            {t("profileHomePg.signIn", "Iniciar sesión")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -133,10 +131,10 @@ export default async function ProfileHomePage() {
       <section className="p-6 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">
-            {`${t("profileHome.greeting", "¡Hola")}${user?.name ? `, ${user.name}` : ""}!`}
+            {`${t("profileHomePg.greeting", "¡Hola")}${user?.name ? `, ${user.name}` : ""}!`}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {t("profileHome.incompleteSubtitle", "Completa tu perfil para comenzar tu viaje de inteligencia emocional")}
+            {t("profileHomePg.incompleteSubtitle", "Completa tu perfil para comenzar tu viaje de inteligencia emocional")}
           </p>
         </div>
 
@@ -148,25 +146,25 @@ export default async function ProfileHomePage() {
             </div>
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-xl font-bold mb-2">
-                {t("profileHome.completeProfileTitle", "Completa tu perfil")}
+                {t("profileHomePg.completeProfileTitle", "Completa tu perfil")}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {t("profileHome.completeProfileDesc", "Necesitamos algunos datos básicos para personalizar tu experiencia en Rowi.")}
+                {t("profileHomePg.completeProfileDesc", "Necesitamos algunos datos básicos para personalizar tu experiencia en Rowi.")}
               </p>
 
               {/* Checklist */}
               <div className="flex flex-wrap gap-4 mb-4 text-sm">
                 <div className={`flex items-center gap-2 ${user?.name ? "text-green-600" : "text-gray-400"}`}>
                   <CheckCircle2 className="w-4 h-4" />
-                  {t("profileHome.fieldName", "Nombre")}
+                  {t("profileHomePg.fieldName", "Nombre")}
                 </div>
                 <div className={`flex items-center gap-2 ${user?.country ? "text-green-600" : "text-gray-400"}`}>
                   <CheckCircle2 className="w-4 h-4" />
-                  {t("profileHome.fieldCountry", "País")}
+                  {t("profileHomePg.fieldCountry", "País")}
                 </div>
                 <div className={`flex items-center gap-2 ${user?.language ? "text-green-600" : "text-gray-400"}`}>
                   <CheckCircle2 className="w-4 h-4" />
-                  {t("profileHome.fieldLanguage", "Idioma")}
+                  {t("profileHomePg.fieldLanguage", "Idioma")}
                 </div>
               </div>
 
@@ -175,7 +173,7 @@ export default async function ProfileHomePage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
               >
                 <Edit className="w-4 h-4" />
-                {t("profileHome.completeProfileCta", "Completar perfil")}
+                {t("profileHomePg.completeProfileCta", "Completar perfil")}
               </Link>
             </div>
           </div>
@@ -184,22 +182,22 @@ export default async function ProfileHomePage() {
         {/* Preview de lo que viene */}
         <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-6">
           <h3 className="font-semibold mb-4 text-gray-500">
-            {t("profileHome.nextSteps", "Próximos pasos")}
+            {t("profileHomePg.nextSteps", "Próximos pasos")}
           </h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-gray-400">
               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">1</div>
               <span className={profileComplete ? "line-through" : ""}>
-                {t("profileHome.stepComplete", "Completar tu perfil")}
+                {t("profileHomePg.stepComplete", "Completar tu perfil")}
               </span>
             </div>
             <div className="flex items-center gap-3 text-gray-400">
               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">2</div>
-              <span>{t("profileHome.stepSei", "Tomar la evaluación SEI")}</span>
+              <span>{t("profileHomePg.stepSei", "Tomar la evaluación SEI")}</span>
             </div>
             <div className="flex items-center gap-3 text-gray-400">
               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">3</div>
-              <span>{t("profileHome.stepEqProfile", "Descubrir tu perfil EQ")}</span>
+              <span>{t("profileHomePg.stepEqProfile", "Descubrir tu perfil EQ")}</span>
             </div>
           </div>
         </div>
@@ -215,10 +213,10 @@ export default async function ProfileHomePage() {
       <section className="p-6 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">
-            {`${t("profileHome.greeting", "¡Hola")}, ${user?.name || ""}!`}
+            {`${t("profileHomePg.greeting", "¡Hola")}, ${user?.name || ""}!`}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {t("profileHome.almostReady", "Tu perfil está casi listo")}
+            {t("profileHomePg.almostReady", "Tu perfil está casi listo")}
           </p>
         </div>
 
@@ -233,16 +231,16 @@ export default async function ProfileHomePage() {
             </div>
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-xl font-bold mb-2">
-                {t("profileHome.activatingTitle", "Tu perfil está en proceso de activación")}
+                {t("profileHomePg.activatingTitle", "Tu perfil está en proceso de activación")}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {t("profileHome.activatingDesc", "Estamos procesando tus datos. Este proceso puede tomar hasta 48 horas. Te notificaremos cuando tu perfil EQ esté listo.")}
+                {t("profileHomePg.activatingDesc", "Estamos procesando tus datos. Este proceso puede tomar hasta 48 horas. Te notificaremos cuando tu perfil EQ esté listo.")}
               </p>
 
               {seiRequestedAt && (
                 <p className="text-sm text-gray-500 mb-4">
-                  {t("profileHome.requestSent", "Solicitud enviada: ")}
-                  {new Date(seiRequestedAt).toLocaleDateString(t("profileHome.dateLocale", "es-ES"), {
+                  {t("profileHomePg.requestSent", "Solicitud enviada: ")}
+                  {new Date(seiRequestedAt).toLocaleDateString(t("profileHomePg.dateLocale", "es-ES"), {
                     year: "numeric",
                     month: "long",
                     day: "numeric"
@@ -256,7 +254,7 @@ export default async function ProfileHomePage() {
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  {t("profileHome.meanwhileTalk", "Mientras tanto, habla con Rowi")}
+                  {t("profileHomePg.meanwhileTalk", "Mientras tanto, habla con Rowi")}
                 </Link>
               </div>
             </div>
@@ -265,7 +263,7 @@ export default async function ProfileHomePage() {
 
         {/* Lo que podrás ver cuando esté listo */}
         <h3 className="font-semibold mb-4 text-gray-600 dark:text-gray-400">
-          {t("profileHome.whenActiveYouSee", "Cuando tu perfil esté activo, verás:")}
+          {t("profileHomePg.whenActiveYouSee", "Cuando tu perfil esté activo, verás:")}
         </h3>
         <div className="grid gap-4 md:grid-cols-3 opacity-60">
           {(["K", "C", "G"] as const).map((key) => {
@@ -298,7 +296,7 @@ export default async function ProfileHomePage() {
   // ============================================
   // ESTADO 3: Usuario con datos SEI - Experiencia completa
   // ============================================
-  const eqDate = latestEQ.at ? new Date(latestEQ.at).toLocaleDateString(t("profileHome.dateLocale", "es-ES"), {
+  const eqDate = latestEQ.at ? new Date(latestEQ.at).toLocaleDateString(t("profileHomePg.dateLocale", "es-ES"), {
     year: "numeric",
     month: "long",
     day: "numeric"
@@ -313,7 +311,7 @@ export default async function ProfileHomePage() {
           El perfil ya no es un dashboard de settings — es identidad. */}
       <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
         {evo ? (
-          <Link href="/becoming" className="shrink-0 group" title={t("profileHome.viewMyGrowth", "Ver mi evolución")}>
+          <Link href="/becoming" className="shrink-0 group" title={t("profileHomePg.viewMyGrowth", "Ver mi evolución")}>
             <RowiStageImage stage={evo.currentStage as RowiStage} size="lg" float alt={user?.name || "Rowi"} />
           </Link>
         ) : (
@@ -345,11 +343,11 @@ export default async function ProfileHomePage() {
         <div className="flex items-center gap-4 text-sm">
           <Link href="/becoming" className="flex items-center gap-1.5 text-[var(--rowi-g2)] font-medium hover:opacity-80 transition-opacity">
             <TrendingUp className="w-4 h-4" />
-            {t("profileHome.myGrowth", "Mi evolución")}
+            {t("profileHomePg.myGrowth", "Mi evolución")}
           </Link>
           <Link href="/settings/profile" className="flex items-center gap-1.5 text-gray-500 hover:text-[var(--rowi-g2)] transition-colors">
             <Edit className="w-4 h-4" />
-            {t("profileHome.edit", "Editar")}
+            {t("profileHomePg.edit", "Editar")}
           </Link>
         </div>
       </div>
@@ -359,23 +357,23 @@ export default async function ProfileHomePage() {
         <div className="rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 text-center">
           <MessageCircle className="w-5 h-5 mx-auto mb-2 text-[var(--rowi-g2)]" />
           <div className="text-2xl font-bold">{chatCount}</div>
-          <div className="text-xs text-gray-500">{t("profileHome.conversations", "Conversaciones")}</div>
+          <div className="text-xs text-gray-500">{t("profileHomePg.conversations", "Conversaciones")}</div>
         </div>
         <div className="rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 text-center">
           <Users className="w-5 h-5 mx-auto mb-2 text-blue-500" />
           <div className="text-2xl font-bold">{communityCount}</div>
-          <div className="text-xs text-gray-500">{t("profileHome.communitiesStat", "Comunidades")}</div>
+          <div className="text-xs text-gray-500">{t("profileHomePg.communitiesStat", "Comunidades")}</div>
         </div>
         <div className="rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-4 text-center">
           <Calendar className="w-5 h-5 mx-auto mb-2 text-green-500" />
           <div className="text-sm font-medium">{eqDate?.split(" ").slice(0, 2).join(" ")}</div>
-          <div className="text-xs text-gray-500">{t("profileHome.lastSei", "Último SEI")}</div>
+          <div className="text-xs text-gray-500">{t("profileHomePg.lastSei", "Último SEI")}</div>
         </div>
       </div>
 
       {/* Scores EQ */}
       <div className="mb-8">
-        <h2 className="font-semibold mb-4">{t("profileHome.yourEqProfile", "Tu Perfil EQ")}</h2>
+        <h2 className="font-semibold mb-4">{t("profileHomePg.yourEqProfile", "Tu Perfil EQ")}</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {(["K", "C", "G"] as const).map((key) => {
             const info = labels[key];
@@ -429,10 +427,10 @@ export default async function ProfileHomePage() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold mb-0.5">
-              {t("profileHome.talkToRowi", "Hablar con Rowi")}
+              {t("profileHomePg.talkToRowi", "Hablar con Rowi")}
             </h3>
             <p className="text-sm text-gray-500">
-              {t("profileHome.talkToRowiDesc", "Tu coach de inteligencia emocional")}
+              {t("profileHomePg.talkToRowiDesc", "Tu coach de inteligencia emocional")}
             </p>
           </div>
           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[var(--rowi-g2)] transition-colors" />
@@ -447,10 +445,10 @@ export default async function ProfileHomePage() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold mb-0.5">
-              {t("profileHome.viewDashboard", "Ver Dashboard")}
+              {t("profileHomePg.viewDashboard", "Ver Dashboard")}
             </h3>
             <p className="text-sm text-gray-500">
-              {t("profileHome.viewDashboardDesc", "Estadísticas y progreso")}
+              {t("profileHomePg.viewDashboardDesc", "Estadísticas y progreso")}
             </p>
           </div>
           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[var(--rowi-g2)] transition-colors" />
@@ -461,10 +459,10 @@ export default async function ProfileHomePage() {
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold">
-            {t("profileHome.mySocialNetwork", "Mi Red Social")}
+            {t("profileHomePg.mySocialNetwork", "Mi Red Social")}
           </h2>
           <Link href="/social/feed" className="text-sm text-[var(--rowi-g2)] hover:underline">
-            {t("profileHome.viewActivity", "Ver Actividad")} →
+            {t("profileHomePg.viewActivity", "Ver Actividad")} →
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -475,7 +473,7 @@ export default async function ProfileHomePage() {
             <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
               <Rss className="w-5 h-5 text-violet-500" />
             </div>
-            <span className="text-sm font-medium">{t("profileHome.activity", "Actividad")}</span>
+            <span className="text-sm font-medium">{t("profileHomePg.activity", "Actividad")}</span>
           </Link>
           <Link
             href="/social/connections"
@@ -485,7 +483,7 @@ export default async function ProfileHomePage() {
               <Handshake className="w-5 h-5 text-blue-500" />
             </div>
             <span className="text-2xl font-bold">{socialStats.connections}</span>
-            <span className="text-xs text-gray-500">{t("profileHome.connections", "Conexiones")}</span>
+            <span className="text-xs text-gray-500">{t("profileHomePg.connections", "Conexiones")}</span>
           </Link>
           <Link
             href="/social/messages"
@@ -494,7 +492,7 @@ export default async function ProfileHomePage() {
             <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-green-500" />
             </div>
-            <span className="text-sm font-medium">{t("profileHome.messages", "Mensajes")}</span>
+            <span className="text-sm font-medium">{t("profileHomePg.messages", "Mensajes")}</span>
           </Link>
           <Link
             href="/social/goals"
@@ -504,7 +502,7 @@ export default async function ProfileHomePage() {
               <Target className="w-5 h-5 text-amber-500" />
             </div>
             <span className="text-2xl font-bold">{socialStats.activeGoals}</span>
-            <span className="text-xs text-gray-500">{t("profileHome.activeGoals", "Causas Activas")}</span>
+            <span className="text-xs text-gray-500">{t("profileHomePg.activeGoals", "Causas Activas")}</span>
           </Link>
         </div>
       </div>
@@ -512,7 +510,7 @@ export default async function ProfileHomePage() {
       {/* Comunidades */}
       {user?.memberships && user.memberships.length > 0 && (
         <div className="mt-8">
-          <h2 className="font-semibold mb-4">{t("profileHome.yourCommunities", "Tus Comunidades")}</h2>
+          <h2 className="font-semibold mb-4">{t("profileHomePg.yourCommunities", "Tus Comunidades")}</h2>
           <div className="flex flex-wrap gap-3">
             {user.memberships.map((m) => (
               <Link

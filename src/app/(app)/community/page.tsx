@@ -52,711 +52,196 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import RelationshipsTab from "@/components/community/RelationshipsTab";
 
 /* =========================================================
-   🌍 Traducciones
+   🌍 Traducciones — migrado al sistema central t() (communityPg.*)
+   buildT(tx) construye el mismo shape que consumían los hijos,
+   pero cada string pasa por el diccionario central.
 ========================================================= */
-const translations = {
-  es: {
-    title: "Mi Comunidad",
-    subtitle: "Las personas que forman parte de tu viaje emocional",
+type Tx = (key: string, fallback?: string) => string;
+
+function buildT(tx: Tx) {
+  return {
+    title: tx("communityPg.title", "Mi Comunidad"),
+    subtitle: tx("communityPg.subtitle", "Las personas que forman parte de tu viaje emocional"),
 
     // Tabs
     tabs: {
-      myPeople: "Mi Gente",
-      relationships: "Relaciones",
-      invited: "Invitados",
-      rowiverse: "Rowiverse",
-      communities: "Comunidades",
+      myPeople: tx("communityPg.tabs.myPeople", "Mi Gente"),
+      relationships: tx("communityPg.tabs.relationships", "Relaciones"),
+      invited: tx("communityPg.tabs.invited", "Invitados"),
+      rowiverse: tx("communityPg.tabs.rowiverse", "Rowiverse"),
+      communities: tx("communityPg.tabs.communities", "Comunidades"),
     },
 
     // Communities tab
     comm: {
-      title: "Mis Comunidades",
-      desc: "Comunidades a las que perteneces y sus sub-comunidades",
-      empty: "No perteneces a ninguna comunidad aún",
-      members: "miembros",
-      subCommunities: "sub-comunidades",
-      parent: "Comunidad padre",
-      viewMembers: "Ver miembros",
-      backToList: "Volver a comunidades",
-      role: "Rol",
-      owner: "Propietario",
-      admin: "Admin",
-      member: "Miembro",
-      viewer: "Visor",
-      inherited: "Heredada",
-      loadingMembers: "Cargando miembros...",
-      noMembers: "Esta comunidad no tiene miembros aún",
+      title: tx("communityPg.comm.title", "Mis Comunidades"),
+      desc: tx("communityPg.comm.desc", "Comunidades a las que perteneces y sus sub-comunidades"),
+      empty: tx("communityPg.comm.empty", "No perteneces a ninguna comunidad aún"),
+      members: tx("communityPg.comm.members", "miembros"),
+      subCommunities: tx("communityPg.comm.subCommunities", "sub-comunidades"),
+      parent: tx("communityPg.comm.parent", "Comunidad padre"),
+      viewMembers: tx("communityPg.comm.viewMembers", "Ver miembros"),
+      backToList: tx("communityPg.comm.backToList", "Volver a comunidades"),
+      role: tx("communityPg.comm.role", "Rol"),
+      owner: tx("communityPg.comm.owner", "Propietario"),
+      admin: tx("communityPg.comm.admin", "Admin"),
+      coach: tx("communityPg.comm.coach", "Coach"),
+      mentor: tx("communityPg.comm.mentor", "Mentor"),
+      member: tx("communityPg.comm.member", "Miembro"),
+      viewer: tx("communityPg.comm.viewer", "Visor"),
+      inherited: tx("communityPg.comm.inherited", "Heredada"),
+      loadingMembers: tx("communityPg.comm.loadingMembers", "Cargando miembros..."),
+      noMembers: tx("communityPg.comm.noMembers", "Esta comunidad no tiene miembros aún"),
     },
 
     // Stats
     stats: {
-      total: "Total",
-      connected: "Conectados",
-      pending: "Pendientes",
-      avgAffinity: "Afinidad promedio",
+      total: tx("communityPg.stats.total", "Total"),
+      connected: tx("communityPg.stats.connected", "Conectados"),
+      pending: tx("communityPg.stats.pending", "Pendientes"),
+      avgAffinity: tx("communityPg.stats.avgAffinity", "Afinidad promedio"),
     },
 
     // Search & Filters
-    search: "Buscar por nombre o email...",
-    filters: "Filtros",
-    clearFilters: "Limpiar filtros",
-    allGroups: "Todos los grupos",
-    allCloseness: "Toda cercanía",
-    onlyWithAffinity: "Solo con afinidad",
+    search: tx("communityPg.search", "Buscar por nombre o email..."),
+    filters: tx("communityPg.filters", "Filtros"),
+    clearFilters: tx("communityPg.clearFilters", "Limpiar filtros"),
+    allGroups: tx("communityPg.allGroups", "Todos los grupos"),
+    allCloseness: tx("communityPg.allCloseness", "Toda cercanía"),
+    onlyWithAffinity: tx("communityPg.onlyWithAffinity", "Solo con afinidad"),
 
     // Groups
     groups: {
-      work: "Trabajo",
-      family: "Familia",
-      friends: "Amigos",
-      toMeet: "Por conocer",
-      rowiverse: "Rowiverse",
+      work: tx("communityPg.groups.work", "Trabajo"),
+      family: tx("communityPg.groups.family", "Familia"),
+      friends: tx("communityPg.groups.friends", "Amigos"),
+      toMeet: tx("communityPg.groups.toMeet", "Por conocer"),
+      rowiverse: tx("communityPg.groups.rowiverse", "Rowiverse"),
     },
 
     // Closeness (5 levels)
     closeness: {
-      veryClose: "Muy cercano",
-      close: "Cercano",
-      neutral: "Neutral",
-      distant: "Distante",
-      veryDistant: "Muy distante",
+      veryClose: tx("communityPg.closeness.veryClose", "Muy cercano"),
+      close: tx("communityPg.closeness.close", "Cercano"),
+      neutral: tx("communityPg.closeness.neutral", "Neutral"),
+      distant: tx("communityPg.closeness.distant", "Distante"),
+      veryDistant: tx("communityPg.closeness.veryDistant", "Muy distante"),
     },
 
     // Connection Types
     connectionTypes: {
-      colleague: "Colega",
-      boss: "Jefe/Supervisor",
-      directReport: "Reporte directo",
-      mentor: "Mentor",
-      mentee: "Mentee",
-      partner: "Socio/Partner",
-      client: "Cliente",
-      friend: "Amigo",
-      familyMember: "Familiar",
-      acquaintance: "Conocido",
-      other: "Otro",
+      colleague: tx("communityPg.connectionTypes.colleague", "Colega"),
+      boss: tx("communityPg.connectionTypes.boss", "Jefe/Supervisor"),
+      directReport: tx("communityPg.connectionTypes.directReport", "Reporte directo"),
+      mentor: tx("communityPg.connectionTypes.mentor", "Mentor"),
+      mentee: tx("communityPg.connectionTypes.mentee", "Mentee"),
+      partner: tx("communityPg.connectionTypes.partner", "Socio/Partner"),
+      client: tx("communityPg.connectionTypes.client", "Cliente"),
+      friend: tx("communityPg.connectionTypes.friend", "Amigo"),
+      familyMember: tx("communityPg.connectionTypes.familyMember", "Familiar"),
+      acquaintance: tx("communityPg.connectionTypes.acquaintance", "Conocido"),
+      other: tx("communityPg.connectionTypes.other", "Otro"),
     },
-    fieldConnectionType: "Tipo de relación",
+    fieldConnectionType: tx("communityPg.fieldConnectionType", "Tipo de relación"),
 
     // Invite Modal
-    inviteTitle: "Invitar a mi comunidad",
-    inviteDesc: "Envía una invitación por email, WhatsApp o SMS",
-    inviteContact: "Email o teléfono (+código país)",
-    inviteName: "Nombre (opcional)",
-    inviteMessage: "Mensaje personalizado (opcional)",
-    inviteDefaultMessage: "¡Hola! Me gustaría conectar contigo en Rowi para fortalecer nuestra relación.",
-    sendInvite: "Crear invitación",
-    inviteSent: "¡Invitación creada!",
-    inviteError: "Error al crear invitación",
-    planLimit: "Tu plan permite invitar hasta",
-    people: "personas",
-    upgradePlan: "Mejorar plan",
-    remainingInvites: "invitaciones restantes",
-    sendVia: "Enviar vía:",
-    copyLink: "Copiar enlace",
-    linkCopied: "¡Enlace copiado!",
+    inviteTitle: tx("communityPg.inviteTitle", "Invitar a mi comunidad"),
+    inviteDesc: tx("communityPg.inviteDesc", "Envía una invitación por email, WhatsApp o SMS"),
+    inviteContact: tx("communityPg.inviteContact", "Email o teléfono (+código país)"),
+    inviteName: tx("communityPg.inviteName", "Nombre (opcional)"),
+    inviteMessage: tx("communityPg.inviteMessage", "Mensaje personalizado (opcional)"),
+    inviteDefaultMessage: tx("communityPg.inviteDefaultMessage", "¡Hola! Me gustaría conectar contigo en Rowi para fortalecer nuestra relación."),
+    invitePlaceholderContact: tx("communityPg.invitePlaceholderContact", "nombre@email.com o +1234567890"),
+    invitePlaceholderName: tx("communityPg.invitePlaceholderName", "Juan Pérez"),
+    sendInvite: tx("communityPg.sendInvite", "Crear invitación"),
+    inviteSent: tx("communityPg.inviteSent", "¡Invitación creada!"),
+    inviteError: tx("communityPg.inviteError", "Error al crear invitación"),
+    planLimit: tx("communityPg.planLimit", "Tu plan permite invitar hasta"),
+    people: tx("communityPg.people", "personas"),
+    upgradePlan: tx("communityPg.upgradePlan", "Mejorar plan"),
+    remainingInvites: tx("communityPg.remainingInvites", "invitaciones restantes"),
+    sendVia: tx("communityPg.sendVia", "Enviar vía:"),
+    copyLink: tx("communityPg.copyLink", "Copiar enlace"),
+    linkCopied: tx("communityPg.linkCopied", "¡Enlace copiado!"),
+    inviteShort: tx("communityPg.inviteShort", "Invitar"),
 
     // Member Actions
     actions: {
-      edit: "Editar",
-      delete: "Eliminar",
-      recalculate: "Recalcular afinidad",
-      viewProfile: "Ver perfil",
+      edit: tx("communityPg.actions.edit", "Editar"),
+      delete: tx("communityPg.actions.delete", "Eliminar"),
+      recalculate: tx("communityPg.actions.recalculate", "Recalcular afinidad"),
+      viewProfile: tx("communityPg.actions.viewProfile", "Ver perfil"),
     },
 
     // Edit Modal
-    editTitle: "Editar miembro",
-    editSave: "Guardar cambios",
-    editCancel: "Cancelar",
-    editSuccess: "Cambios guardados",
-    editError: "Error al guardar",
-    fieldName: "Nombre",
-    fieldEmail: "Email",
-    fieldGroup: "Grupo",
-    fieldCloseness: "Cercanía",
-    fieldCountry: "País",
-    fieldBrainStyle: "Estilo de pensamiento",
+    editTitle: tx("communityPg.editTitle", "Editar miembro"),
+    editSave: tx("communityPg.editSave", "Guardar cambios"),
+    editCancel: tx("communityPg.editCancel", "Cancelar"),
+    editSuccess: tx("communityPg.editSuccess", "Cambios guardados"),
+    editError: tx("communityPg.editError", "Error al guardar"),
+    fieldName: tx("communityPg.fieldName", "Nombre"),
+    fieldEmail: tx("communityPg.fieldEmail", "Email"),
+    fieldGroup: tx("communityPg.fieldGroup", "Grupo"),
+    fieldCloseness: tx("communityPg.fieldCloseness", "Cercanía"),
+    fieldCountry: tx("communityPg.fieldCountry", "País"),
+    fieldBrainStyle: tx("communityPg.fieldBrainStyle", "Estilo de pensamiento"),
 
     // Delete confirmation
-    deleteTitle: "Eliminar miembro",
-    deleteConfirm: "¿Estás seguro de que deseas eliminar a",
-    deleteWarning: "Esta acción no se puede deshacer y se perderán todos los datos de afinidad.",
-    deleteButton: "Sí, eliminar",
+    deleteTitle: tx("communityPg.deleteTitle", "Eliminar miembro"),
+    deleteConfirm: tx("communityPg.deleteConfirm", "¿Estás seguro de que deseas eliminar a"),
+    deleteWarning: tx("communityPg.deleteWarning", "Esta acción no se puede deshacer y se perderán todos los datos de afinidad."),
+    deleteButton: tx("communityPg.deleteButton", "Sí, eliminar"),
 
     // Rowiverse
-    rowiverseTitle: "Descubre el Rowiverse",
-    rowiverseDesc: "Encuentra personas con perfiles públicos en la comunidad global de Rowi",
-    rowiverseSearch: "Buscar en Rowiverse...",
-    rowiverseEmpty: "No se encontraron perfiles públicos",
-    publicProfile: "Perfil público",
-    sendRequest: "Conectar",
-    requestSent: "Conectado",
-    addToCommunity: "Agregar a mi comunidad",
-    added: "Agregado",
+    rowiverseTitle: tx("communityPg.rowiverseTitle", "Descubre el Rowiverse"),
+    rowiverseDesc: tx("communityPg.rowiverseDesc", "Encuentra personas con perfiles públicos en la comunidad global de Rowi"),
+    rowiverseSearch: tx("communityPg.rowiverseSearch", "Buscar en Rowiverse..."),
+    rowiverseEmpty: tx("communityPg.rowiverseEmpty", "No se encontraron perfiles públicos"),
+    publicProfile: tx("communityPg.publicProfile", "Perfil público"),
+    sendRequest: tx("communityPg.sendRequest", "Conectar"),
+    requestSent: tx("communityPg.requestSent", "Conectado"),
+    addToCommunity: tx("communityPg.addToCommunity", "Agregar a mi comunidad"),
+    added: tx("communityPg.added", "Agregado"),
 
     // Member Card
-    noStyle: "Sin estilo definido",
-    noAffinity: "Sin afinidad",
-    viewProfile: "Ver perfil",
-    calculateAffinity: "Calcular afinidad",
+    noStyle: tx("communityPg.noStyle", "Sin estilo definido"),
+    noAffinity: tx("communityPg.noAffinity", "Sin afinidad"),
+    viewProfile: tx("communityPg.viewProfile", "Ver perfil"),
+    calculateAffinity: tx("communityPg.calculateAffinity", "Calcular afinidad"),
 
     // Affinity levels
     affinity: {
-      fullTrust: "Confianza plena",
-      goodConnection: "Buena conexión",
-      mediumPotential: "Potencial medio",
-      lowConnection: "Conexión baja",
-      distant: "Distante",
-      noConnection: "Sin conexión",
+      fullTrust: tx("communityPg.affinity.fullTrust", "Confianza plena"),
+      goodConnection: tx("communityPg.affinity.goodConnection", "Buena conexión"),
+      mediumPotential: tx("communityPg.affinity.mediumPotential", "Potencial medio"),
+      lowConnection: tx("communityPg.affinity.lowConnection", "Conexión baja"),
+      distant: tx("communityPg.affinity.distant", "Distante"),
+      noConnection: tx("communityPg.affinity.noConnection", "Sin conexión"),
     },
 
     // Empty states
-    noMembers: "Aún no tienes miembros en tu comunidad",
-    noInvites: "No tienes invitaciones pendientes",
-    startInviting: "Comienza invitando a las personas importantes para ti",
-    addManually: "Agregar manualmente",
+    noMembers: tx("communityPg.noMembers", "Aún no tienes miembros en tu comunidad"),
+    noInvites: tx("communityPg.noInvites", "No tienes invitaciones pendientes"),
+    startInviting: tx("communityPg.startInviting", "Comienza invitando a las personas importantes para ti"),
+    addManually: tx("communityPg.addManually", "Agregar manualmente"),
 
     // Pending invites
-    pendingInvites: "Invitaciones pendientes",
-    sentOn: "Enviada el",
-    expiresOn: "Expira el",
-    resend: "Reenviar",
-    cancel: "Cancelar",
-    expired: "Expirada",
-    accepted: "Aceptada",
-    pending: "Pendiente",
+    pendingInvites: tx("communityPg.pendingInvites", "Invitaciones pendientes"),
+    sentOn: tx("communityPg.sentOn", "Enviada el"),
+    expiresOn: tx("communityPg.expiresOn", "Expira el"),
+    resend: tx("communityPg.resend", "Reenviar"),
+    cancel: tx("communityPg.cancel", "Cancelar"),
+    expired: tx("communityPg.expired", "Expirada"),
+    accepted: tx("communityPg.accepted", "Aceptada"),
+    pending: tx("communityPg.pending", "Pendiente"),
 
     // Loading
-    loading: "Cargando tu comunidad...",
-    refreshing: "Actualizando...",
-  },
-  en: {
-    title: "My Community",
-    subtitle: "The people who are part of your emotional journey",
+    loading: tx("communityPg.loading", "Cargando tu comunidad..."),
+    refreshing: tx("communityPg.refreshing", "Actualizando..."),
+  };
+}
 
-    // Tabs
-    tabs: {
-      myPeople: "My People",
-      relationships: "Relationships",
-      invited: "Invited",
-      rowiverse: "Rowiverse",
-      communities: "Communities",
-    },
-
-    // Communities tab
-    comm: {
-      title: "My Communities",
-      desc: "Communities you belong to and their sub-communities",
-      empty: "You don't belong to any community yet",
-      members: "members",
-      subCommunities: "sub-communities",
-      parent: "Parent community",
-      viewMembers: "View members",
-      backToList: "Back to communities",
-      role: "Role",
-      owner: "Owner",
-      admin: "Admin",
-      member: "Member",
-      viewer: "Viewer",
-      inherited: "Inherited",
-      loadingMembers: "Loading members...",
-      noMembers: "This community has no members yet",
-    },
-
-    // Stats
-    stats: {
-      total: "Total",
-      connected: "Connected",
-      pending: "Pending",
-      avgAffinity: "Avg. affinity",
-    },
-
-    // Search & Filters
-    search: "Search by name or email...",
-    filters: "Filters",
-    clearFilters: "Clear filters",
-    allGroups: "All groups",
-    allCloseness: "All closeness",
-    onlyWithAffinity: "Only with affinity",
-
-    // Groups
-    groups: {
-      work: "Work",
-      family: "Family",
-      friends: "Friends",
-      toMeet: "To meet",
-      rowiverse: "Rowiverse",
-    },
-
-    // Closeness (5 levels)
-    closeness: {
-      veryClose: "Very close",
-      close: "Close",
-      neutral: "Neutral",
-      distant: "Distant",
-      veryDistant: "Very distant",
-    },
-
-    // Connection Types
-    connectionTypes: {
-      colleague: "Colleague",
-      boss: "Boss/Supervisor",
-      directReport: "Direct report",
-      mentor: "Mentor",
-      mentee: "Mentee",
-      partner: "Partner",
-      client: "Client",
-      friend: "Friend",
-      familyMember: "Family member",
-      acquaintance: "Acquaintance",
-      other: "Other",
-    },
-    fieldConnectionType: "Relationship type",
-
-    // Invite Modal
-    inviteTitle: "Invite to my community",
-    inviteDesc: "Send an invitation via email, WhatsApp or SMS",
-    inviteContact: "Email or phone (+country code)",
-    inviteName: "Name (optional)",
-    inviteMessage: "Custom message (optional)",
-    inviteDefaultMessage: "Hi! I'd like to connect with you on Rowi to strengthen our relationship.",
-    sendInvite: "Create invitation",
-    inviteSent: "Invitation created!",
-    inviteError: "Error creating invitation",
-    planLimit: "Your plan allows inviting up to",
-    people: "people",
-    upgradePlan: "Upgrade plan",
-    remainingInvites: "invitations remaining",
-    sendVia: "Send via:",
-    copyLink: "Copy link",
-    linkCopied: "Link copied!",
-
-    // Member Actions
-    actions: {
-      edit: "Edit",
-      delete: "Delete",
-      recalculate: "Recalculate affinity",
-      viewProfile: "View profile",
-    },
-
-    // Edit Modal
-    editTitle: "Edit member",
-    editSave: "Save changes",
-    editCancel: "Cancel",
-    editSuccess: "Changes saved",
-    editError: "Error saving",
-    fieldName: "Name",
-    fieldEmail: "Email",
-    fieldGroup: "Group",
-    fieldCloseness: "Closeness",
-    fieldCountry: "Country",
-    fieldBrainStyle: "Brain style",
-
-    // Delete confirmation
-    deleteTitle: "Delete member",
-    deleteConfirm: "Are you sure you want to delete",
-    deleteWarning: "This action cannot be undone and all affinity data will be lost.",
-    deleteButton: "Yes, delete",
-
-    // Rowiverse
-    rowiverseTitle: "Discover the Rowiverse",
-    rowiverseDesc: "Find people with public profiles in Rowi's global community",
-    rowiverseSearch: "Search Rowiverse...",
-    rowiverseEmpty: "No public profiles found",
-    publicProfile: "Public profile",
-    sendRequest: "Connect",
-    requestSent: "Connected",
-    addToCommunity: "Add to my community",
-    added: "Added",
-
-    // Member Card
-    noStyle: "No style defined",
-    noAffinity: "No affinity",
-    viewProfile: "View profile",
-    calculateAffinity: "Calculate affinity",
-
-    // Affinity levels
-    affinity: {
-      fullTrust: "Full trust",
-      goodConnection: "Good connection",
-      mediumPotential: "Medium potential",
-      lowConnection: "Low connection",
-      distant: "Distant",
-      noConnection: "No connection",
-    },
-
-    // Empty states
-    noMembers: "You don't have members in your community yet",
-    noInvites: "You don't have pending invitations",
-    startInviting: "Start inviting the people who matter to you",
-    addManually: "Add manually",
-
-    // Pending invites
-    pendingInvites: "Pending invitations",
-    sentOn: "Sent on",
-    expiresOn: "Expires on",
-    resend: "Resend",
-    cancel: "Cancel",
-    expired: "Expired",
-    accepted: "Accepted",
-    pending: "Pending",
-
-    // Loading
-    loading: "Loading your community...",
-    refreshing: "Refreshing...",
-  },
-  pt: {
-    title: "My Community",
-    subtitle: "The people who are part of your emotional journey",
-
-    // Tabs
-    tabs: {
-      myPeople: "My People",
-      relationships: "Relações",
-      invited: "Invited",
-      rowiverse: "Rowiverse",
-      communities: "Communities",
-    },
-
-    // Communities tab
-    comm: {
-      title: "My Communities",
-      desc: "Communities you belong to and their sub-communities",
-      empty: "You don't belong to any community yet",
-      members: "members",
-      subCommunities: "sub-communities",
-      parent: "Parent community",
-      viewMembers: "View members",
-      backToList: "Back to communities",
-      role: "Role",
-      owner: "Owner",
-      admin: "Admin",
-      member: "Member",
-      viewer: "Viewer",
-      inherited: "Inherited",
-      loadingMembers: "Loading members...",
-      noMembers: "This community has no members yet",
-    },
-
-    // Stats
-    stats: {
-      total: "Total",
-      connected: "Connected",
-      pending: "Pending",
-      avgAffinity: "Avg. affinity",
-    },
-
-    // Search & Filters
-    search: "Search by name or email...",
-    filters: "Filters",
-    clearFilters: "Clear filters",
-    allGroups: "All groups",
-    allCloseness: "All closeness",
-    onlyWithAffinity: "Only with affinity",
-
-    // Groups
-    groups: {
-      work: "Work",
-      family: "Family",
-      friends: "Friends",
-      toMeet: "To meet",
-      rowiverse: "Rowiverse",
-    },
-
-    // Closeness (5 levels)
-    closeness: {
-      veryClose: "Very close",
-      close: "Close",
-      neutral: "Neutral",
-      distant: "Distant",
-      veryDistant: "Very distant",
-    },
-
-    // Connection Types
-    connectionTypes: {
-      colleague: "Colleague",
-      boss: "Boss/Supervisor",
-      directReport: "Direct report",
-      mentor: "Mentor",
-      mentee: "Mentee",
-      partner: "Partner",
-      client: "Client",
-      friend: "Friend",
-      familyMember: "Family member",
-      acquaintance: "Acquaintance",
-      other: "Other",
-    },
-    fieldConnectionType: "Relationship type",
-
-    // Invite Modal
-    inviteTitle: "Invite to my community",
-    inviteDesc: "Send an invitation via email, WhatsApp or SMS",
-    inviteContact: "Email or phone (+country code)",
-    inviteName: "Name (optional)",
-    inviteMessage: "Custom message (optional)",
-    inviteDefaultMessage: "Hi! I'd like to connect with you on Rowi to strengthen our relationship.",
-    sendInvite: "Create invitation",
-    inviteSent: "Invitation created!",
-    inviteError: "Error creating invitation",
-    planLimit: "Your plan allows inviting up to",
-    people: "people",
-    upgradePlan: "Upgrade plan",
-    remainingInvites: "invitations remaining",
-    sendVia: "Send via:",
-    copyLink: "Copy link",
-    linkCopied: "Link copied!",
-
-    // Member Actions
-    actions: {
-      edit: "Edit",
-      delete: "Delete",
-      recalculate: "Recalculate affinity",
-      viewProfile: "View profile",
-    },
-
-    // Edit Modal
-    editTitle: "Edit member",
-    editSave: "Save changes",
-    editCancel: "Cancel",
-    editSuccess: "Changes saved",
-    editError: "Error saving",
-    fieldName: "Name",
-    fieldEmail: "Email",
-    fieldGroup: "Group",
-    fieldCloseness: "Closeness",
-    fieldCountry: "Country",
-    fieldBrainStyle: "Brain style",
-
-    // Delete confirmation
-    deleteTitle: "Delete member",
-    deleteConfirm: "Are you sure you want to delete",
-    deleteWarning: "This action cannot be undone and all affinity data will be lost.",
-    deleteButton: "Yes, delete",
-
-    // Rowiverse
-    rowiverseTitle: "Discover the Rowiverse",
-    rowiverseDesc: "Find people with public profiles in Rowi's global community",
-    rowiverseSearch: "Search Rowiverse...",
-    rowiverseEmpty: "No public profiles found",
-    publicProfile: "Public profile",
-    sendRequest: "Connect",
-    requestSent: "Connected",
-    addToCommunity: "Add to my community",
-    added: "Added",
-
-    // Member Card
-    noStyle: "No style defined",
-    noAffinity: "No affinity",
-    viewProfile: "View profile",
-    calculateAffinity: "Calculate affinity",
-
-    // Affinity levels
-    affinity: {
-      fullTrust: "Full trust",
-      goodConnection: "Good connection",
-      mediumPotential: "Medium potential",
-      lowConnection: "Low connection",
-      distant: "Distant",
-      noConnection: "No connection",
-    },
-
-    // Empty states
-    noMembers: "You don't have members in your community yet",
-    noInvites: "You don't have pending invitations",
-    startInviting: "Start inviting the people who matter to you",
-    addManually: "Add manually",
-
-    // Pending invites
-    pendingInvites: "Pending invitations",
-    sentOn: "Sent on",
-    expiresOn: "Expires on",
-    resend: "Resend",
-    cancel: "Cancel",
-    expired: "Expired",
-    accepted: "Accepted",
-    pending: "Pending",
-
-    // Loading
-    loading: "Loading your community...",
-    refreshing: "Refreshing...",
-  },
-  it: {
-    title: "My Community",
-    subtitle: "The people who are part of your emotional journey",
-
-    // Tabs
-    tabs: {
-      myPeople: "My People",
-      relationships: "Relazioni",
-      invited: "Invited",
-      rowiverse: "Rowiverse",
-      communities: "Communities",
-    },
-
-    // Communities tab
-    comm: {
-      title: "My Communities",
-      desc: "Communities you belong to and their sub-communities",
-      empty: "You don't belong to any community yet",
-      members: "members",
-      subCommunities: "sub-communities",
-      parent: "Parent community",
-      viewMembers: "View members",
-      backToList: "Back to communities",
-      role: "Role",
-      owner: "Owner",
-      admin: "Admin",
-      member: "Member",
-      viewer: "Viewer",
-      inherited: "Inherited",
-      loadingMembers: "Loading members...",
-      noMembers: "This community has no members yet",
-    },
-
-    // Stats
-    stats: {
-      total: "Total",
-      connected: "Connected",
-      pending: "Pending",
-      avgAffinity: "Avg. affinity",
-    },
-
-    // Search & Filters
-    search: "Search by name or email...",
-    filters: "Filters",
-    clearFilters: "Clear filters",
-    allGroups: "All groups",
-    allCloseness: "All closeness",
-    onlyWithAffinity: "Only with affinity",
-
-    // Groups
-    groups: {
-      work: "Work",
-      family: "Family",
-      friends: "Friends",
-      toMeet: "To meet",
-      rowiverse: "Rowiverse",
-    },
-
-    // Closeness (5 levels)
-    closeness: {
-      veryClose: "Very close",
-      close: "Close",
-      neutral: "Neutral",
-      distant: "Distant",
-      veryDistant: "Very distant",
-    },
-
-    // Connection Types
-    connectionTypes: {
-      colleague: "Colleague",
-      boss: "Boss/Supervisor",
-      directReport: "Direct report",
-      mentor: "Mentor",
-      mentee: "Mentee",
-      partner: "Partner",
-      client: "Client",
-      friend: "Friend",
-      familyMember: "Family member",
-      acquaintance: "Acquaintance",
-      other: "Other",
-    },
-    fieldConnectionType: "Relationship type",
-
-    // Invite Modal
-    inviteTitle: "Invite to my community",
-    inviteDesc: "Send an invitation via email, WhatsApp or SMS",
-    inviteContact: "Email or phone (+country code)",
-    inviteName: "Name (optional)",
-    inviteMessage: "Custom message (optional)",
-    inviteDefaultMessage: "Hi! I'd like to connect with you on Rowi to strengthen our relationship.",
-    sendInvite: "Create invitation",
-    inviteSent: "Invitation created!",
-    inviteError: "Error creating invitation",
-    planLimit: "Your plan allows inviting up to",
-    people: "people",
-    upgradePlan: "Upgrade plan",
-    remainingInvites: "invitations remaining",
-    sendVia: "Send via:",
-    copyLink: "Copy link",
-    linkCopied: "Link copied!",
-
-    // Member Actions
-    actions: {
-      edit: "Edit",
-      delete: "Delete",
-      recalculate: "Recalculate affinity",
-      viewProfile: "View profile",
-    },
-
-    // Edit Modal
-    editTitle: "Edit member",
-    editSave: "Save changes",
-    editCancel: "Cancel",
-    editSuccess: "Changes saved",
-    editError: "Error saving",
-    fieldName: "Name",
-    fieldEmail: "Email",
-    fieldGroup: "Group",
-    fieldCloseness: "Closeness",
-    fieldCountry: "Country",
-    fieldBrainStyle: "Brain style",
-
-    // Delete confirmation
-    deleteTitle: "Delete member",
-    deleteConfirm: "Are you sure you want to delete",
-    deleteWarning: "This action cannot be undone and all affinity data will be lost.",
-    deleteButton: "Yes, delete",
-
-    // Rowiverse
-    rowiverseTitle: "Discover the Rowiverse",
-    rowiverseDesc: "Find people with public profiles in Rowi's global community",
-    rowiverseSearch: "Search Rowiverse...",
-    rowiverseEmpty: "No public profiles found",
-    publicProfile: "Public profile",
-    sendRequest: "Connect",
-    requestSent: "Connected",
-    addToCommunity: "Add to my community",
-    added: "Added",
-
-    // Member Card
-    noStyle: "No style defined",
-    noAffinity: "No affinity",
-    viewProfile: "View profile",
-    calculateAffinity: "Calculate affinity",
-
-    // Affinity levels
-    affinity: {
-      fullTrust: "Full trust",
-      goodConnection: "Good connection",
-      mediumPotential: "Medium potential",
-      lowConnection: "Low connection",
-      distant: "Distant",
-      noConnection: "No connection",
-    },
-
-    // Empty states
-    noMembers: "You don't have members in your community yet",
-    noInvites: "You don't have pending invitations",
-    startInviting: "Start inviting the people who matter to you",
-    addManually: "Add manually",
-
-    // Pending invites
-    pendingInvites: "Pending invitations",
-    sentOn: "Sent on",
-    expiresOn: "Expires on",
-    resend: "Resend",
-    cancel: "Cancel",
-    expired: "Expired",
-    accepted: "Accepted",
-    pending: "Pending",
-
-    // Loading
-    loading: "Loading your community...",
-    refreshing: "Refreshing...",
-  },
-
-};
+type CommunityT = ReturnType<typeof buildT>;
 
 const GROUP_ICONS = {
   Trabajo: Building2,
@@ -816,8 +301,8 @@ type RowiverseProfile = {
    📄 COMPONENTE PRINCIPAL
 ========================================================= */
 export default function CommunityPage() {
-  const { lang, t: tx } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { t: tx } = useI18n();
+  const t = useMemo(() => buildT(tx), [tx]);
 
   const [activeTab, setActiveTab] = useState<"myPeople" | "relationships" | "invited" | "rowiverse" | "communities">("myPeople");
 
@@ -1222,7 +707,7 @@ export default function CommunityPage() {
           >
             <UserPlus className="w-5 h-5" />
             <span className="hidden sm:inline">{t.inviteTitle}</span>
-            <span className="sm:hidden">Invitar</span>
+            <span className="sm:hidden">{t.inviteShort}</span>
           </button>
         </div>
       </motion.div>
@@ -1804,8 +1289,8 @@ export default function CommunityPage() {
                         >
                           <option value="owner">{t.comm.owner}</option>
                           <option value="admin">{t.comm.admin}</option>
-                          <option value="coach">Coach</option>
-                          <option value="mentor">Mentor</option>
+                          <option value="coach">{t.comm.coach}</option>
+                          <option value="mentor">{t.comm.mentor}</option>
                           <option value="member">{t.comm.member}</option>
                         </select>
 
@@ -1969,7 +1454,7 @@ function MemberCard({
   onRecalculate,
 }: {
   member: Member;
-  t: typeof translations.es;
+  t: CommunityT;
   index: number;
   onEdit: () => void;
   onDelete: () => void;
@@ -2182,7 +1667,7 @@ function InviteCard({
   onCancel,
 }: {
   invite: Invite;
-  t: typeof translations.es;
+  t: CommunityT;
   onCancel: () => void;
 }) {
   const statusColors = {
@@ -2258,7 +1743,7 @@ function RowiverseCard({
   onAdd,
 }: {
   profile: RowiverseProfile;
-  t: typeof translations.es;
+  t: CommunityT;
   index: number;
   isAdded: boolean;
   onAdd: () => void;
@@ -2399,7 +1884,7 @@ function InviteModal({
   onClose,
   onSuccess,
 }: {
-  t: typeof translations.es;
+  t: CommunityT;
   planLimit: number;
   remainingInvites: number;
   onClose: () => void;
@@ -2533,7 +2018,7 @@ function InviteModal({
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   disabled={!canInvite}
-                  placeholder="nombre@email.com o +1234567890"
+                  placeholder={t.invitePlaceholderContact}
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-[var(--rowi-g2)] outline-none disabled:opacity-50 text-sm"
                 />
               </div>
@@ -2547,7 +2032,7 @@ function InviteModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={!canInvite}
-                  placeholder="Juan Pérez"
+                  placeholder={t.invitePlaceholderName}
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 focus:ring-2 focus:ring-[var(--rowi-g2)] outline-none disabled:opacity-50 text-sm"
                 />
               </div>
@@ -2674,7 +2159,7 @@ function EditMemberModal({
   onSave,
 }: {
   member: Member;
-  t: typeof translations.es;
+  t: CommunityT;
   onClose: () => void;
   onSave: (data: Partial<Member>) => void;
 }) {
@@ -2885,7 +2370,7 @@ function DeleteConfirmModal({
   onConfirm,
 }: {
   member: Member;
-  t: typeof translations.es;
+  t: CommunityT;
   onClose: () => void;
   onConfirm: () => void;
 }) {

@@ -19,273 +19,74 @@ import { useUserContext } from "@/contexts/UserContextProvider";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 /* =========================================================
-   🌍 Traducciones del Navbar autenticado
+   🌍 Fallbacks ES de las etiquetas del navbar (clave corta → texto)
+   Las traducciones reales viven en el sistema central t() bajo el
+   namespace "navbar.nav.*". Este mapa solo provee el fallback ES por
+   defecto que se pasa a t() y mantiene una única fuente de claves.
 ========================================================= */
-const translations = {
-  es: {
-    nav: {
-      today: "Hoy",
-      myBecoming: "Mi evolución",
-      dashboard: "Dashboard",
-      community: "Comunidad",
-      affinity: "Afinidad",
-      relationships: "Relaciones",
-      benchmark: "Benchmark",
-      eco: "ECO",
-      guide: "Guía",
-      vitalSigns: "Vital Signs",
-      vsHub: "Mis Vital Signs",
-      vsDebriefs: "Mis Debriefs",
-      vsFamily: "Familia",
-      vsPrivacy: "Mi Privacidad",
-      vsResearch: "Research",
-      vsLearning: "Aprender (juegos EQ)",
-      vsProgress: "Mi evolución",
-      workspace: "Workspace",
-      org: "Organización",
-      weekflow: "WeekFlow",
-      signin: "Iniciar sesión",
-      signout: "Cerrar sesión",
-      profile: "Mi perfil",
-      viewProfile: "Ver perfil",
-      editProfile: "Editar perfil",
-      invites: "Invitaciones",
-      settings: "Configuración",
-      myRowi: "Mi Rowi",
-      sixSeconds: "Six Seconds",
-      rowiLevel: "Nivel Rowi",
-      social: "Social",
-      more: "Más",
-      feed: "Actividad",
-      connections: "Conexiones",
-      messages: "Mensajes",
-      goals: "Causas Nobles",
-      team: "Mi Equipo",
-      reports: "Reportes",
-      hr: "Recursos Humanos",
-      coaching: "Coaching",
-      clients: "Clientes",
-      finance: "Finanzas",
-      admin: "Admin",
-      research: "Investigación",
-      ventas: "Ventas",
-      asesor: "Asesor",
-      general: "General",
-      viewDetails: "Ver detalles",
-      notifications: "Notificaciones",
-      markAllRead: "Marcar todo leído",
-      noNotifications: "Sin notificaciones",
-      markRead: "Marcar leído",
-      viewAllNotifications: "Ver todas las notificaciones",
-      currentContext: "Contexto actual",
-      jSee: "Conócete",
-      jPractice: "Practica",
-      jAffinity: "Afinidad",
-      jEco: "ECO",
-      jConnect: "Conecta",
-      jImpact: "Impacto",
-      jOps: "Cuenta",
-      loading: "Cargando...",
-    },
-  },
-  en: {
-    nav: {
-      today: "Today",
-      myBecoming: "My growth",
-      dashboard: "Dashboard",
-      community: "Community",
-      affinity: "Affinity",
-      relationships: "Relationships",
-      benchmark: "Benchmark",
-      eco: "ECO",
-      guide: "Guide",
-      vitalSigns: "Vital Signs",
-      vsHub: "My Vital Signs",
-      vsDebriefs: "My Debriefs",
-      vsFamily: "Family",
-      vsPrivacy: "My Privacy",
-      vsResearch: "Research",
-      vsLearning: "Learn (EQ games)",
-      vsProgress: "My progress",
-      workspace: "Workspace",
-      org: "Organization",
-      weekflow: "WeekFlow",
-      signin: "Sign in",
-      signout: "Sign out",
-      profile: "My profile",
-      viewProfile: "View profile",
-      editProfile: "Edit profile",
-      invites: "Invitations",
-      settings: "Settings",
-      myRowi: "My Rowi",
-      sixSeconds: "Six Seconds",
-      rowiLevel: "Rowi Level",
-      social: "Social",
-      more: "More",
-      feed: "Activity",
-      connections: "Connections",
-      messages: "Messages",
-      goals: "Noble Goals",
-      team: "My Team",
-      reports: "Reports",
-      hr: "Human Resources",
-      coaching: "Coaching",
-      clients: "Clients",
-      finance: "Finance",
-      admin: "Admin",
-      research: "Research",
-      ventas: "Sales",
-      asesor: "Advisor",
-      general: "General",
-      viewDetails: "View details",
-      notifications: "Notifications",
-      markAllRead: "Mark all read",
-      noNotifications: "No notifications",
-      markRead: "Mark read",
-      viewAllNotifications: "View all notifications",
-      currentContext: "Current context",
-      jSee: "Know Yourself",
-      jPractice: "Practice",
-      jAffinity: "Affinity",
-      jEco: "ECO",
-      jConnect: "Connect",
-      jImpact: "Impact",
-      jOps: "Account",
-      loading: "Loading...",
-    },
-  },
-  pt: {
-    nav: {
-      today: "Hoje",
-      myBecoming: "Minha evolução",
-      dashboard: "Dashboard",
-      community: "Comunidade",
-      affinity: "Afinidade",
-      relationships: "Relações",
-      benchmark: "Benchmark",
-      eco: "ECO",
-      guide: "Guia",
-      vitalSigns: "Vital Signs",
-      vsHub: "Meus Vital Signs",
-      vsDebriefs: "Meus Debriefs",
-      vsFamily: "Família",
-      vsPrivacy: "Minha Privacidade",
-      vsResearch: "Pesquisa",
-      vsLearning: "Aprender (jogos EQ)",
-      vsProgress: "Minha evolução",
-      workspace: "Workspace",
-      org: "Organização",
-      weekflow: "WeekFlow",
-      signin: "Entrar",
-      signout: "Sair",
-      profile: "Meu perfil",
-      viewProfile: "Ver perfil",
-      editProfile: "Editar perfil",
-      invites: "Convites",
-      settings: "Configurações",
-      myRowi: "Meu Rowi",
-      sixSeconds: "Six Seconds",
-      rowiLevel: "Nível Rowi",
-      social: "Social",
-      more: "Mais",
-      feed: "Atividade",
-      connections: "Conexões",
-      messages: "Mensagens",
-      goals: "Causas Nobres",
-      team: "Minha Equipe",
-      reports: "Relatórios",
-      hr: "Recursos Humanos",
-      coaching: "Coaching",
-      clients: "Clientes",
-      finance: "Finanças",
-      admin: "Admin",
-      research: "Pesquisa",
-      ventas: "Vendas",
-      asesor: "Consultor",
-      general: "Geral",
-      viewDetails: "Ver detalhes",
-      notifications: "Notificações",
-      markAllRead: "Marcar tudo como lido",
-      noNotifications: "Sem notificações",
-      markRead: "Marcar como lido",
-      viewAllNotifications: "Ver todas as notificações",
-      currentContext: "Contexto atual",
-      jSee: "Conheça-se",
-      jPractice: "Pratique",
-      jAffinity: "Afinidade",
-      jEco: "ECO",
-      jConnect: "Conecte",
-      jImpact: "Impacto",
-      jOps: "Conta",
-      loading: "Carregando...",
-    },
-  },
-  it: {
-    nav: {
-      today: "Oggi",
-      myBecoming: "La mia evoluzione",
-      dashboard: "Dashboard",
-      community: "Comunità",
-      affinity: "Affinità",
-      relationships: "Relazioni",
-      benchmark: "Benchmark",
-      eco: "ECO",
-      guide: "Guida",
-      vitalSigns: "Vital Signs",
-      vsHub: "I miei Vital Signs",
-      vsDebriefs: "I miei Debrief",
-      vsFamily: "Famiglia",
-      vsPrivacy: "La mia Privacy",
-      vsResearch: "Ricerca",
-      vsLearning: "Impara (giochi EQ)",
-      vsProgress: "La mia evoluzione",
-      workspace: "Workspace",
-      org: "Organizzazione",
-      weekflow: "WeekFlow",
-      signin: "Accedi",
-      signout: "Esci",
-      profile: "Il mio profilo",
-      viewProfile: "Vedi profilo",
-      editProfile: "Modifica profilo",
-      invites: "Inviti",
-      settings: "Impostazioni",
-      myRowi: "Il mio Rowi",
-      sixSeconds: "Six Seconds",
-      rowiLevel: "Livello Rowi",
-      social: "Social",
-      more: "Altro",
-      feed: "Attività",
-      connections: "Connessioni",
-      messages: "Messaggi",
-      goals: "Cause Nobili",
-      team: "La mia Squadra",
-      reports: "Rapporti",
-      hr: "Risorse Umane",
-      coaching: "Coaching",
-      clients: "Clienti",
-      finance: "Finanza",
-      admin: "Admin",
-      research: "Ricerca",
-      ventas: "Vendite",
-      asesor: "Consulente",
-      general: "Generale",
-      viewDetails: "Vedi dettagli",
-      notifications: "Notifiche",
-      markAllRead: "Segna tutte come lette",
-      noNotifications: "Nessuna notifica",
-      markRead: "Segna come letta",
-      viewAllNotifications: "Vedi tutte le notifiche",
-      currentContext: "Contesto attuale",
-      jSee: "Conosciti",
-      jPractice: "Pratica",
-      jAffinity: "Affinità",
-      jEco: "ECO",
-      jConnect: "Connetti",
-      jImpact: "Impatto",
-      jOps: "Account",
-      loading: "Caricamento...",
-    },
-  },
+const NAV_LABEL_FALLBACKS: Record<string, string> = {
+  today: "Hoy",
+  myBecoming: "Mi evolución",
+  dashboard: "Dashboard",
+  community: "Comunidad",
+  affinity: "Afinidad",
+  relationships: "Relaciones",
+  benchmark: "Benchmark",
+  eco: "ECO",
+  guide: "Guía",
+  vitalSigns: "Vital Signs",
+  vsHub: "Mis Vital Signs",
+  vsDebriefs: "Mis Debriefs",
+  vsFamily: "Familia",
+  vsPrivacy: "Mi Privacidad",
+  vsResearch: "Research",
+  vsLearning: "Aprender (juegos EQ)",
+  vsProgress: "Mi evolución",
+  workspace: "Workspace",
+  org: "Organización",
+  weekflow: "WeekFlow",
+  signin: "Iniciar sesión",
+  signout: "Cerrar sesión",
+  profile: "Mi perfil",
+  viewProfile: "Ver perfil",
+  editProfile: "Editar perfil",
+  invites: "Invitaciones",
+  settings: "Configuración",
+  myRowi: "Mi Rowi",
+  sixSeconds: "Six Seconds",
+  rowiLevel: "Nivel Rowi",
+  social: "Social",
+  more: "Más",
+  feed: "Actividad",
+  connections: "Conexiones",
+  messages: "Mensajes",
+  goals: "Causas Nobles",
+  team: "Mi Equipo",
+  reports: "Reportes",
+  hr: "Recursos Humanos",
+  coaching: "Coaching",
+  clients: "Clientes",
+  finance: "Finanzas",
+  admin: "Admin",
+  research: "Investigación",
+  ventas: "Ventas",
+  asesor: "Asesor",
+  general: "General",
+  viewDetails: "Ver detalles",
+  notifications: "Notificaciones",
+  markAllRead: "Marcar todo leído",
+  noNotifications: "Sin notificaciones",
+  markRead: "Marcar leído",
+  viewAllNotifications: "Ver todas las notificaciones",
+  currentContext: "Contexto actual",
+  jSee: "Conócete",
+  jPractice: "Practica",
+  jAffinity: "Afinidad",
+  jEco: "ECO",
+  jConnect: "Conecta",
+  jImpact: "Impacto",
+  jOps: "Cuenta",
+  loading: "Cargando...",
 };
 
 // Emojis y colores para los stages del avatar
@@ -419,8 +220,14 @@ const ROLE_LINKS = [
 export default function NavBar() {
   const pathname = usePathname();
   const { data } = useSession();
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations]?.nav || translations.en.nav;
+  const { lang, t } = useI18n();
+
+  // Etiqueta de navegación por clave corta: resuelve vía el sistema central
+  // t() bajo "navbar.nav.*", con el fallback ES de NAV_LABEL_FALLBACKS.
+  const navLabel = useCallback(
+    (key: string) => t(`navbar.nav.${key}`, NAV_LABEL_FALLBACKS[key] ?? key),
+    [t]
+  );
 
   // Hook de contexto multi-rol
   let userContext;
@@ -598,7 +405,7 @@ export default function NavBar() {
           {primaryLinks.map((l) => {
             const active = pathname?.startsWith(l.href);
             const Icon = l.icon;
-            const label = t[l.key as keyof typeof t] || l.key;
+            const label = navLabel(l.key);
             return (
               <Link
                 key={l.href}
@@ -622,7 +429,7 @@ export default function NavBar() {
             <div id="rowi-more-dropdown" className="relative">
               <button
                 onClick={() => setMoreDropdownOpen((v) => !v)}
-                title={t.more || "Más"}
+                title={navLabel("more")}
                 className={`flex items-center gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   moreLinks.some((l) => pathname?.startsWith(l.href))
                     ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
@@ -630,7 +437,7 @@ export default function NavBar() {
                 }`}
               >
                 <LayoutGrid className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden lg:inline whitespace-nowrap">{t.more || "Más"}</span>
+                <span className="hidden lg:inline whitespace-nowrap">{navLabel("more")}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${moreDropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
@@ -653,12 +460,12 @@ export default function NavBar() {
                       return (
                         <div key={group.key} className="py-1">
                           <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--rowi-muted)]">
-                            {t[group.key as keyof typeof t] || group.key}
+                            {navLabel(group.key)}
                           </p>
                           {groupLinks.map((ml) => {
                             const mlActive = pathname?.startsWith(ml.href);
                             const MlIcon = ml.icon;
-                            const mlLabel = t[ml.key as keyof typeof t] || ml.key;
+                            const mlLabel = navLabel(ml.key);
                             return (
                               <Link
                                 key={ml.href}
@@ -689,7 +496,7 @@ export default function NavBar() {
             <div id="rowi-social-dropdown" className="relative">
               <button
                 onClick={() => setSocialDropdownOpen((v) => !v)}
-                title={t.social}
+                title={navLabel("social")}
                 className={`flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isSocialActive
                     ? "text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10"
@@ -697,7 +504,7 @@ export default function NavBar() {
                 }`}
               >
                 <Users2 className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden lg:inline whitespace-nowrap">{t.social}</span>
+                <span className="hidden lg:inline whitespace-nowrap">{navLabel("social")}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${socialDropdownOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
@@ -712,7 +519,7 @@ export default function NavBar() {
                     {SOCIAL_LINKS.map((sl) => {
                       const slActive = pathname?.startsWith(sl.href);
                       const SlIcon = sl.icon;
-                      const slLabel = t[sl.key as keyof typeof t] || sl.key;
+                      const slLabel = navLabel(sl.key);
                       return (
                         <Link
                           key={sl.href}
@@ -747,7 +554,7 @@ export default function NavBar() {
               <button
                 onClick={() => setNotificationsOpen((v) => !v)}
                 className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                title={t.notifications}
+                title={navLabel("notifications")}
               >
                 <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 {unreadCount > 0 && (
@@ -769,14 +576,14 @@ export default function NavBar() {
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
                       <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {t.notifications}
+                        {navLabel("notifications")}
                       </h3>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
                           className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
                         >
-                          {t.markAllRead}
+                          {navLabel("markAllRead")}
                         </button>
                       )}
                     </div>
@@ -787,7 +594,7 @@ export default function NavBar() {
                         <div className="py-8 text-center">
                           <Bell className="w-10 h-10 mx-auto text-gray-300 dark:text-zinc-600 mb-2" />
                           <p className="text-sm text-gray-500">
-                            {t.noNotifications}
+                            {navLabel("noNotifications")}
                           </p>
                         </div>
                       ) : (
@@ -839,7 +646,7 @@ export default function NavBar() {
                                   <button
                                     onClick={() => markAsRead(notif.id)}
                                     className="p-1 text-gray-400 hover:text-green-600 rounded"
-                                    title={t.markRead}
+                                    title={navLabel("markRead")}
                                   >
                                     <Check className="w-3.5 h-3.5" />
                                   </button>
@@ -857,7 +664,7 @@ export default function NavBar() {
                       onClick={() => setNotificationsOpen(false)}
                       className="block px-4 py-2.5 text-center text-sm text-violet-600 hover:bg-gray-50 dark:hover:bg-zinc-800 border-t border-gray-200 dark:border-zinc-800"
                     >
-                      {t.viewAllNotifications}
+                      {navLabel("viewAllNotifications")}
                     </Link>
                   </motion.div>
                 )}
@@ -870,14 +677,14 @@ export default function NavBar() {
               href="/signin"
               className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] rounded-lg hover:opacity-90 transition-opacity"
             >
-              {t.signin}
+              {navLabel("signin")}
             </Link>
           ) : (
             <div id="rowi-user-menu" className="relative">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                title={t.profile}
+                title={navLabel("profile")}
               >
                 {/* Avatar con emoji del stage */}
                 <div className="relative">
@@ -910,7 +717,7 @@ export default function NavBar() {
                   return (
                     <span
                       className={`hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-gradient-to-r ${meta.gradient}`}
-                      title={t.currentContext}
+                      title={navLabel("currentContext")}
                     >
                       {meta.fallback}
                     </span>
@@ -937,7 +744,7 @@ export default function NavBar() {
                     {/* Seccion Avatar - Colapsable */}
                     <CollapsibleSection
                       id="avatar"
-                      title={t.myRowi}
+                      title={navLabel("myRowi")}
                       icon={<span className="text-lg">{avatar ? AVATAR_STAGE_CONFIG[avatar.currentStage]?.emoji : "🥚"}</span>}
                       isExpanded={expandedSection === "avatar"}
                       onToggle={() => setExpandedSection(expandedSection === "avatar" ? null : "avatar")}
@@ -956,7 +763,7 @@ export default function NavBar() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                              {avatar?.stageInfo?.name?.[lang as "es" | "en"] || t.loading}
+                              {avatar?.stageInfo?.name?.[lang as "es" | "en"] || navLabel("loading")}
                             </p>
                             <p className="text-xs text-gray-500">
                               Score: {avatar?.evolutionScore?.toFixed(1) || "0"}
@@ -971,13 +778,13 @@ export default function NavBar() {
                                 className="px-2 py-1 rounded text-center"
                                 style={{ backgroundColor: `${SIX_SECONDS_COLORS[avatar.sixSecondsLevel]}15` }}
                               >
-                                <p className="text-[9px] uppercase text-gray-500">{t.sixSeconds}</p>
+                                <p className="text-[9px] uppercase text-gray-500">{navLabel("sixSeconds")}</p>
                                 <p className="text-xs font-bold" style={{ color: SIX_SECONDS_COLORS[avatar.sixSecondsLevel] }}>
                                   L{avatar.sixSecondsLevel}
                                 </p>
                               </div>
                               <div className="px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-900/20 text-center">
-                                <p className="text-[9px] uppercase text-gray-500">{t.rowiLevel}</p>
+                                <p className="text-[9px] uppercase text-gray-500">{navLabel("rowiLevel")}</p>
                                 <p className="text-xs font-bold text-emerald-600">L{avatar.rowiLevel}</p>
                               </div>
                             </div>
@@ -999,7 +806,7 @@ export default function NavBar() {
                           onClick={() => setMenuOpen(false)}
                           className="mt-2 block text-center text-xs text-blue-600 dark:text-blue-400 hover:underline"
                         >
-                          {t.viewDetails} →
+                          {navLabel("viewDetails")} →
                         </Link>
                       </div>
                     </CollapsibleSection>
@@ -1007,29 +814,29 @@ export default function NavBar() {
                     {/* Seccion Perfil - Colapsable */}
                     <CollapsibleSection
                       id="profile"
-                      title={t.profile}
+                      title={navLabel("profile")}
                       icon={<User className="w-4 h-4" />}
                       isExpanded={expandedSection === "profile"}
                       onToggle={() => setExpandedSection(expandedSection === "profile" ? null : "profile")}
                     >
                       <div className="py-1">
                         <MenuLink href="/profile/home" icon={User} onClick={() => setMenuOpen(false)}>
-                          {t.viewProfile}
+                          {navLabel("viewProfile")}
                         </MenuLink>
                         <MenuLink href="/social/feed" icon={Rss} onClick={() => setMenuOpen(false)}>
-                          {t.feed}
+                          {navLabel("feed")}
                         </MenuLink>
                         <MenuLink href="/social/connections" icon={Handshake} onClick={() => setMenuOpen(false)}>
-                          {t.connections}
+                          {navLabel("connections")}
                         </MenuLink>
                         <MenuLink href="/social/messages" icon={MessageCircle} onClick={() => setMenuOpen(false)}>
-                          {t.messages}
+                          {navLabel("messages")}
                         </MenuLink>
                         <MenuLink href="/social/goals" icon={Target} onClick={() => setMenuOpen(false)}>
-                          {t.goals}
+                          {navLabel("goals")}
                         </MenuLink>
                         <MenuLink href="/settings/invites" icon={UserPlus} onClick={() => setMenuOpen(false)}>
-                          {t.invites}
+                          {navLabel("invites")}
                         </MenuLink>
                       </div>
                     </CollapsibleSection>
@@ -1037,32 +844,32 @@ export default function NavBar() {
                     {/* Seccion Vital Signs - Colapsable */}
                     <CollapsibleSection
                       id="vitalSigns"
-                      title={t.vitalSigns}
+                      title={navLabel("vitalSigns")}
                       icon={<Activity className="w-4 h-4" />}
                       isExpanded={expandedSection === "vitalSigns"}
                       onToggle={() => setExpandedSection(expandedSection === "vitalSigns" ? null : "vitalSigns")}
                     >
                       <div className="py-1">
                         <MenuLink href="/hub/vital-signs" icon={Activity} onClick={() => setMenuOpen(false)}>
-                          {t.vsHub}
+                          {navLabel("vsHub")}
                         </MenuLink>
                         <MenuLink href="/hub/debrief" icon={Sparkles} onClick={() => setMenuOpen(false)}>
-                          {t.vsDebriefs}
+                          {navLabel("vsDebriefs")}
                         </MenuLink>
                         <MenuLink href="/hub/family/vital-signs" icon={Users} onClick={() => setMenuOpen(false)}>
-                          {t.vsFamily}
+                          {navLabel("vsFamily")}
                         </MenuLink>
                         <MenuLink href="/progress" icon={TrendingUp} onClick={() => setMenuOpen(false)}>
-                          {t.vsProgress}
+                          {navLabel("vsProgress")}
                         </MenuLink>
                         <MenuLink href="/learning" icon={GraduationCap} onClick={() => setMenuOpen(false)}>
-                          {t.vsLearning}
+                          {navLabel("vsLearning")}
                         </MenuLink>
                         <MenuLink href="/hub/account/privacy" icon={Shield} onClick={() => setMenuOpen(false)}>
-                          {t.vsPrivacy}
+                          {navLabel("vsPrivacy")}
                         </MenuLink>
                         <MenuLink href="/research/cases" icon={FlaskConical} onClick={() => setMenuOpen(false)}>
-                          {t.vsResearch}
+                          {navLabel("vsResearch")}
                         </MenuLink>
                       </div>
                     </CollapsibleSection>
@@ -1070,14 +877,14 @@ export default function NavBar() {
                     {/* Seccion Configuracion - Colapsable */}
                     <CollapsibleSection
                       id="settings"
-                      title={t.settings}
+                      title={navLabel("settings")}
                       icon={<Settings className="w-4 h-4" />}
                       isExpanded={expandedSection === "settings"}
                       onToggle={() => setExpandedSection(expandedSection === "settings" ? null : "settings")}
                     >
                       <div className="py-1">
                         <MenuLink href="/settings" icon={Settings} onClick={() => setMenuOpen(false)}>
-                          {t.general}
+                          {navLabel("general")}
                         </MenuLink>
                       </div>
                     </CollapsibleSection>
@@ -1091,7 +898,7 @@ export default function NavBar() {
                         }}
                       >
                         <LogOut className="w-4 h-4" />
-                        {t.signout}
+                        {navLabel("signout")}
                       </button>
                     </div>
                   </motion.div>
@@ -1123,7 +930,7 @@ export default function NavBar() {
             {isLogged && hasMultipleContexts && (
               <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
                 <p className="text-xs text-gray-500 mb-2">
-                  {t.currentContext}
+                  {navLabel("currentContext")}
                 </p>
                 <ContextSwitcher />
               </div>
@@ -1133,7 +940,7 @@ export default function NavBar() {
               {visibleLinks.map((l) => {
                 const active = pathname?.startsWith(l.href);
                 const Icon = l.icon;
-                const label = t[l.key as keyof typeof t] || l.key;
+                const label = navLabel(l.key);
                 return (
                   <Link
                     key={l.href}
@@ -1155,12 +962,12 @@ export default function NavBar() {
               {isLogged && (
                 <>
                   <div className="pt-2 pb-1 px-4">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{t.social}</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{navLabel("social")}</p>
                   </div>
                   {SOCIAL_LINKS.map((sl) => {
                     const slActive = pathname?.startsWith(sl.href);
                     const SlIcon = sl.icon;
-                    const slLabel = t[sl.key as keyof typeof t] || sl.key;
+                    const slLabel = navLabel(sl.key);
                     return (
                       <Link
                         key={sl.href}

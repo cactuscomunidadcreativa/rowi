@@ -208,7 +208,7 @@ export default function ContextSwitcher() {
           </p>
           {currentContext.type !== "personal" && (
             <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-              {lang === "es" ? currentRoleConfig.label : currentRoleConfig.labelEN}
+              {t(currentRoleConfig.labelKey, currentRoleConfig.label)}
             </p>
           )}
         </div>
@@ -275,7 +275,7 @@ export default function ContextSwitcher() {
                       return <GroupIcon className="w-4 h-4 text-gray-400" />;
                     })()}
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      {lang === "es" ? group.label : group.labelEN}
+                      {t(`contextType.${group.type}`, group.label)}
                     </span>
                     <span className="text-xs text-gray-400">
                       ({group.contexts.length})
@@ -411,7 +411,7 @@ function ContextOption({
               color: roleConfig.color,
             }}
           >
-            {lang === "es" ? roleConfig.label : roleConfig.labelEN}
+            {t(roleConfig.labelKey, roleConfig.label)}
           </span>
           {context.memberCount !== undefined && context.memberCount > 0 && (
             <span className="text-[10px] text-gray-400">

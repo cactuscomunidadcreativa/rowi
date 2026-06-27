@@ -48,7 +48,6 @@ interface AnswerResponse {
 
 export default function DailyPulseCard() {
   const { lang, t } = useI18n();
-  const isEN = lang === "en";
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TodayResponse | null>(null);
@@ -68,9 +67,9 @@ export default function DailyPulseCard() {
         setData(json);
         if (json.streak) setStreak(json.streak);
       })
-      .catch(() => setError(isEN ? "Could not load today's pulse" : "No pudimos cargar el pulso de hoy"))
+      .catch(() => setError(t("dailyPulseCard.errorLoad", "No pudimos cargar el pulso de hoy")))
       .finally(() => setLoading(false));
-  }, [isEN]);
+  }, [t]);
 
   async function submit() {
     if (submitting) return;
@@ -88,7 +87,7 @@ export default function DailyPulseCard() {
       });
       const json = (await res.json()) as AnswerResponse;
       if (!json.ok) {
-        setError(json.error ?? (isEN ? "Could not save" : "No pudimos guardar"));
+        setError(json.error ?? t("dailyPulseCard.errorSave", "No pudimos guardar"));
         return;
       }
       if (json.feedback) setFeedback(json.feedback);
@@ -121,7 +120,7 @@ export default function DailyPulseCard() {
     return (
       <div className="rowi-card flex items-center gap-3 text-sm text-[var(--rowi-muted)]">
         <Loader2 className="w-4 h-4 animate-spin" />
-        {isEN ? "Loading today's pulse..." : "Cargando el pulso de hoy..."}
+        {t("dailyPulseCard.loading", "Cargando el pulso de hoy...")}
       </div>
     );
   }
@@ -149,7 +148,7 @@ export default function DailyPulseCard() {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--rowi-primary)] bg-[var(--rowi-primary)]/10 px-2 py-0.5 rounded-full">
-            {isEN ? "Daily Pulse" : "Pulso de hoy"}
+            {t("dailyPulseCard.badge", "Pulso de hoy")}
           </span>
           <span className="text-[10px] text-[var(--rowi-muted-weak)] uppercase tracking-wider">
             {q.sei}
@@ -158,7 +157,7 @@ export default function DailyPulseCard() {
         {streak && streak.current > 0 && (
           <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">
             <Flame className="w-3.5 h-3.5" />
-            {streak.current} {isEN ? "day streak" : "días seguidos"}
+            {streak.current} {t("dailyPulseCard.dayStreak", "días seguidos")}
           </div>
         )}
       </div>
@@ -185,12 +184,12 @@ export default function DailyPulseCard() {
           ) : (
             <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
               <CheckCircle2 className="w-4 h-4" />
-              {isEN ? "You already answered today. See you tomorrow." : "Ya respondiste hoy. Nos vemos mañana."}
+              {t("dailyPulseCard.alreadyAnswered", "Ya respondiste hoy. Nos vemos mañana.")}
             </div>
           )}
           {pointsAdded ? (
             <div className="text-xs text-[var(--rowi-muted)]">
-              +{pointsAdded} Rowi Points
+              +{pointsAdded} Rowi {t("dailyPulseCard.points", "Points")}
             </div>
           ) : null}
         </div>
@@ -212,19 +211,19 @@ export default function DailyPulseCard() {
               </button>
             ))}
             <span className="text-xs text-[var(--rowi-muted-weak)] ml-2">
-              {isEN ? "1 = not at all · 5 = a lot" : "1 = nada · 5 = mucho"}
+              {t("dailyPulseCard.scaleHint", "1 = nada · 5 = mucho")}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] text-[var(--rowi-muted-weak)]">
-              {isEN ? "Takes less than a minute" : "Toma menos de un minuto"}
+              {t("dailyPulseCard.takesLessThanMinute", "Toma menos de un minuto")}
             </span>
             <button
               onClick={submit}
               disabled={submitting}
               className="rowi-btn-primary text-sm px-4 py-2 disabled:opacity-50"
             >
-              {submitting ? "..." : isEN ? "Answer" : "Responder"}
+              {submitting ? "..." : t("dailyPulseCard.answer", "Responder")}
             </button>
           </div>
           {error && <div className="text-xs text-rose-500">{error}</div>}

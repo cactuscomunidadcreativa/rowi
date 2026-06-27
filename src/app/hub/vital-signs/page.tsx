@@ -655,13 +655,16 @@ interface ContextCardItemProps {
   onOpenDetail: (scope: ContextCard["scope"], subjectId: string) => void;
 }
 
-function combineIdentities(lang: VsLang, a: string, b: string): string {
+function combineIdentities(
+  t: (key: string, fallback: string) => string,
+  a: string,
+  b: string,
+): string {
   const x = a.toLowerCase();
   const y = b.toLowerCase();
-  if (lang === "en") return `Combines ${x} with ${y}`;
-  if (lang === "pt") return `Combina ${x} com ${y}`;
-  if (lang === "it") return `Combina ${x} con ${y}`;
-  return `Combina ${x} con ${y}`;
+  return t("vitalSignsPg.combineIdentities", "Combina {a} con {b}")
+    .replace("{a}", x)
+    .replace("{b}", y);
 }
 
 function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardItemProps) {
@@ -731,7 +734,7 @@ function ContextCardItem({ card, lang, t, accent, onOpenDetail }: ContextCardIte
                 <div className="text-[10px] text-[var(--rowi-muted)] truncate">
                   {card.orientationCombined && card.orientationSecondary
                     ? combineIdentities(
-                        lang,
+                        t,
                         vsOrientationIdentity(card.orientation.quadrant, lang, card.orientation.esIdentity, card.orientation.enIdentity),
                         vsOrientationIdentity(card.orientationSecondary.quadrant, lang, card.orientationSecondary.esIdentity, card.orientationSecondary.enIdentity),
                       )

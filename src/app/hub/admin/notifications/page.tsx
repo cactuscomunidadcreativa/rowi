@@ -651,12 +651,12 @@ export default function NotificationsAdminPage() {
 
           <div className="grid gap-4">
             {[
-              { type: "ACHIEVEMENT_UNLOCKED", titleKey: "admin.notifications.templates.achievement", preview: "Has desbloqueado: {{achievement}}. +{{xp}} XP" },
-              { type: "LEVEL_UP", titleKey: "admin.notifications.templates.levelUp", preview: "Felicidades! Ahora eres nivel {{level}}" },
-              { type: "TASK_ASSIGNED", titleKey: "admin.notifications.templates.taskAssigned", preview: "Te han asignado la tarea: {{task}}" },
-              { type: "HUB_INVITATION", titleKey: "admin.notifications.templates.hubInvitation", preview: "Te han invitado a unirte al hub: {{hub}}" },
-              { type: "WEEKFLOW_REMINDER", titleKey: "admin.notifications.templates.weekflowReminder", preview: "Es hora de tu sesion semanal de WeekFlow" },
-              { type: "MICROLEARNING_AVAILABLE", titleKey: "admin.notifications.templates.microlearning", preview: "Tienes una nueva leccion disponible: {{lesson}}" },
+              { type: "ACHIEVEMENT_UNLOCKED", titleKey: "admin.notifications.templates.achievement", preview: t("adminNotifications.templates.preview.achievement", "Has desbloqueado: {{achievement}}. +{{xp}} XP") },
+              { type: "LEVEL_UP", titleKey: "admin.notifications.templates.levelUp", preview: t("adminNotifications.templates.preview.levelUp", "Felicidades! Ahora eres nivel {{level}}") },
+              { type: "TASK_ASSIGNED", titleKey: "admin.notifications.templates.taskAssigned", preview: t("adminNotifications.templates.preview.taskAssigned", "Te han asignado la tarea: {{task}}") },
+              { type: "HUB_INVITATION", titleKey: "admin.notifications.templates.hubInvitation", preview: t("adminNotifications.templates.preview.hubInvitation", "Te han invitado a unirte al hub: {{hub}}") },
+              { type: "WEEKFLOW_REMINDER", titleKey: "admin.notifications.templates.weekflowReminder", preview: t("adminNotifications.templates.preview.weekflowReminder", "Es hora de tu sesion semanal de WeekFlow") },
+              { type: "MICROLEARNING_AVAILABLE", titleKey: "admin.notifications.templates.microlearning", preview: t("adminNotifications.templates.preview.microlearning", "Tienes una nueva leccion disponible: {{lesson}}") },
             ].map((template) => (
               <div
                 key={template.type}

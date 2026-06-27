@@ -43,7 +43,7 @@ const SEI_NAMES: Record<string, { es: string; en: string }> = {
 };
 
 export default function EqeLessonsSection() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const isEN = lang === "en";
 
   const [items, setItems] = useState<Lesson[] | null>(null);
@@ -74,17 +74,18 @@ export default function EqeLessonsSection() {
           <div className="flex items-center gap-2 mb-1">
             <GraduationCap className="w-4 h-4 text-violet-500" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-              {isEN ? "Six Seconds EQ Educator track (18+)" : "Programa Six Seconds EQ Educator (18+)"}
+              {t("eqeLessons.heading", "Programa Six Seconds EQ Educator (18+)")}
             </h2>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {isEN
-              ? "24 micro-lessons adapted from the EQE1/2/3 program. Practice one per day, 5-20 min each."
-              : "24 micro-lecciones adaptadas del programa EQE1/2/3. Practica una al día, 5-20 min cada una."}
+            {t(
+              "eqeLessons.description",
+              "24 micro-lecciones adaptadas del programa EQE1/2/3. Practica una al día, 5-20 min cada una.",
+            )}
           </p>
         </div>
         <span className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1 bg-white dark:bg-zinc-800 rounded-full border border-gray-200 dark:border-zinc-700">
-          {doneThis}/{totalThis} {isEN ? "in this track" : "en este track"}
+          {doneThis}/{totalThis} {t("eqeLessons.inThisTrack", "en este track")}
         </span>
       </div>
 

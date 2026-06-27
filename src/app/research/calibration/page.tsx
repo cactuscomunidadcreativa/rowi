@@ -108,13 +108,13 @@ export default function ResearchCalibrationPage() {
 
               <div className="space-y-2 text-xs">
                 <div>
-                  <span className="text-[var(--rowi-muted)]">SEI hyp:</span>{" "}
+                  <span className="text-[var(--rowi-muted)]">{t("researchCalib.seiHyp", "Hipótesis SEI:")}</span>{" "}
                   <span className="text-[var(--rowi-foreground)]">
                     {pp.hypothesis.competencies.join(" · ")}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[var(--rowi-muted)]">BT hyp:</span>{" "}
+                  <span className="text-[var(--rowi-muted)]">{t("researchCalib.btHyp", "Hipótesis Brain Talents:")}</span>{" "}
                   <span className="text-[var(--rowi-foreground)]">
                     {pp.hypothesis.talents.slice(0, 3).join(" · ")}
                   </span>
@@ -154,7 +154,7 @@ export default function ResearchCalibrationPage() {
                 </div>
                 {obs.meanDelta !== null && (
                   <div className="text-xs">
-                    <span className="text-[var(--rowi-muted)]">Δ avg:</span>{" "}
+                    <span className="text-[var(--rowi-muted)]">{t("researchCalib.deltaAvg", "Δ prom:")}</span>{" "}
                     <span
                       className={`font-medium ${
                         obs.meanDelta > 2

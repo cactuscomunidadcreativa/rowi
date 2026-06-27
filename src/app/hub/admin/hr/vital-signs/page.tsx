@@ -34,15 +34,14 @@ const BAND_BG: Record<string, string> = {
   top_quartile: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30",
 };
 
-const COHESION_LABEL: Record<string, { es: string; en: string }> = {
-  high: { es: "Consenso fuerte", en: "Strong consensus" },
-  mid: { es: "Consenso medio", en: "Mid consensus" },
-  low: { es: "Subgrupos discrepan", en: "Subgroups disagree" },
+const COHESION_LABEL: Record<string, { key: string; fallback: string }> = {
+  high: { key: "hrVitalSigns.cohesionHigh", fallback: "Consenso fuerte" },
+  mid: { key: "hrVitalSigns.cohesionMid", fallback: "Consenso medio" },
+  low: { key: "hrVitalSigns.cohesionLow", fallback: "Subgrupos discrepan" },
 };
 
 export default function HrVitalSignsPage() {
-  const { t, locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const { t } = useI18n();
   const [scope, setScope] = useState<"org" | "team">("org");
   const [data, setData] = useState<AggResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,7 +209,7 @@ export default function HrVitalSignsPage() {
                     SD={d.sd?.toFixed(1) ?? "—"}
                     {d.cohesionBand && (
                       <span className="ml-2">
-                        · {lang === "en" ? COHESION_LABEL[d.cohesionBand].en : COHESION_LABEL[d.cohesionBand].es}
+                        · {t(COHESION_LABEL[d.cohesionBand].key, COHESION_LABEL[d.cohesionBand].fallback)}
                       </span>
                     )}
                   </div>

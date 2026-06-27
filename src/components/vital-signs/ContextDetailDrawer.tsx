@@ -139,12 +139,13 @@ const COHESION_LABEL: Record<
 };
 
 export default function ContextDetailDrawer({ scope, subjectId, open, onClose }: Props) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const vsLang = lang as VsLang;
-  const isEN = lang === "en";
-  // Helper para textos de chrome (no catalogados): es/en/pt/it.
-  const L = (es: string, en: string, pt: string, it: string) =>
-    lang === "en" ? en : lang === "pt" ? pt : lang === "it" ? it : es;
+  // COHESION_LABEL is a data-field map (es/en/pt/it columns); resolve it by lang.
+  const cohesionLabel = (c: AggDriver["cohesion"]) => {
+    const e = COHESION_LABEL[c];
+    return lang === "en" ? e.en : lang === "pt" ? e.pt : lang === "it" ? e.it : e.es;
+  };
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DetailResponse | null>(null);
@@ -159,14 +160,14 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
       .then((r) => r.json())
       .then((json: DetailResponse) => {
         if (!json.ok) {
-          setError(json.error ?? (isEN ? "Could not load" : "No pudimos cargar"));
+          setError(json.error ?? t("vsContextDrawer.loadError", "No pudimos cargar"));
         } else {
           setData(json);
         }
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Network error"))
       .finally(() => setLoading(false));
-  }, [open, scope, subjectId, isEN]);
+  }, [open, scope, subjectId, t]);
 
   useEffect(() => {
     if (!open) return;
@@ -201,10 +202,10 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {scope === "world"
                     ? "Rowiverse"
                     : scope === "org"
-                      ? L("Organización", "Organization", "Organização", "Organizzazione")
+                      ? t("vsContextDrawer.scopeOrg", "Organización")
                       : scope === "team"
-                        ? L("Equipo", "Team", "Equipe", "Team")
-                        : L("Familia", "Family", "Família", "Famiglia")}
+                        ? t("vsContextDrawer.scopeTeam", "Equipo")
+                        : t("vsContextDrawer.scopeFamily", "Familia")}
                 </div>
                 <h2 className="text-base font-semibold text-[var(--rowi-foreground)] truncate">
                   {data?.subjectName ?? "—"}
@@ -223,7 +224,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
               {loading && (
                 <div className="flex items-center gap-3 text-[var(--rowi-muted)] py-12 justify-center">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {L("Cargando...", "Loading...", "Carregando...", "Caricamento...")}
+                  {t("vsContextDrawer.loading", "Cargando...")}
                 </div>
               )}
 
@@ -233,12 +234,12 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
 
               {data && data.suppressed && (
                 <div className="rowi-card text-sm text-[var(--rowi-muted)] text-center py-8">
-                  {L(
-                    `No hay datos suficientes: ${data.n} de ${data.nTotal} miembros con perfil completo (mínimo 5).`,
-                    `Not enough data: ${data.n} of ${data.nTotal} members with a complete profile (need 5).`,
-                    `Dados insuficientes: ${data.n} de ${data.nTotal} membros com perfil completo (mínimo 5).`,
-                    `Dati insufficienti: ${data.n} di ${data.nTotal} membri con profilo completo (minimo 5).`,
-                  )}
+                  {t(
+                    "vsContextDrawer.suppressed",
+                    "No hay datos suficientes: {n} de {total} miembros con perfil completo (mínimo 5).",
+                  )
+                    .replace("{n}", String(data.n))
+                    .replace("{total}", String(data.nTotal))}
                 </div>
               )}
 
@@ -249,7 +250,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-[var(--rowi-primary)]" />
                       <span className="text-[10px] uppercase tracking-wider text-[var(--rowi-primary)] font-bold">
-                        {L("Capital emocional disponible", "Available emotional capital", "Capital emocional disponível", "Capitale emotivo disponibile")}
+                        {t("vsContextDrawer.emotionalCapital", "Capital emocional disponible")}
                       </span>
                     </div>
                     <div className="flex items-end gap-4 mb-2">
@@ -258,16 +259,14 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                         <span className="text-2xl text-[var(--rowi-muted)] font-normal">/100</span>
                       </div>
                       <div className="text-sm text-[var(--rowi-muted)] pb-2">
-                        {L("Índice de Engagement", "Engagement Index", "Índice de Engagement", "Indice di Engagement")}
+                        {t("vsContextDrawer.engagementIndex", "Índice de Engagement")}
                       </div>
                     </div>
                     <p className="text-xs text-[var(--rowi-muted)] mt-2">
-                      {L(
-                        `Inventario de ${data.n} perfiles agregando SEI + Vital Signs + Brain Talents.`,
-                        `Inventory of ${data.n} member profiles aggregating SEI + Vital Signs + Brain Talents.`,
-                        `Inventário de ${data.n} perfis agregando SEI + Vital Signs + Brain Talents.`,
-                        `Inventario di ${data.n} profili che aggregano SEI + Vital Signs + Brain Talents.`,
-                      )}
+                      {t(
+                        "vsContextDrawer.inventory",
+                        "Inventario de {n} perfiles agregando SEI + Vital Signs + Brain Talents.",
+                      ).replace("{n}", String(data.n))}
                     </p>
                     {data.orientation && (
                       <div className="mt-4 flex items-center gap-2 text-sm">
@@ -294,11 +293,9 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {data.seiCompetencies.length > 0 && (
                     <Section
                       Icon={Brain}
-                      title={L(
+                      title={t(
+                        "vsContextDrawer.seiTitle",
                         "8 competencias SEI (Conocer · Elegir · Dar)",
-                        "8 SEI competencies (Know · Choose · Give)",
-                        "8 competências SEI (Conhecer · Escolher · Dar)",
-                        "8 competenze SEI (Conoscere · Scegliere · Dare)",
                       )}
                     >
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -332,10 +329,10 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                         const talents = data.brainTalents.filter((t) => t.category === cat);
                         const catLabel =
                           cat === "focus"
-                            ? L("Foco", "Focus", "Foco", "Focus")
+                            ? t("vsContextDrawer.talentFocus", "Foco")
                             : cat === "decisions"
-                              ? L("Decisiones", "Decisions", "Decisões", "Decisioni")
-                              : L("Impulso", "Drive", "Impulso", "Slancio");
+                              ? t("vsContextDrawer.talentDecisions", "Decisiones")
+                              : t("vsContextDrawer.talentDrive", "Impulso");
                         return (
                           <div key={cat} className="mb-3 last:mb-0">
                             <div className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted)] mb-1.5">
@@ -365,7 +362,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {/* 5 drivers + cohesión */}
                   <Section
                     Icon={Heart}
-                    title={L("5 drivers + cohesión", "5 drivers + cohesion", "5 drivers + coesão", "5 driver + coesione")}
+                    title={t("vsContextDrawer.driversTitle", "5 drivers + cohesión")}
                   >
                     <div className="space-y-2">
                       {data.drivers.map((d) => (
@@ -387,12 +384,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                             </div>
                             <div className={`text-[10px] ${COHESION_LABEL[d.cohesion].cls}`}>
                               SD {d.scoreSD?.toFixed(1) ?? "—"} ·{" "}
-                              {L(
-                                COHESION_LABEL[d.cohesion].es,
-                                COHESION_LABEL[d.cohesion].en,
-                                COHESION_LABEL[d.cohesion].pt,
-                                COHESION_LABEL[d.cohesion].it,
-                              )}
+                              {cohesionLabel(d.cohesion)}
                             </div>
                           </div>
                         </div>
@@ -439,7 +431,7 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   {(scope === "org" || scope === "world") && data.outcomes.length > 0 && (
                     <Section
                       Icon={Target}
-                      title={L("4 outcomes del OVS", "4 OVS outcomes", "4 outcomes do OVS", "4 outcome dell'OVS")}
+                      title={t("vsContextDrawer.outcomesTitle", "4 outcomes del OVS")}
                     >
                       <div className="grid grid-cols-2 gap-2">
                         {data.outcomes.map((o) => (
@@ -460,11 +452,9 @@ export default function ContextDetailDrawer({ scope, subjectId, open, onClose }:
                   )}
 
                   <div className="text-[10px] text-[var(--rowi-muted-weak)] text-center pt-4">
-                    {L(
+                    {t(
+                      "vsContextDrawer.disclaimer",
                       "Inferencia v0 — no es OVS / TVS oficial. Norma = 100 · Fuente: Six Seconds Network.",
-                      "v0 inference — not an official OVS / TVS. Norm = 100 · Source: Six Seconds Network.",
-                      "Inferência v0 — não é um OVS / TVS oficial. Norma = 100 · Fonte: Six Seconds Network.",
-                      "Inferenza v0 — non è un OVS / TVS ufficiale. Norma = 100 · Fonte: Six Seconds Network.",
                     )}
                   </div>
                 </>

@@ -241,42 +241,49 @@ export function useUserContext() {
 export const CONTEXT_TYPE_CONFIG: Record<ContextType, {
   label: string;
   labelEN: string;
+  labelKey: string;
   icon: string;
   color: string;
 }> = {
   personal: {
     label: "Personal",
     labelEN: "Personal",
+    labelKey: "contextType.personal",
     icon: "user",
     color: "#3b82f6",
   },
   superhub: {
     label: "Corporación",
     labelEN: "Corporation",
+    labelKey: "contextType.superhub",
     icon: "building-2",
     color: "#8b5cf6",
   },
   hub: {
     label: "División/Región",
     labelEN: "Division/Region",
+    labelKey: "contextType.hub",
     icon: "globe",
     color: "#10b981",
   },
   tenant: {
     label: "Empresa",
     labelEN: "Company",
+    labelKey: "contextType.tenant",
     icon: "briefcase",
     color: "#f59e0b",
   },
   organization: {
     label: "Departamento",
     labelEN: "Department",
+    labelKey: "contextType.organization",
     icon: "users",
     color: "#ec4899",
   },
   community: {
     label: "Equipo",
     labelEN: "Team",
+    labelKey: "contextType.community",
     icon: "users-round",
     color: "#06b6d4",
   },
@@ -288,37 +295,38 @@ export const CONTEXT_TYPE_CONFIG: Record<ContextType, {
 export const ROLE_CONFIG: Record<string, {
   label: string;
   labelEN: string;
+  labelKey: string;
   color: string;
   priority: number;
 }> = {
   // Roles globales
-  SUPERADMIN: { label: "Super Admin", labelEN: "Super Admin", color: "#ef4444", priority: 100 },
-  ADMIN: { label: "Administrador", labelEN: "Administrator", color: "#f59e0b", priority: 90 },
+  SUPERADMIN: { label: "Super Admin", labelEN: "Super Admin", labelKey: "roleConfig.SUPERADMIN", color: "#ef4444", priority: 100 },
+  ADMIN: { label: "Administrador", labelEN: "Administrator", labelKey: "roleConfig.ADMIN", color: "#f59e0b", priority: 90 },
 
   // Roles de tenant
-  OWNER: { label: "Propietario", labelEN: "Owner", color: "#8b5cf6", priority: 85 },
-  MANAGER: { label: "Gerente", labelEN: "Manager", color: "#3b82f6", priority: 70 },
-  EDITOR: { label: "Editor", labelEN: "Editor", color: "#10b981", priority: 50 },
-  VIEWER: { label: "Visor", labelEN: "Viewer", color: "#6b7280", priority: 20 },
+  OWNER: { label: "Propietario", labelEN: "Owner", labelKey: "roleConfig.OWNER", color: "#8b5cf6", priority: 85 },
+  MANAGER: { label: "Gerente", labelEN: "Manager", labelKey: "roleConfig.MANAGER", color: "#3b82f6", priority: 70 },
+  EDITOR: { label: "Editor", labelEN: "Editor", labelKey: "roleConfig.EDITOR", color: "#10b981", priority: 50 },
+  VIEWER: { label: "Visor", labelEN: "Viewer", labelKey: "roleConfig.VIEWER", color: "#6b7280", priority: 20 },
 
   // Roles especiales
-  CONSULTANT: { label: "Consultor", labelEN: "Consultant", color: "#ec4899", priority: 80 },
-  COACH: { label: "Coach", labelEN: "Coach", color: "#06b6d4", priority: 75 },
-  MENTOR: { label: "Mentor", labelEN: "Mentor", color: "#14b8a6", priority: 60 },
+  CONSULTANT: { label: "Consultor", labelEN: "Consultant", labelKey: "roleConfig.CONSULTANT", color: "#ec4899", priority: 80 },
+  COACH: { label: "Coach", labelEN: "Coach", labelKey: "roleConfig.COACH", color: "#06b6d4", priority: 75 },
+  MENTOR: { label: "Mentor", labelEN: "Mentor", labelKey: "roleConfig.MENTOR", color: "#14b8a6", priority: 60 },
 
   // Roles de comunidad
-  MEMBER: { label: "Miembro", labelEN: "Member", color: "#6b7280", priority: 30 },
+  MEMBER: { label: "Miembro", labelEN: "Member", labelKey: "roleConfig.MEMBER", color: "#6b7280", priority: 30 },
 
   // Roles de HR
-  HR: { label: "Recursos Humanos", labelEN: "Human Resources", color: "#f97316", priority: 65 },
-  BILLING: { label: "Facturación", labelEN: "Billing", color: "#84cc16", priority: 55 },
+  HR: { label: "Recursos Humanos", labelEN: "Human Resources", labelKey: "roleConfig.HR", color: "#f97316", priority: 65 },
+  BILLING: { label: "Facturación", labelEN: "Billing", labelKey: "roleConfig.BILLING", color: "#84cc16", priority: 55 },
 
   // Roles académicos
-  RESEARCHER: { label: "Investigador", labelEN: "Researcher", color: "#7c3aed", priority: 72 },
-  ACADEMIC: { label: "Académico", labelEN: "Academic", color: "#6366f1", priority: 68 },
+  RESEARCHER: { label: "Investigador", labelEN: "Researcher", labelKey: "roleConfig.RESEARCHER", color: "#7c3aed", priority: 72 },
+  ACADEMIC: { label: "Académico", labelEN: "Academic", labelKey: "roleConfig.ACADEMIC", color: "#6366f1", priority: 68 },
 
   // Default
-  USER: { label: "Usuario", labelEN: "User", color: "#9ca3af", priority: 10 },
+  USER: { label: "Usuario", labelEN: "User", labelKey: "roleConfig.USER", color: "#9ca3af", priority: 10 },
 };
 
 export function getRoleConfig(role: string) {

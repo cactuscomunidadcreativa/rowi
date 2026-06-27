@@ -42,12 +42,12 @@ const CHANNEL_OPTIONS = [
 ];
 
 export default function InvitesSettingsPage() {
-  const { lang, t: ti18n } = useI18n();
+  const { t } = useI18n();
   const [contact, setContact] = useState("");
   const [name, setName] = useState("");
   const [channel, setChannel] = useState<Invite["channel"]>("email");
   const [message, setMessage] = useState(
-    ti18n("settings.invites.defaultMessage", "¡Te invito a mi comunidad en Rowi!")
+    t("settingsInvites.defaultMessage", "¡Te invito a mi comunidad en Rowi!")
   );
   const [list, setList] = useState<Invite[]>([]);
   const [stats, setStats] = useState<InviteStats | null>(null);
@@ -56,79 +56,6 @@ export default function InvitesSettingsPage() {
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const t = {
-    es: {
-      title: "Invitaciones",
-      subtitle: "Invita a personas a unirse a tu comunidad en Rowi",
-      newInvite: "Nueva invitación",
-      contactPlaceholder: "Email o teléfono (+51999999999)",
-      namePlaceholder: "Nombre (opcional)",
-      messagePlaceholder: "Mensaje personalizado...",
-      sendInvite: "Enviar invitación",
-      sending: "Enviando...",
-      invitesSent: "Invitaciones enviadas",
-      noInvites: "Aún no has enviado invitaciones",
-      noInvitesDesc: "Invita a tus colegas, amigos o familiares a desarrollar su inteligencia emocional",
-      contact: "Contacto",
-      channel: "Canal",
-      status: "Estado",
-      created: "Creada",
-      expires: "Expira",
-      actions: "Acciones",
-      resend: "Reenviar",
-      cancel: "Cancelar",
-      copyLink: "Copiar link",
-      copied: "Copiado",
-      pending: "Pendiente",
-      accepted: "Aceptada",
-      expired: "Expirada",
-      total: "Total",
-      remaining: "restantes",
-      enterContact: "Ingresa un email o teléfono",
-      inviteCreated: "Invitación creada",
-      inviteCanceled: "Invitación cancelada",
-      errorCreate: "No se pudo crear la invitación",
-      errorCancel: "Error al cancelar",
-      networkError: "Error de red",
-    },
-    en: {
-      title: "Invitations",
-      subtitle: "Invite people to join your community on Rowi",
-      newInvite: "New invitation",
-      contactPlaceholder: "Email or phone (+1999999999)",
-      namePlaceholder: "Name (optional)",
-      messagePlaceholder: "Custom message...",
-      sendInvite: "Send invitation",
-      sending: "Sending...",
-      invitesSent: "Invitations sent",
-      noInvites: "You haven't sent any invitations yet",
-      noInvitesDesc: "Invite your colleagues, friends or family to develop their emotional intelligence",
-      contact: "Contact",
-      channel: "Channel",
-      status: "Status",
-      created: "Created",
-      expires: "Expires",
-      actions: "Actions",
-      resend: "Resend",
-      cancel: "Cancel",
-      copyLink: "Copy link",
-      copied: "Copied",
-      pending: "Pending",
-      accepted: "Accepted",
-      expired: "Expired",
-      total: "Total",
-      remaining: "remaining",
-      enterContact: "Enter an email or phone number",
-      inviteCreated: "Invitation created",
-      inviteCanceled: "Invitation canceled",
-      errorCreate: "Could not create invitation",
-      errorCancel: "Error canceling",
-      networkError: "Network error",
-    },
-  };
-
-  const text = t[lang as keyof typeof t] || t.es;
 
   async function loadList() {
     setLoading(true);
@@ -154,7 +81,7 @@ export default function InvitesSettingsPage() {
 
   async function createInvite() {
     if (!contact.trim()) {
-      setMsg(text.enterContact);
+      setMsg(t("settingsInvites.enterContact", "Ingresa un email o teléfono"));
       setTimeout(() => setMsg(""), 2000);
       return;
     }
@@ -174,7 +101,7 @@ export default function InvitesSettingsPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data?.ok) {
-        setMsg(data?.error || text.errorCreate);
+        setMsg(data?.error || t("settingsInvites.errorCreate", "No se pudo crear la invitación"));
         setTimeout(() => setMsg(""), 3000);
         return;
       }
@@ -195,7 +122,7 @@ export default function InvitesSettingsPage() {
       };
 
       setList((prev) => [inv, ...prev]);
-      setMsg(text.inviteCreated + " ✅");
+      setMsg(t("settingsInvites.inviteCreated", "Invitación creada") + " ✅");
       setTimeout(() => setMsg(""), 1500);
 
       // Open channel
@@ -214,7 +141,7 @@ export default function InvitesSettingsPage() {
       setContact("");
       setName("");
     } catch {
-      setMsg(text.networkError);
+      setMsg(t("settingsInvites.networkError", "Error de red"));
       setTimeout(() => setMsg(""), 2000);
     } finally {
       setSending(false);
@@ -231,11 +158,11 @@ export default function InvitesSettingsPage() {
       const data = await res.json().catch(() => ({}));
       if (data.ok) {
         setList((prev) => prev.filter((inv) => inv.id !== inviteId));
-        setMsg(text.inviteCanceled);
+        setMsg(t("settingsInvites.inviteCanceled", "Invitación cancelada"));
         setTimeout(() => setMsg(""), 1500);
       }
     } catch {
-      setMsg(text.errorCancel);
+      setMsg(t("settingsInvites.errorCancel", "Error al cancelar"));
       setTimeout(() => setMsg(""), 2000);
     }
   }
@@ -259,7 +186,7 @@ export default function InvitesSettingsPage() {
       const sms = `sms:${normalizePhone(contactValue)}?&body=${encodeURIComponent(`${msg}\n${link}`)}`;
       window.location.href = sms;
     } else if (inv.channel === "email" && contactValue) {
-      const mail = `mailto:${encodeURIComponent(contactValue)}?subject=${encodeURIComponent("Invitación Rowi")}&body=${encodeURIComponent(`${msg}\n${link}`)}`;
+      const mail = `mailto:${encodeURIComponent(contactValue)}?subject=${encodeURIComponent(t("settingsInvites.emailSubject", "Invitación Rowi"))}&body=${encodeURIComponent(`${msg}\n${link}`)}`;
       window.location.href = mail;
     } else if (inv.channel === "slack" || inv.channel === "teams") {
       navigator.clipboard.writeText(`${msg}\n${link}`).catch(() => {});
@@ -277,9 +204,9 @@ export default function InvitesSettingsPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] flex items-center justify-center">
               <UserPlus className="w-5 h-5 text-white" />
             </div>
-            {text.title}
+            {t("settingsInvites.title", "Invitaciones")}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">{text.subtitle}</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{t("settingsInvites.subtitle", "Invita a personas a unirse a tu comunidad en Rowi")}</p>
         </div>
 
         {/* Stats */}
@@ -288,7 +215,7 @@ export default function InvitesSettingsPage() {
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800">
               <Users className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-medium">{stats.total}</span>
-              <span className="text-xs text-gray-500">{text.total}</span>
+              <span className="text-xs text-gray-500">{t("settingsInvites.total", "Total")}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
               <Clock className="w-4 h-4 text-yellow-600" />
@@ -306,7 +233,7 @@ export default function InvitesSettingsPage() {
       <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-6">
         <h2 className="font-semibold mb-4 flex items-center gap-2">
           <Send className="w-4 h-4 text-[var(--rowi-g2)]" />
-          {text.newInvite}
+          {t("settingsInvites.newInvite", "Nueva invitación")}
         </h2>
 
         <div className="space-y-4">
@@ -315,14 +242,14 @@ export default function InvitesSettingsPage() {
             <input
               type="text"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20 transition-all"
-              placeholder={text.contactPlaceholder}
+              placeholder={t("settingsInvites.contactPlaceholder", "Email o teléfono (+51999999999)")}
               value={contact}
               onChange={(e) => setContact(e.target.value)}
             />
             <input
               type="text"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20 transition-all"
-              placeholder={text.namePlaceholder}
+              placeholder={t("settingsInvites.namePlaceholder", "Nombre (opcional)")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -357,7 +284,7 @@ export default function InvitesSettingsPage() {
           <textarea
             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 focus:border-[var(--rowi-g2)] focus:outline-none focus:ring-2 focus:ring-[var(--rowi-g2)]/20 transition-all resize-none"
             rows={2}
-            placeholder={text.messagePlaceholder}
+            placeholder={t("settingsInvites.messagePlaceholder", "Mensaje personalizado...")}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
@@ -375,7 +302,7 @@ export default function InvitesSettingsPage() {
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-                {sending ? text.sending : text.sendInvite}
+                {sending ? t("settingsInvites.sending", "Enviando...") : t("settingsInvites.sendInvite", "Enviar invitación")}
               </button>
               {msg && (
                 <span className="text-sm text-gray-500">{msg}</span>
@@ -383,7 +310,7 @@ export default function InvitesSettingsPage() {
             </div>
             {remainingInvites !== null && (
               <span className="text-sm text-gray-400">
-                {remainingInvites} {text.remaining}
+                {remainingInvites} {t("settingsInvites.remaining", "restantes")}
               </span>
             )}
           </div>
@@ -395,22 +322,22 @@ export default function InvitesSettingsPage() {
         <div className="p-4 border-b border-gray-200 dark:border-zinc-800">
           <h2 className="font-semibold flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-500" />
-            {text.invitesSent}
+            {t("settingsInvites.invitesSent", "Invitaciones enviadas")}
           </h2>
         </div>
 
         {loading ? (
           <div className="p-8 text-center">
             <RefreshCw className="w-6 h-6 mx-auto mb-2 animate-spin text-gray-400" />
-            <p className="text-sm text-gray-500">Loading...</p>
+            <p className="text-sm text-gray-500">{t("settingsInvites.loading", "Cargando...")}</p>
           </div>
         ) : list.length === 0 ? (
           <div className="p-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
               <UserPlus className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="font-medium text-gray-600 dark:text-gray-400">{text.noInvites}</p>
-            <p className="text-sm text-gray-400 mt-1">{text.noInvitesDesc}</p>
+            <p className="font-medium text-gray-600 dark:text-gray-400">{t("settingsInvites.noInvites", "Aún no has enviado invitaciones")}</p>
+            <p className="text-sm text-gray-400 mt-1">{t("settingsInvites.noInvitesDesc", "Invita a tus colegas, amigos o familiares a desarrollar su inteligencia emocional")}</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-zinc-800">
@@ -437,7 +364,7 @@ export default function InvitesSettingsPage() {
                       <p className="font-medium truncate">{inv.name || contactDisplay}</p>
                       {inv.name && <p className="text-sm text-gray-500 truncate">{contactDisplay}</p>}
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {text.created}: {createdDate} • {text.expires}: {expiresDate}
+                        {t("settingsInvites.created", "Creada")}: {createdDate} • {t("settingsInvites.expires", "Expira")}: {expiresDate}
                       </p>
                     </div>
 
@@ -446,19 +373,19 @@ export default function InvitesSettingsPage() {
                       {inv.status === "pending" && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
                           <Clock className="w-3 h-3" />
-                          {text.pending}
+                          {t("settingsInvites.pending", "Pendiente")}
                         </span>
                       )}
                       {inv.status === "accepted" && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                           <CheckCircle2 className="w-3 h-3" />
-                          {text.accepted}
+                          {t("settingsInvites.accepted", "Aceptada")}
                         </span>
                       )}
                       {inv.status === "expired" && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
                           <XCircle className="w-3 h-3" />
-                          {text.expired}
+                          {t("settingsInvites.expired", "Expirada")}
                         </span>
                       )}
                     </div>
@@ -468,7 +395,7 @@ export default function InvitesSettingsPage() {
                       <button
                         onClick={() => copyInviteLink(inv)}
                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
-                        title={text.copyLink}
+                        title={t("settingsInvites.copyLink", "Copiar link")}
                       >
                         {copiedId === inv.id ? (
                           <Check className="w-4 h-4 text-green-500" />
@@ -481,14 +408,14 @@ export default function InvitesSettingsPage() {
                           <button
                             onClick={() => openChannel(inv, message)}
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
-                            title={text.resend}
+                            title={t("settingsInvites.resend", "Reenviar")}
                           >
                             <RefreshCw className="w-4 h-4 text-gray-400" />
                           </button>
                           <button
                             onClick={() => deleteInvite(inv.id)}
                             className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            title={text.cancel}
+                            title={t("settingsInvites.cancel", "Cancelar")}
                           >
                             <Trash2 className="w-4 h-4 text-red-400" />
                           </button>

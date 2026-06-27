@@ -25,32 +25,8 @@ type Attachment = { name: string; type: string; data: string };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 /* =========================================================
-   🌍 Contenido Demo por idioma
+   🌍 Contenido Demo
 ========================================================= */
-const DEMO_CONTENT = {
-  es: {
-    greeting: "¡Hola! Soy Rowi, tu compañero de inteligencia emocional.",
-    intro: "Las emociones son el motor de nuestras decisiones, relaciones y bienestar. Comprenderlas es el primer paso para vivir una vida más plena.",
-    question: "¿Sabías que desarrollar tu inteligencia emocional puede mejorar tu comunicación, reducir el estrés y fortalecer tus relaciones?",
-    invitation: "Me encantaría acompañarte en este viaje. Crea tu cuenta gratuita y juntos exploraremos tu mundo emocional.",
-    cta: "Comenzar mi viaje",
-    ctaLogin: "Ya tengo cuenta",
-    placeholder: "Escribe un mensaje...",
-    typingText: "Rowi está escribiendo...",
-    accountIntent: "¡Excelente! Me alegra que quieras comenzar tu viaje de inteligencia emocional. 🎉",
-  },
-  en: {
-    greeting: "Hi! I'm Rowi, your emotional intelligence companion.",
-    intro: "Emotions are the engine of our decisions, relationships, and wellbeing. Understanding them is the first step to living a fuller life.",
-    question: "Did you know that developing your emotional intelligence can improve your communication, reduce stress, and strengthen your relationships?",
-    invitation: "I'd love to accompany you on this journey. Create your free account and together we'll explore your emotional world.",
-    cta: "Start my journey",
-    ctaLogin: "I have an account",
-    placeholder: "Type a message...",
-    typingText: "Rowi is typing...",
-    accountIntent: "Excellent! I'm glad you want to start your emotional intelligence journey. 🎉",
-  },
-};
 
 // Palabras clave para detectar intención de crear cuenta
 const ACCOUNT_INTENT_KEYWORDS = [
@@ -71,7 +47,16 @@ const ACCOUNT_INTENT_KEYWORDS = [
 export default function RowiCoach() {
   const { data: session } = useSession();
   const { t, lang } = useI18n();
-  const content = DEMO_CONTENT[lang as keyof typeof DEMO_CONTENT] || DEMO_CONTENT.es;
+  const content = {
+    greeting: t("rowiCoachCmp.greeting", "¡Hola! Soy Rowi, tu compañero de inteligencia emocional."),
+    intro: t("rowiCoachCmp.intro", "Las emociones son el motor de nuestras decisiones, relaciones y bienestar. Comprenderlas es el primer paso para vivir una vida más plena."),
+    question: t("rowiCoachCmp.question", "¿Sabías que desarrollar tu inteligencia emocional puede mejorar tu comunicación, reducir el estrés y fortalecer tus relaciones?"),
+    invitation: t("rowiCoachCmp.invitation", "Me encantaría acompañarte en este viaje. Crea tu cuenta gratuita y juntos exploraremos tu mundo emocional."),
+    cta: t("rowiCoachCmp.cta", "Comenzar mi viaje"),
+    ctaLogin: t("rowiCoachCmp.ctaLogin", "Ya tengo cuenta"),
+    placeholder: t("rowiCoachCmp.placeholder", "Escribe un mensaje..."),
+    accountIntent: t("rowiCoachCmp.accountIntent", "¡Excelente! Me alegra que quieras comenzar tu viaje de inteligencia emocional. 🎉"),
+  };
 
   /* =========================================================
      🔥 ESTADOS
@@ -199,9 +184,7 @@ export default function RowiCoach() {
         setMessages(prev => [...prev, {
           id: uid(),
           role: "assistant",
-          text: lang === "es"
-            ? "Para poder tener una conversación completa y personalizada, necesitas crear tu cuenta gratuita. ¡Es muy fácil y rápido!"
-            : "To have a complete and personalized conversation, you need to create your free account. It's very easy and quick!"
+          text: t("rowiCoachCmp.needAccount", "Para poder tener una conversación completa y personalizada, necesitas crear tu cuenta gratuita. ¡Es muy fácil y rápido!"),
         }]);
         setShowCTA(true);
         setDemoStep(4);
@@ -233,7 +216,7 @@ export default function RowiCoach() {
       setMediaRecorder(recorder);
       setRecording(true);
     } catch {
-      alert(lang !== "es" ? "Could not access the microphone." : "No se pudo acceder al micrófono.");
+      alert(t("rowiCoachCmp.micError", "No se pudo acceder al micrófono."));
     }
   }
 
@@ -305,7 +288,7 @@ export default function RowiCoach() {
       });
     } catch (e) {
       console.error("[RowiCoach] Error:", e);
-      setMessages((m) => [...m, { id: uid(), role: "assistant", text: "Error procesando tu mensaje." }]);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", text: t("rowiCoachCmp.sendError", "Error procesando tu mensaje.") }]);
     } finally {
       setTyping(false);
     }
@@ -441,8 +424,8 @@ export default function RowiCoach() {
               </div>
               <p className="text-xs text-white/80">
                 {isLoggedIn
-                  ? (lang !== "es" ? "Your EI companion" : "Tu compañero de IE")
-                  : (lang !== "es" ? "Emotional Intelligence" : "Inteligencia Emocional")}
+                  ? t("rowiCoachCmp.subtitleLoggedIn", "Tu compañero de IE")
+                  : t("rowiCoachCmp.subtitleGuest", "Inteligencia Emocional")}
               </p>
             </div>
             {isLoggedIn && (
@@ -516,9 +499,7 @@ export default function RowiCoach() {
                   />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {lang === "en"
-                    ? "Start a conversation with Rowi"
-                    : "Inicia una conversación con Rowi"}
+                  {t("rowiCoachCmp.emptyState", "Inicia una conversación con Rowi")}
                 </p>
               </div>
             )}
@@ -555,7 +536,7 @@ export default function RowiCoach() {
                         onClick={() => playAudio(m.audioUrl!, m.id)}
                         className={`mt-2 text-xs flex items-center gap-1 ${playing === m.id ? "text-[var(--rowi-g2)]" : "opacity-70 hover:opacity-100"}`}
                       >
-                        {playing === m.id ? "Pause" : "Play"}
+                        {playing === m.id ? t("rowiCoachCmp.pause", "Pausar") : t("rowiCoachCmp.play", "Reproducir")}
                       </button>
                     )}
                   </div>

@@ -71,98 +71,9 @@ interface DashboardData {
 export default function HubDashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
-
-  // Traducciones multi-idioma
-  const i18n: Record<string, Record<string, string>> = {
-    es: {
-      loading: "Cargando tu hub...", welcome: "Bienvenido de nuevo",
-      subtitle: "Tu viaje de inteligencia emocional continúa",
-      quickActions: "Acciones Rápidas",
-      myEQ: "Mi EQ", eqScore: "Puntuación EQ", noEQData: "Sin datos EQ aún",
-      linkAssessment: "Vincular SEI", viewProfile: "Ver perfil completo",
-      aiAgents: "Coaches IA", chatWith: "Chatear con", startChat: "Iniciar chat",
-      communities: "Mis Comunidades", members: "miembros", viewAll: "Ver todas",
-      noCommunities: "Sin comunidades aún", exploreCommunities: "Explorar comunidades",
-      progress: "Progreso", level: "Nivel", xp: "XP", streak: "Días seguidos",
-      eqDashboard: "Dashboard EQ", eqDashboardDesc: "Tu inteligencia emocional",
-      brainTalents: "Talentos Cerebrales", brainTalentsDesc: "Tus 18 talentos",
-      coach: "Coach IA", coachDesc: "Chatea con Rowi",
-      learn: "Aprender", learnDesc: "Microlearning EQ",
-      achievements: "Logros", achievementsDesc: "Tus insignias",
-      settings: "Configuración", settingsDesc: "Tu cuenta",
-      adminPanel: "Panel Admin", adminPanelDesc: "Administración",
-      adminDashboard: "Dashboard", adminUsers: "Usuarios",
-      adminAgents: "Agentes IA", adminBenchmarks: "Benchmarks",
-      adminCMS: "CMS", adminBranding: "Marca",
-    },
-    en: {
-      loading: "Loading your hub...", welcome: "Welcome back",
-      subtitle: "Your emotional intelligence journey continues",
-      quickActions: "Quick Actions",
-      myEQ: "My EQ", eqScore: "EQ Score", noEQData: "No EQ data yet",
-      linkAssessment: "Link SEI Assessment", viewProfile: "View full profile",
-      aiAgents: "AI Coaches", chatWith: "Chat with", startChat: "Start chat",
-      communities: "My Communities", members: "members", viewAll: "View all",
-      noCommunities: "No communities yet", exploreCommunities: "Explore communities",
-      progress: "Progress", level: "Level", xp: "XP", streak: "Day streak",
-      eqDashboard: "EQ Dashboard", eqDashboardDesc: "Your emotional intelligence",
-      brainTalents: "Brain Talents", brainTalentsDesc: "Your 18 brain talents",
-      coach: "AI Coach", coachDesc: "Chat with Rowi",
-      learn: "Learn", learnDesc: "EQ microlearning",
-      achievements: "Achievements", achievementsDesc: "Your badges",
-      settings: "Settings", settingsDesc: "Account settings",
-      adminPanel: "Admin Panel", adminPanelDesc: "System administration",
-      adminDashboard: "Dashboard", adminUsers: "Users",
-      adminAgents: "AI Agents", adminBenchmarks: "Benchmarks",
-      adminCMS: "CMS", adminBranding: "Branding",
-    },
-    pt: {
-      loading: "Carregando seu hub...", welcome: "Bem-vindo de volta",
-      subtitle: "Sua jornada de inteligência emocional continua",
-      quickActions: "Ações Rápidas",
-      myEQ: "Meu EQ", eqScore: "Pontuação EQ", noEQData: "Sem dados EQ ainda",
-      linkAssessment: "Vincular SEI", viewProfile: "Ver perfil completo",
-      aiAgents: "Coaches IA", chatWith: "Conversar com", startChat: "Iniciar chat",
-      communities: "Minhas Comunidades", members: "membros", viewAll: "Ver todas",
-      noCommunities: "Sem comunidades ainda", exploreCommunities: "Explorar comunidades",
-      progress: "Progresso", level: "Nível", xp: "XP", streak: "Dias seguidos",
-      eqDashboard: "Dashboard EQ", eqDashboardDesc: "Sua inteligência emocional",
-      brainTalents: "Talentos Cerebrais", brainTalentsDesc: "Seus 18 talentos",
-      coach: "Coach IA", coachDesc: "Converse com Rowi",
-      learn: "Aprender", learnDesc: "Microlearning EQ",
-      achievements: "Conquistas", achievementsDesc: "Suas insígnias",
-      settings: "Configurações", settingsDesc: "Sua conta",
-      adminPanel: "Painel Admin", adminPanelDesc: "Administração",
-      adminDashboard: "Dashboard", adminUsers: "Usuários",
-      adminAgents: "Agentes IA", adminBenchmarks: "Benchmarks",
-      adminCMS: "CMS", adminBranding: "Marca",
-    },
-    it: {
-      loading: "Caricamento del hub...", welcome: "Bentornato",
-      subtitle: "Il tuo viaggio nell'intelligenza emotiva continua",
-      quickActions: "Azioni Rapide",
-      myEQ: "Il mio EQ", eqScore: "Punteggio EQ", noEQData: "Nessun dato EQ ancora",
-      linkAssessment: "Collega SEI", viewProfile: "Vedi profilo completo",
-      aiAgents: "Coach IA", chatWith: "Chatta con", startChat: "Inizia chat",
-      communities: "Le mie Comunità", members: "membri", viewAll: "Vedi tutte",
-      noCommunities: "Nessuna comunità ancora", exploreCommunities: "Esplora comunità",
-      progress: "Progresso", level: "Livello", xp: "XP", streak: "Giorni consecutivi",
-      eqDashboard: "Dashboard EQ", eqDashboardDesc: "La tua intelligenza emotiva",
-      brainTalents: "Talenti Cerebrali", brainTalentsDesc: "I tuoi 18 talenti",
-      coach: "Coach IA", coachDesc: "Chatta con Rowi",
-      learn: "Imparare", learnDesc: "Microlearning EQ",
-      achievements: "Traguardi", achievementsDesc: "I tuoi badge",
-      settings: "Impostazioni", settingsDesc: "Il tuo account",
-      adminPanel: "Pannello Admin", adminPanelDesc: "Amministrazione",
-      adminDashboard: "Dashboard", adminUsers: "Utenti",
-      adminAgents: "Agenti IA", adminBenchmarks: "Benchmarks",
-      adminCMS: "CMS", adminBranding: "Brand",
-    },
-  };
-  const txt = i18n[locale] || i18n["es"];
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -205,9 +116,9 @@ export default function HubDashboardPage() {
           eq: { total: null, hasData: false },
           communities: [],
           agents: [
-            { id: "1", slug: "super-rowi", name: "Super Rowi", description: ({ es: "Tu asistente principal de EQ", en: "Your main EQ assistant", pt: "Seu assistente principal de EQ", it: "Il tuo assistente principale EQ", zh: "您的主要情商助手" })[locale] || "Tu asistente principal de EQ" },
-            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: ({ es: "Coach de inteligencia emocional", en: "Emotional intelligence coach", pt: "Coach de inteligência emocional", it: "Coach di intelligenza emotiva", zh: "情商教练" })[locale] || "Coach de inteligencia emocional" },
-            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: ({ es: "Experto en relaciones", en: "Relationships expert", pt: "Especialista em relacionamentos", it: "Esperto in relazioni", zh: "人际关系专家" })[locale] || "Experto en relaciones" },
+            { id: "1", slug: "super-rowi", name: "Super Rowi", description: t("hubHome.agentSuperRowiDesc", "Tu asistente principal de EQ") },
+            { id: "2", slug: "rowi-eq", name: "Rowi EQ", description: t("hubHome.agentRowiEqDesc", "Coach de inteligencia emocional") },
+            { id: "3", slug: "rowi-affinity", name: "Rowi Affinity", description: t("hubHome.agentRowiAffinityDesc", "Experto en relaciones") },
           ],
         });
       }
@@ -247,13 +158,13 @@ export default function HubDashboardPage() {
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="flex items-center gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{txt.loading}</span>
+          <span>{t("hubHome.loading", "Cargando tu hub...")}</span>
         </div>
       </div>
     );
   }
 
-  const userName = data?.user?.name || session?.user?.name || "Usuario";
+  const userName = data?.user?.name || session?.user?.name || t("hubHome.defaultUserName", "Usuario");
   const firstName = userName.split(" ")[0];
 
   return (
@@ -263,9 +174,9 @@ export default function HubDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">
-              {txt.welcome}, {firstName} 👋
+              {t("hubHome.welcome", "Bienvenido de nuevo")}, {firstName} 👋
             </h1>
-            <p className="text-gray-400 mt-1">{txt.subtitle}</p>
+            <p className="text-gray-400 mt-1">{t("hubHome.subtitle", "Tu viaje de inteligencia emocional continúa")}</p>
           </div>
 
           {/* Progress badge */}
@@ -273,12 +184,12 @@ export default function HubDashboardPage() {
             {data?.user?.streak && data.user.streak > 0 && (
               <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 rounded-xl border border-orange-500/30">
                 <Flame className="w-5 h-5 text-orange-400" />
-                <span className="text-orange-300 font-medium">{data.user.streak} {txt.streak}</span>
+                <span className="text-orange-300 font-medium">{data.user.streak} {t("hubHome.streak", "Días seguidos")}</span>
               </div>
             )}
             <div className="flex items-center gap-2 px-4 py-2 bg-violet-500/20 rounded-xl border border-violet-500/30">
               <Trophy className="w-5 h-5 text-violet-400" />
-              <span className="text-violet-300 font-medium">{txt.level} {data?.user?.level || 1}</span>
+              <span className="text-violet-300 font-medium">{t("hubHome.level", "Nivel")} {data?.user?.level || 1}</span>
             </div>
           </div>
         </div>
@@ -287,43 +198,43 @@ export default function HubDashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <QuickActionCard
             icon={Brain}
-            title={txt.eqDashboard}
-            description={txt.eqDashboardDesc}
+            title={t("hubHome.eqDashboard", "Dashboard EQ")}
+            description={t("hubHome.eqDashboardDesc", "Tu inteligencia emocional")}
             color="violet"
             onClick={() => router.push("/hub/eq")}
           />
           <QuickActionCard
             icon={Sparkles}
-            title={txt.brainTalents}
-            description={txt.brainTalentsDesc}
+            title={t("hubHome.brainTalents", "Talentos Cerebrales")}
+            description={t("hubHome.brainTalentsDesc", "Tus 18 talentos")}
             color="purple"
             onClick={() => router.push("/hub/eq/talents")}
           />
           <QuickActionCard
             icon={Bot}
-            title={txt.coach}
-            description={txt.coachDesc}
+            title={t("hubHome.coach", "Coach IA")}
+            description={t("hubHome.coachDesc", "Chatea con Rowi")}
             color="blue"
             onClick={() => router.push("/hub/ai/rowi-coach")}
           />
           <QuickActionCard
             icon={BookOpen}
-            title={txt.learn}
-            description={txt.learnDesc}
+            title={t("hubHome.learn", "Aprender")}
+            description={t("hubHome.learnDesc", "Microlearning EQ")}
             color="green"
             onClick={() => router.push("/hub/learn")}
           />
           <QuickActionCard
             icon={Trophy}
-            title={txt.achievements}
-            description={txt.achievementsDesc}
+            title={t("hubHome.achievements", "Logros")}
+            description={t("hubHome.achievementsDesc", "Tus insignias")}
             color="amber"
             onClick={() => router.push("/hub/achievements")}
           />
           <QuickActionCard
             icon={Settings}
-            title={txt.settings}
-            description={txt.settingsDesc}
+            title={t("hubHome.settings", "Configuración")}
+            description={t("hubHome.settingsDesc", "Tu cuenta")}
             color="gray"
             onClick={() => router.push("/hub/settings")}
           />
@@ -339,8 +250,8 @@ export default function HubDashboardPage() {
                   <Brain className="w-6 h-6 text-violet-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">{txt.myEQ}</h2>
-                  <p className="text-gray-400 text-sm">{txt.eqScore}</p>
+                  <h2 className="text-xl font-semibold text-white">{t("hubHome.myEQ", "Mi EQ")}</h2>
+                  <p className="text-gray-400 text-sm">{t("hubHome.eqScore", "Puntuación EQ")}</p>
                 </div>
               </div>
               {data?.eq?.hasData && (
@@ -348,7 +259,7 @@ export default function HubDashboardPage() {
                   onClick={() => router.push("/hub/eq")}
                   className="text-sm text-violet-400 hover:text-violet-300 flex items-center gap-1"
                 >
-                  {txt.viewProfile} <ChevronRight className="w-4 h-4" />
+                  {t("hubHome.viewProfile", "Ver perfil completo")} <ChevronRight className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -359,20 +270,20 @@ export default function HubDashboardPage() {
                   {data.eq.total.toFixed(1)}
                 </div>
                 <div className="flex-1 grid grid-cols-3 gap-4">
-                  <MiniStat icon={Target} label="Know" value="--" color="blue" />
-                  <MiniStat icon={Heart} label="Choose" value="--" color="purple" />
-                  <MiniStat icon={Users} label="Give" value="--" color="pink" />
+                  <MiniStat icon={Target} label={t("hubHome.pursuitKnow", "Conocer")} value="--" color="blue" />
+                  <MiniStat icon={Heart} label={t("hubHome.pursuitChoose", "Elegir")} value="--" color="purple" />
+                  <MiniStat icon={Users} label={t("hubHome.pursuitGive", "Dar")} value="--" color="pink" />
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
                 <Brain className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-                <p className="text-gray-400 mb-4">{txt.noEQData}</p>
+                <p className="text-gray-400 mb-4">{t("hubHome.noEQData", "Sin datos EQ aún")}</p>
                 <button
                   onClick={() => router.push("/hub/settings")}
                   className="px-6 py-3 bg-violet-500 hover:bg-violet-600 text-white rounded-xl font-medium transition-colors"
                 >
-                  {txt.linkAssessment}
+                  {t("hubHome.linkAssessment", "Vincular SEI")}
                 </button>
               </div>
             )}
@@ -384,7 +295,7 @@ export default function HubDashboardPage() {
               <div className="p-3 rounded-xl bg-blue-500/20">
                 <Bot className="w-6 h-6 text-blue-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">{txt.aiAgents}</h2>
+              <h2 className="text-xl font-semibold text-white">{t("hubHome.aiAgents", "Coaches IA")}</h2>
             </div>
 
             <div className="space-y-3">
@@ -409,7 +320,7 @@ export default function HubDashboardPage() {
                 onClick={() => router.push("/hub/ai/rowi-coach")}
                 className="w-full p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-xl text-blue-300 font-medium transition-colors"
               >
-                {txt.startChat} →
+                {t("hubHome.startChat", "Iniciar chat")} →
               </button>
             </div>
           </div>
@@ -424,8 +335,8 @@ export default function HubDashboardPage() {
                   <Shield className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">{txt.adminPanel}</h2>
-                  <p className="text-gray-400 text-sm">{txt.adminPanelDesc}</p>
+                  <h2 className="text-xl font-semibold text-white">{t("hubHome.adminPanel", "Panel Admin")}</h2>
+                  <p className="text-gray-400 text-sm">{t("hubHome.adminPanelDesc", "Administración")}</p>
                 </div>
               </div>
               <span className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-xs font-medium">
@@ -436,42 +347,42 @@ export default function HubDashboardPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <AdminQuickLink
                 icon={LayoutDashboard}
-                label={txt.adminDashboard}
+                label={t("hubHome.adminDashboard", "Dashboard")}
                 href="/hub/admin"
                 color="red"
                 onClick={() => router.push("/hub/admin")}
               />
               <AdminQuickLink
                 icon={Users}
-                label={txt.adminUsers}
+                label={t("hubHome.adminUsers", "Usuarios")}
                 href="/hub/admin/users"
                 color="orange"
                 onClick={() => router.push("/hub/admin/users")}
               />
               <AdminQuickLink
                 icon={Bot}
-                label={txt.adminAgents}
+                label={t("hubHome.adminAgents", "Agentes IA")}
                 href="/hub/admin/agents"
                 color="blue"
                 onClick={() => router.push("/hub/admin/agents")}
               />
               <AdminQuickLink
                 icon={BarChart3}
-                label={txt.adminBenchmarks}
+                label={t("hubHome.adminBenchmarks", "Benchmarks")}
                 href="/hub/admin/benchmarks"
                 color="green"
                 onClick={() => router.push("/hub/admin/benchmarks")}
               />
               <AdminQuickLink
                 icon={FileText}
-                label={txt.adminCMS}
+                label={t("hubHome.adminCMS", "CMS")}
                 href="/hub/admin/cms"
                 color="purple"
                 onClick={() => router.push("/hub/admin/cms")}
               />
               <AdminQuickLink
                 icon={Palette}
-                label={txt.adminBranding}
+                label={t("hubHome.adminBranding", "Marca")}
                 href="/hub/admin/branding"
                 color="pink"
                 onClick={() => router.push("/hub/admin/branding")}
@@ -487,13 +398,13 @@ export default function HubDashboardPage() {
               <div className="p-3 rounded-xl bg-green-500/20">
                 <Users className="w-6 h-6 text-green-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">{txt.communities}</h2>
+              <h2 className="text-xl font-semibold text-white">{t("hubHome.communities", "Mis Comunidades")}</h2>
             </div>
             <button
               onClick={() => router.push("/hub/communities")}
               className="text-sm text-green-400 hover:text-green-300 flex items-center gap-1"
             >
-              {txt.viewAll} <ChevronRight className="w-4 h-4" />
+              {t("hubHome.viewAll", "Ver todas")} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
@@ -507,7 +418,7 @@ export default function HubDashboardPage() {
                 >
                   <h4 className="font-medium text-white mb-1">{community.name}</h4>
                   <p className="text-sm text-gray-400">
-                    {community.memberCount} {txt.members}
+                    {community.memberCount} {t("hubHome.members", "miembros")}
                   </p>
                 </div>
               ))}
@@ -515,12 +426,12 @@ export default function HubDashboardPage() {
           ) : (
             <div className="text-center py-8">
               <Users className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-              <p className="text-gray-400 mb-4">{txt.noCommunities}</p>
+              <p className="text-gray-400 mb-4">{t("hubHome.noCommunities", "Sin comunidades aún")}</p>
               <button
                 onClick={() => router.push("/hub/communities")}
                 className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors"
               >
-                {txt.exploreCommunities}
+                {t("hubHome.exploreCommunities", "Explorar comunidades")}
               </button>
             </div>
           )}

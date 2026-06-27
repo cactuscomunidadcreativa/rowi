@@ -47,73 +47,10 @@ const difficultyColors: Record<string, string> = {
   ADVANCED: "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400",
 };
 
-const t = {
-  es: {
-    title: "MicroLearning",
-    subtitle: "Micro-acciones de Six Seconds para desarrollo EQ",
-    loading: "Cargando micro-acciones...",
-    loadingSuspense: "Cargando micro-learnings...",
-    search: "Buscar micro-acciones...",
-    stats: {
-      totalActions: "Total Acciones",
-      categories: "Categorías",
-      featured: "Destacadas",
-      avgDuration: "Duración Promedio",
-      min: "min",
-    },
-    filters: {
-      all: "Todos",
-      competencies: "Competencias",
-      outcomes: "Outcomes",
-      brainTalents: "Brain Talents",
-      coreOutcomes: "Core Outcomes",
-    },
-    category: {
-      competency: "Competencias EQ",
-      outcome: "Outcomes",
-      brainTalent: "Brain Talents",
-      coreOutcome: "Core Outcomes",
-      actions: "acciones",
-    },
-    noResults: "No se encontraron micro-acciones",
-  },
-  en: {
-    title: "MicroLearning",
-    subtitle: "Six Seconds micro-actions for EQ development",
-    loading: "Loading micro-actions...",
-    loadingSuspense: "Loading micro-learnings...",
-    search: "Search micro-actions...",
-    stats: {
-      totalActions: "Total Actions",
-      categories: "Categories",
-      featured: "Featured",
-      avgDuration: "Avg Duration",
-      min: "min",
-    },
-    filters: {
-      all: "All",
-      competencies: "Competencies",
-      outcomes: "Outcomes",
-      brainTalents: "Brain Talents",
-      coreOutcomes: "Core Outcomes",
-    },
-    category: {
-      competency: "EQ Competencies",
-      outcome: "Outcomes",
-      brainTalent: "Brain Talents",
-      coreOutcome: "Core Outcomes",
-      actions: "actions",
-    },
-    noResults: "No micro-actions found",
-  },
-};
-
 function MicroLearningContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const initialCategory = searchParams.get("category") || "all";
 
   const [loading, setLoading] = useState(true);
@@ -123,18 +60,18 @@ function MicroLearningContent() {
   const [stats, setStats] = useState<any>(null);
 
   const categoryConfig: Record<string, { icon: any; color: string; label: string }> = {
-    COMPETENCY: { icon: Zap, color: "text-blue-500 bg-blue-500/20", label: labels.category.competency },
-    OUTCOME: { icon: Target, color: "text-green-500 bg-green-500/20", label: labels.category.outcome },
-    BRAIN_TALENT: { icon: BrainCircuit, color: "text-purple-500 bg-purple-500/20", label: labels.category.brainTalent },
-    CORE_OUTCOME: { icon: TrendingUp, color: "text-amber-500 bg-amber-500/20", label: labels.category.coreOutcome },
+    COMPETENCY: { icon: Zap, color: "text-blue-500 bg-blue-500/20", label: t("microlearningPg.category.competency", "Competencias EQ") },
+    OUTCOME: { icon: Target, color: "text-green-500 bg-green-500/20", label: t("microlearningPg.category.outcome", "Outcomes") },
+    BRAIN_TALENT: { icon: BrainCircuit, color: "text-purple-500 bg-purple-500/20", label: t("microlearningPg.category.brainTalent", "Brain Talents") },
+    CORE_OUTCOME: { icon: TrendingUp, color: "text-amber-500 bg-amber-500/20", label: t("microlearningPg.category.coreOutcome", "Core Outcomes") },
   };
 
   const categories = [
-    { key: "all", label: labels.filters.all },
-    { key: "COMPETENCY", label: labels.filters.competencies },
-    { key: "OUTCOME", label: labels.filters.outcomes },
-    { key: "BRAIN_TALENT", label: labels.filters.brainTalents },
-    { key: "CORE_OUTCOME", label: labels.filters.coreOutcomes },
+    { key: "all", label: t("microlearningPg.filters.all", "Todos") },
+    { key: "COMPETENCY", label: t("microlearningPg.filters.competencies", "Competencias") },
+    { key: "OUTCOME", label: t("microlearningPg.filters.outcomes", "Outcomes") },
+    { key: "BRAIN_TALENT", label: t("microlearningPg.filters.brainTalents", "Brain Talents") },
+    { key: "CORE_OUTCOME", label: t("microlearningPg.filters.coreOutcomes", "Core Outcomes") },
   ];
 
   useEffect(() => {
@@ -190,7 +127,7 @@ function MicroLearningContent() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("microlearningPg.loading", "Cargando micro-acciones...")}</span>
         </div>
       </div>
     );
@@ -212,9 +149,9 @@ function MicroLearningContent() {
               <Lightbulb className="w-6 h-6 text-amber-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("microlearningPg.title", "MicroLearning")}</h1>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {labels.subtitle}
+                {t("microlearningPg.subtitle", "Micro-acciones de Six Seconds para desarrollo EQ")}
               </p>
             </div>
           </div>
@@ -226,7 +163,7 @@ function MicroLearningContent() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Lightbulb className="w-4 h-4 text-amber-500" />
-            {labels.stats.totalActions}
+            {t("microlearningPg.stats.totalActions", "Total Acciones")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {microLearnings.length}
@@ -235,7 +172,7 @@ function MicroLearningContent() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <BarChart3 className="w-4 h-4 text-blue-500" />
-            {labels.stats.categories}
+            {t("microlearningPg.stats.categories", "Categorías")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {stats?.categories?.length || 4}
@@ -244,7 +181,7 @@ function MicroLearningContent() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Star className="w-4 h-4 text-amber-500" />
-            {labels.stats.featured}
+            {t("microlearningPg.stats.featured", "Destacadas")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {microLearnings.filter((ml) => ml.isFeatured).length}
@@ -253,10 +190,10 @@ function MicroLearningContent() {
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
             <Clock className="w-4 h-4 text-green-500" />
-            {labels.stats.avgDuration}
+            {t("microlearningPg.stats.avgDuration", "Duración Promedio")}
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {Math.round(microLearnings.reduce((sum, ml) => sum + ml.duration, 0) / microLearnings.length || 2)} {labels.stats.min}
+            {Math.round(microLearnings.reduce((sum, ml) => sum + ml.duration, 0) / microLearnings.length || 2)} {t("microlearningPg.stats.min", "min")}
           </p>
         </div>
       </div>
@@ -268,7 +205,7 @@ function MicroLearningContent() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder={labels.search}
+            placeholder={t("microlearningPg.search", "Buscar micro-acciones...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500/50"
@@ -303,7 +240,7 @@ function MicroLearningContent() {
       {filteredItems.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>{labels.noResults}</p>
+          <p>{t("microlearningPg.noResults", "No se encontraron micro-acciones")}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -324,7 +261,7 @@ function MicroLearningContent() {
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">{group.parentKey}</h3>
                     <p className="text-xs text-gray-500">
-                      {config?.label} · {group.items.length} {labels.category.actions}
+                      {config?.label} · {group.items.length} {t("microlearningPg.category.actions", "acciones")}
                     </p>
                   </div>
                 </div>
@@ -399,7 +336,7 @@ export default function MicroLearningPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{translate("admin.elearning.loadingMicrolearnings", "Cargando micro-learnings...")}</span>
+          <span>{translate("microlearningPg.loadingSuspense", "Cargando micro-learnings...")}</span>
         </div>
       </div>
     }>

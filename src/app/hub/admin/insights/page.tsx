@@ -9,43 +9,11 @@ import {
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-const INSIGHTS_T = {
-  es: {
-    enterKey: "Ingresa tu clave antes de ejecutar un insight.",
-    genError: "Error generando insight.",
-    noResults: "Sin resultados por ahora.",
-    success: "Insight generado con éxito.",
-    cogError: "Error generando insight cognitivo.",
-  },
-  en: {
-    enterKey: "Enter your key before running an insight.",
-    genError: "Error generating insight.",
-    noResults: "No results yet.",
-    success: "Insight generated successfully.",
-    cogError: "Error generating cognitive insight.",
-  },
-  pt: {
-    enterKey: "Insira sua chave antes de executar um insight.",
-    genError: "Erro ao gerar insight.",
-    noResults: "Sem resultados por enquanto.",
-    success: "Insight gerado com sucesso.",
-    cogError: "Erro ao gerar insight cognitivo.",
-  },
-  it: {
-    enterKey: "Inserisci la tua chiave prima di eseguire un insight.",
-    genError: "Errore nella generazione dell'insight.",
-    noResults: "Nessun risultato al momento.",
-    success: "Insight generato con successo.",
-    cogError: "Errore nella generazione dell'insight cognitivo.",
-  },
-};
-
 /* =========================================================
    🧠 INSIGHTS HUB — IA Cognitiva Manual
    ========================================================= */
 export default function InsightsPage() {
-  const { lang } = useI18n();
-  const t = INSIGHTS_T[lang as keyof typeof INSIGHTS_T] || INSIGHTS_T.en;
+  const { t } = useI18n();
   const [insightType, setInsightType] = useState<string | null>(null);
   const [authKey, setAuthKey] = useState("");
   const [result, setResult] = useState<string | null>(null);
@@ -56,7 +24,7 @@ export default function InsightsPage() {
   // =====================================================
   async function runInsight(type: string) {
     if (!authKey) {
-      toast.warning(t.enterKey);
+      toast.warning(t("adminInsights.enterKey", "Ingresa tu clave antes de ejecutar un insight."));
       return;
     }
 
@@ -69,12 +37,12 @@ export default function InsightsPage() {
           body: JSON.stringify({ type, authKey }),
         });
 
-        if (!res.ok) throw new Error(t.genError);
+        if (!res.ok) throw new Error(t("adminInsights.genError", "Error generando insight."));
         const data = await res.json();
-        setResult(data.result || t.noResults);
-        toast.success(t.success);
+        setResult(data.result || t("adminInsights.noResults", "Sin resultados por ahora."));
+        toast.success(t("adminInsights.success", "Insight generado con éxito."));
       } catch (e: any) {
-        toast.error(e.message || t.cogError);
+        toast.error(e.message || t("adminInsights.cogError", "Error generando insight cognitivo."));
       }
     });
   }
@@ -89,10 +57,10 @@ export default function InsightsPage() {
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-rowi-blueDay via-rowi-purpleDay to-rowi-pinkDay bg-clip-text text-transparent">
-            Insights Hub
+            {t("adminInsights.pageTitle", "Insights Hub")}
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Procesamiento cognitivo manual — genera correlaciones e interpretaciones con IA segura.
+            {t("adminInsights.pageSubtitle", "Procesamiento cognitivo manual — genera correlaciones e interpretaciones con IA segura.")}
           </p>
         </div>
         <Sparkles className="w-6 h-6 text-rowi-pinkDay animate-pulse" />
@@ -102,7 +70,7 @@ export default function InsightsPage() {
       <section className="p-5 border rounded-2xl bg-white/80 dark:bg-gray-900/50 shadow backdrop-blur-md space-y-2">
         <label className="text-sm text-gray-600 dark:text-gray-300 font-semibold flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-rowi-blueDay" />
-          Clave de autorización para IA Cognitiva
+          {t("adminInsights.authKeyLabel", "Clave de autorización para IA Cognitiva")}
         </label>
         <input
           type="password"
@@ -112,7 +80,7 @@ export default function InsightsPage() {
           className="border rounded-lg px-3 py-2 w-full bg-white/70 dark:bg-gray-800/60 focus:ring-2 focus:ring-rowi-blueDay outline-none"
         />
         <p className="text-xs text-gray-500">
-          La IA solo se ejecutará de forma manual, bajo tu autorización.
+          {t("adminInsights.authKeyHint", "La IA solo se ejecutará de forma manual, bajo tu autorización.")}
         </p>
       </section>
 
@@ -120,22 +88,22 @@ export default function InsightsPage() {
       <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <InsightCard
           icon={<Brain className="w-5 h-5 text-rowi-blueDay" />}
-          title="EQ ↔ Afinidad"
-          description="Explora cómo la inteligencia emocional impacta en la afinidad grupal y conexión interpersonal."
+          title={t("adminInsights.cardEqAffinityTitle", "EQ ↔ Afinidad")}
+          description={t("adminInsights.cardEqAffinityDesc", "Explora cómo la inteligencia emocional impacta en la afinidad grupal y conexión interpersonal.")}
           onClick={() => runInsight("eq-affinity")}
           loading={loading && insightType === "eq-affinity"}
         />
         <InsightCard
           icon={<LineChart className="w-5 h-5 text-rowi-purpleDay" />}
-          title="EQ ↔ Desempeño"
-          description="Descubre la relación entre las competencias emocionales y el rendimiento organizacional."
+          title={t("adminInsights.cardEqPerformanceTitle", "EQ ↔ Desempeño")}
+          description={t("adminInsights.cardEqPerformanceDesc", "Descubre la relación entre las competencias emocionales y el rendimiento organizacional.")}
           onClick={() => runInsight("eq-performance")}
           loading={loading && insightType === "eq-performance"}
         />
         <InsightCard
           icon={<BarChart2 className="w-5 h-5 text-rowi-pinkDay" />}
-          title="Afinidad ↔ Clima"
-          description="Analiza cómo los niveles de afinidad afectan la percepción del clima organizacional."
+          title={t("adminInsights.cardAffinityClimateTitle", "Afinidad ↔ Clima")}
+          description={t("adminInsights.cardAffinityClimateDesc", "Analiza cómo los niveles de afinidad afectan la percepción del clima organizacional.")}
           onClick={() => runInsight("affinity-climate")}
           loading={loading && insightType === "affinity-climate"}
         />
@@ -145,7 +113,7 @@ export default function InsightsPage() {
       {result && (
         <Card className="p-6 border border-rowi-blueDay/20 bg-white/70 dark:bg-gray-900/50 backdrop-blur-md">
           <h3 className="font-semibold mb-2 text-lg text-rowi-blueDay flex items-center gap-2">
-            <Filter className="w-4 h-4" /> Insight Generado
+            <Filter className="w-4 h-4" /> {t("adminInsights.resultHeading", "Insight Generado")}
           </h3>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
             {result}
@@ -160,6 +128,7 @@ export default function InsightsPage() {
    🎨 COMPONENTE AUXILIAR DE TARJETA
    ========================================================= */
 function InsightCard({ icon, title, description, onClick, loading }: any) {
+  const { t } = useI18n();
   return (
     <Card className="p-5 bg-white/80 dark:bg-gray-900/50 border border-rowi-blueDay/10 shadow-md hover:shadow-lg transition-all flex flex-col justify-between">
       <div>
@@ -175,7 +144,9 @@ function InsightCard({ icon, title, description, onClick, loading }: any) {
         className="w-full mt-auto bg-gradient-to-r from-rowi-blueDay to-rowi-pinkDay text-white text-sm font-medium rounded-lg py-2 flex items-center justify-center gap-2 hover:opacity-90 transition"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
-        {loading ? "Procesando..." : "Generar Insight"}
+        {loading
+          ? t("adminInsights.cardProcessing", "Procesando...")
+          : t("adminInsights.cardGenerate", "Generar Insight")}
       </button>
     </Card>
   );

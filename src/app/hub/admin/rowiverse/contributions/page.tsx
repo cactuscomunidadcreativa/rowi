@@ -34,68 +34,10 @@ interface BenchmarkInfo {
   createdAt: string;
 }
 
-const t = {
-  es: {
-    title: "Contribuciones RowiVerse",
-    description: "Seguimiento de aportes al ecosistema global de inteligencia emocional",
-    backToGlobal: "Volver al Mapa",
-    refresh: "Actualizar",
-    loading: "Cargando datos...",
-    benchmarkDescription: "Base de datos global de inteligencia emocional Six Seconds",
-    totalDataPoints: "puntos de datos totales",
-    lastEnriched: "Última actualización",
-    totalContributions: "Total Contribuciones",
-    countriesRepresented: "Países Representados",
-    csvUploads: "Cargas CSV",
-    registrations: "Registros de Usuario",
-    bySource: "Por Fuente de Datos",
-    topCountries: "Top Países Contribuyentes",
-    recentActivity: "Actividad Reciente",
-    lastContributionReceived: "Última contribución recibida",
-    growRowiverse: "Haz Crecer el RowiVerse",
-    growDescription: "Importa nuevas comunidades y enriquece el ecosistema global de IE",
-    importCommunity: "Importar Comunidad",
-    source: {
-      csv: "Carga CSV",
-      registration: "Registro de Usuario",
-      eqSnapshot: "Evaluación EQ",
-    },
-    noData: "Sin datos de contribuciones",
-    noDataDesc: "Las contribuciones aparecerán aquí cuando se agreguen datos al RowiVerse",
-  },
-  en: {
-    title: "RowiVerse Contributions",
-    description: "Track contributions to the global emotional intelligence ecosystem",
-    backToGlobal: "Back to Map",
-    refresh: "Refresh",
-    loading: "Loading data...",
-    benchmarkDescription: "Six Seconds global emotional intelligence database",
-    totalDataPoints: "total data points",
-    lastEnriched: "Last updated",
-    totalContributions: "Total Contributions",
-    countriesRepresented: "Countries Represented",
-    csvUploads: "CSV Uploads",
-    registrations: "User Registrations",
-    bySource: "By Data Source",
-    topCountries: "Top Contributing Countries",
-    recentActivity: "Recent Activity",
-    lastContributionReceived: "Last contribution received",
-    growRowiverse: "Grow the RowiVerse",
-    growDescription: "Import new communities and enrich the global EI ecosystem",
-    importCommunity: "Import Community",
-    source: {
-      csv: "CSV Upload",
-      registration: "User Registration",
-      eqSnapshot: "EQ Assessment",
-    },
-    noData: "No contribution data",
-    noDataDesc: "Contributions will appear here when data is added to the RowiVerse",
-  },
-};
+type TFn = (key: string, fallback: string) => string;
 
 export default function RowiverseContributionsPage() {
-  const { lang } = useI18n();
-  const text = t[lang as keyof typeof t] || t.es;
+  const { t } = useI18n();
 
   const [stats, setStats] = useState<ContributionStats | null>(null);
   const [benchmark, setBenchmark] = useState<BenchmarkInfo | null>(null);
@@ -138,7 +80,7 @@ export default function RowiverseContributionsPage() {
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-[var(--rowi-primary)] mx-auto mb-3" />
-          <p className="text-[var(--rowi-muted)]">{text.loading}</p>
+          <p className="text-[var(--rowi-muted)]">{t("rowiverseContrib.loading", "Cargando datos...")}</p>
         </div>
       </div>
     );
@@ -151,9 +93,14 @@ export default function RowiverseContributionsPage() {
         <div>
           <h1 className="text-3xl font-bold text-[var(--rowi-foreground)] flex items-center gap-2">
             <TrendingUp className="w-7 h-7 text-[var(--rowi-primary)]" />
-            {text.title}
+            {t("rowiverseContrib.title", "Contribuciones RowiVerse")}
           </h1>
-          <p className="text-[var(--rowi-muted)] text-sm mt-1">{text.description}</p>
+          <p className="text-[var(--rowi-muted)] text-sm mt-1">
+            {t(
+              "rowiverseContrib.description",
+              "Seguimiento de aportes al ecosistema global de inteligencia emocional",
+            )}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -162,14 +109,14 @@ export default function RowiverseContributionsPage() {
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:bg-[var(--rowi-background)] transition-colors text-sm disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            {text.refresh}
+            {t("rowiverseContrib.refresh", "Actualizar")}
           </button>
           <a
             href="/hub/admin/rowiverse"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--rowi-primary)]/10 text-[var(--rowi-primary)] hover:bg-[var(--rowi-primary)]/20 transition-colors text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            {text.backToGlobal}
+            {t("rowiverseContrib.backToGlobal", "Volver al Mapa")}
           </a>
         </div>
       </header>
@@ -184,7 +131,12 @@ export default function RowiverseContributionsPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-[var(--rowi-foreground)]">{benchmark.name}</h2>
-                <p className="text-sm text-[var(--rowi-muted)]">{text.benchmarkDescription}</p>
+                <p className="text-sm text-[var(--rowi-muted)]">
+                  {t(
+                    "rowiverseContrib.benchmarkDescription",
+                    "Base de datos global de inteligencia emocional Six Seconds",
+                  )}
+                </p>
               </div>
             </div>
             <div className="text-right">
@@ -193,11 +145,14 @@ export default function RowiverseContributionsPage() {
                   {formatNumber(benchmark.totalRows)}
                 </span>
               </div>
-              <p className="text-xs text-[var(--rowi-muted)]">{text.totalDataPoints}</p>
+              <p className="text-xs text-[var(--rowi-muted)]">
+                {t("rowiverseContrib.totalDataPoints", "puntos de datos totales")}
+              </p>
               {benchmark.lastEnrichedAt && (
                 <p className="text-xs text-[var(--rowi-muted)] mt-1 flex items-center gap-1 justify-end">
                   <Calendar className="w-3 h-3" />
-                  {text.lastEnriched}: {new Date(benchmark.lastEnrichedAt).toLocaleDateString()}
+                  {t("rowiverseContrib.lastEnriched", "Última actualización")}:{" "}
+                  {new Date(benchmark.lastEnrichedAt).toLocaleDateString()}
                 </p>
               )}
             </div>
@@ -211,25 +166,25 @@ export default function RowiverseContributionsPage() {
           <StatCard
             icon={<Database className="w-5 h-5" />}
             value={formatNumber(stats.totalContributions)}
-            label={text.totalContributions}
+            label={t("rowiverseContrib.totalContributions", "Total Contribuciones")}
             color="purple"
           />
           <StatCard
             icon={<MapPin className="w-5 h-5" />}
             value={stats.byCountry.length.toString()}
-            label={text.countriesRepresented}
+            label={t("rowiverseContrib.countriesRepresented", "Países Representados")}
             color="green"
           />
           <StatCard
             icon={<FileSpreadsheet className="w-5 h-5" />}
             value={formatNumber(stats.bySource["csv_upload"] || 0)}
-            label={text.csvUploads}
+            label={t("rowiverseContrib.csvUploads", "Cargas CSV")}
             color="orange"
           />
           <StatCard
             icon={<UserPlus className="w-5 h-5" />}
             value={formatNumber(stats.bySource["registration"] || 0)}
-            label={text.registrations}
+            label={t("rowiverseContrib.registrations", "Registros de Usuario")}
             color="blue"
           />
         </div>
@@ -242,11 +197,11 @@ export default function RowiverseContributionsPage() {
           <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[var(--rowi-primary)]" />
-              {text.bySource}
+              {t("rowiverseContrib.bySource", "Por Fuente de Datos")}
             </h3>
             <div className="space-y-3">
               {Object.entries(stats.bySource).map(([source, count]) => {
-                const sourceInfo = getSourceInfo(source, text);
+                const sourceInfo = getSourceInfo(source, t);
                 const percentage = ((count / stats.totalContributions) * 100).toFixed(1);
 
                 return (
@@ -286,7 +241,7 @@ export default function RowiverseContributionsPage() {
           <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-green-500" />
-              {text.topCountries}
+              {t("rowiverseContrib.topCountries", "Top Países Contribuyentes")}
             </h3>
             <div className="space-y-2">
               {stats.byCountry.slice(0, 8).map((item, idx) => (
@@ -317,8 +272,15 @@ export default function RowiverseContributionsPage() {
       ) : (
         <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-12 text-center">
           <Database className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-2">{text.noData}</h3>
-          <p className="text-sm text-[var(--rowi-muted)]">{text.noDataDesc}</p>
+          <h3 className="text-lg font-semibold text-[var(--rowi-foreground)] mb-2">
+            {t("rowiverseContrib.noData", "Sin datos de contribuciones")}
+          </h3>
+          <p className="text-sm text-[var(--rowi-muted)]">
+            {t(
+              "rowiverseContrib.noDataDesc",
+              "Las contribuciones aparecerán aquí cuando se agreguen datos al RowiVerse",
+            )}
+          </p>
         </div>
       )}
 
@@ -327,12 +289,14 @@ export default function RowiverseContributionsPage() {
         <div className="rounded-xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <Activity className="w-4 h-4 text-green-500" />
-            {text.recentActivity}
+            {t("rowiverseContrib.recentActivity", "Actividad Reciente")}
           </h3>
           <div className="flex items-center gap-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
             <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
             <div>
-              <p className="font-medium text-sm">{text.lastContributionReceived}</p>
+              <p className="font-medium text-sm">
+                {t("rowiverseContrib.lastContributionReceived", "Última contribución recibida")}
+              </p>
               <p className="text-xs text-[var(--rowi-muted)]">
                 {new Date(stats.lastContribution).toLocaleString()}
               </p>
@@ -349,15 +313,22 @@ export default function RowiverseContributionsPage() {
               <Sparkles className="w-6 h-6 text-[var(--rowi-primary)]" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">{text.growRowiverse}</h3>
-              <p className="text-sm text-[var(--rowi-muted)]">{text.growDescription}</p>
+              <h3 className="font-semibold text-lg">
+                {t("rowiverseContrib.growRowiverse", "Haz Crecer el RowiVerse")}
+              </h3>
+              <p className="text-sm text-[var(--rowi-muted)]">
+                {t(
+                  "rowiverseContrib.growDescription",
+                  "Importa nuevas comunidades y enriquece el ecosistema global de IE",
+                )}
+              </p>
             </div>
           </div>
           <a
             href="/hub/admin/communities"
             className="px-6 py-3 rounded-lg bg-[var(--rowi-primary)] text-white hover:bg-[var(--rowi-primary)]/90 transition-colors font-medium whitespace-nowrap"
           >
-            {text.importCommunity}
+            {t("rowiverseContrib.importCommunity", "Importar Comunidad")}
           </a>
         </div>
       </div>
@@ -394,11 +365,19 @@ function StatCard({
   );
 }
 
-function getSourceInfo(source: string, text: typeof t.es) {
+function getSourceInfo(source: string, t: TFn) {
   const sources: Record<string, { emoji: string; label: string; color: string }> = {
-    csv_upload: { emoji: "📄", label: text.source.csv, color: "#f59e0b" },
-    registration: { emoji: "👤", label: text.source.registration, color: "#3b82f6" },
-    eq_snapshot: { emoji: "📊", label: text.source.eqSnapshot, color: "#8b5cf6" },
+    csv_upload: { emoji: "📄", label: t("rowiverseContrib.source.csv", "Carga CSV"), color: "#f59e0b" },
+    registration: {
+      emoji: "👤",
+      label: t("rowiverseContrib.source.registration", "Registro de Usuario"),
+      color: "#3b82f6",
+    },
+    eq_snapshot: {
+      emoji: "📊",
+      label: t("rowiverseContrib.source.eqSnapshot", "Evaluación EQ"),
+      color: "#8b5cf6",
+    },
   };
   return sources[source] || { emoji: "📝", label: source, color: "#6b7280" };
 }

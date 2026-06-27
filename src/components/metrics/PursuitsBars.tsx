@@ -6,33 +6,6 @@ import { EQ_MAX, getEqLevel } from "@/domains/eq/lib/eqLevels";
 
 const COLORS = { know: "#1E88E5", choose: "#E53935", give: "#43A047" };
 
-const translations = {
-  es: {
-    title: "Propositos (SEI)",
-    know: "Conocerte",
-    choose: "Elegirte",
-    give: "Entregarte",
-  },
-  en: {
-    title: "Pursuits (SEI)",
-    know: "Know Yourself",
-    choose: "Choose Yourself",
-    give: "Give Yourself",
-  },
-  pt: {
-    title: "Propósitos (SEI)",
-    know: "Conhecer-se",
-    choose: "Escolher-se",
-    give: "Entregar-se",
-  },
-  it: {
-    title: "Propositi (SEI)",
-    know: "Conoscerti",
-    choose: "Sceglierti",
-    give: "Donarti",
-  },
-};
-
 export function PursuitsBars({
   know,
   choose,
@@ -50,8 +23,7 @@ export function PursuitsBars({
   prevGive?: number | null;
   max?: number;
 }) {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { t } = useI18n();
 
   const Item = ({
     label,
@@ -114,9 +86,9 @@ export function PursuitsBars({
 
   return (
     <div className="space-y-2">
-      <Item label={t.know} value={know} prev={prevKnow} color={COLORS.know} delay={0.1} />
-      <Item label={t.choose} value={choose} prev={prevChoose} color={COLORS.choose} delay={0.2} />
-      <Item label={t.give} value={give} prev={prevGive} color={COLORS.give} delay={0.3} />
+      <Item label={t("pursuitsBars.know", "Conocerte")} value={know} prev={prevKnow} color={COLORS.know} delay={0.1} />
+      <Item label={t("pursuitsBars.choose", "Elegirte")} value={choose} prev={prevChoose} color={COLORS.choose} delay={0.2} />
+      <Item label={t("pursuitsBars.give", "Entregarte")} value={give} prev={prevGive} color={COLORS.give} delay={0.3} />
     </div>
   );
 }

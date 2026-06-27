@@ -25,110 +25,9 @@ import {
   BarChart3,
 } from "lucide-react";
 
-const t = {
-  es: {
-    title: "E-Learning",
-    subtitle: "Gestiona contenido educativo y desarrollo EQ",
-    loading: "Cargando...",
-    modules: {
-      microlearning: {
-        title: "MicroLearning",
-        description: "Micro-acciones de Six Seconds para desarrollo EQ",
-        statLabel: "Micro-acciones",
-      },
-      courses: {
-        title: "Cursos",
-        description: "Cursos completos de inteligencia emocional",
-        statLabel: "Cursos activos",
-      },
-      quizzes: {
-        title: "Quizzes",
-        description: "Evaluaciones y cuestionarios",
-        statLabel: "Quizzes",
-      },
-      certificates: {
-        title: "Certificados",
-        description: "Gestiona certificados y credenciales",
-        statLabel: "Certificados emitidos",
-      },
-    },
-    quickStats: {
-      microactions: "Micro-acciones",
-      categories: "Categorías",
-      activeUsers: "Usuarios Activos",
-      completedToday: "Completados Hoy",
-    },
-    categoryBreakdown: {
-      title: "MicroLearning por Categoría",
-      viewAll: "Ver todo →",
-      competencies: "Competencias EQ",
-      outcomes: "Outcomes",
-      brainTalents: "Brain Talents",
-      coreOutcomes: "Core Outcomes",
-      actions: "acciones",
-    },
-    activity: {
-      title: "Actividad Reciente",
-      completed: "completó",
-      started: "inició",
-      rated: "calificó",
-    },
-  },
-  en: {
-    title: "E-Learning",
-    subtitle: "Manage educational content and EQ development",
-    loading: "Loading...",
-    modules: {
-      microlearning: {
-        title: "MicroLearning",
-        description: "Six Seconds micro-actions for EQ development",
-        statLabel: "Micro-actions",
-      },
-      courses: {
-        title: "Courses",
-        description: "Complete emotional intelligence courses",
-        statLabel: "Active courses",
-      },
-      quizzes: {
-        title: "Quizzes",
-        description: "Assessments and questionnaires",
-        statLabel: "Quizzes",
-      },
-      certificates: {
-        title: "Certificates",
-        description: "Manage certificates and credentials",
-        statLabel: "Certificates issued",
-      },
-    },
-    quickStats: {
-      microactions: "Micro-actions",
-      categories: "Categories",
-      activeUsers: "Active Users",
-      completedToday: "Completed Today",
-    },
-    categoryBreakdown: {
-      title: "MicroLearning by Category",
-      viewAll: "View all →",
-      competencies: "EQ Competencies",
-      outcomes: "Outcomes",
-      brainTalents: "Brain Talents",
-      coreOutcomes: "Core Outcomes",
-      actions: "actions",
-    },
-    activity: {
-      title: "Recent Activity",
-      completed: "completed",
-      started: "started",
-      rated: "rated",
-    },
-  },
-};
-
 export default function ElearningDashboardPage() {
   const router = useRouter();
-  const { locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
-  const labels = t[lang];
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
 
@@ -152,75 +51,84 @@ export default function ElearningDashboardPage() {
   const modules = [
     {
       id: "microlearning",
-      title: labels.modules.microlearning.title,
-      description: labels.modules.microlearning.description,
+      title: t("elearningPg.modules.microlearning.title", "MicroLearning"),
+      description: t(
+        "elearningPg.modules.microlearning.description",
+        "Micro-acciones de Six Seconds para desarrollo EQ",
+      ),
       icon: Lightbulb,
       color: "from-amber-500 to-orange-500",
       bgColor: "bg-amber-500/10",
       iconColor: "text-amber-500",
       href: "/hub/admin/elearning/microlearning",
       stat: 150,
-      statLabel: labels.modules.microlearning.statLabel,
+      statLabel: t("elearningPg.modules.microlearning.statLabel", "Micro-acciones"),
     },
     {
       id: "courses",
-      title: labels.modules.courses.title,
-      description: labels.modules.courses.description,
+      title: t("elearningPg.modules.courses.title", "Cursos"),
+      description: t(
+        "elearningPg.modules.courses.description",
+        "Cursos completos de inteligencia emocional",
+      ),
       icon: GraduationCap,
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-blue-500/10",
       iconColor: "text-blue-500",
       href: "/hub/admin/elearning/courses",
       stat: 5,
-      statLabel: labels.modules.courses.statLabel,
+      statLabel: t("elearningPg.modules.courses.statLabel", "Cursos activos"),
     },
     {
       id: "quizzes",
-      title: labels.modules.quizzes.title,
-      description: labels.modules.quizzes.description,
+      title: t("elearningPg.modules.quizzes.title", "Quizzes"),
+      description: t("elearningPg.modules.quizzes.description", "Evaluaciones y cuestionarios"),
       icon: Target,
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
       iconColor: "text-purple-500",
       href: "/hub/admin/elearning/quizzes",
       stat: 24,
-      statLabel: labels.modules.quizzes.statLabel,
+      statLabel: t("elearningPg.modules.quizzes.statLabel", "Quizzes"),
     },
     {
       id: "certificates",
-      title: labels.modules.certificates.title,
-      description: labels.modules.certificates.description,
+      title: t("elearningPg.modules.certificates.title", "Certificados"),
+      description: t(
+        "elearningPg.modules.certificates.description",
+        "Gestiona certificados y credenciales",
+      ),
       icon: Award,
       color: "from-green-500 to-emerald-500",
       bgColor: "bg-green-500/10",
       iconColor: "text-green-500",
       href: "/hub/admin/elearning/certificates",
       stat: 12,
-      statLabel: labels.modules.certificates.statLabel,
+      statLabel: t("elearningPg.modules.certificates.statLabel", "Certificados emitidos"),
     },
   ];
 
   const quickStats = [
     {
-      label: labels.quickStats.microactions,
+      label: t("elearningPg.quickStats.microactions", "Micro-acciones"),
       value: stats?.total || 150,
       icon: Lightbulb,
       color: "text-amber-500",
     },
     {
-      label: labels.quickStats.categories,
+      label: t("elearningPg.quickStats.categories", "Categorías"),
       value: stats?.categories?.length || 4,
       icon: BookOpen,
       color: "text-blue-500",
     },
     {
-      label: labels.quickStats.activeUsers,
+      label: t("elearningPg.quickStats.activeUsers", "Usuarios Activos"),
       value: 847,
       icon: Users,
       color: "text-green-500",
     },
     {
-      label: labels.quickStats.completedToday,
+      label: t("elearningPg.quickStats.completedToday", "Completados Hoy"),
       value: 156,
       icon: TrendingUp,
       color: "text-purple-500",
@@ -228,10 +136,10 @@ export default function ElearningDashboardPage() {
   ];
 
   const categoryBreakdown = [
-    { key: "COMPETENCY", label: labels.categoryBreakdown.competencies, count: 40, icon: Zap, color: "bg-blue-500" },
-    { key: "OUTCOME", label: labels.categoryBreakdown.outcomes, count: 40, icon: Target, color: "bg-green-500" },
-    { key: "BRAIN_TALENT", label: labels.categoryBreakdown.brainTalents, count: 54, icon: BrainCircuit, color: "bg-purple-500" },
-    { key: "CORE_OUTCOME", label: labels.categoryBreakdown.coreOutcomes, count: 16, icon: Star, color: "bg-amber-500" },
+    { key: "COMPETENCY", label: t("elearningPg.categoryBreakdown.competencies", "Competencias EQ"), count: 40, icon: Zap, color: "bg-blue-500" },
+    { key: "OUTCOME", label: t("elearningPg.categoryBreakdown.outcomes", "Outcomes"), count: 40, icon: Target, color: "bg-green-500" },
+    { key: "BRAIN_TALENT", label: t("elearningPg.categoryBreakdown.brainTalents", "Brain Talents"), count: 54, icon: BrainCircuit, color: "bg-purple-500" },
+    { key: "CORE_OUTCOME", label: t("elearningPg.categoryBreakdown.coreOutcomes", "Core Outcomes"), count: 16, icon: Star, color: "bg-amber-500" },
   ];
 
   if (loading) {
@@ -239,7 +147,7 @@ export default function ElearningDashboardPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>{labels.loading}</span>
+          <span>{t("elearningPg.loading", "Cargando...")}</span>
         </div>
       </div>
     );
@@ -253,9 +161,9 @@ export default function ElearningDashboardPage() {
           <BookOpen className="w-8 h-8 text-blue-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{labels.title}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("elearningPg.title", "E-Learning")}</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            {labels.subtitle}
+            {t("elearningPg.subtitle", "Gestiona contenido educativo y desarrollo EQ")}
           </p>
         </div>
       </div>
@@ -309,13 +217,13 @@ export default function ElearningDashboardPage() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-amber-500" />
-            {labels.categoryBreakdown.title}
+            {t("elearningPg.categoryBreakdown.title", "MicroLearning por Categoría")}
           </h3>
           <button
             onClick={() => router.push("/hub/admin/elearning/microlearning")}
             className="text-sm text-amber-400 hover:text-amber-300"
           >
-            {labels.categoryBreakdown.viewAll}
+            {t("elearningPg.categoryBreakdown.viewAll", "Ver todo →")}
           </button>
         </div>
 
@@ -334,7 +242,7 @@ export default function ElearningDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{cat.label}</p>
-                  <p className="text-xs text-gray-500">{cat.count} {labels.categoryBreakdown.actions}</p>
+                  <p className="text-xs text-gray-500">{cat.count} {t("elearningPg.categoryBreakdown.actions", "acciones")}</p>
                 </div>
               </div>
               <div className="h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
@@ -352,14 +260,14 @@ export default function ElearningDashboardPage() {
       <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700/50">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-blue-500" />
-          {labels.activity.title}
+          {t("elearningPg.activity.title", "Actividad Reciente")}
         </h3>
         <div className="space-y-3">
           {[
-            { user: "María G.", action: labels.activity.completed, item: "Navegar Emociones - Acción 1", type: "COMPETENCY", time: lang !== "es" ? "5 min ago" : "Hace 5 min" },
-            { user: "Carlos R.", action: labels.activity.started, item: "Brain Talent BBE - Ejercicio", type: "BRAIN_TALENT", time: lang !== "es" ? "12 min ago" : "Hace 12 min" },
-            { user: "Ana L.", action: labels.activity.completed, item: "Outcome: Influencia", type: "OUTCOME", time: lang !== "es" ? "25 min ago" : "Hace 25 min" },
-            { user: "Pedro M.", action: labels.activity.rated, item: "Ejercitar Optimismo ⭐⭐⭐⭐⭐", type: "COMPETENCY", time: lang !== "es" ? "1h ago" : "Hace 1h" },
+            { user: "María G.", action: t("elearningPg.activity.completed", "completó"), item: "Navegar Emociones - Acción 1", type: "COMPETENCY", time: t("elearningPg.activity.time5min", "Hace 5 min") },
+            { user: "Carlos R.", action: t("elearningPg.activity.started", "inició"), item: "Brain Talent BBE - Ejercicio", type: "BRAIN_TALENT", time: t("elearningPg.activity.time12min", "Hace 12 min") },
+            { user: "Ana L.", action: t("elearningPg.activity.completed", "completó"), item: "Outcome: Influencia", type: "OUTCOME", time: t("elearningPg.activity.time25min", "Hace 25 min") },
+            { user: "Pedro M.", action: t("elearningPg.activity.rated", "calificó"), item: "Ejercitar Optimismo ⭐⭐⭐⭐⭐", type: "COMPETENCY", time: t("elearningPg.activity.time1h", "Hace 1h") },
           ].map((activity, idx) => (
             <div
               key={idx}

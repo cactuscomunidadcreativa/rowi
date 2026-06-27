@@ -36,220 +36,6 @@ import FeedbackPanel from "@/components/dashboard/FeedbackPanel";
 import RowiLevelPill from "@/components/shared/RowiLevelPill";
 import { EQ_MAX, EQ_LEVELS, getEqLevel, toPercentOf135 } from "@/domains/eq/lib/eqLevels";
 
-/* =========================================================
-   🌍 Traducciones del Dashboard
-========================================================= */
-const translations = {
-  es: {
-    welcome: "Bienvenido de vuelta",
-    subtitle: "Tu espacio de crecimiento emocional",
-    deepView: "Vista completa",
-    backToToday: "Ir a mi día",
-    loading: "Cargando tu perfil emocional...",
-    dataSource: "Fuente de datos",
-
-    // Cards
-    eqScore: "Tu Puntuación EQ",
-    eqScoreDesc: "Basado en la metodología Six Seconds",
-    competencies: "Competencias Emocionales",
-    competenciesDesc: "Tus 8 competencias del modelo SEI",
-    noCompetencies: "Completa tu evaluación SEI para ver tus competencias",
-
-    // Pursuits
-    pursuits: "Los 3 Propósitos",
-    know: "Conocerte",
-    choose: "Elegirte",
-    give: "Entregarte",
-
-    // Talents
-    talents: "Tus Talentos",
-    focus: "Enfoque",
-    decisions: "Decisiones",
-    drive: "Impulso",
-
-    // Outcomes
-    outcomes: "Resultados de Vida",
-    outcomesDesc: "Cómo tu IE impacta tu bienestar",
-    overall: "Puntuación General",
-
-    // Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "Tu compañero de inteligencia emocional está listo para ayudarte",
-    startChat: "Iniciar conversación",
-
-    // Quick Actions
-    quickActions: "Acciones Rápidas",
-    takeSei: "Tomar evaluación SEI",
-    exploreAffinity: "Explorar Afinidad",
-    joinCommunity: "Unirse a la Comunidad",
-    viewProgress: "Ver mi progreso",
-    upgradePlan: "Mejora tu plan",
-
-    // Mood
-    currentMood: "Estado de ánimo",
-
-    // Info
-    additionalInfo: "Información Adicional",
-    user: "Usuario",
-    brainStyle: "Estilo cerebral",
-
-    // Indicators
-    indicators: "Indicadores de nivel",
-
-    // Level
-    yourLevel: "Tu nivel",
-
-    // Comparison
-    current: "Actual",
-    previous: "Anterior",
-  },
-  en: {
-    welcome: "Welcome back",
-    subtitle: "Your emotional growth space",
-    deepView: "Full view",
-    backToToday: "Go to my day",
-    loading: "Loading your emotional profile...",
-    dataSource: "Data source",
-
-    // Cards
-    eqScore: "Your EQ Score",
-    eqScoreDesc: "Based on Six Seconds methodology",
-    competencies: "Emotional Competencies",
-    competenciesDesc: "Your 8 SEI model competencies",
-    noCompetencies: "Complete your SEI assessment to see your competencies",
-
-    // Pursuits
-    pursuits: "The 3 Pursuits",
-    know: "Know Yourself",
-    choose: "Choose Yourself",
-    give: "Give Yourself",
-
-    // Talents
-    talents: "Your Talents",
-    focus: "Focus",
-    decisions: "Decisions",
-    drive: "Drive",
-
-    // Outcomes
-    outcomes: "Life Outcomes",
-    outcomesDesc: "How your EI impacts your wellbeing",
-    overall: "Overall Score",
-
-    // Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "Your emotional intelligence companion is ready to help you",
-    startChat: "Start conversation",
-
-    // Quick Actions
-    quickActions: "Quick Actions",
-    takeSei: "Take SEI assessment",
-    exploreAffinity: "Explore Affinity",
-    joinCommunity: "Join Community",
-    viewProgress: "View my progress",
-    upgradePlan: "Upgrade your plan",
-
-    // Mood
-    currentMood: "Current mood",
-
-    // Info
-    additionalInfo: "Additional Information",
-    user: "User",
-    brainStyle: "Brain style",
-
-    // Indicators
-    indicators: "Level indicators",
-
-    // Level
-    yourLevel: "Your level",
-
-    // Comparison
-    current: "Current",
-    previous: "Previous",
-  },
-  pt: {
-    welcome: "Bem-vindo de volta",
-    subtitle: "Seu espaço de crescimento emocional",
-    deepView: "Visão completa",
-    backToToday: "Ir ao meu dia",
-    loading: "Carregando seu perfil emocional...",
-    dataSource: "Fonte de dados",
-    eqScore: "Sua Pontuação EQ",
-    eqScoreDesc: "Baseado na metodologia Six Seconds",
-    competencies: "Competências Emocionais",
-    competenciesDesc: "Suas 8 competências do modelo SEI",
-    noCompetencies: "Complete sua avaliação SEI para ver suas competências",
-    pursuits: "Os 3 Propósitos",
-    know: "Conhecer-se",
-    choose: "Escolher-se",
-    give: "Entregar-se",
-    talents: "Seus Talentos",
-    focus: "Foco",
-    decisions: "Decisões",
-    drive: "Impulso",
-    outcomes: "Resultados de Vida",
-    outcomesDesc: "Como sua IE impacta seu bem-estar",
-    overall: "Pontuação Geral",
-    coachTitle: "Rowi Coach",
-    coachDesc: "Seu companheiro de inteligência emocional está pronto para ajudá-lo",
-    startChat: "Iniciar conversa",
-    quickActions: "Ações Rápidas",
-    takeSei: "Fazer avaliação SEI",
-    exploreAffinity: "Explorar Afinidade",
-    joinCommunity: "Entrar na Comunidade",
-    viewProgress: "Ver meu progresso",
-    upgradePlan: "Melhore seu plano",
-    currentMood: "Estado de ânimo",
-    additionalInfo: "Informações Adicionais",
-    user: "Usuário",
-    brainStyle: "Estilo cerebral",
-    indicators: "Indicadores de nível",
-    yourLevel: "Seu nível",
-    current: "Atual",
-    previous: "Anterior",
-  },
-  it: {
-    welcome: "Bentornato",
-    subtitle: "Il tuo spazio di crescita emotiva",
-    deepView: "Vista completa",
-    backToToday: "Vai alla mia giornata",
-    loading: "Caricamento del tuo profilo emotivo...",
-    dataSource: "Fonte dati",
-    eqScore: "Il tuo punteggio EQ",
-    eqScoreDesc: "Basato sulla metodologia Six Seconds",
-    competencies: "Competenze Emotive",
-    competenciesDesc: "Le tue 8 competenze del modello SEI",
-    noCompetencies: "Completa la tua valutazione SEI per vedere le tue competenze",
-    pursuits: "I 3 Propositi",
-    know: "Conoscerti",
-    choose: "Sceglierti",
-    give: "Donarti",
-    talents: "I tuoi Talenti",
-    focus: "Focus",
-    decisions: "Decisioni",
-    drive: "Spinta",
-    outcomes: "Risultati di Vita",
-    outcomesDesc: "Come la tua IE impatta il tuo benessere",
-    overall: "Punteggio Generale",
-    coachTitle: "Rowi Coach",
-    coachDesc: "Il tuo compagno di intelligenza emotiva è pronto ad aiutarti",
-    startChat: "Inizia conversazione",
-    quickActions: "Azioni Rapide",
-    takeSei: "Fai la valutazione SEI",
-    exploreAffinity: "Esplora Affinità",
-    joinCommunity: "Unisciti alla Comunità",
-    viewProgress: "Vedi il mio progresso",
-    upgradePlan: "Migliora il tuo piano",
-    currentMood: "Stato d'animo",
-    additionalInfo: "Informazioni Aggiuntive",
-    user: "Utente",
-    brainStyle: "Stile cerebrale",
-    indicators: "Indicatori di livello",
-    yourLevel: "Il tuo livello",
-    current: "Attuale",
-    previous: "Precedente",
-  },
-};
-
 /**
  * Resuelve el label localizado de un Brain Talent. Delega en getTalentLabel
  * (dictionary.ts), que normaliza la key cruda PascalCase del API ("DataMining",
@@ -261,8 +47,7 @@ function talentLabel(k: string, lang: string): string {
 }
 
 export default function ClientDashboard() {
-  const { lang, t: tGlobal } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
 
   const [base, setBase] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -299,7 +84,7 @@ export default function ClientDashboard() {
           <div className="absolute inset-0 rounded-full border-2 border-[var(--rowi-g2)] border-t-transparent animate-spin" />
         </div>
         <p className="mt-4 text-gray-500 dark:text-gray-400 animate-pulse">
-          {t.loading}
+          {t("dashboardPg.loading", "Cargando tu perfil emocional...")}
         </p>
       </div>
     );
@@ -320,37 +105,37 @@ export default function ClientDashboard() {
           className="object-contain mb-6"
         />
         <h1 className="text-2xl font-bold text-[var(--rowi-fg)] mb-2">
-          {tGlobal("dashboard.empty.title", "Tu espejo está esperando su primera lectura")}
+          {t("dashboard.empty.title", "Tu espejo está esperando su primera lectura")}
         </h1>
         <p className="text-sm text-[var(--rowi-muted)] max-w-md mb-8">
-          {tGlobal(
+          {t(
             "dashboard.empty.body",
             "Este panel se llena con tu inteligencia emocional real. Empieza con el Rowi Test gratis (2 minutos) o ve directo al SEI completo de Six Seconds."
           )}
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/mini-sei" className="rowi-btn-primary px-6 py-3 text-sm font-medium">
-            {tGlobal("dashboard.empty.miniSei", "Hacer mi Rowi Test gratis · 2 min")}
+            {t("dashboard.empty.miniSei", "Hacer mi Rowi Test gratis · 2 min")}
           </Link>
           <Link
             href="/sei"
             className="px-6 py-3 text-sm font-medium rounded-full border border-[var(--rowi-card-border)] text-[var(--rowi-fg)] hover:border-[var(--rowi-primary)]"
           >
-            {tGlobal("dashboard.empty.fullSei", "Quiero el SEI completo")}
+            {t("dashboard.empty.fullSei", "Quiero el SEI completo")}
           </Link>
         </div>
         <Link
           href="/pricing"
           className="mt-4 text-xs text-[var(--rowi-muted)] underline hover:text-[var(--rowi-fg)]"
         >
-          {tGlobal("dashboard.empty.plans", "Ver planes con SEI incluido")}
+          {t("dashboard.empty.plans", "Ver planes con SEI incluido")}
         </Link>
       </div>
     );
   }
 
   const eqLevel = getEqLevel(eqTotal);
-  const userName = base.user?.name?.split(" ")[0] || "Usuario";
+  const userName = base.user?.name?.split(" ")[0] || t("dashboardPg.user", "Usuario");
 
   // Ghost / Previous snapshot
   const prev = base.previous;
@@ -368,13 +153,13 @@ export default function ClientDashboard() {
         <div>
           {/* Kicker: el dashboard es la vista analítica profunda; TODAY es el home. */}
           <span className="inline-block text-xs font-semibold uppercase tracking-wide text-[var(--rowi-g2)] mb-1">
-            {t.deepView}
+            {t("dashboardPg.deepView", "Vista completa")}
           </span>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t.welcome}, <span className="rowi-gradient-text">{userName}</span>
+            {t("dashboardPg.welcome", "Bienvenido de vuelta")}, <span className="rowi-gradient-text">{userName}</span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            {t.subtitle}
+            {t("dashboardPg.subtitle", "Tu espacio de crecimiento emocional")}
           </p>
         </div>
 
@@ -383,7 +168,7 @@ export default function ClientDashboard() {
             href="/today"
             className="rounded-xl border border-[var(--rowi-g2)]/40 px-4 py-2 text-sm font-medium text-[var(--rowi-g2)] hover:bg-[var(--rowi-g2)]/5 transition-colors whitespace-nowrap"
           >
-            {t.backToToday}
+            {t("dashboardPg.backToToday", "Ir a mi día")}
           </Link>
           <MoodChip
             text={base.mood?.recentText ?? "—"}
@@ -406,7 +191,7 @@ export default function ClientDashboard() {
           <QuickAction
             href="/sei"
             icon={Zap}
-            label={t.takeSei}
+            label={t("dashboardPg.takeSei", "Tomar evaluación SEI")}
             gradient="from-yellow-500 to-orange-500"
           />
         )}
@@ -414,32 +199,32 @@ export default function ClientDashboard() {
           <QuickAction
             href="/rowi"
             icon={MessageCircle}
-            label={t.startChat}
+            label={t("dashboardPg.startChat", "Iniciar conversación")}
             gradient="from-yellow-500 to-orange-500"
           />
         )}
         <QuickAction
           href="/affinity"
           icon={Heart}
-          label={t.exploreAffinity}
+          label={t("dashboardPg.exploreAffinity", "Explorar Afinidad")}
           gradient="from-pink-500 to-rose-500"
         />
         <QuickAction
           href="/community"
           icon={Users}
-          label={t.joinCommunity}
+          label={t("dashboardPg.joinCommunity", "Unirse a la Comunidad")}
           gradient="from-blue-500 to-cyan-500"
         />
         <QuickAction
           href="/progress"
           icon={TrendingUp}
-          label={t.viewProgress}
+          label={t("dashboardPg.viewProgress", "Ver mi progreso")}
           gradient="from-green-500 to-emerald-500"
         />
         <QuickAction
           href="/settings/subscription"
           icon={Sparkles}
-          label={t.upgradePlan}
+          label={t("dashboardPg.upgradePlan", "Mejora tu plan")}
           gradient="from-violet-500 to-fuchsia-500"
         />
       </motion.div>
@@ -459,7 +244,7 @@ export default function ClientDashboard() {
             </div>
             <div>
               <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
-                {t.eqScore}
+                {t("dashboardPg.eqScore", "Tu Puntuación EQ")}
               </h2>
               <a
                 href="https://www.6seconds.org/2025/04/23/the-six-seconds-eq-model/"
@@ -467,7 +252,7 @@ export default function ClientDashboard() {
                 rel="noopener noreferrer"
                 className="text-sm text-[var(--rowi-g2)] hover:underline"
               >
-                {t.eqScoreDesc} →
+                {t("dashboardPg.eqScoreDesc", "Basado en la metodología Six Seconds")} →
               </a>
             </div>
           </div>
@@ -500,13 +285,13 @@ export default function ClientDashboard() {
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: eqLevel.color }} />
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                    {t.current}{base.snapshotProject ? ` · ${base.snapshotProject}` : ""}
+                    {t("dashboardPg.current", "Actual")}{base.snapshotProject ? ` · ${base.snapshotProject}` : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded-full opacity-30" style={{ backgroundColor: eqLevel.color }} />
                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                    {t.previous} · {prev.project || (prev.date ? new Date(prev.date).toLocaleDateString() : "")}
+                    {t("dashboardPg.previous", "Anterior")} · {prev.project || (prev.date ? new Date(prev.date).toLocaleDateString() : "")}
                   </span>
                 </div>
               </div>
@@ -533,7 +318,7 @@ export default function ClientDashboard() {
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <Compass className="w-4 h-4" />
-              {t.pursuits}
+              {t("dashboardPg.pursuits", "Los 3 Propósitos")}
             </h3>
             <PursuitsBars
               know={base.eq?.pursuits?.know ?? null}
@@ -560,10 +345,10 @@ export default function ClientDashboard() {
             </div>
             <div>
               <h2 className="font-semibold text-lg text-gray-900 dark:text-white">
-                {t.competencies}
+                {t("dashboardPg.competencies", "Competencias Emocionales")}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t.competenciesDesc}
+                {t("dashboardPg.competenciesDesc", "Tus 8 competencias del modelo SEI")}
               </p>
             </div>
           </div>
@@ -580,7 +365,7 @@ export default function ClientDashboard() {
                   dateCompare={prev?.project || (prev?.date ? new Date(prev.date).toLocaleDateString() : null)}
                 />
               </div>
-              <IndicatorsLegend t={t} />
+              <IndicatorsLegend indicatorsLabel={t("dashboardPg.indicators", "Indicadores de nivel")} />
             </>
           ) : (
             <div className="h-64 flex flex-col items-center justify-center text-center">
@@ -588,13 +373,13 @@ export default function ClientDashboard() {
                 <Zap className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-                {t.noCompetencies}
+                {t("dashboardPg.noCompetencies", "Completa tu evaluación SEI para ver tus competencias")}
               </p>
               <Link
                 href="/sei"
                 className="mt-4 px-4 py-2 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
               >
-                {t.takeSei}
+                {t("dashboardPg.takeSei", "Tomar evaluación SEI")}
               </Link>
             </div>
           )}
@@ -612,11 +397,11 @@ export default function ClientDashboard() {
       >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Star className="w-5 h-5 text-yellow-500" />
-          {t.talents}
+          {t("dashboardPg.talents", "Tus Talentos")}
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <TalentCard
-            title={t.focus}
+            title={t("dashboardPg.focus", "Enfoque")}
             icon={Target}
             color="#1E88E5"
             talents={Object.entries(base.eq?.talents?.focus || {})
@@ -628,7 +413,7 @@ export default function ClientDashboard() {
               }))}
           />
           <TalentCard
-            title={t.decisions}
+            title={t("dashboardPg.decisions", "Decisiones")}
             icon={Flame}
             color="#E53935"
             talents={Object.entries(base.eq?.talents?.decisions || {})
@@ -640,7 +425,7 @@ export default function ClientDashboard() {
               }))}
           />
           <TalentCard
-            title={t.drive}
+            title={t("dashboardPg.drive", "Impulso")}
             icon={TrendingUp}
             color="#43A047"
             talents={Object.entries(base.eq?.talents?.drive || {})
@@ -663,13 +448,13 @@ export default function ClientDashboard() {
       >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
-          {t.outcomes}
+          {t("dashboardPg.outcomes", "Resultados de Vida")}
         </h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-1">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm h-full">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
-                {t.overall}
+                {t("dashboardPg.overall", "Puntuación General")}
               </h3>
               <OverallSummary
                 overall4={base.outcomes?.overall4 ?? null}
@@ -681,7 +466,7 @@ export default function ClientDashboard() {
           <div className="md:col-span-2">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {t.outcomesDesc}
+                {t("dashboardPg.outcomesDesc", "Cómo tu IE impacta tu bienestar")}
               </p>
               <OutcomesPanel
                 present={{ ...base.outcomes, success: base.success }}
@@ -729,10 +514,10 @@ export default function ClientDashboard() {
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <MessageCircle className="w-5 h-5 text-[var(--rowi-g2)]" />
-                {t.coachTitle}
+                {t("dashboardPg.coachTitle", "Rowi Coach")}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t.coachDesc}
+                {t("dashboardPg.coachDesc", "Tu compañero de inteligencia emocional está listo para ayudarte")}
               </p>
             </div>
           </div>
@@ -742,7 +527,7 @@ export default function ClientDashboard() {
               href="/rowi"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
             >
-              {t.startChat}
+              {t("dashboardPg.startChat", "Iniciar conversación")}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -772,11 +557,11 @@ export default function ClientDashboard() {
       >
         <h2 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
-          {t.additionalInfo}
+          {t("dashboardPg.additionalInfo", "Información Adicional")}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t.user}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t("dashboardPg.user", "Usuario")}</p>
             <p className="font-medium text-gray-900 dark:text-white">
               {base.user?.name ?? "—"}
             </p>
@@ -786,7 +571,7 @@ export default function ClientDashboard() {
           </div>
           {base.brain?.style && (
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t.brainStyle}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("dashboardPg.brainStyle", "Estilo cerebral")}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {base.brain.style}
               </p>
@@ -794,7 +579,7 @@ export default function ClientDashboard() {
           )}
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-          {t.dataSource}: {base.source}
+          {t("dashboardPg.dataSource", "Fuente de datos")}: {base.source}
         </p>
       </motion.div>
     </div>
@@ -867,11 +652,11 @@ function TalentCard({
 /* =========================================================
    📊 Indicators Legend
 ========================================================= */
-function IndicatorsLegend({ t }: { t: typeof translations.es }) {
+function IndicatorsLegend({ indicatorsLabel }: { indicatorsLabel: string }) {
   return (
     <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800">
       <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        {t.indicators}
+        {indicatorsLabel}
       </div>
       <div className="flex flex-wrap gap-3">
         {EQ_LEVELS.map((lvl) => (

@@ -17,42 +17,6 @@ import {
 } from "lucide-react";
 import { getAllPlans } from "@/domains/plans/lib/plans";
 
-/* ====== Traducciones inline ====== */
-const T: Record<string, Record<string, string>> = {
-  title: { es: "Suscripción", en: "Subscription" },
-  subtitle: { es: "Administra tu plan y métodos de pago", en: "Manage your plan and payment methods" },
-
-  currentPlan: { es: "Plan actual", en: "Current plan" },
-  freePlan: { es: "Plan Gratuito", en: "Free Plan" },
-  proPlan: { es: "Plan Pro", en: "Pro Plan" },
-  teamPlan: { es: "Plan Equipo", en: "Team Plan" },
-  familyPlan: { es: "Plan Familiar", en: "Family Plan" },
-
-  features: { es: "Características incluidas", en: "Included features" },
-  upgradeNow: { es: "Mejorar plan", en: "Upgrade now" },
-  manageBilling: { es: "Gestionar facturación", en: "Manage billing" },
-
-  billing: { es: "Facturación", en: "Billing" },
-  nextBilling: { es: "Próximo cobro", en: "Next billing" },
-  paymentMethod: { es: "Método de pago", en: "Payment method" },
-  updatePayment: { es: "Actualizar método de pago", en: "Update payment method" },
-
-  usage: { es: "Uso del plan", en: "Plan usage" },
-  conversations: { es: "Conversaciones este mes", en: "Conversations this month" },
-  invites: { es: "Invitaciones enviadas", en: "Invitations sent" },
-  unlimited: { es: "Ilimitado", en: "Unlimited" },
-
-  trial: { es: "Período de prueba", en: "Trial period" },
-  trialEnds: { es: "Tu prueba termina el", en: "Your trial ends on" },
-  trialDaysLeft: { es: "días restantes", en: "days left" },
-
-  cancelSub: { es: "Cancelar suscripción", en: "Cancel subscription" },
-  cancelWarning: { es: "Perderás acceso a las funciones premium al finalizar el período", en: "You'll lose access to premium features at the end of the period" },
-
-  loading: { es: "Cargando...", en: "Loading...", pt: "Carregando...", it: "Caricamento..." },
-  error: { es: "Error al cargar", en: "Error loading" },
-};
-
 const COLORS = {
   purple: "#7a59c9",
   blue: "#38bdf8",
@@ -61,29 +25,30 @@ const COLORS = {
   orange: "#f59e0b",
 };
 
-const PLAN_FEATURES: Record<string, string[]> = {
+/* Cada feature es una clave i18n bajo settingsSubPg.feature.* */
+const PLAN_FEATURES: Record<string, { key: string; fallback: string }[]> = {
   free: [
-    "5 conversaciones al mes | 5 conversations per month",
-    "Acceso básico a insights | Basic insights access",
-    "1 comunidad | 1 community",
+    { key: "settingsSubPg.feature.freeConversations", fallback: "5 conversaciones al mes" },
+    { key: "settingsSubPg.feature.freeInsights", fallback: "Acceso básico a insights" },
+    { key: "settingsSubPg.feature.freeCommunity", fallback: "1 comunidad" },
   ],
   pro: [
-    "Conversaciones ilimitadas | Unlimited conversations",
-    "Insights avanzados | Advanced insights",
-    "Comunidades ilimitadas | Unlimited communities",
-    "Soporte prioritario | Priority support",
+    { key: "settingsSubPg.feature.proConversations", fallback: "Conversaciones ilimitadas" },
+    { key: "settingsSubPg.feature.proInsights", fallback: "Insights avanzados" },
+    { key: "settingsSubPg.feature.proCommunities", fallback: "Comunidades ilimitadas" },
+    { key: "settingsSubPg.feature.proSupport", fallback: "Soporte prioritario" },
   ],
   team: [
-    "Todo en Pro | Everything in Pro",
-    "Dashboard de equipo | Team dashboard",
-    "Benchmarks corporativos | Corporate benchmarks",
-    "Admin dedicado | Dedicated admin",
+    { key: "settingsSubPg.feature.teamEverythingPro", fallback: "Todo en Pro" },
+    { key: "settingsSubPg.feature.teamDashboard", fallback: "Dashboard de equipo" },
+    { key: "settingsSubPg.feature.teamBenchmarks", fallback: "Benchmarks corporativos" },
+    { key: "settingsSubPg.feature.teamAdmin", fallback: "Admin dedicado" },
   ],
   family: [
-    "Hasta 6 miembros | Up to 6 members",
-    "Dashboard familiar | Family dashboard",
-    "Insights compartidos | Shared insights",
-    "Precio especial | Special pricing",
+    { key: "settingsSubPg.feature.familyMembers", fallback: "Hasta 6 miembros" },
+    { key: "settingsSubPg.feature.familyDashboard", fallback: "Dashboard familiar" },
+    { key: "settingsSubPg.feature.familyInsights", fallback: "Insights compartidos" },
+    { key: "settingsSubPg.feature.familyPricing", fallback: "Precio especial" },
   ],
 };
 
@@ -112,11 +77,8 @@ type SubscriptionData = {
 };
 
 export default function SubscriptionPage() {
-  const { t: tBase, locale } = useI18n();
-  const lang = locale; // all 4 languages
-  // Usa el JSON central (settings.subscription.*) y cae al texto ES del
-  // catálogo T como fallback. Así PT/IT salen del JSON en vez de ver inglés.
-  const t = (key: string) => tBase(`settings.subscription.${key}`, T[key]?.es || key);
+  const { t, locale } = useI18n();
+  const lang = locale; // se conserva para elegir campos de datos del plan (p.nameEN / p.descriptionEN)
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubscriptionData | null>(null);
@@ -174,7 +136,7 @@ export default function SubscriptionPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex items-center gap-3">
           <RefreshCw className="w-5 h-5 animate-spin" style={{ color: COLORS.purple }} />
-          <span className="rowi-muted">{t("loading")}</span>
+          <span className="rowi-muted">{t("settingsSubPg.loading", "Cargando...")}</span>
         </div>
       </div>
     );
@@ -194,8 +156,8 @@ export default function SubscriptionPage() {
         >
           <CreditCard size={32} style={{ color: COLORS.green }} />
         </div>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="text-sm rowi-muted mt-2">{t("subtitle")}</p>
+        <h1 className="text-2xl font-bold">{t("settingsSubPg.title", "Suscripción")}</h1>
+        <p className="text-sm rowi-muted mt-2">{t("settingsSubPg.subtitle", "Administra tu plan y métodos de pago")}</p>
       </motion.div>
 
       {/* Trial Notice */}
@@ -210,16 +172,16 @@ export default function SubscriptionPage() {
               <AlertCircle size={24} style={{ color: COLORS.orange }} />
             </div>
             <div className="flex-1">
-              <p className="font-medium">{t("trial")}</p>
+              <p className="font-medium">{t("settingsSubPg.trial", "Período de prueba")}</p>
               <p className="text-sm rowi-muted">
-                {t("trialEnds")} {new Date(data!.trialEndsAt!).toLocaleDateString()} ({trialDaysLeft} {t("trialDaysLeft")})
+                {t("settingsSubPg.trialEnds", "Tu prueba termina el")} {new Date(data!.trialEndsAt!).toLocaleDateString()} ({trialDaysLeft} {t("settingsSubPg.trialDaysLeft", "días restantes")})
               </p>
             </div>
             <button
               className="rowi-btn-primary"
               onClick={() => { window.location.href = "/pricing"; }}
             >
-              {t("upgradeNow")}
+              {t("settingsSubPg.upgradeNow", "Mejorar plan")}
             </button>
           </div>
         </motion.div>
@@ -237,14 +199,14 @@ export default function SubscriptionPage() {
             <Crown size={24} style={{ color: COLORS.purple }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("currentPlan")}</h2>
+            <h2 className="text-lg font-semibold">{t("settingsSubPg.currentPlan", "Plan actual")}</h2>
             <div className="flex items-center gap-3 mt-2">
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-                {data?.plan?.name || t("freePlan")}
+                {data?.plan?.name || t("settingsSubPg.freePlan", "Plan Gratuito")}
               </span>
               {data?.plan && data.plan.priceCents > 0 && (
                 <span className="text-sm rowi-muted">
-                  ${(data.plan.priceCents / 100).toFixed(2)}/{data.plan.interval === "month" ? "mes" : "año"}
+                  ${(data.plan.priceCents / 100).toFixed(2)}/{data.plan.interval === "month" ? t("settingsSubPg.perMonth", "mes") : t("settingsSubPg.perYear", "año")}
                 </span>
               )}
             </div>
@@ -254,23 +216,20 @@ export default function SubscriptionPage() {
             onClick={() => { window.location.href = "/pricing"; }}
           >
             <Sparkles size={16} />
-            {t("upgradeNow")}
+            {t("settingsSubPg.upgradeNow", "Mejorar plan")}
           </button>
         </div>
 
         {/* Features */}
         <div className="pt-4 border-t dark:border-gray-800">
-          <h3 className="text-sm font-medium mb-3">{t("features")}</h3>
+          <h3 className="text-sm font-medium mb-3">{t("settingsSubPg.features", "Características incluidas")}</h3>
           <div className="grid gap-2">
-            {features.map((feature, idx) => {
-              const [es, en] = feature.split(" | ");
-              return (
-                <div key={idx} className="flex items-center gap-2 text-sm">
-                  <Check size={16} style={{ color: COLORS.green }} />
-                  <span>{lang !== "es" ? en : es}</span>
-                </div>
-              );
-            })}
+            {features.map((feature) => (
+              <div key={feature.key} className="flex items-center gap-2 text-sm">
+                <Check size={16} style={{ color: COLORS.green }} />
+                <span>{t(feature.key, feature.fallback)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </motion.section>
@@ -282,12 +241,10 @@ export default function SubscriptionPage() {
         transition={{ delay: 0.15 }}
       >
         <h2 className="text-lg font-semibold mb-1">
-          {lang === "en" ? "Upgrade your plan" : "Mejora tu plan"}
+          {t("settingsSubPg.upgradeHeading", "Mejora tu plan")}
         </h2>
         <p className="text-sm rowi-muted mb-4">
-          {lang === "en"
-            ? "Pick a plan and pay securely — no extra steps."
-            : "Elige un plan y paga de forma segura, sin pasos extra."}
+          {t("settingsSubPg.upgradeSubtitle", "Elige un plan y paga de forma segura, sin pasos extra.")}
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {getAllPlans()
@@ -310,7 +267,7 @@ export default function SubscriptionPage() {
                     <div className="text-2xl font-bold mt-1">
                       ${p.priceMonthly}
                       <span className="text-sm font-normal rowi-muted">
-                        /{lang === "en" ? "mo" : "mes"}
+                        /{t("settingsSubPg.perMonthShort", "mes")}
                       </span>
                     </div>
                   </div>
@@ -324,8 +281,8 @@ export default function SubscriptionPage() {
                     className="rowi-btn-primary flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     {isLoadingThis
-                      ? lang === "en" ? "Redirecting…" : "Redirigiendo…"
-                      : lang === "en" ? "Choose this plan" : "Elegir este plan"}
+                      ? t("settingsSubPg.redirecting", "Redirigiendo…")
+                      : t("settingsSubPg.choosePlan", "Elegir este plan")}
                     <ArrowRight size={16} />
                   </button>
                 </div>
@@ -345,25 +302,25 @@ export default function SubscriptionPage() {
           <div className="p-3 rounded-xl" style={{ background: `${COLORS.blue}20` }}>
             <Calendar size={24} style={{ color: COLORS.blue }} />
           </div>
-          <h2 className="text-lg font-semibold">{t("usage")}</h2>
+          <h2 className="text-lg font-semibold">{t("settingsSubPg.usage", "Uso del plan")}</h2>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <p className="text-sm rowi-muted mb-1">{t("conversations")}</p>
+            <p className="text-sm rowi-muted mb-1">{t("settingsSubPg.conversations", "Conversaciones este mes")}</p>
             <p className="text-2xl font-bold">
               {data?.usage.conversations || 0}
               <span className="text-sm font-normal rowi-muted ml-1">
-                / {data?.usage.conversationsLimit || t("unlimited")}
+                / {data?.usage.conversationsLimit || t("settingsSubPg.unlimited", "Ilimitado")}
               </span>
             </p>
           </div>
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <p className="text-sm rowi-muted mb-1">{t("invites")}</p>
+            <p className="text-sm rowi-muted mb-1">{t("settingsSubPg.invites", "Invitaciones enviadas")}</p>
             <p className="text-2xl font-bold">
               {data?.usage.invites || 0}
               <span className="text-sm font-normal rowi-muted ml-1">
-                / {data?.usage.invitesLimit || t("unlimited")}
+                / {data?.usage.invitesLimit || t("settingsSubPg.unlimited", "Ilimitado")}
               </span>
             </p>
           </div>
@@ -382,13 +339,13 @@ export default function SubscriptionPage() {
             <div className="p-3 rounded-xl" style={{ background: `${COLORS.green}20` }}>
               <CreditCard size={24} style={{ color: COLORS.green }} />
             </div>
-            <h2 className="text-lg font-semibold">{t("billing")}</h2>
+            <h2 className="text-lg font-semibold">{t("settingsSubPg.billing", "Facturación")}</h2>
           </div>
 
           <div className="space-y-3">
             {data.subscription.currentPeriodEnd && (
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                <span className="text-sm">{t("nextBilling")}</span>
+                <span className="text-sm">{t("settingsSubPg.nextBilling", "Próximo cobro")}</span>
                 <span className="font-medium">
                   {new Date(data.subscription.currentPeriodEnd).toLocaleDateString()}
                 </span>
@@ -411,7 +368,7 @@ export default function SubscriptionPage() {
                 }
               }}
             >
-              <span className="text-sm">{t("manageBilling")}</span>
+              <span className="text-sm">{t("settingsSubPg.manageBilling", "Gestionar facturación")}</span>
               <ExternalLink size={16} className="rowi-muted" />
             </button>
           </div>

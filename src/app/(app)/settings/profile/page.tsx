@@ -38,234 +38,102 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/react";
 
-/* ====== Traducciones inline ====== */
-const T: Record<string, Record<string, string>> = {
-  // Títulos principales
-  title: { es: "Mi Perfil Rowi", en: "My Rowi Profile" },
-  subtitle: { es: "Configura tu perfil para obtener la mejor experiencia personalizada", en: "Configure your profile for the best personalized experience" },
-
-  // Sección SEI
-  seiTitle: { es: "Evaluación SEI (Six Seconds)", en: "SEI Assessment (Six Seconds)" },
-  seiDesc: { es: "La evaluación SEI mide tu inteligencia emocional. Es la base de tu perfil Rowi.", en: "The SEI assessment measures your emotional intelligence. It's the foundation of your Rowi profile." },
-  seiNotTaken: { es: "Aún no has tomado la evaluación SEI", en: "You haven't taken the SEI assessment yet" },
-  seiRequested: { es: "Evaluación solicitada", en: "Assessment requested" },
-  seiPending: { es: "Tus resultados llegarán en aproximadamente 48 horas", en: "Your results will arrive in approximately 48 hours" },
-  seiCompleted: { es: "Evaluación completada", en: "Assessment completed" },
-  seiLastDate: { es: "Última evaluación:", en: "Last assessment:" },
-  seiTakeNow: { es: "Tomar Evaluación SEI", en: "Take SEI Assessment" },
-  seiRetake: { es: "Volver a Tomar SEI", en: "Retake SEI" },
-  seiRetakeFree: { es: "Gratis (incluido en tu plan)", en: "Free (included in your plan)" },
-  seiRetakePaid: { es: "Costo: $50 USD", en: "Cost: $50 USD" },
-  seiRecommend: { es: "Recomendamos tomar la evaluación cada 3 meses mínimo para ver tu progreso", en: "We recommend taking the assessment at least every 3 months to track your progress" },
-  seiNextRecommended: { es: "Próxima evaluación recomendada:", en: "Next recommended assessment:" },
-  seiAvailableLinks: { es: "Links de evaluación disponibles", en: "Available assessment links" },
-  seiSelectLink: { es: "Selecciona un link para comenzar:", en: "Select a link to start:" },
-
-  // Sección Emails
-  emailsTitle: { es: "Correos Electrónicos", en: "Email Addresses" },
-  emailsDesc: { es: "Agrega correos adicionales para vincular tus cuentas corporativas", en: "Add additional emails to link your corporate accounts" },
-  emailPrimary: { es: "Principal", en: "Primary" },
-  emailWork: { es: "Trabajo", en: "Work" },
-  emailPersonal: { es: "Personal", en: "Personal" },
-  emailAlt: { es: "Alternativo", en: "Alternative" },
-  emailAdd: { es: "Agregar correo", en: "Add email" },
-  emailAddPlaceholder: { es: "correo@empresa.com", en: "email@company.com" },
-  emailVerified: { es: "Verificado", en: "Verified" },
-  emailPendingVerification: { es: "Pendiente de verificación", en: "Pending verification" },
-
-  // Sección Affinity
-  affinityTitle: { es: "Datos para Affinity", en: "Affinity Data" },
-  affinityDesc: { es: "Estos datos nos ayudan a conectarte con personas afines en el Rowiverse", en: "This data helps us connect you with like-minded people in the Rowiverse" },
-
-  // Campos de Affinity
-  profession: { es: "Profesión", en: "Profession" },
-  professionPlaceholder: { es: "Ej: Ingeniero de Software, Diseñador UX...", en: "E.g.: Software Engineer, UX Designer..." },
-  industry: { es: "Industria", en: "Industry" },
-  industryPlaceholder: { es: "Ej: Tecnología, Salud, Educación...", en: "E.g.: Technology, Healthcare, Education..." },
-  yearsExperience: { es: "Años de experiencia", en: "Years of experience" },
-  education: { es: "Nivel educativo", en: "Education level" },
-  eduOptions: {
-    es: "Secundaria,Técnico,Universitario,Maestría,Doctorado",
-    en: "High School,Technical,Bachelor,Master,PhD"
-  },
-  languages: { es: "Idiomas que hablas", en: "Languages you speak" },
-  languagesPlaceholder: { es: "Español, Inglés, Portugués...", en: "Spanish, English, Portuguese..." },
-  interests: { es: "Intereses profesionales", en: "Professional interests" },
-  interestsPlaceholder: { es: "IA, Liderazgo, Innovación...", en: "AI, Leadership, Innovation..." },
-  goals: { es: "Metas actuales", en: "Current goals" },
-  goalsPlaceholder: { es: "Crecer profesionalmente, Emprender...", en: "Professional growth, Entrepreneurship..." },
-  lookingFor: { es: "Busco conectar con personas que...", en: "Looking to connect with people who..." },
-  lookingForPlaceholder: { es: "Compartan mis valores, Estén en mi industria...", en: "Share my values, Are in my industry..." },
-  workStyle: { es: "Estilo de trabajo", en: "Work style" },
-  workStyleOptions: {
-    es: "Remoto,Híbrido,Presencial,Flexible",
-    en: "Remote,Hybrid,On-site,Flexible"
-  },
-  teamSize: { es: "Tamaño de equipo preferido", en: "Preferred team size" },
-  teamSizeOptions: {
-    es: "Solo,Pequeño (2-5),Mediano (6-15),Grande (15+)",
-    en: "Solo,Small (2-5),Medium (6-15),Large (15+)"
-  },
-
-  // Comunicación
-  commTitle: { es: "Preferencias de Comunicación", en: "Communication Preferences" },
-  commDesc: { es: "Define cómo prefieres comunicarte y recibir información", en: "Define how you prefer to communicate and receive information" },
-  channels: { es: "Canales preferidos", en: "Preferred channels" },
-  channelEmail: { es: "Email", en: "Email" },
-  channelWhatsapp: { es: "WhatsApp", en: "WhatsApp" },
-  channelSms: { es: "SMS", en: "SMS" },
-  channelCall: { es: "Llamada", en: "Call" },
-  tone: { es: "Tono preferido", en: "Preferred tone" },
-  toneDirecto: { es: "Directo", en: "Direct" },
-  toneEmpatico: { es: "Empático", en: "Empathetic" },
-  toneNeutral: { es: "Neutral", en: "Neutral" },
-  meeting: { es: "Duración de reunión ideal", en: "Ideal meeting duration" },
-
-  // Estilos de comunicación
-  commStyleTitle: { es: "Estilos de Comunicación", en: "Communication Styles" },
-  commStyleSelf: { es: "Cómo suelo comunicarme", en: "How I usually communicate" },
-  commStyleExpect: { es: "Cómo prefiero que se comuniquen conmigo", en: "How I prefer others to communicate with me" },
-  commDraftHint: { es: "Esto es lo que entendimos de tu Rowi Test — edítalo libremente.", en: "This is what we gathered from your Rowi Test — edit it freely." },
-
-  // Acerca de mí
-  aboutTitle: { es: "Acerca de Mí", en: "About Me" },
-  bio: { es: "Bio", en: "Bio" },
-  bioPlaceholder: { es: "Cuéntanos sobre ti...", en: "Tell us about yourself..." },
-  values: { es: "Valores", en: "Values" },
-  hobbies: { es: "Hobbies", en: "Hobbies" },
-
-  // Visibilidad
-  visibilityTitle: { es: "Privacidad y Visibilidad", en: "Privacy & Visibility" },
-  visibilityDesc: { es: "Controla qué información es visible para otros en el Rowiverse", en: "Control what information is visible to others in the Rowiverse" },
-  showBrain: { es: "Mostrar Brain Style", en: "Show Brain Style" },
-  showTalents: { es: "Mostrar Talentos", en: "Show Talents" },
-  showContact: { es: "Mostrar Contacto", en: "Show Contact Info" },
-  allowAI: { es: "Permitir análisis de IA", en: "Allow AI analysis" },
-  contributeRowiverse: { es: "Contribuir datos al Rowiverse", en: "Contribute data to Rowiverse" },
-  contributeDesc: { es: "Tus datos anónimos ayudan a mejorar los benchmarks globales", en: "Your anonymous data helps improve global benchmarks" },
-
-  // Ubicación
-  locationTitle: { es: "Ubicación", en: "Location" },
-  countryLabel: { es: "País", en: "Country" },
-  regionLabel: { es: "Región/Estado", en: "Region/State" },
-  cityLabel: { es: "Ciudad", en: "City" },
-  timezoneLabel: { es: "Zona horaria", en: "Timezone" },
-
-  // Acciones
-  save: { es: "Guardar Cambios", en: "Save Changes" },
-  saving: { es: "Guardando...", en: "Saving..." },
-  saved: { es: "Guardado", en: "Saved" },
-  error: { es: "Error al guardar", en: "Error saving" },
-  cancel: { es: "Cancelar", en: "Cancel" },
-
-  // SEI extras
-  brainStyle: { es: "Estilo Cerebral", en: "Brain Style" },
-  eqTotal: { es: "EQ Total", en: "EQ Total" },
-  requestedOn: { es: "Solicitado el", en: "Requested on" },
-
-  // Privacidad extras
-  allowAIDesc: { es: "Permite que Rowi analice tus datos para darte mejores recomendaciones", en: "Allow Rowi to analyze your data for better recommendations" },
-};
-
 /* ====== Frases del borrador del Rowi Test (claves i18n → texto) ======
    El CommunicationProfile sembrado por el mini-SEI guarda CLAVES (no texto);
-   aquí las resolvemos a frases editables para prellenar los estilos. */
-const COMM_DRAFT_PHRASES: Record<string, { es: string; en: string }> = {
-  "profile.comm.self.EL.high": { es: "Sé nombrar con precisión lo que siento", en: "I can name what I feel precisely" },
-  "profile.comm.self.ACT.high": { es: "Voy al grano y pienso en las consecuencias", en: "I get to the point and weigh consequences" },
-  "profile.comm.self.NE.high": { es: "Mantengo la calma cuando hay tensión", en: "I stay calm under tension" },
-  "profile.comm.self.IM.high": { es: "Me mueve un porqué propio", en: "I'm driven by my own why" },
-  "profile.comm.self.OP.high": { es: "Tiendo a ver posibilidades", en: "I tend to see possibilities" },
-  "profile.comm.self.EMP.high": { es: "Me sintonizo con cómo se siente el otro", en: "I tune into how the other feels" },
-  "profile.comm.self.NG.high": { es: "Conecto lo que hago con algo más grande", en: "I connect what I do to something bigger" },
-  "profile.comm.pref.EL.low": { es: "Dame espacio para procesar lo que siento", en: "Give me space to process what I feel" },
-  "profile.comm.pref.ACT.low": { es: "Dame contexto antes del pedido", en: "Give me context before the ask" },
-  "profile.comm.pref.NE.low": { es: "Cuida el tono cuando hay carga emocional", en: "Mind your tone when emotions run high" },
-  "profile.comm.pref.IM.low": { es: "Ayúdame a ver el sentido de las cosas", en: "Help me see the meaning behind things" },
-  "profile.comm.pref.EMP.high": { es: "Háblame con calidez", en: "Speak to me with warmth" },
-  "profile.comm.pref.EMP.low": { es: "Dime de forma explícita cómo te sientes", en: "Tell me explicitly how you feel" },
+   aquí las resolvemos a frases editables para prellenar los estilos.
+   Cada entrada referencia una clave i18n + fallback ES para t(). */
+const COMM_DRAFT_PHRASES: Record<string, { key: string; es: string }> = {
+  "profile.comm.self.EL.high": { key: "settingsProfilePg.commDraft.selfElHigh", es: "Sé nombrar con precisión lo que siento" },
+  "profile.comm.self.ACT.high": { key: "settingsProfilePg.commDraft.selfActHigh", es: "Voy al grano y pienso en las consecuencias" },
+  "profile.comm.self.NE.high": { key: "settingsProfilePg.commDraft.selfNeHigh", es: "Mantengo la calma cuando hay tensión" },
+  "profile.comm.self.IM.high": { key: "settingsProfilePg.commDraft.selfImHigh", es: "Me mueve un porqué propio" },
+  "profile.comm.self.OP.high": { key: "settingsProfilePg.commDraft.selfOpHigh", es: "Tiendo a ver posibilidades" },
+  "profile.comm.self.EMP.high": { key: "settingsProfilePg.commDraft.selfEmpHigh", es: "Me sintonizo con cómo se siente el otro" },
+  "profile.comm.self.NG.high": { key: "settingsProfilePg.commDraft.selfNgHigh", es: "Conecto lo que hago con algo más grande" },
+  "profile.comm.pref.EL.low": { key: "settingsProfilePg.commDraft.prefElLow", es: "Dame espacio para procesar lo que siento" },
+  "profile.comm.pref.ACT.low": { key: "settingsProfilePg.commDraft.prefActLow", es: "Dame contexto antes del pedido" },
+  "profile.comm.pref.NE.low": { key: "settingsProfilePg.commDraft.prefNeLow", es: "Cuida el tono cuando hay carga emocional" },
+  "profile.comm.pref.IM.low": { key: "settingsProfilePg.commDraft.prefImLow", es: "Ayúdame a ver el sentido de las cosas" },
+  "profile.comm.pref.EMP.high": { key: "settingsProfilePg.commDraft.prefEmpHigh", es: "Háblame con calidez" },
+  "profile.comm.pref.EMP.low": { key: "settingsProfilePg.commDraft.prefEmpLow", es: "Dime de forma explícita cómo te sientes" },
 };
 
-function resolveCommDraft(keys: unknown, lang: string): string[] {
+function resolveCommDraft(
+  keys: unknown,
+  translate: (key: string, fallback: string) => string
+): string[] {
   if (!Array.isArray(keys)) return [];
   return keys
-    .map((k) => COMM_DRAFT_PHRASES[String(k)]?.[lang === "en" ? "en" : "es"])
+    .map((k) => {
+      const entry = COMM_DRAFT_PHRASES[String(k)];
+      return entry ? translate(entry.key, entry.es) : undefined;
+    })
     .filter((s): s is string => Boolean(s));
 }
 
-/* ====== Sugerencias traducibles ====== */
-const SUGGESTED_VALUES: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Honestidad", en: "Honesty" },
-    { es: "Respeto", en: "Respect" },
-    { es: "Aprendizaje", en: "Learning" },
-    { es: "Familia", en: "Family" },
-    { es: "Impacto", en: "Impact" },
-    { es: "Colaboración", en: "Collaboration" },
-    { es: "Creatividad", en: "Creativity" },
-    { es: "Excelencia", en: "Excellence" },
-    { es: "Transparencia", en: "Transparency" },
-    { es: "Autonomía", en: "Autonomy" },
-  ],
-};
-const SUGGESTED_HOBBIES: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Correr", en: "Running" },
-    { es: "Leer", en: "Reading" },
-    { es: "Gimnasio", en: "Gym" },
-    { es: "Cocinar", en: "Cooking" },
-    { es: "Viajar", en: "Traveling" },
-    { es: "Fotografía", en: "Photography" },
-    { es: "Música", en: "Music" },
-    { es: "Pintura", en: "Painting" },
-    { es: "Jardinería", en: "Gardening" },
-    { es: "Gaming", en: "Gaming" },
-  ],
-};
-const COMM_STYLES_ME: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Directo", en: "Direct" },
-    { es: "Empático", en: "Empathetic" },
-    { es: "Detallado", en: "Detailed" },
-    { es: "Breve", en: "Brief" },
-    { es: "Visual", en: "Visual" },
-    { es: "Inspirador", en: "Inspiring" },
-  ],
-};
-const COMM_STYLES_TO_OTHERS: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Necesito contexto", en: "I need context" },
-    { es: "Prefiero brevedad", en: "I prefer brevity" },
-    { es: "Muéstrame datos", en: "Show me data" },
-    { es: "Aclaremos riesgos", en: "Let's clarify risks" },
-    { es: "Vamos al siguiente paso", en: "Let's move forward" },
-    { es: "Valida emoción primero", en: "Validate emotions first" },
-  ],
-};
-const SUGGESTED_INTERESTS: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Liderazgo", en: "Leadership" },
-    { es: "Innovación", en: "Innovation" },
-    { es: "IA", en: "AI" },
-    { es: "Sostenibilidad", en: "Sustainability" },
-    { es: "Emprendimiento", en: "Entrepreneurship" },
-    { es: "Desarrollo personal", en: "Personal development" },
-    { es: "Coaching", en: "Coaching" },
-    { es: "Bienestar", en: "Wellness" },
-    { es: "Tecnología", en: "Technology" },
-    { es: "Educación", en: "Education" },
-  ],
-};
-const SUGGESTED_GOALS: Record<string, { es: string; en: string }[]> = {
-  items: [
-    { es: "Crecimiento profesional", en: "Professional growth" },
-    { es: "Balance vida-trabajo", en: "Work-life balance" },
-    { es: "Emprender", en: "Start a business" },
-    { es: "Liderar equipos", en: "Lead teams" },
-    { es: "Cambiar de industria", en: "Change industry" },
-    { es: "Impacto social", en: "Social impact" },
-  ],
-};
+/* ====== Sugerencias traducibles (clave i18n + fallback ES) ====== */
+type Suggestion = { key: string; es: string };
+
+const SUGGESTED_VALUES: Suggestion[] = [
+  { key: "settingsProfilePg.suggestedValues.honesty", es: "Honestidad" },
+  { key: "settingsProfilePg.suggestedValues.respect", es: "Respeto" },
+  { key: "settingsProfilePg.suggestedValues.learning", es: "Aprendizaje" },
+  { key: "settingsProfilePg.suggestedValues.family", es: "Familia" },
+  { key: "settingsProfilePg.suggestedValues.impact", es: "Impacto" },
+  { key: "settingsProfilePg.suggestedValues.collaboration", es: "Colaboración" },
+  { key: "settingsProfilePg.suggestedValues.creativity", es: "Creatividad" },
+  { key: "settingsProfilePg.suggestedValues.excellence", es: "Excelencia" },
+  { key: "settingsProfilePg.suggestedValues.transparency", es: "Transparencia" },
+  { key: "settingsProfilePg.suggestedValues.autonomy", es: "Autonomía" },
+];
+const SUGGESTED_HOBBIES: Suggestion[] = [
+  { key: "settingsProfilePg.suggestedHobbies.running", es: "Correr" },
+  { key: "settingsProfilePg.suggestedHobbies.reading", es: "Leer" },
+  { key: "settingsProfilePg.suggestedHobbies.gym", es: "Gimnasio" },
+  { key: "settingsProfilePg.suggestedHobbies.cooking", es: "Cocinar" },
+  { key: "settingsProfilePg.suggestedHobbies.traveling", es: "Viajar" },
+  { key: "settingsProfilePg.suggestedHobbies.photography", es: "Fotografía" },
+  { key: "settingsProfilePg.suggestedHobbies.music", es: "Música" },
+  { key: "settingsProfilePg.suggestedHobbies.painting", es: "Pintura" },
+  { key: "settingsProfilePg.suggestedHobbies.gardening", es: "Jardinería" },
+  { key: "settingsProfilePg.suggestedHobbies.gaming", es: "Gaming" },
+];
+const COMM_STYLES_ME: Suggestion[] = [
+  { key: "settingsProfilePg.commStylesMe.direct", es: "Directo" },
+  { key: "settingsProfilePg.commStylesMe.empathetic", es: "Empático" },
+  { key: "settingsProfilePg.commStylesMe.detailed", es: "Detallado" },
+  { key: "settingsProfilePg.commStylesMe.brief", es: "Breve" },
+  { key: "settingsProfilePg.commStylesMe.visual", es: "Visual" },
+  { key: "settingsProfilePg.commStylesMe.inspiring", es: "Inspirador" },
+];
+const COMM_STYLES_TO_OTHERS: Suggestion[] = [
+  { key: "settingsProfilePg.commStylesToOthers.needContext", es: "Necesito contexto" },
+  { key: "settingsProfilePg.commStylesToOthers.preferBrevity", es: "Prefiero brevedad" },
+  { key: "settingsProfilePg.commStylesToOthers.showData", es: "Muéstrame datos" },
+  { key: "settingsProfilePg.commStylesToOthers.clarifyRisks", es: "Aclaremos riesgos" },
+  { key: "settingsProfilePg.commStylesToOthers.moveForward", es: "Vamos al siguiente paso" },
+  { key: "settingsProfilePg.commStylesToOthers.validateEmotion", es: "Valida emoción primero" },
+];
+const SUGGESTED_INTERESTS: Suggestion[] = [
+  { key: "settingsProfilePg.suggestedInterests.leadership", es: "Liderazgo" },
+  { key: "settingsProfilePg.suggestedInterests.innovation", es: "Innovación" },
+  { key: "settingsProfilePg.suggestedInterests.ai", es: "IA" },
+  { key: "settingsProfilePg.suggestedInterests.sustainability", es: "Sostenibilidad" },
+  { key: "settingsProfilePg.suggestedInterests.entrepreneurship", es: "Emprendimiento" },
+  { key: "settingsProfilePg.suggestedInterests.personalDevelopment", es: "Desarrollo personal" },
+  { key: "settingsProfilePg.suggestedInterests.coaching", es: "Coaching" },
+  { key: "settingsProfilePg.suggestedInterests.wellness", es: "Bienestar" },
+  { key: "settingsProfilePg.suggestedInterests.technology", es: "Tecnología" },
+  { key: "settingsProfilePg.suggestedInterests.education", es: "Educación" },
+];
+const SUGGESTED_GOALS: Suggestion[] = [
+  { key: "settingsProfilePg.suggestedGoals.professionalGrowth", es: "Crecimiento profesional" },
+  { key: "settingsProfilePg.suggestedGoals.workLifeBalance", es: "Balance vida-trabajo" },
+  { key: "settingsProfilePg.suggestedGoals.startBusiness", es: "Emprender" },
+  { key: "settingsProfilePg.suggestedGoals.leadTeams", es: "Liderar equipos" },
+  { key: "settingsProfilePg.suggestedGoals.changeIndustry", es: "Cambiar de industria" },
+  { key: "settingsProfilePg.suggestedGoals.socialImpact", es: "Impacto social" },
+];
 
 /* ====== Colores Rowi ====== */
 const COLORS = {
@@ -364,10 +232,8 @@ type AffinityData = {
 
 /* ====== Componente Principal ====== */
 export default function ProfileSettingsPage() {
-  const { locale, t: ti18n } = useI18n();
-  const lang = locale; // all 4 languages
-  const langEsEn: "es" | "en" = (locale === "es" ? "es" : "en"); // for suggestion objects that only have es/en
-  const t = (key: string) => T[key]?.[lang] || T[key]?.es || key;
+  const { locale, t } = useI18n();
+  const lang = locale; // kept for date formatting + API locale
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -472,8 +338,8 @@ export default function ProfileSettingsPage() {
         const cp = prefsData?.communicationProfile;
         if (cp) {
           setCommIsDraft(Boolean(cp.isDraft));
-          const selfPhrases = resolveCommDraft(cp.commSelf, lang);
-          const prefPhrases = resolveCommDraft(cp.commPref, lang);
+          const selfPhrases = resolveCommDraft(cp.commSelf, t);
+          const prefPhrases = resolveCommDraft(cp.commPref, t);
           setPrefs((prev) => ({
             ...prev,
             commStyleSelf: prev.commStyleSelf?.length ? prev.commStyleSelf : selfPhrases,
@@ -492,7 +358,7 @@ export default function ProfileSettingsPage() {
   /* ====== Guardar ====== */
   async function save() {
     setSaving(true);
-    setMsg(t("saving"));
+    setMsg(t("settingsProfilePg.saving", "Guardando..."));
 
     try {
       // Guardar en API extendida
@@ -519,18 +385,17 @@ export default function ProfileSettingsPage() {
       });
 
       if (profileRes.ok && prefsRes.ok) {
-        setMsg(t("saved") + " ✅");
+        setMsg(t("settingsProfilePg.saved", "Guardado") + " ✅");
       } else {
         // Reportar específicamente qué parte falló, en vez de un error genérico
         // que oculta cuál de los dos guardados no se persistió.
-        const isEN = lang === "en";
         const failed: string[] = [];
-        if (!profileRes.ok) failed.push(isEN ? "profile" : "perfil");
-        if (!prefsRes.ok) failed.push(isEN ? "preferences" : "preferencias");
-        setMsg(`${t("error")}: ${failed.join(", ")} ⚠️`);
+        if (!profileRes.ok) failed.push(t("settingsProfilePg.savePartProfile", "perfil"));
+        if (!prefsRes.ok) failed.push(t("settingsProfilePg.savePartPreferences", "preferencias"));
+        setMsg(`${t("settingsProfilePg.error", "Error al guardar")}: ${failed.join(", ")} ⚠️`);
       }
     } catch (e) {
-      setMsg(t("error") + " ❌");
+      setMsg(t("settingsProfilePg.error", "Error al guardar") + " ❌");
     } finally {
       setSaving(false);
       setTimeout(() => setMsg(""), 3000);
@@ -620,9 +485,9 @@ export default function ProfileSettingsPage() {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-500 to-pink-500 bg-clip-text text-transparent">
-          {t("title")}
+          {t("settingsProfilePg.title", "Mi Perfil Rowi")}
         </h1>
-        <p className="text-sm rowi-muted mt-2">{t("subtitle")}</p>
+        <p className="text-sm rowi-muted mt-2">{t("settingsProfilePg.subtitle", "Configura tu perfil para obtener la mejor experiencia personalizada")}</p>
       </div>
 
       {/* ========== SEI SECTION ========== */}
@@ -640,15 +505,15 @@ export default function ProfileSettingsPage() {
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              {t("seiTitle")}
+              {t("settingsProfilePg.seiTitle", "Evaluación SEI (Six Seconds)")}
               {profile?.sei?.lastSnapshot && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
                   <CheckCircle2 size={12} className="inline mr-1" />
-                  {t("seiCompleted")}
+                  {t("settingsProfilePg.seiCompleted", "Evaluación completada")}
                 </span>
               )}
             </h2>
-            <p className="text-sm rowi-muted mt-1">{t("seiDesc")}</p>
+            <p className="text-sm rowi-muted mt-1">{t("settingsProfilePg.seiDesc", "La evaluación SEI mide tu inteligencia emocional. Es la base de tu perfil Rowi.")}</p>
           </div>
         </div>
 
@@ -659,8 +524,8 @@ export default function ProfileSettingsPage() {
             <div className="flex items-center gap-3">
               <AlertCircle size={20} className="text-orange-500" />
               <div>
-                <p className="font-medium">{t("seiNotTaken")}</p>
-                <p className="text-sm rowi-muted">{t("seiRecommend")}</p>
+                <p className="font-medium">{t("settingsProfilePg.seiNotTaken", "Aún no has tomado la evaluación SEI")}</p>
+                <p className="text-sm rowi-muted">{t("settingsProfilePg.seiRecommend", "Recomendamos tomar la evaluación cada 3 meses mínimo para ver tu progreso")}</p>
               </div>
             </div>
           ) : profile?.sei?.pendingArrival ? (
@@ -668,11 +533,11 @@ export default function ProfileSettingsPage() {
             <div className="flex items-center gap-3">
               <Clock size={20} className="text-blue-500 animate-pulse" />
               <div>
-                <p className="font-medium text-blue-600 dark:text-blue-400">{t("seiRequested")}</p>
-                <p className="text-sm rowi-muted">{t("seiPending")}</p>
+                <p className="font-medium text-blue-600 dark:text-blue-400">{t("settingsProfilePg.seiRequested", "Evaluación solicitada")}</p>
+                <p className="text-sm rowi-muted">{t("settingsProfilePg.seiPending", "Tus resultados llegarán en aproximadamente 48 horas")}</p>
                 {profile.sei.requestedAt && (
                   <p className="text-xs rowi-muted mt-1">
-                    {t("requestedOn")}: {formatDate(profile.sei.requestedAt)}
+                    {t("settingsProfilePg.requestedOn", "Solicitado el")}: {formatDate(profile.sei.requestedAt)}
                   </p>
                 )}
               </div>
@@ -685,11 +550,11 @@ export default function ProfileSettingsPage() {
                   <CheckCircle2 size={20} className="text-green-500" />
                   <div>
                     <p className="font-medium text-green-600 dark:text-green-400">
-                      {t("seiLastDate")} {formatDate(profile.sei.lastSnapshot.at)}
+                      {t("settingsProfilePg.seiLastDate", "Última evaluación:")} {formatDate(profile.sei.lastSnapshot.at)}
                     </p>
                     {profile.sei.lastSnapshot.brainStyle && (
                       <p className="text-sm rowi-muted">
-                        {t("brainStyle")}: <span className="font-medium">{profile.sei.lastSnapshot.brainStyle}</span>
+                        {t("settingsProfilePg.brainStyle", "Estilo Cerebral")}: <span className="font-medium">{profile.sei.lastSnapshot.brainStyle}</span>
                       </p>
                     )}
                   </div>
@@ -698,7 +563,7 @@ export default function ProfileSettingsPage() {
                   <div className="text-2xl font-bold" style={{ color: COLORS.purple }}>
                     {profile.sei.lastSnapshot.total}
                   </div>
-                  <div className="text-xs rowi-muted">{t("eqTotal")}</div>
+                  <div className="text-xs rowi-muted">{t("settingsProfilePg.eqTotal", "EQ Total")}</div>
                 </div>
               </div>
 
@@ -706,7 +571,7 @@ export default function ProfileSettingsPage() {
               {profile.sei.nextRecommendedDate && (
                 <div className="flex items-center gap-2 text-sm p-2 rounded bg-purple-50 dark:bg-purple-900/20">
                   <Calendar size={16} style={{ color: COLORS.purple }} />
-                  <span>{t("seiNextRecommended")}</span>
+                  <span>{t("settingsProfilePg.seiNextRecommended", "Próxima evaluación recomendada:")}</span>
                   <span className="font-medium">{formatDate(profile.sei.nextRecommendedDate)}</span>
                 </div>
               )}
@@ -715,18 +580,18 @@ export default function ProfileSettingsPage() {
               <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <RefreshCw size={16} className="rowi-muted" />
-                  <span className="text-sm">{t("seiRetake")}</span>
+                  <span className="text-sm">{t("settingsProfilePg.seiRetake", "Volver a Tomar SEI")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {profile.sei.canRetakeFreely ? (
                     <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
                       <Star size={14} />
-                      {t("seiRetakeFree")}
+                      {t("settingsProfilePg.seiRetakeFree", "Gratis (incluido en tu plan)")}
                     </span>
                   ) : (
                     <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
                       <DollarSign size={14} />
-                      {t("seiRetakePaid")}
+                      {t("settingsProfilePg.seiRetakePaid", "Costo: $50 USD")}
                     </span>
                   )}
                 </div>
@@ -742,7 +607,7 @@ export default function ProfileSettingsPage() {
             onClick={() => setShowSeiLinks(!showSeiLinks)}
           >
             <ExternalLink size={16} />
-            {profile?.sei?.lastSnapshot ? t("seiRetake") : t("seiTakeNow")}
+            {profile?.sei?.lastSnapshot ? t("settingsProfilePg.seiRetake", "Volver a Tomar SEI") : t("settingsProfilePg.seiTakeNow", "Tomar Evaluación SEI")}
           </button>
         </div>
 
@@ -755,7 +620,7 @@ export default function ProfileSettingsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 space-y-3"
             >
-              <p className="text-sm font-medium">{t("seiSelectLink")}</p>
+              <p className="text-sm font-medium">{t("settingsProfilePg.seiSelectLink", "Selecciona un link para comenzar:")}</p>
               {profile?.seiLinks && profile.seiLinks.length > 0 ? (
                 <div className="grid gap-2">
                   {profile.seiLinks.map((link) => (
@@ -793,8 +658,8 @@ export default function ProfileSettingsPage() {
                 <div className="text-center py-4">
                   <AlertCircle size={24} className="mx-auto text-orange-500 mb-2" />
                   <p className="text-sm rowi-muted">
-                    {ti18n(
-                      "settings.profile.noSeiLinks",
+                    {t(
+                      "settingsProfilePg.noSeiLinks",
                       "No hay links de SEI disponibles en este momento. Por favor contacta al administrador."
                     )}
                   </p>
@@ -817,8 +682,8 @@ export default function ProfileSettingsPage() {
             <Mail size={24} style={{ color: COLORS.blue }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("emailsTitle")}</h2>
-            <p className="text-sm rowi-muted">{t("emailsDesc")}</p>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.emailsTitle", "Correos Electrónicos")}</h2>
+            <p className="text-sm rowi-muted">{t("settingsProfilePg.emailsDesc", "Agrega correos adicionales para vincular tus cuentas corporativas")}</p>
           </div>
         </div>
 
@@ -833,7 +698,7 @@ export default function ProfileSettingsPage() {
                 <p className="font-medium">{profile?.user?.email}</p>
                 <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
                   <CheckCircle2 size={12} />
-                  {t("emailPrimary")} · {t("emailVerified")}
+                  {t("settingsProfilePg.emailPrimary", "Principal")} · {t("settingsProfilePg.emailVerified", "Verificado")}
                 </p>
               </div>
             </div>
@@ -857,16 +722,16 @@ export default function ProfileSettingsPage() {
                 <div>
                   <p className="font-medium">{email.email}</p>
                   <p className="text-xs rowi-muted flex items-center gap-1">
-                    {email.label === "work" ? t("emailWork") : email.label === "personal" ? t("emailPersonal") : t("emailAlt")}
+                    {email.label === "work" ? t("settingsProfilePg.emailWork", "Trabajo") : email.label === "personal" ? t("settingsProfilePg.emailPersonal", "Personal") : t("settingsProfilePg.emailAlt", "Alternativo")}
                     {email.verified ? (
                       <span className="text-green-600 dark:text-green-400 flex items-center gap-1 ml-2">
                         <CheckCircle2 size={10} />
-                        {t("emailVerified")}
+                        {t("settingsProfilePg.emailVerified", "Verificado")}
                       </span>
                     ) : (
                       <span className="text-orange-600 dark:text-orange-400 flex items-center gap-1 ml-2">
                         <Clock size={10} />
-                        {t("emailPendingVerification")}
+                        {t("settingsProfilePg.emailPendingVerification", "Pendiente de verificación")}
                       </span>
                     )}
                   </p>
@@ -895,7 +760,7 @@ export default function ProfileSettingsPage() {
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder={t("emailAddPlaceholder")}
+                    placeholder={t("settingsProfilePg.emailAddPlaceholder", "correo@empresa.com")}
                     className="flex-1 px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
                   />
                   <select
@@ -903,21 +768,21 @@ export default function ProfileSettingsPage() {
                     onChange={(e) => setNewEmailLabel(e.target.value as any)}
                     className="px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
                   >
-                    <option value="work">{t("emailWork")}</option>
-                    <option value="personal">{t("emailPersonal")}</option>
-                    <option value="alt">{t("emailAlt")}</option>
+                    <option value="work">{t("settingsProfilePg.emailWork", "Trabajo")}</option>
+                    <option value="personal">{t("settingsProfilePg.emailPersonal", "Personal")}</option>
+                    <option value="alt">{t("settingsProfilePg.emailAlt", "Alternativo")}</option>
                   </select>
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button onClick={addEmail} className="rowi-btn-primary text-sm">
                     <Plus size={14} className="mr-1" />
-                    {t("emailAdd")}
+                    {t("settingsProfilePg.emailAdd", "Agregar correo")}
                   </button>
                   <button
                     onClick={() => setShowAddEmail(false)}
                     className="rowi-btn text-sm"
                   >
-                    {t("cancel")}
+                    {t("settingsProfilePg.cancel", "Cancelar")}
                   </button>
                 </div>
               </motion.div>
@@ -929,7 +794,7 @@ export default function ProfileSettingsPage() {
                 className="w-full p-3 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-center gap-2 rowi-muted hover:text-blue-600"
               >
                 <Plus size={18} />
-                {t("emailAdd")}
+                {t("settingsProfilePg.emailAdd", "Agregar correo")}
               </motion.button>
             )}
           </AnimatePresence>
@@ -948,8 +813,8 @@ export default function ProfileSettingsPage() {
             <Heart size={24} style={{ color: COLORS.pink }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("affinityTitle")}</h2>
-            <p className="text-sm rowi-muted">{t("affinityDesc")}</p>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.affinityTitle", "Datos para Affinity")}</h2>
+            <p className="text-sm rowi-muted">{t("settingsProfilePg.affinityDesc", "Estos datos nos ayudan a conectarte con personas afines en el Rowiverse")}</p>
           </div>
         </div>
 
@@ -958,13 +823,13 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <Briefcase size={14} style={{ color: COLORS.purple }} />
-              {t("profession")}
+              {t("settingsProfilePg.profession", "Profesión")}
             </label>
             <input
               type="text"
               value={affinity.profession}
               onChange={(e) => setAffinity((p) => ({ ...p, profession: e.target.value }))}
-              placeholder={t("professionPlaceholder")}
+              placeholder={t("settingsProfilePg.professionPlaceholder", "Ej: Ingeniero de Software, Diseñador UX...")}
               className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
             />
           </div>
@@ -973,13 +838,13 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <Zap size={14} style={{ color: COLORS.blue }} />
-              {t("industry")}
+              {t("settingsProfilePg.industry", "Industria")}
             </label>
             <input
               type="text"
               value={affinity.industry}
               onChange={(e) => setAffinity((p) => ({ ...p, industry: e.target.value }))}
-              placeholder={t("industryPlaceholder")}
+              placeholder={t("settingsProfilePg.industryPlaceholder", "Ej: Tecnología, Salud, Educación...")}
               className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
             />
           </div>
@@ -988,7 +853,7 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <Clock size={14} style={{ color: COLORS.orange }} />
-              {t("yearsExperience")}
+              {t("settingsProfilePg.yearsExperience", "Años de experiencia")}
             </label>
             <select
               value={affinity.yearsExperience}
@@ -1008,7 +873,7 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <GraduationCap size={14} style={{ color: COLORS.green }} />
-              {t("education")}
+              {t("settingsProfilePg.education", "Nivel educativo")}
             </label>
             <select
               value={affinity.education}
@@ -1016,8 +881,14 @@ export default function ProfileSettingsPage() {
               className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
             >
               <option value="">--</option>
-              {t("eduOptions").split(",").map((opt, i) => (
-                <option key={i} value={opt.trim()}>{opt.trim()}</option>
+              {[
+                { value: "Secundaria", label: t("settingsProfilePg.eduOptHighSchool", "Secundaria") },
+                { value: "Técnico", label: t("settingsProfilePg.eduOptTechnical", "Técnico") },
+                { value: "Universitario", label: t("settingsProfilePg.eduOptBachelor", "Universitario") },
+                { value: "Maestría", label: t("settingsProfilePg.eduOptMaster", "Maestría") },
+                { value: "Doctorado", label: t("settingsProfilePg.eduOptPhd", "Doctorado") },
+              ].map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -1026,7 +897,7 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <Users size={14} style={{ color: COLORS.purple }} />
-              {t("workStyle")}
+              {t("settingsProfilePg.workStyle", "Estilo de trabajo")}
             </label>
             <select
               value={affinity.workStyle}
@@ -1034,8 +905,13 @@ export default function ProfileSettingsPage() {
               className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
             >
               <option value="">--</option>
-              {t("workStyleOptions").split(",").map((opt, i) => (
-                <option key={i} value={opt.trim()}>{opt.trim()}</option>
+              {[
+                { value: "Remoto", label: t("settingsProfilePg.workStyleRemote", "Remoto") },
+                { value: "Híbrido", label: t("settingsProfilePg.workStyleHybrid", "Híbrido") },
+                { value: "Presencial", label: t("settingsProfilePg.workStyleOnsite", "Presencial") },
+                { value: "Flexible", label: t("settingsProfilePg.workStyleFlexible", "Flexible") },
+              ].map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -1044,7 +920,7 @@ export default function ProfileSettingsPage() {
           <div>
             <label className="text-sm font-medium flex items-center gap-2 mb-2">
               <Users size={14} style={{ color: COLORS.blue }} />
-              {t("teamSize")}
+              {t("settingsProfilePg.teamSize", "Tamaño de equipo preferido")}
             </label>
             <select
               value={affinity.teamSize}
@@ -1052,8 +928,13 @@ export default function ProfileSettingsPage() {
               className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
             >
               <option value="">--</option>
-              {t("teamSizeOptions").split(",").map((opt, i) => (
-                <option key={i} value={opt.trim()}>{opt.trim()}</option>
+              {[
+                { value: "Solo", label: t("settingsProfilePg.teamSizeSolo", "Solo") },
+                { value: "Pequeño (2-5)", label: t("settingsProfilePg.teamSizeSmall", "Pequeño (2-5)") },
+                { value: "Mediano (6-15)", label: t("settingsProfilePg.teamSizeMedium", "Mediano (6-15)") },
+                { value: "Grande (15+)", label: t("settingsProfilePg.teamSizeLarge", "Grande (15+)") },
+              ].map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -1063,12 +944,12 @@ export default function ProfileSettingsPage() {
         <div className="mt-4">
           <label className="text-sm font-medium flex items-center gap-2 mb-2">
             <Globe size={14} style={{ color: COLORS.purple }} />
-            {t("languages")}
+            {t("settingsProfilePg.languages", "Idiomas que hablas")}
           </label>
           <Chips
             value={affinity.languages}
             onChange={(v) => setAffinity((p) => ({ ...p, languages: v }))}
-            placeholder={t("languagesPlaceholder")}
+            placeholder={t("settingsProfilePg.languagesPlaceholder", "Español, Inglés, Portugués...")}
           />
         </div>
 
@@ -1076,23 +957,23 @@ export default function ProfileSettingsPage() {
         <div className="mt-4">
           <label className="text-sm font-medium flex items-center gap-2 mb-2">
             <Sparkles size={14} style={{ color: COLORS.pink }} />
-            {t("interests")}
+            {t("settingsProfilePg.interests", "Intereses profesionales")}
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
-            {SUGGESTED_INTERESTS.items.map((s, i) => (
+            {SUGGESTED_INTERESTS.map((s) => (
               <button
-                key={i}
+                key={s.key}
                 className="rowi-chip"
-                onClick={() => addSuggestion("interests", s[langEsEn], "affinity")}
+                onClick={() => addSuggestion("interests", t(s.key, s.es), "affinity")}
               >
-                {s[langEsEn]}
+                {t(s.key, s.es)}
               </button>
             ))}
           </div>
           <Chips
             value={affinity.interests}
             onChange={(v) => setAffinity((p) => ({ ...p, interests: v }))}
-            placeholder={t("interestsPlaceholder")}
+            placeholder={t("settingsProfilePg.interestsPlaceholder", "IA, Liderazgo, Innovación...")}
           />
         </div>
 
@@ -1100,23 +981,23 @@ export default function ProfileSettingsPage() {
         <div className="mt-4">
           <label className="text-sm font-medium flex items-center gap-2 mb-2">
             <Star size={14} style={{ color: COLORS.orange }} />
-            {t("goals")}
+            {t("settingsProfilePg.goals", "Metas actuales")}
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
-            {SUGGESTED_GOALS.items.map((s, i) => (
+            {SUGGESTED_GOALS.map((s) => (
               <button
-                key={i}
+                key={s.key}
                 className="rowi-chip"
-                onClick={() => addSuggestion("goals", s[langEsEn], "affinity")}
+                onClick={() => addSuggestion("goals", t(s.key, s.es), "affinity")}
               >
-                {s[langEsEn]}
+                {t(s.key, s.es)}
               </button>
             ))}
           </div>
           <Chips
             value={affinity.goals}
             onChange={(v) => setAffinity((p) => ({ ...p, goals: v }))}
-            placeholder={t("goalsPlaceholder")}
+            placeholder={t("settingsProfilePg.goalsPlaceholder", "Crecer profesionalmente, Emprender...")}
           />
         </div>
 
@@ -1124,12 +1005,12 @@ export default function ProfileSettingsPage() {
         <div className="mt-4">
           <label className="text-sm font-medium flex items-center gap-2 mb-2">
             <Heart size={14} style={{ color: COLORS.pink }} />
-            {t("lookingFor")}
+            {t("settingsProfilePg.lookingFor", "Busco conectar con personas que...")}
           </label>
           <Chips
             value={affinity.lookingFor}
             onChange={(v) => setAffinity((p) => ({ ...p, lookingFor: v }))}
-            placeholder={t("lookingForPlaceholder")}
+            placeholder={t("settingsProfilePg.lookingForPlaceholder", "Compartan mis valores, Estén en mi industria...")}
           />
         </div>
       </motion.section>
@@ -1146,13 +1027,13 @@ export default function ProfileSettingsPage() {
             <MapPin size={24} style={{ color: COLORS.green }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("locationTitle")}</h2>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.locationTitle", "Ubicación")}</h2>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("countryLabel")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.countryLabel", "País")}</label>
             <input
               type="text"
               value={location.country}
@@ -1161,7 +1042,7 @@ export default function ProfileSettingsPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("regionLabel")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.regionLabel", "Región/Estado")}</label>
             <input
               type="text"
               value={location.region}
@@ -1170,7 +1051,7 @@ export default function ProfileSettingsPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("cityLabel")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.cityLabel", "Ciudad")}</label>
             <input
               type="text"
               value={location.city}
@@ -1179,7 +1060,7 @@ export default function ProfileSettingsPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("timezoneLabel")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.timezoneLabel", "Zona horaria")}</label>
             <input
               type="text"
               value={location.timezone}
@@ -1203,30 +1084,35 @@ export default function ProfileSettingsPage() {
             <MessageSquare size={24} style={{ color: COLORS.purple }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("commTitle")}</h2>
-            <p className="text-sm rowi-muted">{t("commDesc")}</p>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.commTitle", "Preferencias de Comunicación")}</h2>
+            <p className="text-sm rowi-muted">{t("settingsProfilePg.commDesc", "Define cómo prefieres comunicarte y recibir información")}</p>
           </div>
         </div>
 
         <div className="space-y-4">
           {/* Canales */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("channels")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.channels", "Canales preferidos")}</label>
             <div className="flex flex-wrap gap-2">
-              {(["email", "whatsapp", "sms", "call"] as const).map((ch) => (
-                <label key={ch} className="rowi-chip inline-flex items-center gap-2 cursor-pointer">
+              {([
+                { id: "email", label: t("settingsProfilePg.channelEmail", "Email") },
+                { id: "whatsapp", label: t("settingsProfilePg.channelWhatsapp", "WhatsApp") },
+                { id: "sms", label: t("settingsProfilePg.channelSms", "SMS") },
+                { id: "call", label: t("settingsProfilePg.channelCall", "Llamada") },
+              ] as const).map((ch) => (
+                <label key={ch.id} className="rowi-chip inline-flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={prefs.channels[ch]}
+                    checked={prefs.channels[ch.id]}
                     onChange={(e) =>
                       setPrefs((p) => ({
                         ...p,
-                        channels: { ...p.channels, [ch]: e.target.checked },
+                        channels: { ...p.channels, [ch.id]: e.target.checked },
                       }))
                     }
                     className="rounded"
                   />
-                  <span>{t(`channel${ch.charAt(0).toUpperCase() + ch.slice(1)}`)}</span>
+                  <span>{ch.label}</span>
                 </label>
               ))}
             </div>
@@ -1235,20 +1121,20 @@ export default function ProfileSettingsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             {/* Tono */}
             <div>
-              <label className="text-sm font-medium mb-2 block">{t("tone")}</label>
+              <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.tone", "Tono preferido")}</label>
               <select
                 value={prefs.tone}
                 onChange={(e) => setPrefs((p) => ({ ...p, tone: e.target.value as any }))}
                 className="w-full px-3 py-2 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900"
               >
-                <option value="directo">{t("toneDirecto")}</option>
-                <option value="empatico">{t("toneEmpatico")}</option>
-                <option value="neutral">{t("toneNeutral")}</option>
+                <option value="directo">{t("settingsProfilePg.toneDirecto", "Directo")}</option>
+                <option value="empatico">{t("settingsProfilePg.toneEmpatico", "Empático")}</option>
+                <option value="neutral">{t("settingsProfilePg.toneNeutral", "Neutral")}</option>
               </select>
             </div>
             {/* Duración reunión */}
             <div>
-              <label className="text-sm font-medium mb-2 block">{t("meeting")}</label>
+              <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.meeting", "Duración de reunión ideal")}</label>
               <Select
                 value={prefs.meeting}
                 onChange={(v) => setPrefs((p) => ({ ...p, meeting: v as any }))}
@@ -1271,28 +1157,28 @@ export default function ProfileSettingsPage() {
             <Sparkles size={24} style={{ color: COLORS.pink }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("commStyleTitle")}</h2>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.commStyleTitle", "Estilos de Comunicación")}</h2>
           </div>
         </div>
 
         {commIsDraft && (
           <p className="text-xs text-[var(--rowi-muted)] bg-[var(--rowi-chip)] rounded-lg px-3 py-2 mb-3">
-            ✨ {t("commDraftHint")}
+            ✨ {t("settingsProfilePg.commDraftHint", "Esto es lo que entendimos de tu Rowi Test — edítalo libremente.")}
           </p>
         )}
 
         <div className="space-y-4">
           {/* Cómo me comunico */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("commStyleSelf")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.commStyleSelf", "Cómo suelo comunicarme")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {COMM_STYLES_ME.items.map((s, i) => (
+              {COMM_STYLES_ME.map((s) => (
                 <button
-                  key={i}
+                  key={s.key}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("commStyleSelf", s[langEsEn], "prefs")}
+                  onClick={() => addSuggestion("commStyleSelf", t(s.key, s.es), "prefs")}
                 >
-                  {s[langEsEn]}
+                  {t(s.key, s.es)}
                 </button>
               ))}
             </div>
@@ -1305,15 +1191,15 @@ export default function ProfileSettingsPage() {
 
           {/* Cómo prefiero que me comuniquen */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("commStyleExpect")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.commStyleExpect", "Cómo prefiero que se comuniquen conmigo")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {COMM_STYLES_TO_OTHERS.items.map((s, i) => (
+              {COMM_STYLES_TO_OTHERS.map((s) => (
                 <button
-                  key={i}
+                  key={s.key}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("commExpectations", s[langEsEn], "prefs")}
+                  onClick={() => addSuggestion("commExpectations", t(s.key, s.es), "prefs")}
                 >
-                  {s[langEsEn]}
+                  {t(s.key, s.es)}
                 </button>
               ))}
             </div>
@@ -1338,33 +1224,33 @@ export default function ProfileSettingsPage() {
             <User size={24} style={{ color: COLORS.blue }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("aboutTitle")}</h2>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.aboutTitle", "Acerca de Mí")}</h2>
           </div>
         </div>
 
         <div className="space-y-4">
           {/* Bio */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("bio")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.bio", "Bio")}</label>
             <TextArea
               value={prefs.bio}
               onChange={(v) => setPrefs((p) => ({ ...p, bio: v }))}
               rows={3}
-              placeholder={t("bioPlaceholder")}
+              placeholder={t("settingsProfilePg.bioPlaceholder", "Cuéntanos sobre ti...")}
             />
           </div>
 
           {/* Valores */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("values")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.values", "Valores")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {SUGGESTED_VALUES.items.map((s, i) => (
+              {SUGGESTED_VALUES.map((s) => (
                 <button
-                  key={i}
+                  key={s.key}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("values", s[langEsEn], "prefs")}
+                  onClick={() => addSuggestion("values", t(s.key, s.es), "prefs")}
                 >
-                  {s[langEsEn]}
+                  {t(s.key, s.es)}
                 </button>
               ))}
             </div>
@@ -1377,15 +1263,15 @@ export default function ProfileSettingsPage() {
 
           {/* Hobbies */}
           <div>
-            <label className="text-sm font-medium mb-2 block">{t("hobbies")}</label>
+            <label className="text-sm font-medium mb-2 block">{t("settingsProfilePg.hobbies", "Hobbies")}</label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {SUGGESTED_HOBBIES.items.map((s, i) => (
+              {SUGGESTED_HOBBIES.map((s) => (
                 <button
-                  key={i}
+                  key={s.key}
                   className="rowi-chip"
-                  onClick={() => addSuggestion("hobbies", s[langEsEn], "prefs")}
+                  onClick={() => addSuggestion("hobbies", t(s.key, s.es), "prefs")}
                 >
-                  {s[langEsEn]}
+                  {t(s.key, s.es)}
                 </button>
               ))}
             </div>
@@ -1410,14 +1296,14 @@ export default function ProfileSettingsPage() {
             <Eye size={24} style={{ color: COLORS.purple }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">{t("visibilityTitle")}</h2>
-            <p className="text-sm rowi-muted">{t("visibilityDesc")}</p>
+            <h2 className="text-lg font-semibold">{t("settingsProfilePg.visibilityTitle", "Privacidad y Visibilidad")}</h2>
+            <p className="text-sm rowi-muted">{t("settingsProfilePg.visibilityDesc", "Controla qué información es visible para otros en el Rowiverse")}</p>
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <div className="text-sm font-medium mb-2">{t("showBrain")}</div>
+            <div className="text-sm font-medium mb-2">{t("settingsProfilePg.showBrain", "Mostrar Brain Style")}</div>
             <Toggle
               checked={prefs.visibility.showBrain}
               onChange={(v) =>
@@ -1426,7 +1312,7 @@ export default function ProfileSettingsPage() {
             />
           </div>
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <div className="text-sm font-medium mb-2">{t("showTalents")}</div>
+            <div className="text-sm font-medium mb-2">{t("settingsProfilePg.showTalents", "Mostrar Talentos")}</div>
             <Toggle
               checked={prefs.visibility.showTalents}
               onChange={(v) =>
@@ -1435,7 +1321,7 @@ export default function ProfileSettingsPage() {
             />
           </div>
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <div className="text-sm font-medium mb-2">{t("showContact")}</div>
+            <div className="text-sm font-medium mb-2">{t("settingsProfilePg.showContact", "Mostrar Contacto")}</div>
             <Toggle
               checked={prefs.visibility.showContact}
               onChange={(v) =>
@@ -1448,9 +1334,9 @@ export default function ProfileSettingsPage() {
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
             <div>
-              <div className="text-sm font-medium">{t("allowAI")}</div>
+              <div className="text-sm font-medium">{t("settingsProfilePg.allowAI", "Permitir análisis de IA")}</div>
               <p className="text-xs rowi-muted">
-                {t("allowAIDesc")}
+                {t("settingsProfilePg.allowAIDesc", "Permite que Rowi analice tus datos para darte mejores recomendaciones")}
               </p>
             </div>
             <Toggle
@@ -1461,8 +1347,8 @@ export default function ProfileSettingsPage() {
 
           <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
             <div>
-              <div className="text-sm font-medium">{t("contributeRowiverse")}</div>
-              <p className="text-xs rowi-muted">{t("contributeDesc")}</p>
+              <div className="text-sm font-medium">{t("settingsProfilePg.contributeRowiverse", "Contribuir datos al Rowiverse")}</div>
+              <p className="text-xs rowi-muted">{t("settingsProfilePg.contributeDesc", "Tus datos anónimos ayudan a mejorar los benchmarks globales")}</p>
             </div>
             <Toggle
               checked={privacy.contributeToRowiverse}
@@ -1487,12 +1373,12 @@ export default function ProfileSettingsPage() {
           {saving ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-              {t("saving")}
+              {t("settingsProfilePg.saving", "Guardando...")}
             </>
           ) : (
             <>
               <CheckCircle2 size={20} />
-              {t("save")}
+              {t("settingsProfilePg.save", "Guardar Cambios")}
             </>
           )}
         </button>

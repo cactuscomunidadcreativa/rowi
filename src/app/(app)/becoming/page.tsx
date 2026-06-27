@@ -93,14 +93,14 @@ export default function BecomingPage() {
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950">
-        <p className="text-gray-500">{t("becoming.loading", "Reuniendo tu historia…")}</p>
+        <p className="text-gray-500">{t("becomingPg.loading", "Reuniendo tu historia…")}</p>
       </div>
     );
   }
   if (!isAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">{t("becoming.signIn", "Inicia sesión para ver tu evolución")}</p>
+        <p className="text-gray-500">{t("becomingPg.signIn", "Inicia sesión para ver tu evolución")}</p>
       </div>
     );
   }
@@ -124,13 +124,13 @@ export default function BecomingPage() {
           className="text-center"
         >
           <p className="text-xs uppercase tracking-wide text-violet-500 font-semibold mb-1">
-            {t("becoming.title", "Mi evolución")}
+            {t("becomingPg.title", "Mi evolución")}
           </p>
           <p className="text-[11px] text-gray-400 dark:text-gray-500 mb-2">
             🔒 {t("privacy.contextNote", "Privado: solo tú lo ves. Tu organización solo ve agregados anónimos (mínimo 5 personas).")}
           </p>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            {t("becoming.heroQuestion", "¿En quién te estás convirtiendo?")}
+            {t("becomingPg.heroQuestion", "¿En quién te estás convirtiendo?")}
           </h1>
 
           <div className="flex justify-center mb-3">
@@ -149,7 +149,7 @@ export default function BecomingPage() {
               {/* Progreso a la siguiente etapa — tu lugar en el viaje */}
               <div className="max-w-xs mx-auto mt-4">
                 <div className="flex justify-between text-[11px] text-gray-400 mb-1">
-                  <span>{t("becoming.progress.label", "Hacia tu siguiente etapa")}</span>
+                  <span>{t("becomingPg.progress.label", "Hacia tu siguiente etapa")}</span>
                   <span>{Math.round(av.progressToNext)}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden">
@@ -174,9 +174,9 @@ export default function BecomingPage() {
             className="grid grid-cols-3 gap-3"
           >
             {[
-              { icon: CalendarDays, n: av.daysActive, label: t("becoming.signals.days", "días contigo") },
-              { icon: Flame, n: c?.practice.daysWithEntry ?? 0, label: t("becoming.signals.active", "días con registro") },
-              { icon: Award, n: av.totalXP, label: t("becoming.signals.xp", "experiencia") },
+              { icon: CalendarDays, n: av.daysActive, label: t("becomingPg.signals.days", "días contigo") },
+              { icon: Flame, n: c?.practice.daysWithEntry ?? 0, label: t("becomingPg.signals.active", "días con registro") },
+              { icon: Award, n: av.totalXP, label: t("becomingPg.signals.xp", "experiencia") },
             ].map((m, i) => {
               const Icon = m.icon;
               return (
@@ -198,7 +198,7 @@ export default function BecomingPage() {
         <div className="pt-2">
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-violet-500" />
-            {t("becoming.contrastSection", "Tu contraste honesto")}
+            {t("becomingPg.contrastSection", "Tu contraste honesto")}
           </p>
 
           {/* Selector de ventana 30/60/90 */}
@@ -213,7 +213,7 @@ export default function BecomingPage() {
                     : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-zinc-700"
                 }`}
               >
-                {t(`becoming.window.${w}`, `${w} días`)}
+                {t(`becomingPg.window.${w}`, `${w} días`)}
               </button>
             ))}
           </div>
@@ -226,21 +226,21 @@ export default function BecomingPage() {
             className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-5"
           >
             <h2 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm">
-              {(t("becoming.contrast.title", "Hace {days} días vs hoy") as string).replace("{days}", String(days))}
+              {(t("becomingPg.contrast.title", "Hace {days} días vs hoy") as string).replace("{days}", String(days))}
             </h2>
 
             {isLoading ? (
-              <p className="text-sm text-gray-400">{t("becoming.loading", "Reuniendo tu historia…")}</p>
+              <p className="text-sm text-gray-400">{t("becomingPg.loading", "Reuniendo tu historia…")}</p>
             ) : c?.competencies ? (
               <div className="space-y-2.5">
                 {c.source === "mini_sei" && (
                   <p className="text-[11px] text-gray-400">
-                    {t("becoming.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")}
+                    {t("becomingPg.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")}
                   </p>
                 )}
                 <div className="flex items-center justify-end gap-6 text-[11px] text-gray-400 pr-1">
-                  <span>{t("becoming.contrast.then", "Antes")}</span>
-                  <span>{t("becoming.contrast.now", "Hoy")}</span>
+                  <span>{t("becomingPg.contrast.then", "Antes")}</span>
+                  <span>{t("becomingPg.contrast.now", "Hoy")}</span>
                 </div>
                 {c.competencies.map((row) => (
                   <div key={row.sei} className="flex items-center gap-3">
@@ -270,11 +270,11 @@ export default function BecomingPage() {
               <div className="space-y-2.5">
                 <p className="text-[11px] text-gray-400">
                   {c.source === "mini_sei"
-                    ? t("becoming.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")
-                    : t("becoming.contrast.seiSource", "Basado en tu SEI de Six Seconds")}
+                    ? t("becomingPg.contrast.miniSource", "Basado en tu Rowi Test (lectura indicativa)")
+                    : t("becomingPg.contrast.seiSource", "Basado en tu SEI de Six Seconds")}
                 </p>
                 <div className="flex items-center justify-end text-[11px] text-gray-400 pr-1">
-                  <span>{t("becoming.contrast.now", "Hoy")}</span>
+                  <span>{t("becomingPg.contrast.now", "Hoy")}</span>
                 </div>
                 {c.current.map((row) => (
                   <div key={row.sei} className="flex items-center gap-3">
@@ -289,7 +289,7 @@ export default function BecomingPage() {
                 ))}
                 <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
                   {t(
-                    "becoming.contrast.currentNote",
+                    "becomingPg.contrast.currentNote",
                     "Esta es tu lectura más reciente. Cuando tengas una nueva (tu Rowi Test mensual o un SEI), verás aquí el contraste contigo mismo."
                   )}
                 </p>
@@ -297,7 +297,7 @@ export default function BecomingPage() {
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t(
-                  "becoming.contrast.none",
+                  "becomingPg.contrast.none",
                   "Aún no hay suficiente historia para comparar. Vuelve en unos días: tu contraste se construye con tu práctica."
                 )}
               </p>
@@ -308,7 +308,7 @@ export default function BecomingPage() {
           <p className="text-xs text-gray-400 flex items-start gap-1.5 px-1 mt-3">
             <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             {t(
-              "becoming.noScore",
+              "becomingPg.noScore",
               "Aquí no hay un puntaje. La evolución no se mide con un número — se ve en el contraste honesto contigo mismo."
             )}
           </p>
@@ -319,7 +319,7 @@ export default function BecomingPage() {
             className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 text-white py-3.5 font-semibold shadow-lg hover:opacity-95 transition"
           >
             <Sparkles className="w-4 h-4" />
-            {t("becoming.cta", "Sigue creciendo hoy")}
+            {t("becomingPg.cta", "Sigue creciendo hoy")}
           </a>
         </div>
       </div>
@@ -410,11 +410,11 @@ function MemoryTimeline() {
       >
         <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
           <BookOpen className="w-4 h-4 text-violet-500" />
-          {t("becoming.timeline.title", "Tu memoria viva")}
+          {t("becomingPg.timeline.title", "Tu memoria viva")}
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {t(
-            "becoming.timeline.empty",
+            "becomingPg.timeline.empty",
             "Tus reflexiones, prácticas y logros aparecerán aquí a medida que vivas tu día a día en Rowi."
           )}
         </p>
@@ -453,7 +453,7 @@ function MemoryTimeline() {
     >
       <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-1.5">
         <BookOpen className="w-4 h-4 text-violet-500" />
-        {t("becoming.timeline.title", "Tu memoria viva")}
+        {t("becomingPg.timeline.title", "Tu memoria viva")}
       </p>
 
       <div className="space-y-4">
@@ -480,7 +480,7 @@ function MemoryTimeline() {
               <div className="space-y-1.5">
                 {entry.morningMood && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t("becoming.timeline.mood", "Llegaste sintiendo")}{" "}
+                    {t("becomingPg.timeline.mood", "Llegaste sintiendo")}{" "}
                     <span className="font-medium text-gray-700 dark:text-gray-200">{entry.morningMood}</span>
                   </p>
                 )}
@@ -523,8 +523,8 @@ function MemoryTimeline() {
           className="mt-4 w-full rounded-xl border border-gray-200 dark:border-zinc-700 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:border-violet-400 hover:text-violet-600 transition disabled:opacity-50"
         >
           {loadingMore
-            ? t("becoming.loading", "Reuniendo tu historia…")
-            : t("becoming.timeline.more", "Ver más días")}
+            ? t("becomingPg.loading", "Reuniendo tu historia…")
+            : t("becomingPg.timeline.more", "Ver más días")}
         </button>
       )}
     </motion.section>

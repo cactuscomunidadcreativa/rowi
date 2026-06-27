@@ -23,307 +23,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-/* =========================================================
-   🌍 Traducciones principales
-========================================================= */
-const translations = {
-  es: {
-    title: "EQ Coach",
-    subtitle: "Tu guía en inteligencia emocional",
-    modelTitle: "El Modelo Six Seconds",
-    modelDesc: "La inteligencia emocional se desarrolla a través de 3 propósitos fundamentales",
-
-    know: {
-      title: "Conocerte",
-      desc: "Aumenta tu autoconciencia emocional",
-      skills: ["Alfabetización Emocional", "Reconocer Patrones"],
-    },
-    choose: {
-      title: "Elegirte",
-      desc: "Toma decisiones intencionales",
-      skills: ["Pensamiento Consecuente", "Navegar Emociones", "Motivación Intrínseca"],
-    },
-    give: {
-      title: "Entregarte",
-      desc: "Conecta con un propósito mayor",
-      skills: ["Ejercer Optimismo", "Aumentar Empatía", "Metas Nobles"],
-    },
-
-    // Secciones
-    personalInsights: "Insights personalizados",
-    basedOnProfile: "Basado en tu perfil SEI",
-    strengths: "Tus fortalezas",
-    opportunities: "Áreas de oportunidad",
-    dailyPractice: "Práctica del día",
-
-    // Actions
-    learnMore: "Aprender más",
-    takeAssessment: "Tomar SEI",
-    exploreCompetencies: "Ver competencias",
-    askRowi: "Pregunta a Rowi",
-
-    // Chat
-    askPlaceholder: "Pregunta sobre inteligencia emocional...",
-    askButton: "Preguntar",
-    analyzing: "Analizando...",
-
-    // Estados
-    noSei: "Completa tu evaluación SEI para recibir insights personalizados",
-    takeSeiNow: "Tomar evaluación SEI",
-  },
-  en: {
-    title: "EQ Coach",
-    subtitle: "Your emotional intelligence guide",
-    modelTitle: "The Six Seconds Model",
-    modelDesc: "Emotional intelligence is developed through 3 fundamental pursuits",
-
-    know: {
-      title: "Know Yourself",
-      desc: "Increase your emotional self-awareness",
-      skills: ["Emotional Literacy", "Recognize Patterns"],
-    },
-    choose: {
-      title: "Choose Yourself",
-      desc: "Make intentional decisions",
-      skills: ["Consequential Thinking", "Navigate Emotions", "Intrinsic Motivation"],
-    },
-    give: {
-      title: "Give Yourself",
-      desc: "Connect with a greater purpose",
-      skills: ["Exercise Optimism", "Increase Empathy", "Noble Goals"],
-    },
-
-    // Sections
-    personalInsights: "Personal insights",
-    basedOnProfile: "Based on your SEI profile",
-    strengths: "Your strengths",
-    opportunities: "Growth areas",
-    dailyPractice: "Daily practice",
-
-    // Actions
-    learnMore: "Learn more",
-    takeAssessment: "Take SEI",
-    exploreCompetencies: "View competencies",
-    askRowi: "Ask Rowi",
-
-    // Chat
-    askPlaceholder: "Ask about emotional intelligence...",
-    askButton: "Ask",
-    analyzing: "Analyzing...",
-
-    // States
-    noSei: "Complete your SEI assessment to receive personalized insights",
-    takeSeiNow: "Take SEI assessment",
-  },
-  pt: {
-    title: "EQ Coach",
-    subtitle: "Seu guia em inteligência emocional",
-    modelTitle: "O Modelo Six Seconds",
-    modelDesc: "A inteligência emocional é desenvolvida através de 3 propósitos fundamentais",
-    know: {
-      title: "Conhecer-se",
-      desc: "Aumente sua autoconsciência emocional",
-      skills: ["Alfabetização Emocional", "Reconhecer Padrões"],
-    },
-    choose: {
-      title: "Escolher-se",
-      desc: "Tome decisões intencionais",
-      skills: ["Pensamento Consequente", "Navegar Emoções", "Motivação Intrínseca"],
-    },
-    give: {
-      title: "Entregar-se",
-      desc: "Conecte-se com um propósito maior",
-      skills: ["Exercer Otimismo", "Aumentar Empatia", "Metas Nobres"],
-    },
-    personalInsights: "Insights personalizados",
-    basedOnProfile: "Baseado no seu perfil SEI",
-    strengths: "Seus pontos fortes",
-    opportunities: "Áreas de oportunidade",
-    dailyPractice: "Prática do dia",
-    learnMore: "Saber mais",
-    takeAssessment: "Fazer SEI",
-    exploreCompetencies: "Ver competências",
-    askRowi: "Pergunte ao Rowi",
-    askPlaceholder: "Pergunte sobre inteligência emocional...",
-    askButton: "Perguntar",
-    analyzing: "Analisando...",
-    noSei: "Complete sua avaliação SEI para receber insights personalizados",
-    takeSeiNow: "Fazer avaliação SEI",
-  },
-  it: {
-    title: "EQ Coach",
-    subtitle: "La tua guida di intelligenza emotiva",
-    modelTitle: "Il Modello Six Seconds",
-    modelDesc: "L'intelligenza emotiva si sviluppa attraverso 3 propositi fondamentali",
-    know: {
-      title: "Conoscerti",
-      desc: "Aumenta la tua consapevolezza emotiva",
-      skills: ["Alfabetizzazione Emotiva", "Riconoscere Pattern"],
-    },
-    choose: {
-      title: "Sceglierti",
-      desc: "Prendi decisioni intenzionali",
-      skills: ["Pensiero Consequenziale", "Navigare le Emozioni", "Motivazione Intrinseca"],
-    },
-    give: {
-      title: "Donarti",
-      desc: "Connettiti con un proposito più grande",
-      skills: ["Esercitare Ottimismo", "Aumentare Empatia", "Obiettivi Nobili"],
-    },
-    personalInsights: "Insight personalizzati",
-    basedOnProfile: "Basato sul tuo profilo SEI",
-    strengths: "I tuoi punti di forza",
-    opportunities: "Aree di crescita",
-    dailyPractice: "Pratica del giorno",
-    learnMore: "Scopri di più",
-    takeAssessment: "Fai il SEI",
-    exploreCompetencies: "Vedi competenze",
-    askRowi: "Chiedi a Rowi",
-    askPlaceholder: "Chiedi sull'intelligenza emotiva...",
-    askButton: "Chiedi",
-    analyzing: "Analisi in corso...",
-    noSei: "Completa la tua valutazione SEI per ricevere insight personalizzati",
-    takeSeiNow: "Fai la valutazione SEI",
-  },
-};
-
-/* =========================================================
-   📊 Insights pre-programados por competencia
-   Keys: EL, RP, ACT, NE, IM, OP, EMP, NG
-========================================================= */
-const COMPETENCY_INSIGHTS = {
-  es: {
-    // Fortalezas (score >= 115 = Diestro)
-    strengths: {
-      EL: "Tu alfabetización emocional es excepcional. Usas un vocabulario rico para describir tus emociones.",
-      RP: "Reconoces patrones emocionales con claridad. Esto te ayuda a anticipar tus reacciones.",
-      ACT: "Tu pensamiento consecuente es sólido. Evalúas bien las consecuencias de tus decisiones.",
-      NE: "Navegas tus emociones con habilidad. Sabes regularlas sin reprimirlas.",
-      IM: "Tu motivación intrínseca es fuerte. Te mueves por valores, no solo por recompensas externas.",
-      OP: "Ejerces el optimismo de forma realista. Ves posibilidades donde otros ven obstáculos.",
-      EMP: "Tu empatía es notable. Conectas genuinamente con las emociones de los demás.",
-      NG: "Persigues metas nobles que trascienden lo personal. Esto da propósito a tus acciones.",
-    },
-    // Oportunidades (score < 100 = Emergente o Desafío)
-    opportunities: {
-      EL: "Amplía tu vocabulario emocional. Intenta nombrar 3 emociones diferentes cada día.",
-      RP: "Observa qué situaciones disparan tus reacciones automáticas. Lleva un diario breve.",
-      ACT: "Antes de decidir, pregúntate: ¿Cómo me sentiré mañana con esta decisión?",
-      NE: "Practica la técnica 6-segundos: respira antes de reaccionar emocionalmente.",
-      IM: "Conecta tus tareas diarias con tus valores. ¿Por qué importa lo que haces?",
-      OP: "Busca 3 cosas positivas al final de cada día, por pequeñas que sean.",
-      EMP: "Practica la escucha activa: repite lo que el otro dice antes de responder.",
-      NG: "Define un propósito que beneficie a otros, no solo a ti. ¿Qué legado quieres dejar?",
-    },
-    // Prácticas diarias
-    practices: {
-      EL: "Nombra 3 emociones que sientas hoy con precisión.",
-      RP: "Identifica un patrón emocional que se repitió esta semana.",
-      ACT: "Antes de tu próxima decisión, visualiza 3 posibles consecuencias.",
-      NE: "Cuando sientas tensión, haz 6 respiraciones lentas.",
-      IM: "Conecta una tarea de hoy con un valor importante para ti.",
-      OP: "Escribe 3 cosas por las que estás agradecido hoy.",
-      EMP: "En tu próxima conversación, enfócate solo en escuchar sin juzgar.",
-      NG: "Haz algo pequeño hoy que beneficie a alguien más.",
-    },
-  },
-  en: {
-    strengths: {
-      EL: "Your emotional literacy is exceptional. You use a rich vocabulary to describe your emotions.",
-      RP: "You recognize emotional patterns clearly. This helps you anticipate your reactions.",
-      ACT: "Your consequential thinking is solid. You evaluate the consequences of your decisions well.",
-      NE: "You navigate your emotions skillfully. You know how to regulate them without suppressing.",
-      IM: "Your intrinsic motivation is strong. You're driven by values, not just external rewards.",
-      OP: "You exercise optimism realistically. You see possibilities where others see obstacles.",
-      EMP: "Your empathy is remarkable. You genuinely connect with others' emotions.",
-      NG: "You pursue noble goals that transcend the personal. This gives purpose to your actions.",
-    },
-    opportunities: {
-      EL: "Expand your emotional vocabulary. Try naming 3 different emotions each day.",
-      RP: "Notice what situations trigger your automatic reactions. Keep a brief journal.",
-      ACT: "Before deciding, ask yourself: How will I feel tomorrow about this decision?",
-      NE: "Practice the 6-seconds technique: breathe before reacting emotionally.",
-      IM: "Connect your daily tasks with your values. Why does what you do matter?",
-      OP: "Look for 3 positive things at the end of each day, no matter how small.",
-      EMP: "Practice active listening: repeat what the other person says before responding.",
-      NG: "Define a purpose that benefits others, not just yourself. What legacy do you want to leave?",
-    },
-    practices: {
-      EL: "Name 3 emotions you feel today with precision.",
-      RP: "Identify one emotional pattern that repeated this week.",
-      ACT: "Before your next decision, visualize 3 possible consequences.",
-      NE: "When you feel tension, take 6 slow breaths.",
-      IM: "Connect a task today with an important value to you.",
-      OP: "Write 3 things you're grateful for today.",
-      EMP: "In your next conversation, focus only on listening without judging.",
-      NG: "Do something small today that benefits someone else.",
-    },
-  },
-  pt: {
-    strengths: {
-      EL: "Sua alfabetização emocional é excepcional. Você usa um vocabulário rico para descrever suas emoções.",
-      RP: "Você reconhece padrões emocionais com clareza. Isso ajuda a antecipar suas reações.",
-      ACT: "Seu pensamento consequente é sólido. Você avalia bem as consequências de suas decisões.",
-      NE: "Você navega suas emoções com habilidade. Sabe regulá-las sem reprimi-las.",
-      IM: "Sua motivação intrínseca é forte. Você se move por valores, não apenas por recompensas externas.",
-      OP: "Você exerce o otimismo de forma realista. Vê possibilidades onde outros veem obstáculos.",
-      EMP: "Sua empatia é notável. Você conecta genuinamente com as emoções dos outros.",
-      NG: "Você persegue metas nobres que transcendem o pessoal. Isso dá propósito às suas ações.",
-    },
-    opportunities: {
-      EL: "Amplie seu vocabulário emocional. Tente nomear 3 emoções diferentes a cada dia.",
-      RP: "Observe quais situações disparam suas reações automáticas. Mantenha um diário breve.",
-      ACT: "Antes de decidir, pergunte-se: Como me sentirei amanhã com esta decisão?",
-      NE: "Pratique a técnica 6-segundos: respire antes de reagir emocionalmente.",
-      IM: "Conecte suas tarefas diárias com seus valores. Por que importa o que você faz?",
-      OP: "Procure 3 coisas positivas no final de cada dia, por menores que sejam.",
-      EMP: "Pratique a escuta ativa: repita o que o outro diz antes de responder.",
-      NG: "Defina um propósito que beneficie outros, não apenas você. Que legado quer deixar?",
-    },
-    practices: {
-      EL: "Nomeie com precisão 3 emoções que sente hoje.",
-      RP: "Identifique um padrão emocional que se repetiu esta semana.",
-      ACT: "Antes de sua próxima decisão, visualize 3 possíveis consequências.",
-      NE: "Quando sentir tensão, faça 6 respirações lentas.",
-      IM: "Conecte uma tarefa de hoje com um valor importante para você.",
-      OP: "Escreva 3 coisas pelas quais está grato hoje.",
-      EMP: "Em sua próxima conversa, concentre-se apenas em ouvir sem julgar.",
-      NG: "Faça algo pequeno hoje que beneficie outra pessoa.",
-    },
-  },
-  it: {
-    strengths: {
-      EL: "La tua alfabetizzazione emotiva è eccezionale. Usi un vocabolario ricco per descrivere le tue emozioni.",
-      RP: "Riconosci i pattern emotivi con chiarezza. Questo ti aiuta ad anticipare le tue reazioni.",
-      ACT: "Il tuo pensiero consequenziale è solido. Valuti bene le conseguenze delle tue decisioni.",
-      NE: "Navighi le tue emozioni con abilità. Sai regolarle senza reprimerle.",
-      IM: "La tua motivazione intrinseca è forte. Ti muovi per valori, non solo per ricompense esterne.",
-      OP: "Eserciti l'ottimismo in modo realistico. Vedi possibilità dove altri vedono ostacoli.",
-      EMP: "La tua empatia è notevole. Ti connetti genuinamente con le emozioni degli altri.",
-      NG: "Persegui obiettivi nobili che trascendono il personale. Questo dà uno scopo alle tue azioni.",
-    },
-    opportunities: {
-      EL: "Amplia il tuo vocabolario emotivo. Prova a nominare 3 emozioni diverse ogni giorno.",
-      RP: "Osserva quali situazioni scatenano le tue reazioni automatiche. Tieni un diario breve.",
-      ACT: "Prima di decidere, chiediti: Come mi sentirò domani con questa decisione?",
-      NE: "Pratica la tecnica dei 6 secondi: respira prima di reagire emotivamente.",
-      IM: "Collega le tue attività quotidiane ai tuoi valori. Perché conta ciò che fai?",
-      OP: "Cerca 3 cose positive alla fine di ogni giornata, per quanto piccole.",
-      EMP: "Pratica l'ascolto attivo: ripeti ciò che l'altro dice prima di rispondere.",
-      NG: "Definisci un proposito che vada a beneficio degli altri, non solo di te. Che eredità vuoi lasciare?",
-    },
-    practices: {
-      EL: "Nomina con precisione 3 emozioni che senti oggi.",
-      RP: "Identifica un pattern emotivo che si è ripetuto questa settimana.",
-      ACT: "Prima della tua prossima decisione, visualizza 3 possibili conseguenze.",
-      NE: "Quando senti tensione, fai 6 respiri lenti.",
-      IM: "Collega un'attività di oggi a un valore importante per te.",
-      OP: "Scrivi 3 cose per cui sei grato oggi.",
-      EMP: "Nella tua prossima conversazione, concentrati solo sull'ascoltare senza giudicare.",
-      NG: "Fai qualcosa di piccolo oggi che benefici qualcun altro.",
-    },
-  },
-};
+type TFn = (key: string, fallback?: string) => string;
 
 /* =========================================================
    🎯 Función para generar insights basados en el perfil
@@ -333,9 +33,53 @@ const COMPETENCY_INSIGHTS = {
    - Funcional: 100-114
    - Emergente: 85-99
    - Desafío: < 85
+   Las competencias EL, RP, ACT, NE, IM, OP, EMP, NG resuelven su
+   texto vía el sistema central t() bajo la familia "coachPanel.insight*".
 ========================================================= */
-function generateInsights(profile: any, lang: "es" | "en") {
-  const insights = COMPETENCY_INSIGHTS[lang];
+const INSIGHT_FALLBACKS = {
+  strengths: {
+    EL: "Tu alfabetización emocional es excepcional. Usas un vocabulario rico para describir tus emociones.",
+    RP: "Reconoces patrones emocionales con claridad. Esto te ayuda a anticipar tus reacciones.",
+    ACT: "Tu pensamiento consecuente es sólido. Evalúas bien las consecuencias de tus decisiones.",
+    NE: "Navegas tus emociones con habilidad. Sabes regularlas sin reprimirlas.",
+    IM: "Tu motivación intrínseca es fuerte. Te mueves por valores, no solo por recompensas externas.",
+    OP: "Ejerces el optimismo de forma realista. Ves posibilidades donde otros ven obstáculos.",
+    EMP: "Tu empatía es notable. Conectas genuinamente con las emociones de los demás.",
+    NG: "Persigues metas nobles que trascienden lo personal. Esto da propósito a tus acciones.",
+  },
+  opportunities: {
+    EL: "Amplía tu vocabulario emocional. Intenta nombrar 3 emociones diferentes cada día.",
+    RP: "Observa qué situaciones disparan tus reacciones automáticas. Lleva un diario breve.",
+    ACT: "Antes de decidir, pregúntate: ¿Cómo me sentiré mañana con esta decisión?",
+    NE: "Practica la técnica 6-segundos: respira antes de reaccionar emocionalmente.",
+    IM: "Conecta tus tareas diarias con tus valores. ¿Por qué importa lo que haces?",
+    OP: "Busca 3 cosas positivas al final de cada día, por pequeñas que sean.",
+    EMP: "Practica la escucha activa: repite lo que el otro dice antes de responder.",
+    NG: "Define un propósito que beneficie a otros, no solo a ti. ¿Qué legado quieres dejar?",
+  },
+  practices: {
+    EL: "Nombra 3 emociones que sientas hoy con precisión.",
+    RP: "Identifica un patrón emocional que se repitió esta semana.",
+    ACT: "Antes de tu próxima decisión, visualiza 3 posibles consecuencias.",
+    NE: "Cuando sientas tensión, haz 6 respiraciones lentas.",
+    IM: "Conecta una tarea de hoy con un valor importante para ti.",
+    OP: "Escribe 3 cosas por las que estás agradecido hoy.",
+    EMP: "En tu próxima conversación, enfócate solo en escuchar sin juzgar.",
+    NG: "Haz algo pequeño hoy que beneficie a alguien más.",
+  },
+} as const;
+
+type InsightCategory = keyof typeof INSIGHT_FALLBACKS;
+type CompetencyKey = keyof (typeof INSIGHT_FALLBACKS)["strengths"];
+
+function insightText(t: TFn, category: InsightCategory, key: string): string | undefined {
+  const fallbacks = INSIGHT_FALLBACKS[category] as Record<string, string>;
+  const fallback = fallbacks[key];
+  if (!fallback) return undefined;
+  return t(`coachPanel.insight.${category}.${key}`, fallback);
+}
+
+function generateInsights(profile: any, t: TFn) {
   const competencias = profile?.eq?.competencias || {};
 
   const strengths: { key: string; text: string; score: number }[] = [];
@@ -348,27 +92,20 @@ function generateInsights(profile: any, lang: "es" | "en") {
     if (typeof score !== "number" || score === 0) return;
 
     // Fortalezas: Diestro o Experto (>= 115)
-    if (score >= 115 && insights.strengths[key as keyof typeof insights.strengths]) {
-      strengths.push({
-        key,
-        text: insights.strengths[key as keyof typeof insights.strengths],
-        score,
-      });
+    if (score >= 115) {
+      const text = insightText(t, "strengths", key);
+      if (text) strengths.push({ key, text, score });
     }
 
     // Oportunidades: Emergente o Desafío (< 100)
-    if (score < 100 && insights.opportunities[key as keyof typeof insights.opportunities]) {
-      opportunities.push({
-        key,
-        text: insights.opportunities[key as keyof typeof insights.opportunities],
-        score,
-      });
+    if (score < 100) {
+      const text = insightText(t, "opportunities", key);
+      if (text) opportunities.push({ key, text, score });
     }
 
     // Agregar práctica para todas las competencias (siempre hay algo que practicar)
-    if (insights.practices[key as keyof typeof insights.practices]) {
-      practices.push(insights.practices[key as keyof typeof insights.practices]);
-    }
+    const practice = insightText(t, "practices", key);
+    if (practice) practices.push(practice);
   });
 
   // Ordenar por score
@@ -382,12 +119,9 @@ function generateInsights(profile: any, lang: "es" | "en") {
       .sort((a, b) => (b[1] as number) - (a[1] as number));
 
     sorted.slice(0, 2).forEach(([key, value]) => {
-      if (insights.strengths[key as keyof typeof insights.strengths]) {
-        strengths.push({
-          key,
-          text: insights.strengths[key as keyof typeof insights.strengths],
-          score: value as number,
-        });
+      const text = insightText(t, "strengths", key);
+      if (text) {
+        strengths.push({ key, text, score: value as number });
       }
     });
   }
@@ -405,6 +139,41 @@ const PURSUIT_COLORS = {
   give: { bg: "from-green-500 to-emerald-500", icon: Target, color: "#43A047" },
 };
 
+const PURSUITS = {
+  know: {
+    titleKey: "coachPanel.know.title",
+    titleFallback: "Conocerte",
+    descKey: "coachPanel.know.desc",
+    descFallback: "Aumenta tu autoconciencia emocional",
+    skills: [
+      { key: "coachPanel.know.skill1", fallback: "Alfabetización Emocional" },
+      { key: "coachPanel.know.skill2", fallback: "Reconocer Patrones" },
+    ],
+  },
+  choose: {
+    titleKey: "coachPanel.choose.title",
+    titleFallback: "Elegirte",
+    descKey: "coachPanel.choose.desc",
+    descFallback: "Toma decisiones intencionales",
+    skills: [
+      { key: "coachPanel.choose.skill1", fallback: "Pensamiento Consecuente" },
+      { key: "coachPanel.choose.skill2", fallback: "Navegar Emociones" },
+      { key: "coachPanel.choose.skill3", fallback: "Motivación Intrínseca" },
+    ],
+  },
+  give: {
+    titleKey: "coachPanel.give.title",
+    titleFallback: "Entregarte",
+    descKey: "coachPanel.give.desc",
+    descFallback: "Conecta con un propósito mayor",
+    skills: [
+      { key: "coachPanel.give.skill1", fallback: "Ejercer Optimismo" },
+      { key: "coachPanel.give.skill2", fallback: "Aumentar Empatía" },
+      { key: "coachPanel.give.skill3", fallback: "Metas Nobles" },
+    ],
+  },
+} as const;
+
 type Props = {
   profile?: any;
   compact?: boolean;
@@ -412,9 +181,7 @@ type Props = {
 };
 
 export default function CoachPanel({ profile, compact = false, insights: passedInsights }: Props) {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
-  const langKey = (lang !== "es" ? "en" : "es") as "es" | "en";
+  const { lang, t } = useI18n();
 
   const [question, setQuestion] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -423,8 +190,8 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
   // Generar insights basados en el perfil (sin IA)
   const insights = useMemo(() => {
     if (!profile?.eq?.competencias) return null;
-    return generateInsights(profile, langKey);
-  }, [profile, langKey]);
+    return generateInsights(profile, t);
+  }, [profile, t]);
 
   const hasSeiData = profile?.eq?.total && profile.eq.total > 0;
 
@@ -446,9 +213,12 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
       });
 
       const data = await r.json();
-      setResponse(data.text || (lang !== "es" ? "Could not get a response." : "No pude obtener una respuesta."));
+      setResponse(
+        data.text ||
+          t("coachPanel.noResponse", "No pude obtener una respuesta.")
+      );
     } catch {
-      setResponse(lang !== "es" ? "Error processing query." : "Error al procesar la consulta.");
+      setResponse(t("coachPanel.queryError", "Error al procesar la consulta."));
     }
 
     setThinking(false);
@@ -479,14 +249,21 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             <Compass className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{t.modelTitle}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t.modelDesc}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {t("coachPanel.modelTitle", "El Modelo Six Seconds")}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t(
+                "coachPanel.modelDesc",
+                "La inteligencia emocional se desarrolla a través de 3 propósitos fundamentales"
+              )}
+            </p>
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mt-6">
           {(["know", "choose", "give"] as const).map((key, index) => {
-            const pursuit = t[key];
+            const pursuit = PURSUITS[key];
             const { bg, icon: Icon, color } = PURSUIT_COLORS[key];
 
             return (
@@ -500,13 +277,17 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${bg} flex items-center justify-center mb-3`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{pursuit.title}</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{pursuit.desc}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  {t(pursuit.titleKey, pursuit.titleFallback)}
+                </h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                  {t(pursuit.descKey, pursuit.descFallback)}
+                </p>
                 <ul className="space-y-1">
                   {pursuit.skills.map((skill, i) => (
                     <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-                      {skill}
+                      {t(skill.key, skill.fallback)}
                     </li>
                   ))}
                 </ul>
@@ -524,7 +305,9 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800/50 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <h3 className="font-semibold text-green-800 dark:text-green-300">{t.strengths}</h3>
+                <h3 className="font-semibold text-green-800 dark:text-green-300">
+                  {t("coachPanel.strengths", "Tus fortalezas")}
+                </h3>
               </div>
               <ul className="space-y-3">
                 {insights.strengths.map((item, i) => (
@@ -548,7 +331,9 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/50 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingDown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h3 className="font-semibold text-amber-800 dark:text-amber-300">{t.opportunities}</h3>
+                <h3 className="font-semibold text-amber-800 dark:text-amber-300">
+                  {t("coachPanel.opportunities", "Áreas de oportunidad")}
+                </h3>
               </div>
               <ul className="space-y-3">
                 {insights.opportunities.map((item, i) => (
@@ -572,7 +357,9 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             <div className="bg-gradient-to-r from-[var(--rowi-g1)]/10 to-[var(--rowi-g2)]/10 rounded-2xl border border-[var(--rowi-g2)]/20 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-[var(--rowi-g2)]" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">{t.dailyPractice}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  {t("coachPanel.dailyPractice", "Práctica del día")}
+                </h3>
               </div>
               <ul className="space-y-3">
                 {insights.practices.map((practice, i) => (
@@ -595,7 +382,12 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
         /* No tiene SEI */
         <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl border border-gray-200 dark:border-zinc-700 p-6 text-center">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{t.noSei}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {t(
+              "coachPanel.noSei",
+              "Completa tu evaluación SEI para recibir insights personalizados"
+            )}
+          </p>
           <button
             type="button"
             onClick={() => {
@@ -605,7 +397,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             }}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
           >
-            {t.takeSeiNow}
+            {t("coachPanel.takeSeiNow", "Tomar evaluación SEI")}
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -619,7 +411,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
         >
           <BookOpen className="w-5 h-5 text-blue-500" />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[var(--rowi-g2)]">
-            {t.learnMore}
+            {t("coachPanel.learnMore", "Aprender más")}
           </span>
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
         </Link>
@@ -630,7 +422,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
         >
           <Target className="w-5 h-5 text-orange-500" />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[var(--rowi-g2)]">
-            {t.takeAssessment}
+            {t("coachPanel.takeAssessment", "Tomar SEI")}
           </span>
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
         </Link>
@@ -641,7 +433,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
         >
           <Brain className="w-5 h-5 text-purple-500" />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[var(--rowi-g2)]">
-            {t.exploreCompetencies}
+            {t("coachPanel.exploreCompetencies", "Ver competencias")}
           </span>
           <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-[var(--rowi-g2)]" />
         </Link>
@@ -658,14 +450,19 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             className="object-contain"
           />
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{t.askRowi}</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {t("coachPanel.askRowi", "Pregunta a Rowi")}
+            </h3>
           </div>
         </div>
 
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder={t.askPlaceholder}
+            placeholder={t(
+              "coachPanel.askPlaceholder",
+              "Pregunta sobre inteligencia emocional..."
+            )}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && ask(question)}
@@ -678,7 +475,7 @@ export default function CoachPanel({ profile, compact = false, insights: passedI
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--rowi-g1)] to-[var(--rowi-g2)] text-white font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
           >
             {thinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            {t.askButton}
+            {t("coachPanel.askButton", "Preguntar")}
           </button>
         </div>
 
@@ -711,7 +508,7 @@ function CompactView({
   response,
   ask,
 }: {
-  t: typeof translations.es;
+  t: TFn;
   insights: ReturnType<typeof generateInsights> | null;
   hasSeiData: boolean;
   question: string;
@@ -735,7 +532,7 @@ function CompactView({
               <Award className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
               <div>
                 <span className="text-xs font-medium text-green-700 dark:text-green-300 block mb-1">
-                  {t.strengths}
+                  {t("coachPanel.strengths", "Tus fortalezas")}
                 </span>
                 <span className="text-green-800 dark:text-green-200">{insights.strengths[0].text}</span>
               </div>
@@ -753,7 +550,7 @@ function CompactView({
               <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
               <div>
                 <span className="text-xs font-medium text-amber-700 dark:text-amber-300 block mb-1">
-                  {t.opportunities}
+                  {t("coachPanel.opportunities", "Áreas de oportunidad")}
                 </span>
                 <span className="text-amber-800 dark:text-amber-200">{insights.opportunities[0].text}</span>
               </div>
@@ -771,7 +568,7 @@ function CompactView({
               <Sparkles className="w-4 h-4 text-[var(--rowi-g2)] mt-0.5 shrink-0" />
               <div>
                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">
-                  {t.dailyPractice}
+                  {t("coachPanel.dailyPractice", "Práctica del día")}
                 </span>
                 <span className="text-gray-800 dark:text-gray-200">{insights.practices[0]}</span>
               </div>
@@ -780,7 +577,10 @@ function CompactView({
         </div>
       ) : (
         <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-800/50 text-sm text-gray-500 dark:text-gray-400 text-center">
-          {t.noSei}
+          {t(
+            "coachPanel.noSei",
+            "Completa tu evaluación SEI para recibir insights personalizados"
+          )}
         </div>
       )}
 
@@ -788,7 +588,10 @@ function CompactView({
       <div className="flex gap-2">
         <input
           type="text"
-          placeholder={t.askPlaceholder}
+          placeholder={t(
+            "coachPanel.askPlaceholder",
+            "Pregunta sobre inteligencia emocional..."
+          )}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && ask(question)}

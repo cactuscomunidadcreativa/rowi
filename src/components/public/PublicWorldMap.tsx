@@ -81,6 +81,18 @@ const t = {
     benchmarks: "Base di confronto SEI",
     users: "Utenti Rowi",
   },
+  zh: {
+    title: "您的情商，置于全球视野",
+    subtitle: "Rowi 将您的 SEI profile 与 Six Seconds 基准库进行对比：全球超过 273,000 份参考评估",
+    activeUsers: "Rowi 用户",
+    conversations: "对话数",
+    countries: "国家和地区",
+    benchmark: "SEI 对比基准库（Six Seconds）",
+    newRowiers: "新用户",
+    last3months: "最近 3 个月",
+    benchmarks: "SEI 对比基准库",
+    users: "Rowi 用户",
+  },
 };
 
 export default function PublicWorldMap() {

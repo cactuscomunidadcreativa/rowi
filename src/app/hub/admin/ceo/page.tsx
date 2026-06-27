@@ -190,7 +190,11 @@ export default function CeoDashboardPage() {
           <AdminCard titleKey="admin.ceo.funnelTitle" icon={Activity}>
             <div className="space-y-2 p-1">
               {data.funnel.map((row) => {
-                const pct = top > 0 ? Math.round((row.count / top) * 100) : 0;
+                // Un embudo nunca debe exceder el 100% del tope. Si por datos
+                // legados/inconsistentes una etapa supera al tope, se capea a 100%
+                // para no mostrar porcentajes imposibles (400%, 300%…).
+                const rawPct = top > 0 ? Math.round((row.count / top) * 100) : 0;
+                const pct = Math.min(100, rawPct);
                 return (
                   <div key={row.step} className="flex items-center gap-3">
                     <span className="w-48 shrink-0 text-sm text-[var(--rowi-foreground)] truncate">
@@ -199,7 +203,7 @@ export default function CeoDashboardPage() {
                     <div className="flex-1 h-2 rounded-full bg-[var(--rowi-border)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-[var(--rowi-primary)] to-[var(--rowi-secondary)]"
-                        style={{ width: `${Math.min(100, pct)}%` }}
+                        style={{ width: `${pct}%` }}
                       />
                     </div>
                     <span className="w-20 text-right text-sm font-semibold text-[var(--rowi-foreground)]">

@@ -179,3 +179,70 @@ export const vsArchetypeTagline = (quadrant: string, lang: VsLang, es: string, e
   pick(lang, es, en, ARCHETYPE_TAGLINE[quadrant]);
 export const vsTalentName = (key: string, lang: VsLang, es: string, en: string) =>
   pick(lang, es, en, TALENT_NAME[key]);
+
+// ── Avatar Rowi (evolution-calculator AVATAR_STAGES + ROWI_LEVELS) ──────────
+// Las fuentes solo traen {es,en}; aquí agregamos pt/it/zh por código estable
+// (stage para etapas del huevo→búho, slug para niveles Rowi) sin tocar el
+// calculador ni los tipos. Caen a es/en si falta.
+
+const AVATAR_STAGE_NAME: Record<string, PtIt> = {
+  EGG: { pt: "Ovinho", it: "Uovo", zh: "蛋" },
+  HATCHING: { pt: "Eclodindo", it: "Schiusa", zh: "破壳中" },
+  BABY: { pt: "Bebê", it: "Cucciolo", zh: "幼雏" },
+  YOUNG: { pt: "Jovem", it: "Giovane", zh: "幼年" },
+  ADULT: { pt: "Adulto", it: "Adulto", zh: "成年" },
+  WISE: { pt: "Sábio", it: "Saggio", zh: "智者" },
+};
+
+const AVATAR_STAGE_DESC: Record<string, PtIt> = {
+  EGG: {
+    pt: "Seu Rowi está incubando",
+    it: "Il tuo Rowi sta incubando",
+    zh: "你的 Rowi 正在孵化",
+  },
+  HATCHING: {
+    pt: "O ovo está começando a abrir",
+    it: "L'uovo sta iniziando ad aprirsi",
+    zh: "蛋开始裂开了",
+  },
+  BABY: {
+    pt: "Seu Rowi bebê recém-nascido",
+    it: "Il tuo Rowi cucciolo appena nato",
+    zh: "你刚出生的 Rowi 幼雏",
+  },
+  YOUNG: {
+    pt: "Seu Rowi jovem e curioso",
+    it: "Il tuo Rowi giovane e curioso",
+    zh: "你年轻好奇的 Rowi",
+  },
+  ADULT: {
+    pt: "Seu Rowi adulto e equilibrado",
+    it: "Il tuo Rowi adulto ed equilibrato",
+    zh: "你成熟而平衡的 Rowi",
+  },
+  WISE: {
+    pt: "Seu Rowi sábio e mestre",
+    it: "Il tuo Rowi saggio e maestro",
+    zh: "你睿智而通达的 Rowi",
+  },
+};
+
+const ROWI_LEVEL_NAME: Record<string, PtIt> = {
+  semilla: { pt: "Semente", it: "Seme", zh: "种子" },
+  brote: { pt: "Broto", it: "Germoglio", zh: "新芽" },
+  planta: { pt: "Planta", it: "Pianta", zh: "幼苗" },
+  arbol_joven: { pt: "Árvore Jovem", it: "Albero Giovane", zh: "幼树" },
+  arbol: { pt: "Árvore", it: "Albero", zh: "树" },
+  arbol_fuerte: { pt: "Árvore Forte", it: "Albero Forte", zh: "壮树" },
+  arbol_sabio: { pt: "Árvore Sábia", it: "Albero Saggio", zh: "智慧之树" },
+  bosque: { pt: "Floresta", it: "Foresta", zh: "森林" },
+  guardian: { pt: "Guardião", it: "Guardiano", zh: "守护者" },
+  ancestro: { pt: "Ancestral", it: "Antenato", zh: "先祖" },
+};
+
+export const vsAvatarStageName = (stage: string, lang: VsLang, es: string, en: string) =>
+  pick(lang, es, en, AVATAR_STAGE_NAME[stage]);
+export const vsAvatarStageDesc = (stage: string, lang: VsLang, es: string, en: string) =>
+  pick(lang, es, en, AVATAR_STAGE_DESC[stage]);
+export const vsRowiLevelName = (slug: string, lang: VsLang, es: string, en: string) =>
+  pick(lang, es, en, ROWI_LEVEL_NAME[slug]);

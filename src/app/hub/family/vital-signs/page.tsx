@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/react";
 import { Heart, Loader2, Users, AlertCircle, UserPlus } from "lucide-react";
+import { vsDriverName, type VsLang } from "@/lib/vital-signs/vsLocale";
 
 interface PulsePoint {
   code: string;
@@ -64,7 +65,10 @@ export default function FamilyVitalSignsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FVSData | null>(null);
 
+  // `lang` resuelve los enum-labels locales (relación/consentimiento, solo es/en).
+  // `vsLang` resuelve la terminología del catálogo VS (drivers) con pt/it/zh.
   const lang = locale === "en" ? "en" : "es";
+  const vsLang = locale as VsLang;
 
   useEffect(() => {
     fetch("/api/family/vital-signs/me")
@@ -162,7 +166,7 @@ export default function FamilyVitalSignsPage() {
                 {data!.self.drivers.map((d) => (
                   <div key={d.code} className="rowi-card">
                     <div className="text-xs text-[var(--rowi-muted)] mb-1">
-                      {lang === "en" ? d.enName : d.esName}
+                      {vsDriverName(d.code, vsLang, d.esName, d.enName)}
                     </div>
                     <div className="text-2xl font-bold text-[var(--rowi-foreground)]">
                       {d.score?.toFixed(1) ?? "—"}

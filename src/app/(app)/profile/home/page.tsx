@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/core/auth";
 import { getI18n } from "@/lib/i18n/getI18n";
 import { getEvolutionState } from "@/services/avatar-evolution";
+import { vsAvatarStageName, type VsLang } from "@/lib/vital-signs/vsLocale";
 import { RowiStageImage, type RowiStage } from "@/domains/avatar/components/RowiStageImage";
 import Link from "next/link";
 import Image from "next/image";
@@ -327,7 +328,7 @@ export default async function ProfileHomePage() {
           <h1 className="text-2xl font-bold mb-1">{user?.name || ""}</h1>
           {evo && (
             <p className="text-sm font-medium text-[var(--rowi-g2)] mb-1">
-              {evo.stageInfo.emoji} {lang === "es" ? evo.stageInfo.name.es : evo.stageInfo.name.en}
+              {evo.stageInfo.emoji} {vsAvatarStageName(evo.currentStage, lang as VsLang, evo.stageInfo.name.es, evo.stageInfo.name.en)}
             </p>
           )}
           <p className="text-gray-600 dark:text-gray-400 text-sm">

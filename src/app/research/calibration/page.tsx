@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/react";
 import { Loader2, Beaker, CheckCircle2, AlertTriangle } from "lucide-react";
+import { vsPpName, type VsLang } from "@/lib/vital-signs/vsLocale";
 
 interface CalibrationItem {
   code: string;
@@ -36,7 +37,7 @@ interface CalibResponse {
 
 export default function ResearchCalibrationPage() {
   const { t, locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const vsLang = locale as VsLang;
   const [data, setData] = useState<CalibResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -96,7 +97,7 @@ export default function ResearchCalibrationPage() {
                     {pp.driver}
                   </div>
                   <div className="text-sm font-semibold text-[var(--rowi-foreground)]">
-                    {lang === "en" ? pp.enName : pp.esName}
+                    {vsPpName(pp.code, vsLang, pp.esName, pp.enName)}
                   </div>
                 </div>
                 {pp.readyForCalibration ? (

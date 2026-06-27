@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { SEI_COMPETENCIES } from "@/lib/vital-signs/catalog";
+import { vsSeiName, type VsLang } from "@/lib/vital-signs/vsLocale";
 
 /* ───────────────────────── Tipos de los endpoints ───────────────────────── */
 
@@ -139,10 +140,9 @@ const COMP_EN: Record<string, string> = Object.fromEntries(
   SEI_COMPETENCIES.map((c) => [c.key, c.enName]),
 );
 
-/** Etiqueta de competencia: usa el nombre del catálogo según el idioma. */
+/** Etiqueta de competencia: usa el nombre del catálogo según el idioma (es/en/pt/it/zh). */
 function compLabel(key: string, lang: string): string {
-  if (lang === "en") return COMP_EN[key] ?? key;
-  return COMP_ES[key] ?? key;
+  return vsSeiName(key, lang as VsLang, COMP_ES[key] ?? key, COMP_EN[key] ?? key);
 }
 
 function shortHash(hash: string): string {

@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/react";
 import { Heart, Loader2, ShieldAlert, UserCircle2 } from "lucide-react";
+import {
+  vsOrientationName,
+  vsDriverName,
+  vsPpName,
+  vsPpFunction,
+  type VsLang,
+} from "@/lib/vital-signs/vsLocale";
 
 interface Driver {
   code: string;
@@ -35,7 +42,7 @@ interface CoachVSData {
 export default function CoachClientVSPage() {
   const { id } = useParams<{ id: string }>();
   const { t, locale } = useI18n();
-  const lang = locale === "en" ? "en" : "es";
+  const vsLang = locale as VsLang;
   const [data, setData] = useState<CoachVSData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -127,7 +134,7 @@ export default function CoachClientVSPage() {
                 {t("vs.section.quadrant", "Cuadrante dominante")}
               </div>
               <div className="text-3xl font-bold rowi-gradient-text">
-                {lang === "en" ? data.quadrant.enName : data.quadrant.esName}
+                {vsOrientationName(data.quadrant.code, vsLang, data.quadrant.esName, data.quadrant.enName)}
               </div>
             </div>
           )}
@@ -137,7 +144,7 @@ export default function CoachClientVSPage() {
             {(data.drivers ?? []).map((d) => (
               <div key={d.code} className="rowi-card">
                 <div className="text-xs text-[var(--rowi-muted-weak)] uppercase tracking-wide mb-1">
-                  {lang === "en" ? d.enName : d.esName}
+                  {vsDriverName(d.code, vsLang, d.esName, d.enName)}
                 </div>
                 <div className="text-2xl font-bold text-[var(--rowi-foreground)]">
                   {d.score?.toFixed(1) ?? "—"}
@@ -151,7 +158,7 @@ export default function CoachClientVSPage() {
             {(data.drivers ?? []).map((d) => (
               <div key={d.code} className="rowi-card">
                 <div className="text-sm font-medium text-[var(--rowi-foreground)] mb-3">
-                  {lang === "en" ? d.enName : d.esName}
+                  {vsDriverName(d.code, vsLang, d.esName, d.enName)}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {d.pulsePoints.map((pp) => (
@@ -161,14 +168,14 @@ export default function CoachClientVSPage() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-[var(--rowi-foreground)]">
-                          {lang === "en" ? pp.enName : pp.esName}
+                          {vsPpName(pp.code, vsLang, pp.esName, pp.enName)}
                         </span>
                         <span className="text-base font-semibold text-[var(--rowi-foreground)]">
                           {pp.score?.toFixed(1) ?? "—"}
                         </span>
                       </div>
                       <div className="text-xs text-[var(--rowi-muted)] line-clamp-1">
-                        {lang === "en" ? pp.enFunction : pp.esFunction}
+                        {vsPpFunction(pp.code, vsLang, pp.esFunction, pp.enFunction)}
                       </div>
                     </div>
                   ))}

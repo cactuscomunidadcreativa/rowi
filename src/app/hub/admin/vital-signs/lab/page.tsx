@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, FlaskConical, Loader2, Activity } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { vsPpName, type VsLang } from "@/lib/vital-signs/vsLocale";
 
 interface WeightRow {
   id: string;
@@ -110,7 +111,7 @@ export default function VsLabIndexPage() {
                 <Activity className="w-4 h-4 text-[var(--rowi-g2)] flex-shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold text-[var(--rowi-foreground)]">
-                    {lang === "en" ? label?.en : label?.es}
+                    {vsPpName(pp, lang as VsLang, label?.es ?? pp, label?.en ?? pp)}
                   </h3>
                   <p className="text-[10px] uppercase tracking-wider text-[var(--rowi-muted-weak)]">
                     {pp}

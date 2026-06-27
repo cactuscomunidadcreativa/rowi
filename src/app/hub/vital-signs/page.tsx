@@ -358,7 +358,7 @@ export default function VitalSignsPage() {
             <div className="text-3xl font-bold rowi-gradient-text mb-2">
               {t(
                 `vs.quadrant.${data!.quadrant.code.toLowerCase()}`,
-                lang === "en" ? data!.quadrant.enName : data!.quadrant.esName,
+                vsOrientationName(data!.quadrant.code, lang, data!.quadrant.esName, data!.quadrant.enName),
               )}
             </div>
             {data!.quadrant.code !== "BALANCED" && ROWI_ARCHETYPES[data!.quadrant.code] && (

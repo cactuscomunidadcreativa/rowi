@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { vsAvatarStageName, vsAvatarStageDesc, type VsLang } from "@/lib/vital-signs/vsLocale";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -108,9 +109,11 @@ export default function BecomingPage() {
   const c = data?.ok ? data : null;
   const av = avatarRes?.ok ? avatarRes.data : null;
   const stage: RowiStage = av?.currentStage ?? "EGG";
-  // stageInfo viene del API solo en es/en; PT/IT caen a ES (idioma default),
-  // no a inglés.
-  const stageName = av ? (lang === "en" ? av.stageInfo.name.en : av.stageInfo.name.es) : "";
+  // stageInfo viene del API solo en es/en; vsAvatarStage* agrega pt/it/zh por
+  // código de etapa (cae a es/en si falta).
+  const stageName = av
+    ? vsAvatarStageName(stage, lang as VsLang, av.stageInfo.name.es, av.stageInfo.name.en)
+    : "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 py-8 px-4">
@@ -143,7 +146,7 @@ export default function BecomingPage() {
                 {av.stageInfo.emoji} {stageName}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mt-1">
-                {lang === "en" ? av.stageInfo.description.en : av.stageInfo.description.es}
+                {vsAvatarStageDesc(stage, lang as VsLang, av.stageInfo.description.es, av.stageInfo.description.en)}
               </p>
 
               {/* Progreso a la siguiente etapa — tu lugar en el viaje */}

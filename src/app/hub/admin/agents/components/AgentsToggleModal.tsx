@@ -7,33 +7,6 @@ import { toast } from "sonner";
 import { Save } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-const AGT_T = {
-  es: {
-    updateError: "Error actualizando estado",
-    activated: "Agente activado correctamente",
-    deactivated: "Agente desactivado correctamente",
-    saveError: "Error al guardar cambios",
-  },
-  en: {
-    updateError: "Error updating status",
-    activated: "Agent activated successfully",
-    deactivated: "Agent deactivated successfully",
-    saveError: "Error saving changes",
-  },
-  pt: {
-    updateError: "Erro ao atualizar status",
-    activated: "Agente ativado com sucesso",
-    deactivated: "Agente desativado com sucesso",
-    saveError: "Erro ao salvar alterações",
-  },
-  it: {
-    updateError: "Errore nell'aggiornamento dello stato",
-    activated: "Agente attivato correttamente",
-    deactivated: "Agente disattivato correttamente",
-    saveError: "Errore nel salvataggio delle modifiche",
-  },
-};
-
 /* =========================================================
    🔌 Activar / Desactivar agente IA por contexto
    ---------------------------------------------------------
@@ -48,8 +21,7 @@ export default function AgentsToggleModal({
   orgs,
   onClose,
 }: any) {
-  const { lang, t } = useI18n();
-  const at = AGT_T[lang as keyof typeof AGT_T] || AGT_T.en;
+  const { t } = useI18n();
   const [scope, setScope] = useState<"global" | "superhub" | "tenant" | "hub" | "org">(
     agent.scope || "global"
   );
@@ -91,11 +63,15 @@ export default function AgentsToggleModal({
       });
 
       const j = await res.json();
-      if (!res.ok) throw new Error(j.error || at.updateError);
-      toast.success(active ? at.activated : at.deactivated);
+      if (!res.ok) throw new Error(j.error || t("agentsToggle.updateError", "Error actualizando estado"));
+      toast.success(
+        active
+          ? t("agentsToggle.activated", "Agente activado correctamente")
+          : t("agentsToggle.deactivated", "Agente desactivado correctamente")
+      );
       onClose();
     } catch (e: any) {
-      toast.error(e.message || at.saveError);
+      toast.error(e.message || t("agentsToggle.saveError", "Error al guardar cambios"));
     } finally {
       setSaving(false);
     }
@@ -107,7 +83,8 @@ export default function AgentsToggleModal({
   return (
     <div className="p-6 space-y-4">
       <h2 className="text-lg font-semibold">
-        ⚙️ Control de agente: <span className="text-rowi-blueDay">{agent.name}</span>
+        ⚙️ {t("agentsToggle.heading", "Control de agente:")}{" "}
+        <span className="text-rowi-blueDay">{agent.name}</span>
       </h2>
 
       {/* Nivel jerárquico */}
@@ -122,11 +99,11 @@ export default function AgentsToggleModal({
               setSelected("");
             }}
           >
-            <option value="global">🌍 Global</option>
-            <option value="superhub">🏛 SuperHub</option>
-            <option value="tenant">🧱 Tenant</option>
-            <option value="hub">🔹 Hub</option>
-            <option value="org">🏢 Organización</option>
+            <option value="global">🌍 {t("agentsToggle.scopeGlobal", "Global")}</option>
+            <option value="superhub">🏛 {t("agentsToggle.scopeSuperhub", "SuperHub")}</option>
+            <option value="tenant">🧱 {t("agentsToggle.scopeTenant", "Tenant")}</option>
+            <option value="hub">🔹 {t("agentsToggle.scopeHub", "Hub")}</option>
+            <option value="org">🏢 {t("agentsToggle.scopeOrg", "Organización")}</option>
           </select>
         </div>
 
@@ -138,7 +115,7 @@ export default function AgentsToggleModal({
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
             >
-              <option value="">(Seleccionar)</option>
+              <option value="">{t("agentsToggle.selectPlaceholder", "(Seleccionar)")}</option>
               {options.map((o: any) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
@@ -153,16 +130,18 @@ export default function AgentsToggleModal({
       <div className="flex items-center gap-2 mt-4">
         <Switch checked={active} onCheckedChange={setActive} />
         <span className="text-sm">
-          {active ? "Agente activo ✅" : "Agente inactivo ⛔"}
+          {active
+            ? `${t("agentsToggle.agentActive", "Agente activo")} ✅`
+            : `${t("agentsToggle.agentInactive", "Agente inactivo")} ⛔`}
         </span>
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
         <Button onClick={onClose} variant="outline">
-          Cancelar
+          {t("agentsToggle.cancel", "Cancelar")}
         </Button>
         <Button onClick={saveStatus} disabled={saving} className="gap-1">
-          <Save className="w-4 h-4" /> Guardar cambios
+          <Save className="w-4 h-4" /> {t("agentsToggle.save", "Guardar cambios")}
         </Button>
       </div>
     </div>

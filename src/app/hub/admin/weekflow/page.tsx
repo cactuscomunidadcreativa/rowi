@@ -61,7 +61,7 @@ interface HubOption {
 }
 
 export default function WeekFlowAdminPage() {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [hubs, setHubs] = useState<HubOption[]>([]);
@@ -70,30 +70,31 @@ export default function WeekFlowAdminPage() {
 
   const txt = {
     title: "WeekFlow",
-    subtitle: locale === "en" ? "Weekly collaboration metrics and insights" : "Métricas e insights de colaboración semanal",
-    loading: locale === "en" ? "Loading WeekFlow data..." : "Cargando datos de WeekFlow...",
-    noHubs: locale === "en" ? "No WeekFlow spaces configured" : "No hay espacios WeekFlow configurados",
-    noHubsDesc: locale === "en" ? "Create a WeekFlow space from your community" : "Crea un espacio WeekFlow desde tu comunidad",
-    totalSessions: locale === "en" ? "Sessions" : "Sesiones",
-    totalCheckins: locale === "en" ? "Mood Check-ins" : "Check-ins de Ánimo",
-    contributions: locale === "en" ? "Contributions" : "Contribuciones",
-    tasks: locale === "en" ? "Tasks" : "Tareas",
-    participation: locale === "en" ? "Participation" : "Participación",
-    taskCompletion: locale === "en" ? "Task Completion" : "Tareas Completadas",
-    consecutiveWeeks: locale === "en" ? "Consecutive Weeks" : "Semanas Consecutivas",
-    contributionTypes: locale === "en" ? "Contribution Types" : "Tipos de Contribución",
-    moodDistribution: locale === "en" ? "Team Pulse" : "Pulso del Equipo",
-    dominantEmotion: locale === "en" ? "Dominant Emotion" : "Emoción Dominante",
-    configuration: locale === "en" ? "Configuration" : "Configuración",
-    export: locale === "en" ? "Export" : "Exportar",
-    weekly: locale === "en" ? "Week" : "Semana",
-    monthly: locale === "en" ? "Month" : "Mes",
-    quarterly: locale === "en" ? "Quarter" : "Trimestre",
-    showTell: "Show & Tell",
-    toDiscuss: locale === "en" ? "To Discuss" : "Para Discutir",
-    focus: locale === "en" ? "Focus" : "Mi Foco",
-    noData: locale === "en" ? "No data for this period" : "Sin datos para este periodo",
-    selectHub: locale === "en" ? "Select community" : "Seleccionar comunidad",
+    subtitle: t("adminWeekflow.subtitle", "Métricas e insights de colaboración semanal"),
+    loading: t("adminWeekflow.loading", "Cargando datos de WeekFlow..."),
+    noHubs: t("adminWeekflow.noHubs", "No hay espacios WeekFlow configurados"),
+    noHubsDesc: t("adminWeekflow.noHubsDesc", "Crea un espacio WeekFlow desde tu comunidad"),
+    totalSessions: t("adminWeekflow.totalSessions", "Sesiones"),
+    totalCheckins: t("adminWeekflow.totalCheckins", "Check-ins de Ánimo"),
+    contributions: t("adminWeekflow.contributions", "Contribuciones"),
+    tasks: t("adminWeekflow.tasks", "Tareas"),
+    participation: t("adminWeekflow.participation", "Participación"),
+    taskCompletion: t("adminWeekflow.taskCompletion", "Tareas Completadas"),
+    consecutiveWeeks: t("adminWeekflow.consecutiveWeeks", "Semanas Consecutivas"),
+    contributionTypes: t("adminWeekflow.contributionTypes", "Tipos de Contribución"),
+    moodDistribution: t("adminWeekflow.moodDistribution", "Pulso del Equipo"),
+    dominantEmotion: t("adminWeekflow.dominantEmotion", "Emoción Dominante"),
+    configuration: t("adminWeekflow.configuration", "Configuración"),
+    export: t("adminWeekflow.export", "Exportar"),
+    weekly: t("adminWeekflow.weekly", "Semana"),
+    monthly: t("adminWeekflow.monthly", "Mes"),
+    quarterly: t("adminWeekflow.quarterly", "Trimestre"),
+    showTell: t("adminWeekflow.showTell", "Show & Tell"),
+    toDiscuss: t("adminWeekflow.toDiscuss", "Para Discutir"),
+    focus: t("adminWeekflow.focus", "Mi Foco"),
+    noData: t("adminWeekflow.noData", "Sin datos para este periodo"),
+    selectHub: t("adminWeekflow.selectHub", "Seleccionar comunidad"),
+    avgIntensity: t("adminWeekflow.avgIntensity", "Intensidad promedio"),
   };
 
   // Cargar hubs disponibles
@@ -375,7 +376,7 @@ export default function WeekFlowAdminPage() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{txt.dominantEmotion}</p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white capitalize">{tp.dominantEmotion.toLowerCase()}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {tp.totalResponses} check-ins • {locale === "en" ? "Avg intensity" : "Intensidad promedio"}: {tp.avgIntensity}/3
+                        {tp.totalResponses} check-ins • {txt.avgIntensity}: {tp.avgIntensity}/3
                       </p>
                     </div>
                   )}

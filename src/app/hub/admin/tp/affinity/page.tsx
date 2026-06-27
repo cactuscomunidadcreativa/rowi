@@ -27,649 +27,6 @@ import AffinityMonitor from "@/components/affinity/AffinityMonitor";
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
-   Translations
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badge: "Afinidad de Equipo",
-    title: "Afinidad de Equipo TP",
-    subtitle: "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de {count} evaluaciones",
-    subtitleCountFragment: "datos reales de {count} evaluaciones",
-    subtitleNoCount: "datos reales del benchmark TP",
-
-    // Brain styles section
-    brainDistTitle: "Distribucion Real de Estilos Cerebrales",
-    brainDistDesc: "Distribucion de estilos cerebrales del benchmark TP basada en datos reales",
-    employees: "evaluaciones",
-
-    // Affinity matrix
-    affinityMatrixTitle: "Matriz de Afinidad entre Estilos",
-    affinityMatrixDesc: "Compatibilidad emocional calculada por similitud de perfiles de competencia entre estilos cerebrales",
-    highAffinity: "Alta afinidad",
-    mediumAffinity: "Media afinidad",
-    lowAffinity: "Baja afinidad",
-
-    // Complementary pairs
-    complementaryTitle: "Parejas Complementarias",
-    complementaryDesc: "Combinaciones de estilos cerebrales que generan mayor complementariedad de competencias",
-    complementaryReason: "Razon",
-
-    // Regional brain style distribution
-    regionalTitle: "Estilos Cerebrales por Region",
-    regionalDesc: "Como se distribuyen los estilos cerebrales en cada region de TP",
-
-    // Brain style profiles
-    profilesTitle: "Perfiles de Estilo Cerebral",
-    profilesDesc: "Caracteristicas, fortalezas y riesgos de cada estilo cerebral encontrado en TP",
-    traits: "Rasgos",
-    strengths: "Fortalezas",
-    risks: "Riesgos",
-    facilitation: "Facilitacion",
-
-    // Cross-region insights
-    crossRegionTitle: "Perspectivas Interregionales",
-    crossRegionDesc: "Patrones de afinidad en las operaciones globales de TP",
-
-    // EQ by brain style
-    eqByStyleTitle: "EQ Promedio por Estilo Cerebral",
-    eqByStyleDesc: "Puntaje EQ Total promedio para cada estilo cerebral en el benchmark TP",
-    avgEQ: "EQ Prom.",
-    count: "Evaluaciones",
-
-    // Info box
-    infoTitle: "Datos de Afinidad TP",
-    infoDesc: "Datos basados en el benchmark real de Teleperformance con {count} evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.",
-    infoDescCountFragment: "benchmark real de Teleperformance con {count} evaluaciones SEI",
-    infoDescNoCount: "benchmark real de Teleperformance",
-
-    // Navigation
-    navBenchmark: "Benchmark",
-    navEco: "ECO",
-
-    // Community Affinity section
-    communityTitle: "Afinidad de Comunidad",
-    communityDesc: "Analisis de afinidad emocional entre miembros de tu comunidad",
-    searchPlaceholder: "Buscar por nombre, grupo o pais...",
-    recalculate: "Recalcular",
-    calculating: "Calculando afinidad...",
-    noMembers: "No se encontraron miembros",
-    overallAffinity: "Afinidad General",
-    members: "Miembros",
-    selected: "Seleccionados",
-    context: "Contexto",
-    relationships: "Relaciones",
-    leadership: "Liderazgo",
-    execution: "Ejecucion",
-    innovation: "Innovacion",
-    decision: "Decisiones",
-    conversation: "Comunicacion",
-    analyzeSelected: "Analizar Seleccionados",
-    selectedMembers: "seleccionados",
-    clearSelection: "Limpiar",
-    monitor: "Monitor",
-    monitorTitle: "Affinity Monitor",
-    forAnalysis: "para analizar",
-    inCommunity: "en tu comunidad",
-    coachSubtitle: "Tu coach de relaciones",
-    askRowi: "Pregunta sobre relaciones...",
-    avgAffinity: "Afinidad Promedio",
-    analyzed: "analizados",
-    notCalculated: "Sin calcular",
-    growth: "Crecimiento",
-    collaboration: "Colaboracion",
-    understanding: "Entendimiento",
-    groupAnalysis: "Analisis de Grupo",
-    viewBenchmark: "Ver Benchmark",
-    viewCommunity: "Ver Comunidad",
-    tabBenchmark: "Benchmark TP",
-    tabCommunity: "Mi Comunidad",
-    tabCompare: "Comparar",
-    tabMultiContext: "Multi-Contexto",
-    tabConfig: "Configuracion",
-
-    // Compare tab
-    compareTitle: "Comparador de Afinidad",
-    compareDesc: "Selecciona dos personas para comparar su afinidad en detalle",
-    compareMemberA: "Persona A",
-    compareMemberB: "Persona B",
-    compareSelect: "Seleccionar...",
-    compareRun: "Comparar",
-    compareVs: "vs",
-    compareParts: "Desglose",
-    compareBrainStyles: "Estilos Cerebrales",
-    compareTalents: "Talentos Compartidos",
-    compareCompetencies: "Competencias Fuertes",
-    compareNoData: "Selecciona dos personas y haz clic en Comparar",
-
-    // Multi-context tab
-    multiTitle: "Analisis Multi-Contexto",
-    multiDesc: "Visualiza la afinidad en los 6 contextos simultaneamente para los miembros seleccionados",
-    multiSelectMembers: "Selecciona miembros en la tab Comunidad primero",
-    multiRunAll: "Calcular Todos",
-    multiCalculating: "Calculando todos los contextos...",
-    multiAvg: "Promedio",
-    multiMember: "Miembro",
-
-    // Config tab
-    configTitle: "Configuracion de Afinidad",
-    configDesc: "Ajusta los pesos y parametros del calculo de afinidad",
-    configWeights: "Pesos por Contexto",
-    configWeightsDesc: "Cada contexto tiene 3 dimensiones (Crecimiento, Colaboracion, Entendimiento) que deben sumar 100%",
-    configBands: "Bandas Termicas",
-    configBandsDesc: "Umbrales para clasificar la temperatura de afinidad",
-    configHot: "Caliente",
-    configWarm: "Tibio",
-    configCold: "Frio",
-    configCloseness: "Multiplicadores de Cercania",
-    configClose: "Cercano",
-    configNeutral: "Neutral",
-    configFar: "Lejano",
-    configSave: "Guardar Configuracion",
-    configSaving: "Guardando...",
-    configSaved: "Guardado",
-    configRecalculate: "Recalcular Todo",
-    configRecalculating: "Recalculando...",
-    configLoadError: "Error al cargar configuracion",
-    configSaveError: "Error al guardar",
-    configSaveSuccess: "Configuracion guardada correctamente",
-
-    // Detail panel
-    brainStylesLabel: "Estilos de Pensamiento",
-    sharedTalentsLabel: "Talentos en Comun",
-    strongCompLabel: "Competencias Fuertes",
-    insightLabel: "Insight",
-    affinityNote: "La afinidad total considera ponderaciones por contexto, cercania y calibracion.",
-    askCoachTip: "Pregunta al Affinity Coach para obtener consejos personalizados.",
-    groupTip: "Pregunta al Affinity Coach para recomendaciones sobre este grupo.",
-
-    loading: "Cargando datos de afinidad...",
-    errorTitle: "Error al cargar datos",
-    errorDesc: "No se pudieron cargar los datos del benchmark. Intenta de nuevo.",
-    retry: "Reintentar",
-    emptyBenchmark: "Sin datos de benchmark todavía",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badge: "Team Affinity",
-    title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
-    subtitleCountFragment: "real data from {count} assessments",
-    subtitleNoCount: "real TP benchmark data",
-
-    // Brain styles section
-    brainDistTitle: "Real Brain Style Distribution",
-    brainDistDesc: "Brain style distribution from the TP benchmark based on real data",
-    employees: "assessments",
-
-    // Affinity matrix
-    affinityMatrixTitle: "Style Affinity Matrix",
-    affinityMatrixDesc: "Emotional compatibility calculated from competency profile similarity between brain styles",
-    highAffinity: "High affinity",
-    mediumAffinity: "Medium affinity",
-    lowAffinity: "Low affinity",
-
-    // Complementary pairs
-    complementaryTitle: "Complementary Pairs",
-    complementaryDesc: "Brain style combinations that generate the most competency complementarity",
-    complementaryReason: "Reason",
-
-    // Regional brain style distribution
-    regionalTitle: "Brain Styles by Region",
-    regionalDesc: "How brain styles are distributed across each TP region",
-
-    // Brain style profiles
-    profilesTitle: "Brain Style Profiles",
-    profilesDesc: "Characteristics, strengths, and risks of each brain style found in TP",
-    traits: "Traits",
-    strengths: "Strengths",
-    risks: "Risks",
-    facilitation: "Facilitation",
-
-    // Cross-region insights
-    crossRegionTitle: "Cross-Region Insights",
-    crossRegionDesc: "Affinity patterns across TP global operations",
-
-    // EQ by brain style
-    eqByStyleTitle: "Average EQ by Brain Style",
-    eqByStyleDesc: "Average EQ Total score for each brain style in the TP benchmark",
-    avgEQ: "Avg EQ",
-    count: "Assessments",
-
-    // Info box
-    infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
-    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
-    infoDescNoCount: "real Teleperformance benchmark",
-
-    // Navigation
-    navBenchmark: "Benchmark",
-    navEco: "ECO",
-
-    // Community Affinity section
-    communityTitle: "Community Affinity",
-    communityDesc: "Emotional affinity analysis between your community members",
-    searchPlaceholder: "Search by name, group or country...",
-    recalculate: "Recalculate",
-    calculating: "Calculating affinity...",
-    noMembers: "No members found",
-    overallAffinity: "Overall Affinity",
-    members: "Members",
-    selected: "Selected",
-    context: "Context",
-    relationships: "Relationships",
-    leadership: "Leadership",
-    execution: "Execution",
-    innovation: "Innovation",
-    decision: "Decisions",
-    conversation: "Communication",
-    analyzeSelected: "Analyze Selected",
-    selectedMembers: "selected",
-    clearSelection: "Clear",
-    monitor: "Monitor",
-    monitorTitle: "Affinity Monitor",
-    forAnalysis: "for analysis",
-    inCommunity: "in your community",
-    coachSubtitle: "Your relationship coach",
-    askRowi: "Ask about relationships...",
-    avgAffinity: "Average Affinity",
-    analyzed: "analyzed",
-    notCalculated: "Not calculated",
-    growth: "Growth",
-    collaboration: "Collaboration",
-    understanding: "Understanding",
-    groupAnalysis: "Group Analysis",
-    viewBenchmark: "View Benchmark",
-    viewCommunity: "View Community",
-    tabBenchmark: "TP Benchmark",
-    tabCommunity: "My Community",
-    tabCompare: "Compare",
-    tabMultiContext: "Multi-Context",
-    tabConfig: "Configuration",
-
-    // Compare tab
-    compareTitle: "Affinity Comparator",
-    compareDesc: "Select two people to compare their affinity in detail",
-    compareMemberA: "Person A",
-    compareMemberB: "Person B",
-    compareSelect: "Select...",
-    compareRun: "Compare",
-    compareVs: "vs",
-    compareParts: "Breakdown",
-    compareBrainStyles: "Brain Styles",
-    compareTalents: "Shared Talents",
-    compareCompetencies: "Strong Competencies",
-    compareNoData: "Select two people and click Compare",
-
-    // Multi-context tab
-    multiTitle: "Multi-Context Analysis",
-    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
-    multiSelectMembers: "Select members in the Community tab first",
-    multiRunAll: "Calculate All",
-    multiCalculating: "Calculating all contexts...",
-    multiAvg: "Average",
-    multiMember: "Member",
-
-    // Config tab
-    configTitle: "Affinity Configuration",
-    configDesc: "Adjust weights and parameters for affinity calculation",
-    configWeights: "Context Weights",
-    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
-    configBands: "Thermal Bands",
-    configBandsDesc: "Thresholds for classifying affinity temperature",
-    configHot: "Hot",
-    configWarm: "Warm",
-    configCold: "Cold",
-    configCloseness: "Closeness Multipliers",
-    configClose: "Close",
-    configNeutral: "Neutral",
-    configFar: "Far",
-    configSave: "Save Configuration",
-    configSaving: "Saving...",
-    configSaved: "Saved",
-    configRecalculate: "Recalculate All",
-    configRecalculating: "Recalculating...",
-    configLoadError: "Error loading configuration",
-    configSaveError: "Error saving",
-    configSaveSuccess: "Configuration saved successfully",
-
-    // Detail panel
-    brainStylesLabel: "Brain Styles",
-    sharedTalentsLabel: "Shared Talents",
-    strongCompLabel: "Strong Competencies",
-    insightLabel: "Insight",
-    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
-    askCoachTip: "Ask the Affinity Coach for personalized advice.",
-    groupTip: "Ask the Affinity Coach for recommendations about this group.",
-
-    loading: "Loading affinity data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load benchmark data. Please try again.",
-    retry: "Retry",
-    emptyBenchmark: "No benchmark data yet",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badge: "Team Affinity",
-    title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
-    subtitleCountFragment: "real data from {count} assessments",
-    subtitleNoCount: "real TP benchmark data",
-
-    // Brain styles section
-    brainDistTitle: "Real Brain Style Distribution",
-    brainDistDesc: "Brain style distribution from the TP benchmark based on real data",
-    employees: "assessments",
-
-    // Affinity matrix
-    affinityMatrixTitle: "Style Affinity Matrix",
-    affinityMatrixDesc: "Emotional compatibility calculated from competency profile similarity between brain styles",
-    highAffinity: "High affinity",
-    mediumAffinity: "Medium affinity",
-    lowAffinity: "Low affinity",
-
-    // Complementary pairs
-    complementaryTitle: "Complementary Pairs",
-    complementaryDesc: "Brain style combinations that generate the most competency complementarity",
-    complementaryReason: "Reason",
-
-    // Regional brain style distribution
-    regionalTitle: "Brain Styles by Region",
-    regionalDesc: "How brain styles are distributed across each TP region",
-
-    // Brain style profiles
-    profilesTitle: "Brain Style Profiles",
-    profilesDesc: "Characteristics, strengths, and risks of each brain style found in TP",
-    traits: "Traits",
-    strengths: "Strengths",
-    risks: "Risks",
-    facilitation: "Facilitation",
-
-    // Cross-region insights
-    crossRegionTitle: "Cross-Region Insights",
-    crossRegionDesc: "Affinity patterns across TP global operations",
-
-    // EQ by brain style
-    eqByStyleTitle: "Average EQ by Brain Style",
-    eqByStyleDesc: "Average EQ Total score for each brain style in the TP benchmark",
-    avgEQ: "Avg EQ",
-    count: "Assessments",
-
-    // Info box
-    infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
-    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
-    infoDescNoCount: "real Teleperformance benchmark",
-
-    // Navigation
-    navBenchmark: "Benchmark",
-    navEco: "ECO",
-
-    // Community Affinity section
-    communityTitle: "Community Affinity",
-    communityDesc: "Emotional affinity analysis between your community members",
-    searchPlaceholder: "Search by name, group or country...",
-    recalculate: "Recalculate",
-    calculating: "Calculating affinity...",
-    noMembers: "No members found",
-    overallAffinity: "Overall Affinity",
-    members: "Members",
-    selected: "Selected",
-    context: "Context",
-    relationships: "Relationships",
-    leadership: "Leadership",
-    execution: "Execution",
-    innovation: "Innovation",
-    decision: "Decisions",
-    conversation: "Communication",
-    analyzeSelected: "Analyze Selected",
-    selectedMembers: "selected",
-    clearSelection: "Clear",
-    monitor: "Monitor",
-    monitorTitle: "Affinity Monitor",
-    forAnalysis: "for analysis",
-    inCommunity: "in your community",
-    coachSubtitle: "Your relationship coach",
-    askRowi: "Ask about relationships...",
-    avgAffinity: "Average Affinity",
-    analyzed: "analyzed",
-    notCalculated: "Not calculated",
-    growth: "Growth",
-    collaboration: "Collaboration",
-    understanding: "Understanding",
-    groupAnalysis: "Group Analysis",
-    viewBenchmark: "View Benchmark",
-    viewCommunity: "View Community",
-    tabBenchmark: "TP Benchmark",
-    tabCommunity: "My Community",
-    tabCompare: "Compare",
-    tabMultiContext: "Multi-Context",
-    tabConfig: "Configuration",
-
-    // Compare tab
-    compareTitle: "Affinity Comparator",
-    compareDesc: "Select two people to compare their affinity in detail",
-    compareMemberA: "Person A",
-    compareMemberB: "Person B",
-    compareSelect: "Select...",
-    compareRun: "Compare",
-    compareVs: "vs",
-    compareParts: "Breakdown",
-    compareBrainStyles: "Brain Styles",
-    compareTalents: "Shared Talents",
-    compareCompetencies: "Strong Competencies",
-    compareNoData: "Select two people and click Compare",
-
-    // Multi-context tab
-    multiTitle: "Multi-Context Analysis",
-    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
-    multiSelectMembers: "Select members in the Community tab first",
-    multiRunAll: "Calculate All",
-    multiCalculating: "Calculating all contexts...",
-    multiAvg: "Average",
-    multiMember: "Member",
-
-    // Config tab
-    configTitle: "Affinity Configuration",
-    configDesc: "Adjust weights and parameters for affinity calculation",
-    configWeights: "Context Weights",
-    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
-    configBands: "Thermal Bands",
-    configBandsDesc: "Thresholds for classifying affinity temperature",
-    configHot: "Hot",
-    configWarm: "Warm",
-    configCold: "Cold",
-    configCloseness: "Closeness Multipliers",
-    configClose: "Close",
-    configNeutral: "Neutral",
-    configFar: "Far",
-    configSave: "Save Configuration",
-    configSaving: "Saving...",
-    configSaved: "Saved",
-    configRecalculate: "Recalculate All",
-    configRecalculating: "Recalculating...",
-    configLoadError: "Error loading configuration",
-    configSaveError: "Error saving",
-    configSaveSuccess: "Configuration saved successfully",
-
-    // Detail panel
-    brainStylesLabel: "Brain Styles",
-    sharedTalentsLabel: "Shared Talents",
-    strongCompLabel: "Strong Competencies",
-    insightLabel: "Insight",
-    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
-    askCoachTip: "Ask the Affinity Coach for personalized advice.",
-    groupTip: "Ask the Affinity Coach for recommendations about this group.",
-
-    loading: "Loading affinity data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load benchmark data. Please try again.",
-    retry: "Retry",
-    emptyBenchmark: "No benchmark data yet",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badge: "Team Affinity",
-    title: "TP Team Affinity",
-    subtitle: "Emotional compatibility analysis across Teleperformance global teams — powered by SEI brain style matching and real data from {count} assessments",
-    subtitleCountFragment: "real data from {count} assessments",
-    subtitleNoCount: "real TP benchmark data",
-
-    // Brain styles section
-    brainDistTitle: "Real Brain Style Distribution",
-    brainDistDesc: "Brain style distribution from the TP benchmark based on real data",
-    employees: "assessments",
-
-    // Affinity matrix
-    affinityMatrixTitle: "Style Affinity Matrix",
-    affinityMatrixDesc: "Emotional compatibility calculated from competency profile similarity between brain styles",
-    highAffinity: "High affinity",
-    mediumAffinity: "Medium affinity",
-    lowAffinity: "Low affinity",
-
-    // Complementary pairs
-    complementaryTitle: "Complementary Pairs",
-    complementaryDesc: "Brain style combinations that generate the most competency complementarity",
-    complementaryReason: "Reason",
-
-    // Regional brain style distribution
-    regionalTitle: "Brain Styles by Region",
-    regionalDesc: "How brain styles are distributed across each TP region",
-
-    // Brain style profiles
-    profilesTitle: "Brain Style Profiles",
-    profilesDesc: "Characteristics, strengths, and risks of each brain style found in TP",
-    traits: "Traits",
-    strengths: "Strengths",
-    risks: "Risks",
-    facilitation: "Facilitation",
-
-    // Cross-region insights
-    crossRegionTitle: "Cross-Region Insights",
-    crossRegionDesc: "Affinity patterns across TP global operations",
-
-    // EQ by brain style
-    eqByStyleTitle: "Average EQ by Brain Style",
-    eqByStyleDesc: "Average EQ Total score for each brain style in the TP benchmark",
-    avgEQ: "Avg EQ",
-    count: "Assessments",
-
-    // Info box
-    infoTitle: "TP Affinity Data",
-    infoDesc: "Data based on the real Teleperformance benchmark with {count} SEI assessments. Brain styles and affinity metrics calculated from real profiles.",
-    infoDescCountFragment: "real Teleperformance benchmark with {count} SEI assessments",
-    infoDescNoCount: "real Teleperformance benchmark",
-
-    // Navigation
-    navBenchmark: "Benchmark",
-    navEco: "ECO",
-
-    // Community Affinity section
-    communityTitle: "Community Affinity",
-    communityDesc: "Emotional affinity analysis between your community members",
-    searchPlaceholder: "Search by name, group or country...",
-    recalculate: "Recalculate",
-    calculating: "Calculating affinity...",
-    noMembers: "No members found",
-    overallAffinity: "Overall Affinity",
-    members: "Members",
-    selected: "Selected",
-    context: "Context",
-    relationships: "Relationships",
-    leadership: "Leadership",
-    execution: "Execution",
-    innovation: "Innovation",
-    decision: "Decisions",
-    conversation: "Communication",
-    analyzeSelected: "Analyze Selected",
-    selectedMembers: "selected",
-    clearSelection: "Clear",
-    monitor: "Monitor",
-    monitorTitle: "Affinity Monitor",
-    forAnalysis: "for analysis",
-    inCommunity: "in your community",
-    coachSubtitle: "Your relationship coach",
-    askRowi: "Ask about relationships...",
-    avgAffinity: "Average Affinity",
-    analyzed: "analyzed",
-    notCalculated: "Not calculated",
-    growth: "Growth",
-    collaboration: "Collaboration",
-    understanding: "Understanding",
-    groupAnalysis: "Group Analysis",
-    viewBenchmark: "View Benchmark",
-    viewCommunity: "View Community",
-    tabBenchmark: "TP Benchmark",
-    tabCommunity: "My Community",
-    tabCompare: "Compare",
-    tabMultiContext: "Multi-Context",
-    tabConfig: "Configuration",
-
-    // Compare tab
-    compareTitle: "Affinity Comparator",
-    compareDesc: "Select two people to compare their affinity in detail",
-    compareMemberA: "Person A",
-    compareMemberB: "Person B",
-    compareSelect: "Select...",
-    compareRun: "Compare",
-    compareVs: "vs",
-    compareParts: "Breakdown",
-    compareBrainStyles: "Brain Styles",
-    compareTalents: "Shared Talents",
-    compareCompetencies: "Strong Competencies",
-    compareNoData: "Select two people and click Compare",
-
-    // Multi-context tab
-    multiTitle: "Multi-Context Analysis",
-    multiDesc: "View affinity across all 6 contexts simultaneously for selected members",
-    multiSelectMembers: "Select members in the Community tab first",
-    multiRunAll: "Calculate All",
-    multiCalculating: "Calculating all contexts...",
-    multiAvg: "Average",
-    multiMember: "Member",
-
-    // Config tab
-    configTitle: "Affinity Configuration",
-    configDesc: "Adjust weights and parameters for affinity calculation",
-    configWeights: "Context Weights",
-    configWeightsDesc: "Each context has 3 dimensions (Growth, Collaboration, Understanding) that must sum to 100%",
-    configBands: "Thermal Bands",
-    configBandsDesc: "Thresholds for classifying affinity temperature",
-    configHot: "Hot",
-    configWarm: "Warm",
-    configCold: "Cold",
-    configCloseness: "Closeness Multipliers",
-    configClose: "Close",
-    configNeutral: "Neutral",
-    configFar: "Far",
-    configSave: "Save Configuration",
-    configSaving: "Saving...",
-    configSaved: "Saved",
-    configRecalculate: "Recalculate All",
-    configRecalculating: "Recalculating...",
-    configLoadError: "Error loading configuration",
-    configSaveError: "Error saving",
-    configSaveSuccess: "Configuration saved successfully",
-
-    // Detail panel
-    brainStylesLabel: "Brain Styles",
-    sharedTalentsLabel: "Shared Talents",
-    strongCompLabel: "Strong Competencies",
-    insightLabel: "Insight",
-    affinityNote: "Total affinity considers context weighting, closeness, and calibration.",
-    askCoachTip: "Ask the Affinity Coach for personalized advice.",
-    groupTip: "Ask the Affinity Coach for recommendations about this group.",
-
-    loading: "Loading affinity data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load benchmark data. Please try again.",
-    retry: "Retry",
-    emptyBenchmark: "No benchmark data yet",
-  },
-
-};
-
-/* =========================================================
    Types
 ========================================================= */
 interface GroupMetric {
@@ -736,32 +93,68 @@ const PROJECT_COLORS: Record<ProjectType, string> = {
   conversation: "#00ACC1",
 };
 
+/**
+ * Heat band thresholds. `level` holds the Spanish label kept as a stable data
+ * value (used for `affinityLevel` storage). `key` selects the tpAffinity.* i18n
+ * key so the band is translated at render time via t().
+ */
 function levelFromHeat135(h: number) {
-  if (h >= 118) return { level: "Experto", color: "#22c55e" };
-  if (h >= 108) return { level: "Diestro", color: "#84cc16" };
-  if (h >= 92) return { level: "Funcional", color: "#eab308" };
-  if (h >= 82) return { level: "Emergente", color: "#f97316" };
-  return { level: "Desafio", color: "#ef4444" };
+  if (h >= 118) return { level: "Experto", key: "bandExperto", color: "#22c55e" };
+  if (h >= 108) return { level: "Diestro", key: "bandDiestro", color: "#84cc16" };
+  if (h >= 92) return { level: "Funcional", key: "bandFuncional", color: "#eab308" };
+  if (h >= 82) return { level: "Emergente", key: "bandEmergente", color: "#f97316" };
+  return { level: "Desafio", key: "bandDesafio", color: "#ef4444" };
 }
+
+/** Map a stored Spanish band label back to its tpAffinity.* i18n key. */
+const BAND_KEY_BY_LABEL: Record<string, string> = {
+  Experto: "bandExperto",
+  Diestro: "bandDiestro",
+  Funcional: "bandFuncional",
+  Emergente: "bandEmergente",
+  Desafio: "bandDesafio",
+};
 
 /* =========================================================
    Complementary pairs logic
+   `reasonKey` selects the tpAffinity.* i18n key for the rationale (translated
+   at render via t()); the Spanish fallback lives in the t() call.
 ========================================================= */
-const COMPLEMENTARY_PAIRS: { a: string; b: string; reasonEs: string; reasonEn: string; score: number }[] = [
-  { a: "Scientist", b: "Visionary", reasonEs: "El analisis riguroso del Cientifico complementa la vision futurista del Visionario", reasonEn: "The Scientist's rigorous analysis complements the Visionary's forward-looking perspective", score: 92 },
-  { a: "Strategist", b: "Energizer", reasonEs: "La planificacion estrategica del Estratega se potencia con la energia y accion del Energizador", reasonEn: "The Strategist's planning is enhanced by the Energizer's drive and action", score: 89 },
-  { a: "Guardian", b: "Inventor", reasonEs: "La estabilidad del Guardian balancea la creatividad del Inventor", reasonEn: "The Guardian's stability balances the Inventor's creativity", score: 87 },
-  { a: "Doer", b: "Sage", reasonEs: "La ejecucion practica del Hacedor se enriquece con la reflexion profunda del Sabio", reasonEn: "The Doer's practical execution is enriched by the Sage's deep reflection", score: 85 },
-  { a: "Scientist", b: "Energizer", reasonEs: "El enfoque analitico se complementa con la motivacion contagiosa", reasonEn: "The analytical focus complements the contagious motivation", score: 84 },
-  { a: "Strategist", b: "Guardian", reasonEs: "La vision a largo plazo se protege con lealtad y cuidado", reasonEn: "Long-term vision is protected with loyalty and care", score: 83 },
+const COMPLEMENTARY_PAIRS: { a: string; b: string; reasonKey: string; reasonFallbackEs: string; score: number }[] = [
+  { a: "Scientist", b: "Visionary", reasonKey: "complReasonScientistVisionary", reasonFallbackEs: "El analisis riguroso del Cientifico complementa la vision futurista del Visionario", score: 92 },
+  { a: "Strategist", b: "Energizer", reasonKey: "complReasonStrategistEnergizer", reasonFallbackEs: "La planificacion estrategica del Estratega se potencia con la energia y accion del Energizador", score: 89 },
+  { a: "Guardian", b: "Inventor", reasonKey: "complReasonGuardianInventor", reasonFallbackEs: "La estabilidad del Guardian balancea la creatividad del Inventor", score: 87 },
+  { a: "Doer", b: "Sage", reasonKey: "complReasonDoerSage", reasonFallbackEs: "La ejecucion practica del Hacedor se enriquece con la reflexion profunda del Sabio", score: 85 },
+  { a: "Scientist", b: "Energizer", reasonKey: "complReasonScientistEnergizer", reasonFallbackEs: "El enfoque analitico se complementa con la motivacion contagiosa", score: 84 },
+  { a: "Strategist", b: "Guardian", reasonKey: "complReasonStrategistGuardian", reasonFallbackEs: "La vision a largo plazo se protege con lealtad y cuidado", score: 83 },
 ];
 
 /* =========================================================
    Main Page
 ========================================================= */
 export default function TPAffinityPage() {
-  const { lang, t: tFn } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
+
+  /** Translate a stored Spanish band label (or a band key) to the active locale. */
+  function bandLabel(value?: string | null): string {
+    if (!value) return "—";
+    const key = BAND_KEY_BY_LABEL[value] ?? value;
+    return t(`tpAffinity.${key}`, value);
+  }
+
+  /** Translate a project/context key to its localized label. */
+  function ctxLabel(ctx: ProjectType): string {
+    const map: Record<ProjectType, [string, string]> = {
+      relationship: ["tpAffinity.relationships", "Relaciones"],
+      leadership: ["tpAffinity.leadership", "Liderazgo"],
+      execution: ["tpAffinity.execution", "Ejecucion"],
+      innovation: ["tpAffinity.innovation", "Innovacion"],
+      decision: ["tpAffinity.decision", "Decisiones"],
+      conversation: ["tpAffinity.conversation", "Comunicacion"],
+    };
+    const [key, fallback] = map[ctx];
+    return t(key, fallback);
+  }
 
   const [activeTab, setActiveTab] = useState<TabType>("community");
   const [brainStyleGroups, setBrainStyleGroups] = useState<BrainStyleGroup[]>([]);
@@ -779,7 +172,7 @@ export default function TPAffinityPage() {
   const [loadingAll, setLoadingAll] = useState(false);
   const [showMonitor, setShowMonitor] = useState(false);
   const [chat, setChat] = useState<{ role: "assistant" | "user"; content: string }[]>([
-    { role: "assistant", content: lang !== "es" ? "Hi, I'm Rowi. Who would you like to connect with better today?" : "Hola, soy Rowi. ¿Con quién te gustaría conectar mejor hoy?" },
+    { role: "assistant", content: t("tpAffinity.chatGreeting", "Hola, soy Rowi. ¿Con quién te gustaría conectar mejor hoy?") },
   ]);
   const [coachInput, setCoachInput] = useState("");
   const [rowiTyping, setRowiTyping] = useState(false);
@@ -899,8 +292,8 @@ export default function TPAffinityPage() {
       }).join("\n");
       const res = await fetch("/api/rowi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intent: "affinity", locale: lang, ask: memberContext ? `Contexto (proyecto: ${project}):\n${memberContext}\n\n${seed}` : seed }) });
       const j = await res.json();
-      setChat((c) => [...c, { role: "assistant", content: j?.text || "No pude generar respuesta." }]);
-    } catch { setChat((c) => [...c, { role: "assistant", content: "Error de conexión." }]); }
+      setChat((c) => [...c, { role: "assistant", content: j?.text || t("tpAffinity.chatNoResponse", "No pude generar respuesta.") }]);
+    } catch { setChat((c) => [...c, { role: "assistant", content: t("tpAffinity.chatConnectionError", "Error de conexión.") }]); }
     finally { setRowiTyping(false); }
   }
 
@@ -1079,19 +472,19 @@ export default function TPAffinityPage() {
       <div className="space-y-8">
         <div>
           <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpAffinity.backToHub", "TP Hub")}
           </Link>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-pink-500/20 text-pink-500 mb-3">
-            <Sparkles className="w-3 h-3" /> {t.badge}
+            <Sparkles className="w-3 h-3" /> {t("tpAffinity.badge", "Afinidad de Equipo")}
           </span>
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-            <Heart className="w-8 h-8 text-pink-500" /> {t.title}
+            <Heart className="w-8 h-8 text-pink-500" /> {t("tpAffinity.title", "Afinidad de Equipo TP")}
           </h1>
         </div>
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full" />
-            <span className="text-sm text-[var(--rowi-muted)]">{t.loading}</span>
+            <span className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.loading", "Cargando datos de afinidad...")}</span>
           </div>
         </div>
       </div>
@@ -1103,14 +496,14 @@ export default function TPAffinityPage() {
       <div className="space-y-8">
         <div>
           <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpAffinity.backToHub", "TP Hub")}
           </Link>
-          <h1 className="text-3xl font-bold mb-2">{t.title}</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("tpAffinity.title", "Afinidad de Equipo TP")}</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-20">
           <AlertCircle className="w-10 h-10 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold text-red-600">{t.errorTitle}</h3>
-          <p className="text-sm text-[var(--rowi-muted)] mt-2">{t.errorDesc}</p>
+          <h3 className="text-lg font-semibold text-red-600">{t("tpAffinity.errorTitle", "Error al cargar datos")}</h3>
+          <p className="text-sm text-[var(--rowi-muted)] mt-2">{t("tpAffinity.errorDesc", "No se pudieron cargar los datos del benchmark. Intenta de nuevo.")}</p>
         </div>
       </div>
     );
@@ -1121,29 +514,29 @@ export default function TPAffinityPage() {
       {/* Header */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpAffinity.backToHub", "TP Hub")}
         </Link>
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-pink-500/20 text-pink-500 mb-3">
-          <Sparkles className="w-3 h-3" /> {t.badge}
+          <Sparkles className="w-3 h-3" /> {t("tpAffinity.badge", "Afinidad de Equipo")}
         </span>
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <Heart className="w-8 h-8 text-pink-500" /> {t.title}
+          <Heart className="w-8 h-8 text-pink-500" /> {t("tpAffinity.title", "Afinidad de Equipo TP")}
         </h1>
         <p className="text-[var(--rowi-muted)]">
           {totalAssessments > 0
-            ? t.subtitle.replace("{count}", totalAssessments.toLocaleString())
-            : t.subtitle.replace(t.subtitleCountFragment, t.subtitleNoCount)}
+            ? t("tpAffinity.subtitle", "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de {count} evaluaciones").replace("{count}", totalAssessments.toLocaleString())
+            : t("tpAffinity.subtitle", "Analisis de compatibilidad emocional en los equipos globales de Teleperformance — basado en estilos cerebrales SEI y datos reales de {count} evaluaciones").replace(t("tpAffinity.subtitleCountFragment", "datos reales de {count} evaluaciones"), t("tpAffinity.subtitleNoCount", "datos reales del benchmark TP"))}
         </p>
       </div>
 
       {/* ── Tab Selector ── */}
       <div className="flex gap-1 border-b border-gray-200 dark:border-zinc-800 pb-2 overflow-x-auto">
         {([
-          { key: "community" as TabType, icon: Users, label: t.tabCommunity },
-          { key: "compare" as TabType, icon: ArrowLeftRight, label: t.tabCompare },
-          { key: "multicontext" as TabType, icon: Table2, label: t.tabMultiContext },
-          { key: "config" as TabType, icon: Settings, label: t.tabConfig },
-          { key: "benchmark" as TabType, icon: BarChart3, label: t.tabBenchmark },
+          { key: "community" as TabType, icon: Users, label: t("tpAffinity.tabCommunity", "Mi Comunidad") },
+          { key: "compare" as TabType, icon: ArrowLeftRight, label: t("tpAffinity.tabCompare", "Comparar") },
+          { key: "multicontext" as TabType, icon: Table2, label: t("tpAffinity.tabMultiContext", "Multi-Contexto") },
+          { key: "config" as TabType, icon: Settings, label: t("tpAffinity.tabConfig", "Configuracion") },
+          { key: "benchmark" as TabType, icon: BarChart3, label: t("tpAffinity.tabBenchmark", "Benchmark TP") },
         ]).map(({ key, icon: Icon, label }) => (
           <button
             key={key}
@@ -1161,7 +554,7 @@ export default function TPAffinityPage() {
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--rowi-muted)] hover:bg-pink-500/10 transition-colors ml-auto"
         >
           <BarChart3 className="w-4 h-4" />
-          <span className="hidden sm:inline">{t.monitor}</span>
+          <span className="hidden sm:inline">{t("tpAffinity.monitor", "Monitor")}</span>
         </button>
       </div>
 
@@ -1171,7 +564,7 @@ export default function TPAffinityPage() {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">{t.monitorTitle}</h2>
+                <h2 className="text-xl font-semibold">{t("tpAffinity.monitorTitle", "Affinity Monitor")}</h2>
                 <button onClick={() => setShowMonitor(false)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800">
                   <X className="w-5 h-5 text-[var(--rowi-muted)]" />
                 </button>
@@ -1192,37 +585,37 @@ export default function TPAffinityPage() {
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4 text-[var(--rowi-muted)]" />
-                <span className="text-xs text-[var(--rowi-muted)]">{t.overallAffinity}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.overallAffinity", "Afinidad General")}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold" style={{ color: overallLevel.color }}>{overallAffinity}%</span>
-                <span className="text-xs text-[var(--rowi-muted)]">{overallLevel.level}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{bandLabel(overallLevel.level)}</span>
               </div>
             </div>
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-4 h-4 text-[var(--rowi-muted)]" />
-                <span className="text-xs text-[var(--rowi-muted)]">{t.members}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.members", "Miembros")}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold">{communityMembers.length}</span>
-                <span className="text-xs text-[var(--rowi-muted)]">{t.inCommunity}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.inCommunity", "en tu comunidad")}</span>
               </div>
             </div>
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <UserCheck className="w-4 h-4 text-[var(--rowi-muted)]" />
-                <span className="text-xs text-[var(--rowi-muted)]">{t.selected}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.selected", "Seleccionados")}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-pink-500">{selectedMembers.length}</span>
-                <span className="text-xs text-[var(--rowi-muted)]">{t.forAnalysis}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.forAnalysis", "para analizar")}</span>
               </div>
             </div>
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Heart className="w-4 h-4" style={{ color: PROJECT_COLORS[project] }} />
-                <span className="text-xs text-[var(--rowi-muted)]">{t.context}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.context", "Contexto")}</span>
               </div>
               <select
                 value={project}
@@ -1230,12 +623,12 @@ export default function TPAffinityPage() {
                 className="w-full bg-transparent text-lg font-semibold cursor-pointer focus:outline-none"
                 style={{ color: PROJECT_COLORS[project] }}
               >
-                <option value="relationship">{t.relationships}</option>
-                <option value="leadership">{t.leadership}</option>
-                <option value="execution">{t.execution}</option>
-                <option value="innovation">{t.innovation}</option>
-                <option value="decision">{t.decision}</option>
-                <option value="conversation">{t.conversation}</option>
+                <option value="relationship">{t("tpAffinity.relationships", "Relaciones")}</option>
+                <option value="leadership">{t("tpAffinity.leadership", "Liderazgo")}</option>
+                <option value="execution">{t("tpAffinity.execution", "Ejecucion")}</option>
+                <option value="innovation">{t("tpAffinity.innovation", "Innovacion")}</option>
+                <option value="decision">{t("tpAffinity.decision", "Decisiones")}</option>
+                <option value="conversation">{t("tpAffinity.conversation", "Comunicacion")}</option>
               </select>
             </div>
           </div>
@@ -1246,7 +639,7 @@ export default function TPAffinityPage() {
             <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col shadow-sm">
               <div className="p-4 border-b border-gray-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <h2 className="font-semibold">{t.communityTitle}</h2>
+                  <h2 className="font-semibold">{t("tpAffinity.communityTitle", "Afinidad de Comunidad")}</h2>
                   <div className="flex items-center gap-2">
                     {availableGroups.length > 0 && (
                       <select
@@ -1254,7 +647,7 @@ export default function TPAffinityPage() {
                         onChange={(e) => setGroupFilter(e.target.value)}
                         className="text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-[var(--rowi-muted)] focus:outline-none"
                       >
-                        <option value="all">{lang !== "es" ? "All Groups" : "Todos los Grupos"}</option>
+                        <option value="all">{t("tpAffinity.allGroups", "Todos los Grupos")}</option>
                         {availableGroups.map((g) => (
                           <option key={g} value={g}>{g}</option>
                         ))}
@@ -1267,7 +660,7 @@ export default function TPAffinityPage() {
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-[var(--rowi-muted)] hover:text-pink-500 transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={`w-3 h-3 ${loadingAll ? "animate-spin" : ""}`} />
-                    {t.recalculate}
+                    {t("tpAffinity.recalculate", "Recalcular")}
                   </button>
                 </div>
                 <div className="mt-3 relative">
@@ -1276,7 +669,7 @@ export default function TPAffinityPage() {
                     type="text"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
-                    placeholder={t.searchPlaceholder}
+                    placeholder={t("tpAffinity.searchPlaceholder", "Buscar por nombre, grupo o pais...")}
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-sm placeholder:text-[var(--rowi-muted)] focus:outline-none focus:ring-2 focus:ring-pink-500/30"
                   />
                 </div>
@@ -1286,12 +679,12 @@ export default function TPAffinityPage() {
                 {loadingAll ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-pink-500 mb-3" />
-                    <p className="text-sm text-[var(--rowi-muted)]">{t.calculating}</p>
+                    <p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.calculating", "Calculando afinidad...")}</p>
                   </div>
                 ) : filteredMembers.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" />
-                    <p className="text-[var(--rowi-muted)]">{t.noMembers}</p>
+                    <p className="text-[var(--rowi-muted)]">{t("tpAffinity.noMembers", "No se encontraron miembros")}</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1341,7 +734,7 @@ export default function TPAffinityPage() {
                                     <span className="text-xs font-semibold" style={{ color: levelInfo?.color }}>{affinityPct}%</span>
                                   </>
                                 ) : (
-                                  <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                                  <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.notCalculated", "Sin calcular")}</span>
                                 )}
                               </div>
                             </div>
@@ -1358,8 +751,8 @@ export default function TPAffinityPage() {
                 <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-[var(--rowi-muted)]">{selectedMembers.length} {t.selectedMembers}</span>
-                      <button onClick={() => setSelectedMembers([])} className="text-xs text-pink-500 hover:underline">{t.clearSelection}</button>
+                      <span className="text-sm text-[var(--rowi-muted)]">{selectedMembers.length} {t("tpAffinity.selectedMembers", "seleccionados")}</span>
+                      <button onClick={() => setSelectedMembers([])} className="text-xs text-pink-500 hover:underline">{t("tpAffinity.clearSelection", "Limpiar")}</button>
                     </div>
                     <button
                       onClick={() => {
@@ -1384,7 +777,7 @@ export default function TPAffinityPage() {
                       className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90"
                     >
                       <Sparkles className="w-4 h-4" />
-                      {t.analyzeSelected}
+                      {t("tpAffinity.analyzeSelected", "Analizar Seleccionados")}
                     </button>
                   </div>
                 </div>
@@ -1414,7 +807,7 @@ export default function TPAffinityPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold" style={{ color: lvl.color }}>{heat}%</div>
-                          <div className="text-xs text-[var(--rowi-muted)]">{aff?.affinityLevel || "—"}</div>
+                          <div className="text-xs text-[var(--rowi-muted)]">{bandLabel(aff?.affinityLevel)}</div>
                         </div>
                       </div>
                       {/* Parts breakdown */}
@@ -1422,25 +815,25 @@ export default function TPAffinityPage() {
                         <div className="grid grid-cols-3 gap-2 mb-3">
                           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                             <div className="text-lg font-semibold text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div>
-                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.growth}</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t("tpAffinity.growth", "Crecimiento")}</div>
                           </div>
                           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                             <div className="text-lg font-semibold text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div>
-                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.collaboration}</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t("tpAffinity.collaboration", "Colaboracion")}</div>
                           </div>
                           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                             <div className="text-lg font-semibold text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div>
-                            <div className="text-[10px] text-[var(--rowi-muted)]">{t.understanding}</div>
+                            <div className="text-[10px] text-[var(--rowi-muted)]">{t("tpAffinity.understanding", "Entendimiento")}</div>
                           </div>
                         </div>
                       )}
-                      {aff?.parts && <div className="text-[10px] text-[var(--rowi-muted)] text-center mb-3 italic">{t.affinityNote}</div>}
+                      {aff?.parts && <div className="text-[10px] text-[var(--rowi-muted)] text-center mb-3 italic">{t("tpAffinity.affinityNote", "La afinidad total considera ponderaciones por contexto, cercania y calibracion.")}</div>}
                       {/* Brain Styles */}
                       {aff?.brainStyles && (
                         <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 mb-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Brain className="w-4 h-4 text-pink-500" />
-                            <span className="text-xs font-medium">{t.brainStylesLabel}</span>
+                            <span className="text-xs font-medium">{t("tpAffinity.brainStylesLabel", "Estilos de Pensamiento")}</span>
                           </div>
                           <div className="flex items-center justify-between text-sm">
                             <span className="px-2 py-1 rounded-lg bg-pink-500/10 text-pink-500 text-xs">{aff.brainStyles.yours || "—"}</span>
@@ -1455,7 +848,7 @@ export default function TPAffinityPage() {
                         <div className="bg-green-500/10 rounded-xl p-3 mb-3">
                           <div className="flex items-center gap-2 mb-2">
                             <Sparkles className="w-4 h-4 text-green-500" />
-                            <span className="text-xs font-medium text-green-700 dark:text-green-300">{t.sharedTalentsLabel} ({aff.sharedTalents.length})</span>
+                            <span className="text-xs font-medium text-green-700 dark:text-green-300">{t("tpAffinity.sharedTalentsLabel", "Talentos en Comun")} ({aff.sharedTalents.length})</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {aff.sharedTalents.slice(0, 6).map((tal: string) => (
@@ -1470,7 +863,7 @@ export default function TPAffinityPage() {
                         <div className="bg-blue-500/10 rounded-xl p-3 mb-3">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-4 h-4 text-blue-500" />
-                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t.strongCompLabel}</span>
+                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t("tpAffinity.strongCompLabel", "Competencias Fuertes")}</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {aff.strongCompetencies.map((c: string) => (
@@ -1485,19 +878,19 @@ export default function TPAffinityPage() {
                         if (summary && !summary.includes("modo ahorro")) {
                           return (
                             <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 border border-gray-200 dark:border-zinc-700">
-                              <div className="flex items-center gap-2 mb-1"><MessageCircle className="w-3 h-3 text-[var(--rowi-muted)]" /><span className="text-[10px] text-[var(--rowi-muted)]">{t.insightLabel}</span></div>
+                              <div className="flex items-center gap-2 mb-1"><MessageCircle className="w-3 h-3 text-[var(--rowi-muted)]" /><span className="text-[10px] text-[var(--rowi-muted)]">{t("tpAffinity.insightLabel", "Insight")}</span></div>
                               <p className="text-xs italic">{summary}</p>
                             </div>
                           );
                         }
-                        return <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10"><p className="text-xs text-[var(--rowi-muted)]">{t.askCoachTip}</p></div>;
+                        return <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10"><p className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.askCoachTip", "Pregunta al Affinity Coach para obtener consejos personalizados.")}</p></div>;
                       })()}
                     </>);
                   })() : (<>
                     {/* Group analysis */}
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="w-5 h-5 text-pink-500" />
-                      <h3 className="font-semibold">{t.groupAnalysis} ({selectedMembers.length})</h3>
+                      <h3 className="font-semibold">{t("tpAffinity.groupAnalysis", "Analisis de Grupo")} ({selectedMembers.length})</h3>
                     </div>
                     {(() => {
                       const analyzed = selectedMembers.filter((m) => affByMember[m.id]?.heat100);
@@ -1506,9 +899,9 @@ export default function TPAffinityPage() {
                       return (
                         <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-center">
                           <div className="text-3xl font-bold" style={{ color: avgLevel.color }}>{avg}%</div>
-                          <div className="text-sm text-[var(--rowi-muted)]">{t.avgAffinity}</div>
-                          <div className="text-xs mt-1" style={{ color: avgLevel.color }}>{avgLevel.level}</div>
-                          <div className="text-[10px] text-[var(--rowi-muted)] mt-2">{analyzed.length} / {selectedMembers.length} {t.analyzed}</div>
+                          <div className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.avgAffinity", "Afinidad Promedio")}</div>
+                          <div className="text-xs mt-1" style={{ color: avgLevel.color }}>{bandLabel(avgLevel.level)}</div>
+                          <div className="text-[10px] text-[var(--rowi-muted)] mt-2">{analyzed.length} / {selectedMembers.length} {t("tpAffinity.analyzed", "analizados")}</div>
                         </div>
                       );
                     })()}
@@ -1521,7 +914,7 @@ export default function TPAffinityPage() {
                               <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-medium text-[var(--rowi-muted)]">{member.name.charAt(0)}</div>
                               <span className="text-sm">{member.name}</span>
                             </div>
-                            <span className="text-xs text-[var(--rowi-muted)]">{t.notCalculated}</span>
+                            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.notCalculated", "Sin calcular")}</span>
                           </div>
                         );
                         const heat = aff.heat100 ?? 0;
@@ -1538,21 +931,21 @@ export default function TPAffinityPage() {
                               </div>
                               <div className="text-right">
                                 <div className="text-lg font-bold" style={{ color: lvl.color }}>{heat}%</div>
-                                <div className="text-[10px] text-[var(--rowi-muted)]">{aff.affinityLevel}</div>
+                                <div className="text-[10px] text-[var(--rowi-muted)]">{bandLabel(aff.affinityLevel)}</div>
                               </div>
                             </div>
                             {aff.parts && (
                               <div className="flex gap-2 mt-2">
-                                <div className="flex-1 text-center"><div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.growth}</div></div>
-                                <div className="flex-1 text-center"><div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.collaboration}</div></div>
-                                <div className="flex-1 text-center"><div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t.understanding}</div></div>
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-green-500">{Math.round((aff.parts.growth || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t("tpAffinity.growth", "Crecimiento")}</div></div>
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-blue-500">{Math.round((aff.parts.collaboration || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t("tpAffinity.collaboration", "Colaboracion")}</div></div>
+                                <div className="flex-1 text-center"><div className="text-xs font-medium text-purple-500">{Math.round((aff.parts.understanding || 0) / 135 * 100)}%</div><div className="text-[8px] text-[var(--rowi-muted)]">{t("tpAffinity.understanding", "Entendimiento")}</div></div>
                               </div>
                             )}
                           </div>
                         );
                       })}
                     </div>
-                    <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10 mt-3"><p className="text-xs text-[var(--rowi-muted)]">{t.groupTip}</p></div>
+                    <div className="bg-pink-500/5 rounded-xl p-3 border border-pink-500/10 mt-3"><p className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.groupTip", "Pregunta al Affinity Coach para recomendaciones sobre este grupo.")}</p></div>
                   </>)}
                 </motion.div>
               )}
@@ -1565,8 +958,8 @@ export default function TPAffinityPage() {
                       <Bot className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{tFn("admin.tp.affinity.coachTitle")}</h3>
-                      <p className="text-xs text-[var(--rowi-muted)]">{t.coachSubtitle}</p>
+                      <h3 className="font-semibold">{t("admin.tp.affinity.coachTitle", "Affinity Coach")}</h3>
+                      <p className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.coachSubtitle", "Tu coach de relaciones")}</p>
                     </div>
                   </div>
                 </div>
@@ -1600,7 +993,7 @@ export default function TPAffinityPage() {
                       value={coachInput}
                       onChange={(e) => setCoachInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askRowi(); } }}
-                      placeholder={t.askRowi}
+                      placeholder={t("tpAffinity.askRowi", "Pregunta sobre relaciones...")}
                       className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 px-4 py-2.5 text-sm placeholder:text-[var(--rowi-muted)] focus:outline-none focus:ring-2 focus:ring-pink-500/30"
                     />
                     <button
@@ -1625,28 +1018,28 @@ export default function TPAffinityPage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-              <ArrowLeftRight className="w-5 h-5 text-pink-500" /> {t.compareTitle}
+              <ArrowLeftRight className="w-5 h-5 text-pink-500" /> {t("tpAffinity.compareTitle", "Comparador de Afinidad")}
             </h2>
-            <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.compareDesc}</p>
+            <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.compareDesc", "Selecciona dos personas para comparar su afinidad en detalle")}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t.compareMemberA}</label>
+              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("tpAffinity.compareMemberA", "Persona A")}</label>
               <select value={compareA} onChange={(e) => setCompareA(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/30">
-                <option value="">{t.compareSelect}</option>
+                <option value="">{t("tpAffinity.compareSelect", "Seleccionar...")}</option>
                 {communityMembers.map((m) => <option key={m.id} value={m.id}>{m.name} {m.brainStyle ? `(${m.brainStyle})` : ""}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t.compareMemberB}</label>
+              <label className="text-xs text-[var(--rowi-muted)] mb-1 block">{t("tpAffinity.compareMemberB", "Persona B")}</label>
               <select value={compareB} onChange={(e) => setCompareB(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/30">
-                <option value="">{t.compareSelect}</option>
+                <option value="">{t("tpAffinity.compareSelect", "Seleccionar...")}</option>
                 {communityMembers.filter((m) => m.id !== compareA).map((m) => <option key={m.id} value={m.id}>{m.name} {m.brainStyle ? `(${m.brainStyle})` : ""}</option>)}
               </select>
             </div>
             <button onClick={runCompare} disabled={!compareA || !compareB || compareLoading} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium hover:opacity-90 disabled:opacity-50">
               {compareLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowLeftRight className="w-4 h-4" />}
-              {t.compareRun}
+              {t("tpAffinity.compareRun", "Comparar")}
             </button>
           </div>
           {compareResult && (() => {
@@ -1666,8 +1059,8 @@ export default function TPAffinityPage() {
                   </div>
                   <div className="text-center px-6">
                     <div className="text-3xl font-bold" style={{ color: lvl.color }}>{heat}%</div>
-                    <div className="text-xs" style={{ color: lvl.color }}>{compareResult.affinityLevel}</div>
-                    <div className="text-sm text-[var(--rowi-muted)] mt-1">{t.compareVs}</div>
+                    <div className="text-xs" style={{ color: lvl.color }}>{bandLabel(compareResult.affinityLevel)}</div>
+                    <div className="text-sm text-[var(--rowi-muted)] mt-1">{t("tpAffinity.compareVs", "vs")}</div>
                   </div>
                   <div className="text-center flex-1">
                     <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 font-bold text-lg mx-auto mb-2">{memberB.name.charAt(0)}</div>
@@ -1678,19 +1071,19 @@ export default function TPAffinityPage() {
                 {/* Parts */}
                 {compareResult.parts && (
                   <div>
-                    <h3 className="text-sm font-semibold mb-3">{t.compareParts}</h3>
+                    <h3 className="text-sm font-semibold mb-3">{t("tpAffinity.compareParts", "Desglose")}</h3>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                         <div className="text-xl font-bold text-green-500">{Math.round((compareResult.parts.growth || 0) / 135 * 100)}%</div>
-                        <div className="text-xs text-[var(--rowi-muted)]">{t.growth}</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.growth", "Crecimiento")}</div>
                       </div>
                       <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                         <div className="text-xl font-bold text-blue-500">{Math.round((compareResult.parts.collaboration || 0) / 135 * 100)}%</div>
-                        <div className="text-xs text-[var(--rowi-muted)]">{t.collaboration}</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.collaboration", "Colaboracion")}</div>
                       </div>
                       <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-3 text-center">
                         <div className="text-xl font-bold text-purple-500">{Math.round((compareResult.parts.understanding || 0) / 135 * 100)}%</div>
-                        <div className="text-xs text-[var(--rowi-muted)]">{t.understanding}</div>
+                        <div className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.understanding", "Entendimiento")}</div>
                       </div>
                     </div>
                   </div>
@@ -1698,7 +1091,7 @@ export default function TPAffinityPage() {
                 {/* Brain styles */}
                 {compareResult.brainStyles && (
                   <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Brain className="w-4 h-4 text-pink-500" />{t.compareBrainStyles}</h3>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Brain className="w-4 h-4 text-pink-500" />{t("tpAffinity.compareBrainStyles", "Estilos Cerebrales")}</h3>
                     <div className="flex items-center justify-between">
                       <span className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-500 text-sm">{compareResult.brainStyles.yours || "—"}</span>
                       <span className="text-[var(--rowi-muted)]">↔</span>
@@ -1710,21 +1103,21 @@ export default function TPAffinityPage() {
                 {/* Shared Talents */}
                 {compareResult.sharedTalents && compareResult.sharedTalents.length > 0 && (
                   <div className="bg-green-500/10 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-green-700 dark:text-green-300"><Sparkles className="w-4 h-4 text-green-500" />{t.compareTalents} ({compareResult.sharedTalents.length})</h3>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-green-700 dark:text-green-300"><Sparkles className="w-4 h-4 text-green-500" />{t("tpAffinity.compareTalents", "Talentos Compartidos")} ({compareResult.sharedTalents.length})</h3>
                     <div className="flex flex-wrap gap-2">{compareResult.sharedTalents.map((tal: string) => <span key={tal} className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-700 dark:text-green-300">{tal}</span>)}</div>
                   </div>
                 )}
                 {/* Strong Competencies */}
                 {compareResult.strongCompetencies && compareResult.strongCompetencies.length > 0 && (
                   <div className="bg-blue-500/10 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300"><TrendingUp className="w-4 h-4 text-blue-500" />{t.compareCompetencies}</h3>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300"><TrendingUp className="w-4 h-4 text-blue-500" />{t("tpAffinity.compareCompetencies", "Competencias Fuertes")}</h3>
                     <div className="flex flex-wrap gap-2">{compareResult.strongCompetencies.map((c: string) => <span key={c} className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300">{c}</span>)}</div>
                   </div>
                 )}
                 {/* AI Summary */}
                 {compareResult.ai_summary && !compareResult.ai_summary.includes("modo ahorro") && (
                   <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700">
-                    <div className="flex items-center gap-2 mb-2"><MessageCircle className="w-4 h-4 text-[var(--rowi-muted)]" /><span className="text-xs text-[var(--rowi-muted)]">{t.insightLabel}</span></div>
+                    <div className="flex items-center gap-2 mb-2"><MessageCircle className="w-4 h-4 text-[var(--rowi-muted)]" /><span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.insightLabel", "Insight")}</span></div>
                     <p className="text-sm italic">{compareResult.ai_summary}</p>
                   </div>
                 )}
@@ -1732,7 +1125,7 @@ export default function TPAffinityPage() {
             );
           })()}
           {!compareResult && !compareLoading && (
-            <div className="text-center py-16"><ArrowLeftRight className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.compareNoData}</p></div>
+            <div className="text-center py-16"><ArrowLeftRight className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t("tpAffinity.compareNoData", "Selecciona dos personas y haz clic en Comparar")}</p></div>
           )}
         </div>
       )}
@@ -1744,31 +1137,31 @@ export default function TPAffinityPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Table2 className="w-5 h-5 text-pink-500" /> {t.multiTitle}</h2>
-              <p className="text-sm text-[var(--rowi-muted)]">{t.multiDesc}</p>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Table2 className="w-5 h-5 text-pink-500" /> {t("tpAffinity.multiTitle", "Analisis Multi-Contexto")}</h2>
+              <p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.multiDesc", "Visualiza la afinidad en los 6 contextos simultaneamente para los miembros seleccionados")}</p>
             </div>
             <button onClick={runMultiContext} disabled={selectedMembers.length === 0 || multiLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
               {multiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              {t.multiRunAll}
+              {t("tpAffinity.multiRunAll", "Calcular Todos")}
             </button>
           </div>
           {selectedMembers.length === 0 ? (
-            <div className="text-center py-16"><Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.multiSelectMembers}</p></div>
+            <div className="text-center py-16"><Users className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t("tpAffinity.multiSelectMembers", "Selecciona miembros en la tab Comunidad primero")}</p></div>
           ) : multiLoading ? (
-            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t.multiCalculating}</p></div>
+            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.multiCalculating", "Calculando todos los contextos...")}</p></div>
           ) : Object.keys(multiContextData).length > 0 ? (
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-zinc-800">
-                      <th className="text-left p-4 text-xs text-[var(--rowi-muted)] font-medium">{t.multiMember}</th>
+                      <th className="text-left p-4 text-xs text-[var(--rowi-muted)] font-medium">{t("tpAffinity.multiMember", "Miembro")}</th>
                       {ALL_CONTEXTS.map((ctx) => (
                         <th key={ctx} className="text-center p-4 text-xs font-medium" style={{ color: PROJECT_COLORS[ctx] }}>
-                          {t[ctx === "relationship" ? "relationships" : ctx === "conversation" ? "conversation" : ctx] || ctx}
+                          {ctxLabel(ctx)}
                         </th>
                       ))}
-                      <th className="text-center p-4 text-xs text-[var(--rowi-muted)] font-medium">{t.multiAvg}</th>
+                      <th className="text-center p-4 text-xs text-[var(--rowi-muted)] font-medium">{t("tpAffinity.multiAvg", "Promedio")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1796,20 +1189,20 @@ export default function TPAffinityPage() {
                             return (
                               <td key={ctx} className="text-center p-4">
                                 <div className="text-lg font-bold" style={{ color: lvl.color }}>{val}%</div>
-                                <div className="text-[10px]" style={{ color: lvl.color }}>{lvl.level}</div>
+                                <div className="text-[10px]" style={{ color: lvl.color }}>{bandLabel(lvl.level)}</div>
                               </td>
                             );
                           })}
                           <td className="text-center p-4">
                             <div className="text-lg font-bold" style={{ color: avgLvl.color }}>{avg}%</div>
-                            <div className="text-[10px]" style={{ color: avgLvl.color }}>{avgLvl.level}</div>
+                            <div className="text-[10px]" style={{ color: avgLvl.color }}>{bandLabel(avgLvl.level)}</div>
                           </td>
                         </tr>
                       );
                     })}
                     {/* Averages row */}
                     <tr className="bg-gray-50 dark:bg-zinc-800/50 font-semibold">
-                      <td className="p-4 text-xs text-[var(--rowi-muted)]">{t.multiAvg}</td>
+                      <td className="p-4 text-xs text-[var(--rowi-muted)]">{t("tpAffinity.multiAvg", "Promedio")}</td>
                       {ALL_CONTEXTS.map((ctx) => {
                         const vals = selectedMembers.map((m) => multiContextData[m.id]?.[ctx]?.heat100 ?? 0);
                         const avg = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
@@ -1830,7 +1223,7 @@ export default function TPAffinityPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-16"><Table2 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.multiRunAll}</p></div>
+            <div className="text-center py-16"><Table2 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t("tpAffinity.multiRunAll", "Calcular Todos")}</p></div>
           )}
         </div>
       )}
@@ -1842,29 +1235,29 @@ export default function TPAffinityPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Settings className="w-5 h-5 text-pink-500" /> {t.configTitle}</h2>
-              <p className="text-sm text-[var(--rowi-muted)]">{t.configDesc}</p>
+              <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Settings className="w-5 h-5 text-pink-500" /> {t("tpAffinity.configTitle", "Configuracion de Afinidad")}</h2>
+              <p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.configDesc", "Ajusta los pesos y parametros del calculo de afinidad")}</p>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={async () => { await recalculateAll(); }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm text-[var(--rowi-muted)] hover:text-pink-500 transition-colors">
-                <RefreshCw className="w-4 h-4" /> {t.configRecalculate}
+                <RefreshCw className="w-4 h-4" /> {t("tpAffinity.configRecalculate", "Recalcular Todo")}
               </button>
               <button onClick={saveConfig} disabled={configSaving || !affinityConfig} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
                 {configSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : configSaved ? <Award className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                {configSaving ? t.configSaving : configSaved ? t.configSaved : t.configSave}
+                {configSaving ? t("tpAffinity.configSaving", "Guardando...") : configSaved ? t("tpAffinity.configSaved", "Guardado") : t("tpAffinity.configSave", "Guardar Configuracion")}
               </button>
             </div>
           </div>
           {configLoading ? (
-            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p></div>
+            <div className="text-center py-16"><Loader2 className="w-8 h-8 animate-spin text-pink-500 mx-auto mb-3" /><p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.loading", "Cargando datos de afinidad...")}</p></div>
           ) : !affinityConfig ? (
-            <div className="text-center py-16"><AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t.configLoadError}</p></div>
+            <div className="text-center py-16"><AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" /><p className="text-[var(--rowi-muted)]">{t("tpAffinity.configLoadError", "Error al cargar configuracion")}</p></div>
           ) : (
             <div className="space-y-6">
               {/* Context Weights */}
               <div>
-                <h3 className="text-lg font-semibold mb-2">{t.configWeights}</h3>
-                <p className="text-xs text-[var(--rowi-muted)] mb-4">{t.configWeightsDesc}</p>
+                <h3 className="text-lg font-semibold mb-2">{t("tpAffinity.configWeights", "Pesos por Contexto")}</h3>
+                <p className="text-xs text-[var(--rowi-muted)] mb-4">{t("tpAffinity.configWeightsDesc", "Cada contexto tiene 3 dimensiones (Crecimiento, Colaboracion, Entendimiento) que deben sumar 100%")}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {ALL_CONTEXTS.map((ctx) => {
                     const weights = affinityConfig.contextWeights?.[ctx] || { growth: 0.33, collab: 0.34, understand: 0.33 };
@@ -1874,13 +1267,13 @@ export default function TPAffinityPage() {
                       <div key={ctx} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-3 h-3 rounded-full" style={{ background: PROJECT_COLORS[ctx] }} />
-                          <span className="text-sm font-semibold capitalize">{t[ctx === "relationship" ? "relationships" : ctx === "conversation" ? "conversation" : ctx] || ctx}</span>
+                          <span className="text-sm font-semibold capitalize">{ctxLabel(ctx)}</span>
                           {!isValid && <span className="text-[10px] text-red-500 ml-auto">≠ 100%</span>}
                         </div>
                         {[
-                          { key: "growth", label: t.growth, color: "text-green-500" },
-                          { key: "collab", label: t.collaboration, color: "text-blue-500" },
-                          { key: "understand", label: t.understanding, color: "text-purple-500" },
+                          { key: "growth", label: t("tpAffinity.growth", "Crecimiento"), color: "text-green-500" },
+                          { key: "collab", label: t("tpAffinity.collaboration", "Colaboracion"), color: "text-blue-500" },
+                          { key: "understand", label: t("tpAffinity.understanding", "Entendimiento"), color: "text-purple-500" },
                         ].map(({ key, label, color }) => (
                           <div key={key} className="mb-2">
                             <div className="flex items-center justify-between mb-1">
@@ -1910,40 +1303,40 @@ export default function TPAffinityPage() {
               {/* Bands */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                  <h3 className="text-sm font-semibold mb-3">{t.configBands}</h3>
-                  <p className="text-xs text-[var(--rowi-muted)] mb-3">{t.configBandsDesc}</p>
+                  <h3 className="text-sm font-semibold mb-3">{t("tpAffinity.configBands", "Bandas Termicas")}</h3>
+                  <p className="text-xs text-[var(--rowi-muted)] mb-3">{t("tpAffinity.configBandsDesc", "Umbrales para clasificar la temperatura de afinidad")}</p>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configHot} (≥)</span>
+                      <span className="text-xs">{t("tpAffinity.configHot", "Caliente")} (≥)</span>
                       <input type="number" min="0" max="100" value={affinityConfig.bands?.hotThreshold ?? 70}
                         onChange={(e) => setAffinityConfig((p: any) => ({ ...p, bands: { ...p.bands, hotThreshold: Number(e.target.value) } }))}
                         className="w-20 px-2 py-1 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-center" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configWarm} (≥)</span>
+                      <span className="text-xs">{t("tpAffinity.configWarm", "Tibio")} (≥)</span>
                       <input type="number" min="0" max="100" value={affinityConfig.bands?.warmThreshold ?? 45}
                         onChange={(e) => setAffinityConfig((p: any) => ({ ...p, bands: { ...p.bands, warmThreshold: Number(e.target.value) } }))}
                         className="w-20 px-2 py-1 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm text-center" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configCold} (&lt;)</span>
+                      <span className="text-xs">{t("tpAffinity.configCold", "Frio")} (&lt;)</span>
                       <span className="text-sm text-[var(--rowi-muted)]">&lt; {affinityConfig.bands?.warmThreshold ?? 45}</span>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                  <h3 className="text-sm font-semibold mb-3">{t.configCloseness}</h3>
+                  <h3 className="text-sm font-semibold mb-3">{t("tpAffinity.configCloseness", "Multiplicadores de Cercania")}</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configClose}</span>
+                      <span className="text-xs">{t("tpAffinity.configClose", "Cercano")}</span>
                       <span className="text-sm font-mono font-bold text-green-500">{affinityConfig.closeness?.cercano ?? 1.0}x</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configNeutral}</span>
+                      <span className="text-xs">{t("tpAffinity.configNeutral", "Neutral")}</span>
                       <span className="text-sm font-mono font-bold text-yellow-500">{affinityConfig.closeness?.neutral ?? 0.9}x</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs">{t.configFar}</span>
+                      <span className="text-xs">{t("tpAffinity.configFar", "Lejano")}</span>
                       <span className="text-sm font-mono font-bold text-red-500">{affinityConfig.closeness?.lejano ?? 0.75}x</span>
                     </div>
                   </div>
@@ -1963,7 +1356,7 @@ export default function TPAffinityPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{t.overallAffinity}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.overallAffinity", "Afinidad General")}</span>
           </div>
           <div className="flex items-baseline gap-2">
             {(() => {
@@ -1973,7 +1366,7 @@ export default function TPAffinityPage() {
               const lvl = levelFromHeat135(Math.round((normPct * 135) / 100));
               return (<>
                 <span className="text-2xl font-bold" style={{ color: lvl.color }}>{avgSim.toFixed(1)}%</span>
-                <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Avg Similarity" : "Similitud Prom."}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.avgSimilarity", "Similitud Prom.")}</span>
               </>);
             })()}
           </div>
@@ -1981,31 +1374,31 @@ export default function TPAffinityPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{t.members}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.members", "Miembros")}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold">{totalAssessments.toLocaleString()}</span>
-            <span className="text-xs text-[var(--rowi-muted)]">{t.employees}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.employees", "evaluaciones")}</span>
           </div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Brain Styles" : "Estilos Cerebrales"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.brainStylesStat", "Estilos Cerebrales")}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-purple-500">{brainStyleGroups.length}</span>
-            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "identified" : "identificados"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.identified", "identificados")}</span>
           </div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Globe className="w-4 h-4 text-[var(--rowi-muted)]" />
-            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "Regions" : "Regiones"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.regions", "Regiones")}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-blue-500">{regionGroups.length}</span>
-            <span className="text-xs text-[var(--rowi-muted)]">{lang !== "es" ? "global" : "globales"}</span>
+            <span className="text-xs text-[var(--rowi-muted)]">{t("tpAffinity.global", "globales")}</span>
           </div>
         </div>
       </div>
@@ -2013,13 +1406,13 @@ export default function TPAffinityPage() {
       {/* ── Brain Style Distribution as Community Cards ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Brain className="w-5 h-5 text-purple-500" /> {t.brainDistTitle}
+          <Brain className="w-5 h-5 text-purple-500" /> {t("tpAffinity.brainDistTitle", "Distribucion Real de Estilos Cerebrales")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.brainDistDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.brainDistDesc", "Distribucion de estilos cerebrales del benchmark TP basada en datos reales")}</p>
         {sortedBrainStyles.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-10 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
             <Brain className="w-10 h-10 text-[var(--rowi-muted)] mx-auto mb-3 opacity-50" />
-            <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+            <p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.emptyBenchmark", "Sin datos de benchmark todavía")}</p>
           </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -2054,7 +1447,7 @@ export default function TPAffinityPage() {
                       </div>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-500 font-medium">{pct}%</span>
                     </div>
-                    <div className="text-xs text-[var(--rowi-muted)]">{group.count.toLocaleString()} {t.employees}</div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{group.count.toLocaleString()} {t("tpAffinity.employees", "evaluaciones")}</div>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="h-1.5 rounded-full flex-1 bg-gray-200 dark:bg-zinc-700" style={{ maxWidth: "80px" }}>
                         <div className="h-full rounded-full transition-all" style={{ width: `${parseFloat(pct) * 4}%`, background: getBrainStyleColor(group.name) }} />
@@ -2078,9 +1471,9 @@ export default function TPAffinityPage() {
       {/* ── EQ by Brain Style (bars) ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-purple-500" /> {t.eqByStyleTitle}
+          <TrendingUp className="w-5 h-5 text-purple-500" /> {t("tpAffinity.eqByStyleTitle", "EQ Promedio por Estilo Cerebral")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.eqByStyleDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.eqByStyleDesc", "Puntaje EQ Total promedio para cada estilo cerebral en el benchmark TP")}</p>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
           <div className="space-y-3">
             {[...sortedBrainStyles]
@@ -2128,9 +1521,9 @@ export default function TPAffinityPage() {
       {affinityMatrix.length > 0 && (
         <div>
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-pink-500" /> {t.affinityMatrixTitle}
+            <Heart className="w-5 h-5 text-pink-500" /> {t("tpAffinity.affinityMatrixTitle", "Matriz de Afinidad entre Estilos")}
           </h2>
-          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.affinityMatrixDesc}</p>
+          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.affinityMatrixDesc", "Compatibilidad emocional calculada por similitud de perfiles de competencia entre estilos cerebrales")}</p>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
             {/* Full NxN Heat Map Table */}
             <div className="overflow-x-auto mb-6">
@@ -2188,7 +1581,7 @@ export default function TPAffinityPage() {
               </table>
             </div>
             {/* Top pairs list */}
-            <h3 className="text-sm font-semibold mb-3">{lang !== "es" ? "Top Affinity Pairs" : "Pares de Mayor Afinidad"}</h3>
+            <h3 className="text-sm font-semibold mb-3">{t("tpAffinity.topAffinityPairs", "Pares de Mayor Afinidad")}</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {affinityMatrix.slice(0, 8).map((pair, i) => {
                 const affinityLevel = pair.similarity > 99.5 ? "high" : pair.similarity > 99 ? "medium" : "low";
@@ -2228,9 +1621,9 @@ export default function TPAffinityPage() {
               })}
             </div>
             <div className="flex items-center gap-6 justify-center mt-4 text-xs text-[var(--rowi-muted)]">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-400" /> {t.highAffinity}</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-400" /> {t.mediumAffinity}</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-400" /> {t.lowAffinity}</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-400" /> {t("tpAffinity.highAffinity", "Alta afinidad")}</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-400" /> {t("tpAffinity.mediumAffinity", "Media afinidad")}</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-400" /> {t("tpAffinity.lowAffinity", "Baja afinidad")}</span>
             </div>
           </div>
         </div>
@@ -2239,9 +1632,9 @@ export default function TPAffinityPage() {
       {/* ── Complementary Pairs ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Zap className="w-5 h-5 text-yellow-500" /> {t.complementaryTitle}
+          <Zap className="w-5 h-5 text-yellow-500" /> {t("tpAffinity.complementaryTitle", "Parejas Complementarias")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.complementaryDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.complementaryDesc", "Combinaciones de estilos cerebrales que generan mayor complementariedad de competencias")}</p>
         <div className="grid md:grid-cols-2 gap-4">
           {COMPLEMENTARY_PAIRS.map((pair, i) => (
             <motion.div
@@ -2268,7 +1661,7 @@ export default function TPAffinityPage() {
                 <span className="ml-auto text-lg font-bold text-pink-600">{pair.score}%</span>
               </div>
               <p className="text-xs text-[var(--rowi-muted)]">
-                {lang !== "es" ? pair.reasonEn : pair.reasonEs}
+                {t(`tpAffinity.${pair.reasonKey}`, pair.reasonFallbackEs)}
               </p>
             </motion.div>
           ))}
@@ -2279,9 +1672,9 @@ export default function TPAffinityPage() {
       {regionGroups.length > 0 && (
         <div>
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-500" /> {t.regionalTitle}
+            <Globe className="w-5 h-5 text-blue-500" /> {t("tpAffinity.regionalTitle", "Estilos Cerebrales por Region")}
           </h2>
-          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.regionalDesc}</p>
+          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.regionalDesc", "Como se distribuyen los estilos cerebrales en cada region de TP")}</p>
           <div className="grid md:grid-cols-2 gap-4">
             {regionGroups
               .filter(r => r.brainStyleDist && Object.keys(r.brainStyleDist).length > 0)
@@ -2305,7 +1698,7 @@ export default function TPAffinityPage() {
                       <span className="font-semibold text-sm">{region.name}</span>
                       <span className="text-xs text-purple-500 font-mono ml-auto">EQ {avgEQ.toFixed(1)}</span>
                       <span className="text-[10px] text-[var(--rowi-muted)]">
-                        {region.count.toLocaleString()} {t.employees}
+                        {region.count.toLocaleString()} {t("tpAffinity.employees", "evaluaciones")}
                       </span>
                     </div>
                     <div className="space-y-2">
@@ -2341,15 +1734,15 @@ export default function TPAffinityPage() {
       {regionGroups.length > 1 && (
         <div>
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-blue-500" /> {t.crossRegionTitle}
+            <Building2 className="w-5 h-5 text-blue-500" /> {t("tpAffinity.crossRegionTitle", "Perspectivas Interregionales")}
           </h2>
-          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.crossRegionDesc}</p>
+          <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.crossRegionDesc", "Patrones de afinidad en las operaciones globales de TP")}</p>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr>
-                    <th className="p-2 text-left text-[var(--rowi-muted)]">{lang !== "es" ? "Region" : "Region"}</th>
+                    <th className="p-2 text-left text-[var(--rowi-muted)]">{t("tpAffinity.region", "Region")}</th>
                     {regionGroups.filter(r => r.count > 50).slice(0, 8).map((r) => (
                       <th key={r.name} className="p-2 text-center text-blue-600 font-medium">
                         <span className="text-[10px]">{r.name.slice(0, 12)}</span>
@@ -2396,9 +1789,9 @@ export default function TPAffinityPage() {
       {/* ── Brain Style Profiles ── */}
       <div>
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Award className="w-5 h-5 text-purple-500" /> {t.profilesTitle}
+          <Award className="w-5 h-5 text-purple-500" /> {t("tpAffinity.profilesTitle", "Perfiles de Estilo Cerebral")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t.profilesDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-4">{t("tpAffinity.profilesDesc", "Caracteristicas, fortalezas y riesgos de cada estilo cerebral encontrado en TP")}</p>
         <div className="grid md:grid-cols-2 gap-4">
           {sortedBrainStyles.slice(0, 8).map((group, i) => {
             const styleKey = group.name.toLowerCase() as BrainStyleKey;
@@ -2419,25 +1812,25 @@ export default function TPAffinityPage() {
                       {getBrainStyleLabel(group.name, lang)}
                     </h3>
                     <p className="text-[10px] text-[var(--rowi-muted)]">
-                      {group.count.toLocaleString()} {t.employees} · EQ {(group.metrics.eqTotal?.mean ?? 0).toFixed(1)}
+                      {group.count.toLocaleString()} {t("tpAffinity.employees", "evaluaciones")} · EQ {(group.metrics.eqTotal?.mean ?? 0).toFixed(1)}
                     </p>
                   </div>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="font-medium text-[var(--rowi-muted)]">{t.traits}: </span>
+                    <span className="font-medium text-[var(--rowi-muted)]">{t("tpAffinity.traits", "Rasgos")}: </span>
                     <span>{styleData.traits.join(", ")}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-green-600">{t.strengths}: </span>
+                    <span className="font-medium text-green-600">{t("tpAffinity.strengths", "Fortalezas")}: </span>
                     <span>{styleData.strengths.join(", ")}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-yellow-600">{t.risks}: </span>
+                    <span className="font-medium text-yellow-600">{t("tpAffinity.risks", "Riesgos")}: </span>
                     <span>{styleData.risks.join(", ")}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-purple-500">{t.facilitation}: </span>
+                    <span className="font-medium text-purple-500">{t("tpAffinity.facilitation", "Facilitacion")}: </span>
                     <span>{styleData.facilitation}</span>
                   </div>
                 </div>
@@ -2451,11 +1844,11 @@ export default function TPAffinityPage() {
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-2xl p-6 flex gap-4">
         <Shield className="w-6 h-6 text-pink-500 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-semibold text-pink-900 dark:text-pink-100 mb-1">{t.infoTitle}</h3>
+          <h3 className="font-semibold text-pink-900 dark:text-pink-100 mb-1">{t("tpAffinity.infoTitle", "Datos de Afinidad TP")}</h3>
           <p className="text-sm text-pink-700 dark:text-pink-300">
             {totalAssessments > 0
-              ? t.infoDesc.replace("{count}", totalAssessments.toLocaleString())
-              : t.infoDesc.replace(t.infoDescCountFragment, t.infoDescNoCount)}
+              ? t("tpAffinity.infoDesc", "Datos basados en el benchmark real de Teleperformance con {count} evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.").replace("{count}", totalAssessments.toLocaleString())
+              : t("tpAffinity.infoDesc", "Datos basados en el benchmark real de Teleperformance con {count} evaluaciones SEI. Estilos cerebrales y metricas de afinidad calculados desde perfiles reales.").replace(t("tpAffinity.infoDescCountFragment", "benchmark real de Teleperformance con {count} evaluaciones SEI"), t("tpAffinity.infoDescNoCount", "benchmark real de Teleperformance"))}
           </p>
         </div>
       </motion.div>
@@ -2465,10 +1858,10 @@ export default function TPAffinityPage() {
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">
         <Link href="/hub/admin/tp/benchmark" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-pink-500 transition-colors font-medium">
-          <ArrowLeft className="w-5 h-5" /> {t.navBenchmark}
+          <ArrowLeft className="w-5 h-5" /> {t("tpAffinity.navBenchmark", "Benchmark")}
         </Link>
         <Link href="/hub/admin/tp/eco" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold hover:opacity-90 transition-opacity">
-          {t.navEco} <ArrowRight className="w-5 h-5" />
+          {t("tpAffinity.navEco", "ECO")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

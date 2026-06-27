@@ -28,293 +28,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { EQ_LEVELS, getEqLevel } from "@/domains/eq/lib/eqLevels";
 
 /* =========================================================
-   Translations — Bilingual ES / EN
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badgeAlerts: "Alertas / Alerts",
-    pageTitle: "Alertas y Notificaciones EQ",
-    pageSubtitle: "Monitoreo proactivo de salud EQ — umbrales, tendencias, anomalías y salud de equipos",
-    totalAlerts: "Total Alertas",
-    critical: "Críticas",
-    warning: "Advertencias",
-    informational: "Informativas",
-    filterSeverity: "Severidad",
-    filterType: "Tipo",
-    filterRegion: "Región",
-    filterStatus: "Estado",
-    all: "Todas",
-    severityCritical: "Crítica",
-    severityWarning: "Advertencia",
-    severityInfo: "Info",
-    typeLowEQ: "EQ Bajo",
-    typeDeclining: "Tendencia",
-    typeTeamHealth: "Salud Equipo",
-    typeAnomaly: "Anomalía",
-    regionNA: "NA",
-    regionLATAM: "LATAM",
-    regionAPAC: "APAC",
-    regionEMEA: "EMEA",
-    statusNew: "Nueva",
-    statusAcknowledged: "Reconocida",
-    statusResolved: "Resuelta",
-    activeAlertsTitle: "Alertas Activas",
-    activeAlertsDesc: "Lista filtrada de alertas detectadas por el sistema de monitoreo EQ",
-    detected: "Detectada",
-    threshold: "Umbral",
-    current: "Actual",
-    entity: "Entidad",
-    noAlertsMatch: "No hay alertas que coincidan con los filtros seleccionados",
-    teamHealthTitle: "Salud EQ por País",
-    teamHealthDesc: "Nivel SEI y salud relativa al benchmark TP por país",
-    health: "Nivel SEI",
-    eqLevel: "Nivel SEI",
-    trend: "Tendencia",
-    topStrength: "Mayor Fortaleza",
-    biggestGap: "Mayor Brecha",
-    trendUp: "Subiendo",
-    trendDown: "Bajando",
-    trendStable: "Estable",
-    configTitle: "Configuración de Umbrales",
-    configDesc: "Definir umbrales de alerta para métricas clave del sistema EQ",
-    metric: "Métrica",
-    warningThreshold: "Umbral Advertencia",
-    criticalThreshold: "Umbral Crítico",
-    enabled: "Activo",
-    trendMonitorTitle: "Monitoreo de Métricas Actuales",
-    trendMonitorDesc: "Indicadores de métricas clave por región — datos en vivo del benchmark",
-    infoTitle: "Sistema de Alertas EQ",
-    infoDesc: "Las alertas se generan automáticamente basándose en umbrales configurados, análisis de tendencias y detección de anomalías sobre datos SEI de Teleperformance. Todos los datos individuales permanecen anonimizados.",
-    navPrev: "World",
-    navNext: "Data Quality",
-    loading: "Cargando datos...",
-    assessments: "evaluaciones",
-    avgEQ: "EQ Prom",
-    regionMetrics: "Métricas por Región",
-    regionMetricsDesc: "Promedios de métricas clave por región geográfica",
-    mean: "Prom",
-    count: "N",
-    lowCompAlert: "Competencia Baja",
-    lowCompAlertDesc: "tiene {comp} en {value}, por debajo del umbral de {threshold}",
-    lowEQAlertDesc: "tiene un EQ promedio de {value}, por debajo del umbral de {threshold}",
-    lowHealthAlertDesc: "tiene un score de salud de {value}, por debajo del umbral de {threshold}",
-    spread: "Rango",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badgeAlerts: "Alerts / Notifications",
-    pageTitle: "EQ Alerts & Notifications",
-    pageSubtitle: "Proactive EQ health monitoring — thresholds, trends, anomalies, and team health",
-    totalAlerts: "Total Alerts",
-    critical: "Critical",
-    warning: "Warnings",
-    informational: "Informational",
-    filterSeverity: "Severity",
-    filterType: "Type",
-    filterRegion: "Region",
-    filterStatus: "Status",
-    all: "All",
-    severityCritical: "Critical",
-    severityWarning: "Warning",
-    severityInfo: "Info",
-    typeLowEQ: "Low EQ",
-    typeDeclining: "Trend",
-    typeTeamHealth: "Team Health",
-    typeAnomaly: "Anomaly",
-    regionNA: "NA",
-    regionLATAM: "LATAM",
-    regionAPAC: "APAC",
-    regionEMEA: "EMEA",
-    statusNew: "New",
-    statusAcknowledged: "Acknowledged",
-    statusResolved: "Resolved",
-    activeAlertsTitle: "Active Alerts",
-    activeAlertsDesc: "Filtered list of alerts detected by the EQ monitoring system",
-    detected: "Detected",
-    threshold: "Threshold",
-    current: "Current",
-    entity: "Entity",
-    noAlertsMatch: "No alerts match the selected filters",
-    teamHealthTitle: "EQ Health by Country",
-    teamHealthDesc: "SEI level and relative health vs TP benchmark by country",
-    health: "SEI Level",
-    eqLevel: "SEI Level",
-    trend: "Trend",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    trendUp: "Improving",
-    trendDown: "Declining",
-    trendStable: "Stable",
-    configTitle: "Threshold Configuration",
-    configDesc: "Define alert thresholds for key EQ system metrics",
-    metric: "Metric",
-    warningThreshold: "Warning Threshold",
-    criticalThreshold: "Critical Threshold",
-    enabled: "Enabled",
-    trendMonitorTitle: "Current Metrics Monitoring",
-    trendMonitorDesc: "Key metric indicators by region — live benchmark data",
-    infoTitle: "EQ Alert System",
-    infoDesc: "Alerts are automatically generated based on configured thresholds, trend analysis, and anomaly detection over Teleperformance SEI data. All individual data remains anonymized.",
-    navPrev: "World",
-    navNext: "Data Quality",
-    loading: "Loading data...",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    regionMetrics: "Metrics by Region",
-    regionMetricsDesc: "Key metric averages by geographic region",
-    mean: "Avg",
-    count: "N",
-    lowCompAlert: "Low Competency",
-    lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
-    lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
-    lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
-    spread: "Spread",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badgeAlerts: "Alerts / Notifications",
-    pageTitle: "EQ Alerts & Notifications",
-    pageSubtitle: "Proactive EQ health monitoring — thresholds, trends, anomalies, and team health",
-    totalAlerts: "Total Alerts",
-    critical: "Critical",
-    warning: "Warnings",
-    informational: "Informational",
-    filterSeverity: "Severity",
-    filterType: "Type",
-    filterRegion: "Region",
-    filterStatus: "Status",
-    all: "All",
-    severityCritical: "Critical",
-    severityWarning: "Warning",
-    severityInfo: "Info",
-    typeLowEQ: "Low EQ",
-    typeDeclining: "Trend",
-    typeTeamHealth: "Team Health",
-    typeAnomaly: "Anomaly",
-    regionNA: "NA",
-    regionLATAM: "LATAM",
-    regionAPAC: "APAC",
-    regionEMEA: "EMEA",
-    statusNew: "New",
-    statusAcknowledged: "Acknowledged",
-    statusResolved: "Resolved",
-    activeAlertsTitle: "Active Alerts",
-    activeAlertsDesc: "Filtered list of alerts detected by the EQ monitoring system",
-    detected: "Detected",
-    threshold: "Threshold",
-    current: "Current",
-    entity: "Entity",
-    noAlertsMatch: "No alerts match the selected filters",
-    teamHealthTitle: "EQ Health by Country",
-    teamHealthDesc: "SEI level and relative health vs TP benchmark by country",
-    health: "SEI Level",
-    eqLevel: "SEI Level",
-    trend: "Trend",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    trendUp: "Improving",
-    trendDown: "Declining",
-    trendStable: "Stable",
-    configTitle: "Threshold Configuration",
-    configDesc: "Define alert thresholds for key EQ system metrics",
-    metric: "Metric",
-    warningThreshold: "Warning Threshold",
-    criticalThreshold: "Critical Threshold",
-    enabled: "Enabled",
-    trendMonitorTitle: "Current Metrics Monitoring",
-    trendMonitorDesc: "Key metric indicators by region — live benchmark data",
-    infoTitle: "EQ Alert System",
-    infoDesc: "Alerts are automatically generated based on configured thresholds, trend analysis, and anomaly detection over Teleperformance SEI data. All individual data remains anonymized.",
-    navPrev: "World",
-    navNext: "Data Quality",
-    loading: "Loading data...",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    regionMetrics: "Metrics by Region",
-    regionMetricsDesc: "Key metric averages by geographic region",
-    mean: "Avg",
-    count: "N",
-    lowCompAlert: "Low Competency",
-    lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
-    lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
-    lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
-    spread: "Intervalo",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badgeAlerts: "Alerts / Notifications",
-    pageTitle: "EQ Alerts & Notifications",
-    pageSubtitle: "Proactive EQ health monitoring — thresholds, trends, anomalies, and team health",
-    totalAlerts: "Total Alerts",
-    critical: "Critical",
-    warning: "Warnings",
-    informational: "Informational",
-    filterSeverity: "Severity",
-    filterType: "Type",
-    filterRegion: "Region",
-    filterStatus: "Status",
-    all: "All",
-    severityCritical: "Critical",
-    severityWarning: "Warning",
-    severityInfo: "Info",
-    typeLowEQ: "Low EQ",
-    typeDeclining: "Trend",
-    typeTeamHealth: "Team Health",
-    typeAnomaly: "Anomaly",
-    regionNA: "NA",
-    regionLATAM: "LATAM",
-    regionAPAC: "APAC",
-    regionEMEA: "EMEA",
-    statusNew: "New",
-    statusAcknowledged: "Acknowledged",
-    statusResolved: "Resolved",
-    activeAlertsTitle: "Active Alerts",
-    activeAlertsDesc: "Filtered list of alerts detected by the EQ monitoring system",
-    detected: "Detected",
-    threshold: "Threshold",
-    current: "Current",
-    entity: "Entity",
-    noAlertsMatch: "No alerts match the selected filters",
-    teamHealthTitle: "EQ Health by Country",
-    teamHealthDesc: "SEI level and relative health vs TP benchmark by country",
-    health: "SEI Level",
-    eqLevel: "SEI Level",
-    trend: "Trend",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    trendUp: "Improving",
-    trendDown: "Declining",
-    trendStable: "Stable",
-    configTitle: "Threshold Configuration",
-    configDesc: "Define alert thresholds for key EQ system metrics",
-    metric: "Metric",
-    warningThreshold: "Warning Threshold",
-    criticalThreshold: "Critical Threshold",
-    enabled: "Enabled",
-    trendMonitorTitle: "Current Metrics Monitoring",
-    trendMonitorDesc: "Key metric indicators by region — live benchmark data",
-    infoTitle: "EQ Alert System",
-    infoDesc: "Alerts are automatically generated based on configured thresholds, trend analysis, and anomaly detection over Teleperformance SEI data. All individual data remains anonymized.",
-    navPrev: "World",
-    navNext: "Data Quality",
-    loading: "Loading data...",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    regionMetrics: "Metrics by Region",
-    regionMetricsDesc: "Key metric averages by geographic region",
-    mean: "Avg",
-    count: "N",
-    lowCompAlert: "Low Competency",
-    lowCompAlertDesc: "has {comp} at {value}, below threshold of {threshold}",
-    lowEQAlertDesc: "has an average EQ of {value}, below the threshold of {threshold}",
-    lowHealthAlertDesc: "has a health score of {value}, below the threshold of {threshold}",
-    spread: "Intervallo",
-  },
-
-};
-
-/* =========================================================
    Constants
 ========================================================= */
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
@@ -440,8 +153,7 @@ function compLabel(comp: string, lang: string): string {
    Main Page Component
 ========================================================= */
 export default function TPAlertsPage() {
-  const { lang, t: tFn } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
 
   /* ---- Filter state ---- */
   const [severityFilter, setSeverityFilter] = useState("all");
@@ -658,20 +370,20 @@ export default function TPAlertsPage() {
         {/* Header */}
         <div>
           <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpAlerts.backToHub", "TP Hub")}
           </Link>
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-              <Bell className="w-3 h-3" /> {t.badgeAlerts}
+              <Bell className="w-3 h-3" /> {t("tpAlerts.badgeAlerts", "Alertas / Alerts")}
             </span>
-            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-            <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+            <h1 className="text-3xl font-bold mb-2">{t("tpAlerts.pageTitle", "Alertas y Notificaciones EQ")}</h1>
+            <p className="text-[var(--rowi-muted)]">{t("tpAlerts.pageSubtitle", "Monitoreo proactivo de salud EQ — umbrales, tendencias, anomalías y salud de equipos")}</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-24">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-            <p className="text-[var(--rowi-muted)] text-sm">{t.loading}</p>
+            <p className="text-[var(--rowi-muted)] text-sm">{t("tpAlerts.loading", "Cargando datos...")}</p>
           </div>
         </div>
       </div>
@@ -683,24 +395,24 @@ export default function TPAlertsPage() {
       {/* Header */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpAlerts.backToHub", "TP Hub")}
         </Link>
         <div>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-            <Bell className="w-3 h-3" /> {t.badgeAlerts}
+            <Bell className="w-3 h-3" /> {t("tpAlerts.badgeAlerts", "Alertas / Alerts")}
           </span>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("tpAlerts.pageTitle", "Alertas y Notificaciones EQ")}</h1>
+          <p className="text-[var(--rowi-muted)]">{t("tpAlerts.pageSubtitle", "Monitoreo proactivo de salud EQ — umbrales, tendencias, anomalías y salud de equipos")}</p>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t.totalAlerts, value: totalCount, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-900/20", borderColor: "border-purple-200 dark:border-purple-800", icon: Bell },
-          { label: t.critical, value: criticalCount, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-50 dark:bg-red-900/20", borderColor: "border-red-200 dark:border-red-800", icon: AlertTriangle },
-          { label: t.warning, value: warningCount, color: "text-amber-600 dark:text-amber-400", bgColor: "bg-amber-50 dark:bg-amber-900/20", borderColor: "border-amber-200 dark:border-amber-800", icon: AlertCircle },
-          { label: t.informational, value: infoCount, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-900/20", borderColor: "border-blue-200 dark:border-blue-800", icon: Info },
+          { label: t("tpAlerts.totalAlerts", "Total Alertas"), value: totalCount, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-900/20", borderColor: "border-purple-200 dark:border-purple-800", icon: Bell },
+          { label: t("tpAlerts.critical", "Críticas"), value: criticalCount, color: "text-red-600 dark:text-red-400", bgColor: "bg-red-50 dark:bg-red-900/20", borderColor: "border-red-200 dark:border-red-800", icon: AlertTriangle },
+          { label: t("tpAlerts.warning", "Advertencias"), value: warningCount, color: "text-amber-600 dark:text-amber-400", bgColor: "bg-amber-50 dark:bg-amber-900/20", borderColor: "border-amber-200 dark:border-amber-800", icon: AlertCircle },
+          { label: t("tpAlerts.informational", "Informativas"), value: infoCount, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-900/20", borderColor: "border-blue-200 dark:border-blue-800", icon: Info },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className={`${card.bgColor} rounded-xl p-5 border ${card.borderColor} text-center`}>
             <card.icon className={`w-6 h-6 mx-auto mb-2 ${card.color}`} />
@@ -714,25 +426,25 @@ export default function TPAlertsPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-gray-100 dark:border-zinc-800 shadow-sm">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterSeverity}</label>
+            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t("tpAlerts.filterSeverity", "Severidad")}</label>
             <div className="flex flex-wrap gap-1.5">
-              {[{ key: "all", label: t.all }, { key: "critical", label: t.severityCritical }, { key: "warning", label: t.severityWarning }, { key: "info", label: t.severityInfo }].map((opt) => (
+              {[{ key: "all", label: t("tpAlerts.all", "Todas") }, { key: "critical", label: t("tpAlerts.severityCritical", "Crítica") }, { key: "warning", label: t("tpAlerts.severityWarning", "Advertencia") }, { key: "info", label: t("tpAlerts.severityInfo", "Info") }].map((opt) => (
                 <button key={opt.key} onClick={() => setSeverityFilter(opt.key)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${severityFilter === opt.key ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{opt.label}</button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterType}</label>
+            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t("tpAlerts.filterType", "Tipo")}</label>
             <div className="flex flex-wrap gap-1.5">
-              {[{ key: "all", label: t.all }, { key: "low_eq", label: t.typeLowEQ }, { key: "low_competency", label: t.typeDeclining }, { key: "team_health", label: t.typeTeamHealth }].map((opt) => (
+              {[{ key: "all", label: t("tpAlerts.all", "Todas") }, { key: "low_eq", label: t("tpAlerts.typeLowEQ", "EQ Bajo") }, { key: "low_competency", label: t("tpAlerts.typeDeclining", "Tendencia") }, { key: "team_health", label: t("tpAlerts.typeTeamHealth", "Salud Equipo") }].map((opt) => (
                 <button key={opt.key} onClick={() => setTypeFilter(opt.key)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${typeFilter === opt.key ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{opt.label}</button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t.filterRegion}</label>
+            <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1.5 block">{t("tpAlerts.filterRegion", "Región")}</label>
             <div className="flex flex-wrap gap-1.5">
-              <button onClick={() => setRegionFilter("all")} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === "all" ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{t.all}</button>
+              <button onClick={() => setRegionFilter("all")} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === "all" ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{t("tpAlerts.all", "Todas")}</button>
               {uniqueRegions.map((r) => (
                 <button key={r} onClick={() => setRegionFilter(r)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${regionFilter === r ? "bg-purple-500 text-white" : "bg-gray-100 dark:bg-zinc-800 text-[var(--rowi-muted)] hover:bg-gray-200 dark:hover:bg-zinc-700"}`}>{r}</button>
               ))}
@@ -744,13 +456,13 @@ export default function TPAlertsPage() {
       {/* Active Alerts List */}
       <div>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><AlertTriangle className="w-6 h-6 text-purple-500" /> {t.activeAlertsTitle}</h2>
-          <p className="text-[var(--rowi-muted)]">{t.activeAlertsDesc}</p>
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><AlertTriangle className="w-6 h-6 text-purple-500" /> {t("tpAlerts.activeAlertsTitle", "Alertas Activas")}</h2>
+          <p className="text-[var(--rowi-muted)]">{t("tpAlerts.activeAlertsDesc", "Lista filtrada de alertas detectadas por el sistema de monitoreo EQ")}</p>
         </div>
         {filteredAlerts.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white dark:bg-zinc-900 rounded-xl p-8 border border-gray-100 dark:border-zinc-800 text-center">
             <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-            <p className="text-[var(--rowi-muted)]">{t.noAlertsMatch}</p>
+            <p className="text-[var(--rowi-muted)]">{t("tpAlerts.noAlertsMatch", "No hay alertas que coincidan con los filtros seleccionados")}</p>
           </motion.div>
         ) : (
           <div className="space-y-3">
@@ -778,16 +490,16 @@ export default function TPAlertsPage() {
                         </span>
                         {alert.currentValue > 0 && (
                           <span className="text-[var(--rowi-muted)]">
-                            {alert.metric}: <span className={`font-semibold ${sev.text}`}>{alert.currentValue}</span> / {t.threshold}: {alert.threshold}
+                            {alert.metric}: <span className={`font-semibold ${sev.text}`}>{alert.currentValue}</span> / {t("tpAlerts.threshold", "Umbral")}: {alert.threshold}
                           </span>
                         )}
-                        <span className="text-[var(--rowi-muted)] inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {t.detected}: {alert.detectedAt}</span>
+                        <span className="text-[var(--rowi-muted)] inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {t("tpAlerts.detected", "Detectada")}: {alert.detectedAt}</span>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
                         <Clock className="w-3 h-3" />
-                        {t.statusNew}
+                        {t("tpAlerts.statusNew", "Nueva")}
                       </span>
                     </div>
                   </div>
@@ -801,12 +513,12 @@ export default function TPAlertsPage() {
       {/* Team Health Overview */}
       <div>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><Users className="w-6 h-6 text-purple-500" /> {t.teamHealthTitle}</h2>
-          <p className="text-[var(--rowi-muted)]">{t.teamHealthDesc}</p>
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><Users className="w-6 h-6 text-purple-500" /> {t("tpAlerts.teamHealthTitle", "Salud EQ por País")}</h2>
+          <p className="text-[var(--rowi-muted)]">{t("tpAlerts.teamHealthDesc", "Nivel SEI y salud relativa al benchmark TP por país")}</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {teamHealthGrid.map((team, i) => {
-            const levelLabel = tFn(`sei.levels.${team.eqLevel.key}`, team.eqLevel.label);
+            const levelLabel = t(`sei.levels.${team.eqLevel.key}`, team.eqLevel.label);
             return (
             <motion.div key={team.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
@@ -816,12 +528,12 @@ export default function TPAlertsPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm truncate">{team.name}</div>
-                  <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.count} {t.assessments}</span>
+                  <span className="text-[10px] font-mono text-[var(--rowi-muted)] bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">{team.count} {t("tpAlerts.assessments", "evaluaciones")}</span>
                 </div>
               </div>
               {/* SEI Level */}
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.eqLevel}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAlerts.eqLevel", "Nivel SEI")}</span>
                 <span
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
                   style={{ backgroundColor: `${team.eqLevel.color}20`, color: team.eqLevel.color }}
@@ -831,7 +543,7 @@ export default function TPAlertsPage() {
               </div>
               {/* EQ Average */}
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.avgEQ}</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpAlerts.avgEQ", "EQ Prom")}</span>
                 <span className="text-2xl font-bold" style={{ color: team.eqLevel.color }}>{team.avgEQ.toFixed(1)}</span>
               </div>
               {/* EQ gauge bar based on real SEI scale */}
@@ -840,11 +552,11 @@ export default function TPAlertsPage() {
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-[var(--rowi-muted)]">{t.topStrength}</span>
+                  <span className="text-[var(--rowi-muted)]">{t("tpAlerts.topStrength", "Mayor Fortaleza")}</span>
                   <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{team.strength}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[var(--rowi-muted)]">{t.biggestGap}</span>
+                  <span className="text-[var(--rowi-muted)]">{t("tpAlerts.biggestGap", "Mayor Brecha")}</span>
                   <span className="font-mono font-medium text-amber-600 dark:text-amber-400">{team.gap}</span>
                 </div>
               </div>
@@ -857,15 +569,15 @@ export default function TPAlertsPage() {
       {/* Alert Configuration */}
       <div>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><Settings className="w-6 h-6 text-purple-500" /> {t.configTitle}</h2>
-          <p className="text-[var(--rowi-muted)]">{t.configDesc}</p>
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><Settings className="w-6 h-6 text-purple-500" /> {t("tpAlerts.configTitle", "Configuración de Umbrales")}</h2>
+          <p className="text-[var(--rowi-muted)]">{t("tpAlerts.configDesc", "Definir umbrales de alerta para métricas clave del sistema EQ")}</p>
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
           <div className="grid grid-cols-4 gap-4 px-6 py-3 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wider">
-            <span>{t.metric}</span>
-            <span className="text-center">{t.warningThreshold}</span>
-            <span className="text-center">{t.criticalThreshold}</span>
-            <span className="text-center">{t.enabled}</span>
+            <span>{t("tpAlerts.metric", "Métrica")}</span>
+            <span className="text-center">{t("tpAlerts.warningThreshold", "Umbral Advertencia")}</span>
+            <span className="text-center">{t("tpAlerts.criticalThreshold", "Umbral Crítico")}</span>
+            <span className="text-center">{t("tpAlerts.enabled", "Activo")}</span>
           </div>
           {ALERT_CONFIGS.map((cfg, i) => {
             const cfgLabel = cfg.label[lang as keyof typeof cfg.label] || cfg.label.es;
@@ -897,8 +609,8 @@ export default function TPAlertsPage() {
       {/* Region Metrics Monitoring */}
       <div>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><TrendingUp className="w-6 h-6 text-purple-500" /> {t.trendMonitorTitle}</h2>
-          <p className="text-[var(--rowi-muted)]">{t.trendMonitorDesc}</p>
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2"><TrendingUp className="w-6 h-6 text-purple-500" /> {t("tpAlerts.trendMonitorTitle", "Monitoreo de Métricas Actuales")}</h2>
+          <p className="text-[var(--rowi-muted)]">{t("tpAlerts.trendMonitorDesc", "Indicadores de métricas clave por región — datos en vivo del benchmark")}</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {regionMetricsData.map((rm, i) => {
@@ -910,7 +622,7 @@ export default function TPAlertsPage() {
               <motion.div key={rm.key} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-semibold text-sm">{rm.label}</span>
-                  <span className="text-xs font-mono text-[var(--rowi-muted)]">{t.mean}: {rm.overallMean}</span>
+                  <span className="text-xs font-mono text-[var(--rowi-muted)]">{t("tpAlerts.mean", "Prom")}: {rm.overallMean}</span>
                 </div>
                 <div className="space-y-2">
                   {rm.regions.map((region) => {
@@ -932,7 +644,7 @@ export default function TPAlertsPage() {
                   })}
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 text-xs text-[var(--rowi-muted)]">
-                  <span className="font-medium">{t.spread}: {spread.toFixed(1)}</span>{" "}
+                  <span className="font-medium">{t("tpAlerts.spread", "Rango")}: {spread.toFixed(1)}</span>{" "}
                   ({minMean.toFixed(1)} — {maxMean.toFixed(1)})
                 </div>
               </motion.div>
@@ -945,18 +657,18 @@ export default function TPAlertsPage() {
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-6 flex gap-4">
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t.infoTitle}</h3>
-          <p className="text-sm text-purple-700 dark:text-purple-300">{t.infoDesc}</p>
+          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t("tpAlerts.infoTitle", "Sistema de Alertas EQ")}</h3>
+          <p className="text-sm text-purple-700 dark:text-purple-300">{t("tpAlerts.infoDesc", "Las alertas se generan automáticamente basándose en umbrales configurados, análisis de tendencias y detección de anomalías sobre datos SEI de Teleperformance. Todos los datos individuales permanecen anonimizados.")}</p>
         </div>
       </motion.div>
 
       {/* Navigation Footer */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">
         <Link href="/hub/admin/tp/world" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
-          <ArrowLeft className="w-5 h-5" /> {t.navPrev}
+          <ArrowLeft className="w-5 h-5" /> {t("tpAlerts.navPrev", "World")}
         </Link>
         <Link href="/hub/admin/tp/data-quality" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity">
-          {t.navNext} <ArrowRight className="w-5 h-5" />
+          {t("tpAlerts.navNext", "Data Quality")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

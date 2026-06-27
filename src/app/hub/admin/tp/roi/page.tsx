@@ -29,362 +29,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
-   Translations
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badge: "ROI Calculator",
-    pageTitle: "Retorno de Inversión EQ",
-    pageSubtitle:
-      "Calcula el retorno proyectado de programas de desarrollo de inteligencia emocional basado en correlaciones, benchmarks de la industria y datos de TP",
-    configTitle: "Configuración de Inversión",
-    configDesc: "Ajusta los parámetros para modelar el retorno de tu programa EQ",
-    labelBudget: "Presupuesto de Inversión",
-    labelDuration: "Duración del Programa",
-    labelMonths: "meses",
-    labelPopulation: "Población Objetivo",
-    labelEmployees: "empleados",
-    labelImprovement: "Mejora EQ Objetivo",
-    labelPoints: "puntos",
-    roiTitle: "ROI Proyectado",
-    roiFor: "Por cada",
-    roiInvested: "invertido, retorno proyectado de",
-    roiPayback: "Período de Recuperación",
-    roiPaybackMonths: "meses",
-    roiNetBenefit: "Beneficio Neto",
-    roiTotalSavings: "Ahorro Total Proyectado",
-    outcomesTitle: "Resultados Proyectados",
-    outcomesDesc: "Mejoras estimadas basadas en la matriz de correlación SEI y la mejora EQ objetivo",
-    outcomeEffectiveness: "Efectividad",
-    outcomeRelationships: "Relaciones",
-    outcomeWellbeing: "Bienestar",
-    outcomeQuality: "Calidad de Vida",
-    outcomeCurrent: "Actual",
-    outcomeProjected: "Proyectado",
-    costTitle: "Desglose de Costos",
-    costDesc: "Análisis de costo por empleado y por punto EQ vs benchmarks de la industria",
-    costPerEmployee: "Costo por Empleado",
-    costPerPoint: "Costo por Punto EQ",
-    costVsBenchmark: "vs Benchmark Industria",
-    costBelow: "por debajo",
-    costAbove: "por encima",
-    impactTitle: "Impacto en el Negocio",
-    impactDesc: "Proyecciones financieras basadas en la mejora de EQ",
-    impactTurnover: "Reducción de Rotación",
-    impactTurnoverFrom: "de",
-    impactTurnoverTo: "a",
-    impactSavings: "Ahorro por Rotación",
-    impactProductivity: "Ganancia de Productividad",
-    impactRevenue: "Impacto en Ingresos",
-    impactPerYear: "por año",
-    scenarioTitle: "Comparación de Escenarios",
-    scenarioDesc: "Tres escenarios basados en distintos niveles de efectividad del programa",
-    scenarioConservative: "Conservador",
-    scenarioModerate: "Moderado",
-    scenarioAggressive: "Agresivo",
-    scenarioROI: "ROI",
-    scenarioPayback: "Recuperación",
-    scenarioSavings: "Ahorro Total",
-    scenarioMultiplier: "Multiplicador",
-    industryTitle: "Comparación por Industria",
-    industryDesc: "Métricas proyectadas de TP vs benchmarks de otras industrias",
-    industryName: "Industria",
-    industryCostPerPt: "Costo/Punto",
-    industryAvgROI: "ROI Prom.",
-    industryTimeline: "Tiempo",
-    industryTurnover: "Red. Rotación",
-    industryProductivity: "Productividad",
-    industrySatisfaction: "Satisfacción",
-    industryTPProjected: "TP (Proyectado)",
-    timelineTitle: "Cronología del ROI",
-    timelineDesc: "Fases y milestones esperados del programa de desarrollo EQ",
-    timelinePhase1: "Fase 1: Formación",
-    timelinePhase1Desc: "Evaluaciones SEI, selección de cohortes, diseño de programa",
-    timelinePhase2: "Fase 2: Resultados Tempranos",
-    timelinePhase2Desc: "Primeras mejoras medibles en competencias EQ",
-    timelinePhase3: "Fase 3: Impacto Completo",
-    timelinePhase3Desc: "Beneficios financieros realizados, ROI medible",
-    timelineMilestone1: "Kickoff del programa",
-    timelineMilestone2: "Primera medición",
-    timelineMilestone3: "Punto de equilibrio",
-    timelineMilestone4: "ROI completo",
-    infoTitle: "Modelo de Proyección",
-    infoDesc: "Las proyecciones se basan en la matriz de correlación SEI de Six Seconds y benchmarks de la industria. Los resultados reales pueden variar según factores organizacionales, culturales y de implementación.",
-    navPrev: "Dashboard",
-    navNext: "Benchmark",
-    loading: "Cargando datos de correlaciones y estadísticas...",
-    errorTitle: "Error al cargar datos",
-    errorDesc: "No se pudieron cargar las correlaciones o estadísticas. Usando valores de referencia.",
-    retry: "Reintentar",
-    assessments: "evaluaciones",
-    dataBasedOn: "Datos basados en",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badge: "ROI Calculator",
-    pageTitle: "EQ Investment ROI",
-    pageSubtitle: "Calculate projected return on EQ development programs based on correlations, industry benchmarks, and TP data",
-    configTitle: "Investment Configuration",
-    configDesc: "Adjust parameters to model your EQ program return",
-    labelBudget: "Investment Budget",
-    labelDuration: "Program Duration",
-    labelMonths: "months",
-    labelPopulation: "Target Population",
-    labelEmployees: "employees",
-    labelImprovement: "Target EQ Improvement",
-    labelPoints: "points",
-    roiTitle: "Projected ROI",
-    roiFor: "For every",
-    roiInvested: "invested, projected return of",
-    roiPayback: "Payback Period",
-    roiPaybackMonths: "months",
-    roiNetBenefit: "Net Benefit",
-    roiTotalSavings: "Total Projected Savings",
-    outcomesTitle: "Projected Outcomes",
-    outcomesDesc: "Estimated improvements based on the SEI correlation matrix and target EQ improvement",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQuality: "Quality of Life",
-    outcomeCurrent: "Current",
-    outcomeProjected: "Projected",
-    costTitle: "Cost Breakdown",
-    costDesc: "Cost per employee and per EQ point analysis vs industry benchmarks",
-    costPerEmployee: "Cost per Employee",
-    costPerPoint: "Cost per EQ Point",
-    costVsBenchmark: "vs Industry Benchmark",
-    costBelow: "below",
-    costAbove: "above",
-    impactTitle: "Business Impact",
-    impactDesc: "Financial projections based on EQ improvement",
-    impactTurnover: "Turnover Reduction",
-    impactTurnoverFrom: "from",
-    impactTurnoverTo: "to",
-    impactSavings: "Turnover Savings",
-    impactProductivity: "Productivity Gain",
-    impactRevenue: "Revenue Impact",
-    impactPerYear: "per year",
-    scenarioTitle: "Scenario Comparison",
-    scenarioDesc: "Three scenarios based on different program effectiveness levels",
-    scenarioConservative: "Conservative",
-    scenarioModerate: "Moderate",
-    scenarioAggressive: "Aggressive",
-    scenarioROI: "ROI",
-    scenarioPayback: "Payback",
-    scenarioSavings: "Total Savings",
-    scenarioMultiplier: "Multiplier",
-    industryTitle: "Industry Comparison",
-    industryDesc: "TP projected metrics vs benchmarks from other industries",
-    industryName: "Industry",
-    industryCostPerPt: "Cost/Point",
-    industryAvgROI: "Avg ROI",
-    industryTimeline: "Timeline",
-    industryTurnover: "Turnover Red.",
-    industryProductivity: "Productivity",
-    industrySatisfaction: "Satisfaction",
-    industryTPProjected: "TP (Projected)",
-    timelineTitle: "ROI Timeline",
-    timelineDesc: "Expected phases and milestones for the EQ development program",
-    timelinePhase1: "Phase 1: Training",
-    timelinePhase1Desc: "SEI assessments, cohort selection, program design",
-    timelinePhase2: "Phase 2: Early Results",
-    timelinePhase2Desc: "First measurable improvements in EQ competencies",
-    timelinePhase3: "Phase 3: Full Impact",
-    timelinePhase3Desc: "Financial benefits realized, measurable ROI",
-    timelineMilestone1: "Program kickoff",
-    timelineMilestone2: "First measurement",
-    timelineMilestone3: "Break-even point",
-    timelineMilestone4: "Full ROI",
-    infoTitle: "Projection Model",
-    infoDesc: "Projections are based on the Six Seconds SEI correlation matrix and industry benchmarks. Actual results may vary based on organizational, cultural, and implementation factors.",
-    navPrev: "Dashboard",
-    navNext: "Benchmark",
-    loading: "Loading correlation and statistics data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load correlations or statistics. Using reference values.",
-    retry: "Retry",
-    assessments: "assessments",
-    dataBasedOn: "Data based on",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badge: "ROI Calculator",
-    pageTitle: "EQ Investment ROI",
-    pageSubtitle: "Calculate projected return on EQ development programs based on correlations, industry benchmarks, and TP data",
-    configTitle: "Investment Configuration",
-    configDesc: "Adjust parameters to model your EQ program return",
-    labelBudget: "Investment Budget",
-    labelDuration: "Program Duration",
-    labelMonths: "months",
-    labelPopulation: "Target Population",
-    labelEmployees: "employees",
-    labelImprovement: "Target EQ Improvement",
-    labelPoints: "points",
-    roiTitle: "Projected ROI",
-    roiFor: "For every",
-    roiInvested: "invested, projected return of",
-    roiPayback: "Payback Period",
-    roiPaybackMonths: "months",
-    roiNetBenefit: "Net Benefit",
-    roiTotalSavings: "Total Projected Savings",
-    outcomesTitle: "Projected Outcomes",
-    outcomesDesc: "Estimated improvements based on the SEI correlation matrix and target EQ improvement",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQuality: "Quality of Life",
-    outcomeCurrent: "Current",
-    outcomeProjected: "Projected",
-    costTitle: "Cost Breakdown",
-    costDesc: "Cost per employee and per EQ point analysis vs industry benchmarks",
-    costPerEmployee: "Cost per Employee",
-    costPerPoint: "Cost per EQ Point",
-    costVsBenchmark: "vs Industry Benchmark",
-    costBelow: "below",
-    costAbove: "above",
-    impactTitle: "Business Impact",
-    impactDesc: "Financial projections based on EQ improvement",
-    impactTurnover: "Turnover Reduction",
-    impactTurnoverFrom: "from",
-    impactTurnoverTo: "to",
-    impactSavings: "Turnover Savings",
-    impactProductivity: "Productivity Gain",
-    impactRevenue: "Revenue Impact",
-    impactPerYear: "per year",
-    scenarioTitle: "Scenario Comparison",
-    scenarioDesc: "Three scenarios based on different program effectiveness levels",
-    scenarioConservative: "Conservative",
-    scenarioModerate: "Moderate",
-    scenarioAggressive: "Aggressive",
-    scenarioROI: "ROI",
-    scenarioPayback: "Payback",
-    scenarioSavings: "Total Savings",
-    scenarioMultiplier: "Multiplier",
-    industryTitle: "Industry Comparison",
-    industryDesc: "TP projected metrics vs benchmarks from other industries",
-    industryName: "Industry",
-    industryCostPerPt: "Cost/Point",
-    industryAvgROI: "Avg ROI",
-    industryTimeline: "Timeline",
-    industryTurnover: "Turnover Red.",
-    industryProductivity: "Productivity",
-    industrySatisfaction: "Satisfaction",
-    industryTPProjected: "TP (Projected)",
-    timelineTitle: "ROI Timeline",
-    timelineDesc: "Expected phases and milestones for the EQ development program",
-    timelinePhase1: "Phase 1: Training",
-    timelinePhase1Desc: "SEI assessments, cohort selection, program design",
-    timelinePhase2: "Phase 2: Early Results",
-    timelinePhase2Desc: "First measurable improvements in EQ competencies",
-    timelinePhase3: "Phase 3: Full Impact",
-    timelinePhase3Desc: "Financial benefits realized, measurable ROI",
-    timelineMilestone1: "Program kickoff",
-    timelineMilestone2: "First measurement",
-    timelineMilestone3: "Break-even point",
-    timelineMilestone4: "Full ROI",
-    infoTitle: "Projection Model",
-    infoDesc: "Projections are based on the Six Seconds SEI correlation matrix and industry benchmarks. Actual results may vary based on organizational, cultural, and implementation factors.",
-    navPrev: "Dashboard",
-    navNext: "Benchmark",
-    loading: "Loading correlation and statistics data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load correlations or statistics. Using reference values.",
-    retry: "Retry",
-    assessments: "assessments",
-    dataBasedOn: "Dados baseados em",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badge: "ROI Calculator",
-    pageTitle: "EQ Investment ROI",
-    pageSubtitle: "Calculate projected return on EQ development programs based on correlations, industry benchmarks, and TP data",
-    configTitle: "Investment Configuration",
-    configDesc: "Adjust parameters to model your EQ program return",
-    labelBudget: "Investment Budget",
-    labelDuration: "Program Duration",
-    labelMonths: "months",
-    labelPopulation: "Target Population",
-    labelEmployees: "employees",
-    labelImprovement: "Target EQ Improvement",
-    labelPoints: "points",
-    roiTitle: "Projected ROI",
-    roiFor: "For every",
-    roiInvested: "invested, projected return of",
-    roiPayback: "Payback Period",
-    roiPaybackMonths: "months",
-    roiNetBenefit: "Net Benefit",
-    roiTotalSavings: "Total Projected Savings",
-    outcomesTitle: "Projected Outcomes",
-    outcomesDesc: "Estimated improvements based on the SEI correlation matrix and target EQ improvement",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQuality: "Quality of Life",
-    outcomeCurrent: "Current",
-    outcomeProjected: "Projected",
-    costTitle: "Cost Breakdown",
-    costDesc: "Cost per employee and per EQ point analysis vs industry benchmarks",
-    costPerEmployee: "Cost per Employee",
-    costPerPoint: "Cost per EQ Point",
-    costVsBenchmark: "vs Industry Benchmark",
-    costBelow: "below",
-    costAbove: "above",
-    impactTitle: "Business Impact",
-    impactDesc: "Financial projections based on EQ improvement",
-    impactTurnover: "Turnover Reduction",
-    impactTurnoverFrom: "from",
-    impactTurnoverTo: "to",
-    impactSavings: "Turnover Savings",
-    impactProductivity: "Productivity Gain",
-    impactRevenue: "Revenue Impact",
-    impactPerYear: "per year",
-    scenarioTitle: "Scenario Comparison",
-    scenarioDesc: "Three scenarios based on different program effectiveness levels",
-    scenarioConservative: "Conservative",
-    scenarioModerate: "Moderate",
-    scenarioAggressive: "Aggressive",
-    scenarioROI: "ROI",
-    scenarioPayback: "Payback",
-    scenarioSavings: "Total Savings",
-    scenarioMultiplier: "Multiplier",
-    industryTitle: "Industry Comparison",
-    industryDesc: "TP projected metrics vs benchmarks from other industries",
-    industryName: "Industry",
-    industryCostPerPt: "Cost/Point",
-    industryAvgROI: "Avg ROI",
-    industryTimeline: "Timeline",
-    industryTurnover: "Turnover Red.",
-    industryProductivity: "Productivity",
-    industrySatisfaction: "Satisfaction",
-    industryTPProjected: "TP (Projected)",
-    timelineTitle: "ROI Timeline",
-    timelineDesc: "Expected phases and milestones for the EQ development program",
-    timelinePhase1: "Phase 1: Training",
-    timelinePhase1Desc: "SEI assessments, cohort selection, program design",
-    timelinePhase2: "Phase 2: Early Results",
-    timelinePhase2Desc: "First measurable improvements in EQ competencies",
-    timelinePhase3: "Phase 3: Full Impact",
-    timelinePhase3Desc: "Financial benefits realized, measurable ROI",
-    timelineMilestone1: "Program kickoff",
-    timelineMilestone2: "First measurement",
-    timelineMilestone3: "Break-even point",
-    timelineMilestone4: "Full ROI",
-    infoTitle: "Projection Model",
-    infoDesc: "Projections are based on the Six Seconds SEI correlation matrix and industry benchmarks. Actual results may vary based on organizational, cultural, and implementation factors.",
-    navPrev: "Dashboard",
-    navNext: "Benchmark",
-    loading: "Loading correlation and statistics data...",
-    errorTitle: "Error loading data",
-    errorDesc: "Could not load correlations or statistics. Using reference values.",
-    retry: "Retry",
-    assessments: "assessments",
-    dataBasedOn: "Dati basati su",
-  },
-
-};
-
-/* =========================================================
    Industry Benchmarks (external reference data, not from DB)
 ========================================================= */
 const INDUSTRY_BENCHMARKS = [
@@ -826,8 +470,7 @@ function TimelinePhase({
    Main Page
 ========================================================= */
 export default function TPROIPage() {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
 
   /* ---- API state ---- */
   const [correlations, setCorrelations] = useState<CorrelationItem[]>([]);
@@ -896,16 +539,16 @@ export default function TPROIPage() {
   const currentOutcomes = tpCurrent.outcomeScores;
 
   const outcomeKeys = [
-    { key: "effectiveness" as const, tKey: "outcomeEffectiveness" as const },
-    { key: "relationships" as const, tKey: "outcomeRelationships" as const },
-    { key: "wellbeing" as const, tKey: "outcomeWellbeing" as const },
-    { key: "qualityOfLife" as const, tKey: "outcomeQuality" as const },
+    { key: "effectiveness" as const, label: t("tpRoi.outcomeEffectiveness", "Efectividad") },
+    { key: "relationships" as const, label: t("tpRoi.outcomeRelationships", "Relaciones") },
+    { key: "wellbeing" as const, label: t("tpRoi.outcomeWellbeing", "Bienestar") },
+    { key: "qualityOfLife" as const, label: t("tpRoi.outcomeQuality", "Calidad de Vida") },
   ];
 
   const scenarios = [
-    { multiplier: 0.6, label: t.scenarioConservative, multiplierLabel: "0.6x" },
-    { multiplier: 1.0, label: t.scenarioModerate, multiplierLabel: "1.0x" },
-    { multiplier: 1.4, label: t.scenarioAggressive, multiplierLabel: "1.4x" },
+    { multiplier: 0.6, label: t("tpRoi.scenarioConservative", "Conservador"), multiplierLabel: "0.6x" },
+    { multiplier: 1.0, label: t("tpRoi.scenarioModerate", "Moderado"), multiplierLabel: "1.0x" },
+    { multiplier: 1.4, label: t("tpRoi.scenarioAggressive", "Agresivo"), multiplierLabel: "1.4x" },
   ];
 
   const scenarioData = scenarios.map((s) => {
@@ -921,9 +564,13 @@ export default function TPROIPage() {
   const tpProductivityGain = proj.productivityGainPct;
 
   /* ---- Dynamic info desc with real assessment count ---- */
+  const infoDesc = t(
+    "tpRoi.infoDesc",
+    "Las proyecciones se basan en la matriz de correlación SEI de Six Seconds y benchmarks de la industria. Los resultados reales pueden variar según factores organizacionales, culturales y de implementación."
+  );
   const infoDescWithCount = tpCurrent.totalAssessments > 0
-    ? `${t.infoDesc.replace(/\.$/, "")}. ${t.dataBasedOn} ${tpCurrent.totalAssessments.toLocaleString()} ${t.assessments}.`
-    : t.infoDesc;
+    ? `${infoDesc.replace(/\.$/, "")}. ${t("tpRoi.dataBasedOn", "Datos basados en")} ${tpCurrent.totalAssessments.toLocaleString()} ${t("tpRoi.assessments", "evaluaciones")}.`
+    : infoDesc;
 
   /* ---- Loading state ---- */
   if (loading) {
@@ -934,19 +581,19 @@ export default function TPROIPage() {
             href="/hub/admin/tp"
             className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4"
           >
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpRoi.backToHub", "TP Hub")}
           </Link>
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-              <Calculator className="w-3 h-3" /> {t.badge}
+              <Calculator className="w-3 h-3" /> {t("tpRoi.badge", "ROI Calculator")}
             </span>
-            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-            <p className="text-[var(--rowi-muted)] max-w-3xl">{t.pageSubtitle}</p>
+            <h1 className="text-3xl font-bold mb-2">{t("tpRoi.pageTitle", "Retorno de Inversión EQ")}</h1>
+            <p className="text-[var(--rowi-muted)] max-w-3xl">{t("tpRoi.pageSubtitle", "Calcula el retorno proyectado de programas de desarrollo de inteligencia emocional basado en correlaciones, benchmarks de la industria y datos de TP")}</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 gap-4">
           <Loader2 className="w-10 h-10 text-purple-500 animate-spin" />
-          <p className="text-[var(--rowi-muted)] text-sm">{t.loading}</p>
+          <p className="text-[var(--rowi-muted)] text-sm">{t("tpRoi.loading", "Cargando datos de correlaciones y estadísticas...")}</p>
         </div>
       </div>
     );
@@ -960,14 +607,14 @@ export default function TPROIPage() {
           href="/hub/admin/tp"
           className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4"
         >
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpRoi.backToHub", "TP Hub")}
         </Link>
         <div>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-            <Calculator className="w-3 h-3" /> {t.badge}
+            <Calculator className="w-3 h-3" /> {t("tpRoi.badge", "ROI Calculator")}
           </span>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)] max-w-3xl">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("tpRoi.pageTitle", "Retorno de Inversión EQ")}</h1>
+          <p className="text-[var(--rowi-muted)] max-w-3xl">{t("tpRoi.pageSubtitle", "Calcula el retorno proyectado de programas de desarrollo de inteligencia emocional basado en correlaciones, benchmarks de la industria y datos de TP")}</p>
         </div>
       </div>
 
@@ -981,15 +628,15 @@ export default function TPROIPage() {
           <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <h3 className="font-semibold text-amber-900 dark:text-amber-100 text-sm">
-              {t.errorTitle}
+              {t("tpRoi.errorTitle", "Error al cargar datos")}
             </h3>
-            <p className="text-xs text-amber-700 dark:text-amber-300">{t.errorDesc}</p>
+            <p className="text-xs text-amber-700 dark:text-amber-300">{t("tpRoi.errorDesc", "No se pudieron cargar las correlaciones o estadísticas. Usando valores de referencia.")}</p>
           </div>
           <button
             onClick={fetchData}
             className="px-3 py-1 text-xs font-medium rounded-lg bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors"
           >
-            {t.retry}
+            {t("tpRoi.retry", "Reintentar")}
           </button>
         </motion.div>
       )}
@@ -1001,12 +648,12 @@ export default function TPROIPage() {
         className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800"
       >
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Target className="w-5 h-5 text-purple-500" /> {t.configTitle}
+          <Target className="w-5 h-5 text-purple-500" /> {t("tpRoi.configTitle", "Configuración de Inversión")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.configDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpRoi.configDesc", "Ajusta los parámetros para modelar el retorno de tu programa EQ")}</p>
         <div className="grid md:grid-cols-2 gap-8">
           <SliderInput
-            label={t.labelBudget}
+            label={t("tpRoi.labelBudget", "Presupuesto de Inversión")}
             value={budget}
             min={100000}
             max={5000000}
@@ -1015,28 +662,28 @@ export default function TPROIPage() {
             onChange={setBudget}
           />
           <DurationSelector
-            label={t.labelDuration}
+            label={t("tpRoi.labelDuration", "Duración del Programa")}
             value={duration}
             options={[6, 12, 18, 24]}
-            unit={t.labelMonths}
+            unit={t("tpRoi.labelMonths", "meses")}
             onChange={setDuration}
           />
           <SliderInput
-            label={t.labelPopulation}
+            label={t("tpRoi.labelPopulation", "Población Objetivo")}
             value={population}
             min={100}
             max={tpCurrent.totalAssessments > 0 ? tpCurrent.totalAssessments : 15000}
             step={100}
-            unit={t.labelEmployees}
+            unit={t("tpRoi.labelEmployees", "empleados")}
             onChange={setPopulation}
           />
           <SliderInput
-            label={t.labelImprovement}
+            label={t("tpRoi.labelImprovement", "Mejora EQ Objetivo")}
             value={improvement}
             min={2}
             max={15}
             step={1}
-            unit={t.labelPoints}
+            unit={t("tpRoi.labelPoints", "puntos")}
             onChange={setImprovement}
           />
         </div>
@@ -1050,7 +697,7 @@ export default function TPROIPage() {
         className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-10 shadow-xl border border-purple-200 dark:border-purple-800 text-center"
       >
         <h2 className="text-xl font-bold mb-6 flex items-center justify-center gap-2">
-          <TrendingUp className="w-6 h-6 text-purple-500" /> {t.roiTitle}
+          <TrendingUp className="w-6 h-6 text-purple-500" /> {t("tpRoi.roiTitle", "ROI Proyectado")}
         </h2>
         <motion.div
           key={`${budget}-${population}-${improvement}-${duration}`}
@@ -1064,29 +711,29 @@ export default function TPROIPage() {
           </span>
         </motion.div>
         <p className="text-[var(--rowi-muted)] mb-8 text-lg">
-          {t.roiFor} <strong>$1</strong> {t.roiInvested}{" "}
+          {t("tpRoi.roiFor", "Por cada")} <strong>$1</strong> {t("tpRoi.roiInvested", "invertido, retorno proyectado de")}{" "}
           <strong className="text-purple-600">
             ${(proj.roiPercentage / 100 + 1).toFixed(2)}
           </strong>
         </p>
         <div className="grid sm:grid-cols-3 gap-6">
           <div className="bg-white/60 dark:bg-zinc-900/60 rounded-xl p-4 backdrop-blur">
-            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t.roiPayback}</div>
+            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t("tpRoi.roiPayback", "Período de Recuperación")}</div>
             <div className="text-2xl font-bold text-purple-600">
               {proj.paybackMonths}{" "}
               <span className="text-base font-normal text-[var(--rowi-muted)]">
-                {t.roiPaybackMonths}
+                {t("tpRoi.roiPaybackMonths", "meses")}
               </span>
             </div>
           </div>
           <div className="bg-white/60 dark:bg-zinc-900/60 rounded-xl p-4 backdrop-blur">
-            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t.roiNetBenefit}</div>
+            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t("tpRoi.roiNetBenefit", "Beneficio Neto")}</div>
             <div className="text-2xl font-bold text-green-600">
               ${((proj.totalSavings - budget) / 1000000).toFixed(2)}M
             </div>
           </div>
           <div className="bg-white/60 dark:bg-zinc-900/60 rounded-xl p-4 backdrop-blur">
-            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t.roiTotalSavings}</div>
+            <div className="text-sm text-[var(--rowi-muted)] mb-1">{t("tpRoi.roiTotalSavings", "Ahorro Total Proyectado")}</div>
             <div className="text-2xl font-bold text-green-600">
               ${(proj.totalSavings / 1000000).toFixed(2)}M
             </div>
@@ -1102,17 +749,17 @@ export default function TPROIPage() {
         className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800"
       >
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-purple-500" /> {t.outcomesTitle}
+          <Activity className="w-5 h-5 text-purple-500" /> {t("tpRoi.outcomesTitle", "Resultados Proyectados")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.outcomesDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpRoi.outcomesDesc", "Mejoras estimadas basadas en la matriz de correlación SEI y la mejora EQ objetivo")}</p>
         <div className="flex items-center gap-6 mb-6 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-zinc-600" />
-            <span className="text-[var(--rowi-muted)]">{t.outcomeCurrent}</span>
+            <span className="text-[var(--rowi-muted)]">{t("tpRoi.outcomeCurrent", "Actual")}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
-            <span className="text-[var(--rowi-muted)]">{t.outcomeProjected}</span>
+            <span className="text-[var(--rowi-muted)]">{t("tpRoi.outcomeProjected", "Proyectado")}</span>
           </div>
         </div>
         <div className="space-y-6">
@@ -1123,11 +770,11 @@ export default function TPROIPage() {
             return (
               <OutcomeBar
                 key={outcome.key}
-                label={t[outcome.tKey]}
+                label={outcome.label}
                 currentPct={current}
                 projectedPct={current + gain}
-                currentLabel={t.outcomeCurrent}
-                projectedLabel={t.outcomeProjected}
+                currentLabel={t("tpRoi.outcomeCurrent", "Actual")}
+                projectedLabel={t("tpRoi.outcomeProjected", "Proyectado")}
                 delay={i * 0.1}
               />
             );
@@ -1144,13 +791,13 @@ export default function TPROIPage() {
           className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
         >
           <h3 className="font-bold mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-purple-500" /> {t.costTitle}
+            <DollarSign className="w-5 h-5 text-purple-500" /> {t("tpRoi.costTitle", "Desglose de Costos")}
           </h3>
-          <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.costDesc}</p>
+          <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpRoi.costDesc", "Análisis de costo por empleado y por punto EQ vs benchmarks de la industria")}</p>
           <div className="space-y-6">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-[var(--rowi-muted)]">{t.costPerEmployee}</span>
+                <span className="text-[var(--rowi-muted)]">{t("tpRoi.costPerEmployee", "Costo por Empleado")}</span>
                 <span className="font-bold text-purple-600">
                   ${proj.costPerEmployee.toFixed(0)}
                 </span>
@@ -1169,7 +816,7 @@ export default function TPROIPage() {
             </div>
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-[var(--rowi-muted)]">{t.costPerPoint}</span>
+                <span className="text-[var(--rowi-muted)]">{t("tpRoi.costPerPoint", "Costo por Punto EQ")}</span>
                 <span className="font-bold text-purple-600">
                   ${proj.costPerPoint.toFixed(0)}
                 </span>
@@ -1188,7 +835,7 @@ export default function TPROIPage() {
             </div>
             <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-[var(--rowi-muted)]">{t.costVsBenchmark}</span>
+                <span className="text-[var(--rowi-muted)]">{t("tpRoi.costVsBenchmark", "vs Benchmark Industria")}</span>
                 <span
                   className={`font-bold ${
                     proj.costPerPoint < proj.bpoBenchmarkCostPerPoint
@@ -1204,8 +851,8 @@ export default function TPROIPage() {
                   ).toFixed(0)}
                   %{" "}
                   {proj.costPerPoint < proj.bpoBenchmarkCostPerPoint
-                    ? t.costBelow
-                    : t.costAbove}
+                    ? t("tpRoi.costBelow", "por debajo")
+                    : t("tpRoi.costAbove", "por encima")}
                 </span>
               </div>
             </div>
@@ -1220,40 +867,40 @@ export default function TPROIPage() {
           className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
         >
           <h3 className="font-bold mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-purple-500" /> {t.impactTitle}
+            <Zap className="w-5 h-5 text-purple-500" /> {t("tpRoi.impactTitle", "Impacto en el Negocio")}
           </h3>
-          <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.impactDesc}</p>
+          <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpRoi.impactDesc", "Proyecciones financieras basadas en la mejora de EQ")}</p>
           <div className="space-y-5">
             <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-sm text-[var(--rowi-muted)] mb-1">
-                {t.impactTurnover}
+                {t("tpRoi.impactTurnover", "Reducción de Rotación")}
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-purple-600">
                   {proj.projectedTurnoverRate.toFixed(1)}%
                 </span>
                 <span className="text-sm text-[var(--rowi-muted)]">
-                  ({t.impactTurnoverFrom} {tpCurrent.turnoverRate}% {t.impactTurnoverTo}{" "}
+                  ({t("tpRoi.impactTurnoverFrom", "de")} {tpCurrent.turnoverRate}% {t("tpRoi.impactTurnoverTo", "a")}{" "}
                   {proj.projectedTurnoverRate.toFixed(1)}%)
                 </span>
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-sm text-[var(--rowi-muted)] mb-1">
-                {t.impactSavings}
+                {t("tpRoi.impactSavings", "Ahorro por Rotación")}
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-green-600">
                   ${(proj.turnoverSavings / 1000000).toFixed(2)}M
                 </span>
                 <span className="text-sm text-[var(--rowi-muted)]">
-                  {t.impactPerYear}
+                  {t("tpRoi.impactPerYear", "por año")}
                 </span>
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-sm text-[var(--rowi-muted)] mb-1">
-                {t.impactProductivity}
+                {t("tpRoi.impactProductivity", "Ganancia de Productividad")}
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-purple-600">
@@ -1263,14 +910,14 @@ export default function TPROIPage() {
             </div>
             <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-sm text-[var(--rowi-muted)] mb-1">
-                {t.impactRevenue}
+                {t("tpRoi.impactRevenue", "Impacto en Ingresos")}
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-green-600">
                   ${(proj.revenueImpact / 1000000).toFixed(2)}M
                 </span>
                 <span className="text-sm text-[var(--rowi-muted)]">
-                  {t.impactPerYear}
+                  {t("tpRoi.impactPerYear", "por año")}
                 </span>
               </div>
             </div>
@@ -1282,9 +929,9 @@ export default function TPROIPage() {
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-purple-500" /> {t.scenarioTitle}
+            <BarChart3 className="w-6 h-6 text-purple-500" /> {t("tpRoi.scenarioTitle", "Comparación de Escenarios")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.scenarioDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpRoi.scenarioDesc", "Tres escenarios basados en distintos niveles de efectividad del programa")}</p>
         </div>
         <div className="grid sm:grid-cols-3 gap-6">
           {scenarioData.map((scenario, i) => (
@@ -1296,11 +943,11 @@ export default function TPROIPage() {
               payback={scenario.payback}
               savings={scenario.savings}
               labels={{
-                scenarioROI: t.scenarioROI,
-                scenarioPayback: t.scenarioPayback,
-                scenarioSavings: t.scenarioSavings,
-                scenarioMultiplier: t.scenarioMultiplier,
-                roiPaybackMonths: t.roiPaybackMonths,
+                scenarioROI: t("tpRoi.scenarioROI", "ROI"),
+                scenarioPayback: t("tpRoi.scenarioPayback", "Recuperación"),
+                scenarioSavings: t("tpRoi.scenarioSavings", "Ahorro Total"),
+                scenarioMultiplier: t("tpRoi.scenarioMultiplier", "Multiplicador"),
+                roiPaybackMonths: t("tpRoi.roiPaybackMonths", "meses"),
               }}
               isHighlighted={i === 1}
             />
@@ -1316,32 +963,32 @@ export default function TPROIPage() {
         className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800 overflow-x-auto"
       >
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-purple-500" /> {t.industryTitle}
+          <Building2 className="w-5 h-5 text-purple-500" /> {t("tpRoi.industryTitle", "Comparación por Industria")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.industryDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpRoi.industryDesc", "Métricas proyectadas de TP vs benchmarks de otras industrias")}</p>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 dark:border-zinc-800">
               <th className="text-left py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryName}
+                {t("tpRoi.industryName", "Industria")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryCostPerPt}
+                {t("tpRoi.industryCostPerPt", "Costo/Punto")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryAvgROI}
+                {t("tpRoi.industryAvgROI", "ROI Prom.")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryTimeline}
+                {t("tpRoi.industryTimeline", "Tiempo")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryTurnover}
+                {t("tpRoi.industryTurnover", "Red. Rotación")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industryProductivity}
+                {t("tpRoi.industryProductivity", "Productividad")}
               </th>
               <th className="text-right py-3 px-2 font-semibold text-[var(--rowi-muted)]">
-                {t.industrySatisfaction}
+                {t("tpRoi.industrySatisfaction", "Satisfacción")}
               </th>
             </tr>
           </thead>
@@ -1350,7 +997,7 @@ export default function TPROIPage() {
               <td className="py-3 px-2 rounded-l-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-purple-500" />
-                  {t.industryTPProjected}
+                  {t("tpRoi.industryTPProjected", "TP (Proyectado)")}
                 </div>
               </td>
               <td className="text-right py-3 px-2 text-purple-600">
@@ -1360,7 +1007,7 @@ export default function TPROIPage() {
                 {tpROI.toFixed(0)}%
               </td>
               <td className="text-right py-3 px-2">
-                {duration} {t.labelMonths}
+                {duration} {t("tpRoi.labelMonths", "meses")}
               </td>
               <td className="text-right py-3 px-2">
                 {tpTurnoverReduction.toFixed(1)}%
@@ -1381,7 +1028,7 @@ export default function TPROIPage() {
                 <td className="text-right py-3 px-2">${ind.avgCostPerPoint}</td>
                 <td className="text-right py-3 px-2">{ind.avgROI}%</td>
                 <td className="text-right py-3 px-2">
-                  {ind.avgTimeMonths} {t.labelMonths}
+                  {ind.avgTimeMonths} {t("tpRoi.labelMonths", "meses")}
                 </td>
                 <td className="text-right py-3 px-2">{ind.turnoverReduction}%</td>
                 <td className="text-right py-3 px-2">{ind.productivityGain}%</td>
@@ -1400,9 +1047,9 @@ export default function TPROIPage() {
         className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800"
       >
         <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-purple-500" /> {t.timelineTitle}
+          <Clock className="w-5 h-5 text-purple-500" /> {t("tpRoi.timelineTitle", "Cronología del ROI")}
         </h2>
-        <p className="text-sm text-[var(--rowi-muted)] mb-8">{t.timelineDesc}</p>
+        <p className="text-sm text-[var(--rowi-muted)] mb-8">{t("tpRoi.timelineDesc", "Fases y milestones esperados del programa de desarrollo EQ")}</p>
         <div className="relative mb-10">
           <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
             <motion.div
@@ -1415,10 +1062,10 @@ export default function TPROIPage() {
           </div>
           <div className="flex justify-between mt-3">
             {[
-              { month: 1, label: t.timelineMilestone1 },
-              { month: Math.ceil(duration * 0.25), label: t.timelineMilestone2 },
-              { month: Math.ceil(duration * 0.6), label: t.timelineMilestone3 },
-              { month: duration, label: t.timelineMilestone4 },
+              { month: 1, label: t("tpRoi.timelineMilestone1", "Kickoff del programa") },
+              { month: Math.ceil(duration * 0.25), label: t("tpRoi.timelineMilestone2", "Primera medición") },
+              { month: Math.ceil(duration * 0.6), label: t("tpRoi.timelineMilestone3", "Punto de equilibrio") },
+              { month: duration, label: t("tpRoi.timelineMilestone4", "ROI completo") },
             ].map((milestone, i) => (
               <motion.div
                 key={i}
@@ -1440,42 +1087,42 @@ export default function TPROIPage() {
         <div className="space-y-2">
           <TimelinePhase
             phase={1}
-            title={t.timelinePhase1}
-            description={t.timelinePhase1Desc}
+            title={t("tpRoi.timelinePhase1", "Fase 1: Formación")}
+            description={t("tpRoi.timelinePhase1Desc", "Evaluaciones SEI, selección de cohortes, diseño de programa")}
             months={`M1 - M${Math.ceil(duration * 0.25)}`}
             color="#7B2D8E"
             delay={0}
             milestones={[
-              { label: t.timelineMilestone1, position: "M1" },
+              { label: t("tpRoi.timelineMilestone1", "Kickoff del programa"), position: "M1" },
               {
-                label: t.timelineMilestone2,
+                label: t("tpRoi.timelineMilestone2", "Primera medición"),
                 position: `M${Math.ceil(duration * 0.25)}`,
               },
             ]}
           />
           <TimelinePhase
             phase={2}
-            title={t.timelinePhase2}
-            description={t.timelinePhase2Desc}
+            title={t("tpRoi.timelinePhase2", "Fase 2: Resultados Tempranos")}
+            description={t("tpRoi.timelinePhase2Desc", "Primeras mejoras medibles en competencias EQ")}
             months={`M${Math.ceil(duration * 0.25) + 1} - M${Math.ceil(duration * 0.5)}`}
             color="#E31937"
             delay={0.1}
             milestones={[
               {
-                label: t.timelineMilestone3,
+                label: t("tpRoi.timelineMilestone3", "Punto de equilibrio"),
                 position: `M${Math.ceil(duration * 0.6)}`,
               },
             ]}
           />
           <TimelinePhase
             phase={3}
-            title={t.timelinePhase3}
-            description={t.timelinePhase3Desc}
+            title={t("tpRoi.timelinePhase3", "Fase 3: Impacto Completo")}
+            description={t("tpRoi.timelinePhase3Desc", "Beneficios financieros realizados, ROI medible")}
             months={`M${Math.ceil(duration * 0.5) + 1} - M${duration}`}
             color="#10b981"
             delay={0.2}
             milestones={[
-              { label: t.timelineMilestone4, position: `M${duration}` },
+              { label: t("tpRoi.timelineMilestone4", "ROI completo"), position: `M${duration}` },
             ]}
           />
         </div>
@@ -1491,7 +1138,7 @@ export default function TPROIPage() {
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
           <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">
-            {t.infoTitle}
+            {t("tpRoi.infoTitle", "Modelo de Proyección")}
           </h3>
           <p className="text-sm text-purple-700 dark:text-purple-300">
             {infoDescWithCount}
@@ -1505,13 +1152,13 @@ export default function TPROIPage() {
           href="/hub/admin/tp/dashboard"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium"
         >
-          <ArrowLeft className="w-5 h-5" /> {t.navPrev}
+          <ArrowLeft className="w-5 h-5" /> {t("tpRoi.navPrev", "Dashboard")}
         </Link>
         <Link
           href="/hub/admin/tp/benchmark"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
         >
-          {t.navNext} <ArrowRight className="w-5 h-5" />
+          {t("tpRoi.navNext", "Benchmark")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

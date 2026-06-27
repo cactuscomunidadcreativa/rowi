@@ -36,379 +36,118 @@ import { getEqLevel } from "@/domains/eq/lib/eqLevels";
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
-   Translations — Fully bilingual ES / EN
+   Copy — migrated to central t() under the "tpEvolution" namespace.
+   buildCopy() resolves every label via tFn(key, "Spanish fallback"),
+   returning a flat object so existing t.xxx and dynamic
+   t[COMP_T_KEYS[...]] accesses keep working, and child components
+   that receive predLabel/actualLabel keep their contracts.
 ========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badge: "Curva de Aprendizaje / Learning Curve",
-    pageTitle: "Evolución y Curva de Aprendizaje EQ",
-    pageSubtitle:
-      "Seguimiento longitudinal de crecimiento emocional: curvas de aprendizaje, comparaciones antes/después y predicciones",
+type Copy = Record<string, string>;
 
-    selectorLabel: "Seleccionar persona",
-    selectorPlaceholder: "Selecciona un participante...",
-    assessmentsLabel: "evaluaciones",
-    regionLabel: "Región",
-    roleLabel: "Rol",
+function buildCopy(tFn: (key: string, fallback?: string) => string): Copy {
+  return {
+    backToHub: tFn("tpEvolution.backToHub", "TP Hub"),
+    badge: tFn("tpEvolution.badge", "Curva de Aprendizaje"),
+    pageTitle: tFn("tpEvolution.pageTitle", "Evolución y Curva de Aprendizaje EQ"),
+    pageSubtitle: tFn(
+      "tpEvolution.pageSubtitle",
+      "Seguimiento longitudinal de crecimiento emocional: curvas de aprendizaje, comparaciones antes/después y predicciones"
+    ),
 
-    chartTitle: "Curva de Evolución EQ",
-    chartSubtitle: "Puntaje total EQ a lo largo del tiempo con línea de predicción",
-    prediction: "Predicción",
-    actual: "Real",
+    selectorLabel: tFn("tpEvolution.selectorLabel", "Seleccionar persona"),
+    selectorPlaceholder: tFn("tpEvolution.selectorPlaceholder", "Selecciona un participante..."),
+    assessmentsLabel: tFn("tpEvolution.assessmentsLabel", "evaluaciones"),
+    regionLabel: tFn("tpEvolution.regionLabel", "Región"),
+    roleLabel: tFn("tpEvolution.roleLabel", "Rol"),
 
-    beforeAfterTitle: "Comparación Antes / Después",
-    beforeAfterSubtitle: "Primera evaluación vs evaluación más reciente",
-    firstAssessment: "Primera Evaluación",
-    latestAssessment: "Última Evaluación",
-    totalGrowth: "Crecimiento Total",
-    points: "puntos",
+    chartTitle: tFn("tpEvolution.chartTitle", "Curva de Evolución EQ"),
+    chartSubtitle: tFn("tpEvolution.chartSubtitle", "Puntaje total EQ a lo largo del tiempo con línea de predicción"),
+    prediction: tFn("tpEvolution.prediction", "Predicción"),
+    actual: tFn("tpEvolution.actual", "Real"),
 
-    compGrowthTitle: "Crecimiento por Competencia",
-    compGrowthSubtitle: "Desglose detallado del progreso en cada competencia SEI",
-    competency: "Competencia",
-    firstScore: "Primer Puntaje",
-    latestScore: "Último Puntaje",
-    growthPts: "Crecimiento (pts)",
-    growthPct: "Crecimiento (%)",
-    rate: "Ritmo",
-    rateFast: "Rápido",
-    rateModerate: "Moderado",
-    rateSlow: "Lento",
-    topGrowth: "Mayor crecimiento",
+    beforeAfterTitle: tFn("tpEvolution.beforeAfterTitle", "Comparación Antes / Después"),
+    beforeAfterSubtitle: tFn("tpEvolution.beforeAfterSubtitle", "Primera evaluación vs evaluación más reciente"),
+    firstAssessment: tFn("tpEvolution.firstAssessment", "Primera Evaluación"),
+    latestAssessment: tFn("tpEvolution.latestAssessment", "Última Evaluación"),
+    totalGrowth: tFn("tpEvolution.totalGrowth", "Crecimiento Total"),
+    points: tFn("tpEvolution.points", "puntos"),
 
-    compEL: "Alfabetización Emocional",
-    compRP: "Reconocer Patrones",
-    compACT: "Pensamiento Consecuente",
-    compNE: "Navegar Emociones",
-    compIM: "Motivación Intrínseca",
-    compOP: "Ejercer Optimismo",
-    compEMP: "Aumentar Empatía",
-    compNG: "Metas Nobles",
+    compGrowthTitle: tFn("tpEvolution.compGrowthTitle", "Crecimiento por Competencia"),
+    compGrowthSubtitle: tFn("tpEvolution.compGrowthSubtitle", "Desglose detallado del progreso en cada competencia SEI"),
+    competency: tFn("tpEvolution.competency", "Competencia"),
+    firstScore: tFn("tpEvolution.firstScore", "Primer Puntaje"),
+    latestScore: tFn("tpEvolution.latestScore", "Último Puntaje"),
+    growthPts: tFn("tpEvolution.growthPts", "Crecimiento (pts)"),
+    growthPct: tFn("tpEvolution.growthPct", "Crecimiento (%)"),
+    rate: tFn("tpEvolution.rate", "Ritmo"),
+    rateFast: tFn("tpEvolution.rateFast", "Rápido"),
+    rateModerate: tFn("tpEvolution.rateModerate", "Moderado"),
+    rateSlow: tFn("tpEvolution.rateSlow", "Lento"),
+    topGrowth: tFn("tpEvolution.topGrowth", "Mayor crecimiento"),
 
-    growthRateTitle: "Análisis de Ritmo de Crecimiento",
-    growthRateSubtitle: "Indicadores clave del progreso de desarrollo EQ",
-    avgGrowthRate: "Ritmo de Crecimiento Promedio",
-    ptsPerYear: "puntos/año",
-    fastestComp: "Competencia de Mayor Crecimiento",
-    strongestComp: "Competencia Más Fuerte",
-    predicted12m: "EQ Predicho en 12 Meses",
+    compEL: tFn("tpEvolution.compEL", "Alfabetización Emocional"),
+    compRP: tFn("tpEvolution.compRP", "Reconocer Patrones"),
+    compACT: tFn("tpEvolution.compACT", "Pensamiento Consecuente"),
+    compNE: tFn("tpEvolution.compNE", "Navegar Emociones"),
+    compIM: tFn("tpEvolution.compIM", "Motivación Intrínseca"),
+    compOP: tFn("tpEvolution.compOP", "Ejercer Optimismo"),
+    compEMP: tFn("tpEvolution.compEMP", "Aumentar Empatía"),
+    compNG: tFn("tpEvolution.compNG", "Metas Nobles"),
 
-    dupTitle: "Detección de IDs Duplicados",
-    dupSubtitle: "IDs con múltiples evaluaciones para seguimiento longitudinal",
-    dupBadge: "IDs duplicados encontrados",
-    dupId: "ID Fuente",
-    dupName: "Nombre",
-    dupCount: "Evaluaciones",
-    dupFirst: "Primera",
-    dupLast: "Última",
-    dupGrowth: "Crecimiento",
+    growthRateTitle: tFn("tpEvolution.growthRateTitle", "Análisis de Ritmo de Crecimiento"),
+    growthRateSubtitle: tFn("tpEvolution.growthRateSubtitle", "Indicadores clave del progreso de desarrollo EQ"),
+    avgGrowthRate: tFn("tpEvolution.avgGrowthRate", "Ritmo de Crecimiento Promedio"),
+    ptsPerYear: tFn("tpEvolution.ptsPerYear", "puntos/año"),
+    fastestComp: tFn("tpEvolution.fastestComp", "Competencia de Mayor Crecimiento"),
+    strongestComp: tFn("tpEvolution.strongestComp", "Competencia Más Fuerte"),
+    predicted12m: tFn("tpEvolution.predicted12m", "EQ Predicho en 12 Meses"),
 
-    teamTitle: "Resumen de Evolución del Equipo",
-    teamSubtitle: "Trayectoria de crecimiento comparativa de todos los participantes rastreados",
-    teamMostGrowth: "Mayor crecimiento",
-    teamLeastGrowth: "Menor crecimiento",
-    teamName: "Nombre",
-    teamStart: "EQ Inicial",
-    teamEnd: "EQ Final",
-    teamChange: "Cambio",
+    dupTitle: tFn("tpEvolution.dupTitle", "Detección de IDs Duplicados"),
+    dupSubtitle: tFn("tpEvolution.dupSubtitle", "IDs con múltiples evaluaciones para seguimiento longitudinal"),
+    dupBadge: tFn("tpEvolution.dupBadge", "IDs duplicados encontrados"),
+    dupId: tFn("tpEvolution.dupId", "ID Fuente"),
+    dupName: tFn("tpEvolution.dupName", "Nombre"),
+    dupCount: tFn("tpEvolution.dupCount", "Evaluaciones"),
+    dupFirst: tFn("tpEvolution.dupFirst", "Primera"),
+    dupLast: tFn("tpEvolution.dupLast", "Última"),
+    dupGrowth: tFn("tpEvolution.dupGrowth", "Crecimiento"),
 
-    predTitle: "Predicciones de Crecimiento",
-    predSubtitle: "Proyecciones basadas en la tasa de crecimiento actual del participante",
-    pred6m: "Predicción a 6 Meses",
-    pred12m: "Predicción a 12 Meses",
-    predCurrent: "EQ Actual",
-    predBasis: "Basado en ritmo de crecimiento de",
+    teamTitle: tFn("tpEvolution.teamTitle", "Resumen de Evolución del Equipo"),
+    teamSubtitle: tFn("tpEvolution.teamSubtitle", "Trayectoria de crecimiento comparativa de todos los participantes rastreados"),
+    teamMostGrowth: tFn("tpEvolution.teamMostGrowth", "Mayor crecimiento"),
+    teamLeastGrowth: tFn("tpEvolution.teamLeastGrowth", "Menor crecimiento"),
+    teamName: tFn("tpEvolution.teamName", "Nombre"),
+    teamStart: tFn("tpEvolution.teamStart", "EQ Inicial"),
+    teamEnd: tFn("tpEvolution.teamEnd", "EQ Final"),
+    teamChange: tFn("tpEvolution.teamChange", "Cambio"),
 
-    infoTitle: "Seguimiento Longitudinal de IE",
-    infoDesc:
-      "Esta página rastrea la evolución de inteligencia emocional a lo largo del tiempo usando detección de ID duplicado para vincular múltiples evaluaciones SEI. Todos los datos individuales están anonimizados. Escala SEI: 65–135.",
-    navPrev: "Selection",
-    navNext: "ROI",
+    predTitle: tFn("tpEvolution.predTitle", "Predicciones de Crecimiento"),
+    predSubtitle: tFn("tpEvolution.predSubtitle", "Proyecciones basadas en la tasa de crecimiento actual del participante"),
+    pred6m: tFn("tpEvolution.pred6m", "Predicción a 6 Meses"),
+    pred12m: tFn("tpEvolution.pred12m", "Predicción a 12 Meses"),
+    predCurrent: tFn("tpEvolution.predCurrent", "EQ Actual"),
+    predBasis: tFn("tpEvolution.predBasis", "Basado en ritmo de crecimiento de"),
 
-    loading: "Cargando datos de evolución...",
-    noEvolutionData: "Sin datos de evolución",
-    noEvolutionDataDesc:
-      "No se encontraron personas con múltiples evaluaciones SEI en el dataset actual. Los datos de evolución requieren que la misma persona haya sido evaluada al menos 2 veces.",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badge: "Learning Curve / Curva de Aprendizaje",
-    pageTitle: "EQ Evolution & Learning Curve",
-    pageSubtitle:
-      "Longitudinal emotional growth tracking: learning curves, before/after comparisons, and predictions",
+    infoTitle: tFn("tpEvolution.infoTitle", "Seguimiento Longitudinal de IE"),
+    infoDesc: tFn(
+      "tpEvolution.infoDesc",
+      "Esta página rastrea la evolución de inteligencia emocional a lo largo del tiempo usando detección de ID duplicado para vincular múltiples evaluaciones SEI. Todos los datos individuales están anonimizados. Escala SEI: 65–135."
+    ),
+    navPrev: tFn("tpEvolution.navPrev", "Selección"),
+    navNext: tFn("tpEvolution.navNext", "ROI"),
 
-    selectorLabel: "Select person",
-    selectorPlaceholder: "Select a participant...",
-    assessmentsLabel: "assessments",
-    regionLabel: "Region",
-    roleLabel: "Role",
+    loading: tFn("tpEvolution.loading", "Cargando datos de evolución..."),
+    noEvolutionData: tFn("tpEvolution.noEvolutionData", "Sin datos de evolución"),
+    noEvolutionDataDesc: tFn(
+      "tpEvolution.noEvolutionDataDesc",
+      "No se encontraron personas con múltiples evaluaciones SEI en el dataset actual. Los datos de evolución requieren que la misma persona haya sido evaluada al menos 2 veces."
+    ),
 
-    chartTitle: "EQ Evolution Curve",
-    chartSubtitle: "Total EQ score over time with prediction line",
-    prediction: "Prediction",
-    actual: "Actual",
-
-    beforeAfterTitle: "Before / After Comparison",
-    beforeAfterSubtitle: "First assessment vs most recent assessment",
-    firstAssessment: "First Assessment",
-    latestAssessment: "Latest Assessment",
-    totalGrowth: "Total Growth",
-    points: "points",
-
-    compGrowthTitle: "Competency Growth",
-    compGrowthSubtitle: "Detailed breakdown of progress across each SEI competency",
-    competency: "Competency",
-    firstScore: "First Score",
-    latestScore: "Latest Score",
-    growthPts: "Growth (pts)",
-    growthPct: "Growth (%)",
-    rate: "Rate",
-    rateFast: "Fast",
-    rateModerate: "Moderate",
-    rateSlow: "Slow",
-    topGrowth: "Top growth",
-
-    compEL: "Enhance Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Apply Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Engage Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Pursue Noble Goals",
-
-    growthRateTitle: "Growth Rate Analysis",
-    growthRateSubtitle: "Key indicators of EQ development progress",
-    avgGrowthRate: "Average Growth Rate",
-    ptsPerYear: "pts/year",
-    fastestComp: "Fastest Growing Competency",
-    strongestComp: "Strongest Competency",
-    predicted12m: "Predicted EQ in 12 Months",
-
-    dupTitle: "Duplicate ID Detection",
-    dupSubtitle: "IDs with multiple assessments for longitudinal tracking",
-    dupBadge: "Duplicate IDs found",
-    dupId: "Source ID",
-    dupName: "Name",
-    dupCount: "Assessments",
-    dupFirst: "First Seen",
-    dupLast: "Last Seen",
-    dupGrowth: "Growth",
-
-    teamTitle: "Team Evolution Summary",
-    teamSubtitle: "Comparative growth trajectory of all tracked participants",
-    teamMostGrowth: "Most growth",
-    teamLeastGrowth: "Least growth",
-    teamName: "Name",
-    teamStart: "Start EQ",
-    teamEnd: "End EQ",
-    teamChange: "Change",
-
-    predTitle: "Growth Predictions",
-    predSubtitle: "Projections based on the participant's current growth rate",
-    pred6m: "6-Month Prediction",
-    pred12m: "12-Month Prediction",
-    predCurrent: "Current EQ",
-    predBasis: "Based on growth rate of",
-
-    infoTitle: "Longitudinal EQ Tracking",
-    infoDesc:
-      "This page tracks emotional intelligence evolution over time using duplicate ID detection to link multiple SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
-    navPrev: "Selection",
-    navNext: "ROI",
-
-    loading: "Loading evolution data...",
-    noEvolutionData: "No evolution data",
-    noEvolutionDataDesc:
-      "No individuals with multiple SEI assessments found in the current dataset. Evolution data requires the same person to have been assessed at least 2 times.",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badge: "Learning Curve / Curva de Aprendizaje",
-    pageTitle: "EQ Evolution & Learning Curve",
-    pageSubtitle:
-      "Longitudinal emotional growth tracking: learning curves, before/after comparisons, and predictions",
-
-    selectorLabel: "Select person",
-    selectorPlaceholder: "Select a participant...",
-    assessmentsLabel: "assessments",
-    regionLabel: "Region",
-    roleLabel: "Role",
-
-    chartTitle: "EQ Evolution Curve",
-    chartSubtitle: "Total EQ score over time with prediction line",
-    prediction: "Prediction",
-    actual: "Actual",
-
-    beforeAfterTitle: "Before / After Comparison",
-    beforeAfterSubtitle: "First assessment vs most recent assessment",
-    firstAssessment: "First Assessment",
-    latestAssessment: "Latest Assessment",
-    totalGrowth: "Total Growth",
-    points: "points",
-
-    compGrowthTitle: "Competency Growth",
-    compGrowthSubtitle: "Detailed breakdown of progress across each SEI competency",
-    competency: "Competency",
-    firstScore: "First Score",
-    latestScore: "Latest Score",
-    growthPts: "Growth (pts)",
-    growthPct: "Growth (%)",
-    rate: "Rate",
-    rateFast: "Fast",
-    rateModerate: "Moderate",
-    rateSlow: "Slow",
-    topGrowth: "Top growth",
-
-    compEL: "Enhance Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Apply Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Engage Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Pursue Noble Goals",
-
-    growthRateTitle: "Growth Rate Analysis",
-    growthRateSubtitle: "Key indicators of EQ development progress",
-    avgGrowthRate: "Average Growth Rate",
-    ptsPerYear: "pts/year",
-    fastestComp: "Fastest Growing Competency",
-    strongestComp: "Strongest Competency",
-    predicted12m: "Predicted EQ in 12 Months",
-
-    dupTitle: "Duplicate ID Detection",
-    dupSubtitle: "IDs with multiple assessments for longitudinal tracking",
-    dupBadge: "Duplicate IDs found",
-    dupId: "Source ID",
-    dupName: "Name",
-    dupCount: "Assessments",
-    dupFirst: "First Seen",
-    dupLast: "Last Seen",
-    dupGrowth: "Growth",
-
-    teamTitle: "Team Evolution Summary",
-    teamSubtitle: "Comparative growth trajectory of all tracked participants",
-    teamMostGrowth: "Most growth",
-    teamLeastGrowth: "Least growth",
-    teamName: "Name",
-    teamStart: "Start EQ",
-    teamEnd: "End EQ",
-    teamChange: "Change",
-
-    predTitle: "Growth Predictions",
-    predSubtitle: "Projections based on the participant's current growth rate",
-    pred6m: "6-Month Prediction",
-    pred12m: "12-Month Prediction",
-    predCurrent: "Current EQ",
-    predBasis: "Based on growth rate of",
-
-    infoTitle: "Longitudinal EQ Tracking",
-    infoDesc:
-      "This page tracks emotional intelligence evolution over time using duplicate ID detection to link multiple SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
-    navPrev: "Selection",
-    navNext: "ROI",
-
-    loading: "Loading evolution data...",
-    noEvolutionData: "No evolution data",
-    noEvolutionDataDesc:
-      "No individuals with multiple SEI assessments found in the current dataset. Evolution data requires the same person to have been assessed at least 2 times.",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badge: "Learning Curve / Curva de Aprendizaje",
-    pageTitle: "EQ Evolution & Learning Curve",
-    pageSubtitle:
-      "Longitudinal emotional growth tracking: learning curves, before/after comparisons, and predictions",
-
-    selectorLabel: "Select person",
-    selectorPlaceholder: "Select a participant...",
-    assessmentsLabel: "assessments",
-    regionLabel: "Region",
-    roleLabel: "Role",
-
-    chartTitle: "EQ Evolution Curve",
-    chartSubtitle: "Total EQ score over time with prediction line",
-    prediction: "Prediction",
-    actual: "Actual",
-
-    beforeAfterTitle: "Before / After Comparison",
-    beforeAfterSubtitle: "First assessment vs most recent assessment",
-    firstAssessment: "First Assessment",
-    latestAssessment: "Latest Assessment",
-    totalGrowth: "Total Growth",
-    points: "points",
-
-    compGrowthTitle: "Competency Growth",
-    compGrowthSubtitle: "Detailed breakdown of progress across each SEI competency",
-    competency: "Competency",
-    firstScore: "First Score",
-    latestScore: "Latest Score",
-    growthPts: "Growth (pts)",
-    growthPct: "Growth (%)",
-    rate: "Rate",
-    rateFast: "Fast",
-    rateModerate: "Moderate",
-    rateSlow: "Slow",
-    topGrowth: "Top growth",
-
-    compEL: "Enhance Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Apply Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Engage Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Pursue Noble Goals",
-
-    growthRateTitle: "Growth Rate Analysis",
-    growthRateSubtitle: "Key indicators of EQ development progress",
-    avgGrowthRate: "Average Growth Rate",
-    ptsPerYear: "pts/year",
-    fastestComp: "Fastest Growing Competency",
-    strongestComp: "Strongest Competency",
-    predicted12m: "Predicted EQ in 12 Months",
-
-    dupTitle: "Duplicate ID Detection",
-    dupSubtitle: "IDs with multiple assessments for longitudinal tracking",
-    dupBadge: "Duplicate IDs found",
-    dupId: "Source ID",
-    dupName: "Name",
-    dupCount: "Assessments",
-    dupFirst: "First Seen",
-    dupLast: "Last Seen",
-    dupGrowth: "Growth",
-
-    teamTitle: "Team Evolution Summary",
-    teamSubtitle: "Comparative growth trajectory of all tracked participants",
-    teamMostGrowth: "Most growth",
-    teamLeastGrowth: "Least growth",
-    teamName: "Name",
-    teamStart: "Start EQ",
-    teamEnd: "End EQ",
-    teamChange: "Change",
-
-    predTitle: "Growth Predictions",
-    predSubtitle: "Projections based on the participant's current growth rate",
-    pred6m: "6-Month Prediction",
-    pred12m: "12-Month Prediction",
-    predCurrent: "Current EQ",
-    predBasis: "Based on growth rate of",
-
-    infoTitle: "Longitudinal EQ Tracking",
-    infoDesc:
-      "This page tracks emotional intelligence evolution over time using duplicate ID detection to link multiple SEI assessments. All individual data is anonymized. SEI Scale: 65–135.",
-    navPrev: "Selection",
-    navNext: "ROI",
-
-    loading: "Loading evolution data...",
-    noEvolutionData: "No evolution data",
-    noEvolutionDataDesc:
-      "No individuals with multiple SEI assessments found in the current dataset. Evolution data requires the same person to have been assessed at least 2 times.",
-  },
-
-};
+    eqTotal: tFn("tpEvolution.eqTotal", "EQ Total"),
+    brainStyleLabel: tFn("tpEvolution.brainStyleLabel", "Brain Style:"),
+    seiLevel: tFn("tpEvolution.seiLevel", "Nivel SEI:"),
+  };
+}
 
 /* =========================================================
    Types
@@ -739,7 +478,7 @@ function TeamBarChart({ evolutions }: { evolutions: ApiEvolution[] }) {
 ========================================================= */
 export default function TPEvolutionPage() {
   const { lang, t: tFn } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const t = buildCopy(tFn);
 
   const [evolutions, setEvolutions] = useState<ApiEvolution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -976,7 +715,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-blue-500">{firstA.eqTotal.toFixed(1)}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">{tFn("admin.tp.evolution.eqTotal")}</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {COMP_KEYS.map((key) => (
@@ -988,7 +727,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="mt-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                   <span className="text-lg">{getBrainStyleEmoji(evo.brainStyle)}</span>
-                  <span className="text-[var(--rowi-muted)]">{tFn("admin.tp.evolution.brainStyle")}</span>
+                  <span className="text-[var(--rowi-muted)]">{t.brainStyleLabel}</span>
                   <span
                     className="font-medium px-2 py-0.5 rounded-full text-xs"
                     style={{
@@ -1005,7 +744,7 @@ export default function TPEvolutionPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                       <span className="text-lg">{lvl.emoji}</span>
-                      <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="text-[var(--rowi-muted)]">{t.seiLevel}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
                         {tFn(lvl.labelKey, lvl.label)}
                       </span>
@@ -1035,7 +774,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-green-500">{lastA.eqTotal.toFixed(1)}</div>
-                  <div className="text-xs text-[var(--rowi-muted)]">EQ Total</div>
+                  <div className="text-xs text-[var(--rowi-muted)]">{t.eqTotal}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {COMP_KEYS.map((key) => {
@@ -1057,7 +796,7 @@ export default function TPEvolutionPage() {
                 </div>
                 <div className="mt-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                   <span className="text-lg">{getBrainStyleEmoji(evo.brainStyle)}</span>
-                  <span className="text-[var(--rowi-muted)]">Brain Style:</span>
+                  <span className="text-[var(--rowi-muted)]">{t.brainStyleLabel}</span>
                   <span
                     className="font-medium px-2 py-0.5 rounded-full text-xs"
                     style={{
@@ -1074,7 +813,7 @@ export default function TPEvolutionPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm">
                       <span className="text-lg">{lvl.emoji}</span>
-                      <span className="text-[var(--rowi-muted)]">{lang !== "es" ? "SEI Level:" : "Nivel SEI:"}</span>
+                      <span className="text-[var(--rowi-muted)]">{t.seiLevel}</span>
                       <span className="font-medium text-xs" style={{ color: lvl.color }}>
                         {tFn(lvl.labelKey, lvl.label)}
                       </span>
@@ -1122,7 +861,7 @@ export default function TPEvolutionPage() {
                           className={`border-b border-gray-100 dark:border-zinc-800 ${isTop ? "bg-green-50 dark:bg-green-900/10" : ""}`}
                         >
                           <td className="py-2.5 px-2 font-medium flex items-center gap-2">
-                            {t[COMP_T_KEYS[c.key as CompKey] as keyof typeof t]}
+                            {t[COMP_T_KEYS[c.key as CompKey]]}
                             {isTop && (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
                                 <Award className="w-3 h-3" /> {t.topGrowth}
@@ -1178,7 +917,7 @@ export default function TPEvolutionPage() {
                   <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3">
                     <Zap className="w-6 h-6 text-green-500" />
                   </div>
-                  <div className="text-lg font-bold text-green-600">{t[COMP_T_KEYS[topGrowthComp.key as CompKey] as keyof typeof t]}</div>
+                  <div className="text-lg font-bold text-green-600">{t[COMP_T_KEYS[topGrowthComp.key as CompKey]]}</div>
                   <div className="text-xs text-[var(--rowi-muted)] mt-1">{t.fastestComp}</div>
                   <div className="text-[10px] font-mono text-green-500">+{topGrowthComp.growthPts.toFixed(1)} pts</div>
                 </motion.div>
@@ -1187,7 +926,7 @@ export default function TPEvolutionPage() {
                   <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
                     <Award className="w-6 h-6 text-blue-500" />
                   </div>
-                  <div className="text-lg font-bold text-blue-600">{t[COMP_T_KEYS[strongestComp.key as CompKey] as keyof typeof t]}</div>
+                  <div className="text-lg font-bold text-blue-600">{t[COMP_T_KEYS[strongestComp.key as CompKey]]}</div>
                   <div className="text-xs text-[var(--rowi-muted)] mt-1">{t.strongestComp}</div>
                   <div className="text-[10px] font-mono text-blue-500">{strongestComp.last.toFixed(1)} pts</div>
                 </motion.div>

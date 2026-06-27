@@ -37,588 +37,11 @@ import {
    Protected route for @6seconds.org users
 ========================================================= */
 
-const translations = {
-  es: {
-    // Header
-    pageTitle: "Hub de Gestión",
-    enterpriseBadge: "Enterprise",
-    subtitle: "Plataforma de Inteligencia EQ — Powered by Rowi × Six Seconds",
-    protectedAccess: "Acceso por plan + rol de administración",
-
-    // Quick Stats
-    statAvgEQ: "EQ Promedio",
-    statAssessments: "Evaluaciones",
-    statCountries: "Países",
-    statBrainProfiles: "Perfiles Cerebrales",
-
-    // Modules section
-    modulesTitle: "Módulos TP",
-    openButton: "Abrir",
-
-    // Module: Dashboard
-    dashboardTitle: "Dashboard EQ",
-    dashboardDesc: "Vista completa de métricas SEI con puntajes EQ individuales y de equipo, pursuits y competencias.",
-    dashboardFeat1: "Puntaje Total EQ",
-    dashboardFeat2: "8 Competencias SEI",
-    dashboardFeat3: "3 Pursuits",
-    dashboardFeat4: "Resultados de Vida",
-
-    // Module: Benchmark
-    benchmarkTitle: "Benchmark TP",
-    benchmarkDesc: "{count} evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.",
-    benchmarkFeat1: "{count} Evaluaciones",
-    benchmarkFeat2: "42 Países",
-    benchmarkFeat3: "Insights Regionales",
-    benchmarkFeat4: "Perfiles Cerebrales",
-
-    // Module: Affinity
-    affinityTitle: "Afinidad de Equipo",
-    affinityDesc: "Descubre la compatibilidad emocional entre equipos TP. Optimiza la colaboración con matching de estilos cerebrales.",
-    affinityFeat1: "Compatibilidad de Equipo",
-    affinityFeat2: "Match de Estilo Cerebral",
-    affinityFeat3: "Equipos Multi-región",
-    affinityFeat4: "Insights de Colaboración",
-
-    // Module: ECO
-    ecoTitle: "Comunicación ECO",
-    ecoDesc: "Optimiza la comunicación emocional en la fuerza laboral global de TP con mensajería adaptada por IA.",
-    ecoFeat1: "Mensajería Adaptada",
-    ecoFeat2: "Multi-canal",
-    ecoFeat3: "Estilo Cerebral Aware",
-    ecoFeat4: "Contexto Cultural",
-
-    // Module: Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "Coaching de inteligencia emocional 24/7 con IA para empleados de TP, contextualizado con datos SEI.",
-    coachFeat1: "Coach IA por Chat",
-    coachFeat2: "Basado en SEI",
-    coachFeat3: "Seguimiento de Progreso",
-    coachFeat4: "Ejercicios Personalizados",
-
-    // Module: Community
-    communityTitle: "Comunidad EQ TP",
-    communityDesc: "La comunidad de inteligencia emocional de Teleperformance. Eventos, leaderboards y aprendizaje entre pares.",
-    communityFeat1: "Leaderboard EQ",
-    communityFeat2: "Eventos y Desafíos",
-    communityFeat3: "Aprendizaje entre Pares",
-    communityFeat4: "Reconocimiento",
-
-    // Module: Onboarding
-    onboardingTitle: "Onboarding TP",
-    onboardingDesc: "Flujo de onboarding de empleados con evaluación SEI, perfil cerebral y matching de equipo.",
-    onboardingFeat1: "Evaluación SEI",
-    onboardingFeat2: "Perfil Cerebral",
-    onboardingFeat3: "Matching de Equipo",
-    onboardingFeat4: "Plan de Crecimiento",
-
-    // Module: People
-    peopleTitle: "Comparador de Personas",
-    peopleDesc: "Compara perfiles EQ lado a lado. Analiza fortalezas complementarias y estilos cerebrales entre dos personas.",
-    peopleFeat1: "Comparación 1 vs 1",
-    peopleFeat2: "Radar de Competencias",
-    peopleFeat3: "Análisis Complementario",
-    peopleFeat4: "12 Perfiles Mock",
-
-    // Module: Teams
-    teamsTitle: "Team Analytics",
-    teamsDesc: "Análisis profundo de equipos con indicadores de salud, heatmaps de competencias y comparación inter-equipos.",
-    teamsFeat1: "8 Equipos Mock",
-    teamsFeat2: "Indicadores de Salud",
-    teamsFeat3: "Heatmap Competencias",
-    teamsFeat4: "Comparación Inter-equipos",
-
-    // Module: Selection
-    selectionTitle: "Selección y Contratación",
-    selectionDesc: "Evalúa candidatos contra benchmarks de rol con fit scores, gap analysis y recomendaciones IA.",
-    selectionFeat1: "Fit Score 0-100%",
-    selectionFeat2: "5 Roles Benchmark",
-    selectionFeat3: "Gap Analysis",
-    selectionFeat4: "Recomendación IA",
-
-    // Module: Evolution
-    evolutionTitle: "Curva de Evolución",
-    evolutionDesc: "Rastrea el crecimiento EQ a lo largo del tiempo con assessments múltiples, predicciones y análisis de tendencias.",
-    evolutionFeat1: "Timeline Interactivo",
-    evolutionFeat2: "Before/After",
-    evolutionFeat3: "Predicción EQ",
-    evolutionFeat4: "Growth Rate",
-
-    // Module: ROI
-    roiTitle: "Calculadora de ROI",
-    roiDesc: "Simula el retorno de inversión en programas EQ con escenarios, correlaciones y benchmarks industriales.",
-    roiFeat1: "Simulador Budget",
-    roiFeat2: "3 Escenarios",
-    roiFeat3: "Correlaciones Reales",
-    roiFeat4: "Benchmark Industria",
-
-    // Module: World
-    worldTitle: "Benchmark Global",
-    worldDesc: "Compara TP vs el mundo: Six Seconds global, industria BPO, top 10% mundial y patrones de éxito.",
-    worldFeat1: "TP vs Global",
-    worldFeat2: "TP vs BPO",
-    worldFeat3: "Top 10% Mundial",
-    worldFeat4: "Success Patterns",
-
-    // Module: Alerts
-    alertsTitle: "Alertas y Monitoreo",
-    alertsDesc: "Sistema de alertas inteligentes para EQ bajo, tendencias declinantes, salud de equipos y anomalías.",
-    alertsFeat1: "Alertas por Severidad",
-    alertsFeat2: "Salud de Equipos",
-    alertsFeat3: "Tendencias",
-    alertsFeat4: "Configuración Umbrales",
-
-    // Module: Data Quality
-    dataQualityTitle: "Calidad de Datos",
-    dataQualityDesc: "Análisis de integridad de datos: duplicados, outliers, completeness y score de calidad general.",
-    dataQualityFeat1: "Score de Calidad",
-    dataQualityFeat2: "Detección Duplicados",
-    dataQualityFeat3: "Outlier Detection",
-    dataQualityFeat4: "Completeness",
-
-    // Footer
-    footerText:
-      "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi × Six Seconds.",
-    footerCopyright: "Rowi — Plataforma de Inteligencia Emocional con IA",
-    noData: "—",
-  },
-  en: {
-    // Header
-    pageTitle: "Manage Hub",
-    enterpriseBadge: "Enterprise",
-    subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Access by plan + admin role",
-
-    // Quick Stats
-    statAvgEQ: "Avg EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statBrainProfiles: "Brain Profiles",
-
-    // Modules section
-    modulesTitle: "TP Modules",
-    openButton: "Open",
-
-    // Module: Dashboard
-    dashboardTitle: "EQ Dashboard",
-    dashboardDesc: "Complete SEI metrics view with individual and team-level EQ scores, pursuits, and competencies.",
-    dashboardFeat1: "Total EQ Score",
-    dashboardFeat2: "8 SEI Competencies",
-    dashboardFeat3: "3 Pursuits",
-    dashboardFeat4: "Life Outcomes",
-
-    // Module: Benchmark
-    benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "{count} Assessments",
-    benchmarkFeat2: "42 Countries",
-    benchmarkFeat3: "Regional Insights",
-    benchmarkFeat4: "Brain Profiles",
-
-    // Module: Affinity
-    affinityTitle: "Team Affinity",
-    affinityDesc: "Discover emotional compatibility across TP teams. Optimize collaboration with brain style matching.",
-    affinityFeat1: "Team Compatibility",
-    affinityFeat2: "Brain Style Match",
-    affinityFeat3: "Cross-region Teams",
-    affinityFeat4: "Collaboration Insights",
-
-    // Module: ECO
-    ecoTitle: "ECO Communication",
-    ecoDesc: "Optimize emotional communication across TP's global workforce with AI-adapted messaging.",
-    ecoFeat1: "Adapted Messaging",
-    ecoFeat2: "Multi-channel",
-    ecoFeat3: "Brain Style Aware",
-    ecoFeat4: "Cultural Context",
-
-    // Module: Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "24/7 AI-powered emotional intelligence coaching for TP employees, contextualized with SEI data.",
-    coachFeat1: "AI Chat Coach",
-    coachFeat2: "SEI-Aware",
-    coachFeat3: "Progress Tracking",
-    coachFeat4: "Personalized Exercises",
-
-    // Module: Community
-    communityTitle: "TP EQ Community",
-    communityDesc: "The Teleperformance emotional intelligence community. Events, leaderboards, and peer learning.",
-    communityFeat1: "EQ Leaderboard",
-    communityFeat2: "Events & Challenges",
-    communityFeat3: "Peer Learning",
-    communityFeat4: "Recognition",
-
-    // Module: Onboarding
-    onboardingTitle: "TP Onboarding",
-    onboardingDesc: "Employee onboarding flow with SEI assessment, brain profiling, and team matching.",
-    onboardingFeat1: "SEI Assessment",
-    onboardingFeat2: "Brain Profile",
-    onboardingFeat3: "Team Matching",
-    onboardingFeat4: "Growth Plan",
-
-    // Module: People
-    peopleTitle: "Person Comparator",
-    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
-    peopleFeat1: "1 vs 1 Comparison",
-    peopleFeat2: "Competency Radar",
-    peopleFeat3: "Complementary Analysis",
-    peopleFeat4: "12 Mock Profiles",
-
-    // Module: Teams
-    teamsTitle: "Team Analytics",
-    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
-    teamsFeat1: "8 Mock Teams",
-    teamsFeat2: "Health Indicators",
-    teamsFeat3: "Competency Heatmap",
-    teamsFeat4: "Inter-team Comparison",
-
-    // Module: Selection
-    selectionTitle: "Hiring & Selection",
-    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
-    selectionFeat1: "Fit Score 0-100%",
-    selectionFeat2: "5 Role Benchmarks",
-    selectionFeat3: "Gap Analysis",
-    selectionFeat4: "AI Recommendation",
-
-    // Module: Evolution
-    evolutionTitle: "Evolution Curve",
-    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
-    evolutionFeat1: "Interactive Timeline",
-    evolutionFeat2: "Before/After",
-    evolutionFeat3: "EQ Prediction",
-    evolutionFeat4: "Growth Rate",
-
-    // Module: ROI
-    roiTitle: "ROI Calculator",
-    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
-    roiFeat1: "Budget Simulator",
-    roiFeat2: "3 Scenarios",
-    roiFeat3: "Real Correlations",
-    roiFeat4: "Industry Benchmark",
-
-    // Module: World
-    worldTitle: "Global Benchmark",
-    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
-    worldFeat1: "TP vs Global",
-    worldFeat2: "TP vs BPO",
-    worldFeat3: "Top 10% Worldwide",
-    worldFeat4: "Success Patterns",
-
-    // Module: Alerts
-    alertsTitle: "Alerts & Monitoring",
-    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
-    alertsFeat1: "Severity Alerts",
-    alertsFeat2: "Team Health",
-    alertsFeat3: "Trends",
-    alertsFeat4: "Threshold Config",
-
-    // Module: Data Quality
-    dataQualityTitle: "Data Quality",
-    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
-    dataQualityFeat1: "Quality Score",
-    dataQualityFeat2: "Duplicate Detection",
-    dataQualityFeat3: "Outlier Detection",
-    dataQualityFeat4: "Completeness",
-
-    // Footer
-    footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
-    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
-    noData: "—",
-  },
-  pt: {
-    // Header
-    pageTitle: "Manage Hub",
-    enterpriseBadge: "Enterprise",
-    subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Access by plan + admin role",
-
-    // Quick Stats
-    statAvgEQ: "Avg EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statBrainProfiles: "Brain Profiles",
-
-    // Modules section
-    modulesTitle: "TP Modules",
-    openButton: "Open",
-
-    // Module: Dashboard
-    dashboardTitle: "EQ Dashboard",
-    dashboardDesc: "Complete SEI metrics view with individual and team-level EQ scores, pursuits, and competencies.",
-    dashboardFeat1: "Total EQ Score",
-    dashboardFeat2: "8 SEI Competencies",
-    dashboardFeat3: "3 Pursuits",
-    dashboardFeat4: "Life Outcomes",
-
-    // Module: Benchmark
-    benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "{count} Assessments",
-    benchmarkFeat2: "42 Countries",
-    benchmarkFeat3: "Regional Insights",
-    benchmarkFeat4: "Brain Profiles",
-
-    // Module: Affinity
-    affinityTitle: "Team Affinity",
-    affinityDesc: "Discover emotional compatibility across TP teams. Optimize collaboration with brain style matching.",
-    affinityFeat1: "Team Compatibility",
-    affinityFeat2: "Brain Style Match",
-    affinityFeat3: "Cross-region Teams",
-    affinityFeat4: "Collaboration Insights",
-
-    // Module: ECO
-    ecoTitle: "ECO Communication",
-    ecoDesc: "Optimize emotional communication across TP's global workforce with AI-adapted messaging.",
-    ecoFeat1: "Adapted Messaging",
-    ecoFeat2: "Multi-channel",
-    ecoFeat3: "Brain Style Aware",
-    ecoFeat4: "Cultural Context",
-
-    // Module: Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "24/7 AI-powered emotional intelligence coaching for TP employees, contextualized with SEI data.",
-    coachFeat1: "AI Chat Coach",
-    coachFeat2: "SEI-Aware",
-    coachFeat3: "Progress Tracking",
-    coachFeat4: "Personalized Exercises",
-
-    // Module: Community
-    communityTitle: "TP EQ Community",
-    communityDesc: "The Teleperformance emotional intelligence community. Events, leaderboards, and peer learning.",
-    communityFeat1: "EQ Leaderboard",
-    communityFeat2: "Events & Challenges",
-    communityFeat3: "Peer Learning",
-    communityFeat4: "Recognition",
-
-    // Module: Onboarding
-    onboardingTitle: "TP Onboarding",
-    onboardingDesc: "Employee onboarding flow with SEI assessment, brain profiling, and team matching.",
-    onboardingFeat1: "SEI Assessment",
-    onboardingFeat2: "Brain Profile",
-    onboardingFeat3: "Team Matching",
-    onboardingFeat4: "Growth Plan",
-
-    // Module: People
-    peopleTitle: "Person Comparator",
-    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
-    peopleFeat1: "1 vs 1 Comparison",
-    peopleFeat2: "Competency Radar",
-    peopleFeat3: "Complementary Analysis",
-    peopleFeat4: "12 Mock Profiles",
-
-    // Module: Teams
-    teamsTitle: "Team Analytics",
-    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
-    teamsFeat1: "8 Mock Teams",
-    teamsFeat2: "Health Indicators",
-    teamsFeat3: "Competency Heatmap",
-    teamsFeat4: "Inter-team Comparison",
-
-    // Module: Selection
-    selectionTitle: "Hiring & Selection",
-    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
-    selectionFeat1: "Fit Score 0-100%",
-    selectionFeat2: "5 Role Benchmarks",
-    selectionFeat3: "Gap Analysis",
-    selectionFeat4: "AI Recommendation",
-
-    // Module: Evolution
-    evolutionTitle: "Evolution Curve",
-    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
-    evolutionFeat1: "Interactive Timeline",
-    evolutionFeat2: "Before/After",
-    evolutionFeat3: "EQ Prediction",
-    evolutionFeat4: "Growth Rate",
-
-    // Module: ROI
-    roiTitle: "ROI Calculator",
-    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
-    roiFeat1: "Budget Simulator",
-    roiFeat2: "3 Scenarios",
-    roiFeat3: "Real Correlations",
-    roiFeat4: "Industry Benchmark",
-
-    // Module: World
-    worldTitle: "Global Benchmark",
-    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
-    worldFeat1: "TP vs Global",
-    worldFeat2: "TP vs BPO",
-    worldFeat3: "Top 10% Worldwide",
-    worldFeat4: "Success Patterns",
-
-    // Module: Alerts
-    alertsTitle: "Alerts & Monitoring",
-    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
-    alertsFeat1: "Severity Alerts",
-    alertsFeat2: "Team Health",
-    alertsFeat3: "Trends",
-    alertsFeat4: "Threshold Config",
-
-    // Module: Data Quality
-    dataQualityTitle: "Data Quality",
-    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
-    dataQualityFeat1: "Quality Score",
-    dataQualityFeat2: "Duplicate Detection",
-    dataQualityFeat3: "Outlier Detection",
-    dataQualityFeat4: "Completeness",
-
-    // Footer
-    footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
-    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
-    noData: "—",
-  },
-  it: {
-    // Header
-    pageTitle: "Manage Hub",
-    enterpriseBadge: "Enterprise",
-    subtitle: "EQ Intelligence Platform — Powered by Rowi × Six Seconds",
-    protectedAccess: "Access by plan + admin role",
-
-    // Quick Stats
-    statAvgEQ: "Avg EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statBrainProfiles: "Brain Profiles",
-
-    // Modules section
-    modulesTitle: "TP Modules",
-    openButton: "Open",
-
-    // Module: Dashboard
-    dashboardTitle: "EQ Dashboard",
-    dashboardDesc: "Complete SEI metrics view with individual and team-level EQ scores, pursuits, and competencies.",
-    dashboardFeat1: "Total EQ Score",
-    dashboardFeat2: "8 SEI Competencies",
-    dashboardFeat3: "3 Pursuits",
-    dashboardFeat4: "Life Outcomes",
-
-    // Module: Benchmark
-    benchmarkTitle: "TP Benchmark",
-    benchmarkDesc: "{count} real SEI assessments analyzed. Corporate benchmarking across regions, roles, and departments.",
-    benchmarkFeat1: "{count} Assessments",
-    benchmarkFeat2: "42 Countries",
-    benchmarkFeat3: "Regional Insights",
-    benchmarkFeat4: "Brain Profiles",
-
-    // Module: Affinity
-    affinityTitle: "Team Affinity",
-    affinityDesc: "Discover emotional compatibility across TP teams. Optimize collaboration with brain style matching.",
-    affinityFeat1: "Team Compatibility",
-    affinityFeat2: "Brain Style Match",
-    affinityFeat3: "Cross-region Teams",
-    affinityFeat4: "Collaboration Insights",
-
-    // Module: ECO
-    ecoTitle: "ECO Communication",
-    ecoDesc: "Optimize emotional communication across TP's global workforce with AI-adapted messaging.",
-    ecoFeat1: "Adapted Messaging",
-    ecoFeat2: "Multi-channel",
-    ecoFeat3: "Brain Style Aware",
-    ecoFeat4: "Cultural Context",
-
-    // Module: Coach
-    coachTitle: "Rowi Coach",
-    coachDesc: "24/7 AI-powered emotional intelligence coaching for TP employees, contextualized with SEI data.",
-    coachFeat1: "AI Chat Coach",
-    coachFeat2: "SEI-Aware",
-    coachFeat3: "Progress Tracking",
-    coachFeat4: "Personalized Exercises",
-
-    // Module: Community
-    communityTitle: "TP EQ Community",
-    communityDesc: "The Teleperformance emotional intelligence community. Events, leaderboards, and peer learning.",
-    communityFeat1: "EQ Leaderboard",
-    communityFeat2: "Events & Challenges",
-    communityFeat3: "Peer Learning",
-    communityFeat4: "Recognition",
-
-    // Module: Onboarding
-    onboardingTitle: "TP Onboarding",
-    onboardingDesc: "Employee onboarding flow with SEI assessment, brain profiling, and team matching.",
-    onboardingFeat1: "SEI Assessment",
-    onboardingFeat2: "Brain Profile",
-    onboardingFeat3: "Team Matching",
-    onboardingFeat4: "Growth Plan",
-
-    // Module: People
-    peopleTitle: "Person Comparator",
-    peopleDesc: "Compare EQ profiles side by side. Analyze complementary strengths and brain styles between two people.",
-    peopleFeat1: "1 vs 1 Comparison",
-    peopleFeat2: "Competency Radar",
-    peopleFeat3: "Complementary Analysis",
-    peopleFeat4: "12 Mock Profiles",
-
-    // Module: Teams
-    teamsTitle: "Team Analytics",
-    teamsDesc: "Deep team analysis with health indicators, competency heatmaps, and inter-team comparison.",
-    teamsFeat1: "8 Mock Teams",
-    teamsFeat2: "Health Indicators",
-    teamsFeat3: "Competency Heatmap",
-    teamsFeat4: "Inter-team Comparison",
-
-    // Module: Selection
-    selectionTitle: "Hiring & Selection",
-    selectionDesc: "Evaluate candidates against role benchmarks with fit scores, gap analysis, and AI recommendations.",
-    selectionFeat1: "Fit Score 0-100%",
-    selectionFeat2: "5 Role Benchmarks",
-    selectionFeat3: "Gap Analysis",
-    selectionFeat4: "AI Recommendation",
-
-    // Module: Evolution
-    evolutionTitle: "Evolution Curve",
-    evolutionDesc: "Track EQ growth over time with multiple assessments, predictions, and trend analysis.",
-    evolutionFeat1: "Interactive Timeline",
-    evolutionFeat2: "Before/After",
-    evolutionFeat3: "EQ Prediction",
-    evolutionFeat4: "Growth Rate",
-
-    // Module: ROI
-    roiTitle: "ROI Calculator",
-    roiDesc: "Simulate return on investment in EQ programs with scenarios, correlations, and industry benchmarks.",
-    roiFeat1: "Budget Simulator",
-    roiFeat2: "3 Scenarios",
-    roiFeat3: "Real Correlations",
-    roiFeat4: "Industry Benchmark",
-
-    // Module: World
-    worldTitle: "Global Benchmark",
-    worldDesc: "Compare TP vs the world: Six Seconds global, BPO industry, top 10% worldwide, and success patterns.",
-    worldFeat1: "TP vs Global",
-    worldFeat2: "TP vs BPO",
-    worldFeat3: "Top 10% Worldwide",
-    worldFeat4: "Success Patterns",
-
-    // Module: Alerts
-    alertsTitle: "Alerts & Monitoring",
-    alertsDesc: "Smart alert system for low EQ, declining trends, team health, and anomalies.",
-    alertsFeat1: "Severity Alerts",
-    alertsFeat2: "Team Health",
-    alertsFeat3: "Trends",
-    alertsFeat4: "Threshold Config",
-
-    // Module: Data Quality
-    dataQualityTitle: "Data Quality",
-    dataQualityDesc: "Data integrity analysis: duplicates, outliers, completeness, and overall quality score.",
-    dataQualityFeat1: "Quality Score",
-    dataQualityFeat2: "Duplicate Detection",
-    dataQualityFeat3: "Outlier Detection",
-    dataQualityFeat4: "Completeness",
-
-    // Footer
-    footerText:
-      "This is a live demo environment using real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized. Powered by Rowi × Six Seconds.",
-    footerCopyright: "Rowi — Emotional Intelligence AI Platform",
-    noData: "—",
-  },
-
-};
-
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 export default function TPAdminHub() {
   const [hoveredModule, setHoveredModule] = useState<string | null>(null);
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { t } = useI18n();
 
   // --- Live data from the real benchmark API ---
   const [avgEQ, setAvgEQ] = useState<number | null>(null);
@@ -657,13 +80,13 @@ export default function TPAdminHub() {
   }, []);
 
   const fmt = (v: number | null, digits = 0) =>
-    v === null ? t.noData : digits ? v.toFixed(digits) : v.toLocaleString();
+    v === null ? t("tpHome.noData", "—") : digits ? v.toFixed(digits) : v.toLocaleString();
 
   const TP_QUICK_STATS = [
-    { icon: Activity, value: fmt(avgEQ, 1), label: t.statAvgEQ, color: "#7B2D8E" },
-    { icon: Users, value: fmt(totalAssessments), label: t.statAssessments, color: "#3b82f6" },
-    { icon: Globe, value: fmt(countryCount), label: t.statCountries, color: "#10b981" },
-    { icon: Brain, value: fmt(brainStyleCount), label: t.statBrainProfiles, color: "#f59e0b" },
+    { icon: Activity, value: fmt(avgEQ, 1), label: t("tpHome.statAvgEQ", "EQ Promedio"), color: "#7B2D8E" },
+    { icon: Users, value: fmt(totalAssessments), label: t("tpHome.statAssessments", "Evaluaciones"), color: "#3b82f6" },
+    { icon: Globe, value: fmt(countryCount), label: t("tpHome.statCountries", "Países"), color: "#10b981" },
+    { icon: Brain, value: fmt(brainStyleCount), label: t("tpHome.statBrainProfiles", "Perfiles Cerebrales"), color: "#f59e0b" },
   ];
 
   const modules = [
@@ -673,9 +96,14 @@ export default function TPAdminHub() {
       icon: LayoutDashboard,
       gradient: "from-violet-500 to-purple-600",
       image: "/rowivectors/Rowi-06.webp",
-      title: t.dashboardTitle,
-      desc: t.dashboardDesc,
-      features: [t.dashboardFeat1, t.dashboardFeat2, t.dashboardFeat3, t.dashboardFeat4],
+      title: t("tpHome.dashboardTitle", "Dashboard EQ"),
+      desc: t("tpHome.dashboardDesc", "Vista completa de métricas SEI con puntajes EQ individuales y de equipo, pursuits y competencias."),
+      features: [
+        t("tpHome.dashboardFeat1", "Puntaje Total EQ"),
+        t("tpHome.dashboardFeat2", "8 Competencias SEI"),
+        t("tpHome.dashboardFeat3", "3 Pursuits"),
+        t("tpHome.dashboardFeat4", "Resultados de Vida"),
+      ],
     },
     {
       key: "benchmark",
@@ -683,9 +111,14 @@ export default function TPAdminHub() {
       icon: BarChart3,
       gradient: "from-purple-600 to-pink-600",
       image: "/rowivectors/Rowi-01.webp",
-      title: t.benchmarkTitle,
-      desc: t.benchmarkDesc.replace("{count}", fmt(totalAssessments)),
-      features: [t.benchmarkFeat1.replace("{count}", fmt(totalAssessments)), t.benchmarkFeat2, t.benchmarkFeat3, t.benchmarkFeat4],
+      title: t("tpHome.benchmarkTitle", "Benchmark TP"),
+      desc: t("tpHome.benchmarkDesc", "{count} evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.").replace("{count}", fmt(totalAssessments)),
+      features: [
+        t("tpHome.benchmarkFeat1", "{count} Evaluaciones").replace("{count}", fmt(totalAssessments)),
+        t("tpHome.benchmarkFeat2", "42 Países"),
+        t("tpHome.benchmarkFeat3", "Insights Regionales"),
+        t("tpHome.benchmarkFeat4", "Perfiles Cerebrales"),
+      ],
     },
     {
       key: "affinity",
@@ -693,9 +126,14 @@ export default function TPAdminHub() {
       icon: Heart,
       gradient: "from-pink-500 to-rose-600",
       image: "/rowivectors/Rowi-05.webp",
-      title: t.affinityTitle,
-      desc: t.affinityDesc,
-      features: [t.affinityFeat1, t.affinityFeat2, t.affinityFeat3, t.affinityFeat4],
+      title: t("tpHome.affinityTitle", "Afinidad de Equipo"),
+      desc: t("tpHome.affinityDesc", "Descubre la compatibilidad emocional entre equipos TP. Optimiza la colaboración con matching de estilos cerebrales."),
+      features: [
+        t("tpHome.affinityFeat1", "Compatibilidad de Equipo"),
+        t("tpHome.affinityFeat2", "Match de Estilo Cerebral"),
+        t("tpHome.affinityFeat3", "Equipos Multi-región"),
+        t("tpHome.affinityFeat4", "Insights de Colaboración"),
+      ],
     },
     {
       key: "eco",
@@ -703,9 +141,14 @@ export default function TPAdminHub() {
       icon: MessageSquare,
       gradient: "from-emerald-500 to-green-600",
       image: "/rowivectors/Rowi-04.webp",
-      title: t.ecoTitle,
-      desc: t.ecoDesc,
-      features: [t.ecoFeat1, t.ecoFeat2, t.ecoFeat3, t.ecoFeat4],
+      title: t("tpHome.ecoTitle", "Comunicación ECO"),
+      desc: t("tpHome.ecoDesc", "Optimiza la comunicación emocional en la fuerza laboral global de TP con mensajería adaptada por IA."),
+      features: [
+        t("tpHome.ecoFeat1", "Mensajería Adaptada"),
+        t("tpHome.ecoFeat2", "Multi-canal"),
+        t("tpHome.ecoFeat3", "Estilo Cerebral Aware"),
+        t("tpHome.ecoFeat4", "Contexto Cultural"),
+      ],
     },
     {
       key: "coach",
@@ -713,9 +156,14 @@ export default function TPAdminHub() {
       icon: Bot,
       gradient: "from-blue-500 to-cyan-600",
       image: "/rowivectors/Rowi-03.webp",
-      title: t.coachTitle,
-      desc: t.coachDesc,
-      features: [t.coachFeat1, t.coachFeat2, t.coachFeat3, t.coachFeat4],
+      title: t("tpHome.coachTitle", "Rowi Coach"),
+      desc: t("tpHome.coachDesc", "Coaching de inteligencia emocional 24/7 con IA para empleados de TP, contextualizado con datos SEI."),
+      features: [
+        t("tpHome.coachFeat1", "Coach IA por Chat"),
+        t("tpHome.coachFeat2", "Basado en SEI"),
+        t("tpHome.coachFeat3", "Seguimiento de Progreso"),
+        t("tpHome.coachFeat4", "Ejercicios Personalizados"),
+      ],
     },
     {
       key: "community",
@@ -723,9 +171,14 @@ export default function TPAdminHub() {
       icon: Users,
       gradient: "from-amber-500 to-orange-600",
       image: "/rowivectors/Rowi-02.webp",
-      title: t.communityTitle,
-      desc: t.communityDesc,
-      features: [t.communityFeat1, t.communityFeat2, t.communityFeat3, t.communityFeat4],
+      title: t("tpHome.communityTitle", "Comunidad EQ TP"),
+      desc: t("tpHome.communityDesc", "La comunidad de inteligencia emocional de Teleperformance. Eventos, leaderboards y aprendizaje entre pares."),
+      features: [
+        t("tpHome.communityFeat1", "Leaderboard EQ"),
+        t("tpHome.communityFeat2", "Eventos y Desafíos"),
+        t("tpHome.communityFeat3", "Aprendizaje entre Pares"),
+        t("tpHome.communityFeat4", "Reconocimiento"),
+      ],
     },
     {
       key: "onboarding",
@@ -733,9 +186,14 @@ export default function TPAdminHub() {
       icon: GraduationCap,
       gradient: "from-indigo-500 to-violet-600",
       image: "/rowivectors/Rowi-06.webp",
-      title: t.onboardingTitle,
-      desc: t.onboardingDesc,
-      features: [t.onboardingFeat1, t.onboardingFeat2, t.onboardingFeat3, t.onboardingFeat4],
+      title: t("tpHome.onboardingTitle", "Onboarding TP"),
+      desc: t("tpHome.onboardingDesc", "Flujo de onboarding de empleados con evaluación SEI, perfil cerebral y matching de equipo."),
+      features: [
+        t("tpHome.onboardingFeat1", "Evaluación SEI"),
+        t("tpHome.onboardingFeat2", "Perfil Cerebral"),
+        t("tpHome.onboardingFeat3", "Matching de Equipo"),
+        t("tpHome.onboardingFeat4", "Plan de Crecimiento"),
+      ],
     },
     {
       key: "people",
@@ -743,9 +201,14 @@ export default function TPAdminHub() {
       icon: GitCompareArrows,
       gradient: "from-cyan-500 to-blue-600",
       image: "/rowivectors/Rowi-01.webp",
-      title: t.peopleTitle,
-      desc: t.peopleDesc,
-      features: [t.peopleFeat1, t.peopleFeat2, t.peopleFeat3, t.peopleFeat4],
+      title: t("tpHome.peopleTitle", "Comparador de Personas"),
+      desc: t("tpHome.peopleDesc", "Compara perfiles EQ lado a lado. Analiza fortalezas complementarias y estilos cerebrales entre dos personas."),
+      features: [
+        t("tpHome.peopleFeat1", "Comparación 1 vs 1"),
+        t("tpHome.peopleFeat2", "Radar de Competencias"),
+        t("tpHome.peopleFeat3", "Análisis Complementario"),
+        t("tpHome.peopleFeat4", "12 Perfiles Mock"),
+      ],
     },
     {
       key: "teams",
@@ -753,9 +216,14 @@ export default function TPAdminHub() {
       icon: Users,
       gradient: "from-teal-500 to-emerald-600",
       image: "/rowivectors/Rowi-02.webp",
-      title: t.teamsTitle,
-      desc: t.teamsDesc,
-      features: [t.teamsFeat1, t.teamsFeat2, t.teamsFeat3, t.teamsFeat4],
+      title: t("tpHome.teamsTitle", "Team Analytics"),
+      desc: t("tpHome.teamsDesc", "Análisis profundo de equipos con indicadores de salud, heatmaps de competencias y comparación inter-equipos."),
+      features: [
+        t("tpHome.teamsFeat1", "8 Equipos Mock"),
+        t("tpHome.teamsFeat2", "Indicadores de Salud"),
+        t("tpHome.teamsFeat3", "Heatmap Competencias"),
+        t("tpHome.teamsFeat4", "Comparación Inter-equipos"),
+      ],
     },
     {
       key: "selection",
@@ -763,9 +231,14 @@ export default function TPAdminHub() {
       icon: UserCheck,
       gradient: "from-lime-500 to-green-600",
       image: "/rowivectors/Rowi-03.webp",
-      title: t.selectionTitle,
-      desc: t.selectionDesc,
-      features: [t.selectionFeat1, t.selectionFeat2, t.selectionFeat3, t.selectionFeat4],
+      title: t("tpHome.selectionTitle", "Selección y Contratación"),
+      desc: t("tpHome.selectionDesc", "Evalúa candidatos contra benchmarks de rol con fit scores, gap analysis y recomendaciones IA."),
+      features: [
+        t("tpHome.selectionFeat1", "Fit Score 0-100%"),
+        t("tpHome.selectionFeat2", "5 Roles Benchmark"),
+        t("tpHome.selectionFeat3", "Gap Analysis"),
+        t("tpHome.selectionFeat4", "Recomendación IA"),
+      ],
     },
     {
       key: "evolution",
@@ -773,9 +246,14 @@ export default function TPAdminHub() {
       icon: LineChart,
       gradient: "from-sky-500 to-blue-600",
       image: "/rowivectors/Rowi-04.webp",
-      title: t.evolutionTitle,
-      desc: t.evolutionDesc,
-      features: [t.evolutionFeat1, t.evolutionFeat2, t.evolutionFeat3, t.evolutionFeat4],
+      title: t("tpHome.evolutionTitle", "Curva de Evolución"),
+      desc: t("tpHome.evolutionDesc", "Rastrea el crecimiento EQ a lo largo del tiempo con assessments múltiples, predicciones y análisis de tendencias."),
+      features: [
+        t("tpHome.evolutionFeat1", "Timeline Interactivo"),
+        t("tpHome.evolutionFeat2", "Before/After"),
+        t("tpHome.evolutionFeat3", "Predicción EQ"),
+        t("tpHome.evolutionFeat4", "Growth Rate"),
+      ],
     },
     {
       key: "roi",
@@ -783,9 +261,14 @@ export default function TPAdminHub() {
       icon: Target,
       gradient: "from-yellow-500 to-amber-600",
       image: "/rowivectors/Rowi-05.webp",
-      title: t.roiTitle,
-      desc: t.roiDesc,
-      features: [t.roiFeat1, t.roiFeat2, t.roiFeat3, t.roiFeat4],
+      title: t("tpHome.roiTitle", "Calculadora de ROI"),
+      desc: t("tpHome.roiDesc", "Simula el retorno de inversión en programas EQ con escenarios, correlaciones y benchmarks industriales."),
+      features: [
+        t("tpHome.roiFeat1", "Simulador Budget"),
+        t("tpHome.roiFeat2", "3 Escenarios"),
+        t("tpHome.roiFeat3", "Correlaciones Reales"),
+        t("tpHome.roiFeat4", "Benchmark Industria"),
+      ],
     },
     {
       key: "world",
@@ -793,9 +276,14 @@ export default function TPAdminHub() {
       icon: Globe,
       gradient: "from-emerald-500 to-teal-600",
       image: "/rowivectors/Rowi-06.webp",
-      title: t.worldTitle,
-      desc: t.worldDesc,
-      features: [t.worldFeat1, t.worldFeat2, t.worldFeat3, t.worldFeat4],
+      title: t("tpHome.worldTitle", "Benchmark Global"),
+      desc: t("tpHome.worldDesc", "Compara TP vs el mundo: Six Seconds global, industria BPO, top 10% mundial y patrones de éxito."),
+      features: [
+        t("tpHome.worldFeat1", "TP vs Global"),
+        t("tpHome.worldFeat2", "TP vs BPO"),
+        t("tpHome.worldFeat3", "Top 10% Mundial"),
+        t("tpHome.worldFeat4", "Success Patterns"),
+      ],
     },
     {
       key: "alerts",
@@ -803,9 +291,14 @@ export default function TPAdminHub() {
       icon: AlertTriangle,
       gradient: "from-red-500 to-rose-600",
       image: "/rowivectors/Rowi-01.webp",
-      title: t.alertsTitle,
-      desc: t.alertsDesc,
-      features: [t.alertsFeat1, t.alertsFeat2, t.alertsFeat3, t.alertsFeat4],
+      title: t("tpHome.alertsTitle", "Alertas y Monitoreo"),
+      desc: t("tpHome.alertsDesc", "Sistema de alertas inteligentes para EQ bajo, tendencias declinantes, salud de equipos y anomalías."),
+      features: [
+        t("tpHome.alertsFeat1", "Alertas por Severidad"),
+        t("tpHome.alertsFeat2", "Salud de Equipos"),
+        t("tpHome.alertsFeat3", "Tendencias"),
+        t("tpHome.alertsFeat4", "Configuración Umbrales"),
+      ],
     },
     {
       key: "dataQuality",
@@ -813,9 +306,14 @@ export default function TPAdminHub() {
       icon: Database,
       gradient: "from-slate-500 to-gray-600",
       image: "/rowivectors/Rowi-02.webp",
-      title: t.dataQualityTitle,
-      desc: t.dataQualityDesc,
-      features: [t.dataQualityFeat1, t.dataQualityFeat2, t.dataQualityFeat3, t.dataQualityFeat4],
+      title: t("tpHome.dataQualityTitle", "Calidad de Datos"),
+      desc: t("tpHome.dataQualityDesc", "Análisis de integridad de datos: duplicados, outliers, completeness y score de calidad general."),
+      features: [
+        t("tpHome.dataQualityFeat1", "Score de Calidad"),
+        t("tpHome.dataQualityFeat2", "Detección Duplicados"),
+        t("tpHome.dataQualityFeat3", "Outlier Detection"),
+        t("tpHome.dataQualityFeat4", "Completeness"),
+      ],
     },
   ];
 
@@ -829,20 +327,20 @@ export default function TPAdminHub() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
+              <h1 className="text-2xl font-bold">{t("tpHome.pageTitle", "Hub de Gestión")}</h1>
               <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500">
-                {t.enterpriseBadge}
+                {t("tpHome.enterpriseBadge", "Enterprise")}
               </span>
             </div>
             <p className="text-sm text-[var(--rowi-muted)]">
-              {t.subtitle}
+              {t("tpHome.subtitle", "Plataforma de Inteligencia EQ — Powered by Rowi × Six Seconds")}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-[var(--rowi-muted)]">
           <Shield className="w-3 h-3 text-emerald-500" />
-          <span>{t.protectedAccess}</span>
+          <span>{t("tpHome.protectedAccess", "Acceso por plan + rol de administración")}</span>
         </div>
       </motion.div>
 
@@ -872,7 +370,7 @@ export default function TPAdminHub() {
       <div>
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-purple-500" />
-          {t.modulesTitle}
+          {t("tpHome.modulesTitle", "Módulos TP")}
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -915,7 +413,7 @@ export default function TPAdminHub() {
                       </div>
 
                       <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${mod.gradient} text-white text-sm font-medium`}>
-                        {t.openButton}
+                        {t("tpHome.openButton", "Abrir")}
                         <ArrowRight className="w-4 h-4" />
                       </div>
                     </div>
@@ -936,9 +434,9 @@ export default function TPAdminHub() {
       >
         <Shield className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
         <div>
-          <p>{t.footerText.replace("{count}", fmt(totalAssessments))}</p>
+          <p>{t("tpHome.footerText", "Este es un entorno de demostración en vivo que utiliza datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados. Powered by Rowi × Six Seconds.").replace("{count}", fmt(totalAssessments))}</p>
           <p className="text-xs mt-1 text-purple-400">
-            Rowi &copy; {new Date().getFullYear()} &mdash; {t.footerCopyright}
+            Rowi &copy; {new Date().getFullYear()} &mdash; {t("tpHome.footerCopyright", "Rowi — Plataforma de Inteligencia Emocional con IA")}
           </p>
         </div>
       </motion.div>

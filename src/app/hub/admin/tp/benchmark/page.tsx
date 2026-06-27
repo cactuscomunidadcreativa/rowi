@@ -16,402 +16,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
    Real SEI assessments — fetched live from the benchmark API
 ========================================================= */
 
-const translations = {
-  es: {
-    // Header
-    backToHub: "TP Hub",
-    badgeLabel: "Benchmark Teleperformance",
-    pageTitle: "Benchmark EQ — Teleperformance",
-    pageSubtitle: "{count} evaluaciones SEI analizadas en {countries} países. Benchmarking corporativo en acción.",
-
-    // Section tabs
-    tabOverview: "Resumen",
-    tabCompetencies: "Competencias",
-    tabOutcomes: "Resultados",
-    tabBrainProfiles: "Perfiles Cerebrales",
-    tabInsights: "Hallazgos",
-
-    // Overview section
-    sectionOverview: "Resumen",
-    statAvgEQ: "EQ Promedio",
-    statAssessments: "Evaluaciones",
-    statCountries: "Países",
-    statStrongestCompetency: "Competencia más fuerte",
-    globalAverage: "Promedio Global TP",
-    seiScale: "Escala SEI: 65–135",
-    threePursuits: "Tres Propósitos",
-    regionalDistribution: "Distribución Regional",
-    assessments: "evaluaciones",
-
-    // Pursuits
-    pursuitKnow: "Conócete",
-    pursuitChoose: "Elígete",
-    pursuitGive: "Entrégate",
-
-    // Competencies section
-    sectionCompetencies: "Competencias SEI",
-    legendAverage: "Promedio",
-    legendTopPerformer: "Mejor desempeño",
-    byJobFunction: "Por Función Laboral",
-
-    // Competency names
-    compEmotionalLiteracy: "Alfabetización Emocional",
-    compRecognizePatterns: "Reconocer Patrones",
-    compConsequentialThinking: "Pensamiento Consecuente",
-    compNavigateEmotions: "Navegar Emociones",
-    compIntrinsicMotivation: "Motivación Intrínseca",
-    compExerciseOptimism: "Ejercitar el Optimismo",
-    compIncreaseEmpathy: "Incrementar la Empatía",
-    compPursueNobleGoals: "Perseguir Metas Nobles",
-
-    // Outcomes section
-    sectionOutcomes: "Resultados",
-    outcomeEffectiveness: "Efectividad",
-    outcomeRelationships: "Relaciones",
-    outcomeWellbeing: "Bienestar",
-    outcomeQualityOfLife: "Calidad de Vida",
-
-    // Brain Profiles section
-    sectionBrainProfiles: "Perfiles Cerebrales",
-    brainScientist: "Científico",
-    brainDeliverer: "Ejecutor",
-    brainStrategist: "Estratega",
-    brainInventor: "Inventor",
-    brainGuardian: "Guardián",
-    brainVisionary: "Visionario",
-    brainSuperhero: "Superhéroe",
-
-    // Job Functions
-    jobCustomerService: "Atención al Cliente",
-    jobSalesBusinessDev: "Ventas y Desarrollo",
-    jobHumanResources: "Recursos Humanos",
-    jobITTechnology: "TI y Tecnología",
-    jobOperations: "Operaciones",
-
-    // Regions
-    regionNorthAmerica: "Norteamérica",
-    regionAsiaPacific: "Asia Pacífico",
-    regionEMEA: "EMEA",
-    regionLatinAmerica: "Latinoamérica",
-
-    // Insights section
-    sectionInsights: "Hallazgos Clave",
-    insightsReferenceNote: "Ejemplos ilustrativos del marco SEI — referencia, no calculados desde el benchmark actual",
-    insight1: "Los mejores en Efectividad muestran +22% en Pensamiento Consecuente (ACT) vs. el promedio",
-    insight2: "RRHH tiende a mostrar EQ promedio más alto, lo que sugiere una correlación entre EQ y roles de gestión de personas",
-    insight3: "Motivación Intrínseca (IM) suele ser una competencia fuerte — clave para la retención",
-    insight4: "El perfil cerebral 'Científico' es frecuente, lo que indica una cultura analítica orientada a datos",
-
-    // Footer
-    footerText: "Datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados.",
-    footerPowered: "Powered by Rowi × Six Seconds",
-
-    // States
-    loading: "Cargando datos del benchmark...",
-    emptyBenchmark: "Sin datos de benchmark todavía",
-    noData: "—",
-
-    // Navigation
-    navDashboard: "Dashboard",
-    navAffinity: "Afinidad",
-  },
-  en: {
-    // Header
-    backToHub: "TP Hub",
-    badgeLabel: "Teleperformance Benchmark",
-    pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
-
-    // Section tabs
-    tabOverview: "Overview",
-    tabCompetencies: "Competencies",
-    tabOutcomes: "Outcomes",
-    tabBrainProfiles: "Brain Profiles",
-    tabInsights: "Insights",
-
-    // Overview section
-    sectionOverview: "Overview",
-    statAvgEQ: "Average EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statStrongestCompetency: "Strongest Competency",
-    globalAverage: "TP Global Average",
-    seiScale: "SEI Scale: 65–135",
-    threePursuits: "Three Pursuits",
-    regionalDistribution: "Regional Distribution",
-    assessments: "assessments",
-
-    // Pursuits
-    pursuitKnow: "Know Yourself",
-    pursuitChoose: "Choose Yourself",
-    pursuitGive: "Give Yourself",
-
-    // Competencies section
-    sectionCompetencies: "SEI Competencies",
-    legendAverage: "Average",
-    legendTopPerformer: "Top Performer",
-    byJobFunction: "By Job Function",
-
-    // Competency names
-    compEmotionalLiteracy: "Emotional Literacy",
-    compRecognizePatterns: "Recognize Patterns",
-    compConsequentialThinking: "Consequential Thinking",
-    compNavigateEmotions: "Navigate Emotions",
-    compIntrinsicMotivation: "Intrinsic Motivation",
-    compExerciseOptimism: "Exercise Optimism",
-    compIncreaseEmpathy: "Increase Empathy",
-    compPursueNobleGoals: "Pursue Noble Goals",
-
-    // Outcomes section
-    sectionOutcomes: "Outcomes",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQualityOfLife: "Quality of Life",
-
-    // Brain Profiles section
-    sectionBrainProfiles: "Brain Profiles",
-    brainScientist: "Scientist",
-    brainDeliverer: "Deliverer",
-    brainStrategist: "Strategist",
-    brainInventor: "Inventor",
-    brainGuardian: "Guardian",
-    brainVisionary: "Visionary",
-    brainSuperhero: "Superhero",
-
-    // Job Functions
-    jobCustomerService: "Customer Service",
-    jobSalesBusinessDev: "Sales & Business Dev",
-    jobHumanResources: "Human Resources",
-    jobITTechnology: "IT & Technology",
-    jobOperations: "Operations",
-
-    // Regions
-    regionNorthAmerica: "North America",
-    regionAsiaPacific: "Asia Pacific",
-    regionEMEA: "EMEA",
-    regionLatinAmerica: "Latin America",
-
-    // Insights section
-    sectionInsights: "Key Insights",
-    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
-    insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
-    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
-
-    // Footer
-    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi × Six Seconds",
-
-    // States
-    loading: "Loading benchmark data...",
-    emptyBenchmark: "No benchmark data yet",
-    noData: "—",
-
-    // Navigation
-    navDashboard: "Dashboard",
-    navAffinity: "Affinity",
-  },
-  pt: {
-    // Header
-    backToHub: "TP Hub",
-    badgeLabel: "Teleperformance Benchmark",
-    pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
-
-    // Section tabs
-    tabOverview: "Overview",
-    tabCompetencies: "Competencies",
-    tabOutcomes: "Outcomes",
-    tabBrainProfiles: "Brain Profiles",
-    tabInsights: "Insights",
-
-    // Overview section
-    sectionOverview: "Overview",
-    statAvgEQ: "Average EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statStrongestCompetency: "Strongest Competency",
-    globalAverage: "TP Global Average",
-    seiScale: "SEI Scale: 65–135",
-    threePursuits: "Three Pursuits",
-    regionalDistribution: "Regional Distribution",
-    assessments: "assessments",
-
-    // Pursuits
-    pursuitKnow: "Know Yourself",
-    pursuitChoose: "Choose Yourself",
-    pursuitGive: "Give Yourself",
-
-    // Competencies section
-    sectionCompetencies: "SEI Competencies",
-    legendAverage: "Average",
-    legendTopPerformer: "Top Performer",
-    byJobFunction: "By Job Function",
-
-    // Competency names
-    compEmotionalLiteracy: "Emotional Literacy",
-    compRecognizePatterns: "Recognize Patterns",
-    compConsequentialThinking: "Consequential Thinking",
-    compNavigateEmotions: "Navigate Emotions",
-    compIntrinsicMotivation: "Intrinsic Motivation",
-    compExerciseOptimism: "Exercise Optimism",
-    compIncreaseEmpathy: "Increase Empathy",
-    compPursueNobleGoals: "Pursue Noble Goals",
-
-    // Outcomes section
-    sectionOutcomes: "Outcomes",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQualityOfLife: "Quality of Life",
-
-    // Brain Profiles section
-    sectionBrainProfiles: "Brain Profiles",
-    brainScientist: "Scientist",
-    brainDeliverer: "Deliverer",
-    brainStrategist: "Strategist",
-    brainInventor: "Inventor",
-    brainGuardian: "Guardian",
-    brainVisionary: "Visionary",
-    brainSuperhero: "Superhero",
-
-    // Job Functions
-    jobCustomerService: "Customer Service",
-    jobSalesBusinessDev: "Sales & Business Dev",
-    jobHumanResources: "Human Resources",
-    jobITTechnology: "IT & Technology",
-    jobOperations: "Operations",
-
-    // Regions
-    regionNorthAmerica: "North America",
-    regionAsiaPacific: "Asia Pacific",
-    regionEMEA: "EMEA",
-    regionLatinAmerica: "Latin America",
-
-    // Insights section
-    sectionInsights: "Key Insights",
-    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
-    insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
-    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
-
-    // Footer
-    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi × Six Seconds",
-
-    // States
-    loading: "Loading benchmark data...",
-    emptyBenchmark: "No benchmark data yet",
-    noData: "—",
-
-    // Navigation
-    navDashboard: "Dashboard",
-    navAffinity: "Affinity",
-  },
-  it: {
-    // Header
-    backToHub: "TP Hub",
-    badgeLabel: "Teleperformance Benchmark",
-    pageTitle: "EQ Benchmark — Teleperformance",
-    pageSubtitle: "{count} SEI assessments analyzed across {countries} countries. Corporate benchmarking in action.",
-
-    // Section tabs
-    tabOverview: "Overview",
-    tabCompetencies: "Competencies",
-    tabOutcomes: "Outcomes",
-    tabBrainProfiles: "Brain Profiles",
-    tabInsights: "Insights",
-
-    // Overview section
-    sectionOverview: "Overview",
-    statAvgEQ: "Average EQ",
-    statAssessments: "Assessments",
-    statCountries: "Countries",
-    statStrongestCompetency: "Strongest Competency",
-    globalAverage: "TP Global Average",
-    seiScale: "SEI Scale: 65–135",
-    threePursuits: "Three Pursuits",
-    regionalDistribution: "Regional Distribution",
-    assessments: "assessments",
-
-    // Pursuits
-    pursuitKnow: "Know Yourself",
-    pursuitChoose: "Choose Yourself",
-    pursuitGive: "Give Yourself",
-
-    // Competencies section
-    sectionCompetencies: "SEI Competencies",
-    legendAverage: "Average",
-    legendTopPerformer: "Top Performer",
-    byJobFunction: "By Job Function",
-
-    // Competency names
-    compEmotionalLiteracy: "Emotional Literacy",
-    compRecognizePatterns: "Recognize Patterns",
-    compConsequentialThinking: "Consequential Thinking",
-    compNavigateEmotions: "Navigate Emotions",
-    compIntrinsicMotivation: "Intrinsic Motivation",
-    compExerciseOptimism: "Exercise Optimism",
-    compIncreaseEmpathy: "Increase Empathy",
-    compPursueNobleGoals: "Pursue Noble Goals",
-
-    // Outcomes section
-    sectionOutcomes: "Outcomes",
-    outcomeEffectiveness: "Effectiveness",
-    outcomeRelationships: "Relationships",
-    outcomeWellbeing: "Wellbeing",
-    outcomeQualityOfLife: "Quality of Life",
-
-    // Brain Profiles section
-    sectionBrainProfiles: "Brain Profiles",
-    brainScientist: "Scientist",
-    brainDeliverer: "Deliverer",
-    brainStrategist: "Strategist",
-    brainInventor: "Inventor",
-    brainGuardian: "Guardian",
-    brainVisionary: "Visionary",
-    brainSuperhero: "Superhero",
-
-    // Job Functions
-    jobCustomerService: "Customer Service",
-    jobSalesBusinessDev: "Sales & Business Dev",
-    jobHumanResources: "Human Resources",
-    jobITTechnology: "IT & Technology",
-    jobOperations: "Operations",
-
-    // Regions
-    regionNorthAmerica: "North America",
-    regionAsiaPacific: "Asia Pacific",
-    regionEMEA: "EMEA",
-    regionLatinAmerica: "Latin America",
-
-    // Insights section
-    sectionInsights: "Key Insights",
-    insightsReferenceNote: "Illustrative examples of the SEI framework — reference, not calculated from the current benchmark",
-    insight1: "Top performers in Effectiveness show +22% in Consequential Thinking (ACT) vs. average",
-    insight2: "HR tends to show higher average EQ, suggesting a correlation between EQ and people management roles",
-    insight3: "Intrinsic Motivation (IM) is often a strong competency — key for retention",
-    insight4: "The 'Scientist' brain profile is common, indicating a data-driven analytical culture",
-
-    // Footer
-    footerText: "Real aggregated data from {count} Teleperformance SEI assessments. All individual data is anonymized.",
-    footerPowered: "Powered by Rowi × Six Seconds",
-
-    // States
-    loading: "Loading benchmark data...",
-    emptyBenchmark: "No benchmark data yet",
-    noData: "—",
-
-    // Navigation
-    navDashboard: "Dashboard",
-    navAffinity: "Affinity",
-  },
-
-};
-
 /* =========================================================
    Real benchmark data wiring
 ========================================================= */
@@ -513,8 +117,7 @@ function SectionHeader({ title, icon: Icon }: { title: string; icon: any }) {
 /* Main Page */
 export default function TPBenchmarkPage() {
   const [activeSection, setActiveSection] = useState("overview");
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { t } = useI18n();
 
   // --- Live data from the real benchmark API ---
   const [stats, setStats] = useState<StatItem[]>([]);
@@ -577,14 +180,14 @@ export default function TPBenchmarkPage() {
   // --- Competencies: avg = mean, topPerformer = p90 (real) ---
   const TP_COMPETENCIES = useMemo(() => {
     const defs = [
-      { key: "EL", name: t.compEmotionalLiteracy, pursuit: "know", color: "#3b82f6" },
-      { key: "RP", name: t.compRecognizePatterns, pursuit: "know", color: "#3b82f6" },
-      { key: "ACT", name: t.compConsequentialThinking, pursuit: "know", color: "#3b82f6" },
-      { key: "NE", name: t.compNavigateEmotions, pursuit: "choose", color: "#10b981" },
-      { key: "IM", name: t.compIntrinsicMotivation, pursuit: "choose", color: "#10b981" },
-      { key: "OP", name: t.compExerciseOptimism, pursuit: "choose", color: "#10b981" },
-      { key: "EMP", name: t.compIncreaseEmpathy, pursuit: "give", color: "#f59e0b" },
-      { key: "NG", name: t.compPursueNobleGoals, pursuit: "give", color: "#f59e0b" },
+      { key: "EL", name: t("tpBenchmark.compEmotionalLiteracy", "Alfabetización Emocional"), pursuit: "know", color: "#3b82f6" },
+      { key: "RP", name: t("tpBenchmark.compRecognizePatterns", "Reconocer Patrones"), pursuit: "know", color: "#3b82f6" },
+      { key: "ACT", name: t("tpBenchmark.compConsequentialThinking", "Pensamiento Consecuente"), pursuit: "know", color: "#3b82f6" },
+      { key: "NE", name: t("tpBenchmark.compNavigateEmotions", "Navegar Emociones"), pursuit: "choose", color: "#10b981" },
+      { key: "IM", name: t("tpBenchmark.compIntrinsicMotivation", "Motivación Intrínseca"), pursuit: "choose", color: "#10b981" },
+      { key: "OP", name: t("tpBenchmark.compExerciseOptimism", "Ejercitar el Optimismo"), pursuit: "choose", color: "#10b981" },
+      { key: "EMP", name: t("tpBenchmark.compIncreaseEmpathy", "Incrementar la Empatía"), pursuit: "give", color: "#f59e0b" },
+      { key: "NG", name: t("tpBenchmark.compPursueNobleGoals", "Perseguir Metas Nobles"), pursuit: "give", color: "#f59e0b" },
     ];
     return defs.map((d) => {
       const s = getStat(d.key);
@@ -599,17 +202,17 @@ export default function TPBenchmarkPage() {
       return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     };
     return {
-      know: { label: t.pursuitKnow, avg: meanOf(["EL", "RP", "ACT"]), color: "#3b82f6", icon: Brain },
-      choose: { label: t.pursuitChoose, avg: meanOf(["NE", "IM", "OP"]), color: "#10b981", icon: Target },
-      give: { label: t.pursuitGive, avg: meanOf(["EMP", "NG"]), color: "#f59e0b", icon: Heart },
+      know: { label: t("tpBenchmark.pursuitKnow", "Conócete"), avg: meanOf(["EL", "RP", "ACT"]), color: "#3b82f6", icon: Brain },
+      choose: { label: t("tpBenchmark.pursuitChoose", "Elígete"), avg: meanOf(["NE", "IM", "OP"]), color: "#10b981", icon: Target },
+      give: { label: t("tpBenchmark.pursuitGive", "Entrégate"), avg: meanOf(["EMP", "NG"]), color: "#f59e0b", icon: Heart },
     };
   }, [stats, t]);
 
   const TP_OUTCOMES = useMemo(() => [
-    { key: "effectiveness", label: t.outcomeEffectiveness, avg: getStat("effectiveness")?.mean ?? 0, icon: Zap, color: "#6366f1" },
-    { key: "relationships", label: t.outcomeRelationships, avg: getStat("relationships")?.mean ?? 0, icon: Users, color: "#ec4899" },
-    { key: "wellbeing", label: t.outcomeWellbeing, avg: getStat("wellbeing")?.mean ?? 0, icon: Heart, color: "#10b981" },
-    { key: "qualityOfLife", label: t.outcomeQualityOfLife, avg: getStat("qualityOfLife")?.mean ?? 0, icon: Award, color: "#f59e0b" },
+    { key: "effectiveness", label: t("tpBenchmark.outcomeEffectiveness", "Efectividad"), avg: getStat("effectiveness")?.mean ?? 0, icon: Zap, color: "#6366f1" },
+    { key: "relationships", label: t("tpBenchmark.outcomeRelationships", "Relaciones"), avg: getStat("relationships")?.mean ?? 0, icon: Users, color: "#ec4899" },
+    { key: "wellbeing", label: t("tpBenchmark.outcomeWellbeing", "Bienestar"), avg: getStat("wellbeing")?.mean ?? 0, icon: Heart, color: "#10b981" },
+    { key: "qualityOfLife", label: t("tpBenchmark.outcomeQualityOfLife", "Calidad de Vida"), avg: getStat("qualityOfLife")?.mean ?? 0, icon: Award, color: "#f59e0b" },
   ], [stats, t]);
 
   // --- Strongest competency (real) ---
@@ -650,31 +253,31 @@ export default function TPBenchmarkPage() {
     })), [jobGroups]);
 
   const TP_KEY_INSIGHTS = [
-    { text: t.insight1, icon: TrendingUp, color: "#6366f1" },
-    { text: t.insight2, icon: Users, color: "#ec4899" },
-    { text: t.insight3, icon: Zap, color: "#10b981" },
-    { text: t.insight4, icon: Brain, color: "#3b82f6" },
+    { text: t("tpBenchmark.insight1", "Los mejores en Efectividad muestran +22% en Pensamiento Consecuente (ACT) vs. el promedio"), icon: TrendingUp, color: "#6366f1" },
+    { text: t("tpBenchmark.insight2", "RRHH tiende a mostrar EQ promedio más alto, lo que sugiere una correlación entre EQ y roles de gestión de personas"), icon: Users, color: "#ec4899" },
+    { text: t("tpBenchmark.insight3", "Motivación Intrínseca (IM) suele ser una competencia fuerte — clave para la retención"), icon: Zap, color: "#10b981" },
+    { text: t("tpBenchmark.insight4", "El perfil cerebral 'Científico' es frecuente, lo que indica una cultura analítica orientada a datos"), icon: Brain, color: "#3b82f6" },
   ];
 
   const sections = [
-    { id: "overview", label: t.tabOverview, icon: BarChart3 },
-    { id: "competencies", label: t.tabCompetencies, icon: Brain },
-    { id: "outcomes", label: t.tabOutcomes, icon: Target },
-    { id: "brainProfiles", label: t.tabBrainProfiles, icon: PieChart },
-    { id: "insights", label: t.tabInsights, icon: Sparkles },
+    { id: "overview", label: t("tpBenchmark.tabOverview", "Resumen"), icon: BarChart3 },
+    { id: "competencies", label: t("tpBenchmark.tabCompetencies", "Competencias"), icon: Brain },
+    { id: "outcomes", label: t("tpBenchmark.tabOutcomes", "Resultados"), icon: Target },
+    { id: "brainProfiles", label: t("tpBenchmark.tabBrainProfiles", "Perfiles Cerebrales"), icon: PieChart },
+    { id: "insights", label: t("tpBenchmark.tabInsights", "Hallazgos"), icon: Sparkles },
   ];
 
   const headerBlock = (
     <div>
       <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-        <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+        <ArrowLeft className="w-4 h-4" /> {t("tpBenchmark.backToHub", "TP Hub")}
       </Link>
       <div className="flex items-center gap-3 mb-4">
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-purple-500/20 text-purple-500">
-          <Building2 className="w-4 h-4" /> {t.badgeLabel}
+          <Building2 className="w-4 h-4" /> {t("tpBenchmark.badgeLabel", "Benchmark Teleperformance")}
         </span>
       </div>
-      <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+      <h1 className="text-3xl font-bold mb-2">{t("tpBenchmark.pageTitle", "Benchmark EQ — Teleperformance")}</h1>
     </div>
   );
 
@@ -684,7 +287,7 @@ export default function TPBenchmarkPage() {
         {headerBlock}
         <div className="flex flex-col items-center justify-center py-24 gap-4">
           <Loader2 className="w-10 h-10 text-purple-500 animate-spin" />
-          <p className="text-sm text-[var(--rowi-muted)]">{t.loading}</p>
+          <p className="text-sm text-[var(--rowi-muted)]">{t("tpBenchmark.loading", "Cargando datos del benchmark...")}</p>
         </div>
       </div>
     );
@@ -696,7 +299,7 @@ export default function TPBenchmarkPage() {
         {headerBlock}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-12 border border-dashed border-gray-200 dark:border-zinc-700 text-center">
           <BarChart3 className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-3 opacity-50" />
-          <p className="text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpBenchmark.emptyBenchmark", "Sin datos de benchmark todavía")}</p>
         </div>
       </div>
     );
@@ -707,22 +310,22 @@ export default function TPBenchmarkPage() {
       {/* Header */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpBenchmark.backToHub", "TP Hub")}
         </Link>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-4">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-purple-500/20 text-purple-500">
-              <Building2 className="w-4 h-4" /> {t.badgeLabel}
+              <Building2 className="w-4 h-4" /> {t("tpBenchmark.badgeLabel", "Benchmark Teleperformance")}
             </span>
             <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-500 font-mono">
               {TP_STATS.totalAssessments.toLocaleString()} SEI
             </span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("tpBenchmark.pageTitle", "Benchmark EQ — Teleperformance")}</h1>
           <p className="text-[var(--rowi-muted)]">
-            {t.pageSubtitle
+            {t("tpBenchmark.pageSubtitle", "{count} evaluaciones SEI analizadas en {countries} países. Benchmarking corporativo en acción.")
               .replace("{count}", TP_STATS.totalAssessments.toLocaleString())
-              .replace("{countries}", TP_STATS.countries > 0 ? String(TP_STATS.countries) : t.noData)}
+              .replace("{countries}", TP_STATS.countries > 0 ? String(TP_STATS.countries) : t("tpBenchmark.noData", "—"))}
           </p>
         </motion.div>
       </div>
@@ -744,23 +347,23 @@ export default function TPBenchmarkPage() {
       <div className="space-y-16">
         {/* Overview */}
         <section id="overview">
-          <SectionHeader title={t.sectionOverview} icon={BarChart3} />
+          <SectionHeader title={t("tpBenchmark.sectionOverview", "Resumen")} icon={BarChart3} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <StatCard icon={Activity} value={TP_STATS.avgEQ.toFixed(1)} label={t.statAvgEQ} color="#7B2D8E" index={0} />
-            <StatCard icon={Users} value={TP_STATS.totalAssessments.toLocaleString()} label={t.statAssessments} color="#3b82f6" index={1} />
-            <StatCard icon={Globe} value={TP_STATS.countries > 0 ? TP_STATS.countries.toString() : t.noData} label={t.statCountries} color="#10b981" index={2} />
-            <StatCard icon={Zap} value={strongestComp?.key ?? t.noData} label={t.statStrongestCompetency} color="#f59e0b" index={3} />
+            <StatCard icon={Activity} value={TP_STATS.avgEQ.toFixed(1)} label={t("tpBenchmark.statAvgEQ", "EQ Promedio")} color="#7B2D8E" index={0} />
+            <StatCard icon={Users} value={TP_STATS.totalAssessments.toLocaleString()} label={t("tpBenchmark.statAssessments", "Evaluaciones")} color="#3b82f6" index={1} />
+            <StatCard icon={Globe} value={TP_STATS.countries > 0 ? TP_STATS.countries.toString() : t("tpBenchmark.noData", "—")} label={t("tpBenchmark.statCountries", "Países")} color="#10b981" index={2} />
+            <StatCard icon={Zap} value={strongestComp?.key ?? t("tpBenchmark.noData", "—")} label={t("tpBenchmark.statStrongestCompetency", "Competencia más fuerte")} color="#f59e0b" index={3} />
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
-              <h3 className="text-lg font-semibold mb-6 text-center">{t.globalAverage}</h3>
+              <h3 className="text-lg font-semibold mb-6 text-center">{t("tpBenchmark.globalAverage", "Promedio Global TP")}</h3>
               <EQGauge score={TP_STATS.avgEQ} />
-              <p className="text-center text-xs text-[var(--rowi-muted)] mt-4">{t.seiScale}</p>
+              <p className="text-center text-xs text-[var(--rowi-muted)] mt-4">{t("tpBenchmark.seiScale", "Escala SEI: 65–135")}</p>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
-              <h3 className="text-lg font-semibold mb-6">{t.threePursuits}</h3>
+              <h3 className="text-lg font-semibold mb-6">{t("tpBenchmark.threePursuits", "Tres Propósitos")}</h3>
               <div className="space-y-6">
                 {Object.entries(TP_PURSUITS).map(([key, p], i) => {
                   const Icon = p.icon;
@@ -782,9 +385,9 @@ export default function TPBenchmarkPage() {
           </div>
 
           <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-purple-500" /> {t.regionalDistribution}</h3>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-purple-500" /> {t("tpBenchmark.regionalDistribution", "Distribución Regional")}</h3>
             {TP_REGIONS.length === 0 ? (
-              <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+              <p className="text-sm text-[var(--rowi-muted)]">{t("tpBenchmark.emptyBenchmark", "Sin datos de benchmark todavía")}</p>
             ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {TP_REGIONS.map((region, i) => (
@@ -792,7 +395,7 @@ export default function TPBenchmarkPage() {
                   className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 text-center hover:shadow-md transition-shadow">
                   <span className="text-3xl mb-2 block">{region.flag}</span>
                   <h4 className="font-semibold text-sm mb-1">{region.name}</h4>
-                  <p className="text-xs text-[var(--rowi-muted)]">{region.count.toLocaleString()} {t.assessments}</p>
+                  <p className="text-xs text-[var(--rowi-muted)]">{region.count.toLocaleString()} {t("tpBenchmark.assessments", "evaluaciones")}</p>
                   <p className="text-lg font-bold text-purple-500 mt-2">EQ {region.avgEQ.toFixed(1)}</p>
                 </motion.div>
               ))}
@@ -803,24 +406,24 @@ export default function TPBenchmarkPage() {
 
         {/* Competencies */}
         <section id="competencies">
-          <SectionHeader title={t.sectionCompetencies} icon={Brain} />
+          <SectionHeader title={t("tpBenchmark.sectionCompetencies", "Competencias SEI")} icon={Brain} />
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
             <div className="flex items-center gap-4 mb-6 text-xs">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-500" /><span>{t.legendAverage}</span></div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span>{t.legendTopPerformer}</span></div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-500" /><span>{t("tpBenchmark.legendAverage", "Promedio")}</span></div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span>{t("tpBenchmark.legendTopPerformer", "Mejor desempeño")}</span></div>
             </div>
             <div className="space-y-4">
               {TP_COMPETENCIES.map((comp, i) => (
                 <CompetencyBar key={comp.key} name={comp.name} avg={comp.avg} topPerformer={comp.topPerformer} color={comp.color} index={i} />
               ))}
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800"><p className="text-xs text-[var(--rowi-muted)] text-center">{t.seiScale}</p></div>
+            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800"><p className="text-xs text-[var(--rowi-muted)] text-center">{t("tpBenchmark.seiScale", "Escala SEI: 65–135")}</p></div>
           </div>
 
           <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Layers className="w-5 h-5 text-purple-500" /> {t.byJobFunction}</h3>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Layers className="w-5 h-5 text-purple-500" /> {t("tpBenchmark.byJobFunction", "Por Función Laboral")}</h3>
             {TP_JOB_FUNCTIONS.length === 0 ? (
-              <p className="text-sm text-[var(--rowi-muted)]">{t.emptyBenchmark}</p>
+              <p className="text-sm text-[var(--rowi-muted)]">{t("tpBenchmark.emptyBenchmark", "Sin datos de benchmark todavía")}</p>
             ) : (
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
               {TP_JOB_FUNCTIONS.map((jf, i) => (
@@ -839,7 +442,7 @@ export default function TPBenchmarkPage() {
 
         {/* Outcomes */}
         <section id="outcomes">
-          <SectionHeader title={t.sectionOutcomes} icon={Target} />
+          <SectionHeader title={t("tpBenchmark.sectionOutcomes", "Resultados")} icon={Target} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {TP_OUTCOMES.map((outcome, i) => {
               const Icon = outcome.icon;
@@ -863,10 +466,10 @@ export default function TPBenchmarkPage() {
 
         {/* Brain Profiles */}
         <section id="brainProfiles">
-          <SectionHeader title={t.sectionBrainProfiles} icon={PieChart} />
+          <SectionHeader title={t("tpBenchmark.sectionBrainProfiles", "Perfiles Cerebrales")} icon={PieChart} />
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800">
             {TP_BRAIN_PROFILES.length === 0 ? (
-              <p className="text-sm text-[var(--rowi-muted)] text-center py-4">{t.emptyBenchmark}</p>
+              <p className="text-sm text-[var(--rowi-muted)] text-center py-4">{t("tpBenchmark.emptyBenchmark", "Sin datos de benchmark todavía")}</p>
             ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {TP_BRAIN_PROFILES.map((profile, i) => (
@@ -888,8 +491,8 @@ export default function TPBenchmarkPage() {
 
         {/* Insights */}
         <section id="insights">
-          <SectionHeader title={t.sectionInsights} icon={Sparkles} />
-          <p className="text-xs text-[var(--rowi-muted)] mb-4 italic">{t.insightsReferenceNote}</p>
+          <SectionHeader title={t("tpBenchmark.sectionInsights", "Hallazgos Clave")} icon={Sparkles} />
+          <p className="text-xs text-[var(--rowi-muted)] mb-4 italic">{t("tpBenchmark.insightsReferenceNote", "Ejemplos ilustrativos del marco SEI — referencia, no calculados desde el benchmark actual")}</p>
           <div className="grid md:grid-cols-2 gap-4">
             {TP_KEY_INSIGHTS.map((insight, i) => {
               const Icon = insight.icon;
@@ -913,18 +516,18 @@ export default function TPBenchmarkPage() {
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex items-start gap-3 p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10 text-sm text-[var(--rowi-muted)]">
         <Shield className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
         <div>
-          <p>{t.footerText.replace("{count}", TP_STATS.totalAssessments.toLocaleString())}</p>
-          <p className="text-xs mt-1 text-purple-400">{t.footerPowered}</p>
+          <p>{t("tpBenchmark.footerText", "Datos reales agregados de {count} evaluaciones SEI de Teleperformance. Todos los datos individuales están anonimizados.").replace("{count}", TP_STATS.totalAssessments.toLocaleString())}</p>
+          <p className="text-xs mt-1 text-purple-400">{t("tpBenchmark.footerPowered", "Powered by Rowi × Six Seconds")}</p>
         </div>
       </motion.div>
 
       {/* Navigation */}
       <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">
         <Link href="/hub/admin/tp/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors text-sm font-medium">
-          <ArrowLeft className="w-4 h-4" /> {t.navDashboard}
+          <ArrowLeft className="w-4 h-4" /> {t("tpBenchmark.navDashboard", "Dashboard")}
         </Link>
         <Link href="/hub/admin/tp/affinity" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold shadow-lg hover:opacity-90 transition-opacity">
-          {t.navAffinity} <ArrowRight className="w-4 h-4" />
+          {t("tpBenchmark.navAffinity", "Afinidad")} <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </div>

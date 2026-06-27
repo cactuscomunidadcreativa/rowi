@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid, Sun } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User, UserPlus, LogOut, Users, Heart, Satellite, Bot, BarChart3, CalendarCheck, Sparkles, Briefcase, Building2, FileText, DollarSign, GraduationCap, Shield, FlaskConical, Bell, Check, ExternalLink, MessageCircle, Handshake, Rss, Target, Users2, Activity, TrendingUp, LayoutGrid, Sun, Theater } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
@@ -45,6 +45,7 @@ const NAV_LABEL_FALLBACKS: Record<string, string> = {
   workspace: "Workspace",
   org: "Organización",
   weekflow: "WeekFlow",
+  practice: "Practicar",
   signin: "Iniciar sesión",
   signout: "Cerrar sesión",
   profile: "Mi perfil",
@@ -155,6 +156,7 @@ const BASE_LINKS = [
   // (links contextuales y URL directa), pero no compite como "home".
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false, journey: "see" },
   { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
+  { href: "/practice", key: "practice", icon: Theater, roles: ["*"], primary: false, journey: "practice" },
   { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "affinity" },
   { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "eco" },
   // Relaciones vive DENTRO de Comunidad (pestaña "Relaciones") — ya no es entrada propia.

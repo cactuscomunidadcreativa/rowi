@@ -22,7 +22,7 @@ import {
   Heart, UserCheck, Mail, Share2, Gift, Crown, BadgeCheck,
   Shield, GitBranch, ToggleRight, KeyRound,
   Handshake, Rss, MessageCircle, Boxes,
-  AlertTriangle,
+  AlertTriangle, Theater,
 } from "lucide-react";
 
 /* =========================================================
@@ -340,6 +340,7 @@ export default function Sidebar() {
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
         { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain, badge: "NEW" },
         { href: "/hub/admin/knowledge", labelKey: "admin.nav.knowledgeBase", icon: BookOpenCheck },
+        { href: "/hub/admin/scenarios", labelKey: "admin.nav.scenarios", icon: Theater, badge: "NEW" },
         { href: "/hub/admin/insights", labelKey: "admin.nav.insights", icon: Sparkles },
         { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle, badge: "NEW" },
         { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },

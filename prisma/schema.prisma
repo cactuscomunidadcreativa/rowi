@@ -205,6 +205,10 @@ model User {
   // 🧩 Hiring — casos de análisis archivados (no crean comunidad)
   hiringCases HiringCase[] @relation("HiringCaseOwner")
 
+  // 🎭 AI Practice Partner — sesiones de práctica multi-turno
+  practiceSessions PracticeSession[] @relation("PracticeSessionUser")
+  coachingTurns    CoachingTurn[]    @relation("CoachingTurnUser")
+
   // 🔒 Privacy / Consent / Research lens
   researchAccessLevel ResearchAccessLevel      @default(none)
   consents            UserConsent[]            @relation("UserConsentOwner")
@@ -7615,4 +7619,120 @@ model HiringCase {
   @@index([ownerUserId])
   @@index([tenantId])
   @@map("hiring_cases")
+}
+
+// =============================================================================
+// 🎭 AI PRACTICE PARTNER — práctica deliberada multi-turno, puntuada y gamificada
+// =============================================================================
+// Track B (puramente aditivo). El usuario practica una conversación de roleplay
+// contra un escenario (ScenarioBank). La IA interpreta el "brief" del escenario;
+// cada intercambio se persiste como CoachingTurn; al cerrar se puntúa contra la
+// rúbrica y se conecta a la gamificación (awardPoints + checkAndEvolve) y al
+// loop diario. El motor IA es pluggable (provider+model resueltos en runtime).
+
+/** Estado del ciclo de vida de una sesión de práctica. */
+enum PracticeStatus {
+  ACTIVE // en curso, admite más turnos
+  SCORED // finalizada y puntuada
+  ABANDONED // el usuario la dejó sin cerrar
+}
+
+/** Quién emitió un turno de la conversación de práctica. */
+enum CoachingRole {
+  USER // el practicante
+  PARTNER // la IA interpretando el escenario
+}
+
+/**
+ * Banco de escenarios de práctica. Contenido del cliente: el "brief" que la IA
+ * interpreta + la rúbrica contra la que se puntúa. Multi-idioma vía el campo
+ * `locale` (es/en/pt/it/zh). Opcionalmente acotado a un tenant y/o ligado a un
+ * AgentConfig (el agente "practice") para heredar cultura/conocimiento.
+ */
+model ScenarioBank {
+  id          String  @id @default(cuid())
+  tenantId    String? // opcional: escenario propio de un tenant/cliente
+  agentId     String? // opcional: AgentConfig que interpreta el brief (slug "practice")
+  locale      String  @default("es") // es | en | pt | it | zh
+  title       String
+  summary     String? // descripción corta para la lista
+  // El "guion" del cliente que la IA interpreta (rol, situación, objetivos).
+  brief       String
+  // Competencia SEI foco del escenario (EL, RP, ACT, NE, IM, OP, EMP, NG). Opcional.
+  focusSei    String?
+  // Rúbrica de evaluación: criterios + pesos. Estructura libre validada en código.
+  rubric      Json
+  // Dificultad 1-5 para ordenar progresión.
+  difficulty  Int     @default(1)
+  isActive    Boolean @default(true)
+  // Trazabilidad de uso (refina el banco hacia v1, igual que el resto del knowledge layer).
+  usageCount  Int     @default(0)
+  createdBy   String? // userId del admin que lo subió
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions PracticeSession[] @relation("PracticeSessionScenario")
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([locale, isActive])
+  @@map("scenario_bank")
+}
+
+/**
+ * Una sesión de práctica: un intento del usuario contra un escenario. Agrupa los
+ * CoachingTurn y guarda el resultado de la puntuación + feedback estructurado.
+ */
+model PracticeSession {
+  id         String         @id @default(cuid())
+  userId     String
+  tenantId   String? // opcional: contexto en que se practicó
+  scenarioId String
+  locale     String         @default("es")
+  status     PracticeStatus @default(ACTIVE)
+  // Foco SEI heredado del escenario o resuelto por become.ts al iniciar.
+  focusSei   String?
+  // Resolución del motor IA usado (trazabilidad + "pluggable").
+  aiProvider String? // "openai" | "anthropic" | futuro
+  aiModel    String? // p.ej. "claude-sonnet-4-6"
+  // Resultado (se llena al puntuar).
+  score      Int? // 0-100 contra la rúbrica
+  feedback   Json? // feedback estructurado por criterio
+  turnCount  Int            @default(0)
+  // Efectos colaterales (gamificación + loop) — trazabilidad.
+  pointsAwarded Int         @default(0)
+  startedAt  DateTime       @default(now())
+  scoredAt   DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user     User         @relation("PracticeSessionUser", fields: [userId], references: [id], onDelete: Cascade)
+  scenario ScenarioBank @relation("PracticeSessionScenario", fields: [scenarioId], references: [id], onDelete: Cascade)
+  turns    CoachingTurn[] @relation("CoachingTurnSession")
+
+  @@index([userId, createdAt])
+  @@index([tenantId])
+  @@index([scenarioId])
+  @@map("practice_session")
+}
+
+/** Un intercambio (turno) dentro de una sesión de práctica. */
+model CoachingTurn {
+  id        String       @id @default(cuid())
+  sessionId String
+  userId    String // denormalizado para consultas/scoping rápidos
+  role      CoachingRole
+  content   String
+  // Orden dentro de la sesión (0-based).
+  turnIndex Int          @default(0)
+  // Trazabilidad del modelo cuando el turno lo emitió la IA.
+  aiModel   String?
+  createdAt DateTime     @default(now())
+
+  session PracticeSession @relation("CoachingTurnSession", fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User            @relation("CoachingTurnUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, turnIndex])
+  @@index([userId, createdAt])
+  @@map("coaching_turn")
 }

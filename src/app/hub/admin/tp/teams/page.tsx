@@ -42,17 +42,6 @@ const OUTCOME_KEYS = [
   "qualityOfLife",
 ] as const;
 
-const COMP_TKEYS: Record<string, string> = {
-  EL: "compEL",
-  RP: "compRP",
-  ACT: "compACT",
-  NE: "compNE",
-  IM: "compIM",
-  OP: "compOP",
-  EMP: "compEMP",
-  NG: "compNG",
-};
-
 const GROUP_BY_OPTIONS = [
   { value: "country", labelEs: "Pais", labelEn: "Country" },
   { value: "region", labelEs: "Region", labelEn: "Region" },
@@ -60,265 +49,6 @@ const GROUP_BY_OPTIONS = [
   { value: "jobFunction", labelEs: "Funcion", labelEn: "Job Function" },
   { value: "sector", labelEs: "Sector", labelEn: "Sector" },
 ];
-
-/* =========================================================
-   Translations
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badge: "Equipos / Teams",
-    pageTitle: "Team Deep Analytics",
-    pageSubtitle:
-      "Analisis profundo de equipos: agrupa por dimension, compara grupos y monitorea indicadores de salud",
-    groupByLabel: "Agrupar por",
-    filterAll: "Todos",
-    teamOverview: "Vista General de Grupos",
-    teamOverviewDesc:
-      "Tarjetas de resumen para cada grupo con metricas clave de EQ y salud",
-    assessments: "evaluaciones",
-    avgEQ: "EQ Prom.",
-    teamComparison: "Comparacion de Grupos",
-    teamComparisonDesc:
-      "Selecciona 2 grupos para comparar competencias, resultados y estilos cerebrales",
-    selectTeamA: "Seleccionar Grupo A",
-    selectTeamB: "Seleccionar Grupo B",
-    competencyRadar: "Radar de Competencias",
-    outcomesComparison: "Comparacion de Resultados",
-    brainStyleComparison: "Distribucion de Estilos Cerebrales",
-    seiLevelComparison: "Comparación de Nivel SEI",
-    effectiveness: "Efectividad",
-    relationships: "Relaciones",
-    wellbeing: "Bienestar",
-    qualityOfLife: "Calidad de Vida",
-    teamHealthDashboard: "Dashboard SEI de Grupos",
-    teamHealthDesc:
-      "Nivel SEI de cada grupo con fortalezas y áreas de mejora",
-    strength: "Fortaleza",
-    gap: "Brecha",
-    brainStyleDist: "Distribucion de Estilos Cerebrales",
-    brainStyleDistDesc:
-      "Haz clic en un grupo para ver su distribucion de estilos cerebrales en detalle",
-    selectTeamToView: "Selecciona un grupo para ver su distribucion",
-    membersLabel: "evaluaciones",
-    regionalSummary: "Resumen por Dimension",
-    regionalSummaryDesc: "Metricas agregadas por la dimension seleccionada",
-    avgEQLabel: "EQ Promedio",
-    totalTeams: "Grupos",
-    totalMembers: "Evaluaciones",
-    topTeam: "Mejor Grupo",
-    infoTitle: "Datos de Equipos TP",
-    infoDesc:
-      "Este análisis muestra datos agregados de equipos de Teleperformance. Todos los datos individuales están anonimizados. Los niveles SEI se basan en la escala oficial de Six Seconds (65-135).",
-    navPeople: "People",
-    navSelection: "Selection",
-    compEL: "Alfabetizacion Emocional",
-    compRP: "Reconocer Patrones",
-    compACT: "Pensamiento Consecuente",
-    compNE: "Navegar Emociones",
-    compIM: "Motivacion Intrinseca",
-    compOP: "Ejercer Optimismo",
-    compEMP: "Aumentar Empatia",
-    compNG: "Metas Nobles",
-    eqLevel: "Nivel SEI",
-    noTeamsFound: "No se encontraron grupos con los filtros seleccionados",
-    loading: "Cargando datos...",
-    errorTitle: "Error al cargar datos",
-    errorDesc:
-      "No se pudieron cargar los datos del benchmark. Intenta de nuevo mas tarde.",
-    retry: "Reintentar",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badge: "Equipos / Teams",
-    pageTitle: "Team Deep Analytics",
-    pageSubtitle:
-      "Deep team analysis: group by dimension, compare groups, and monitor health indicators",
-    groupByLabel: "Group by",
-    filterAll: "All",
-    teamOverview: "Group Overview",
-    teamOverviewDesc:
-      "Summary cards for each group with key EQ and health metrics",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    teamComparison: "Group Comparison",
-    teamComparisonDesc:
-      "Select 2 groups to compare competencies, outcomes, and brain styles",
-    selectTeamA: "Select Group A",
-    selectTeamB: "Select Group B",
-    competencyRadar: "Competency Radar",
-    outcomesComparison: "Outcomes Comparison",
-    brainStyleComparison: "Brain Style Distribution",
-    seiLevelComparison: "SEI Level Comparison",
-    effectiveness: "Effectiveness",
-    relationships: "Relationships",
-    wellbeing: "Wellbeing",
-    qualityOfLife: "Quality of Life",
-    teamHealthDashboard: "Group SEI Dashboard",
-    teamHealthDesc:
-      "SEI level for each group with strengths and improvement areas",
-    strength: "Strength",
-    gap: "Gap",
-    brainStyleDist: "Brain Style Distribution",
-    brainStyleDistDesc:
-      "Click on a group to view its detailed brain style distribution",
-    selectTeamToView: "Select a group to view its distribution",
-    membersLabel: "assessments",
-    regionalSummary: "Dimension Summary",
-    regionalSummaryDesc: "Aggregated metrics by selected dimension",
-    avgEQLabel: "Average EQ",
-    totalTeams: "Groups",
-    totalMembers: "Assessments",
-    topTeam: "Top Group",
-    infoTitle: "TP Team Data",
-    infoDesc:
-      "This analysis shows aggregated Teleperformance team data. All individual data is anonymized. SEI levels are based on the official Six Seconds scale (65-135).",
-    navPeople: "People",
-    navSelection: "Selection",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    eqLevel: "SEI Level",
-    noTeamsFound: "No groups found with the selected filters",
-    loading: "Loading data...",
-    errorTitle: "Error loading data",
-    errorDesc:
-      "Could not load benchmark data. Please try again later.",
-    retry: "Retry",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badge: "Equipos / Teams",
-    pageTitle: "Team Deep Analytics",
-    pageSubtitle:
-      "Deep team analysis: group by dimension, compare groups, and monitor health indicators",
-    groupByLabel: "Group by",
-    filterAll: "All",
-    teamOverview: "Group Overview",
-    teamOverviewDesc:
-      "Summary cards for each group with key EQ and health metrics",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    teamComparison: "Group Comparison",
-    teamComparisonDesc:
-      "Select 2 groups to compare competencies, outcomes, and brain styles",
-    selectTeamA: "Select Group A",
-    selectTeamB: "Select Group B",
-    competencyRadar: "Competency Radar",
-    outcomesComparison: "Outcomes Comparison",
-    brainStyleComparison: "Brain Style Distribution",
-    seiLevelComparison: "SEI Level Comparison",
-    effectiveness: "Effectiveness",
-    relationships: "Relationships",
-    wellbeing: "Wellbeing",
-    qualityOfLife: "Quality of Life",
-    teamHealthDashboard: "Group SEI Dashboard",
-    teamHealthDesc:
-      "SEI level for each group with strengths and improvement areas",
-    strength: "Strength",
-    gap: "Gap",
-    brainStyleDist: "Brain Style Distribution",
-    brainStyleDistDesc:
-      "Click on a group to view its detailed brain style distribution",
-    selectTeamToView: "Select a group to view its distribution",
-    membersLabel: "assessments",
-    regionalSummary: "Dimension Summary",
-    regionalSummaryDesc: "Aggregated metrics by selected dimension",
-    avgEQLabel: "Average EQ",
-    totalTeams: "Groups",
-    totalMembers: "Assessments",
-    topTeam: "Top Group",
-    infoTitle: "TP Team Data",
-    infoDesc:
-      "This analysis shows aggregated Teleperformance team data. All individual data is anonymized. SEI levels are based on the official Six Seconds scale (65-135).",
-    navPeople: "People",
-    navSelection: "Selection",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    eqLevel: "SEI Level",
-    noTeamsFound: "No groups found with the selected filters",
-    loading: "Loading data...",
-    errorTitle: "Error loading data",
-    errorDesc:
-      "Could not load benchmark data. Please try again later.",
-    retry: "Retry",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badge: "Equipos / Teams",
-    pageTitle: "Team Deep Analytics",
-    pageSubtitle:
-      "Deep team analysis: group by dimension, compare groups, and monitor health indicators",
-    groupByLabel: "Group by",
-    filterAll: "All",
-    teamOverview: "Group Overview",
-    teamOverviewDesc:
-      "Summary cards for each group with key EQ and health metrics",
-    assessments: "assessments",
-    avgEQ: "Avg EQ",
-    teamComparison: "Group Comparison",
-    teamComparisonDesc:
-      "Select 2 groups to compare competencies, outcomes, and brain styles",
-    selectTeamA: "Select Group A",
-    selectTeamB: "Select Group B",
-    competencyRadar: "Competency Radar",
-    outcomesComparison: "Outcomes Comparison",
-    brainStyleComparison: "Brain Style Distribution",
-    seiLevelComparison: "SEI Level Comparison",
-    effectiveness: "Effectiveness",
-    relationships: "Relationships",
-    wellbeing: "Wellbeing",
-    qualityOfLife: "Quality of Life",
-    teamHealthDashboard: "Group SEI Dashboard",
-    teamHealthDesc:
-      "SEI level for each group with strengths and improvement areas",
-    strength: "Strength",
-    gap: "Gap",
-    brainStyleDist: "Brain Style Distribution",
-    brainStyleDistDesc:
-      "Click on a group to view its detailed brain style distribution",
-    selectTeamToView: "Select a group to view its distribution",
-    membersLabel: "assessments",
-    regionalSummary: "Dimension Summary",
-    regionalSummaryDesc: "Aggregated metrics by selected dimension",
-    avgEQLabel: "Average EQ",
-    totalTeams: "Groups",
-    totalMembers: "Assessments",
-    topTeam: "Top Group",
-    infoTitle: "TP Team Data",
-    infoDesc:
-      "This analysis shows aggregated Teleperformance team data. All individual data is anonymized. SEI levels are based on the official Six Seconds scale (65-135).",
-    navPeople: "People",
-    navSelection: "Selection",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    eqLevel: "SEI Level",
-    noTeamsFound: "No groups found with the selected filters",
-    loading: "Loading data...",
-    errorTitle: "Error loading data",
-    errorDesc:
-      "Could not load benchmark data. Please try again later.",
-    retry: "Retry",
-  },
-
-};
 
 /* =========================================================
    Types
@@ -564,8 +294,27 @@ function BrainStyleDonut({
    Main Page
 ========================================================= */
 export default function TPTeamsPage() {
-  const { lang, t: tFn } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
+
+  /* ---- Localized competency labels (for dynamic best/worst lookups) ---- */
+  const compLabels: Record<string, string> = {
+    EL: t("tpTeams.compEL", "Alfabetizacion Emocional"),
+    RP: t("tpTeams.compRP", "Reconocer Patrones"),
+    ACT: t("tpTeams.compACT", "Pensamiento Consecuente"),
+    NE: t("tpTeams.compNE", "Navegar Emociones"),
+    IM: t("tpTeams.compIM", "Motivacion Intrinseca"),
+    OP: t("tpTeams.compOP", "Ejercer Optimismo"),
+    EMP: t("tpTeams.compEMP", "Aumentar Empatia"),
+    NG: t("tpTeams.compNG", "Metas Nobles"),
+  };
+
+  /* ---- Localized outcome labels (keyed by OUTCOME_KEYS) ---- */
+  const outcomeLabels: Record<string, string> = {
+    effectiveness: t("tpTeams.effectiveness", "Efectividad"),
+    relationships: t("tpTeams.relationships", "Relaciones"),
+    wellbeing: t("tpTeams.wellbeing", "Bienestar"),
+    qualityOfLife: t("tpTeams.qualityOfLife", "Calidad de Vida"),
+  };
 
   /* ---- API State ---- */
   const [groups, setGroups] = useState<ApiGroup[]>([]);
@@ -669,20 +418,20 @@ export default function TPTeamsPage() {
             href="/hub/admin/tp"
             className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4"
           >
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpTeams.backToHub", "TP Hub")}
           </Link>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-            <Sparkles className="w-3 h-3" /> {t.badge}
+            <Sparkles className="w-3 h-3" /> {t("tpTeams.badge", "Equipos / Teams")}
           </span>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("tpTeams.pageTitle", "Team Deep Analytics")}</h1>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.pageSubtitle", "Analisis profundo de equipos: agrupa por dimension, compara grupos y monitorea indicadores de salud")}</p>
         </div>
 
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" />
             <span className="text-sm text-[var(--rowi-muted)]">
-              {t.loading}
+              {t("tpTeams.loading", "Cargando datos...")}
             </span>
           </div>
         </div>
@@ -699,29 +448,29 @@ export default function TPTeamsPage() {
             href="/hub/admin/tp"
             className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4"
           >
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpTeams.backToHub", "TP Hub")}
           </Link>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-            <Sparkles className="w-3 h-3" /> {t.badge}
+            <Sparkles className="w-3 h-3" /> {t("tpTeams.badge", "Equipos / Teams")}
           </span>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("tpTeams.pageTitle", "Team Deep Analytics")}</h1>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.pageSubtitle", "Analisis profundo de equipos: agrupa por dimension, compara grupos y monitorea indicadores de salud")}</p>
         </div>
 
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4 text-center">
             <AlertCircle className="w-10 h-10 text-red-500" />
             <h3 className="text-lg font-semibold text-red-600">
-              {t.errorTitle}
+              {t("tpTeams.errorTitle", "Error al cargar datos")}
             </h3>
             <p className="text-sm text-[var(--rowi-muted)] max-w-md">
-              {t.errorDesc}
+              {t("tpTeams.errorDesc", "No se pudieron cargar los datos del benchmark. Intenta de nuevo mas tarde.")}
             </p>
             <button
               onClick={handleRetry}
               className="mt-2 px-5 py-2 rounded-full bg-purple-500 text-white text-sm font-medium hover:bg-purple-600 transition-colors"
             >
-              {t.retry}
+              {t("tpTeams.retry", "Reintentar")}
             </button>
           </div>
         </div>
@@ -737,16 +486,16 @@ export default function TPTeamsPage() {
           href="/hub/admin/tp"
           className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4"
         >
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpTeams.backToHub", "TP Hub")}
         </Link>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-              <Sparkles className="w-3 h-3" /> {t.badge}
+              <Sparkles className="w-3 h-3" /> {t("tpTeams.badge", "Equipos / Teams")}
             </span>
-            <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-            <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+            <h1 className="text-3xl font-bold mb-2">{t("tpTeams.pageTitle", "Team Deep Analytics")}</h1>
+            <p className="text-[var(--rowi-muted)]">{t("tpTeams.pageSubtitle", "Analisis profundo de equipos: agrupa por dimension, compara grupos y monitorea indicadores de salud")}</p>
           </div>
 
           <motion.div
@@ -760,7 +509,7 @@ export default function TPTeamsPage() {
                 {enrichedGroups.length}
               </div>
               <div className="text-xs text-[var(--rowi-muted)]">
-                {t.totalTeams}
+                {t("tpTeams.totalTeams", "Grupos")}
               </div>
             </div>
             <div className="w-px h-8 bg-gray-200 dark:bg-zinc-700 mx-2" />
@@ -769,7 +518,7 @@ export default function TPTeamsPage() {
                 {totalAssessments.toLocaleString()}
               </div>
               <div className="text-xs text-[var(--rowi-muted)]">
-                {t.totalMembers}
+                {t("tpTeams.totalMembers", "Evaluaciones")}
               </div>
             </div>
           </motion.div>
@@ -785,7 +534,7 @@ export default function TPTeamsPage() {
       >
         <div className="flex-1 max-w-xs">
           <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1 block">
-            {t.groupByLabel}
+            {t("tpTeams.groupByLabel", "Agrupar por")}
           </label>
           <div className="relative">
             <select
@@ -808,9 +557,9 @@ export default function TPTeamsPage() {
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-            <Users className="w-6 h-6 text-purple-500" /> {t.teamOverview}
+            <Users className="w-6 h-6 text-purple-500" /> {t("tpTeams.teamOverview", "Vista General de Grupos")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.teamOverviewDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.teamOverviewDesc", "Tarjetas de resumen para cada grupo con metricas clave de EQ y salud")}</p>
         </div>
 
         {enrichedGroups.length === 0 ? (
@@ -819,7 +568,7 @@ export default function TPTeamsPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12 text-[var(--rowi-muted)]"
           >
-            {t.noTeamsFound}
+            {t("tpTeams.noTeamsFound", "No se encontraron grupos con los filtros seleccionados")}
           </motion.div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -842,14 +591,14 @@ export default function TPTeamsPage() {
                     <div>
                       <div className="font-semibold text-sm">{group.name}</div>
                       <div className="text-[10px] text-[var(--rowi-muted)]">
-                        {group.count.toLocaleString()} {t.assessments}
+                        {group.count.toLocaleString()} {t("tpTeams.assessments", "evaluaciones")}
                       </div>
                     </div>
                     <div
                       className="text-xs font-bold px-2 py-1 rounded-full"
                       style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                     >
-                      {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
+                      {group.eqLevel.emoji} {t(group.eqLevel.labelKey, group.eqLevel.label)}
                     </div>
                   </div>
 
@@ -869,7 +618,7 @@ export default function TPTeamsPage() {
                   <div className="mb-2">
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-[var(--rowi-muted)]">
-                        {t.avgEQ}
+                        {t("tpTeams.avgEQ", "EQ Prom.")}
                       </span>
                       <span className="font-mono font-bold text-purple-600">
                         {group.avgEQ.toFixed(1)}
@@ -893,7 +642,7 @@ export default function TPTeamsPage() {
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-sm">{group.eqLevel.emoji}</span>
                     <span className="font-medium" style={{ color: group.eqLevel.color }}>
-                      {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
+                      {t(group.eqLevel.labelKey, group.eqLevel.label)}
                     </span>
                   </div>
                 </motion.div>
@@ -908,16 +657,16 @@ export default function TPTeamsPage() {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-purple-500" />{" "}
-            {t.teamComparison}
+            {t("tpTeams.teamComparison", "Comparacion de Grupos")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.teamComparisonDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.teamComparisonDesc", "Selecciona 2 grupos para comparar competencias, resultados y estilos cerebrales")}</p>
         </div>
 
         {/* Group selectors */}
         <div className="grid sm:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1 block">
-              {t.selectTeamA}
+              {t("tpTeams.selectTeamA", "Seleccionar Grupo A")}
             </label>
             <div className="relative">
               <select
@@ -925,7 +674,7 @@ export default function TPTeamsPage() {
                 onChange={(e) => setCompareA(e.target.value)}
                 className="w-full appearance-none bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="">{t.selectTeamA}</option>
+                <option value="">{t("tpTeams.selectTeamA", "Seleccionar Grupo A")}</option>
                 {enrichedGroups.map((g) => (
                   <option key={g.name} value={g.name}>
                     {g.name} ({g.count})
@@ -937,7 +686,7 @@ export default function TPTeamsPage() {
           </div>
           <div>
             <label className="text-xs font-medium text-[var(--rowi-muted)] mb-1 block">
-              {t.selectTeamB}
+              {t("tpTeams.selectTeamB", "Seleccionar Grupo B")}
             </label>
             <div className="relative">
               <select
@@ -945,7 +694,7 @@ export default function TPTeamsPage() {
                 onChange={(e) => setCompareB(e.target.value)}
                 className="w-full appearance-none bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="">{t.selectTeamB}</option>
+                <option value="">{t("tpTeams.selectTeamB", "Seleccionar Grupo B")}</option>
                 {enrichedGroups.map((g) => (
                   <option key={g.name} value={g.name}>
                     {g.name} ({g.count})
@@ -970,7 +719,7 @@ export default function TPTeamsPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <Target className="w-5 h-5 text-purple-500" />{" "}
-                  {t.competencyRadar}
+                  {t("tpTeams.competencyRadar", "Radar de Competencias")}
                 </h3>
                 <CompetencyRadar
                   teamA={{
@@ -998,18 +747,17 @@ export default function TPTeamsPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-purple-500" />{" "}
-                  {t.outcomesComparison}
+                  {t("tpTeams.outcomesComparison", "Comparacion de Resultados")}
                 </h3>
                 <div className="space-y-4">
                   {OUTCOME_KEYS.map((key) => {
-                    const tKey = key as keyof typeof t;
                     const valA = groupA.outcomes[key] ?? 100;
                     const valB = groupB.outcomes[key] ?? 100;
                     const maxOutcome = Math.max(valA, valB, 115);
                     return (
                       <div key={key}>
                         <div className="text-xs font-medium text-[var(--rowi-muted)] mb-1">
-                          {t[tKey]}
+                          {outcomeLabels[key]}
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -1059,7 +807,7 @@ export default function TPTeamsPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <Brain className="w-5 h-5 text-purple-500" />{" "}
-                  {t.brainStyleComparison}
+                  {t("tpTeams.brainStyleComparison", "Distribucion de Estilos Cerebrales")}
                 </h3>
                 <div className="space-y-3">
                   {(() => {
@@ -1144,7 +892,7 @@ export default function TPTeamsPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <Target className="w-5 h-5 text-purple-500" />{" "}
-                  {t.seiLevelComparison}
+                  {t("tpTeams.seiLevelComparison", "Comparación de Nivel SEI")}
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {[groupA, groupB].map((group, idx) => {
@@ -1196,7 +944,7 @@ export default function TPTeamsPage() {
                             textAnchor="middle"
                             className="fill-current text-[9px] opacity-50"
                           >
-                            {t.avgEQ}
+                            {t("tpTeams.avgEQ", "EQ Prom.")}
                           </text>
                           <text
                             x="60"
@@ -1205,7 +953,7 @@ export default function TPTeamsPage() {
                             className="text-[9px]"
                             fill={eqLvl.color}
                           >
-                            {eqLvl.emoji} {tFn(eqLvl.labelKey, eqLvl.label)}
+                            {eqLvl.emoji} {t(eqLvl.labelKey, eqLvl.label)}
                           </text>
                         </svg>
                         <div className="text-sm font-medium mt-2 text-center">
@@ -1226,9 +974,9 @@ export default function TPTeamsPage() {
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
             <Activity className="w-6 h-6 text-purple-500" />{" "}
-            {t.teamHealthDashboard}
+            {t("tpTeams.teamHealthDashboard", "Dashboard SEI de Grupos")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.teamHealthDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.teamHealthDesc", "Nivel SEI de cada grupo con fortalezas y áreas de mejora")}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1254,7 +1002,7 @@ export default function TPTeamsPage() {
                     className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                   >
-                    {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
+                    {group.eqLevel.emoji} {t(group.eqLevel.labelKey, group.eqLevel.label)}
                   </span>
                   <span className="text-xs font-mono text-purple-600">{group.avgEQ.toFixed(1)}</span>
                 </div>
@@ -1262,10 +1010,10 @@ export default function TPTeamsPage() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
                     <span className="text-[var(--rowi-muted)]">
-                      {t.strength}:
+                      {t("tpTeams.strength", "Fortaleza")}:
                     </span>
                     <span className="font-medium">
-                      {t[COMP_TKEYS[best.key] as keyof typeof t] || best.key}
+                      {compLabels[best.key] || best.key}
                     </span>
                     <span className="font-mono text-green-600 ml-auto">
                       {best.value.toFixed(1)}
@@ -1274,10 +1022,10 @@ export default function TPTeamsPage() {
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />
                     <span className="text-[var(--rowi-muted)]">
-                      {t.gap}:
+                      {t("tpTeams.gap", "Brecha")}:
                     </span>
                     <span className="font-medium">
-                      {t[COMP_TKEYS[worst.key] as keyof typeof t] || worst.key}
+                      {compLabels[worst.key] || worst.key}
                     </span>
                     <span className="font-mono text-yellow-600 ml-auto">
                       {worst.value.toFixed(1)}
@@ -1294,9 +1042,9 @@ export default function TPTeamsPage() {
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-500" /> {t.brainStyleDist}
+            <Brain className="w-6 h-6 text-purple-500" /> {t("tpTeams.brainStyleDist", "Distribucion de Estilos Cerebrales")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.brainStyleDistDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.brainStyleDistDesc", "Haz clic en un grupo para ver su distribucion de estilos cerebrales en detalle")}</p>
         </div>
 
         <motion.div
@@ -1336,7 +1084,7 @@ export default function TPTeamsPage() {
                   lang={lang}
                 />
                 <div className="text-center mt-4 text-sm text-[var(--rowi-muted)]">
-                  {brainGroup.count.toLocaleString()} {t.membersLabel}
+                  {brainGroup.count.toLocaleString()} {t("tpTeams.membersLabel", "evaluaciones")}
                 </div>
               </motion.div>
             ) : (
@@ -1345,7 +1093,7 @@ export default function TPTeamsPage() {
                 animate={{ opacity: 1 }}
                 className="text-center py-12 text-[var(--rowi-muted)]"
               >
-                {t.selectTeamToView}
+                {t("tpTeams.selectTeamToView", "Selecciona un grupo para ver su distribucion")}
               </motion.div>
             )}
           </AnimatePresence>
@@ -1356,9 +1104,9 @@ export default function TPTeamsPage() {
       <div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-            <Globe className="w-6 h-6 text-purple-500" /> {t.regionalSummary}
+            <Globe className="w-6 h-6 text-purple-500" /> {t("tpTeams.regionalSummary", "Resumen por Dimension")}
           </h2>
-          <p className="text-[var(--rowi-muted)]">{t.regionalSummaryDesc}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpTeams.regionalSummaryDesc", "Metricas agregadas por la dimension seleccionada")}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1379,7 +1127,7 @@ export default function TPTeamsPage() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--rowi-muted)]">
-                    {t.avgEQLabel}
+                    {t("tpTeams.avgEQLabel", "EQ Promedio")}
                   </span>
                   <span className="font-bold text-purple-600">
                     {group.avgEQ.toFixed(1)}
@@ -1387,7 +1135,7 @@ export default function TPTeamsPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--rowi-muted)]">
-                    {t.totalMembers}
+                    {t("tpTeams.totalMembers", "Evaluaciones")}
                   </span>
                   <span className="font-bold">
                     {group.count.toLocaleString()}
@@ -1395,25 +1143,22 @@ export default function TPTeamsPage() {
                 </div>
                 <div className="flex justify-between text-sm items-center">
                   <span className="text-[var(--rowi-muted)]">
-                    {t.eqLevel}
+                    {t("tpTeams.eqLevel", "Nivel SEI")}
                   </span>
                   <span
                     className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: `${group.eqLevel.color}20`, color: group.eqLevel.color }}
                   >
-                    {group.eqLevel.emoji} {tFn(group.eqLevel.labelKey, group.eqLevel.label)}
+                    {group.eqLevel.emoji} {t(group.eqLevel.labelKey, group.eqLevel.label)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-zinc-800">
                   <div className="text-xs text-[var(--rowi-muted)] mb-1">
-                    {t.strength}
+                    {t("tpTeams.strength", "Fortaleza")}
                   </div>
                   <div className="text-sm font-semibold">
-                    {t[
-                      COMP_TKEYS[
-                        getBestCompetency(group.competencies).key
-                      ] as keyof typeof t
-                    ] || getBestCompetency(group.competencies).key}
+                    {compLabels[getBestCompetency(group.competencies).key] ||
+                      getBestCompetency(group.competencies).key}
                   </div>
                   <div className="text-xs text-purple-500 font-mono">
                     {getBestCompetency(group.competencies).value.toFixed(1)}
@@ -1435,10 +1180,10 @@ export default function TPTeamsPage() {
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
           <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">
-            {t.infoTitle}
+            {t("tpTeams.infoTitle", "Datos de Equipos TP")}
           </h3>
           <p className="text-sm text-purple-700 dark:text-purple-300">
-            {t.infoDesc}
+            {t("tpTeams.infoDesc", "Este análisis muestra datos agregados de equipos de Teleperformance. Todos los datos individuales están anonimizados. Los niveles SEI se basan en la escala oficial de Six Seconds (65-135).")}
           </p>
         </div>
       </motion.div>
@@ -1449,13 +1194,13 @@ export default function TPTeamsPage() {
           href="/hub/admin/tp/people"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium"
         >
-          <ArrowLeft className="w-5 h-5" /> {t.navPeople}
+          <ArrowLeft className="w-5 h-5" /> {t("tpTeams.navPeople", "People")}
         </Link>
         <Link
           href="/hub/admin/tp/selection"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
         >
-          {t.navSelection} <ArrowRight className="w-5 h-5" />
+          {t("tpTeams.navSelection", "Selection")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

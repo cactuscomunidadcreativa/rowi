@@ -33,269 +33,6 @@ import {
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
 
 /* =========================================================
-   Translations
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badgeLabel: "Calidad de Datos",
-    pageTitle: "Calidad de Datos y Detección de Duplicados",
-    pageSubtitle: "Análisis de integridad, completitud y confiabilidad de las evaluaciones SEI de Teleperformance",
-    overallQuality: "Calidad General de Datos",
-    recordsAnalyzed: "registros analizados",
-    qualityExcellent: "Excelente",
-    qualityGood: "Buena",
-    qualityFair: "Aceptable",
-    qualityPoor: "Deficiente",
-    totalRecords: "Registros Totales",
-    duplicatesFound: "Duplicados Detectados",
-    groups: "grupos",
-    records: "registros",
-    outliersDetected: "Outliers",
-    avgReliability: "Confiabilidad Promedio",
-    assessments: "evaluaciones",
-    completenessTitle: "Completitud de Datos por Campo",
-    completenessDesc: "Porcentaje de registros con valores válidos por cada campo — ordenado de menor a mayor completitud",
-    fieldName: "Campo",
-    completeness: "Completitud",
-    present: "Presentes",
-    missing: "Faltantes",
-    totalLabel: "Total",
-    outliers: "Outliers",
-    duplicatesTitle: "Detección de Duplicados",
-    duplicatesDesc: "Grupos de registros duplicados identificados por coincidencia de ID fuente exacto",
-    showRecords: "Ver registros",
-    hideRecords: "Ocultar registros",
-    colSourceId: "ID Fuente",
-    colDate: "Fecha",
-    colEqTotal: "EQ Total",
-    colCountry: "País",
-    colRegion: "Región",
-    colRole: "Rol",
-    colBrainStyle: "Estilo Cerebral",
-    reliabilityTitle: "Distribución del Índice de Confiabilidad",
-    reliabilityDesc: "Distribución de las evaluaciones según su índice de confiabilidad agrupadas en rangos",
-    reliabilityCount: "evaluaciones",
-    reliabilityMean: "Media",
-    reliabilityMedian: "Mediana",
-    reliabilityMin: "Mínimo",
-    reliabilityMax: "Máximo",
-    outliersTitle: "Registros Atípicos (Outliers)",
-    outliersDesc: "Evaluaciones con EQ Total fuera de ±2σ del promedio que requieren revisión",
-    colZScore: "Z-Score",
-    colType: "Tipo",
-    typeHigh: "Alto",
-    typeLow: "Bajo",
-    outlierStatsTitle: "Estadísticas de Outliers",
-    outlierStatsMean: "Media EQ Total",
-    outlierStatsStdDev: "Desviación Estándar",
-    outlierStatsThresholdHigh: "Umbral Alto (μ+2σ)",
-    outlierStatsThresholdLow: "Umbral Bajo (μ-2σ)",
-    outlierStatsTotalOutliers: "Total Outliers",
-    infoTitle: "Análisis de Calidad de Datos TP",
-    infoDesc: "Este módulo analiza la integridad de las evaluaciones SEI de Teleperformance. Los duplicados se detectan por coincidencia de ID fuente. Los outliers se calculan como registros con EQ Total fuera de ±2 desviaciones estándar. Todos los datos individuales están anonimizados.",
-    navAlerts: "Alertas",
-    navHub: "TP Hub",
-    loading: "Cargando datos de calidad...",
-    errorLoading: "Error al cargar datos de calidad",
-    noData: "No hay datos disponibles",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badgeLabel: "Data Quality",
-    pageTitle: "Data Quality & Duplicate Detection",
-    pageSubtitle: "Integrity, completeness, and reliability analysis of Teleperformance SEI assessments",
-    overallQuality: "Overall Data Quality",
-    recordsAnalyzed: "records analyzed",
-    qualityExcellent: "Excellent",
-    qualityGood: "Good",
-    qualityFair: "Fair",
-    qualityPoor: "Poor",
-    totalRecords: "Total Records",
-    duplicatesFound: "Duplicates Found",
-    groups: "groups",
-    records: "records",
-    outliersDetected: "Outliers",
-    avgReliability: "Avg Reliability",
-    assessments: "assessments",
-    completenessTitle: "Data Completeness by Field",
-    completenessDesc: "Percentage of records with valid values per field — sorted from lowest to highest completeness",
-    fieldName: "Field",
-    completeness: "Completeness",
-    present: "Present",
-    missing: "Missing",
-    totalLabel: "Total",
-    outliers: "Outliers",
-    duplicatesTitle: "Duplicate Detection",
-    duplicatesDesc: "Groups of duplicated records identified by exact source ID match",
-    showRecords: "Show records",
-    hideRecords: "Hide records",
-    colSourceId: "Source ID",
-    colDate: "Date",
-    colEqTotal: "EQ Total",
-    colCountry: "Country",
-    colRegion: "Region",
-    colRole: "Role",
-    colBrainStyle: "Brain Style",
-    reliabilityTitle: "Reliability Index Distribution",
-    reliabilityDesc: "Distribution of assessments by reliability index grouped in ranges",
-    reliabilityCount: "assessments",
-    reliabilityMean: "Mean",
-    reliabilityMedian: "Median",
-    reliabilityMin: "Min",
-    reliabilityMax: "Max",
-    outliersTitle: "Outlier Records",
-    outliersDesc: "Assessments with EQ Total outside +/-2 std dev from the mean that require review",
-    colZScore: "Z-Score",
-    colType: "Type",
-    typeHigh: "High",
-    typeLow: "Low",
-    outlierStatsTitle: "Outlier Statistics",
-    outlierStatsMean: "EQ Total Mean",
-    outlierStatsStdDev: "Standard Deviation",
-    outlierStatsThresholdHigh: "High Threshold (μ+2σ)",
-    outlierStatsThresholdLow: "Low Threshold (μ-2σ)",
-    outlierStatsTotalOutliers: "Total Outliers",
-    infoTitle: "TP Data Quality Analysis",
-    infoDesc: "This module analyzes the integrity of Teleperformance SEI assessments. Duplicates are detected by source ID match. Outliers are calculated as records with EQ Total outside +/-2 standard deviations. All individual data is anonymized.",
-    navAlerts: "Alerts",
-    navHub: "TP Hub",
-    loading: "Loading quality data...",
-    errorLoading: "Error loading quality data",
-    noData: "No data available",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badgeLabel: "Data Quality",
-    pageTitle: "Data Quality & Duplicate Detection",
-    pageSubtitle: "Integrity, completeness, and reliability analysis of Teleperformance SEI assessments",
-    overallQuality: "Overall Data Quality",
-    recordsAnalyzed: "records analyzed",
-    qualityExcellent: "Excellent",
-    qualityGood: "Good",
-    qualityFair: "Fair",
-    qualityPoor: "Poor",
-    totalRecords: "Total Records",
-    duplicatesFound: "Duplicates Found",
-    groups: "groups",
-    records: "records",
-    outliersDetected: "Outliers",
-    avgReliability: "Avg Reliability",
-    assessments: "assessments",
-    completenessTitle: "Data Completeness by Field",
-    completenessDesc: "Percentage of records with valid values per field — sorted from lowest to highest completeness",
-    fieldName: "Field",
-    completeness: "Completeness",
-    present: "Present",
-    missing: "Missing",
-    totalLabel: "Total",
-    outliers: "Outliers",
-    duplicatesTitle: "Duplicate Detection",
-    duplicatesDesc: "Groups of duplicated records identified by exact source ID match",
-    showRecords: "Show records",
-    hideRecords: "Hide records",
-    colSourceId: "Source ID",
-    colDate: "Date",
-    colEqTotal: "EQ Total",
-    colCountry: "Country",
-    colRegion: "Region",
-    colRole: "Role",
-    colBrainStyle: "Brain Style",
-    reliabilityTitle: "Reliability Index Distribution",
-    reliabilityDesc: "Distribution of assessments by reliability index grouped in ranges",
-    reliabilityCount: "assessments",
-    reliabilityMean: "Mean",
-    reliabilityMedian: "Median",
-    reliabilityMin: "Min",
-    reliabilityMax: "Max",
-    outliersTitle: "Outlier Records",
-    outliersDesc: "Assessments with EQ Total outside +/-2 std dev from the mean that require review",
-    colZScore: "Z-Score",
-    colType: "Type",
-    typeHigh: "High",
-    typeLow: "Low",
-    outlierStatsTitle: "Outlier Statistics",
-    outlierStatsMean: "EQ Total Mean",
-    outlierStatsStdDev: "Standard Deviation",
-    outlierStatsThresholdHigh: "High Threshold (μ+2σ)",
-    outlierStatsThresholdLow: "Low Threshold (μ-2σ)",
-    outlierStatsTotalOutliers: "Total Outliers",
-    infoTitle: "TP Data Quality Analysis",
-    infoDesc: "This module analyzes the integrity of Teleperformance SEI assessments. Duplicates are detected by source ID match. Outliers are calculated as records with EQ Total outside +/-2 standard deviations. All individual data is anonymized.",
-    navAlerts: "Alerts",
-    navHub: "TP Hub",
-    loading: "Loading quality data...",
-    errorLoading: "Error loading quality data",
-    noData: "No data available",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badgeLabel: "Data Quality",
-    pageTitle: "Data Quality & Duplicate Detection",
-    pageSubtitle: "Integrity, completeness, and reliability analysis of Teleperformance SEI assessments",
-    overallQuality: "Overall Data Quality",
-    recordsAnalyzed: "records analyzed",
-    qualityExcellent: "Excellent",
-    qualityGood: "Good",
-    qualityFair: "Fair",
-    qualityPoor: "Poor",
-    totalRecords: "Total Records",
-    duplicatesFound: "Duplicates Found",
-    groups: "groups",
-    records: "records",
-    outliersDetected: "Outliers",
-    avgReliability: "Avg Reliability",
-    assessments: "assessments",
-    completenessTitle: "Data Completeness by Field",
-    completenessDesc: "Percentage of records with valid values per field — sorted from lowest to highest completeness",
-    fieldName: "Field",
-    completeness: "Completeness",
-    present: "Present",
-    missing: "Missing",
-    totalLabel: "Total",
-    outliers: "Outliers",
-    duplicatesTitle: "Duplicate Detection",
-    duplicatesDesc: "Groups of duplicated records identified by exact source ID match",
-    showRecords: "Show records",
-    hideRecords: "Hide records",
-    colSourceId: "Source ID",
-    colDate: "Date",
-    colEqTotal: "EQ Total",
-    colCountry: "Country",
-    colRegion: "Region",
-    colRole: "Role",
-    colBrainStyle: "Brain Style",
-    reliabilityTitle: "Reliability Index Distribution",
-    reliabilityDesc: "Distribution of assessments by reliability index grouped in ranges",
-    reliabilityCount: "assessments",
-    reliabilityMean: "Mean",
-    reliabilityMedian: "Median",
-    reliabilityMin: "Min",
-    reliabilityMax: "Max",
-    outliersTitle: "Outlier Records",
-    outliersDesc: "Assessments with EQ Total outside +/-2 std dev from the mean that require review",
-    colZScore: "Z-Score",
-    colType: "Type",
-    typeHigh: "High",
-    typeLow: "Low",
-    outlierStatsTitle: "Outlier Statistics",
-    outlierStatsMean: "EQ Total Mean",
-    outlierStatsStdDev: "Standard Deviation",
-    outlierStatsThresholdHigh: "High Threshold (μ+2σ)",
-    outlierStatsThresholdLow: "Low Threshold (μ-2σ)",
-    outlierStatsTotalOutliers: "Total Outliers",
-    infoTitle: "TP Data Quality Analysis",
-    infoDesc: "This module analyzes the integrity of Teleperformance SEI assessments. Duplicates are detected by source ID match. Outliers are calculated as records with EQ Total outside +/-2 standard deviations. All individual data is anonymized.",
-    navAlerts: "Alerts",
-    navHub: "TP Hub",
-    loading: "Loading quality data...",
-    errorLoading: "Error loading quality data",
-    noData: "No data available",
-  },
-
-};
-
-/* =========================================================
    Types
 ========================================================= */
 interface CompletenessField {
@@ -441,8 +178,7 @@ function CompletenessBar({ value }: { value: number }) {
    Main Page
 ========================================================= */
 export default function TPDataQualityPage() {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
 
   const [data, setData] = useState<DataQualityResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -482,12 +218,12 @@ export default function TPDataQualityPage() {
 
   const qualityLabel = data
     ? data.qualityScore >= 80
-      ? t.qualityExcellent
+      ? t("tpDataQuality.qualityExcellent", "Excelente")
       : data.qualityScore >= 60
-      ? t.qualityGood
+      ? t("tpDataQuality.qualityGood", "Buena")
       : data.qualityScore >= 40
-      ? t.qualityFair
-      : t.qualityPoor
+      ? t("tpDataQuality.qualityFair", "Aceptable")
+      : t("tpDataQuality.qualityPoor", "Deficiente")
     : "";
 
   const qualityLabelColor = data
@@ -511,12 +247,12 @@ export default function TPDataQualityPage() {
     "80-100": "#10b981",
   };
 
-  const bucketLabels: Record<string, { es: string; en: string }> = {
-    "0-20": { es: "Muy Baja", en: "Very Low" },
-    "20-40": { es: "Baja", en: "Low" },
-    "40-60": { es: "Moderada", en: "Moderate" },
-    "60-80": { es: "Buena", en: "Good" },
-    "80-100": { es: "Excelente", en: "Excellent" },
+  const bucketLabels: Record<string, string> = {
+    "0-20": t("tpDataQuality.bucketVeryLow", "Muy Baja"),
+    "20-40": t("tpDataQuality.bucketLow", "Baja"),
+    "40-60": t("tpDataQuality.bucketModerate", "Moderada"),
+    "60-80": t("tpDataQuality.bucketGood", "Buena"),
+    "80-100": t("tpDataQuality.bucketExcellent", "Excelente"),
   };
 
   return (
@@ -524,15 +260,15 @@ export default function TPDataQualityPage() {
       {/* Header */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpDataQuality.backToHub", "TP Hub")}
         </Link>
 
         <div>
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 mb-3">
-            <Database className="w-3 h-3" /> {t.badgeLabel}
+            <Database className="w-3 h-3" /> {t("tpDataQuality.badgeLabel", "Calidad de Datos")}
           </span>
-          <h1 className="text-3xl font-bold mb-2">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)]">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("tpDataQuality.pageTitle", "Calidad de Datos y Detección de Duplicados")}</h1>
+          <p className="text-[var(--rowi-muted)]">{t("tpDataQuality.pageSubtitle", "Análisis de integridad, completitud y confiabilidad de las evaluaciones SEI de Teleperformance")}</p>
         </div>
       </div>
 
@@ -540,7 +276,7 @@ export default function TPDataQualityPage() {
       {loading && (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-10 h-10 text-purple-500 animate-spin mb-4" />
-          <p className="text-[var(--rowi-muted)] text-sm">{t.loading}</p>
+          <p className="text-[var(--rowi-muted)] text-sm">{t("tpDataQuality.loading", "Cargando datos de calidad...")}</p>
         </div>
       )}
 
@@ -548,7 +284,7 @@ export default function TPDataQualityPage() {
       {!loading && error && (
         <div className="flex flex-col items-center justify-center py-20">
           <XCircle className="w-10 h-10 text-red-500 mb-4" />
-          <p className="text-red-600 dark:text-red-400 text-sm">{t.errorLoading}</p>
+          <p className="text-red-600 dark:text-red-400 text-sm">{t("tpDataQuality.errorLoading", "Error al cargar datos de calidad")}</p>
         </div>
       )}
 
@@ -556,7 +292,7 @@ export default function TPDataQualityPage() {
       {!loading && !error && data && data.totalRecords === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <Database className="w-10 h-10 text-[var(--rowi-muted)] mb-4 opacity-40" />
-          <p className="text-[var(--rowi-muted)] text-sm">{t.noData}</p>
+          <p className="text-[var(--rowi-muted)] text-sm">{t("tpDataQuality.noData", "No hay datos disponibles")}</p>
         </div>
       )}
 
@@ -570,7 +306,7 @@ export default function TPDataQualityPage() {
             className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-zinc-800 flex flex-col items-center"
           >
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-purple-500" /> {t.overallQuality}
+              <BarChart3 className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.overallQuality", "Calidad General de Datos")}
             </h2>
             <QualityGauge score={data.qualityScore} />
             <div className="mt-4 text-center">
@@ -578,7 +314,7 @@ export default function TPDataQualityPage() {
                 <CheckCircle2 className="w-4 h-4" /> {qualityLabel}
               </span>
               <p className="text-sm text-[var(--rowi-muted)] mt-2">
-                {data.totalRecords.toLocaleString()} {t.recordsAnalyzed}
+                {data.totalRecords.toLocaleString()} {t("tpDataQuality.recordsAnalyzed", "registros analizados")}
               </p>
             </div>
           </motion.div>
@@ -588,30 +324,30 @@ export default function TPDataQualityPage() {
             {[
               {
                 icon: <Database className="w-5 h-5" />,
-                label: t.totalRecords,
+                label: t("tpDataQuality.totalRecords", "Registros Totales"),
                 value: data.totalRecords.toLocaleString(),
                 sub: null,
                 color: "text-purple-500",
               },
               {
                 icon: <Copy className="w-5 h-5" />,
-                label: t.duplicatesFound,
+                label: t("tpDataQuality.duplicatesFound", "Duplicados Detectados"),
                 value: data.totalDuplicateGroups.toString(),
-                sub: `${data.totalDuplicateGroups} ${t.groups}, ${data.totalDuplicateRecords} ${t.records}`,
+                sub: `${data.totalDuplicateGroups} ${t("tpDataQuality.groups", "grupos")}, ${data.totalDuplicateRecords} ${t("tpDataQuality.records", "registros")}`,
                 color: "text-orange-500",
               },
               {
                 icon: <TrendingDown className="w-5 h-5" />,
-                label: t.outliersDetected,
+                label: t("tpDataQuality.outliersDetected", "Outliers"),
                 value: data.outlierStats.totalOutliers.toString(),
                 sub: null,
                 color: "text-yellow-500",
               },
               {
                 icon: <Activity className="w-5 h-5" />,
-                label: t.avgReliability,
+                label: t("tpDataQuality.avgReliability", "Confiabilidad Promedio"),
                 value: data.reliabilityDistribution.mean.toFixed(1),
-                sub: `${data.reliabilityDistribution.count.toLocaleString()} ${t.assessments}`,
+                sub: `${data.reliabilityDistribution.count.toLocaleString()} ${t("tpDataQuality.assessments", "evaluaciones")}`,
                 color: "text-blue-500",
               },
             ].map((card, i) => (
@@ -638,15 +374,15 @@ export default function TPDataQualityPage() {
             className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
           >
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-purple-500" /> {t.completenessTitle}
+              <CheckCircle2 className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.completenessTitle", "Completitud de Datos por Campo")}
             </h2>
-            <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.completenessDesc}</p>
+            <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpDataQuality.completenessDesc", "Porcentaje de registros con valores válidos por cada campo — ordenado de menor a mayor completitud")}</p>
 
             <div className="hidden md:grid md:grid-cols-[200px_1fr_140px_100px] gap-4 px-4 py-2 text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide border-b border-gray-100 dark:border-zinc-800 mb-2">
-              <span>{t.fieldName}</span>
-              <span>{t.completeness}</span>
-              <span className="text-right">{t.present}</span>
-              <span className="text-right">{t.missing}</span>
+              <span>{t("tpDataQuality.fieldName", "Campo")}</span>
+              <span>{t("tpDataQuality.completeness", "Completitud")}</span>
+              <span className="text-right">{t("tpDataQuality.present", "Presentes")}</span>
+              <span className="text-right">{t("tpDataQuality.missing", "Faltantes")}</span>
             </div>
 
             <div className="space-y-1">
@@ -683,9 +419,9 @@ export default function TPDataQualityPage() {
               className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
             >
               <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <Copy className="w-5 h-5 text-purple-500" /> {t.duplicatesTitle}
+                <Copy className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.duplicatesTitle", "Detección de Duplicados")}
               </h2>
-              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.duplicatesDesc}</p>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpDataQuality.duplicatesDesc", "Grupos de registros duplicados identificados por coincidencia de ID fuente exacto")}</p>
 
               <div className="space-y-4">
                 {data.duplicates.map((group) => {
@@ -702,10 +438,10 @@ export default function TPDataQualityPage() {
                           {group.sourceId}
                         </span>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
-                          {group.count} {t.records}
+                          {group.count} {t("tpDataQuality.records", "registros")}
                         </span>
                         <span className="ml-auto flex items-center gap-1 text-xs text-[var(--rowi-muted)]">
-                          {isExpanded ? t.hideRecords : t.showRecords}
+                          {isExpanded ? t("tpDataQuality.hideRecords", "Ocultar registros") : t("tpDataQuality.showRecords", "Ver registros")}
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </span>
                       </button>
@@ -721,13 +457,13 @@ export default function TPDataQualityPage() {
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colSourceId}</th>
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colDate}</th>
-                                  <th className="px-4 py-2 text-right font-semibold">{t.colEqTotal}</th>
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colCountry}</th>
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colRegion}</th>
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colRole}</th>
-                                  <th className="px-4 py-2 text-left font-semibold">{t.colBrainStyle}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colSourceId", "ID Fuente")}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colDate", "Fecha")}</th>
+                                  <th className="px-4 py-2 text-right font-semibold">{t("tpDataQuality.colEqTotal", "EQ Total")}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colCountry", "País")}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colRegion", "Región")}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colRole", "Rol")}</th>
+                                  <th className="px-4 py-2 text-left font-semibold">{t("tpDataQuality.colBrainStyle", "Brain Style")}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -784,17 +520,17 @@ export default function TPDataQualityPage() {
               className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
             >
               <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-purple-500" /> {t.reliabilityTitle}
+                <Activity className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.reliabilityTitle", "Distribución del Índice de Confiabilidad")}
               </h2>
-              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.reliabilityDesc}</p>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpDataQuality.reliabilityDesc", "Distribución de las evaluaciones según su índice de confiabilidad agrupadas en rangos")}</p>
 
               {/* Stats summary row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                 {[
-                  { label: t.reliabilityMean, value: data.reliabilityDistribution.mean.toFixed(1) },
-                  { label: t.reliabilityMedian, value: data.reliabilityDistribution.median.toFixed(1) },
-                  { label: t.reliabilityMin, value: data.reliabilityDistribution.min.toFixed(1) },
-                  { label: t.reliabilityMax, value: data.reliabilityDistribution.max.toFixed(1) },
+                  { label: t("tpDataQuality.reliabilityMean", "Media"), value: data.reliabilityDistribution.mean.toFixed(1) },
+                  { label: t("tpDataQuality.reliabilityMedian", "Mediana"), value: data.reliabilityDistribution.median.toFixed(1) },
+                  { label: t("tpDataQuality.reliabilityMin", "Mínimo"), value: data.reliabilityDistribution.min.toFixed(1) },
+                  { label: t("tpDataQuality.reliabilityMax", "Máximo"), value: data.reliabilityDistribution.max.toFixed(1) },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center px-3 py-2 bg-gray-50 dark:bg-zinc-800/50 rounded-lg">
                     <div className="text-lg font-bold font-mono">{stat.value}</div>
@@ -809,10 +545,7 @@ export default function TPDataQualityPage() {
                   const totalCount = data.reliabilityDistribution.count;
                   const pct = totalCount > 0 ? Math.round((bucket.count / totalCount) * 1000) / 10 : 0;
                   const color = bucketColors[bucket.range] || "#8b5cf6";
-                  const labelObj = bucketLabels[bucket.range];
-                  const label = labelObj
-                    ? labelObj[lang as keyof typeof labelObj] || labelObj.es
-                    : bucket.range;
+                  const label = bucketLabels[bucket.range] || bucket.range;
 
                   return (
                     <motion.div
@@ -865,16 +598,16 @@ export default function TPDataQualityPage() {
               className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
             >
               <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-purple-500" /> {t.outlierStatsTitle}
+                <BarChart3 className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.outlierStatsTitle", "Estadísticas de Outliers")}
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
                 {[
-                  { label: t.outlierStatsMean, value: data.outlierStats.mean.toFixed(2) },
-                  { label: t.outlierStatsStdDev, value: data.outlierStats.stdDev.toFixed(2) },
-                  { label: t.outlierStatsThresholdHigh, value: data.outlierStats.thresholdHigh.toFixed(2) },
-                  { label: t.outlierStatsThresholdLow, value: data.outlierStats.thresholdLow.toFixed(2) },
-                  { label: t.outlierStatsTotalOutliers, value: data.outlierStats.totalOutliers.toString() },
+                  { label: t("tpDataQuality.outlierStatsMean", "Media EQ Total"), value: data.outlierStats.mean.toFixed(2) },
+                  { label: t("tpDataQuality.outlierStatsStdDev", "Desviación Estándar"), value: data.outlierStats.stdDev.toFixed(2) },
+                  { label: t("tpDataQuality.outlierStatsThresholdHigh", "Umbral Alto (μ+2σ)"), value: data.outlierStats.thresholdHigh.toFixed(2) },
+                  { label: t("tpDataQuality.outlierStatsThresholdLow", "Umbral Bajo (μ-2σ)"), value: data.outlierStats.thresholdLow.toFixed(2) },
+                  { label: t("tpDataQuality.outlierStatsTotalOutliers", "Total Outliers"), value: data.outlierStats.totalOutliers.toString() },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center px-3 py-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
                     <div className="text-xl font-bold font-mono">{stat.value}</div>
@@ -894,21 +627,21 @@ export default function TPDataQualityPage() {
               className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800"
             >
               <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-purple-500" /> {t.outliersTitle}
+                <AlertTriangle className="w-5 h-5 text-purple-500" /> {t("tpDataQuality.outliersTitle", "Registros Atípicos (Outliers)")}
               </h2>
-              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t.outliersDesc}</p>
+              <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpDataQuality.outliersDesc", "Evaluaciones con EQ Total fuera de ±2σ del promedio que requieren revisión")}</p>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wide text-[var(--rowi-muted)]">
-                      <th className="px-4 py-3 text-left font-semibold">{t.colSourceId}</th>
-                      <th className="px-4 py-3 text-left font-semibold">{t.colCountry}</th>
-                      <th className="px-4 py-3 text-right font-semibold">{t.colEqTotal}</th>
-                      <th className="px-4 py-3 text-right font-semibold">{t.colZScore}</th>
-                      <th className="px-4 py-3 text-center font-semibold">{t.colType}</th>
-                      <th className="px-4 py-3 text-left font-semibold">{t.colRole}</th>
-                      <th className="px-4 py-3 text-left font-semibold">{t.colBrainStyle}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t("tpDataQuality.colSourceId", "ID Fuente")}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t("tpDataQuality.colCountry", "País")}</th>
+                      <th className="px-4 py-3 text-right font-semibold">{t("tpDataQuality.colEqTotal", "EQ Total")}</th>
+                      <th className="px-4 py-3 text-right font-semibold">{t("tpDataQuality.colZScore", "Z-Score")}</th>
+                      <th className="px-4 py-3 text-center font-semibold">{t("tpDataQuality.colType", "Tipo")}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t("tpDataQuality.colRole", "Rol")}</th>
+                      <th className="px-4 py-3 text-left font-semibold">{t("tpDataQuality.colBrainStyle", "Brain Style")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -943,7 +676,7 @@ export default function TPDataQualityPage() {
                               ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                               : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                           }`}>
-                            {rec.type === "high" ? t.typeHigh : t.typeLow}
+                            {rec.type === "high" ? t("tpDataQuality.typeHigh", "Alto") : t("tpDataQuality.typeLow", "Bajo")}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-[var(--rowi-muted)] text-xs">{rec.jobRole || "—"}</td>
@@ -981,9 +714,9 @@ export default function TPDataQualityPage() {
       >
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t.infoTitle}</h3>
+          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t("tpDataQuality.infoTitle", "Análisis de Calidad de Datos TP")}</h3>
           <p className="text-sm text-purple-700 dark:text-purple-300">
-            {t.infoDesc}
+            {t("tpDataQuality.infoDesc", "Este módulo analiza la integridad de las evaluaciones SEI de Teleperformance. Los duplicados se detectan por coincidencia de ID fuente. Los outliers se calculan como registros con EQ Total fuera de ±2 desviaciones estándar. Todos los datos individuales están anonimizados.")}
           </p>
         </div>
       </motion.div>
@@ -994,13 +727,13 @@ export default function TPDataQualityPage() {
           href="/hub/admin/tp"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium"
         >
-          <ArrowLeft className="w-5 h-5" /> {t.navAlerts}
+          <ArrowLeft className="w-5 h-5" /> {t("tpDataQuality.navAlerts", "Alertas")}
         </Link>
         <Link
           href="/hub/admin/tp"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
         >
-          {t.navHub} <ArrowRight className="w-5 h-5" />
+          {t("tpDataQuality.navHub", "TP Hub")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

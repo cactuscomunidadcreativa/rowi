@@ -32,319 +32,6 @@ import {
 } from "@/domains/eq/lib/dictionary";
 
 /* =========================================================
-   Translations
-========================================================= */
-const translations = {
-  es: {
-    backToHub: "TP Hub",
-    badge: "Proceso de Selección",
-    pageTitle: "Selección y Contratación EQ",
-    pageSubtitle: "Evalúa candidatos contra benchmarks de rol y top performers. Calcula fit scores y recomienda decisiones de contratación.",
-    roleSelector: "Seleccionar Rol",
-    roleSelectorPlaceholder: "Elige un rol para evaluar candidatos...",
-    department: "Departamento",
-    idealEQ: "EQ Ideal",
-    minEQ: "EQ Mínimo",
-    candidatesFor: "Candidatos para",
-    noCandidates: "No hay candidatos para este rol",
-    fitScore: "Fit Score",
-    country: "País",
-    brainStyle: "Estilo Cerebral",
-    candidateDetail: "Detalle del Candidato",
-    competencyComparison: "Comparación de Competencias",
-    candidate: "Candidato",
-    benchmark: "Benchmark",
-    topPerformer: "Top Performer",
-    gapAnalysis: "Análisis de Brechas",
-    competency: "Competencia",
-    score: "Puntaje",
-    gap: "Brecha",
-    status: "Estado",
-    exceeds: "Supera",
-    meets: "Cumple",
-    below: "Debajo",
-    overallAssessment: "Evaluación General",
-    strengths: "Fortalezas",
-    developmentAreas: "Áreas de Desarrollo",
-    rankingTitle: "Ranking de Candidatos",
-    rank: "Pos",
-    name: "Nombre",
-    topStrength: "Mayor Fortaleza",
-    biggestGap: "Mayor Brecha",
-    aiRecommendation: "Recomendación IA",
-    hire: "CONTRATAR",
-    hireWithCoaching: "CONTRATAR con plan de coaching",
-    consider: "CONSIDERAR — revisar áreas de desarrollo",
-    notRecommended: "NO RECOMENDADO — perfil no cumple mínimos",
-    selectCandidate: "Selecciona un candidato para ver el análisis detallado",
-    infoTitle: "Datos de Selección TP",
-    infoDesc: "Esta herramienta utiliza benchmarks EQ por rol basados en datos reales de top performers de Teleperformance. Los fit scores son calculados con ponderación por competencia según la criticidad del rol. Todos los datos están anonimizados.",
-    navTeams: "Teams",
-    navEvolution: "Evolución",
-    compEL: "Alfabetización Emocional",
-    compRP: "Reconocer Patrones",
-    compACT: "Pensamiento Consecuente",
-    compNE: "Navegar Emociones",
-    compIM: "Motivación Intrínseca",
-    compOP: "Ejercer Optimismo",
-    compEMP: "Aumentar Empatía",
-    compNG: "Metas Nobles",
-    radarCandidate: "Candidato",
-    radarBenchmark: "Benchmark Rol",
-    radarTop: "Top Performer",
-    recommendedAction: "Acción Recomendada",
-    noRoleSelected: "Selecciona un rol para comenzar la evaluación de candidatos",
-    loading: "Cargando datos de benchmarks...",
-    errorLoading: "Error al cargar datos. Intenta de nuevo.",
-    nRoles: "roles encontrados",
-    participants: "participantes",
-    demoDataBanner: "Los candidatos mostrados son datos de demostración. Los benchmarks de rol están basados en datos reales de TP.",
-  },
-  en: {
-    backToHub: "TP Hub",
-    badge: "Selection Process",
-    pageTitle: "EQ Hiring & Selection",
-    pageSubtitle: "Evaluate candidates against role benchmarks and top performers. Calculate fit scores and recommend hiring decisions.",
-    roleSelector: "Select Role",
-    roleSelectorPlaceholder: "Choose a role to evaluate candidates...",
-    department: "Department",
-    idealEQ: "Ideal EQ",
-    minEQ: "Min EQ",
-    candidatesFor: "Candidates for",
-    noCandidates: "No candidates for this role",
-    fitScore: "Fit Score",
-    country: "Country",
-    brainStyle: "Brain Style",
-    candidateDetail: "Candidate Detail",
-    competencyComparison: "Competency Comparison",
-    candidate: "Candidate",
-    benchmark: "Benchmark",
-    topPerformer: "Top Performer",
-    gapAnalysis: "Gap Analysis",
-    competency: "Competency",
-    score: "Score",
-    gap: "Gap",
-    status: "Status",
-    exceeds: "Exceeds",
-    meets: "Meets",
-    below: "Below",
-    overallAssessment: "Overall Assessment",
-    strengths: "Strengths",
-    developmentAreas: "Development Areas",
-    rankingTitle: "Candidate Ranking",
-    rank: "Rank",
-    name: "Name",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    aiRecommendation: "AI Recommendation",
-    hire: "HIRE",
-    hireWithCoaching: "HIRE with coaching plan",
-    consider: "CONSIDER — review development areas",
-    notRecommended: "NOT RECOMMENDED — profile below minimums",
-    selectCandidate: "Select a candidate to view detailed analysis",
-    infoTitle: "TP Selection Data",
-    infoDesc: "This tool uses role-based EQ benchmarks from real Teleperformance top performer data. Fit scores are calculated with per-competency weighting based on role criticality. All data is anonymized.",
-    navTeams: "Teams",
-    navEvolution: "Evolution",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    radarCandidate: "Candidate",
-    radarBenchmark: "Role Benchmark",
-    radarTop: "Top Performer",
-    recommendedAction: "Recommended Action",
-    noRoleSelected: "Select a role to start evaluating candidates",
-    loading: "Loading benchmark data...",
-    errorLoading: "Error loading data. Please try again.",
-    nRoles: "roles found",
-    participants: "participants",
-    demoDataBanner: "Candidates shown are demonstration data. Role benchmarks are based on real TP data.",
-  },
-  pt: {
-    backToHub: "TP Hub",
-    badge: "Selection Process",
-    pageTitle: "EQ Hiring & Selection",
-    pageSubtitle: "Evaluate candidates against role benchmarks and top performers. Calculate fit scores and recommend hiring decisions.",
-    roleSelector: "Select Role",
-    roleSelectorPlaceholder: "Choose a role to evaluate candidates...",
-    department: "Department",
-    idealEQ: "Ideal EQ",
-    minEQ: "Min EQ",
-    candidatesFor: "Candidates for",
-    noCandidates: "No candidates for this role",
-    fitScore: "Fit Score",
-    country: "Country",
-    brainStyle: "Brain Style",
-    candidateDetail: "Candidate Detail",
-    competencyComparison: "Competency Comparison",
-    candidate: "Candidate",
-    benchmark: "Benchmark",
-    topPerformer: "Top Performer",
-    gapAnalysis: "Gap Analysis",
-    competency: "Competency",
-    score: "Score",
-    gap: "Gap",
-    status: "Status",
-    exceeds: "Exceeds",
-    meets: "Meets",
-    below: "Below",
-    overallAssessment: "Overall Assessment",
-    strengths: "Strengths",
-    developmentAreas: "Development Areas",
-    rankingTitle: "Candidate Ranking",
-    rank: "Rank",
-    name: "Name",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    aiRecommendation: "AI Recommendation",
-    hire: "HIRE",
-    hireWithCoaching: "HIRE with coaching plan",
-    consider: "CONSIDER — review development areas",
-    notRecommended: "NOT RECOMMENDED — profile below minimums",
-    selectCandidate: "Select a candidate to view detailed analysis",
-    infoTitle: "TP Selection Data",
-    infoDesc: "This tool uses role-based EQ benchmarks from real Teleperformance top performer data. Fit scores are calculated with per-competency weighting based on role criticality. All data is anonymized.",
-    navTeams: "Teams",
-    navEvolution: "Evolution",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    radarCandidate: "Candidate",
-    radarBenchmark: "Role Benchmark",
-    radarTop: "Top Performer",
-    recommendedAction: "Recommended Action",
-    noRoleSelected: "Select a role to start evaluating candidates",
-    loading: "Loading benchmark data...",
-    errorLoading: "Error loading data. Please try again.",
-    nRoles: "roles found",
-    participants: "participants",
-    demoDataBanner: "Candidates shown are demonstration data. Role benchmarks are based on real TP data.",
-  },
-  it: {
-    backToHub: "TP Hub",
-    badge: "Selection Process",
-    pageTitle: "EQ Hiring & Selection",
-    pageSubtitle: "Evaluate candidates against role benchmarks and top performers. Calculate fit scores and recommend hiring decisions.",
-    roleSelector: "Select Role",
-    roleSelectorPlaceholder: "Choose a role to evaluate candidates...",
-    department: "Department",
-    idealEQ: "Ideal EQ",
-    minEQ: "Min EQ",
-    candidatesFor: "Candidates for",
-    noCandidates: "No candidates for this role",
-    fitScore: "Fit Score",
-    country: "Country",
-    brainStyle: "Brain Style",
-    candidateDetail: "Candidate Detail",
-    competencyComparison: "Competency Comparison",
-    candidate: "Candidate",
-    benchmark: "Benchmark",
-    topPerformer: "Top Performer",
-    gapAnalysis: "Gap Analysis",
-    competency: "Competency",
-    score: "Score",
-    gap: "Gap",
-    status: "Status",
-    exceeds: "Exceeds",
-    meets: "Meets",
-    below: "Below",
-    overallAssessment: "Overall Assessment",
-    strengths: "Strengths",
-    developmentAreas: "Development Areas",
-    rankingTitle: "Candidate Ranking",
-    rank: "Rank",
-    name: "Name",
-    topStrength: "Top Strength",
-    biggestGap: "Biggest Gap",
-    aiRecommendation: "AI Recommendation",
-    hire: "HIRE",
-    hireWithCoaching: "HIRE with coaching plan",
-    consider: "CONSIDER — review development areas",
-    notRecommended: "NOT RECOMMENDED — profile below minimums",
-    selectCandidate: "Select a candidate to view detailed analysis",
-    infoTitle: "TP Selection Data",
-    infoDesc: "This tool uses role-based EQ benchmarks from real Teleperformance top performer data. Fit scores are calculated with per-competency weighting based on role criticality. All data is anonymized.",
-    navTeams: "Teams",
-    navEvolution: "Evolution",
-    compEL: "Emotional Literacy",
-    compRP: "Recognize Patterns",
-    compACT: "Consequential Thinking",
-    compNE: "Navigate Emotions",
-    compIM: "Intrinsic Motivation",
-    compOP: "Exercise Optimism",
-    compEMP: "Increase Empathy",
-    compNG: "Noble Goals",
-    radarCandidate: "Candidate",
-    radarBenchmark: "Role Benchmark",
-    radarTop: "Top Performer",
-    recommendedAction: "Recommended Action",
-    noRoleSelected: "Select a role to start evaluating candidates",
-    loading: "Loading benchmark data...",
-    errorLoading: "Error loading data. Please try again.",
-    nRoles: "roles found",
-    participants: "participants",
-    demoDataBanner: "Candidates shown are demonstration data. Role benchmarks are based on real TP data.",
-  },
-
-};
-
-/* =========================================================
-   AI recommendation builders (per-language, interpolated)
-========================================================= */
-const RECOMMENDATIONS = {
-  es: {
-    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
-      `Excelente ajuste para ${role}. Supera el benchmark en ${exceeds || "todas las competencias"} que son críticas para el rol. ${dev ? `Desarrollo menor en ${dev}.` : "Sin brechas significativas."} EQ total (${eqTotal}) supera el ideal del rol (${idealEQ}).`,
-    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
-      `Buen ajuste para ${role}. ${exceeds ? `Fortalezas en ${exceeds}.` : ""} ${dev ? `Desarrollo necesario en ${dev}.` : ""} EQ total (${eqTotal}) ${meetsMin ? "cumple" : "no alcanza"} el mínimo del rol (${minEQ}).`,
-    moderate: (role: string, exceeds: string, dev: string) =>
-      `Ajuste moderado para ${role}. Brechas notables en ${dev || "varias competencias"}. ${exceeds ? `Potencial en ${exceeds}.` : ""} Requiere evaluación adicional y plan de desarrollo intensivo.`,
-    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
-      `Ajuste débil para ${role}. Brechas significativas en ${dev || "múltiples competencias"}. EQ total (${eqTotal}) debajo del mínimo del rol (${minEQ}). No se recomienda para esta posición.`,
-  },
-  en: {
-    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
-      `Excellent fit for ${role}. Exceeds benchmark in ${exceeds || "all competencies"} which are critical for the role. ${dev ? `Minor development in ${dev}.` : "No significant gaps."} Total EQ (${eqTotal}) exceeds role ideal (${idealEQ}).`,
-    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
-      `Good fit for ${role}. ${exceeds ? `Strengths in ${exceeds}.` : ""} ${dev ? `Development needed in ${dev}.` : ""} Total EQ (${eqTotal}) ${meetsMin ? "meets" : "falls below"} role minimum (${minEQ}).`,
-    moderate: (role: string, exceeds: string, dev: string) =>
-      `Moderate fit for ${role}. Notable gaps in ${dev || "several competencies"}. ${exceeds ? `Potential in ${exceeds}.` : ""} Requires additional evaluation and intensive development plan.`,
-    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
-      `Weak fit for ${role}. Significant gaps in ${dev || "multiple competencies"}. Total EQ (${eqTotal}) below role minimum (${minEQ}). Not recommended for this position.`,
-  },
-  pt: {
-    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
-      `Ótimo ajuste para ${role}. Supera o benchmark em ${exceeds || "todas as competências"} que são críticas para o cargo. ${dev ? `Desenvolvimento menor em ${dev}.` : "Sem lacunas significativas."} EQ total (${eqTotal}) supera o ideal do cargo (${idealEQ}).`,
-    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
-      `Bom ajuste para ${role}. ${exceeds ? `Pontos fortes em ${exceeds}.` : ""} ${dev ? `Desenvolvimento necessário em ${dev}.` : ""} EQ total (${eqTotal}) ${meetsMin ? "atende" : "não atinge"} o mínimo do cargo (${minEQ}).`,
-    moderate: (role: string, exceeds: string, dev: string) =>
-      `Ajuste moderado para ${role}. Lacunas notáveis em ${dev || "várias competências"}. ${exceeds ? `Potencial em ${exceeds}.` : ""} Requer avaliação adicional e plano de desenvolvimento intensivo.`,
-    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
-      `Ajuste fraco para ${role}. Lacunas significativas em ${dev || "múltiplas competências"}. EQ total (${eqTotal}) abaixo do mínimo do cargo (${minEQ}). Não recomendado para esta posição.`,
-  },
-  it: {
-    excellent: (role: string, exceeds: string, dev: string, eqTotal: number, idealEQ: number) =>
-      `Ottima corrispondenza per ${role}. Supera il benchmark in ${exceeds || "tutte le competenze"} che sono critiche per il ruolo. ${dev ? `Sviluppo minore in ${dev}.` : "Nessun divario significativo."} EQ totale (${eqTotal}) supera l'ideale del ruolo (${idealEQ}).`,
-    good: (role: string, exceeds: string, dev: string, eqTotal: number, meetsMin: boolean, minEQ: number) =>
-      `Buona corrispondenza per ${role}. ${exceeds ? `Punti di forza in ${exceeds}.` : ""} ${dev ? `Sviluppo necessario in ${dev}.` : ""} EQ totale (${eqTotal}) ${meetsMin ? "soddisfa" : "non raggiunge"} il minimo del ruolo (${minEQ}).`,
-    moderate: (role: string, exceeds: string, dev: string) =>
-      `Corrispondenza moderata per ${role}. Divari notevoli in ${dev || "diverse competenze"}. ${exceeds ? `Potenziale in ${exceeds}.` : ""} Richiede una valutazione aggiuntiva e un piano di sviluppo intensivo.`,
-    weak: (role: string, dev: string, eqTotal: number, minEQ: number) =>
-      `Corrispondenza debole per ${role}. Divari significativi in ${dev || "molteplici competenze"}. EQ totale (${eqTotal}) inferiore al minimo del ruolo (${minEQ}). Non raccomandato per questa posizione.`,
-  },
-};
-
-/* =========================================================
    Constants & Types
 ========================================================= */
 const TP_BENCHMARK_ID = "tp-all-assessments-2025";
@@ -424,6 +111,18 @@ interface RoleBenchmark {
 const COMP_TKEYS: Record<CompKey, string> = {
   EL: "compEL", RP: "compRP", ACT: "compACT", NE: "compNE",
   IM: "compIM", OP: "compOP", EMP: "compEMP", NG: "compNG",
+};
+
+// Spanish fallbacks for competency labels (used as the t() fallback).
+const COMP_FALLBACKS_ES: Record<CompKey, string> = {
+  EL: "Alfabetización Emocional",
+  RP: "Reconocer Patrones",
+  ACT: "Pensamiento Consecuente",
+  NE: "Navegar Emociones",
+  IM: "Motivación Intrínseca",
+  OP: "Ejercer Optimismo",
+  EMP: "Aumentar Empatía",
+  NG: "Metas Nobles",
 };
 
 // Default even weights when we don't have role-specific weighting
@@ -573,8 +272,7 @@ function FitGauge({ score }: { score: number }) {
    Main Page
 ========================================================= */
 export default function TPSelectionPage() {
-  const { lang } = useI18n();
-  const t = translations[lang as keyof typeof translations] || translations.en;
+  const { lang, t } = useI18n();
 
   /* ---- API state ---- */
   const [topPerformers, setTopPerformers] = useState<any[]>([]);
@@ -701,6 +399,16 @@ export default function TPSelectionPage() {
   const selectedCandidate = roleCandidates.find((c) => c.id === selectedCandidateId);
   const compLabelsShort = COMP_KEYS.map((key) => key);
 
+  // Translate a competency key (EL, RP, ...) to its localized label.
+  const compLabel = (key: CompKey): string =>
+    t(`tpSelection.${COMP_TKEYS[key]}`, COMP_FALLBACKS_ES[key]);
+
+  // Translate a gap status (exceeds / meets / below) to its localized label.
+  const statusLabel = (status: "exceeds" | "meets" | "below"): string => {
+    const fallback = status === "exceeds" ? "Supera" : status === "meets" ? "Cumple" : "Debajo";
+    return t(`tpSelection.${status}`, fallback);
+  };
+
   const gapData = useMemo(() => {
     if (!selectedCandidate || !selectedRole) return [];
     return COMP_KEYS.map((key) => {
@@ -720,28 +428,77 @@ export default function TPSelectionPage() {
     const fit = cand.fitScore;
     const exceedsList = strengths.map((s) => s.key).join(", ");
     const devList = devAreas.map((d) => d.key).join(", ");
-    const rec = RECOMMENDATIONS[lang as keyof typeof RECOMMENDATIONS] || RECOMMENDATIONS.en;
+    const role = selectedRole.displayName;
     if (fit >= 90) {
+      const exceeds = exceedsList || t("tpSelection.recAllCompetencies", "todas las competencias");
+      const devClause = devList
+        ? t("tpSelection.recExcellentDev", "Desarrollo menor en {dev}.").replace("{dev}", devList)
+        : t("tpSelection.recExcellentNoDev", "Sin brechas significativas.");
       return {
-        text: rec.excellent(selectedRole.displayName, exceedsList, devList, cand.eqTotal, selectedRole.idealEQ),
-        action: t.hire,
+        text: t(
+          "tpSelection.recExcellent",
+          "Excelente ajuste para {role}. Supera el benchmark en {exceeds} que son críticas para el rol. {devClause} EQ total ({eqTotal}) supera el ideal del rol ({idealEQ}).",
+        )
+          .replace("{role}", role)
+          .replace("{exceeds}", exceeds)
+          .replace("{devClause}", devClause)
+          .replace("{eqTotal}", String(cand.eqTotal))
+          .replace("{idealEQ}", String(selectedRole.idealEQ)),
+        action: t("tpSelection.hire", "CONTRATAR"),
       };
     }
     if (fit >= 75) {
+      const exceedsClause = exceedsList
+        ? t("tpSelection.recGoodStrengths", "Fortalezas en {exceeds}.").replace("{exceeds}", exceedsList)
+        : "";
+      const devClause = devList
+        ? t("tpSelection.recGoodDev", "Desarrollo necesario en {dev}.").replace("{dev}", devList)
+        : "";
+      const meetsClause =
+        cand.eqTotal >= selectedRole.minEQ
+          ? t("tpSelection.recMeetsMin", "cumple")
+          : t("tpSelection.recBelowMin", "no alcanza");
       return {
-        text: rec.good(selectedRole.displayName, exceedsList, devList, cand.eqTotal, cand.eqTotal >= selectedRole.minEQ, selectedRole.minEQ),
-        action: t.hireWithCoaching,
+        text: t(
+          "tpSelection.recGood",
+          "Buen ajuste para {role}. {exceedsClause} {devClause} EQ total ({eqTotal}) {meetsClause} el mínimo del rol ({minEQ}).",
+        )
+          .replace("{role}", role)
+          .replace("{exceedsClause}", exceedsClause)
+          .replace("{devClause}", devClause)
+          .replace("{eqTotal}", String(cand.eqTotal))
+          .replace("{meetsClause}", meetsClause)
+          .replace("{minEQ}", String(selectedRole.minEQ)),
+        action: t("tpSelection.hireWithCoaching", "CONTRATAR con plan de coaching"),
       };
     }
     if (fit >= 60) {
+      const dev = devList || t("tpSelection.recSeveralCompetencies", "varias competencias");
+      const potentialClause = exceedsList
+        ? t("tpSelection.recModeratePotential", "Potencial en {exceeds}.").replace("{exceeds}", exceedsList)
+        : "";
       return {
-        text: rec.moderate(selectedRole.displayName, exceedsList, devList),
-        action: t.consider,
+        text: t(
+          "tpSelection.recModerate",
+          "Ajuste moderado para {role}. Brechas notables en {dev}. {potentialClause} Requiere evaluación adicional y plan de desarrollo intensivo.",
+        )
+          .replace("{role}", role)
+          .replace("{dev}", dev)
+          .replace("{potentialClause}", potentialClause),
+        action: t("tpSelection.consider", "CONSIDERAR — revisar áreas de desarrollo"),
       };
     }
+    const dev = devList || t("tpSelection.recMultipleCompetencies", "múltiples competencias");
     return {
-      text: rec.weak(selectedRole.displayName, devList, cand.eqTotal, selectedRole.minEQ),
-      action: t.notRecommended,
+      text: t(
+        "tpSelection.recWeak",
+        "Ajuste débil para {role}. Brechas significativas en {dev}. EQ total ({eqTotal}) debajo del mínimo del rol ({minEQ}). No se recomienda para esta posición.",
+      )
+        .replace("{role}", role)
+        .replace("{dev}", dev)
+        .replace("{eqTotal}", String(cand.eqTotal))
+        .replace("{minEQ}", String(selectedRole.minEQ)),
+      action: t("tpSelection.notRecommended", "NO RECOMENDADO — perfil no cumple mínimos"),
     };
   }
 
@@ -753,18 +510,18 @@ export default function TPSelectionPage() {
       <div className="space-y-8">
         <div>
           <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+            <ArrowLeft className="w-4 h-4" /> {t("tpSelection.backToHub", "TP Hub")}
           </Link>
           <div className="flex flex-col gap-3">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 w-fit">
-              <Sparkles className="w-3 h-3" /> {t.badge}
+              <Sparkles className="w-3 h-3" /> {t("tpSelection.badge", "Proceso de Selección")}
             </span>
-            <h1 className="text-3xl font-bold">{t.pageTitle}</h1>
+            <h1 className="text-3xl font-bold">{t("tpSelection.pageTitle", "Selección y Contratación EQ")}</h1>
           </div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-zinc-800 flex flex-col items-center justify-center gap-4">
           <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-          <p className="text-[var(--rowi-muted)]">{t.loading}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpSelection.loading", "Cargando datos de benchmarks...")}</p>
         </div>
       </div>
     );
@@ -775,14 +532,14 @@ export default function TPSelectionPage() {
       {/* Header */}
       <div>
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> {t.backToHub}
+          <ArrowLeft className="w-4 h-4" /> {t("tpSelection.backToHub", "TP Hub")}
         </Link>
         <div className="flex flex-col gap-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-500 w-fit">
-            <Sparkles className="w-3 h-3" /> {t.badge}
+            <Sparkles className="w-3 h-3" /> {t("tpSelection.badge", "Proceso de Selección")}
           </span>
-          <h1 className="text-3xl font-bold">{t.pageTitle}</h1>
-          <p className="text-[var(--rowi-muted)] max-w-2xl">{t.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold">{t("tpSelection.pageTitle", "Selección y Contratación EQ")}</h1>
+          <p className="text-[var(--rowi-muted)] max-w-2xl">{t("tpSelection.pageSubtitle", "Evalúa candidatos contra benchmarks de rol y top performers. Calcula fit scores y recomienda decisiones de contratación.")}</p>
         </div>
       </div>
 
@@ -790,17 +547,17 @@ export default function TPSelectionPage() {
       {error && (
         <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          <span>{t.errorLoading}</span>
+          <span>{t("tpSelection.errorLoading", "Error al cargar datos. Intenta de nuevo.")}</span>
         </div>
       )}
 
       {/* Role Selector */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Target className="w-5 h-5 text-purple-500" /> {t.roleSelector}
+          <Target className="w-5 h-5 text-purple-500" /> {t("tpSelection.roleSelector", "Seleccionar Rol")}
           {roleBenchmarks.length > 0 && (
             <span className="text-xs font-normal text-[var(--rowi-muted)] ml-2">
-              ({roleBenchmarks.length} {t.nRoles})
+              ({roleBenchmarks.length} {t("tpSelection.nRoles", "roles encontrados")})
             </span>
           )}
         </h2>
@@ -810,10 +567,10 @@ export default function TPSelectionPage() {
             onChange={(e) => { setSelectedRoleId(e.target.value); setSelectedCandidateId(""); }}
             className="w-full appearance-none bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
           >
-            <option value="">{t.roleSelectorPlaceholder}</option>
+            <option value="">{t("tpSelection.roleSelectorPlaceholder", "Elige un rol para evaluar candidatos...")}</option>
             {roleBenchmarks.map((role) => (
               <option key={role.id} value={role.id}>
-                {role.displayName} — {role.count} {t.participants}
+                {role.displayName} — {role.count} {t("tpSelection.participants", "participantes")}
               </option>
             ))}
           </select>
@@ -822,15 +579,15 @@ export default function TPSelectionPage() {
         {selectedRole && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 grid grid-cols-3 gap-4">
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
-              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.participants}</div>
+              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t("tpSelection.participants", "participantes")}</div>
               <div className="font-bold text-purple-600">{selectedRole.count}</div>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
-              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.idealEQ}</div>
+              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t("tpSelection.idealEQ", "EQ Ideal")}</div>
               <div className="font-bold text-blue-600">{selectedRole.idealEQ}</div>
             </div>
             <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 text-center">
-              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t.minEQ}</div>
+              <div className="text-xs text-[var(--rowi-muted)] mb-1">{t("tpSelection.minEQ", "EQ Mínimo")}</div>
               <div className="font-bold text-amber-600">{selectedRole.minEQ}</div>
             </div>
           </motion.div>
@@ -841,23 +598,23 @@ export default function TPSelectionPage() {
       {!selectedRole && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-zinc-800 text-center">
           <UserCheck className="w-12 h-12 text-[var(--rowi-muted)] mx-auto mb-4 opacity-40" />
-          <p className="text-[var(--rowi-muted)]">{t.noRoleSelected}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpSelection.noRoleSelected", "Selecciona un rol para comenzar la evaluación de candidatos")}</p>
         </motion.div>
       )}
 
       {/* Candidates for Role */}
       {selectedRole && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t.candidatesFor} {selectedRole.displayName}</h2>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><UserCheck className="w-5 h-5 text-purple-500" /> {t("tpSelection.candidatesFor", "Candidatos para")} {selectedRole.displayName}</h2>
 
           {/* Demo Data Banner */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 mb-4">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>{t.demoDataBanner}</span>
+            <span>{t("tpSelection.demoDataBanner", "Los candidatos mostrados son datos de demostración. Los benchmarks de rol están basados en datos reales de TP.")}</span>
           </div>
 
           {roleCandidates.length === 0 ? (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 text-center border border-gray-100 dark:border-zinc-800"><p className="text-[var(--rowi-muted)]">{t.noCandidates}</p></div>
+            <div className="bg-white dark:bg-zinc-900 rounded-xl p-8 text-center border border-gray-100 dark:border-zinc-800"><p className="text-[var(--rowi-muted)]">{t("tpSelection.noCandidates", "No hay candidatos para este rol")}</p></div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {roleCandidates.map((cand, i) => (
@@ -871,7 +628,7 @@ export default function TPSelectionPage() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${getBrainStyleColor(cand.brainStyle)}15`, color: getBrainStyleColor(cand.brainStyle) }}><Brain className="w-3 h-3" /> {getBrainStyleEmoji(cand.brainStyle)} {getBrainStyleLabel(cand.brainStyle, lang)}</span>
-                    <span className={`text-xs font-semibold ${fitColor(cand.fitScore)}`}>{t.fitScore}: {cand.fitScore.toFixed(1)}%</span>
+                    <span className={`text-xs font-semibold ${fitColor(cand.fitScore)}`}>{t("tpSelection.fitScore", "Fit Score")}: {cand.fitScore.toFixed(1)}%</span>
                   </div>
                 </motion.button>
               ))}
@@ -885,7 +642,7 @@ export default function TPSelectionPage() {
         {selectedCandidate && selectedRole && (
           <motion.div key={selectedCandidate.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="space-y-6">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
-              <h2 className="text-xl font-bold mb-1 flex items-center gap-2"><Award className="w-5 h-5 text-purple-500" /> {t.candidateDetail}</h2>
+              <h2 className="text-xl font-bold mb-1 flex items-center gap-2"><Award className="w-5 h-5 text-purple-500" /> {t("tpSelection.candidateDetail", "Detalle del Candidato")}</h2>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-4">
                 <div className="flex-1">
                   <div className="text-2xl font-bold">{selectedCandidate.name}</div>
@@ -899,7 +656,7 @@ export default function TPSelectionPage() {
                   <FitGauge score={selectedCandidate.fitScore} />
                   <div className="text-center">
                     <div className={`text-2xl font-bold ${fitColor(selectedCandidate.fitScore)}`}>{selectedCandidate.fitScore.toFixed(1)}%</div>
-                    <div className="text-xs text-[var(--rowi-muted)]">{t.fitScore}</div>
+                    <div className="text-xs text-[var(--rowi-muted)]">{t("tpSelection.fitScore", "Fit Score")}</div>
                   </div>
                 </div>
               </div>
@@ -907,27 +664,27 @@ export default function TPSelectionPage() {
 
             <div className="grid lg:grid-cols-2 gap-6">
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-purple-500" /> {t.competencyComparison}</h3>
-                <RadarChart candidateData={Object.fromEntries(COMP_KEYS.map((k) => [k, selectedCandidate[k]])) as Record<CompKey, number>} benchmarkData={selectedRole.competencies} topData={selectedRole.topPerformer} labels={compLabelsShort} legendCandidate={t.radarCandidate} legendBenchmark={t.radarBenchmark} legendTop={t.radarTop} />
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-purple-500" /> {t("tpSelection.competencyComparison", "Comparación de Competencias")}</h3>
+                <RadarChart candidateData={Object.fromEntries(COMP_KEYS.map((k) => [k, selectedCandidate[k]])) as Record<CompKey, number>} benchmarkData={selectedRole.competencies} topData={selectedRole.topPerformer} labels={compLabelsShort} legendCandidate={t("tpSelection.radarCandidate", "Candidato")} legendBenchmark={t("tpSelection.radarBenchmark", "Benchmark Rol")} legendTop={t("tpSelection.radarTop", "Top Performer")} />
               </motion.div>
 
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-500" /> {t.gapAnalysis}</h3>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-purple-500" /> {t("tpSelection.gapAnalysis", "Análisis de Brechas")}</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100 dark:border-zinc-800">
-                        <th className="text-left py-2 text-[var(--rowi-muted)] font-medium">{t.competency}</th>
-                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t.candidate}</th>
-                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t.benchmark}</th>
-                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t.gap}</th>
-                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t.status}</th>
+                        <th className="text-left py-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.competency", "Competencia")}</th>
+                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.candidate", "Candidato")}</th>
+                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.benchmark", "Benchmark")}</th>
+                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.gap", "Brecha")}</th>
+                        <th className="text-center py-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.status", "Estado")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {gapData.map((row, i) => (
                         <motion.tr key={row.key} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="border-b border-gray-50 dark:border-zinc-800/50">
-                          <td className="py-2.5 font-medium">{t[COMP_TKEYS[row.key] as keyof typeof t]}</td>
+                          <td className="py-2.5 font-medium">{compLabel(row.key)}</td>
                           <td className="py-2.5 text-center font-mono">{row.candidateVal.toFixed(1)}</td>
                           <td className="py-2.5 text-center font-mono text-blue-500">{row.benchVal.toFixed(1)}</td>
                           <td className="py-2.5 text-center font-mono">
@@ -938,7 +695,7 @@ export default function TPSelectionPage() {
                               {row.status === "exceeds" && <TrendingUp className="w-3 h-3" />}
                               {row.status === "meets" && <Minus className="w-3 h-3" />}
                               {row.status === "below" && <TrendingDown className="w-3 h-3" />}
-                              {t[row.status]}
+                              {statusLabel(row.status)}
                             </span>
                           </td>
                         </motion.tr>
@@ -951,28 +708,28 @@ export default function TPSelectionPage() {
 
             <div className="grid sm:grid-cols-2 gap-4">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-5 border border-emerald-200 dark:border-emerald-800">
-                <h4 className="font-bold text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2"><Star className="w-4 h-4" /> {t.strengths}</h4>
+                <h4 className="font-bold text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2"><Star className="w-4 h-4" /> {t("tpSelection.strengths", "Fortalezas")}</h4>
                 {strengths.length > 0 ? (
                   <ul className="space-y-1.5">{strengths.map((s) => (
-                    <li key={s.key} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2"><TrendingUp className="w-3.5 h-3.5 flex-shrink-0" /><span className="font-medium">{t[COMP_TKEYS[s.key] as keyof typeof t]}</span><span className="font-mono text-xs ml-auto">+{s.gap.toFixed(1)}</span></li>
+                    <li key={s.key} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2"><TrendingUp className="w-3.5 h-3.5 flex-shrink-0" /><span className="font-medium">{compLabel(s.key)}</span><span className="font-mono text-xs ml-auto">+{s.gap.toFixed(1)}</span></li>
                   ))}</ul>
                 ) : (<p className="text-sm text-emerald-600 dark:text-emerald-400 opacity-60">--</p>)}
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-red-50 dark:bg-red-900/20 rounded-xl p-5 border border-red-200 dark:border-red-800">
-                <h4 className="font-bold text-red-700 dark:text-red-300 mb-3 flex items-center gap-2"><TrendingDown className="w-4 h-4" /> {t.developmentAreas}</h4>
+                <h4 className="font-bold text-red-700 dark:text-red-300 mb-3 flex items-center gap-2"><TrendingDown className="w-4 h-4" /> {t("tpSelection.developmentAreas", "Áreas de Desarrollo")}</h4>
                 {devAreas.length > 0 ? (
                   <ul className="space-y-1.5">{devAreas.map((d) => (
-                    <li key={d.key} className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2"><TrendingDown className="w-3.5 h-3.5 flex-shrink-0" /><span className="font-medium">{t[COMP_TKEYS[d.key] as keyof typeof t]}</span><span className="font-mono text-xs ml-auto">{d.gap.toFixed(1)}</span></li>
+                    <li key={d.key} className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2"><TrendingDown className="w-3.5 h-3.5 flex-shrink-0" /><span className="font-medium">{compLabel(d.key)}</span><span className="font-mono text-xs ml-auto">{d.gap.toFixed(1)}</span></li>
                   ))}</ul>
                 ) : (<p className="text-sm text-red-600 dark:text-red-400 opacity-60">--</p>)}
               </motion.div>
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`rounded-2xl p-6 border ${fitBgLight(selectedCandidate.fitScore)}`}>
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2"><Bot className="w-5 h-5 text-purple-500" /> {t.aiRecommendation}</h3>
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2"><Bot className="w-5 h-5 text-purple-500" /> {t("tpSelection.aiRecommendation", "Recomendación IA")}</h3>
               <p className="text-sm leading-relaxed mb-4">{recommendation.text}</p>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-[var(--rowi-muted)]">{t.recommendedAction}:</span>
+                <span className="text-xs text-[var(--rowi-muted)]">{t("tpSelection.recommendedAction", "Acción Recomendada")}:</span>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${selectedCandidate.fitScore >= 90 ? "bg-emerald-500 text-white" : selectedCandidate.fitScore >= 75 ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300" : selectedCandidate.fitScore >= 60 ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"}`}>
                   {selectedCandidate.fitScore >= 90 && <UserCheck className="w-3.5 h-3.5" />}
                   {recommendation.action}
@@ -987,31 +744,31 @@ export default function TPSelectionPage() {
       {selectedRole && roleCandidates.length > 0 && !selectedCandidate && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800 text-center">
           <Award className="w-10 h-10 text-[var(--rowi-muted)] mx-auto mb-3 opacity-40" />
-          <p className="text-[var(--rowi-muted)]">{t.selectCandidate}</p>
+          <p className="text-[var(--rowi-muted)]">{t("tpSelection.selectCandidate", "Selecciona un candidato para ver el análisis detallado")}</p>
         </motion.div>
       )}
 
       {/* Ranking Table */}
       {selectedRole && roleCandidates.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-zinc-800">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Star className="w-5 h-5 text-purple-500" /> {t.rankingTitle}</h2>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Star className="w-5 h-5 text-purple-500" /> {t("tpSelection.rankingTitle", "Ranking de Candidatos")}</h2>
 
           {/* Demo Data Banner */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 mb-4">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>{t.demoDataBanner}</span>
+            <span>{t("tpSelection.demoDataBanner", "Los candidatos mostrados son datos de demostración. Los benchmarks de rol están basados en datos reales de TP.")}</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-zinc-700">
-                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.rank}</th>
-                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.name}</th>
-                  <th className="text-center py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.fitScore}</th>
-                  <th className="text-center py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.brainStyle}</th>
-                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.topStrength}</th>
-                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t.biggestGap}</th>
+                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.rank", "Pos")}</th>
+                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.name", "Nombre")}</th>
+                  <th className="text-center py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.fitScore", "Fit Score")}</th>
+                  <th className="text-center py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.brainStyle", "Estilo Cerebral")}</th>
+                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.topStrength", "Mayor Fortaleza")}</th>
+                  <th className="text-left py-3 px-2 text-[var(--rowi-muted)] font-medium">{t("tpSelection.biggestGap", "Mayor Brecha")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1037,10 +794,10 @@ export default function TPSelectionPage() {
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: `${getBrainStyleColor(cand.brainStyle)}15`, color: getBrainStyleColor(cand.brainStyle) }}>{getBrainStyleEmoji(cand.brainStyle)} {getBrainStyleLabel(cand.brainStyle, lang)}</span>
                       </td>
                       <td className="py-3 px-2">
-                        <span className="text-emerald-500 text-xs font-medium">{t[COMP_TKEYS[bestGap.key as CompKey] as keyof typeof t]} (+{bestGap.gap.toFixed(1)})</span>
+                        <span className="text-emerald-500 text-xs font-medium">{compLabel(bestGap.key as CompKey)} (+{bestGap.gap.toFixed(1)})</span>
                       </td>
                       <td className="py-3 px-2">
-                        <span className={`text-xs font-medium ${worstGap.gap < -2 ? "text-red-500" : "text-amber-500"}`}>{t[COMP_TKEYS[worstGap.key as CompKey] as keyof typeof t]} ({worstGap.gap.toFixed(1)})</span>
+                        <span className={`text-xs font-medium ${worstGap.gap < -2 ? "text-red-500" : "text-amber-500"}`}>{compLabel(worstGap.key as CompKey)} ({worstGap.gap.toFixed(1)})</span>
                       </td>
                     </motion.tr>
                   );
@@ -1055,18 +812,18 @@ export default function TPSelectionPage() {
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-6 flex gap-4">
         <Shield className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t.infoTitle}</h3>
-          <p className="text-sm text-purple-700 dark:text-purple-300">{t.infoDesc}</p>
+          <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t("tpSelection.infoTitle", "Datos de Selección TP")}</h3>
+          <p className="text-sm text-purple-700 dark:text-purple-300">{t("tpSelection.infoDesc", "Esta herramienta utiliza benchmarks EQ por rol basados en datos reales de top performers de Teleperformance. Los fit scores son calculados con ponderación por competencia según la criticidad del rol. Todos los datos están anonimizados.")}</p>
         </div>
       </motion.div>
 
       {/* Navigation Footer */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t border-gray-200 dark:border-zinc-800">
         <Link href="/hub/admin/tp/teams" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
-          <ArrowLeft className="w-5 h-5" /> {t.navTeams}
+          <ArrowLeft className="w-5 h-5" /> {t("tpSelection.navTeams", "Teams")}
         </Link>
         <Link href="/hub/admin/tp/evolution" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity">
-          {t.navEvolution} <ArrowRight className="w-5 h-5" />
+          {t("tpSelection.navEvolution", "Evolución")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>
     </div>

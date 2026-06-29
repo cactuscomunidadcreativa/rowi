@@ -38,6 +38,7 @@ import {
 } from "@/lib/practice/practiceEngine";
 import { parseRubric, scorePracticeSession } from "@/lib/practice/practiceScore";
 import { completePractice } from "@/lib/practice/practiceComplete";
+import { resolveScenarioView } from "@/lib/practice/scenarioLocale";
 import type { SeiKey } from "@/lib/vital-signs/catalog";
 
 const SEI_KEYS: SeiKey[] = ["EL", "RP", "ACT", "NE", "IM", "OP", "EMP", "NG"];
@@ -77,20 +78,25 @@ export async function GET(req: NextRequest) {
     }
     const url = new URL(req.url);
 
-    // Lista de escenarios para elegir.
+    // Lista de escenarios para elegir. Cada escenario es UNA fila multi-idioma;
+    // lo resolvemos al idioma del usuario (fallback al base) → una entrada por
+    // escenario, en su idioma.
     if (url.searchParams.get("scenarios")) {
       const locale = url.searchParams.get("locale") || undefined;
-      const scenarios = await prisma.scenarioBank.findMany({
-        where: { isActive: true, ...(locale ? { locale } : {}) },
+      const rows = await prisma.scenarioBank.findMany({
+        where: { isActive: true },
         orderBy: [{ difficulty: "asc" }, { createdAt: "desc" }],
-        select: {
-          id: true,
-          title: true,
-          summary: true,
-          locale: true,
-          focusSei: true,
-          difficulty: true,
-        },
+      });
+      const scenarios = rows.map((s) => {
+        const view = resolveScenarioView(s, locale);
+        return {
+          id: s.id,
+          title: view.title,
+          summary: view.summary ?? null,
+          locale: view.resolvedLocale,
+          focusSei: s.focusSei,
+          difficulty: s.difficulty,
+        };
       });
       return NextResponse.json({ ok: true, scenarios });
     }
@@ -155,8 +161,14 @@ async function startSession(userId: string, body: Record<string, unknown>) {
     return NextResponse.json({ ok: false, error: "scenario.notFound" }, { status: 404 });
   }
 
+  // El usuario practica en SU idioma: resolvemos la versión del escenario en el
+  // locale del usuario (fallback al idioma base del escenario).
+  const userLocale = String(body.locale || "");
+  const view = resolveScenarioView(scenario, userLocale);
+  const sessionLocale = view.resolvedLocale;
+
   const agent = await getPracticeAgent();
-  const choice = resolvePracticeModel(agent, regionFromLocale(scenario.locale));
+  const choice = resolvePracticeModel(agent, regionFromLocale(sessionLocale));
   const focusSei = await resolveFocusSei(userId, scenario.focusSei);
 
   // Bloque de cultura/conocimiento del agente (si existe el AgentConfig).
@@ -169,7 +181,7 @@ async function startSession(userId: string, body: Record<string, unknown>) {
     }
   }
   const system = buildPartnerSystemPrompt(
-    { title: scenario.title, brief: scenario.brief, locale: scenario.locale, focusSei },
+    { title: view.title, brief: view.brief, locale: sessionLocale, focusSei },
     focusSei,
     culturePrefix || undefined,
   );
@@ -191,7 +203,7 @@ async function startSession(userId: string, body: Record<string, unknown>) {
       userId,
       tenantId: scenario.tenantId,
       scenarioId: scenario.id,
-      locale: scenario.locale,
+      locale: sessionLocale,
       status: "ACTIVE",
       focusSei,
       aiProvider: choice.provider,
@@ -250,10 +262,11 @@ async function takeTurn(userId: string, body: Record<string, unknown>) {
     }
   }
   const focusSei = resolveSessionFocus(session.focusSei);
+  const view = resolveScenarioView(session.scenario, session.locale);
   const system = buildPartnerSystemPrompt(
     {
-      title: session.scenario.title,
-      brief: session.scenario.brief,
+      title: view.title,
+      brief: view.brief,
       locale: session.locale,
       focusSei,
     },
@@ -336,14 +349,22 @@ async function finishSession(userId: string, body: Record<string, unknown>, tz: 
 
   const agent = await getPracticeAgent();
   const choice = resolvePracticeModel(agent, regionFromLocale(session.locale));
+  const view = resolveScenarioView(session.scenario, session.locale);
   const transcript: TurnForPrompt[] = session.turns.map((t) => ({
     role: t.role,
     content: t.content,
   }));
+  // Rúbrica: claves/pesos neutros; etiquetas en el idioma del usuario si existen.
+  const rubric = parseRubric(session.scenario.rubric);
+  if (view.rubricLabels) {
+    for (const c of rubric.criteria) {
+      if (view.rubricLabels[c.key]) c.label = view.rubricLabels[c.key];
+    }
+  }
   const feedback = await scorePracticeSession({
-    scenarioTitle: session.scenario.title,
-    brief: session.scenario.brief,
-    rubric: parseRubric(session.scenario.rubric),
+    scenarioTitle: view.title,
+    brief: view.brief,
+    rubric,
     transcript,
     locale: session.locale,
     provider: choice.provider,

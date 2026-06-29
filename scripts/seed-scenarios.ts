@@ -1,11 +1,11 @@
 /**
- * Seed semilla del ScenarioBank (AI Practice Partner · Track B).
+ * Seed semilla del ScenarioBank multi-idioma (AI Practice Partner · Track B).
  *
- * Escenarios genéricos de arranque (es/en/zh) para que el motor de práctica
- * tenga contra qué practicar antes de cargar los guiones reales del cliente
- * desde /hub/admin/scenarios. Son HIPÓTESIS v0, editables/borrables por admin.
+ * Cada escenario es UNA fila con sus traducciones (campo `translations`). Son
+ * HIPÓTESIS v0, editables/borrables/traducibles por admin desde
+ * /hub/admin/scenarios. El usuario practica en SU idioma.
  *
- * Idempotente: no duplica si ya existe un escenario con el mismo (title, locale).
+ * Idempotente: no duplica si ya existe un escenario con el mismo título base.
  *
  * Ejecutar: `tsx scripts/seed-scenarios.ts`
  */
@@ -22,61 +22,68 @@ const DEFAULT_RUBRIC = {
   ],
 };
 
-interface SeedScenario {
+interface LocText {
   title: string;
   summary: string;
   brief: string;
-  locale: string;
+  rubricLabels?: Record<string, string>;
+}
+
+interface SeedScenario {
+  baseLocale: string;
   focusSei: string | null;
   difficulty: number;
+  translations: Record<string, LocText>;
 }
 
 const SCENARIOS: SeedScenario[] = [
   {
-    title: "Cliente molesto por un retraso",
-    summary: "Un cliente llama enojado porque su pedido llegó tarde.",
-    brief:
-      "Interpretas a un cliente molesto porque su pedido llegó tres días tarde. " +
-      "Empiezas firme y frustrado, pero eres razonable: si la persona reconoce tu " +
-      "molestia, escucha y propone una solución concreta, te calmas progresivamente. " +
-      "Si te ignora o se pone a la defensiva, subes el tono.",
-    locale: "es",
+    baseLocale: "es",
     focusSei: "EMP",
     difficulty: 2,
+    translations: {
+      es: {
+        title: "Cliente molesto por un retraso",
+        summary: "Un cliente llama enojado porque su pedido llegó tarde.",
+        brief:
+          "Interpretas a un cliente molesto porque su pedido llegó tres días tarde. " +
+          "Empiezas firme y frustrado, pero eres razonable: si la persona reconoce tu " +
+          "molestia, escucha y propone una solución concreta, te calmas progresivamente. " +
+          "Si te ignora o se pone a la defensiva, subes el tono.",
+      },
+      en: {
+        title: "Upset customer over a delay",
+        summary: "A customer calls upset because their order arrived late.",
+        brief:
+          "You play an upset customer because your order arrived three days late. You start " +
+          "firm and frustrated but are reasonable: if the person acknowledges your frustration, " +
+          "listens, and offers a concrete solution, you gradually calm down. If they dismiss " +
+          "you or get defensive, you escalate.",
+      },
+      zh: {
+        title: "因延误而不满的客户",
+        summary: "一位客户因订单迟到而来电不满。",
+        brief:
+          "你扮演一位因订单迟到三天而不满的客户。一开始你态度坚定且沮丧，但讲道理：" +
+          "如果对方承认你的不满、认真倾听并提出具体的解决方案，你会逐渐平静下来；" +
+          "如果对方忽视你或采取防御姿态，你会升级情绪。",
+      },
+    },
   },
   {
-    title: "Feedback difícil a un compañero",
-    summary: "Necesitas dar feedback honesto a alguien de tu equipo.",
-    brief:
-      "Interpretas a un compañero de equipo que ha estado entregando tarde y bajando " +
-      "la calidad. Reaccionas a la defensiva al principio. Si la persona te da feedback " +
-      "específico, sin atacarte, y muestra que le importas, te abres a escuchar.",
-    locale: "es",
+    baseLocale: "es",
     focusSei: "NE",
     difficulty: 3,
-  },
-  {
-    title: "Upset customer over a delay",
-    summary: "A customer calls upset because their order arrived late.",
-    brief:
-      "You play an upset customer because your order arrived three days late. You start " +
-      "firm and frustrated but are reasonable: if the person acknowledges your frustration, " +
-      "listens, and offers a concrete solution, you gradually calm down. If they dismiss " +
-      "you or get defensive, you escalate.",
-    locale: "en",
-    focusSei: "EMP",
-    difficulty: 2,
-  },
-  {
-    title: "因延误而不满的客户",
-    summary: "一位客户因订单迟到而来电不满。",
-    brief:
-      "你扮演一位因订单迟到三天而不满的客户。一开始你态度坚定且沮丧，但讲道理：" +
-      "如果对方承认你的不满、认真倾听并提出具体的解决方案，你会逐渐平静下来；" +
-      "如果对方忽视你或采取防御姿态，你会升级情绪。",
-    locale: "zh",
-    focusSei: "EMP",
-    difficulty: 2,
+    translations: {
+      es: {
+        title: "Feedback difícil a un compañero",
+        summary: "Necesitas dar feedback honesto a alguien de tu equipo.",
+        brief:
+          "Interpretas a un compañero de equipo que ha estado entregando tarde y bajando " +
+          "la calidad. Reaccionas a la defensiva al principio. Si la persona te da feedback " +
+          "específico, sin atacarte, y muestra que le importas, te abres a escuchar.",
+      },
+    },
   },
 ];
 
@@ -84,8 +91,9 @@ async function main() {
   let created = 0;
   let skipped = 0;
   for (const s of SCENARIOS) {
+    const base = s.translations[s.baseLocale];
     const existing = await prisma.scenarioBank.findFirst({
-      where: { title: s.title, locale: s.locale },
+      where: { title: base.title },
       select: { id: true },
     });
     if (existing) {
@@ -93,7 +101,18 @@ async function main() {
       continue;
     }
     await prisma.scenarioBank.create({
-      data: { ...s, rubric: DEFAULT_RUBRIC, isActive: true },
+      data: {
+        baseLocale: s.baseLocale,
+        locale: s.baseLocale,
+        title: base.title,
+        summary: base.summary,
+        brief: base.brief,
+        translations: s.translations,
+        focusSei: s.focusSei,
+        difficulty: s.difficulty,
+        rubric: DEFAULT_RUBRIC,
+        isActive: true,
+      },
     });
     created++;
   }

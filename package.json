@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "NEXT_DISABLE_TURBOPACK=1 next dev -p 3000",
-    "build": "prisma generate && prisma db push --skip-generate --accept-data-loss && (tsx prisma/grant-super-eduardo.ts || true) && (tsx scripts/upsert-consulting-agents.ts || true) && (tsx scripts/seed-plans.ts || true) && (tsx scripts/sync-stripe-prices.ts || true) && (tsx prisma/seed-interventions.ts || true) && (tsx scripts/upsert-practice-agent.ts || true) && (tsx scripts/seed-scenarios.ts || true) && next build",
+    "build": "prisma generate && prisma db push --skip-generate --accept-data-loss && (tsx prisma/grant-super-eduardo.ts || true) && (tsx scripts/upsert-consulting-agents.ts || true) && (tsx scripts/seed-plans.ts || true) && (tsx scripts/sync-stripe-prices.ts || true) && (tsx prisma/seed-interventions.ts || true) && (tsx scripts/upsert-practice-agent.ts || true) && (tsx scripts/migrate-scenarios-multilocale.ts || true) && (tsx scripts/seed-scenarios.ts || true) && next build",
     "build:dev": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "eslint",

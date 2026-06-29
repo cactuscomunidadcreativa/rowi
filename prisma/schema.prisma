@@ -7653,7 +7653,15 @@ model ScenarioBank {
   id          String  @id @default(cuid())
   tenantId    String? // opcional: escenario propio de un tenant/cliente
   agentId     String? // opcional: AgentConfig que interpreta el brief (slug "practice")
-  locale      String  @default("es") // es | en | pt | it | zh
+  // Idioma en que se ESCRIBIÓ el escenario (la fuente de verdad para traducir).
+  // `locale` se conserva como alias de baseLocale por compatibilidad.
+  baseLocale  String  @default("es")
+  locale      String  @default("es") // = baseLocale (compat con datos previos)
+  // Versiones por idioma. Forma: { [locale]: { title, summary, brief,
+  // rubricLabels: { [criterionKey]: label } } }. Un escenario = una fila con N
+  // idiomas; el motor sirve la versión del idioma del usuario (fallback a base).
+  translations Json?
+  // Campos del idioma BASE (compat + fallback rápido sin parsear translations).
   title       String
   summary     String? // descripción corta para la lista
   // El "guion" del cliente que la IA interpreta (rol, situación, objetivos).

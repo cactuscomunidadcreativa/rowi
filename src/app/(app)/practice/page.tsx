@@ -114,7 +114,7 @@ export default function PracticePage() {
       const res = await fetch("/api/practice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "start", scenarioId, tz: tzOffset() }),
+        body: JSON.stringify({ action: "start", scenarioId, locale: lang, tz: tzOffset() }),
       });
       const json = await res.json();
       if (!json.ok) return;

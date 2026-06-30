@@ -56,6 +56,30 @@ function resolveBadge(item: NavItem): string | null {
 
 import { useAdminUser } from "./AdminUserContext";
 
+/** Los 8 dominios del viaje (auditoría v2), en orden de aparición. */
+const DOMAIN_ORDER = [
+  "resumen",
+  "personas",
+  "viaje",
+  "guiaIA",
+  "workspaces",
+  "contenido",
+  "negocio",
+  "plataforma",
+] as const;
+
+/** Fallback ES de los encabezados de dominio (el valor real vía t()). */
+const DOMAIN_FALLBACKS: Record<string, string> = {
+  resumen: "Resumen",
+  personas: "Personas",
+  viaje: "El Viaje",
+  guiaIA: "Guía & IA",
+  workspaces: "Workspaces",
+  contenido: "Contenido",
+  negocio: "Negocio",
+  plataforma: "Plataforma",
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
@@ -88,6 +112,14 @@ export default function Sidebar() {
     (a, b) => (b.priority || 0) - (a.priority || 0),
   );
 
+  // Agrupar las secciones en los 8 dominios del viaje (auditoría v2). Cada
+  // dominio mantiene sus secciones como subgrupos → reagrupa sin perder items.
+  // El orden de DOMAIN_ORDER manda; "resumen" arriba, "plataforma" abajo.
+  const domains = DOMAIN_ORDER.map((domainKey) => ({
+    domainKey,
+    sections: sortedSections.filter((s) => (s.domainKey ?? "plataforma") === domainKey),
+  })).filter((d) => d.sections.length > 0);
+
   return (
     <aside className="h-full flex flex-col bg-white dark:bg-zinc-900">
       {/* Logo + buscador ⌘K (entrada principal de navegación) */}
@@ -103,15 +135,22 @@ export default function Sidebar() {
         <AdminCommandPalette />
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {sortedSections.map((section, i) => (
-          <SidebarSection
-            key={i}
-            section={section}
-            pathname={pathname}
-            t={t}
-          />
+      {/* Navigation — agrupada en los 8 dominios del viaje */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-4">
+        {domains.map((domain) => (
+          <div key={domain.domainKey} className="space-y-1">
+            <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-[var(--rowi-g2)]/70">
+              {t(`admin.domain.${domain.domainKey}`, DOMAIN_FALLBACKS[domain.domainKey] ?? domain.domainKey)}
+            </p>
+            {domain.sections.map((section, i) => (
+              <SidebarSection
+                key={i}
+                section={section}
+                pathname={pathname}
+                t={t}
+              />
+            ))}
+          </div>
         ))}
       </nav>
 

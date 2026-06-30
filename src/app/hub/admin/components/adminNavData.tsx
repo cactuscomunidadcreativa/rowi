@@ -53,6 +53,7 @@ export interface NavSection {
 export const ADMIN_SECTIONS: NavSection[] = [
   {
     titleKey: "admin.nav.main",
+    domainKey: "resumen",
     icon: LayoutDashboard,
     priority: 100,
     items: [
@@ -67,6 +68,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.workspaces",
+    domainKey: "workspaces",
     icon: Briefcase,
     priority: 97,
     items: [
@@ -83,6 +85,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.tpDemo",
+    domainKey: "workspaces",
     icon: Building2,
     priority: 96,
     capability: "tp.dashboard",
@@ -114,6 +117,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.eq",
+    domainKey: "viaje",
     icon: Brain,
     priority: 95,
     items: [
@@ -135,6 +139,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.social",
+    domainKey: "viaje",
     icon: Users2,
     priority: 91,
     items: [
@@ -149,6 +154,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.gamification",
+    domainKey: "viaje",
     icon: Trophy,
     priority: 90,
     items: [
@@ -162,6 +168,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.productivity",
+    domainKey: "contenido",
     icon: CheckSquare,
     priority: 89,
     items: [
@@ -173,6 +180,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.elearning",
+    domainKey: "contenido",
     icon: BookOpen,
     priority: 88,
     items: [
@@ -185,6 +193,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.research",
+    domainKey: "viaje",
     icon: Target,
     priority: 87,
     items: [
@@ -193,6 +202,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.sixSeconds",
+    domainKey: "viaje",
     icon: Award,
     priority: 85,
     items: [
@@ -211,6 +221,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.people",
+    domainKey: "personas",
     icon: Users,
     priority: 80,
     items: [
@@ -235,6 +246,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.coaching",
+    domainKey: "guiaIA",
     icon: Target,
     priority: 78,
     items: [
@@ -247,6 +259,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.rowiverse",
+    domainKey: "plataforma",
     icon: Earth,
     priority: 75,
     superOnly: true,
@@ -258,6 +271,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.aiAutomation",
+    domainKey: "guiaIA",
     icon: Bot,
     priority: 70,
     superOnly: true,
@@ -274,6 +288,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.sales",
+    domainKey: "negocio",
     icon: CreditCard,
     priority: 65,
     superOnly: true,
@@ -289,6 +304,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.structure",
+    domainKey: "plataforma",
     icon: Globe2,
     priority: 60,
     superOnly: true,
@@ -309,6 +325,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.branding",
+    domainKey: "contenido",
     icon: Palette,
     priority: 55,
     items: [
@@ -319,6 +336,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.publicSite",
+    domainKey: "contenido",
     icon: Globe2,
     priority: 50,
     superOnly: true,
@@ -352,6 +370,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.education",
+    domainKey: "workspaces",
     icon: GraduationCap,
     priority: 45,
     items: [
@@ -364,6 +383,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.finance",
+    domainKey: "negocio",
     icon: Coins,
     priority: 40,
     items: [
@@ -391,6 +411,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.hr",
+    domainKey: "workspaces",
     icon: Briefcase,
     priority: 35,
     items: [
@@ -407,6 +428,7 @@ export const ADMIN_SECTIONS: NavSection[] = [
   },
   {
     titleKey: "admin.nav.system",
+    domainKey: "plataforma",
     icon: Wrench,
     priority: 10,
     items: [

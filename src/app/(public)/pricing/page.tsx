@@ -452,13 +452,13 @@ export default function PricingPage() {
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.plusLabel", "⭐ ROWI+ (150 tokens)")}</p>
+                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.plusLabel", "ROWI+ (150 tokens)")}</p>
                   <p className="text-xs text-[var(--rowi-muted)]">
                     {t("pricingPage.tokens.plusDesc", "Conversación profunda + resúmenes")}
                   </p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50">
-                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.proLabel", "🚀 Pro (500 tokens)")}</p>
+                  <p className="font-semibold text-sm mb-1">{t("pricingPage.tokens.proLabel", "Pro (500 tokens)")}</p>
                   <p className="text-xs text-[var(--rowi-muted)]">
                     {t("pricingPage.tokens.proDesc", "IA copiloto para coaching")}
                   </p>

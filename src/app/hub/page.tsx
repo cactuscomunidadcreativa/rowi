@@ -197,7 +197,7 @@ export default function HubDashboardPage() {
           />
           <QuickActionCard
             icon={Bot}
-            title={t("hubHome.coach", "Coach IA")}
+            title={t("hubHome.coach", "Tu Guía")}
             description={t("hubHome.coachDesc", "Chatea con Rowi")}
             color="blue"
             onClick={() => router.push("/hub/ai/rowi-coach")}
@@ -280,7 +280,7 @@ export default function HubDashboardPage() {
               <div className="p-3 rounded-xl bg-blue-500/20">
                 <Bot className="w-6 h-6 text-blue-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">{t("hubHome.aiAgents", "Coaches IA")}</h2>
+              <h2 className="text-xl font-semibold text-white">{t("hubHome.aiAgents", "Tu Guía")}</h2>
             </div>
 
             <div className="space-y-3">

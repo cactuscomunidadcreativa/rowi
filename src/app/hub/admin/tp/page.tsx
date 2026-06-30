@@ -159,7 +159,7 @@ export default function TPAdminHub() {
       title: t("tpHome.coachTitle", "Rowi Coach"),
       desc: t("tpHome.coachDesc", "Coaching de inteligencia emocional 24/7 con IA para empleados de TP, contextualizado con datos SEI."),
       features: [
-        t("tpHome.coachFeat1", "Coach IA por Chat"),
+        t("tpHome.coachFeat1", "Tu Guía por chat"),
         t("tpHome.coachFeat2", "Basado en SEI"),
         t("tpHome.coachFeat3", "Seguimiento de Progreso"),
         t("tpHome.coachFeat4", "Ejercicios Personalizados"),

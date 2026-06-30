@@ -1053,12 +1053,12 @@ export default function AffinityAdminPage() {
                 </div>
                 <div className="mt-4 p-3 rounded-lg bg-[var(--rowi-muted)]/5">
                   <div className="flex items-center gap-2 text-xs text-[var(--rowi-muted)]">
-                    <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-500">🔥 Hot ≥{config.bands.hotThreshold}</span>
+                    <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-500">Hot ≥{config.bands.hotThreshold}</span>
                     <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500">
-                      ☀️ Warm {config.bands.warmThreshold}-{config.bands.hotThreshold - 1}
+                      Warm {config.bands.warmThreshold}-{config.bands.hotThreshold - 1}
                     </span>
                     <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500">
-                      ❄️ Cold &lt;{config.bands.warmThreshold}
+                      Cold &lt;{config.bands.warmThreshold}
                     </span>
                   </div>
                 </div>

@@ -268,7 +268,7 @@ export default function HowItWorksPage() {
                   {[
                     t("howItWorksPage.step3.item1", "Tu Rowi evoluciona"),
                     t("howItWorksPage.step3.item2", "Contraste contigo mismo"),
-                    t("howItWorksPage.step3.item3", "Coach IA siempre"),
+                    t("howItWorksPage.step3.item3", "Tu Guía, siempre"),
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-500" />

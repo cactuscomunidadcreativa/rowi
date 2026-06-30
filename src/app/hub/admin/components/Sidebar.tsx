@@ -39,11 +39,35 @@ interface NavItem {
   labelKey: string;
   icon: LucideIcon;
   badge?: string;
+  /**
+   * Fecha (YYYY-MM-DD) desde la que el badge "NEW" es válido. El badge caduca
+   * tras BADGE_NEW_TTL_DAYS — un "NEW" dura una versión, no para siempre
+   * (regla de marca del Brand Book). Solo aplica al badge "NEW"; otros badges
+   * (p.ej. "HUB") se muestran siempre.
+   */
+  newSince?: string;
   children?: NavItem[];
   /** True if this item should only be shown to platform-level admins (rowiverse/superhub). */
   superOnly?: boolean;
   /** Si se define, el item se muestra cuando el usuario tiene esta capability. */
   capability?: string;
+}
+
+/** Días que un badge "NEW" permanece visible desde `newSince`. */
+const BADGE_NEW_TTL_DAYS = 30;
+
+/**
+ * Texto del badge a mostrar para un item, aplicando la caducidad del "NEW".
+ * Devuelve null si el badge "NEW" ya expiró. Badges no-"NEW" pasan tal cual.
+ */
+function resolveBadge(item: NavItem): string | null {
+  if (!item.badge) return null;
+  if (item.badge !== "NEW") return item.badge;
+  if (!item.newSince) return null; // "NEW" sin fecha = no se muestra (ya no es nuevo)
+  const since = new Date(item.newSince + "T00:00:00Z").getTime();
+  if (Number.isNaN(since)) return null;
+  const ageDays = (Date.now() - since) / 86_400_000;
+  return ageDays <= BADGE_NEW_TTL_DAYS ? "NEW" : null;
 }
 
 interface NavSection {
@@ -74,10 +98,10 @@ export default function Sidebar() {
       priority: 100,
       items: [
         { href: "/hub/admin", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-        { href: "/hub/admin/ceo", labelKey: "admin.nav.ceo", icon: Activity, badge: "NEW" },
-        { href: "/hub/admin/inventory", labelKey: "admin.nav.inventory", icon: Boxes, badge: "NEW" },
+        { href: "/hub/admin/ceo", labelKey: "admin.nav.ceo", icon: Activity },
+        { href: "/hub/admin/inventory", labelKey: "admin.nav.inventory", icon: Boxes },
         { href: "/hub/admin/routes-map", labelKey: "admin.nav.routesMap", icon: Network },
-        { href: "/hub/admin/user-roles", labelKey: "admin.nav.userRoles", icon: Shield, badge: "NEW" },
+        { href: "/hub/admin/user-roles", labelKey: "admin.nav.userRoles", icon: Shield },
         { href: "/hub/admin/users", labelKey: "admin.nav.users", icon: Users },
         { href: "/hub/admin/communities", labelKey: "admin.nav.communities", icon: HeartHandshake },
       ],
@@ -91,11 +115,11 @@ export default function Sidebar() {
       icon: Briefcase,
       priority: 97,
       items: [
-        { href: "/hub/admin/workspaces", labelKey: "admin.nav.workspacesAll", icon: Briefcase, badge: "NEW" },
+        { href: "/hub/admin/workspaces", labelKey: "admin.nav.workspacesAll", icon: Briefcase },
         { href: "/workspace/new", labelKey: "admin.nav.workspaceNew", icon: Sparkles },
         { href: "/hub/admin/workspaces?type=COACHING", labelKey: "admin.nav.workspaceCoaching", icon: Target },
         { href: "/hub/admin/workspaces?type=SELECTION", labelKey: "admin.nav.workspaceSelection", icon: UserCheck },
-        { href: "/hub/admin/hiring", labelKey: "admin.nav.hiring", icon: Target, badge: "NEW", capability: "consultant.hiring" },
+        { href: "/hub/admin/hiring", labelKey: "admin.nav.hiring", icon: Target, capability: "consultant.hiring" },
         { href: "/hub/admin/workspaces?type=TEAM_UNIT", labelKey: "admin.nav.workspaceTeam", icon: Users2 },
         { href: "/hub/admin/workspaces?type=HR_COHORT", labelKey: "admin.nav.workspaceHr", icon: Building2 },
         { href: "/hub/admin/workspaces?type=CONSULTING", labelKey: "admin.nav.workspaceConsulting", icon: Briefcase },
@@ -148,17 +172,17 @@ export default function Sidebar() {
       items: [
         { href: "/hub/admin/eq", labelKey: "admin.nav.eqPanel", icon: LayoutDashboard },
         { href: "/hub/admin/eq/dashboard", labelKey: "admin.nav.eqDashboard", icon: LineChart },
-        { href: "/hub/admin/eq-upload", labelKey: "admin.nav.eqUpload", icon: Upload, badge: "NEW" },
+        { href: "/hub/admin/eq-upload", labelKey: "admin.nav.eqUpload", icon: Upload },
         { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
         { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
         { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
         { href: "/hub/admin/emotions", labelKey: "admin.nav.emotions", icon: Heart },
-        { href: "/hub/admin/vital-signs/benchmarks", labelKey: "admin.nav.vsBenchmark", icon: BarChart3, badge: "NEW", superOnly: true },
-        { href: "/hub/admin/vital-signs/cross-instrument", labelKey: "admin.nav.vsSeiCross", icon: GitCompareArrows, badge: "NEW", superOnly: true },
+        { href: "/hub/admin/vital-signs/benchmarks", labelKey: "admin.nav.vsBenchmark", icon: BarChart3, superOnly: true },
+        { href: "/hub/admin/vital-signs/cross-instrument", labelKey: "admin.nav.vsSeiCross", icon: GitCompareArrows, superOnly: true },
         // El consultor NO-superadmin entra por capability (antes el informe
         // era inalcanzable sin ser SuperAdmin — auditoría jun-2026, flujo E).
-        { href: "/hub/admin/vital-signs/report", labelKey: "admin.nav.vsConsultantReport", icon: FileText, badge: "NEW", capability: "consultant.cross" },
-        { href: "/hub/admin/eco", labelKey: "admin.nav.ecoEvents", icon: Heart, badge: "NEW" },
+        { href: "/hub/admin/vital-signs/report", labelKey: "admin.nav.vsConsultantReport", icon: FileText, capability: "consultant.cross" },
+        { href: "/hub/admin/eco", labelKey: "admin.nav.ecoEvents", icon: Heart },
       ],
     },
 
@@ -170,7 +194,7 @@ export default function Sidebar() {
       icon: Users2,
       priority: 91,
       items: [
-        { href: "/hub/admin/social", labelKey: "admin.nav.socialDashboard", icon: LayoutDashboard, badge: "NEW" },
+        { href: "/hub/admin/social", labelKey: "admin.nav.socialDashboard", icon: LayoutDashboard },
         { href: "/hub/admin/social/connections", labelKey: "admin.nav.socialConnections", icon: Handshake },
         { href: "/hub/admin/social/feed", labelKey: "admin.nav.socialFeed", icon: Rss },
         { href: "/hub/admin/social/goals", labelKey: "admin.nav.socialGoals", icon: Target },
@@ -241,7 +265,7 @@ export default function Sidebar() {
       icon: Target,
       priority: 87,
       items: [
-        { href: "/research", labelKey: "admin.nav.researchCenter", icon: Target, badge: "NEW" },
+        { href: "/research", labelKey: "admin.nav.researchCenter", icon: Target },
       ],
     },
 
@@ -293,7 +317,7 @@ export default function Sidebar() {
         { href: "/hub/admin/plans", labelKey: "admin.nav.plans", icon: Gauge },
         // permissions/roles era un redirect a /hub/admin/roles (ya listado
         // arriba) — el subgrupo quedó redundante y volvió a item simple.
-        { href: "/hub/admin/permissions", labelKey: "admin.nav.permissions", icon: Shield, badge: "NEW" },
+        { href: "/hub/admin/permissions", labelKey: "admin.nav.permissions", icon: Shield },
       ],
     },
 
@@ -305,7 +329,7 @@ export default function Sidebar() {
       icon: Target,
       priority: 78,
       items: [
-        { href: "/hub/admin/coaching", labelKey: "admin.nav.coachNotes", icon: FileText, badge: "NEW" },
+        { href: "/hub/admin/coaching", labelKey: "admin.nav.coachNotes", icon: FileText },
         { href: "/hub/admin/coaching/plans", labelKey: "admin.nav.developmentPlans", icon: Target },
         { href: "/hub/admin/coaching/campaigns", labelKey: "admin.nav.assessmentCampaigns", icon: CalendarCheck },
         { href: "/hub/admin/coaching/alerts", labelKey: "admin.nav.smartAlerts", icon: Bell },
@@ -338,11 +362,11 @@ export default function Sidebar() {
       superOnly: true, // agentes IA, knowledge layer, prompts: solo plataforma (tú)
       items: [
         { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
-        { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain, badge: "NEW" },
+        { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain },
         { href: "/hub/admin/knowledge", labelKey: "admin.nav.knowledgeBase", icon: BookOpenCheck },
-        { href: "/hub/admin/scenarios", labelKey: "admin.nav.scenarios", icon: Theater, badge: "NEW" },
+        { href: "/hub/admin/scenarios", labelKey: "admin.nav.scenarios", icon: Theater, badge: "NEW", newSince: "2026-06-29" },
         { href: "/hub/admin/insights", labelKey: "admin.nav.insights", icon: Sparkles },
-        { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle, badge: "NEW" },
+        { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle },
         { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },
         { href: "/hub/admin/ai/learning", labelKey: "admin.nav.learning", icon: BookOpenCheck },
         { href: "/hub/admin/automation", labelKey: "admin.nav.automationPanel", icon: Workflow },
@@ -386,7 +410,7 @@ export default function Sidebar() {
           icon: Building,
           children: [
             { href: "/hub/admin/organizations", labelKey: "admin.nav.organizationsList", icon: Building },
-            { href: "/hub/admin/organizations/hierarchy", labelKey: "admin.nav.organizationsHierarchy", icon: GitBranch, badge: "NEW" },
+            { href: "/hub/admin/organizations/hierarchy", labelKey: "admin.nav.organizationsHierarchy", icon: GitBranch },
           ],
         },
       ],
@@ -474,7 +498,7 @@ export default function Sidebar() {
         { href: "/hub/admin/accounting/sales-orders", labelKey: "admin.nav.salesOrders", icon: ShoppingCart },
         { href: "/hub/admin/accounting/payouts", labelKey: "admin.nav.payouts", icon: Wallet },
         { href: "/hub/admin/accounting/payroll", labelKey: "admin.nav.payroll", icon: Calendar },
-        { href: "/hub/admin/accounting/products", labelKey: "admin.nav.products", icon: Package, badge: "NEW" },
+        { href: "/hub/admin/accounting/products", labelKey: "admin.nav.products", icon: Package },
         {
           href: "/hub/admin/finance/dashboard",
           labelKey: "admin.nav.financeOps",
@@ -504,9 +528,9 @@ export default function Sidebar() {
         { href: "/hub/admin/hr/leaves", labelKey: "admin.nav.leaves", icon: Calendar },
         { href: "/hub/admin/hr/time", labelKey: "admin.nav.timeTracking", icon: Clock },
         { href: "/hub/admin/hr/productivity", labelKey: "admin.nav.productivity", icon: BarChart3 },
-        { href: "/hub/admin/hr/vital-signs", labelKey: "admin.nav.hrVitalSigns", icon: Activity, badge: "NEW" },
+        { href: "/hub/admin/hr/vital-signs", labelKey: "admin.nav.hrVitalSigns", icon: Activity },
         { href: "/hub/admin/community-members/orphans", labelKey: "admin.nav.orphans", icon: AlertTriangle },
-        { href: "/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow, badge: "NEW" },
+        { href: "/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow },
       ],
     },
 
@@ -519,7 +543,7 @@ export default function Sidebar() {
       priority: 10,
       items: [
         { href: "/hub/admin/settings", labelKey: "admin.nav.settings", icon: Settings2 },
-        { href: "/hub/admin/notifications", labelKey: "admin.nav.notifications", icon: Bell, badge: "NEW" },
+        { href: "/hub/admin/notifications", labelKey: "admin.nav.notifications", icon: Bell },
         { href: "/hub/admin/tokens", labelKey: "admin.nav.tokens", icon: Gauge },
         { href: "/hub/admin/usage", labelKey: "admin.nav.usage", icon: BarChart3 },
         { href: "/hub/admin/reports", labelKey: "admin.nav.reports", icon: FileText },
@@ -723,9 +747,9 @@ function SidebarLink({ item, pathname, t }: SidebarLinkProps) {
     >
       <Icon className="w-4 h-4 flex-shrink-0" />
       <span className="truncate">{t(item.labelKey)}</span>
-      {item.badge && (
-        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">
-          {item.badge}
+      {resolveBadge(item) && (
+        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--rowi-g2)] text-white font-bold">
+          {resolveBadge(item)}
         </span>
       )}
     </Link>
@@ -790,9 +814,9 @@ function NestedGroup({ item, pathname, t }: NestedGroupProps) {
         <span className="flex items-center gap-2">
           <Icon className={`w-4 h-4 ${isActive ? "text-violet-600 dark:text-violet-400" : ""}`} />
           <span className="truncate">{t(item.labelKey)}</span>
-          {item.badge && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">
-              {item.badge}
+          {resolveBadge(item) && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--rowi-g2)] text-white font-bold">
+              {resolveBadge(item)}
             </span>
           )}
         </span>

@@ -39,7 +39,7 @@ export default function RoutesMapPage() {
         { href: "/affinity", label: "/affinity", description: t("admin.routesMap.affinity", "Brain affinity"), icon: Heart },
         { href: "/benchmark", label: "/benchmark", description: t("admin.routesMap.benchmark", "Benchmark insights"), icon: BarChart3 },
         { href: "/eco", label: "/eco", description: t("admin.routesMap.eco", "Emotional communication optimizer"), icon: Satellite },
-        { href: "/rowi", label: "/rowi", description: t("admin.routesMap.rowi", "Rowi AI Coach (personal)"), icon: Bot },
+        { href: "/rowi", label: "/rowi", description: t("admin.routesMap.rowi", "Rowi, tu Guía (personal)"), icon: Bot },
         { href: "/research", label: "/research", description: t("admin.routesMap.research", "Research center"), icon: FlaskConical },
       ],
     },

@@ -113,7 +113,7 @@ export default function TPCoachPage() {
           <ArrowLeft className="w-4 h-4" /> {t("tpCoach.back", "TP Hub")}
         </Link>
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-500 mb-3">
-          <Sparkles className="w-3 h-3" /> {t("tpCoach.badge", "AI Coach")}
+          <Sparkles className="w-3 h-3" /> {t("tpCoach.badge", "Guía")}
         </span>
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
           <Bot className="w-8 h-8 text-blue-500" /> {t("tpCoach.title", "Rowi Coach — Edición TP")}

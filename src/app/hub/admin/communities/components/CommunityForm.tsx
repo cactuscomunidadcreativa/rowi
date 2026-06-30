@@ -114,11 +114,11 @@ export default function CommunityForm({
                 <SelectValue placeholder={t("admin.communities.form.selectCategoryOptional")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mindfulness">🧘 Mindfulness</SelectItem>
-                <SelectItem value="leadership">👑 Liderazgo</SelectItem>
-                <SelectItem value="relationships">💞 Relaciones</SelectItem>
-                <SelectItem value="education">📚 Educación</SelectItem>
-                <SelectItem value="innovation">🚀 Innovación</SelectItem>
+                <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                <SelectItem value="leadership">Liderazgo</SelectItem>
+                <SelectItem value="relationships">Relaciones</SelectItem>
+                <SelectItem value="education">Educación</SelectItem>
+                <SelectItem value="innovation">Innovación</SelectItem>
               </SelectContent>
             </Select>
           </div>

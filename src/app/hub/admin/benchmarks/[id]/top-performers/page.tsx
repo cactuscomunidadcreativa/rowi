@@ -659,7 +659,7 @@ export default function TopPerformersPage() {
 
             <AdminCard compact>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -676,7 +676,7 @@ export default function TopPerformersPage() {
 
             <AdminCard compact>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -1011,7 +1011,7 @@ export default function TopPerformersPage() {
           {Array.isArray(selectedProfile.commonPatterns) && selectedProfile.commonPatterns.length > 0 && (
             <AdminCard>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -1166,7 +1166,7 @@ export default function TopPerformersPage() {
           {Array.isArray(selectedProfile.talentPatterns) && selectedProfile.talentPatterns.length > 0 && (
             <AdminCard>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-fuchsia-500 to-pink-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>

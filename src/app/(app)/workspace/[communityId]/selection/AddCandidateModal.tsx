@@ -310,10 +310,10 @@ export function AddCandidateModal({
                 <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-300/40 dark:border-violet-700/40 rounded-xl p-3"
+                  className="bg-gradient-to-br from-violet-500/10 to-purple-600/10 border border-violet-300/40 dark:border-violet-700/40 rounded-xl p-3"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                       <History className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -371,7 +371,7 @@ export function AddCandidateModal({
                       <button
                         type="button"
                         onClick={applyLookup}
-                        className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:opacity-90 transition-opacity"
+                        className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90 transition-opacity"
                       >
                         <Sparkles className="w-3 h-3" />
                         {t(

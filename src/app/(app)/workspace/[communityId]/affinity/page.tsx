@@ -92,7 +92,7 @@ export default function WorkspaceAffinityPage({
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
                           transition={{ duration: 0.8, delay: i * 0.05 }}
-                          className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600"
                         />
                       </div>
                     </motion.div>
@@ -106,7 +106,7 @@ export default function WorkspaceAffinityPage({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-2xl border border-pink-200 dark:border-pink-900 p-6"
+            className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-2xl border border-violet-200 dark:border-violet-900 p-6"
           >
             <h3 className="font-semibold text-lg mb-2">
               ✨ {t("workspace.affinity.insight.title", "Insight")}

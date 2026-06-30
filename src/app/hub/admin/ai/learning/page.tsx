@@ -962,7 +962,7 @@ export default function AILearningPage() {
           {/* Tab: Deploy */}
           {activeTab === "deploy" && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-6 border border-purple-500/20">
+              <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 rounded-xl p-6 border border-violet-500/20">
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-purple-500/20">
                     <Sparkles className="w-6 h-6 text-purple-500" />

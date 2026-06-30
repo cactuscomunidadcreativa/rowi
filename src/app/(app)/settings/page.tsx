@@ -217,7 +217,7 @@ export default function SettingsIndex() {
         >
           <Settings2 size={32} style={{ color: COLORS.purple }} />
         </div>
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-500 to-pink-500 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
           {t("title")}
         </h1>
         <p className="text-sm rowi-muted mt-2">{t("subtitle")}</p>
@@ -278,7 +278,7 @@ export default function SettingsIndex() {
       >
         <div className="flex items-center justify-center gap-2 mb-2">
           <Sparkles size={14} style={{ color: COLORS.purple }} />
-          <span className="font-medium bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+          <span className="font-medium bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             Rowi
           </span>
         </div>

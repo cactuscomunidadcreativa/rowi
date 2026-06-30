@@ -91,7 +91,7 @@ export default function StudyGroupsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--rowi-foreground)] flex items-center gap-2">
-            <UsersRound className="w-7 h-7 text-blue-500" />
+            <UsersRound className="w-7 h-7 text-violet-500" />
             {t("admin.education.studyGroups.title")}
           </h1>
           <p className="text-[var(--rowi-muted)] mt-1">{t("admin.education.studyGroups.description")}</p>
@@ -142,8 +142,8 @@ export default function StudyGroupsPage() {
               <div key={group.id} className="bg-[var(--rowi-card)] rounded-xl border border-[var(--rowi-border)] p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                      <UsersRound className="w-6 h-6 text-blue-500" />
+                    <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                      <UsersRound className="w-6 h-6 text-violet-500" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-[var(--rowi-foreground)]">{group.name}</h3>

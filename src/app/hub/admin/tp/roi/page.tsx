@@ -328,7 +328,7 @@ function OutcomeBar({
           transition={{ duration: 0.8, ease: "easeOut", delay }}
         />
         <motion.div
-          className="absolute h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-80"
+          className="absolute h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 opacity-80"
           initial={{ width: 0 }}
           whileInView={{ width: `${Math.min(projectedPct, 100)}%` }}
           viewport={{ once: true }}
@@ -369,7 +369,7 @@ function ScenarioCard({
       viewport={{ once: true }}
       className={`rounded-2xl p-6 border ${
         isHighlighted
-          ? "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800 shadow-lg"
+          ? "bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 shadow-lg"
           : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800"
       }`}
     >
@@ -384,7 +384,7 @@ function ScenarioCard({
           <div
             className={`text-4xl font-bold ${
               isHighlighted
-                ? "bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                ? "bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent"
                 : "text-purple-600"
             }`}
           >
@@ -694,7 +694,7 @@ export default function TPROIPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-10 shadow-xl border border-purple-200 dark:border-purple-800 text-center"
+        className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-2xl p-10 shadow-xl border border-purple-200 dark:border-purple-800 text-center"
       >
         <h2 className="text-xl font-bold mb-6 flex items-center justify-center gap-2">
           <TrendingUp className="w-6 h-6 text-purple-500" /> {t("tpRoi.roiTitle", "ROI Proyectado")}
@@ -758,7 +758,7 @@ export default function TPROIPage() {
             <span className="text-[var(--rowi-muted)]">{t("tpRoi.outcomeCurrent", "Actual")}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600" />
             <span className="text-[var(--rowi-muted)]">{t("tpRoi.outcomeProjected", "Proyectado")}</span>
           </div>
         </div>
@@ -1156,7 +1156,7 @@ export default function TPROIPage() {
         </Link>
         <Link
           href="/hub/admin/tp/benchmark"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity"
         >
           {t("tpRoi.navNext", "Benchmark")} <ArrowRight className="w-5 h-5" />
         </Link>

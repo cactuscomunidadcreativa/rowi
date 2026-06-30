@@ -62,7 +62,7 @@ export default function SocialDashboardPage() {
       icon: Link2,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      gradient: "from-blue-500 to-cyan-500",
+      gradient: "from-violet-500 to-purple-600",
     },
     {
       key: "postsToday",
@@ -71,7 +71,7 @@ export default function SocialDashboardPage() {
       icon: Newspaper,
       color: "text-violet-500",
       bgColor: "bg-violet-500/10",
-      gradient: "from-violet-500 to-fuchsia-500",
+      gradient: "from-violet-500 to-purple-600",
     },
     {
       key: "activeGoals",
@@ -109,7 +109,7 @@ export default function SocialDashboardPage() {
       icon: Activity,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      gradient: "from-purple-500 to-pink-500",
+      gradient: "from-violet-500 to-purple-600",
     },
   ];
 
@@ -129,7 +129,7 @@ export default function SocialDashboardPage() {
       title: t("admin.social.modules.feed", "Feed"),
       description: t("admin.social.modules.feedDesc", "Moderate posts, reactions and comments"),
       icon: Newspaper,
-      color: "from-violet-500 to-fuchsia-500",
+      color: "from-violet-500 to-purple-600",
       bgColor: "bg-violet-500/10",
       iconColor: "text-violet-500",
       href: "/hub/admin/social/feed",
@@ -205,11 +205,11 @@ export default function SocialDashboardPage() {
     <div className="space-y-8 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
           <Users className="w-8 h-8 text-violet-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent">
             {t("admin.social.title", "Social System")}
           </h1>
           <p className="text-gray-400 dark:text-gray-400 text-gray-600">

@@ -430,7 +430,7 @@ function SingleMemberEqForm({ userId }: { userId: string }) {
       <button
         type="submit"
         disabled={saving}
-        className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+        className="w-full px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 font-medium"
       >
         {saving ? "Guardando..." : "💾 Guardar datos SEI"}
       </button>
@@ -705,7 +705,7 @@ maria@example.com,María,López,MX,105,100,98,100,95,92,90,95,88,100,90,Intuitiv
                 <button
                   onClick={handleUpload}
                   disabled={uploading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-6 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
                 >
                   {uploading ? "Subiendo..." : "📤 Subir e importar"}
                 </button>

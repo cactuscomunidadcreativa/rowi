@@ -199,7 +199,7 @@ export default function HubDashboardPage() {
             icon={Bot}
             title={t("hubHome.coach", "Tu Guía")}
             description={t("hubHome.coachDesc", "Chatea con Rowi")}
-            color="blue"
+            color="violet"
             onClick={() => router.push("/hub/ai/rowi-coach")}
           />
           <QuickActionCard
@@ -277,8 +277,8 @@ export default function HubDashboardPage() {
           {/* AI Agents Card */}
           <div className="bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 rounded-xl bg-blue-500/20">
-                <Bot className="w-6 h-6 text-blue-400" />
+              <div className="p-3 rounded-xl bg-violet-500/20">
+                <Bot className="w-6 h-6 text-violet-400" />
               </div>
               <h2 className="text-xl font-semibold text-white">{t("hubHome.aiAgents", "Tu Guía")}</h2>
             </div>
@@ -290,7 +290,7 @@ export default function HubDashboardPage() {
                   onClick={() => router.push(`/hub/ai/${agent.slug}`)}
                   className="w-full flex items-center gap-3 p-3 bg-gray-700/30 hover:bg-gray-700/50 rounded-xl transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -303,7 +303,7 @@ export default function HubDashboardPage() {
 
               <button
                 onClick={() => router.push("/hub/ai/rowi-coach")}
-                className="w-full p-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-xl text-blue-300 font-medium transition-colors"
+                className="w-full p-3 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 rounded-xl text-violet-300 font-medium transition-colors"
               >
                 {t("hubHome.startChat", "Iniciar chat")} →
               </button>

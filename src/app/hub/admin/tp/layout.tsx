@@ -67,7 +67,7 @@ export default async function ManageHubLayout({ children }: { children: ReactNod
           </p>
           <Link
             href="/hub/admin"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity"
           >
             Volver a Admin
           </Link>

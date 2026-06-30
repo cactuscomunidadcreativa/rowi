@@ -135,7 +135,7 @@ export default function TPOnboardingPage() {
                   </motion.div>
                 ))}
               </div>
-              <button onClick={nextStep} className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg hover:opacity-90 transition-opacity">
+              <button onClick={nextStep} className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold text-lg shadow-lg hover:opacity-90 transition-opacity">
                 {t("tpOnboarding.startBtn", "Comenzar mi viaje")} <ArrowRight className="w-5 h-5" />
               </button>
             </motion.div>
@@ -178,7 +178,7 @@ export default function TPOnboardingPage() {
               </div>
               <div className="flex gap-3 mt-10">
                 <button onClick={prevStep} className="px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 text-sm font-medium hover:border-purple-500 transition-colors"><ArrowLeft className="w-4 h-4" /></button>
-                <button onClick={nextStep} className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
+                <button onClick={nextStep} className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
                   {t("tpOnboarding.continueBtn", "Continuar")} <ArrowRight className="w-4 h-4 inline ml-2" />
                 </button>
               </div>
@@ -194,7 +194,7 @@ export default function TPOnboardingPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border border-gray-100 dark:border-zinc-800 max-w-md mx-auto mb-8">
                 <Brain className="w-16 h-16 mx-auto mb-4 text-purple-500 opacity-50" />
                 <p className="text-sm text-[var(--rowi-muted)] mb-6">{t("tpOnboarding.assessmentNote", "En producción, aquí se integra el assessment real de Six Seconds. Para este demo, mostramos resultados simulados.")}</p>
-                <button onClick={nextStep} className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
+                <button onClick={nextStep} className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
                   {t("tpOnboarding.simulateBtn", "Simular evaluación completada")} <ChevronRight className="w-5 h-5 inline ml-2" />
                 </button>
               </div>
@@ -292,7 +292,7 @@ export default function TPOnboardingPage() {
               </div>
               <div className="flex gap-3 mt-8">
                 <button onClick={prevStep} className="px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 text-sm font-medium hover:border-purple-500 transition-colors"><ArrowLeft className="w-4 h-4" /></button>
-                <button onClick={nextStep} className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
+                <button onClick={nextStep} className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
                   {t("tpOnboarding.seeMatches", "Ver mi equipo")} <Heart className="w-4 h-4 inline ml-2" />
                 </button>
               </div>
@@ -323,7 +323,7 @@ export default function TPOnboardingPage() {
                       <span className="text-xs text-[var(--rowi-muted)]">{t("tpOnboarding.brainStyle", "Perfil Cerebral")}:</span>
                       <span className="text-xs px-2 py-1 rounded-full bg-purple-500/10 text-purple-500 font-medium">{match.emoji} {isEs ? match.brainStyleEs : match.brainStyle}</span>
                       <div className="flex-1 h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                        <motion.div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500" initial={{ width: 0 }}
+                        <motion.div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600" initial={{ width: 0 }}
                           animate={{ width: `${match.compatibility}%` }} transition={{ duration: 1, delay: i * 0.15 }} />
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function TPOnboardingPage() {
               </div>
               <div className="flex gap-3">
                 <button onClick={prevStep} className="px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 text-sm font-medium hover:border-purple-500 transition-colors"><ArrowLeft className="w-4 h-4" /></button>
-                <Link href="/hub/admin/tp" className="flex-1 text-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
+                <Link href="/hub/admin/tp" className="flex-1 text-center px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-90 transition-opacity">
                   {t("tpOnboarding.finishBtn", "Completar onboarding")} <Check className="w-4 h-4 inline ml-2" />
                 </Link>
               </div>

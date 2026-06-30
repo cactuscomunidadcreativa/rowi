@@ -514,7 +514,7 @@ export default function BenchmarkPage() {
 
             {/* Top 5 Talents */}
             <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-zinc-800 bg-gradient-to-r from-purple-500/5 to-pink-500/5">
+              <div className="p-4 border-b border-gray-200 dark:border-zinc-800 bg-gradient-to-r from-violet-500/5 to-purple-500/5">
                 <h2 className="font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                   <Brain className="w-5 h-5 text-purple-500" />
                   {tr.top5Talents}

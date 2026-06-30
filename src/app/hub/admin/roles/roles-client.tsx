@@ -291,7 +291,7 @@ export default function HubRolesClient() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -619,7 +619,7 @@ export default function HubRolesClient() {
             {/* Modal header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--rowi-border)]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <PlusCircle className="w-4 h-4 text-white" />
                 </div>
                 <h3 className="font-semibold text-[var(--rowi-foreground)]">

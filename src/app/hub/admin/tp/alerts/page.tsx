@@ -667,7 +667,7 @@ export default function TPAlertsPage() {
         <Link href="/hub/admin/tp/world" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t("tpAlerts.navPrev", "World")}
         </Link>
-        <Link href="/hub/admin/tp/data-quality" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp/data-quality" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity">
           {t("tpAlerts.navNext", "Data Quality")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>

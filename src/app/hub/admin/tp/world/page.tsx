@@ -1017,7 +1017,7 @@ export default function TPWorldPage() {
                     <span className="font-bold text-purple-600">{pattern.topPerformerPct}%</span>
                   </div>
                   <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                    <motion.div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500" initial={{ width: 0 }} whileInView={{ width: `${pattern.topPerformerPct}%` }} viewport={{ once: true }} transition={{ duration: 1 }} />
+                    <motion.div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600" initial={{ width: 0 }} whileInView={{ width: `${pattern.topPerformerPct}%` }} viewport={{ once: true }} transition={{ duration: 1 }} />
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg p-3">
@@ -1071,7 +1071,7 @@ export default function TPWorldPage() {
           })}
         </div>
 
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }} className="mt-8 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }} className="mt-8 p-4 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800">
           <div className="flex items-center gap-3">
             <Target className="w-6 h-6 text-purple-500 shrink-0" />
             <p className="text-sm font-semibold text-purple-800 dark:text-purple-200">
@@ -1100,7 +1100,7 @@ export default function TPWorldPage() {
         <Link href="/hub/admin/tp" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t.navROI}
         </Link>
-        <Link href="/hub/admin/tp" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity">
           {t.navAlerts} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>

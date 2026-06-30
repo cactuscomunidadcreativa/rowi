@@ -241,7 +241,7 @@ export default function HrLandingPage() {
                 className="block bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 hover:border-[var(--rowi-g2)] hover:shadow-lg transition-all group"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 flex items-center justify-center">
                     <Briefcase className="w-5 h-5 text-white" />
                   </div>
                   <span className="text-xs text-gray-400">

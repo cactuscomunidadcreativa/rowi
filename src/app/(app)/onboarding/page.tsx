@@ -41,10 +41,10 @@ type Step = {
 };
 
 const STEPS: Step[] = [
-  { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-fuchsia-500" },
+  { key: "welcome", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
   { key: "consent", icon: ShieldCheck, gradient: "from-amber-500 to-orange-600" },
   // Cadena SIA: el mini-SEI normado es el ancla del onboarding.
-  { key: "rowiTest", icon: Sparkles, gradient: "from-fuchsia-500 to-pink-600" },
+  { key: "rowiTest", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
   // Cierre: ofrecer el SEI completo (Six Seconds, de pago). Opcional —
   // "hazlo completo o sigue sin él". Handoff a /sei.
   { key: "fullSei", icon: Award, gradient: "from-violet-600 to-indigo-600" },
@@ -1004,7 +1004,7 @@ function RowiTestWow({
         </div>
       )}
 
-      <div className="rounded-2xl bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-500/10 dark:to-fuchsia-500/10 p-4 space-y-3">
+      <div className="rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-500/10 dark:to-purple-500/10 p-4 space-y-3">
         <p className="text-xs font-semibold text-[var(--rowi-muted)] uppercase tracking-wide">
           {t("onboarding.rowiTest.wow.planTitle", "Tu plan con Rowi")}
         </p>
@@ -1031,7 +1031,7 @@ function RowiTestWow({
       <button
         type="button"
         onClick={onContinue}
-        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
       >
         {t("onboarding.rowiTest.wow.continue", "Empezar mi plan")}
         <ArrowRight className="w-4 h-4" />

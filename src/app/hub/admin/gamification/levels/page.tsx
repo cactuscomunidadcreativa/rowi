@@ -107,8 +107,8 @@ export default function LevelsPage() {
             <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-              <Crown className="w-6 h-6 text-purple-500" />
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+              <Crown className="w-6 h-6 text-violet-500" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamLevels.title", "Niveles")}</h1>
@@ -132,7 +132,7 @@ export default function LevelsPage() {
             color: "#8B5CF6",
             multiplier: 1,
           })}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-gray-900 dark:text-white rounded-lg hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
           {t("gamLevels.newLevel", "Nuevo Nivel")}
@@ -400,7 +400,7 @@ export default function LevelsPage() {
               </button>
               <button
                 onClick={() => updateLevel(editingLevel)}
-                className="flex-1 px-4 py-2 bg-purple-500 text-gray-900 dark:text-white rounded-lg hover:bg-purple-600 transition-colors"
+                className="flex-1 px-4 py-2 bg-violet-500 text-gray-900 dark:text-white rounded-lg hover:bg-violet-600 transition-colors"
               >
                 {t("gamLevels.modal.save", "Guardar")}
               </button>

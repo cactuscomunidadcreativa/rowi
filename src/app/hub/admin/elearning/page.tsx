@@ -72,9 +72,9 @@ export default function ElearningDashboardPage() {
         "Cursos completos de inteligencia emocional",
       ),
       icon: GraduationCap,
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-500/10",
-      iconColor: "text-blue-500",
+      color: "from-violet-500 to-purple-600",
+      bgColor: "bg-violet-500/10",
+      iconColor: "text-violet-500",
       href: "/hub/admin/elearning/courses",
       stat: 5,
       statLabel: t("elearningPg.modules.courses.statLabel", "Cursos activos"),
@@ -84,7 +84,7 @@ export default function ElearningDashboardPage() {
       title: t("elearningPg.modules.quizzes.title", "Quizzes"),
       description: t("elearningPg.modules.quizzes.description", "Evaluaciones y cuestionarios"),
       icon: Target,
-      color: "from-purple-500 to-pink-500",
+      color: "from-violet-500 to-purple-600",
       bgColor: "bg-purple-500/10",
       iconColor: "text-purple-500",
       href: "/hub/admin/elearning/quizzes",
@@ -157,8 +157,8 @@ export default function ElearningDashboardPage() {
     <div className="space-y-8 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20">
-          <BookOpen className="w-8 h-8 text-blue-500" />
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+          <BookOpen className="w-8 h-8 text-violet-500" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("elearningPg.title", "E-Learning")}</h1>

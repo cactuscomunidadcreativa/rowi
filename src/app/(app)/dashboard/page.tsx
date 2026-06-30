@@ -225,7 +225,7 @@ export default function ClientDashboard() {
           href="/settings/subscription"
           icon={Sparkles}
           label={t("dashboardPg.upgradePlan", "Mejora tu plan")}
-          gradient="from-violet-500 to-fuchsia-500"
+          gradient="from-violet-500 to-purple-600"
         />
       </motion.div>
 

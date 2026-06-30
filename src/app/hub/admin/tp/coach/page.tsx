@@ -65,7 +65,7 @@ function buildSuggestedPrompts(t: Translate): { icon: typeof Heart; text: string
 function ChatMessage({ message, isUser }: { message: { role: string; content: string }; isUser: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isUser ? "bg-purple-500/20" : "bg-gradient-to-br from-blue-500 to-cyan-500"}`}>
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isUser ? "bg-purple-500/20" : "bg-gradient-to-br from-violet-500 to-purple-600"}`}>
         {isUser ? <User className="w-5 h-5 text-purple-500" /> : <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={32} height={32} className="object-contain" />}
       </div>
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${isUser ? "bg-purple-500 text-white rounded-tr-sm" : "bg-gray-100 dark:bg-zinc-800 rounded-tl-sm"}`}>
@@ -112,11 +112,11 @@ export default function TPCoachPage() {
         <Link href="/hub/admin/tp" className="inline-flex items-center gap-2 text-sm text-[var(--rowi-muted)] hover:text-purple-500 transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" /> {t("tpCoach.back", "TP Hub")}
         </Link>
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-500 mb-3">
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-violet-500/20 text-violet-500 mb-3">
           <Sparkles className="w-3 h-3" /> {t("tpCoach.badge", "Guía")}
         </span>
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <Bot className="w-8 h-8 text-blue-500" /> {t("tpCoach.title", "Rowi Coach — Edición TP")}
+          <Bot className="w-8 h-8 text-violet-500" /> {t("tpCoach.title", "Rowi Coach — Edición TP")}
         </h1>
         <p className="text-[var(--rowi-muted)]">{t("tpCoach.subtitle", "Tu coach de inteligencia emocional con IA, contextualizado con datos benchmark de Teleperformance de 14,886 evaluaciones SEI")}</p>
       </div>
@@ -128,7 +128,7 @@ export default function TPCoachPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col" style={{ height: "650px" }}>
             {/* Chat Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 flex items-center gap-3">
+            <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-4 flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                 <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={40} height={40} className="object-contain" />
               </div>
@@ -150,7 +150,7 @@ export default function TPCoachPage() {
 
               {isTyping && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                     <Image src="/rowivectors/Rowi-06.webp" alt="Rowi" width={32} height={32} />
                   </div>
                   <div className="bg-gray-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm px-4 py-3">
@@ -190,7 +190,7 @@ export default function TPCoachPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleSend()} placeholder={t("tpCoach.inputPlaceholder", "Pregúntale a Rowi Coach lo que quieras...")}
                   className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-blue-500 outline-none" />
                 <button onClick={() => handleSend()} disabled={!input.trim() || isTyping}
-                  className="px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+                  className="px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
                   <Send className="w-5 h-5" />
                 </button>
               </div>
@@ -213,8 +213,8 @@ export default function TPCoachPage() {
                 t("tpCoach.feature6", "Disponible 24/7 con conversaciones de coaching ilimitadas"),
               ].map((feature, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Sparkles className="w-3 h-3 text-blue-500" />
+                  <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Sparkles className="w-3 h-3 text-violet-500" />
                   </div>
                   <span className="text-sm">{feature}</span>
                 </li>
@@ -238,7 +238,7 @@ export default function TPCoachPage() {
 
           {/* Quick Stats */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 text-white">
+            className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-6 text-white">
             <h3 className="font-bold text-lg mb-4">{t("tpCoach.statsTitle", "Datos Rápidos de TP")}</h3>
             <div className="space-y-3">
               <div className="flex justify-between"><span className="text-white/80 text-sm">{t("tpCoach.statsGlobalEQ", "IE Promedio Global")}</span><span className="font-bold">98.7</span></div>
@@ -255,7 +255,7 @@ export default function TPCoachPage() {
         <Link href="/hub/admin/tp/eco" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t("tpCoach.prevNav", "ECO")}
         </Link>
-        <Link href="/hub/admin/tp/community" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp/community" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity">
           {t("tpCoach.nextNav", "Comunidad")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>

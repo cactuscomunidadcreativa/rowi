@@ -153,7 +153,7 @@ export default function OrganizationHubPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-600 rounded-3xl p-8 md:p-10 text-white shadow-2xl"
+        className="relative overflow-hidden bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl p-8 md:p-10 text-white shadow-2xl"
       >
         <div className="absolute -right-10 -bottom-10 opacity-10">
           <Building2 className="w-64 h-64" />
@@ -320,7 +320,7 @@ export default function OrganizationHubPage() {
                   className="block bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 hover:border-[var(--rowi-g2)] hover:shadow-lg transition-all group"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 flex items-center justify-center">
                       <Briefcase className="w-5 h-5 text-white" />
                     </div>
                     {ws.workspaceType && (
@@ -373,7 +373,7 @@ export default function OrganizationHubPage() {
                 transition={{ delay: i * 0.04 }}
                 className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 flex items-center justify-center mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 flex items-center justify-center mb-3">
                   <Network className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -573,7 +573,7 @@ export default function OrganizationHubPage() {
                           initial={{ width: 0 }}
                           animate={{ width: `${pct}%` }}
                           transition={{ duration: 0.5, ease: "easeOut" }}
-                          className="h-full bg-gradient-to-r from-pink-500 to-fuchsia-500"
+                          className="h-full bg-gradient-to-r from-violet-500 to-purple-600"
                         />
                       </div>
                     </div>

@@ -109,7 +109,7 @@ export default function TPAdminHub() {
       key: "benchmark",
       href: "/hub/admin/tp/benchmark",
       icon: BarChart3,
-      gradient: "from-purple-600 to-pink-600",
+      gradient: "from-violet-500 to-purple-600",
       image: "/rowivectors/Rowi-01.webp",
       title: t("tpHome.benchmarkTitle", "Benchmark TP"),
       desc: t("tpHome.benchmarkDesc", "{count} evaluaciones SEI reales analizadas. Benchmarking corporativo por regiones, roles y departamentos.").replace("{count}", fmt(totalAssessments)),
@@ -154,7 +154,7 @@ export default function TPAdminHub() {
       key: "coach",
       href: "/hub/admin/tp/coach",
       icon: Bot,
-      gradient: "from-blue-500 to-cyan-600",
+      gradient: "from-violet-500 to-purple-600",
       image: "/rowivectors/Rowi-03.webp",
       title: t("tpHome.coachTitle", "Rowi Coach"),
       desc: t("tpHome.coachDesc", "Coaching de inteligencia emocional 24/7 con IA para empleados de TP, contextualizado con datos SEI."),
@@ -199,7 +199,7 @@ export default function TPAdminHub() {
       key: "people",
       href: "/hub/admin/tp/people",
       icon: GitCompareArrows,
-      gradient: "from-cyan-500 to-blue-600",
+      gradient: "from-violet-500 to-purple-600",
       image: "/rowivectors/Rowi-01.webp",
       title: t("tpHome.peopleTitle", "Comparador de Personas"),
       desc: t("tpHome.peopleDesc", "Compara perfiles EQ lado a lado. Analiza fortalezas complementarias y estilos cerebrales entre dos personas."),
@@ -244,7 +244,7 @@ export default function TPAdminHub() {
       key: "evolution",
       href: "/hub/admin/tp/evolution",
       icon: LineChart,
-      gradient: "from-sky-500 to-blue-600",
+      gradient: "from-violet-500 to-purple-600",
       image: "/rowivectors/Rowi-04.webp",
       title: t("tpHome.evolutionTitle", "Curva de Evolución"),
       desc: t("tpHome.evolutionDesc", "Rastrea el crecimiento EQ a lo largo del tiempo con assessments múltiples, predicciones y análisis de tendencias."),
@@ -322,7 +322,7 @@ export default function TPAdminHub() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>

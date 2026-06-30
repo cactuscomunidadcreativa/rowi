@@ -154,7 +154,7 @@ export default function AdminDashboard() {
         <Link href="/hub/admin/inventory" className="block">
           <AdminCard className="group hover:scale-[1.01] transition-transform cursor-pointer border-2 border-[var(--rowi-primary)]/30 bg-gradient-to-br from-[var(--rowi-primary)]/5 to-[var(--rowi-secondary)]/5">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg flex-shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
                 <Boxes className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1 min-w-0">
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
             <Link href="/hub/admin/vital-signs/lab" className="block">
               <AdminCard compact className="group hover:scale-[1.02] transition-transform cursor-pointer h-full">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow flex-shrink-0">
                     <FlaskConical className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">

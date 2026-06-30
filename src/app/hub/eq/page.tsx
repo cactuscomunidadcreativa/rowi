@@ -335,8 +335,8 @@ export default function EQDashboardPage() {
               onClick={() => router.push("/hub/eq/snapshots")}
               className="flex items-center gap-4 p-4 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700/50 transition-colors text-left"
             >
-              <div className="p-3 rounded-xl bg-blue-500/20">
-                <Calendar className="w-5 h-5 text-blue-400" />
+              <div className="p-3 rounded-xl bg-violet-500/20">
+                <Calendar className="w-5 h-5 text-violet-400" />
               </div>
               <div>
                 <h4 className="font-medium text-white">{txt.seiHistory}</h4>

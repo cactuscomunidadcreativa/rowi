@@ -120,7 +120,7 @@ export default function GoalsAdminPage() {
           <Target className="w-7 h-7 text-emerald-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent">
             {t("admin.social.goals.title", "Noble Goals Management")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">

@@ -103,11 +103,11 @@ export default function FeedModerationPage() {
         >
           <ArrowLeft className="w-5 h-5 text-gray-500" />
         </button>
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
           <Newspaper className="w-7 h-7 text-violet-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent">
             {t("admin.social.feed.title", "Feed Moderation")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">

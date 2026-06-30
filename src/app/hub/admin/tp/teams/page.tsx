@@ -626,7 +626,7 @@ export default function TPTeamsPage() {
                     </div>
                     <div className="h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600"
                         initial={{ width: 0 }}
                         animate={{ width: `${eqPct}%` }}
                         transition={{
@@ -1198,7 +1198,7 @@ export default function TPTeamsPage() {
         </Link>
         <Link
           href="/hub/admin/tp/selection"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity"
         >
           {t("tpTeams.navSelection", "Selection")} <ArrowRight className="w-5 h-5" />
         </Link>

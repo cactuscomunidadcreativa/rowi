@@ -526,7 +526,7 @@ export default function TPBenchmarkPage() {
         <Link href="/hub/admin/tp/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors text-sm font-medium">
           <ArrowLeft className="w-4 h-4" /> {t("tpBenchmark.navDashboard", "Dashboard")}
         </Link>
-        <Link href="/hub/admin/tp/affinity" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold shadow-lg hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp/affinity" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold shadow-lg hover:opacity-90 transition-opacity">
           {t("tpBenchmark.navAffinity", "Afinidad")} <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

@@ -303,7 +303,7 @@ export default function SeiLinksAdminPage() {
       {editor && (
         <AdminCard className="mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               {editor.mode === "create" ? (
                 <PlusCircle className="w-4 h-4 text-white" />
               ) : (
@@ -528,7 +528,7 @@ export default function SeiLinksAdminPage() {
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       link.isActive
-                        ? "bg-gradient-to-br from-blue-500 to-purple-500"
+                        ? "bg-gradient-to-br from-violet-500 to-purple-600"
                         : "bg-[var(--rowi-muted)]/20"
                     }`}
                   >

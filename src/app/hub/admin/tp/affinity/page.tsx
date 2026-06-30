@@ -774,7 +774,7 @@ export default function TPAffinityPage() {
                           }
                         });
                       }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium text-sm hover:opacity-90"
                     >
                       <Sparkles className="w-4 h-4" />
                       {t("tpAffinity.analyzeSelected", "Analizar Seleccionados")}
@@ -954,7 +954,7 @@ export default function TPAffinityPage() {
               <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 flex flex-col shadow-sm" style={{ minHeight: "400px" }}>
                 <div className="p-4 border-b border-gray-100 dark:border-zinc-800 bg-gradient-to-r from-pink-500/10 to-rose-500/10 rounded-t-2xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 flex items-center justify-center">
                       <Bot className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -967,7 +967,7 @@ export default function TPAffinityPage() {
                   {chat.map((m, i) => (
                     <div key={i} className={`flex ${m.role === "assistant" ? "justify-start" : "justify-end"}`}>
                       <div className={`max-w-[85%] px-4 py-2.5 text-sm rounded-2xl ${
-                        m.role === "assistant" ? "bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700" : "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
+                        m.role === "assistant" ? "bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700" : "bg-gradient-to-r from-violet-500 to-purple-600 text-white"
                       }`}>
                         {m.content}
                       </div>
@@ -999,7 +999,7 @@ export default function TPAffinityPage() {
                     <button
                       onClick={askRowi}
                       disabled={!coachInput.trim() || rowiTyping}
-                      className="p-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                      className="p-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
                     </button>
@@ -1037,7 +1037,7 @@ export default function TPAffinityPage() {
                 {communityMembers.filter((m) => m.id !== compareA).map((m) => <option key={m.id} value={m.id}>{m.name} {m.brainStyle ? `(${m.brainStyle})` : ""}</option>)}
               </select>
             </div>
-            <button onClick={runCompare} disabled={!compareA || !compareB || compareLoading} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium hover:opacity-90 disabled:opacity-50">
+            <button onClick={runCompare} disabled={!compareA || !compareB || compareLoading} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:opacity-90 disabled:opacity-50">
               {compareLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowLeftRight className="w-4 h-4" />}
               {t("tpAffinity.compareRun", "Comparar")}
             </button>
@@ -1140,7 +1140,7 @@ export default function TPAffinityPage() {
               <h2 className="text-xl font-bold mb-2 flex items-center gap-2"><Table2 className="w-5 h-5 text-pink-500" /> {t("tpAffinity.multiTitle", "Analisis Multi-Contexto")}</h2>
               <p className="text-sm text-[var(--rowi-muted)]">{t("tpAffinity.multiDesc", "Visualiza la afinidad en los 6 contextos simultaneamente para los miembros seleccionados")}</p>
             </div>
-            <button onClick={runMultiContext} disabled={selectedMembers.length === 0 || multiLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
+            <button onClick={runMultiContext} disabled={selectedMembers.length === 0 || multiLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
               {multiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               {t("tpAffinity.multiRunAll", "Calcular Todos")}
             </button>
@@ -1242,7 +1242,7 @@ export default function TPAffinityPage() {
               <button onClick={async () => { await recalculateAll(); }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm text-[var(--rowi-muted)] hover:text-pink-500 transition-colors">
                 <RefreshCw className="w-4 h-4" /> {t("tpAffinity.configRecalculate", "Recalcular Todo")}
               </button>
-              <button onClick={saveConfig} disabled={configSaving || !affinityConfig} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
+              <button onClick={saveConfig} disabled={configSaving || !affinityConfig} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium text-sm hover:opacity-90 disabled:opacity-50">
                 {configSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : configSaved ? <Award className="w-4 h-4" /> : <Save className="w-4 h-4" />}
                 {configSaving ? t("tpAffinity.configSaving", "Guardando...") : configSaved ? t("tpAffinity.configSaved", "Guardado") : t("tpAffinity.configSave", "Guardar Configuracion")}
               </button>
@@ -1860,7 +1860,7 @@ export default function TPAffinityPage() {
         <Link href="/hub/admin/tp/benchmark" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-pink-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t("tpAffinity.navBenchmark", "Benchmark")}
         </Link>
-        <Link href="/hub/admin/tp/eco" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp/eco" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity">
           {t("tpAffinity.navEco", "ECO")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>

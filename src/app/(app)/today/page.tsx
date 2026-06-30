@@ -225,7 +225,7 @@ export default function TodayPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="rounded-2xl shadow-lg p-5 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white"
+          className="rounded-2xl shadow-lg p-5 bg-gradient-to-br from-violet-500 to-purple-600 text-white"
         >
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4" />
@@ -350,7 +350,7 @@ export default function TodayPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white text-center p-5 shadow-lg"
+            className="rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white text-center p-5 shadow-lg"
           >
             <p className="text-lg font-bold">
               {evolved.hatched

@@ -208,7 +208,7 @@ function OutcomeCard({ outcome, name }: { outcome: OutcomeDatum; name: string })
       <div className="text-sm text-[var(--rowi-muted)]">{name}</div>
       <div className="mt-3 h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600"
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -499,7 +499,7 @@ export default function TPDashboardPage() {
         <Link href="/hub/admin/tp" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-gray-200 dark:border-zinc-700 hover:border-purple-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5" /> {t("tpDashboard.backToHub", "TP Hub")}
         </Link>
-        <Link href="/hub/admin/tp/benchmark" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/hub/admin/tp/benchmark" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity">
           {t("tpDashboard.navBenchmark", "Benchmark")} <ArrowRight className="w-5 h-5" />
         </Link>
       </div>

@@ -201,7 +201,7 @@ export default function SubscriptionPage() {
           <div className="flex-1">
             <h2 className="text-lg font-semibold">{t("settingsSubPg.currentPlan", "Plan actual")}</h2>
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
                 {data?.plan?.name || t("settingsSubPg.freePlan", "Plan Gratuito")}
               </span>
               {data?.plan && data.plan.priceCents > 0 && (

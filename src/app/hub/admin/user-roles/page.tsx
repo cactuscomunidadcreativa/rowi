@@ -74,7 +74,7 @@ export default function UserRolesPage() {
       </div>
 
       {/* Grant super access */}
-      <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 rounded-2xl border border-violet-200 dark:border-violet-900 p-5">
+      <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-2xl border border-violet-200 dark:border-violet-900 p-5">
         <h3 className="font-semibold text-sm flex items-center gap-2 mb-2">
           <Crown className="w-4 h-4 text-violet-600" />
           {t("admin.userRoles.grantSuper", "Grant SUPERADMIN access")}
@@ -93,7 +93,7 @@ export default function UserRolesPage() {
           <button
             onClick={grantSuper}
             disabled={!grantEmail.trim() || granting}
-            className="px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
           >
             {granting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {t("admin.userRoles.grant", "Grant")}

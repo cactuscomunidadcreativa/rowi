@@ -94,8 +94,8 @@ export default function LeaderboardsPage() {
           <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
         </button>
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
-            <BarChart3 className="w-6 h-6 text-blue-500" />
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+            <BarChart3 className="w-6 h-6 text-violet-500" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("gamLeaderboards.title", "Leaderboards")}</h1>
@@ -154,7 +154,7 @@ export default function LeaderboardsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
               activeTab === tab.id
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
                 : "bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
             }`}
           >

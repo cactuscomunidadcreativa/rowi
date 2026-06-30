@@ -61,7 +61,7 @@ export default function PreSeiMirror({ insight, token }: Props) {
       className="max-w-2xl mx-auto w-full space-y-4"
     >
       {/* EL ESPEJO */}
-      <div className="rounded-3xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white p-6 md:p-8 shadow-xl shadow-violet-500/20">
+      <div className="rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 md:p-8 shadow-xl shadow-violet-500/20">
         <p className="text-xs uppercase tracking-widest text-white/70 font-semibold mb-4 flex items-center gap-1.5">
           <Eye className="w-4 h-4" />
           {t("preSei.mirror.title", "Tu espejo")}

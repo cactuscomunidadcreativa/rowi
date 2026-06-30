@@ -156,7 +156,7 @@ export default function WeekFlowPage() {
             href="/weekflow/tasks"
             className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">
               <CheckSquare className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -171,7 +171,7 @@ export default function WeekFlowPage() {
             href="/weekflow/tasks/insights"
             className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -325,8 +325,8 @@ export default function WeekFlowPage() {
                 className="space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-blue-500" />
+                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-violet-500" />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-[var(--rowi-foreground)]">{tr.communityCheckins}</h2>
@@ -347,13 +347,13 @@ export default function WeekFlowPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 + i * 0.05 }}
                         onClick={() => router.push(`/weekflow/${hub.id}`)}
-                        className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer group"
+                        className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all cursor-pointer group"
                       >
                         {hub.image ? (
                           <img src={hub.image} alt={hub.name} className="w-12 h-12 rounded-xl object-cover shrink-0" />
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center shrink-0">
-                            <MessageSquare className="w-6 h-6 text-blue-600" />
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+                            <MessageSquare className="w-6 h-6 text-violet-600" />
                           </div>
                         )}
 
@@ -384,7 +384,7 @@ export default function WeekFlowPage() {
                           >
                             {tr.createCheckin}
                           </button>
-                          <ArrowRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:text-blue-500 transition-colors" />
+                          <ArrowRight className="w-4 h-4 text-[var(--rowi-muted)] group-hover:text-violet-500 transition-colors" />
                         </div>
                       </motion.div>
                     );

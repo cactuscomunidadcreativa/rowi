@@ -484,7 +484,7 @@ export default function ProfileSettingsPage() {
     <main className="max-w-4xl mx-auto space-y-6 animate-fadeIn pb-12">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-500 to-pink-500 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
           {t("settingsProfilePg.title", "Mi Perfil Rowi")}
         </h1>
         <p className="text-sm rowi-muted mt-2">{t("settingsProfilePg.subtitle", "Configura tu perfil para obtener la mejor experiencia personalizada")}</p>

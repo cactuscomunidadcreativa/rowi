@@ -619,7 +619,7 @@ export default function TPEvolutionPage() {
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:border-purple-400 transition-colors text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                     {formatDisplayId(evo.sourceId).slice(0, 2)}
                   </div>
                   <div>
@@ -648,7 +648,7 @@ export default function TPEvolutionPage() {
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors ${i === selectedIdx ? "bg-purple-50 dark:bg-purple-900/20" : ""}`}
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
                         {formatDisplayId(p.sourceId).slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1093,7 +1093,7 @@ export default function TPEvolutionPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800"
+                className="text-center p-4 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800"
               >
                 <div className="text-xs text-purple-600 dark:text-purple-400 mb-2 font-medium">{t.pred6m}</div>
                 <div className="text-4xl font-bold text-purple-600">{pred6}</div>
@@ -1150,7 +1150,7 @@ export default function TPEvolutionPage() {
         </Link>
         <Link
           href="/hub/admin/tp"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-opacity"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity"
         >
           {t.navNext} <ArrowRight className="w-5 h-5" />
         </Link>

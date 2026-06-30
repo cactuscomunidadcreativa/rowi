@@ -351,7 +351,7 @@ export default function BenchmarkDashboardPage() {
         {/* Country Breakdown */}
         <AdminCard>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <Globe className="w-5 h-5 text-white" />
             </div>
             <div>

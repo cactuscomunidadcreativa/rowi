@@ -12,7 +12,6 @@ export async function GET() {
       endpoints: [
         "/api/admin/hubs",
         "/api/admin/users",
-        "/api/admin/ui",
       ],
       note: "Este es un índice informativo. Los endpoints reales están en subrutas."
     },

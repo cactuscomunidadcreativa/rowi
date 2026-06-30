@@ -18,6 +18,15 @@ import { useUserContext } from "@/contexts/UserContextProvider";
 // Fetcher para SWR
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+/**
+ * Feature flag del ContextSwitcher (cambio de "lente"/contexto en la navbar).
+ * La UI está construida pero el cambio de contexto aún no propaga a las vistas
+ * (workspace, dashboard…). La auditoría lo reactiva en el Hito 3 como mecanismo
+ * de lentes — cuando la lógica propague, poner en true. NO es código muerto:
+ * es un toggle intencional. Ver [[project_navegacion_growth_os]].
+ */
+const CONTEXT_SWITCHER_ENABLED = false;
+
 /* =========================================================
    🌍 Fallbacks ES de las etiquetas del navbar (clave corta → texto)
    Las traducciones reales viven en el sistema central t() bajo el
@@ -215,8 +224,9 @@ const ROLE_LINKS = [
   // Research views (Academic Researcher)
   { href: "/research", key: "research", icon: FlaskConical, roles: ["RESEARCHER", "ACADEMIC", "ADMIN", "SUPERADMIN"] },
 
-  // Admin views
-  { href: "/admin", key: "admin", icon: Shield, roles: ["ADMIN", "SUPERADMIN", "OWNER"] },
+  // Admin: la consola real es /hub/admin (el legacy (app)/admin/ui se eliminó
+  // en el Hito 0 de la auditoría — era un 2º admin de usuario muerto).
+  { href: "/hub/admin", key: "admin", icon: Shield, roles: ["ADMIN", "SUPERADMIN", "OWNER"] },
 ];
 
 export default function NavBar() {
@@ -395,7 +405,7 @@ export default function NavBar() {
               confundir al usuario. El componente sigue importado abajo
               para que cuando se reactive solo haya que descomentar este
               bloque. */}
-          {false && isLogged && hasMultipleContexts && (
+          {CONTEXT_SWITCHER_ENABLED && isLogged && hasMultipleContexts && (
             <div className="hidden xl:block">
               <ContextSwitcher />
             </div>

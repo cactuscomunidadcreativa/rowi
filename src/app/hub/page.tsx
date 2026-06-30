@@ -91,18 +91,11 @@ export default function HubDashboardPage() {
         const json = await res.json();
         setData(json);
       } else {
-        // Si no hay API, usar datos de sesión
-        // Verificar si es admin por email conocido
-        const adminEmails = [
-          "eduardo@cactuscomunidadcreativa.com",
-          "eduardo.gonzalez@6seconds.org",
-          "josh@6seconds.org",
-          "patty@6seconds.org",
-        ];
+        // Fallback sin API: NUNCA derivar admin en el cliente. La fuente de
+        // verdad de permisos es server-side (scope-aware, ver core/auth.ts:
+        // "no autorices nunca desde claims del token"). Si la API no responde,
+        // el panel admin queda oculto (falso negativo seguro > falso positivo).
         const userEmail = session?.user?.email || "";
-        const isAdmin = adminEmails.includes(userEmail);
-        const isSuperAdmin = userEmail === "eduardo@cactuscomunidadcreativa.com";
-
         setData({
           user: {
             name: session?.user?.name || null,
@@ -110,8 +103,8 @@ export default function HubDashboardPage() {
             level: 1,
             xp: 0,
             streak: 0,
-            isAdmin,
-            isSuperAdmin,
+            isAdmin: false,
+            isSuperAdmin: false,
           },
           eq: { total: null, hasData: false },
           communities: [],
@@ -124,16 +117,8 @@ export default function HubDashboardPage() {
       }
     } catch (error) {
       console.error("Error loading dashboard:", error);
-      // Fallback con datos básicos
-      const adminEmails = [
-        "eduardo@cactuscomunidadcreativa.com",
-        "eduardo.gonzalez@6seconds.org",
-        "josh@6seconds.org",
-        "patty@6seconds.org",
-      ];
+      // Fallback ante error: igual que arriba, sin derivar admin en el cliente.
       const userEmail = session?.user?.email || "";
-      const isAdmin = adminEmails.includes(userEmail);
-
       setData({
         user: {
           name: session?.user?.name || null,
@@ -141,8 +126,8 @@ export default function HubDashboardPage() {
           level: 1,
           xp: 0,
           streak: 0,
-          isAdmin,
-          isSuperAdmin: userEmail === "eduardo@cactuscomunidadcreativa.com",
+          isAdmin: false,
+          isSuperAdmin: false,
         },
         eq: { total: null, hasData: false },
         communities: [],

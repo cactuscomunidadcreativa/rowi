@@ -89,12 +89,17 @@ const NAV_LABEL_FALLBACKS: Record<string, string> = {
   markRead: "Marcar leído",
   viewAllNotifications: "Ver todas las notificaciones",
   currentContext: "Contexto actual",
-  jSee: "Conócete",
-  jPractice: "Practica",
-  jAffinity: "Afinidad",
-  jEco: "ECO",
-  jConnect: "Conecta",
+  // Fases del viaje (navbar primaria)
+  verme: "Verme",
+  practicar: "Practicar",
+  conectar: "Conectar",
+  impacto: "Impacto",
+  // Encabezados de grupo del dropdown "Más"
+  jSee: "Verme",
+  jPractice: "Practicar",
+  jConnect: "Conectar",
   jImpact: "Impacto",
+  jGuia: "Guía",
   jOps: "Cuenta",
   loading: "Cargando...",
 };
@@ -154,38 +159,37 @@ const SIX_SECONDS_COLORS: Record<number, string> = {
 //   guide     = quién me ayuda a avanzar (IA + humanos)
 //   workspace = B2B (estructura org, fuera del viaje personal)
 const BASE_LINKS = [
-  // Espina del Human Growth OS: TODAY · BECOMING · GUIDE.
+  // La navbar ES el viaje (Brand Book): HOY · VERME · PRACTICAR · CONECTAR ·
+  // IMPACTO. Cada fase es un destino primario a su "home" real (no inventamos
+  // rutas en español; el Hito 3 unifica el shell). La Guía es transversal.
   { href: "/today", key: "today", icon: Sun, roles: ["*"], primary: true, journey: "today" },
-  { href: "/becoming", key: "myBecoming", icon: TrendingUp, roles: ["*"], primary: true, journey: "becoming" },
-  { href: "/rowi", key: "guide", icon: Bot, roles: ["*"], primary: true, journey: "guide" },
-  // El resto vive en "Más", agrupado por etapa del viaje (dentro de BECOMING).
+  { href: "/becoming", key: "verme", icon: TrendingUp, roles: ["*"], primary: true, journey: "see" },
+  { href: "/practice", key: "practicar", icon: Theater, roles: ["*"], primary: true, journey: "practice" },
+  { href: "/eco", key: "conectar", icon: Satellite, roles: ["*"], primary: true, journey: "connect" },
+  { href: "/org", key: "impacto", icon: Building2, roles: ["*"], primary: true, journey: "impact" },
+  // Guía — transversal: el paraguas neutro (IA + coaches humanos). Accesible
+  // siempre, no como 6ª pestaña fija. Vive en "Más" + se invoca en contexto.
+  { href: "/rowi", key: "guide", icon: Bot, roles: ["*"], primary: false, journey: "guia" },
+  // Herramientas de cada fase — viven en "Más", agrupadas bajo su fase.
   { href: "/settings/profile", key: "profile", icon: User, roles: ["*"], primary: false, journey: "see" },
-  // /dashboard fuera de la nav (decisión Eduardo F7): la puerta es TODAY y la
-  // memoria es BECOMING. El dashboard sigue vivo para los flujos de Mírate
-  // (links contextuales y URL directa), pero no compite como "home".
   { href: "/hub/vital-signs", key: "vitalSigns", icon: Activity, roles: ["*"], primary: false, journey: "see" },
-  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
-  { href: "/practice", key: "practice", icon: Theater, roles: ["*"], primary: false, journey: "practice" },
-  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "affinity" },
-  { href: "/eco", key: "eco", icon: Satellite, roles: ["*"], primary: false, journey: "eco" },
-  // Relaciones vive DENTRO de Comunidad (pestaña "Relaciones") — ya no es entrada propia.
-  { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
-  { href: "/org", key: "org", icon: Building2, roles: ["*"], primary: false, journey: "impact" },
   { href: "/benchmark", key: "benchmark", icon: BarChart3, roles: ["*"], primary: false, journey: "see" },
+  { href: "/weekflow", key: "weekflow", icon: CalendarCheck, roles: ["*"], primary: false, journey: "practice" },
+  { href: "/affinity", key: "affinity", icon: Heart, roles: ["*"], primary: false, journey: "connect" },
+  { href: "/community", key: "community", icon: Users, roles: ["*"], primary: false, journey: "connect" },
   { href: "/workspace", key: "workspace", icon: Briefcase, roles: ["*"], primary: false, journey: "workspace" },
 ];
 
-// Grupos del dropdown "Más", ordenados por etapa del Human Growth OS.
+// Grupos del dropdown "Más", ordenados por las fases del viaje (Brand Book).
 // Cada grupo agrupa los journeys que le pertenecen; la clave `key` es la
-// etiqueta i18n del encabezado. El grupo "ops" recoge todo lo demás (perfil,
-// roles, workspace) como cierre operativo.
+// etiqueta i18n del encabezado. "jGuia" es transversal; "jOps" cierra con lo
+// operativo (perfil, roles, workspace).
 const MORE_GROUPS = [
   { key: "jSee", journeys: ["see"] },
   { key: "jPractice", journeys: ["practice"] },
-  { key: "jAffinity", journeys: ["affinity"] },
-  { key: "jEco", journeys: ["eco"] },
-  { key: "jConnect", journeys: ["connect"] },
+  { key: "jConnect", journeys: ["connect", "affinity", "eco"] },
   { key: "jImpact", journeys: ["impact"] },
+  { key: "jGuia", journeys: ["guia"] },
   { key: "jOps", journeys: ["ops", "workspace"] },
 ];
 

@@ -123,6 +123,9 @@ export const ADMIN_SECTIONS: NavSection[] = [
       { href: "/hub/admin/eq/snapshots", labelKey: "admin.nav.eqSnapshots", icon: Brain },
       { href: "/hub/admin/eq/progress", labelKey: "admin.nav.eqProgress", icon: BarChart3 },
       { href: "/hub/admin/eq/insights", labelKey: "admin.nav.eqInsights", icon: FileText },
+      // Practice — el banco de escenarios vive junto al viaje (fase PRACTICE),
+      // no en "IA & Automatización" (auditoría v2, Hito 3).
+      { href: "/hub/admin/scenarios", labelKey: "admin.nav.practiceScenarios", icon: Theater, badge: "NEW", newSince: "2026-06-29" },
       { href: "/hub/admin/emotions", labelKey: "admin.nav.emotions", icon: Heart },
       { href: "/hub/admin/vital-signs/benchmarks", labelKey: "admin.nav.vsBenchmark", icon: BarChart3, superOnly: true },
       { href: "/hub/admin/vital-signs/cross-instrument", labelKey: "admin.nav.vsSeiCross", icon: GitCompareArrows, superOnly: true },
@@ -262,7 +265,6 @@ export const ADMIN_SECTIONS: NavSection[] = [
       { href: "/hub/admin/agents", labelKey: "admin.nav.agents", icon: Bot },
       { href: "/hub/admin/knowledge-layer", labelKey: "admin.nav.knowledgeLayer", icon: Brain },
       { href: "/hub/admin/knowledge", labelKey: "admin.nav.knowledgeBase", icon: BookOpenCheck },
-      { href: "/hub/admin/scenarios", labelKey: "admin.nav.scenarios", icon: Theater, badge: "NEW", newSince: "2026-06-29" },
       { href: "/hub/admin/insights", labelKey: "admin.nav.insights", icon: Sparkles },
       { href: "/hub/admin/ai/conversations", labelKey: "admin.nav.aiConversations", icon: MessageCircle },
       { href: "/hub/admin/ai/prompts", labelKey: "admin.nav.prompts", icon: MessageSquareCode },

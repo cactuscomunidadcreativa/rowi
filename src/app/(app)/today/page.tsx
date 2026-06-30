@@ -6,7 +6,7 @@ import useSWR, { mutate } from "swr";
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sun, Sparkles, Target, Moon, Check, MessageCircle } from "lucide-react";
+import { Sun, Sparkles, Target, Moon, Check, MessageCircle, Theater } from "lucide-react";
 import DailyPulseCard from "@/components/dashboard/DailyPulseCard";
 import { RowiStageImage, type RowiStage } from "@/domains/avatar/components/RowiStageImage";
 
@@ -270,6 +270,13 @@ export default function TodayPage() {
                 ? t("today.practice.done", "Hecho")
                 : t("today.practice.markdone", "Marcar como hecho")}
             </button>
+            <Link
+              href="/practice"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300"
+            >
+              <Theater className="w-4 h-4" />
+              {t("today.practice.rehearse", "Ensayar una conversación")}
+            </Link>
             <Link
               href="/rowi"
               className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300"

@@ -89,6 +89,10 @@ export default function WorkspaceListPage() {
       >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
           <div>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-[var(--rowi-g2)] bg-[var(--rowi-g2)]/10 rounded-full px-2.5 py-1 mb-2">
+              <Compass className="w-3 h-3" />
+              {t("espacios.levels", "Rowiverse → Espacio → Persona")}
+            </span>
             <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
               <Sparkles className="w-8 h-8 text-[var(--rowi-g2)]" />
               <span className="rowi-gradient-text">

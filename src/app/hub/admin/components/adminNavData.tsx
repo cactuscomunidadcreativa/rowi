@@ -172,7 +172,9 @@ export const ADMIN_SECTIONS: NavSection[] = [
     icon: CheckSquare,
     priority: 89,
     items: [
-      { href: "/hub/admin/tasks", labelKey: "admin.nav.tasksDashboard", icon: CheckSquare, superOnly: true },
+      // tasks: dashboard 100% DEMO_STATS (datos ficticios). Badge "DEMO" visible
+      // + superOnly hasta que tenga datos reales (auditoría v2, Hito 0.4).
+      { href: "/hub/admin/tasks", labelKey: "admin.nav.tasksDashboard", icon: CheckSquare, superOnly: true, badge: "DEMO" },
       { href: "/hub/admin/tasks/settings", labelKey: "admin.nav.tasksSettings", icon: Settings, superOnly: true },
       { href: "/hub/admin/weekflow", labelKey: "admin.nav.weekflow", icon: Workflow },
       { href: "/hub/admin/weekflow/settings", labelKey: "admin.nav.weekflowSettings", icon: Settings },

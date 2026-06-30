@@ -23,6 +23,7 @@ import {
   Megaphone,
   Target,
   MessageSquare,
+  Theater,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -103,6 +104,8 @@ export default function WeekFlowPage() {
     tasksDesc: t("weekflow.tasks.subtitle"),
     insights: t("weekflow.insights.title"),
     insightsDesc: t("weekflow.insights.subtitle"),
+    practice: t("weekflow.practice.title", "Ensayar una conversación"),
+    practiceDesc: t("weekflow.practice.subtitle", "Practica un caso real con tu Guía y recibe feedback."),
     myCheckins: t("weekflow.landing.myCheckins"),
     myCheckinsDesc: t("weekflow.landing.myCheckinsDesc"),
     communityCheckins: t("weekflow.landing.communityCheckins"),
@@ -177,6 +180,21 @@ export default function WeekFlowPage() {
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-[var(--rowi-foreground)]">{tr.insights}</h3>
               <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.insightsDesc}</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
+          </Link>
+
+          {/* Practice — ensayar una conversación (fase PRACTICE del viaje) */}
+          <Link
+            href="/practice"
+            className="flex items-center gap-4 p-5 rounded-2xl bg-[var(--rowi-surface)] border border-[var(--rowi-border)] hover:border-[var(--rowi-primary)]/50 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0">
+              <Theater className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-[var(--rowi-foreground)]">{tr.practice}</h3>
+              <p className="text-sm text-[var(--rowi-muted)] truncate">{tr.practiceDesc}</p>
             </div>
             <ArrowRight className="w-5 h-5 text-[var(--rowi-muted)] group-hover:text-[var(--rowi-primary)] transition-colors shrink-0" />
           </Link>
